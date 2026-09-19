@@ -12,3 +12,10 @@
 - Use Canvas LMS as a UX reference without copying its branding, assets, or exact design.
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
 - Keep commit messages simple and human-readable.
+
+## Git Workflow
+
+- Codex may create phase branches, commit completed phase work, push phase branches, and merge completed and checked phases into `development`.
+- Codex may delete a phase branch after its merge and the updated `development` branch are successfully pushed.
+- Do not merge `development` into `main` unless the current phase explicitly allows it.
+- Report Git failures instead of bypassing them, and keep commit messages simple and human-readable.
