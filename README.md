@@ -16,7 +16,7 @@ Stacc will initially use a modular-monolith architecture, keeping business domai
 
 - **Frontend:** React, TypeScript, Vite, and Tailwind CSS
 - **Backend:** Java, Spring Boot, Spring Security, Spring Data JPA, and Maven
-- **Database:** MySQL
+- **Database:** MySQL (local development database: `stacc`)
 - **Future AI:** Python, FastAPI, PyTorch, and Hugging Face Transformers
 
 Planned capabilities will be delivered incrementally through small, explicitly scoped development phases.
