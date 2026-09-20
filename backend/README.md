@@ -2,6 +2,10 @@
 
 The Stacc backend uses Java 21, Spring Boot, and Maven. It follows modular-monolith principles so that future business domains remain clearly separated within one application.
 
+## Module structure
+
+The single Spring Boot application is organized into logical modules under `com.stacc.backend`, including `auth`, `identity`, `academic`, `lms`, and the other domains described in `../docs/backend-architecture.md`. Each module owns its business logic, while the `common` module is reserved for small, genuinely shared technical code.
+
 ## MySQL connection
 
 The backend includes Spring Data JPA and MySQL Connector/J. Its connection configuration reads these environment variables:

@@ -2,6 +2,7 @@
 
 - Stacc uses MySQL. Treat older references to PostgreSQL as outdated unless a current phase explicitly changes this decision.
 - Use a modular-monolith architecture with clear domain boundaries.
+- Place backend code inside the correct Stacc module. Keep `common` small, and avoid cross-module dependencies without a clear need.
 - The frontend uses React and TypeScript; the backend uses Java and Spring Boot.
 - Work only on the currently requested development phase. Do not implement future features early.
 - Inspect the repository before editing and preserve existing working functionality.
