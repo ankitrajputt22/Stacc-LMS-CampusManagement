@@ -9,7 +9,7 @@ Stacc uses MySQL as its primary database. The local development defaults are:
 
 Keep real database credentials in local environment configuration. Never commit usernames, passwords, or other secrets. The repository's `.env.example` lists the supported placeholders, while a real `.env` file remains ignored by Git.
 
-Phase 6 will connect the Spring Boot application to MySQL. Phase 7 will introduce Flyway migrations. This phase does not create application tables or migrations.
+The Spring Boot application connects to MySQL using these environment variables. Flyway manages versioned schema migrations; Phase 7 adds only the migration baseline and no application tables.
 
 ## Useful commands
 
