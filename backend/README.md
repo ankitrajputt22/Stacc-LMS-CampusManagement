@@ -1,14 +1,23 @@
 # Stacc Backend
 
-The Stacc backend will use Java and Spring Boot, with Maven for dependency management and builds.
+The Stacc backend uses Java 21, Spring Boot, and Maven. It follows modular-monolith principles so that future business domains remain clearly separated within one application.
 
-The planned backend stack includes:
+## MySQL connection
 
-- Spring Security for authentication and authorization
-- Spring Data JPA and Hibernate for database access
-- MySQL as the primary database
-- Flyway for future database migrations
+The backend includes Spring Data JPA and MySQL Connector/J. Its connection configuration reads these environment variables:
 
-The backend will follow modular-monolith principles so that business domains remain clearly separated within one application.
+- `MYSQL_HOST` (defaults to `localhost`)
+- `MYSQL_PORT` (defaults to `3306`)
+- `MYSQL_DATABASE` (defaults to `stacc`)
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
 
-The Spring Boot application and its implementation files will be generated in a later development phase.
+Set the username and password in the local environment before running the application. Never commit real credentials.
+
+Hibernate schema management is disabled. Flyway will begin managing database changes in Phase 7; this phase contains no application tables or migrations.
+
+Run the backend tests with:
+
+```bash
+mvn test
+```
