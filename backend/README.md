@@ -22,6 +22,10 @@ Flyway manages database schema changes. Versioned migrations live in `src/main/r
 
 Hibernate automatic schema management remains disabled.
 
+## API validation and errors
+
+The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
+
 Run the backend tests with:
 
 ```bash
