@@ -11,6 +11,7 @@
 - Enforce permissions on the backend; frontend visibility is not a security boundary.
 - Keep frontend and backend API contracts consistent.
 - Use the shared API error format and Jakarta Validation for request DTOs. Do not expose stack traces or internal database errors, and do not create module-specific error formats.
+- Keep new REST APIs visible in OpenAPI with simple, useful descriptions. Do not create fake endpoints for Swagger, and do not treat API documentation as an authorization control.
 - Use Canvas LMS as a UX reference without copying its branding, assets, or exact design.
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
 - Keep commit messages simple and human-readable.
