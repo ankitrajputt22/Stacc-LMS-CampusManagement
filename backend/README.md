@@ -26,6 +26,10 @@ Hibernate automatic schema management remains disabled.
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
 
+## API documentation
+
+OpenAPI documentation is configured for the backend. During local development, Swagger UI is available at `http://localhost:8080/swagger-ui/index.html`, and the OpenAPI JSON is available at `http://localhost:8080/v3/api-docs`.
+
 Run the backend tests with:
 
 ```bash
