@@ -2,7 +2,13 @@
 
 The Stacc frontend is built with React, TypeScript, and Vite, using npm for package management.
 
-Tailwind CSS is configured through its Vite plugin. The current interface is a small Stacc UI foundation based on the approved academic design direction, with Canvas LMS used only as a UX reference. Final product pages will be created in later phases.
+Tailwind CSS is configured through its Vite plugin. The interface follows the approved academic design direction, with Canvas LMS used only as a UX reference. Final product pages will be created in later phases.
+
+## App shell
+
+All pages share one app shell in `src/layouts/AppLayout.tsx`, made of a sidebar, a top bar, and the main content area. Routing uses React Router, with routes defined in `src/App.tsx`. Future pages should be added as routes inside `AppLayout` rather than building their own navigation.
+
+Reusable `LoadingState`, `EmptyState`, and `ErrorState` components live in `src/components/states`. See `../docs/frontend-layout.md` for details.
 
 ## API configuration
 
