@@ -8,11 +8,13 @@ The structure is being built one model at a time:
 Department
     |
     +------< Program
-                |
-                +------< Semester >------ AcademicSession
+    |           |
+    |           +------< Semester >------ AcademicSession
+    |
+    +------< Course
 ```
 
-`Department`, `Program`, `AcademicSession`, and `Semester` exist so far. `Course` and `CourseOffering` are not built yet.
+`Department`, `Program`, `AcademicSession`, `Semester`, and `Course` exist so far. `CourseOffering` is not built yet.
 
 ## Department
 
@@ -59,16 +61,34 @@ A semester is one numbered semester of one program during one academic session, 
 
 Deleting a semester never deletes its program or session, and neither can be deleted while a semester refers to it.
 
+## Course
+
+A course is a permanent entry in the college's course catalog, such as a subject with its code and credits. The code is in `com.stacc.backend.academic.course` and the table is `courses`.
+
+- A course has one owning department, which is responsible for its definition. That does not limit which programs can later be taught the course.
+- `code` is required, at most 30 characters, stored in uppercase without surrounding spaces, and unique across the whole college. No particular code format is assumed.
+- `name` is required and at most 200 characters. It does not have to be unique: the code is the official identifier.
+- `credits` is the official credit value. It is stored as an exact decimal with two places, so fractional values such as `1.50` are supported. It must be greater than zero and at most `20.00`. A value with more than two decimal places is rejected, never rounded.
+- `status` is `ACTIVE` or `INACTIVE`. New courses are `ACTIVE`.
+- A course does not belong to a program, a semester, or an academic session, and it has no teacher, schedule, or learning material. Those belong to later models.
+
+Deleting a course never deletes its department, and a department that still has courses cannot be deleted.
+
+## Course and course offering
+
+```text
+Course          = the permanent definition
+CourseOffering  = one course offered in one semester   (not built yet)
+```
+
+The two are separate on purpose. The same course will be offered again in many semesters, and everything that depends on a particular semester belongs to the offering, not to the course.
+
 ## Keeping history
 
-A department or program that is no longer used is made `INACTIVE`, and a finished session or semester is `CLOSED`. None of them is deleted. Older courses, enrollments, and student records may still refer to them, so academic history is kept.
-
-## Next
-
-`Course` will be permanent academic data, such as a subject with its code and credits. `CourseOffering` will be one course offered in one specific semester. They are separate models and neither exists yet.
+A department, program, or course that is no longer used is made `INACTIVE`, and a finished session or semester is `CLOSED`. None of them is deleted. Older offerings, enrollments, and student records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
 - There is no API, service, or screen for any of these models. Only the stored models exist.
-- No department, program, session, or semester rows are seeded. The college's real data will be entered through a later administrative feature.
+- No department, program, session, semester, or course rows are seeded. The college's real data will be entered through a later administrative feature.
 - No permissions for this data exist yet. They will be added together with the API they protect.

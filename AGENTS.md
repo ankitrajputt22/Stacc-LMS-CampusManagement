@@ -57,6 +57,8 @@
 - A program belongs to exactly one department. Its code and name are unique within that department, never across the college.
 - An academic session is college-wide. Do not attach it directly to a department or a program, and do not assume it lasts exactly one year. Use `LocalDate` and `DATE` for its boundaries.
 - A semester connects one program and one academic session. Its identity is program, session, and semester number together; the number alone is never unique.
+- A course is permanent catalog data with a college-wide unique code and one owning department. It never belongs directly to a program, a semester, or a session.
+- Use `BigDecimal` and `DECIMAL` for academic credits, never `double` or `float`.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
