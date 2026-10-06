@@ -65,6 +65,9 @@
 - Never store a current semester or current session on `StudentProfile`. `admissionSession` is the session of original admission only. Ongoing participation comes from ERP enrollment, and a profile alone must not grant LMS access.
 - `SemesterEnrollment` is the official ERP record of semester participation. Do not copy the account, program, department, or session onto it, and keep its history instead of deleting it.
 - Creating a semester enrollment must check that the student's program is the semester's program. Semester enrollment alone must not grant LMS course access, and course enrollment is a separate, explicit step.
+- `CourseEnrollment` links a semester enrollment to a course offering. Do not copy the student, semester, program, session, or course onto it, and never auto-enroll a student in all offerings of a semester.
+- Creating a course enrollment must check that the offering's semester is the semester enrollment's semester. ERP course enrollment is the future source of truth for LMS course access.
+- An enrollment status is not an academic result. Keep grades and results in their own models.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
