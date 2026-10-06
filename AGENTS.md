@@ -59,6 +59,8 @@
 - A semester connects one program and one academic session. Its identity is program, session, and semester number together; the number alone is never unique.
 - A course is permanent catalog data with a college-wide unique code and one owning department. It never belongs directly to a program, a semester, or a session.
 - Use `BigDecimal` and `DECIMAL` for academic credits, never `double` or `float`.
+- A course offering links one course to one semester, and a course appears at most once per semester. Do not copy the program, session, department, or the course's code, name, or credits onto it.
+- Sections, teaching assignments, timetables, and enrollment are separate concepts. Do not fold them into the course offering.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
