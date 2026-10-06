@@ -5,10 +5,10 @@ Stacc uses Flyway for database schema changes. Migration files live in `backend/
 Use simple versioned names with two underscores between the version and description. For example:
 
 - `V1__baseline.sql`
-- `V2__create_users.sql`
+- `V2__create_user_accounts.sql`
 - `V3__create_roles.sql`
 
-Only `V1__baseline.sql` exists now; the other names are examples for later phases.
+`V1__baseline.sql` and `V2__create_user_accounts.sql` exist now; the last name is only an example for a later phase.
 
 Do not make schema changes manually. Hibernate automatic schema updates remain disabled so that Flyway owns the schema history.
 

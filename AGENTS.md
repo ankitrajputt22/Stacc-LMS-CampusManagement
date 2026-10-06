@@ -9,6 +9,10 @@
 - Do not refactor unrelated code without a clear phase-related reason.
 - Never hard-code credentials or secrets. Use environment configuration instead.
 - Enforce permissions on the backend; frontend visibility is not a security boundary.
+- Never store plaintext passwords. Store only password hashes, and never log or expose them.
+- Keep `UserAccount` separate from student and faculty profile data.
+- Do not expose JPA entities such as `UserAccount` directly through APIs.
+- Disable an account through its status. Do not delete accounts just to remove access.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
