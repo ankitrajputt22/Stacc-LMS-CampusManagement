@@ -53,8 +53,12 @@ The login ID and password are checked by Spring Security through the shared `Aut
 
 Passwords and login requests are never logged.
 
-## What login does not do yet
+## After login
 
-A successful login returns an access token, but the backend does not read tokens on incoming requests yet, so the next request is still not recognised as signed in. That comes in the next phase. Login does not create a server session or set a cookie.
+```text
+login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  ->  Spring Security checks the token
+```
 
-Also not built yet: refresh tokens, logout, password change or reset, and access rules for other routes.
+A request that carries a valid access token is recognised as that account. See `access-tokens.md`. Login does not create a server session or set a cookie.
+
+Not built yet: refresh tokens, logout, password change or reset, and access rules for other routes. All routes are still temporarily open.
