@@ -23,9 +23,10 @@
 - Users never grant themselves roles or permissions.
 - Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
 - Every route under `/api/` requires authentication by default. Make a route public only deliberately, with a clear reason, by listing it in `SecurityConfig`. The login stays public.
-- Check roles with `hasRole` or `hasAnyRole` and permissions with `hasAuthority`. Add a rule only when a real feature needs it.
-- There is no role hierarchy and no automatic admin pass. Do not add either without an explicit design decision.
-- Permission codes must not start with `ROLE_`.
+- Check roles with `hasRole` or `hasAnyRole` and permissions with `hasAuthority` or `hasAnyAuthority`. Add a rule only when a real feature needs it.
+- A permission's code is its authority name. Never add `ROLE_`, `SCOPE_`, or any other prefix to it, and never start a permission code with `ROLE_`.
+- There is no role hierarchy and no automatic admin pass, for roles or for permissions. Do not add either without an explicit design decision.
+- Do not build a custom permission engine or guess permission constants. Use Spring Security's checks.
 - Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
 - Sign-in goes through the shared `AuthenticationManager`, with `loginId` as the identifier. Roles map to `ROLE_*` authorities, and permission codes are used as authorities unchanged.
 - There is one central college login (`POST /api/auth/login`) and no public signup. The login request never carries a role.

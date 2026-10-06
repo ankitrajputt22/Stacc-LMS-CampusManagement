@@ -37,7 +37,12 @@ Permission rows are shared. Changing a role never creates or deletes a permissio
 
 No mappings exist yet. When a real feature introduces a permission, the same migration should assign it to the right roles. Do not guess mappings for features that do not exist.
 
+## Checking permissions
+
+A permission code can be used directly in a method rule: `@PreAuthorize("hasAuthority('PERMISSION_CODE')")`. The code is the authority name as stored, with no prefix. See `authorization.md`.
+
+No real permission codes have been introduced yet, so no real endpoint checks one.
+
 ## Not built yet
 
-- Nothing checks permissions yet. Authorization will be enforced on the backend in a later phase.
 - There is no API for managing permissions. Users never assign permissions to themselves.

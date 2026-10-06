@@ -26,11 +26,11 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 | No token | 401, `Authentication is required.` |
 | Invalid, changed, or expired token | 401, `Invalid or expired access token.` |
 | Valid token | The request continues as that account. |
-| Valid token, but the operation needs a role the account lacks | 403, `You do not have permission to access this resource.` |
+| Valid token, but the operation needs a role or permission the account lacks | 403, `You do not have permission to access this resource.` |
 
 Both 401 responses use the common error format and carry a `WWW-Authenticate: Bearer` header.
 
-Any signed-in account may use a protected route unless the operation itself requires a role. Role rules are described in `authorization.md`. No real endpoint has one yet, and permission rules are not active yet.
+Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. No real endpoint has one yet.
 
 ## Unknown routes
 
@@ -44,6 +44,5 @@ This is intended. It also means an anonymous caller cannot probe which API paths
 
 ## Still to come
 
-- Permission-based rules.
 - CORS for the frontend, with known origins only.
 - Refresh tokens and sign-out.

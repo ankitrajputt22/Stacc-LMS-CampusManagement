@@ -21,7 +21,7 @@ CSRF protection is switched off. It guards against attacks on cookie-based sessi
 ## Not built yet
 
 - Sign-out and refresh tokens.
-- Permission checks. Role checks are supported at method level (see `authorization.md`), but no real endpoint uses one yet.
+- Real role and permission rules. Both kinds of check are supported at method level (see `authorization.md`), but no real endpoint uses one yet.
 - CORS for the frontend. It will be set up for known origins when the first real frontend and backend feature is connected.
 
 Swagger and the OpenAPI document still load without a token. Unknown URLs still return 404 and unsupported methods 405, except that inside `/api/` a caller must be signed in first.
