@@ -77,6 +77,13 @@
 - Do not copy the course, program, semester, academic session, or department onto `LmsCourse`.
 - ERP `CourseEnrollment` remains the source of truth for future official LMS student access. A `PUBLISHED` LMS course alone grants no student access.
 - Archive an LMS course instead of deleting it, so its history is kept.
+- The `lms` module may use academic data. Academic models must never refer to LMS models.
+- ERP `CourseEnrollment` is the source of truth for official student course participation. `LmsStudentMembership` is only an LMS-side projection of it.
+- One course enrollment has at most one `LmsStudentMembership`, and its course enrollment and LMS course must belong to the same course offering.
+- Do not copy the student, account, course offering, course, or semester onto an LMS membership. Make a membership inactive instead of deleting it.
+- An `ACTIVE` membership alone does not give access. The LMS course's status and the ERP enrollment still count.
+- Do not synchronize ERP data into the LMS automatically until a dedicated provisioning phase.
+- Faculty access must not be modelled from student course enrollment or added to the student membership.
 - Add LMS content models only in their own feature phases.
 
 ## Git Workflow
