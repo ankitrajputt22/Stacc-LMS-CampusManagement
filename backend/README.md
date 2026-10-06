@@ -51,6 +51,10 @@ Clients send the token on later requests as `Authorization: Bearer <access-token
 
 The `academic` module holds the college's academic master data. So far it contains `Department`, `Program` (each program belongs to one department), the college-wide `AcademicSession`, `Semester` (one numbered semester of a program in a session), `Course` (the permanent course catalog), and `CourseOffering` (one course offered in one semester). The `identity` module holds `StudentProfile`, which links a student's `UserAccount` to a program and to the session of admission. In the `academic` module, `SemesterEnrollment` records a student's official participation in a semester and `CourseEnrollment` records participation in a course offering. There is no API for any of them yet. See `../docs/academic-structure.md`.
 
+## LMS
+
+The `lms` module holds `LmsCourse`, the learning space for one official course offering. It is the root that later LMS features will build on. There is no API for it yet. See `../docs/lms-foundation.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.

@@ -1,6 +1,6 @@
 # Academic Structure
 
-The academic (ERP) side of Stacc is the official source of truth for the college's academic structure and, later, for enrollment. Its code lives in the `academic` module.
+The academic (ERP) side of Stacc is the official source of truth for the college's academic structure and for enrollment. Its code lives in the `academic` module.
 
 The structure is being built one model at a time:
 
@@ -166,7 +166,33 @@ ERP SemesterEnrollment  = official participation in a semester
 ERP CourseEnrollment    = official participation in a course offering
 ```
 
-Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. No LMS integration exists yet, and nothing grants LMS access today.
+The LMS is built on this data. An `LmsCourse` in the `lms` module is the learning space for one course offering (see `lms-foundation.md`).
+
+```text
+ERP:   UserAccount
+            |
+            v
+       StudentProfile
+            |
+            v
+       SemesterEnrollment
+            |
+            v
+       CourseEnrollment
+            |
+            v
+       CourseOffering ------> Course, Semester
+            |
+            v
+LMS:   LmsCourse
+```
+
+- The course offering stays ERP academic data. The LMS course points to it, never the other way round.
+- One course offering has at most one LMS course.
+- The course, program, semester, and academic session are not stored again on the LMS course.
+- No student LMS membership exists yet.
+
+Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. Nothing grants LMS access today.
 
 ## Keeping history
 
