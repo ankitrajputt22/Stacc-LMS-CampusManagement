@@ -24,7 +24,11 @@ Hibernate automatic schema management remains disabled.
 
 ## User accounts
 
-The `auth.account` package holds the first persistent model: `UserAccount`, stored in the `user_accounts` table. It keeps a unique login ID, a password hash, and an account status. Login and roles are not implemented yet. See `../docs/user-accounts.md`.
+The `auth.account` package holds the first persistent model: `UserAccount`, stored in the `user_accounts` table. It keeps a unique login ID, a password hash, and an account status. See `../docs/user-accounts.md`.
+
+The `auth.role` package holds the `Role` model. An account can hold several roles through the `user_account_roles` table, and the initial roles are `STUDENT`, `FACULTY`, and `ADMIN`. See `../docs/account-roles.md`.
+
+Login and permissions are not implemented yet.
 
 ## API validation and errors
 
