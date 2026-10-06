@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -30,5 +32,15 @@ public class SecurityConfig {
                 // use tokens, so it is off. Review this if authentication ever moves to cookies.
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
+    }
+
+    /**
+     * The one password encoder for Stacc. New passwords are hashed with BCrypt, and each
+     * hash records its algorithm so it can be upgraded later. Always use this bean:
+     * encode(...) to create a hash and matches(...) to check a password.
+     */
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }

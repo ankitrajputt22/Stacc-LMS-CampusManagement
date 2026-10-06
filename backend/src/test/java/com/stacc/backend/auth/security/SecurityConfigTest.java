@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -92,5 +93,10 @@ class SecurityConfigTest {
     @Test
     void springBootDoesNotCreateAGeneratedUser() {
         assertEquals(0, context.getBeanNamesForType(UserDetailsService.class).length);
+    }
+
+    @Test
+    void thereIsOneSharedPasswordEncoder() {
+        assertEquals(1, context.getBeanNamesForType(PasswordEncoder.class).length);
     }
 }

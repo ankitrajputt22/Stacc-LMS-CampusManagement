@@ -5,7 +5,7 @@ A `UserAccount` is a college-issued Stacc account. It holds only what is needed 
 ## What an account stores
 
 - `loginId` — the one unique login identifier for every kind of user, such as a student ID (`2408400100011`), an employee ID (`EMP1024`), or an admin-assigned ID. It is required, at most 100 characters, and unique in the database.
-- `passwordHash` — only a password hash is stored. Stacc never stores a plain password. The hashing method will be chosen in a later authentication phase.
+- `passwordHash` — only a password hash is stored. Stacc never stores a plain password. Hashes are created by the shared password encoder (see `password-security.md`).
 - `status` — `ACTIVE` or `DISABLED`, stored as text. New accounts are `ACTIVE`.
 - `createdAt` and `updatedAt` — set automatically.
 
@@ -19,4 +19,4 @@ A `UserAccount` is a college-issued Stacc account. It holds only what is needed 
 
 ## Not built yet
 
-Login, logout, tokens, password hashing, password reset, account creation, and permissions all belong to later phases.
+Login, logout, tokens, password reset, account creation, and permission checks all belong to later phases.
