@@ -70,6 +70,15 @@
 - An enrollment status is not an academic result. Keep grades and results in their own models.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
+## LMS Data
+
+- LMS data belongs in the `lms` module. An ERP `CourseOffering` and an LMS `LmsCourse` are different concepts; do not put LMS state on the course offering.
+- One course offering maps to at most one `LmsCourse`.
+- Do not copy the course, program, semester, academic session, or department onto `LmsCourse`.
+- ERP `CourseEnrollment` remains the source of truth for future official LMS student access. A `PUBLISHED` LMS course alone grants no student access.
+- Archive an LMS course instead of deleting it, so its history is kept.
+- Add LMS content models only in their own feature phases.
+
 ## Git Workflow
 
 - Codex may create phase branches, commit completed phase work, push phase branches, and merge completed and checked phases into `development`.
