@@ -47,6 +47,10 @@ The backend needs two more environment variables for tokens:
 
 Clients send the token on later requests as `Authorization: Bearer <access-token>`.
 
+## Academic structure
+
+The `academic` module holds the college's academic master data. So far it contains the `Department` model, stored in the `departments` table. There is no API for it yet. See `../docs/academic-structure.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.

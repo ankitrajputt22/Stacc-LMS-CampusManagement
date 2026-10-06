@@ -49,6 +49,13 @@
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - Keep commit messages simple and human-readable.
 
+## Academic Data
+
+- Academic master data belongs in the `academic` module. The ERP side is the source of truth for academic structure and enrollment.
+- Keep academic history. Make a record inactive instead of deleting it, and do not use cascading deletes on academic data.
+- Department codes are unique and stored in uppercase.
+- Add each academic model only in its own phase, and add its permissions only together with the action they protect.
+
 ## Git Workflow
 
 - Codex may create phase branches, commit completed phase work, push phase branches, and merge completed and checked phases into `development`.
