@@ -16,6 +16,8 @@
 - Roles are assigned by the college through the backend. Users never choose their own role.
 - An account can hold several roles. Do not assume it has only one.
 - `Role` rows are shared reference data. Never create or delete them as a side effect of changing an account.
+- Permission codes use `UPPERCASE_WITH_UNDERSCORES`. Add a permission only when a real feature needs it, through a migration.
+- Users never grant themselves roles or permissions.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
