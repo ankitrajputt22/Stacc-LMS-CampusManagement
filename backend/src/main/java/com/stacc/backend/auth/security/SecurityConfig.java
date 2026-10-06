@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AccountStatusUserDetailsCheck
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,14 +21,21 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * The one shared Spring Security configuration for Stacc. Everything under /api/ needs a
- * signed-in account unless it is listed here as public. Rules for specific roles and
- * permissions are added in later phases.
+ * signed-in account unless it is listed here as public.
+ *
+ * <p>Method security is on, so an operation can require a role with
+ * {@code @PreAuthorize("hasRole('ADMIN')")} or {@code hasAnyRole('STUDENT', 'FACULTY')}.
+ * Add such a rule only where a real feature needs it.
  */
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, StaccAuthenticationEntryPoint authenticationEntryPoint)
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            StaccAuthenticationEntryPoint authenticationEntryPoint,
+            StaccAccessDeniedHandler accessDeniedHandler)
             throws Exception {
         http
                 .authorizeHttpRequests(requests -> requests
@@ -50,8 +58,12 @@ public class SecurityConfig {
                 // request only. A missing or unacceptable token on a protected route is answered with 401.
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .authenticationEntryPoint(authenticationEntryPoint))
-                .exceptionHandling(handling -> handling.authenticationEntryPoint(authenticationEntryPoint))
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                // Not signed in is answered with 401. Signed in but not allowed is answered with 403.
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 // CSRF protection guards cookie-based sessions. The API is stateless and will
                 // use tokens, so it is off. Review this if authentication ever moves to cookies.
                 .csrf(AbstractHttpConfigurer::disable);

@@ -36,6 +36,13 @@ class PermissionTest {
         assertThrows(IllegalArgumentException.class, () -> new Permission(code));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"ROLE_ADMIN", "ROLE_STUDENT", "ROLE_ANYTHING"})
+    void codeCannotLookLikeARole(String code) {
+        assertThrows(IllegalArgumentException.class, () -> new Permission(code));
+        assertEquals("ROLES_VIEW", new Permission("ROLES_VIEW").getCode());
+    }
+
     @Test
     void codeCannotBeLongerThanTheColumn() {
         String longestAllowed = "A".repeat(Permission.MAX_CODE_LENGTH);

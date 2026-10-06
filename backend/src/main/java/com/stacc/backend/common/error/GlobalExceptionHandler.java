@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,6 +28,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private static final String UNEXPECTED_ERROR_MESSAGE = "An unexpected error occurred.";
+
+    private static final String ACCESS_DENIED_MESSAGE = "You do not have permission to access this resource.";
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -85,6 +88,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         return response(HttpStatus.BAD_REQUEST, "Validation failed", request, HttpHeaders.EMPTY, fieldErrors);
+    }
+
+    // A signed-in account without the required role or permission. The rule itself is not revealed.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDenied(AccessDeniedException exception, HttpServletRequest request) {
+        return response(HttpStatus.FORBIDDEN, ACCESS_DENIED_MESSAGE, request, HttpHeaders.EMPTY, List.of());
     }
 
     @ExceptionHandler(ApiException.class)

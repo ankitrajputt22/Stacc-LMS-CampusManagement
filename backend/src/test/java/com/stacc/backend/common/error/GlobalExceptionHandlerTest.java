@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -112,6 +113,20 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void accessDeniedIsForbiddenWithoutRevealingTheRule() throws Exception {
+        mockMvc.perform(get("/test/denied"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("Forbidden"))
+                .andExpect(jsonPath("$.message").value("You do not have permission to access this resource."))
+                .andExpect(jsonPath("$.path").value("/test/denied"))
+                .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
+                .andExpect(content().string(not(containsString("hasRole"))))
+                .andExpect(content().string(not(containsString("ADMIN"))));
+    }
+
+    @Test
     void apiExceptionUsesItsStatusAndMessage() throws Exception {
         mockMvc.perform(get("/test/conflict"))
                 .andExpect(status().isConflict())
@@ -148,6 +163,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/constraint")
         void constraintViolation() {
             throw new ConstraintViolationException(Set.of());
+        }
+
+        @GetMapping("/denied")
+        void accessDenied() {
+            throw new AccessDeniedException("Access Denied: hasRole('ADMIN')");
         }
 
         @GetMapping("/conflict")

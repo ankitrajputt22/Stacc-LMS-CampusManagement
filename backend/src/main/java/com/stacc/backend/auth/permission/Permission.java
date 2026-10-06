@@ -23,6 +23,9 @@ public class Permission {
     // UPPERCASE_WITH_UNDERSCORES, for example COURSE_VIEW.
     private static final Pattern CODE_FORMAT = Pattern.compile("[A-Z][A-Z0-9]*(_[A-Z0-9]+)*");
 
+    // Names starting with ROLE_ mean a role to Spring Security, so a permission may not use them.
+    private static final String ROLE_PREFIX = "ROLE_";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,6 +51,9 @@ public class Permission {
         }
         if (!CODE_FORMAT.matcher(trimmed).matches()) {
             throw new IllegalArgumentException("code must use uppercase letters, digits, and underscores");
+        }
+        if (trimmed.startsWith(ROLE_PREFIX)) {
+            throw new IllegalArgumentException("code must not start with " + ROLE_PREFIX);
         }
         this.code = trimmed;
     }
