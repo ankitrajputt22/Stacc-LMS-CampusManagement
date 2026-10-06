@@ -16,6 +16,7 @@ A `UserAccount` is a college-issued Stacc account. It holds only what is needed 
 - Profile details such as name, email, department, or semester do not belong here. They will be stored in separate student and faculty profile models.
 - An account can hold one or more roles, assigned by the college. Users never choose their own role. See `account-roles.md`.
 - `UserAccount` is a database entity. Do not return it from an API, and never log or expose `passwordHash`.
+- `UserAccount` is the only source of accounts for Spring Security sign-in. See `authentication-foundation.md`.
 
 ## Not built yet
 

@@ -9,7 +9,7 @@ This is the foundation only. Stacc sign-in is not built yet.
 - **All routes are open, temporarily.** There is no way to sign in yet, so locking routes would make the backend unusable. This is not the final policy. Real access rules will replace it when authentication is built.
 - **No Spring sign-in page.** Spring's generated login page and its default `/logout` handling are switched off. Stacc will have its own sign-in screen.
 - **No HTTP Basic.** The browser's username and password prompt is not used.
-- **No generated user.** Spring Boot normally creates a `user` account with a random password printed in the log. That is switched off in `StaccApplication`. Stacc has no built-in or demo users, and accounts will only come from `UserAccount`.
+- **No generated user.** Spring Boot normally creates a `user` account with a random password printed in the log. That is switched off in `StaccApplication`. Stacc has no built-in or demo users, and accounts come only from `UserAccount`.
 - **Stateless.** The backend does not create server-side login sessions. It is being prepared for token-based authentication.
 - **Default security headers stay on**, such as `X-Content-Type-Options` and `X-Frame-Options`.
 
@@ -19,8 +19,7 @@ CSRF protection is switched off. It guards against attacks on cookie-based sessi
 
 ## Not built yet
 
-- Sign-in, sign-out, and tokens.
-- Loading accounts and checking passwords at sign-in. The shared password encoder already exists (see `password-security.md`), but nothing uses it yet.
+- The sign-in endpoint, sign-out, and tokens. The backend can already load an account and check its password (see `authentication-foundation.md` and `password-security.md`), but nothing calls this over HTTP yet.
 - Enforcing roles and permissions. They exist in the database but nothing checks them yet.
 - CORS for the frontend. It will be set up for known origins when the first real frontend and backend feature is connected.
 

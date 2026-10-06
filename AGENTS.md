@@ -23,6 +23,7 @@
 - Users never grant themselves roles or permissions.
 - Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
 - Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
+- Sign-in goes through the shared `AuthenticationManager`, with `loginId` as the identifier. Roles map to `ROLE_*` authorities, and permission codes are used as authorities unchanged.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
