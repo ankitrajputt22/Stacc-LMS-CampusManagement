@@ -13,6 +13,9 @@
 - Keep `UserAccount` separate from student and faculty profile data.
 - Do not expose JPA entities such as `UserAccount` directly through APIs.
 - Disable an account through its status. Do not delete accounts just to remove access.
+- Roles are assigned by the college through the backend. Users never choose their own role.
+- An account can hold several roles. Do not assume it has only one.
+- `Role` rows are shared reference data. Never create or delete them as a side effect of changing an account.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.

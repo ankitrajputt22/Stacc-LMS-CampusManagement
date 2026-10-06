@@ -14,9 +14,9 @@ A `UserAccount` is a college-issued Stacc account. It holds only what is needed 
 - There is no public signup. Accounts are created by the college.
 - To stop access, set the status to `DISABLED`. Do not delete the account.
 - Profile details such as name, email, department, or semester do not belong here. They will be stored in separate student and faculty profile models.
-- Roles and permissions are not part of the account yet. They will be added separately, and users never choose their own role.
+- An account can hold one or more roles, assigned by the college. Users never choose their own role. See `account-roles.md`.
 - `UserAccount` is a database entity. Do not return it from an API, and never log or expose `passwordHash`.
 
 ## Not built yet
 
-Login, logout, tokens, password hashing, password reset, account creation, and roles all belong to later phases.
+Login, logout, tokens, password hashing, password reset, account creation, and permissions all belong to later phases.

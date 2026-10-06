@@ -4,7 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Set;
+
+import com.stacc.backend.auth.role.Role;
+import com.stacc.backend.auth.role.RoleName;
 import org.junit.jupiter.api.Test;
 
 class UserAccountTest {
@@ -55,6 +60,58 @@ class UserAccountTest {
 
         assertEquals(AccountStatus.DISABLED, account.getStatus());
         assertThrows(IllegalArgumentException.class, () -> account.setStatus(null));
+    }
+
+    @Test
+    void newAccountHasNoRoles() {
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+
+        assertTrue(account.getRoles().isEmpty());
+        assertFalse(account.hasRole(RoleName.FACULTY));
+    }
+
+    @Test
+    void accountCanHoldMoreThanOneRole() {
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+
+        account.assignRole(new Role(RoleName.FACULTY));
+        account.assignRole(new Role(RoleName.ADMIN));
+
+        assertEquals(Set.of(new Role(RoleName.FACULTY), new Role(RoleName.ADMIN)), account.getRoles());
+        assertTrue(account.hasRole(RoleName.FACULTY));
+        assertTrue(account.hasRole(RoleName.ADMIN));
+        assertFalse(account.hasRole(RoleName.STUDENT));
+    }
+
+    @Test
+    void assigningTheSameRoleTwiceKeepsOneCopy() {
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+
+        account.assignRole(new Role(RoleName.FACULTY));
+        account.assignRole(new Role(RoleName.FACULTY));
+
+        assertEquals(1, account.getRoles().size());
+    }
+
+    @Test
+    void removingOneRoleKeepsTheOthers() {
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+        account.assignRole(new Role(RoleName.FACULTY));
+        account.assignRole(new Role(RoleName.ADMIN));
+
+        account.removeRole(new Role(RoleName.ADMIN));
+
+        assertEquals(Set.of(new Role(RoleName.FACULTY)), account.getRoles());
+    }
+
+    @Test
+    void rolesCanOnlyBeChangedThroughTheAccount() {
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+
+        assertThrows(IllegalArgumentException.class, () -> account.assignRole(null));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> account.getRoles().add(new Role(RoleName.ADMIN)));
     }
 
     @Test

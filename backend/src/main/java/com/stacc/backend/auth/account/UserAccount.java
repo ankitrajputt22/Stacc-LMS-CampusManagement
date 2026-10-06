@@ -1,7 +1,12 @@
 package com.stacc.backend.auth.account;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.stacc.backend.auth.role.Role;
+import com.stacc.backend.auth.role.RoleName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,6 +14,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -44,6 +52,14 @@ public class UserAccount {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    // No cascade: roles are shared reference data and must never be created or deleted through an account.
+    @ManyToMany
+    @JoinTable(
+            name = "user_account_roles",
+            joinColumns = @JoinColumn(name = "user_account_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
     protected UserAccount() {
         // Required by JPA.
@@ -86,6 +102,25 @@ public class UserAccount {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Set<Role> getRoles() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    public boolean hasRole(RoleName name) {
+        return roles.stream().anyMatch(role -> role.getName() == name);
+    }
+
+    public void assignRole(Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("role is required");
+        }
+        roles.add(role);
+    }
+
+    public void removeRole(Role role) {
+        roles.remove(role);
     }
 
     private static String requireText(String value, String name) {
