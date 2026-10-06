@@ -17,6 +17,9 @@
 - Keep new REST APIs visible in OpenAPI with simple, useful descriptions. Do not create fake endpoints for Swagger, and do not treat API documentation as an authorization control.
 - Use Canvas LMS as a UX reference without copying its branding, assets, or exact design.
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
+- Frontend pages reuse the shared `AppLayout`. Do not create separate global navigation for each module.
+- Reuse `LoadingState`, `EmptyState`, and `ErrorState` for page states.
+- Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - Keep commit messages simple and human-readable.
 
 ## Git Workflow
