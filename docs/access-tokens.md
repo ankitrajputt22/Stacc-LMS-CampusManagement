@@ -75,5 +75,5 @@ The database is not asked on each request. Everything comes from the token, so i
 
 ## Not built yet
 
-- Checking permissions. A valid token is required for every protected `/api/` route (see `api-security.md`), and operations can require roles (see `authorization.md`).
+- Real role and permission rules. A valid token is required for every protected `/api/` route (see `api-security.md`), and operations can require roles or permissions (see `authorization.md`), but no real endpoint does yet.
 - There are no refresh tokens, no logout, and no way to cancel a token before it expires.

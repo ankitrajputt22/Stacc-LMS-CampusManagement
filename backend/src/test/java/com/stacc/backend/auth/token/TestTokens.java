@@ -39,6 +39,14 @@ public final class TestTokens {
         return signed(TestSecrets.JWT_SECRET, MacAlgorithm.HS256, validClaims(loginId, accountId, authorities));
     }
 
+    /** A correctly signed token that stopped being valid 45 minutes ago. */
+    public static String expired(String loginId, long accountId, String... authorities) {
+        Instant anHourAgo = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(1, ChronoUnit.HOURS);
+        return withClaims(
+                validClaims(loginId, accountId, authorities),
+                claims -> claims.issuedAt(anHourAgo).expiresAt(anHourAgo.plus(15, ChronoUnit.MINUTES)));
+    }
+
     /** A token signed with the test secret after the claims have been changed. */
     public static String withClaims(JwtClaimsSet.Builder claims, Consumer<JwtClaimsSet.Builder> change) {
         change.accept(claims);
