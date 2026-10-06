@@ -34,6 +34,8 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Login and authorization checks are not implemented yet. See `../docs/security-foundation.md`.
 
+Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.

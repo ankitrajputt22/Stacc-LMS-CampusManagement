@@ -9,7 +9,8 @@
 - Do not refactor unrelated code without a clear phase-related reason.
 - Never hard-code credentials or secrets. Use environment configuration instead.
 - Enforce permissions on the backend; frontend visibility is not a security boundary.
-- Never store plaintext passwords. Store only password hashes, and never log or expose them.
+- Never store plaintext passwords. Store only password hashes, and never log or expose raw passwords or hashes.
+- Hash and check passwords only with the shared `PasswordEncoder`. Do not compare password strings yourself or write custom hashing code.
 - Keep `UserAccount` separate from student and faculty profile data.
 - Do not expose JPA entities such as `UserAccount` directly through APIs.
 - Disable an account through its status. Do not delete accounts just to remove access.

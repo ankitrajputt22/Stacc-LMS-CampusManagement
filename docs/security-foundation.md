@@ -20,7 +20,7 @@ CSRF protection is switched off. It guards against attacks on cookie-based sessi
 ## Not built yet
 
 - Sign-in, sign-out, and tokens.
-- Loading accounts and checking passwords.
+- Loading accounts and checking passwords at sign-in. The shared password encoder already exists (see `password-security.md`), but nothing uses it yet.
 - Enforcing roles and permissions. They exist in the database but nothing checks them yet.
 - CORS for the frontend. It will be set up for known origins when the first real frontend and backend feature is connected.
 
