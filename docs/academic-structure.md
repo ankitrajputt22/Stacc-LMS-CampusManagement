@@ -31,6 +31,8 @@ StudentProfile
      +------> admission AcademicSession
      |
      +------< SemesterEnrollment >------ Semester
+                     |
+                     +------< CourseEnrollment >------ CourseOffering ------> Course
 ```
 
 ## Department
@@ -142,14 +144,29 @@ A semester enrollment is the official ERP record that one student takes part in 
 
 Deleting an enrollment never deletes the student profile or the semester, and neither can be deleted while an enrollment refers to it.
 
-## Course enrollment and the LMS, later
+## CourseEnrollment
+
+A course enrollment is the official ERP record that a student takes part in one course offering. The code is in `com.stacc.backend.academic.enrollment` and the table is `course_enrollments`.
+
+- A course enrollment belongs to one semester enrollment and one course offering. They cannot be changed after creation, and the same pair can exist only once.
+- One semester enrollment can have many course enrollments, and one course offering can have many students.
+- The student profile and the account are reached through the semester enrollment. The course is reached through the course offering. The semester, program, session, and department are reached through those in turn. None of them is stored on the course enrollment again.
+- Course enrollment is always explicit. A student is never enrolled automatically in every offering of a semester, because of electives, optional courses, and backlogs.
+- `status` is `ENROLLED`, `COMPLETED`, or `WITHDRAWN`. New course enrollments are `ENROLLED`. Once completed or withdrawn, a course enrollment cannot change again.
+- The status describes the enrollment only. It is not a grade or a result, and `COMPLETED` does not mean passed. Marks, grades, attendance, and results belong to later models.
+
+**Rule for the future course-enrollment feature:** before creating a course enrollment, it must check that the course offering belongs to the same semester as the semester enrollment. The stored model does not check this itself, the semester is not stored a second time to force it, and there is no database trigger for it.
+
+Deleting a course enrollment never deletes the semester enrollment or the course offering, and neither can be deleted while a course enrollment refers to it.
+
+## The ERP is the source of truth for the LMS
 
 ```text
-ERP SemesterEnrollment   = official participation in a semester
-future CourseEnrollment  = official participation in a course offering   (not built yet)
+ERP SemesterEnrollment  = official participation in a semester
+ERP CourseEnrollment    = official participation in a course offering
 ```
 
-A student is not automatically enrolled in every course offering of a semester. Course enrollment will be explicit, in its own model. Only that official ERP course enrollment should later grant access to the matching LMS course. A student profile or a semester enrollment on its own must never grant LMS access. Neither course enrollment nor the LMS link exists yet.
+Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. No LMS integration exists yet, and nothing grants LMS access today.
 
 ## Keeping history
 
