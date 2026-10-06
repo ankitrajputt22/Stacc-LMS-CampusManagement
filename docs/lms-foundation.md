@@ -62,9 +62,59 @@ LmsStudentMembership      (LMS)
 - This model is for students only. Teacher access will come from an official teaching assignment, not from a course enrollment, and will have its own design.
 - `status` is `ACTIVE` or `INACTIVE`. New memberships are `ACTIVE`. An inactive membership is kept for history and can be made active again. Memberships are not deleted.
 
-**Rule for the future membership feature:** the course enrollment and the LMS course must belong to the same course offering. The feature that creates memberships must check this before creating one. The stored model does not check it itself, the course offering is not stored a third time to force it, and there is no database trigger for it.
+**Matching rule:** the course enrollment and the LMS course must belong to the same course offering. The provisioning service below checks this before it creates a membership, so memberships are created through that service. The stored model does not check it itself, the course offering is not stored a third time to force it, and there is no database trigger for it.
 
 Deleting a membership never deletes the course enrollment or the LMS course, and neither can be deleted while a membership refers to it.
+
+## Membership provisioning
+
+`LmsStudentMembershipProvisioningService` in `com.stacc.backend.lms.membership` creates and switches off memberships, one official course enrollment at a time.
+
+```text
+CourseEnrollment
+       |
+       v
+LmsStudentMembershipProvisioningService
+       |
+       v
+LmsStudentMembership
+       |
+       v
+    LmsCourse
+```
+
+It is an internal service. No API calls it yet, and nothing runs it automatically.
+
+### `provision(courseEnrollmentId)`
+
+Gives the student of a course enrollment an active membership in the LMS course of the same course offering, and returns it.
+
+| Situation | Result |
+| --- | --- |
+| The course enrollment does not exist | Fails with `Course enrollment not found.` (404). |
+| The course enrollment is `COMPLETED` or `WITHDRAWN` | Fails (409). Only an `ENROLLED` course enrollment can be provisioned. |
+| The course offering has no LMS course | Fails with `This course offering has no LMS course yet.` (409). No LMS course is created. |
+| No membership exists yet | An `ACTIVE` membership is created. |
+| An `ACTIVE` membership exists | It is returned unchanged. |
+| An `INACTIVE` membership exists | It is made `ACTIVE` again. |
+
+- The LMS course is found through the course enrollment's course offering. Its ID is never assumed to be the offering's ID.
+- The matching rule is checked by comparing course offering IDs, both for the LMS course that was found and for the LMS course of an existing membership. A mismatch means the stored data is inconsistent: the service stops with an error and changes nothing. It never moves a membership to another LMS course.
+- Provisioning is safe to repeat. Calling it again for the same course enrollment never creates a second membership. The unique `course_enrollment_id` in the database is the final guard if two calls arrive at the same moment.
+- The LMS course does not have to be `PUBLISHED`. Memberships can be prepared while it is still a `DRAFT`. No rule for archived LMS courses has been decided.
+
+### `deactivate(courseEnrollmentId)`
+
+Makes the membership of a course enrollment `INACTIVE`. If the enrollment has no membership, or the membership is already inactive, nothing happens and no error is raised. A membership is never created just to be made inactive.
+
+### What the service does not do
+
+- It never changes ERP data. The course enrollment, semester enrollment, course offering, and student profile are only read. Deactivating a membership does not withdraw the enrollment: that is the academic side's decision.
+- It does not grant access. An active membership is one input to the access rule below, not the answer.
+- It does not run automatically. Nothing provisions a membership when a course enrollment is created, nothing deactivates one when an enrollment is withdrawn, and there is no bulk synchronization.
+- It does not decide what a student may still see after a course enrollment is `COMPLETED`. Such an enrollment cannot be newly provisioned, and an existing membership is left as it is. That policy belongs to a later phase.
+
+The expected failures in the table use the shared `ApiException`, so a future API can return them in the common error format.
 
 ## Student access, later
 
@@ -74,12 +124,12 @@ Neither a `PUBLISHED` LMS course nor an `ACTIVE` membership lets a student in by
 valid ERP CourseEnrollment  +  ACTIVE LmsStudentMembership  +  PUBLISHED LmsCourse   ->   the student may be given access
 ```
 
-**This is not implemented yet.** Nothing creates memberships from course enrollments, nothing keeps them in step when an enrollment is withdrawn, and nothing answers whether a student may open a course.
+**This is not implemented yet.** Memberships can be provisioned, but only by an explicit call to the service. Nothing keeps them in step when an enrollment is withdrawn, and nothing answers whether a student may open a course.
 
 ## Not built yet
 
-- No API, service, or screen for LMS courses or memberships. Only the stored models exist.
+- No API or screen for LMS courses or memberships. The stored models and the provisioning service exist, and nothing calls the service yet.
 - No rows are seeded for either, and none is created automatically from existing course offerings or course enrollments.
-- No synchronization from the ERP to the LMS.
+- No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No teacher assignment, and no content such as modules, assignments, or announcements.
 - No permissions for LMS data. They will be added together with the API they protect.
