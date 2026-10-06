@@ -27,6 +27,8 @@
 - There is one central college login (`POST /api/auth/login`) and no public signup. The login request never carries a role.
 - Failed logins always return the same generic 401 message. Never reveal whether a login ID exists, and never log passwords or login requests.
 - For an expected failure with a specific status, throw `ApiException` with a client-safe message.
+- Create access tokens only through the shared `AccessTokenService`. Keep them short-lived, and never put passwords, hashes, or private data in token claims.
+- Never hard-code, log, or expose the JWT signing secret, and never log access tokens. Do not add refresh tokens until their own phase.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.

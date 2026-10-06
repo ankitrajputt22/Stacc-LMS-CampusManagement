@@ -32,13 +32,18 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 ## Security
 
-Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Tokens and authorization checks are not implemented yet. See `../docs/security-foundation.md`.
+Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Checking tokens on requests and authorization rules are not implemented yet. See `../docs/security-foundation.md`.
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
 Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides the `AuthenticationManager`. See `../docs/authentication-foundation.md`.
 
-The college login is `POST /api/auth/login` in `auth.api.AuthController`. It checks a login ID and password but does not issue a token yet. See `../docs/authentication.md`.
+The college login is `POST /api/auth/login` in `auth.api.AuthController`. It checks a login ID and password and returns a short-lived JWT access token. See `../docs/authentication.md` and `../docs/access-tokens.md`.
+
+The backend needs two more environment variables for tokens:
+
+- `JWT_SECRET` — required. Base64 text for at least 32 random bytes, for example from `openssl rand -base64 48`. The backend does not start without it.
+- `JWT_ACCESS_TOKEN_MINUTES` (defaults to `15`)
 
 ## API validation and errors
 

@@ -27,11 +27,14 @@ Successful response, HTTP 200:
 {
   "accountId": 12,
   "loginId": "2408400100011",
-  "roles": ["STUDENT"]
+  "roles": ["STUDENT"],
+  "accessToken": "<signed JWT>",
+  "tokenType": "Bearer",
+  "expiresIn": 900
 }
 ```
 
-`roles` lists every role the college has assigned to the account, in alphabetical order. The response never contains a password or a password hash.
+`roles` lists every role the college has assigned to the account, in alphabetical order. `accessToken` is a short-lived signed token; `expiresIn` is its lifetime in seconds. See `access-tokens.md`. The response never contains a password or a password hash.
 
 ## Failed logins
 
@@ -42,7 +45,7 @@ Successful response, HTTP 200:
 | Disabled account | 401, the same message |
 | Missing, blank, or over-long field | 400, with `fieldErrors` |
 
-The three 401 cases look identical on purpose, so nobody can use the login to find out which login IDs exist. All errors use the common format described in `api-error-handling.md`.
+The three 401 cases look identical on purpose, so nobody can use the login to find out which login IDs exist. A failed login never receives a token. All errors use the common format described in `api-error-handling.md`.
 
 ## How the check works
 
@@ -52,6 +55,6 @@ Passwords and login requests are never logged.
 
 ## What login does not do yet
 
-A successful login only confirms that the credentials are correct. It does not issue a token, create a server session, or set a cookie, so the next request is not recognised as signed in. Token support comes in a later phase and will make the login usable across requests.
+A successful login returns an access token, but the backend does not read tokens on incoming requests yet, so the next request is still not recognised as signed in. That comes in the next phase. Login does not create a server session or set a cookie.
 
-Also not built yet: logout, password change or reset, and access rules for other routes.
+Also not built yet: refresh tokens, logout, password change or reset, and access rules for other routes.

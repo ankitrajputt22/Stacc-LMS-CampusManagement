@@ -1,0 +1,57 @@
+# Access Tokens
+
+A successful college login returns a JWT access token. It is the proof of sign-in that a client will send with later requests.
+
+```json
+{
+  "accountId": 12,
+  "loginId": "2408400100011",
+  "roles": ["STUDENT"],
+  "accessToken": "<signed JWT>",
+  "tokenType": "Bearer",
+  "expiresIn": 900
+}
+```
+
+- `tokenType` is always `Bearer`.
+- `expiresIn` is the token's lifetime in seconds. The default is 15 minutes (900 seconds).
+- A failed login never receives a token.
+
+## What a token contains
+
+| Claim | Meaning |
+| --- | --- |
+| `iss` | Always `stacc`. |
+| `sub` | The account's `loginId`. |
+| `accountId` | The account's ID. |
+| `authorities` | The account's roles as `ROLE_*` names, plus the permission codes of those roles. |
+| `iat`, `exp` | When the token was issued and when it expires. |
+
+The authorities are included so that later requests can be checked without asking the database every time. The trade-off is that a change to an account's roles or permissions only takes effect in tokens issued after the change. Keeping tokens short-lived limits how long an old token can be used.
+
+A token is signed, not encrypted. Anyone holding it can read what is inside, so it never contains a password, a password hash, or profile details such as email or phone number.
+
+## Signing and configuration
+
+Tokens are signed with HMAC SHA-256 through Spring Security's JWT support. `AccessTokenService` in `com.stacc.backend.auth.token` is the only place that creates them.
+
+| Environment variable | Meaning |
+| --- | --- |
+| `JWT_SECRET` | The signing secret, as Base64 text for at least 32 random bytes. Required. |
+| `JWT_ACCESS_TOKEN_MINUTES` | Token lifetime in minutes, from 1 to 60. Defaults to 15. |
+
+Create a secret with:
+
+```bash
+openssl rand -base64 48
+```
+
+There is no default secret. The backend refuses to start if `JWT_SECRET` is missing, is not Base64, or is too short. Never commit a real secret, never log it, and never give it to the frontend (there must be no `VITE_JWT_SECRET`). Tests use their own made-up secret that exists only in test code.
+
+Access tokens must not be logged either.
+
+## Not built yet
+
+- The backend does not read tokens on incoming requests yet. Sending `Authorization: Bearer <token>` has no effect until that is added.
+- All routes are still temporarily open.
+- There are no refresh tokens, no logout, and no way to cancel a token before it expires.

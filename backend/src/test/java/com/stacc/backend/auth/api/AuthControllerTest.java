@@ -2,6 +2,7 @@ package com.stacc.backend.auth.api;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -14,19 +15,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.stacc.backend.DatabaseFreeApiTest;
+import com.stacc.backend.TestSecrets;
 import com.stacc.backend.auth.account.AccountStatus;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.role.Role;
 import com.stacc.backend.auth.role.RoleName;
+import com.stacc.backend.auth.token.JwtProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -76,14 +83,37 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
-    void successfulLoginNeverReturnsPasswordData() throws Exception {
+    void successfulLoginNeverReturnsPasswordDataOrTheSigningSecret() throws Exception {
         login(credentials(LOGIN_ID, PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist())
                 .andExpect(content().string(not(containsString(PASSWORD))))
                 .andExpect(content().string(not(containsString(passwordHash))))
-                .andExpect(content().string(not(containsString("bcrypt"))));
+                .andExpect(content().string(not(containsString("bcrypt"))))
+                .andExpect(content().string(not(containsString(TestSecrets.JWT_SECRET))));
+    }
+
+    @Test
+    void successfulLoginReturnsASignedBearerAccessToken() throws Exception {
+        MvcResult result = login(credentials(LOGIN_ID, PASSWORD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken", matchesPattern("[\\w-]+\\.[\\w-]+\\.[\\w-]+")))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(900))
+                .andReturn();
+
+        String token = result.getResponse().getContentAsString()
+                .replaceAll(".*\"accessToken\":\"([^\"]*)\".*", "$1");
+        Jwt jwt = NimbusJwtDecoder.withSecretKey(new JwtProperties(TestSecrets.JWT_SECRET, 15).signingKey())
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build()
+                .decode(token);
+
+        assertEquals(LOGIN_ID, jwt.getSubject());
+        assertEquals(12L, jwt.<Long>getClaim("accountId"));
+        assertEquals(List.of("ROLE_STUDENT"), jwt.getClaimAsStringList("authorities"));
     }
 
     @Test
@@ -118,7 +148,20 @@ class AuthControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.path").value("/api/auth/login"))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
                 .andExpect(jsonPath("$.accountId").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
                 .andExpect(content().string(not(containsString("Exception"))));
+    }
+
+    @Test
+    void failedLoginsNeverReceiveAToken() throws Exception {
+        login(credentials("EMP9999", PASSWORD))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
+
+        account.setStatus(AccountStatus.DISABLED);
+        login(credentials(LOGIN_ID, PASSWORD))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
 
     @Test
@@ -198,6 +241,10 @@ class AuthControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.paths['/api/auth/login'].post.summary").value("College login"))
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.loginId").exists())
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.password").exists())
-                .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.role").doesNotExist());
+                .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.role").doesNotExist())
+                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.accessToken").exists())
+                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.tokenType").exists())
+                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.expiresIn").exists())
+                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.refreshToken").doesNotExist());
     }
 }

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import com.stacc.backend.auth.permission.Permission;
 import com.stacc.backend.auth.role.Role;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.security.StaccUserPrincipal;
+import com.stacc.backend.auth.token.AccessToken;
+import com.stacc.backend.auth.token.AccessTokenService;
 import com.stacc.backend.common.error.ApiException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +38,8 @@ class LoginServiceTest {
     private static final String PASSWORD = " Test Password 123! ";
 
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
-    private final LoginService loginService = new LoginService(authenticationManager);
+    private final AccessTokenService accessTokenService = mock(AccessTokenService.class);
+    private final LoginService loginService = new LoginService(authenticationManager, accessTokenService);
 
     private static StaccUserPrincipal principalWithRoles(RoleName... roleNames) {
         UserAccount account = new UserAccount(LOGIN_ID, "example-hash-value");
@@ -51,6 +55,7 @@ class LoginServiceTest {
     private void authenticationSucceedsWith(StaccUserPrincipal principal) {
         when(authenticationManager.authenticate(any())).thenReturn(
                 UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));
+        when(accessTokenService.issue(principal)).thenReturn(new AccessToken("signed-token-value", 900));
     }
 
     @Test
@@ -79,6 +84,20 @@ class LoginServiceTest {
     }
 
     @Test
+    void successfulLoginReturnsABearerAccessTokenForTheAuthenticatedAccount() {
+        StaccUserPrincipal principal = principalWithRoles(RoleName.STUDENT);
+        authenticationSucceedsWith(principal);
+
+        LoginResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD));
+
+        verify(accessTokenService).issue(principal);
+        assertEquals("signed-token-value", response.accessToken());
+        assertEquals("Bearer", response.tokenType());
+        assertEquals(900, response.expiresIn());
+        assertFalse(response.toString().contains("signed-token-value"));
+    }
+
+    @Test
     void wrongCredentialsAndDisabledAccountsFailWithTheSameSafeMessage() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
         ApiException wrongCredentials =
@@ -88,12 +107,22 @@ class LoginServiceTest {
         when(disabledManager.authenticate(any())).thenThrow(new DisabledException("User is disabled"));
         ApiException disabled = assertThrows(
                 ApiException.class,
-                () -> new LoginService(disabledManager).login(new LoginRequest(LOGIN_ID, PASSWORD)));
+                () -> new LoginService(disabledManager, accessTokenService)
+                        .login(new LoginRequest(LOGIN_ID, PASSWORD)));
 
         assertEquals(HttpStatus.UNAUTHORIZED, wrongCredentials.getStatus());
         assertEquals("Invalid login ID or password.", wrongCredentials.getMessage());
         assertEquals(wrongCredentials.getStatus(), disabled.getStatus());
         assertEquals(wrongCredentials.getMessage(), disabled.getMessage());
+    }
+
+    @Test
+    void failedLoginNeverGetsAToken() {
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
+
+        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD)));
+
+        verifyNoInteractions(accessTokenService);
     }
 
     @Test
