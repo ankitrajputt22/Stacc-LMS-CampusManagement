@@ -166,7 +166,7 @@ ERP SemesterEnrollment  = official participation in a semester
 ERP CourseEnrollment    = official participation in a course offering
 ```
 
-The LMS is built on this data. An `LmsCourse` in the `lms` module is the learning space for one course offering (see `lms-foundation.md`).
+The LMS is built on this data, in the `lms` module (see `lms-foundation.md`). An `LmsCourse` is the learning space for one course offering, and an `LmsStudentMembership` is the LMS-side membership for one course enrollment.
 
 ```text
 ERP:   UserAccount
@@ -182,17 +182,26 @@ ERP:   UserAccount
             |
             v
        CourseOffering ------> Course, Semester
+
+
+LMS:   CourseEnrollment
             |
             v
-LMS:   LmsCourse
+       LmsStudentMembership
+            |
+            v
+       LmsCourse
+            |
+            v
+       CourseOffering
 ```
 
-- The course offering stays ERP academic data. The LMS course points to it, never the other way round.
-- One course offering has at most one LMS course.
-- The course, program, semester, and academic session are not stored again on the LMS course.
-- No student LMS membership exists yet.
+- The course offering and the course enrollment stay ERP academic data. The LMS records point to them, never the other way round.
+- One course offering has at most one LMS course, and one course enrollment has at most one LMS membership.
+- The student, course, program, semester, and academic session are not stored again on the LMS records.
+- The ERP remains authoritative. An LMS membership is not an academic enrollment.
 
-Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. Nothing grants LMS access today.
+Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. Nothing creates memberships automatically, and nothing grants LMS access today.
 
 ## Keeping history
 
