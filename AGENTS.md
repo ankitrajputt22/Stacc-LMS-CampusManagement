@@ -61,6 +61,8 @@
 - Use `BigDecimal` and `DECIMAL` for academic credits, never `double` or `float`.
 - A course offering links one course to one semester, and a course appears at most once per semester. Do not copy the program, session, department, or the course's code, name, or credits onto it.
 - Sections, teaching assignments, timetables, and enrollment are separate concepts. Do not fold them into the course offering.
+- `StudentProfile` belongs in the `identity` module. The student ID is the account's `loginId`; do not store it, the student's name, or the department on the profile.
+- Never store a current semester or current session on `StudentProfile`. `admissionSession` is the session of original admission only. Ongoing participation comes from ERP enrollment, and a profile alone must not grant LMS access.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
