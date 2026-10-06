@@ -24,5 +24,6 @@ Role rows are shared by many accounts. Changing or deleting an account never cre
 ## What roles are not
 
 - Roles are separate from profile information such as name, department, or semester.
-- Roles are not permissions. A role can now hold permissions (see `permissions.md`), but no permissions are assigned yet and nothing checks them yet.
+- Roles are not permissions. A role can hold permissions (see `permissions.md`), but no permissions are assigned yet and nothing checks them yet.
+- Operations can now require a role. See `authorization.md`.
 - There is no API for creating roles or assigning them yet.

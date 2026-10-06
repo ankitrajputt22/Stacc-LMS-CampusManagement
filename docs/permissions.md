@@ -10,6 +10,7 @@ Each permission has a unique text `code` of at most 100 characters, written in `
 
 - Codes are stored as text, not as one large Java enum, so each module can add its own permissions without changing shared code.
 - `Permission` removes surrounding spaces and rejects any other code that is not already in this style. It never changes the case for you.
+- A code may not start with `ROLE_`. Spring Security reads such names as roles, so a permission must never look like one.
 - The database compares codes without case sensitivity, so two codes that differ only by case cannot both exist.
 
 ## Adding permissions
