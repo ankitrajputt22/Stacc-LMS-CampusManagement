@@ -32,11 +32,13 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 ## Security
 
-Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Login and authorization checks are not implemented yet. See `../docs/security-foundation.md`.
+Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Tokens and authorization checks are not implemented yet. See `../docs/security-foundation.md`.
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
-Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides an `AuthenticationManager` for the future sign-in endpoint. See `../docs/authentication-foundation.md`.
+Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides the `AuthenticationManager`. See `../docs/authentication-foundation.md`.
+
+The college login is `POST /api/auth/login` in `auth.api.AuthController`. It checks a login ID and password but does not issue a token yet. See `../docs/authentication.md`.
 
 ## API validation and errors
 

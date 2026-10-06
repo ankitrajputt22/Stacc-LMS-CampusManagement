@@ -87,6 +87,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, "Validation failed", request, HttpHeaders.EMPTY, fieldErrors);
     }
 
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Object> handleApiException(ApiException exception, HttpServletRequest request) {
+        return response(exception.getStatus(), exception.getMessage(), request, HttpHeaders.EMPTY, List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpectedException(
             Exception exception,

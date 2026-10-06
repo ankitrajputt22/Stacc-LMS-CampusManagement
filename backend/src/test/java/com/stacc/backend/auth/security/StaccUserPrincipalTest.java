@@ -106,6 +106,17 @@ class StaccUserPrincipalTest {
     }
 
     @Test
+    void roleNamesLeaveOutThePrefixAndThePermissions() {
+        Role faculty = new Role(RoleName.FACULTY);
+        faculty.assignPermission(new Permission("COURSE_VIEW"));
+        UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
+        account.assignRole(faculty);
+        account.assignRole(new Role(RoleName.ADMIN));
+
+        assertEquals(List.of("ADMIN", "FACULTY"), StaccUserPrincipal.from(account).getRoleNames());
+    }
+
+    @Test
     void authoritiesCannotBeChanged() {
         UserAccount account = new UserAccount("EMP1024", PASSWORD_HASH);
         account.assignRole(new Role(RoleName.FACULTY));

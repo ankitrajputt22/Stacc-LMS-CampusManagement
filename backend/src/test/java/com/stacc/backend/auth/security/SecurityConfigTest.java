@@ -9,47 +9,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.stacc.backend.auth.account.UserAccountRepository;
-import jakarta.servlet.Filter;
-import org.junit.jupiter.api.BeforeEach;
+import com.stacc.backend.DatabaseFreeApiTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-/**
- * Checks the security foundation without a database, with the account repository
- * replaced by a stand-in. Every request goes through the real Spring Security filter chain.
- */
-@SpringBootTest(properties =
-        "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
-class SecurityConfigTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    @Autowired
-    private Filter springSecurityFilterChain;
-
-    @MockitoBean
-    private UserAccountRepository userAccountRepository;
-
-    private MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .addFilters(springSecurityFilterChain)
-                .build();
-    }
+class SecurityConfigTest extends DatabaseFreeApiTest {
 
     @Test
     void currentRoutesAreOpenWhileSignInDoesNotExist() throws Exception {

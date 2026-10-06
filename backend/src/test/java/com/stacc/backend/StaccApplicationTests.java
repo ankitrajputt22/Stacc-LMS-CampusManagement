@@ -6,43 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.stacc.backend.auth.account.UserAccountRepository;
-import jakarta.servlet.Filter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-/**
- * Starts the application without a database, so these tests need no MySQL credentials.
- * The account repository is replaced by a stand-in for the same reason.
- * Requests pass through the Spring Security filter chain, as they do in the running app.
- */
-@SpringBootTest(properties =
-        "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
-class StaccApplicationTests {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    @Autowired
-    private Filter springSecurityFilterChain;
-
-    @MockitoBean
-    private UserAccountRepository userAccountRepository;
-
-    private MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .addFilters(springSecurityFilterChain)
-                .build();
-    }
+class StaccApplicationTests extends DatabaseFreeApiTest {
 
     @Test
     void apiDocumentationIsAvailable() throws Exception {

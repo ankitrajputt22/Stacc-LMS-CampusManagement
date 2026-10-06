@@ -2,11 +2,11 @@
 
 Spring Security is part of the Stacc backend. All of its settings live in one place: `SecurityConfig` in `com.stacc.backend.auth.security`. Every request passes through its filter chain before it reaches a controller.
 
-This is the foundation only. Stacc sign-in is not built yet.
+The college login endpoint exists (see `authentication.md`), but it does not issue tokens yet, so no route can require a signed-in user.
 
 ## Current behaviour
 
-- **All routes are open, temporarily.** There is no way to sign in yet, so locking routes would make the backend unusable. This is not the final policy. Real access rules will replace it when authentication is built.
+- **All routes are open, temporarily.** A login cannot be carried from one request to the next yet, so locking routes would make the backend unusable. This is not the final policy. Real access rules will replace it when tokens are built.
 - **No Spring sign-in page.** Spring's generated login page and its default `/logout` handling are switched off. Stacc will have its own sign-in screen.
 - **No HTTP Basic.** The browser's username and password prompt is not used.
 - **No generated user.** Spring Boot normally creates a `user` account with a random password printed in the log. That is switched off in `StaccApplication`. Stacc has no built-in or demo users, and accounts come only from `UserAccount`.
@@ -19,7 +19,7 @@ CSRF protection is switched off. It guards against attacks on cookie-based sessi
 
 ## Not built yet
 
-- The sign-in endpoint, sign-out, and tokens. The backend can already load an account and check its password (see `authentication-foundation.md` and `password-security.md`), but nothing calls this over HTTP yet.
+- Tokens and sign-out. The login endpoint already checks a login ID and password (see `authentication.md`), but nothing remembers the result.
 - Enforcing roles and permissions. They exist in the database but nothing checks them yet.
 - CORS for the frontend. It will be set up for known origins when the first real frontend and backend feature is connected.
 
