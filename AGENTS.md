@@ -56,6 +56,7 @@
 - Department codes are unique and stored in uppercase.
 - A program belongs to exactly one department. Its code and name are unique within that department, never across the college.
 - An academic session is college-wide. Do not attach it directly to a department or a program, and do not assume it lasts exactly one year. Use `LocalDate` and `DATE` for its boundaries.
+- A semester connects one program and one academic session. Its identity is program, session, and semester number together; the number alone is never unique.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
