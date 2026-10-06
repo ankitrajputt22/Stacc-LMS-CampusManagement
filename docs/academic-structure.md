@@ -18,7 +18,7 @@ Department
 
 `Department`, `Program`, `AcademicSession`, `Semester`, `Course`, and `CourseOffering` exist so far. Read `A ------< B` as "one A has many B".
 
-Students are linked to this structure through their profile:
+Students are linked to this structure through their profile and their enrollments:
 
 ```text
 UserAccount
@@ -29,6 +29,8 @@ StudentProfile
      +------> Program ------> Department
      |
      +------> admission AcademicSession
+     |
+     +------< SemesterEnrollment >------ Semester
 ```
 
 ## Department
@@ -124,23 +126,34 @@ A student profile is meant for an account with the `STUDENT` role. That rule is 
 
 Deleting a profile never deletes the account, program, or session, and none of them can be deleted while a profile refers to them.
 
-## Enrollment and the LMS, later
+## SemesterEnrollment
+
+A semester enrollment is the official ERP record that one student takes part in one semester. The code is in `com.stacc.backend.academic.enrollment` and the table is `semester_enrollments`.
+
+- The student profile is the student's lasting academic identity. The semester enrollment says which semester the student is officially in.
+- An enrollment belongs to one student profile and one semester. They cannot be changed after creation.
+- A student has many enrollments over the years, one per semester, which keeps the academic history. The same student cannot be enrolled in the same semester twice.
+- Repeating a semester needs no special field. Semester 3 in a later session is a different semester record, so it is simply another enrollment.
+- The account, program, department, and academic session are reached through the student profile and the semester. None of them is stored on the enrollment again.
+- The session of the enrollment comes from its semester. It is a different thing from the student's `admissionSession`.
+- `status` is `ENROLLED`, `COMPLETED`, or `WITHDRAWN`. New enrollments are `ENROLLED`. Once completed or withdrawn, an enrollment cannot change again. These statuses say nothing about results: passing, failing, and promotion belong to later features.
+
+**Rule for the future enrollment feature:** before creating an enrollment, it must check that the student's program is the same as the semester's program. The stored model does not check this itself, and there is no database trigger for it.
+
+Deleting an enrollment never deletes the student profile or the semester, and neither can be deleted while an enrollment refers to it.
+
+## Course enrollment and the LMS, later
 
 ```text
-StudentProfile
-      |
-      v
-future Enrollment
-      |
-      v
-Semester / CourseOffering
+ERP SemesterEnrollment   = official participation in a semester
+future CourseEnrollment  = official participation in a course offering   (not built yet)
 ```
 
-ERP enrollment will be the official record of what a student is taking part in, and that enrollment will later decide who gets access to the matching LMS course. A student profile on its own must never grant LMS access. Neither enrollment nor the LMS link exists yet.
+A student is not automatically enrolled in every course offering of a semester. Course enrollment will be explicit, in its own model. Only that official ERP course enrollment should later grant access to the matching LMS course. A student profile or a semester enrollment on its own must never grant LMS access. Neither course enrollment nor the LMS link exists yet.
 
 ## Keeping history
 
-A department, program, course, or student profile that is no longer used is made `INACTIVE`, and a finished session, semester, or offering is `CLOSED`. None of them is deleted. Older enrollments and student records may still refer to them, so academic history is kept.
+A department, program, course, or student profile that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
