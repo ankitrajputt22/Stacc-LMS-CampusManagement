@@ -55,6 +55,7 @@
 - Keep academic history. Make a record inactive instead of deleting it, and do not use cascading deletes on academic data.
 - Department codes are unique and stored in uppercase.
 - A program belongs to exactly one department. Its code and name are unique within that department, never across the college.
+- An academic session is college-wide. Do not attach it directly to a department or a program, and do not assume it lasts exactly one year. Use `LocalDate` and `DATE` for its boundaries.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
 ## Git Workflow
