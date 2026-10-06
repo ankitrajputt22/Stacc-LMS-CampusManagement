@@ -20,6 +20,8 @@
 - A role can hold several permissions, and a permission can be shared by several roles. Assign a permission to roles only when its protected feature exists.
 - Roles and permissions are shared reference data. Do not use cascading deletes on their relationships.
 - Users never grant themselves roles or permissions.
+- Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
+- Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.

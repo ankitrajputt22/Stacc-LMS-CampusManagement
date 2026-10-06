@@ -30,7 +30,9 @@ The `auth.role` package holds the `Role` model. An account can hold several role
 
 The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table, but no permissions or mappings exist yet. See `../docs/permissions.md`.
 
-Login and authorization checks are not implemented yet.
+## Security
+
+Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Login and authorization checks are not implemented yet. See `../docs/security-foundation.md`.
 
 ## API validation and errors
 
