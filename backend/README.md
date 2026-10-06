@@ -49,7 +49,7 @@ Clients send the token on later requests as `Authorization: Bearer <access-token
 
 ## Academic structure
 
-The `academic` module holds the college's academic master data. So far it contains the `Department` model, stored in the `departments` table. There is no API for it yet. See `../docs/academic-structure.md`.
+The `academic` module holds the college's academic master data. So far it contains `Department` and `Program` (each program belongs to one department). There is no API for them yet. See `../docs/academic-structure.md`.
 
 ## API validation and errors
 
