@@ -22,6 +22,10 @@ Flyway manages database schema changes. Versioned migrations live in `src/main/r
 
 Hibernate automatic schema management remains disabled.
 
+## User accounts
+
+The `auth.account` package holds the first persistent model: `UserAccount`, stored in the `user_accounts` table. It keeps a unique login ID, a password hash, and an account status. Login and roles are not implemented yet. See `../docs/user-accounts.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
