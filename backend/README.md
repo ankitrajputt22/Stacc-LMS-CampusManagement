@@ -28,7 +28,7 @@ The `auth.account` package holds the first persistent model: `UserAccount`, stor
 
 The `auth.role` package holds the `Role` model. An account can hold several roles through the `user_account_roles` table, and the initial roles are `STUDENT`, `FACULTY`, and `ADMIN`. See `../docs/account-roles.md`.
 
-The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. Permissions are not connected to roles yet. See `../docs/permissions.md`.
+The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table, but no permissions or mappings exist yet. See `../docs/permissions.md`.
 
 Login and authorization checks are not implemented yet.
 

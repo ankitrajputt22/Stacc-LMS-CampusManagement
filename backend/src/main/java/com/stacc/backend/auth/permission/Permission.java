@@ -1,5 +1,6 @@
 package com.stacc.backend.auth.permission;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
@@ -62,11 +63,11 @@ public class Permission {
     // Two permissions are the same permission when they have the same unique code.
     @Override
     public boolean equals(Object other) {
-        return other instanceof Permission permission && code.equals(permission.getCode());
+        return other instanceof Permission permission && Objects.equals(code, permission.getCode());
     }
 
     @Override
     public int hashCode() {
-        return code.hashCode();
+        return Objects.hashCode(code);
     }
 }

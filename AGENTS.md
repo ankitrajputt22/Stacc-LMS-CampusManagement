@@ -17,6 +17,8 @@
 - An account can hold several roles. Do not assume it has only one.
 - `Role` rows are shared reference data. Never create or delete them as a side effect of changing an account.
 - Permission codes use `UPPERCASE_WITH_UNDERSCORES`. Add a permission only when a real feature needs it, through a migration.
+- A role can hold several permissions, and a permission can be shared by several roles. Assign a permission to roles only when its protected feature exists.
+- Roles and permissions are shared reference data. Do not use cascading deletes on their relationships.
 - Users never grant themselves roles or permissions.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
