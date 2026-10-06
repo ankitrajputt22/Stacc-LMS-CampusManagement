@@ -91,4 +91,11 @@ class AccountAuthenticationTest {
 
         assertThrows(DisabledException.class, () -> signIn(LOGIN_ID, PASSWORD));
     }
+
+    @Test
+    void disabledAccountWithAWrongPasswordLooksLikeAnyOtherWrongLogin() {
+        account.setStatus(AccountStatus.DISABLED);
+
+        assertThrows(BadCredentialsException.class, () -> signIn(LOGIN_ID, WRONG_PASSWORD));
+    }
 }

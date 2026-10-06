@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
@@ -111,6 +112,18 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void apiExceptionUsesItsStatusAndMessage() throws Exception {
+        mockMvc.perform(get("/test/conflict"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("This already exists."))
+                .andExpect(jsonPath("$.path").value("/test/conflict"))
+                .andExpect(jsonPath("$.fieldErrors", hasSize(0)));
+    }
+
+    @Test
     void unexpectedExceptionDoesNotExposeInternalDetails() throws Exception {
         mockMvc.perform(get("/test/failure"))
                 .andExpect(status().isInternalServerError())
@@ -135,6 +148,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/constraint")
         void constraintViolation() {
             throw new ConstraintViolationException(Set.of());
+        }
+
+        @GetMapping("/conflict")
+        void expectedFailure() {
+            throw new ApiException(HttpStatus.CONFLICT, "This already exists.");
         }
 
         @GetMapping("/failure")

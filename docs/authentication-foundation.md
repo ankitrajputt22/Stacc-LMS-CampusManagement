@@ -2,7 +2,7 @@
 
 Stacc accounts are now connected to Spring Security. Given a login ID and a password, the backend can decide whether they belong to a real, active account and what that account is allowed to do.
 
-There is still no sign-in endpoint, so nothing uses this over HTTP yet.
+The college login endpoint uses this. See `authentication.md` for the API itself.
 
 ## How an account is loaded
 
@@ -44,14 +44,13 @@ Stacc does not model locked or expired accounts, so those checks always pass.
 
 ## Checking a password
 
-`SecurityConfig` provides an `AuthenticationManager`. It uses Spring Security's standard provider with `StaccUserDetailsService` and the shared `PasswordEncoder`, so passwords are never compared by hand. The future sign-in endpoint will call it.
+`SecurityConfig` provides an `AuthenticationManager`. It uses Spring Security's standard provider with `StaccUserDetailsService` and the shared `PasswordEncoder`, so passwords are never compared by hand. The login endpoint calls it.
 
 - Correct login ID and password: authenticated.
 - Wrong password or unknown login ID: rejected in the same way, so the two cannot be told apart.
-- `DISABLED` account: rejected, even with the correct password.
+- `DISABLED` account: rejected, even with the correct password. The password is checked before the account status, so a disabled account with a wrong password fails like any other wrong login.
 
 ## Not built yet
 
-- The sign-in HTTP endpoint and its request and response format.
-- Tokens (JWT), sign-out, and public sign-up (which Stacc will never have).
+- Tokens (JWT) and sign-out. Public sign-up will never exist.
 - Access rules. All routes are still temporarily open, and roles and permissions are not enforced yet.

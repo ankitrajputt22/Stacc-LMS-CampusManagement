@@ -3,6 +3,7 @@ package com.stacc.backend.auth.security;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -73,6 +74,15 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
+    }
+
+    /** The account's role names without the ROLE_ prefix, in alphabetical order. */
+    public List<String> getRoleNames() {
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(authority -> authority.startsWith(ROLE_PREFIX))
+                .map(authority -> authority.substring(ROLE_PREFIX.length()))
+                .toList();
     }
 
     /** Spring Security's "username" is the Stacc login ID. */

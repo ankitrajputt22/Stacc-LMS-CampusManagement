@@ -24,6 +24,9 @@
 - Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
 - Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
 - Sign-in goes through the shared `AuthenticationManager`, with `loginId` as the identifier. Roles map to `ROLE_*` authorities, and permission codes are used as authorities unchanged.
+- There is one central college login (`POST /api/auth/login`) and no public signup. The login request never carries a role.
+- Failed logins always return the same generic 401 message. Never reveal whether a login ID exists, and never log passwords or login requests.
+- For an expected failure with a specific status, throw `ApiException` with a client-safe message.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
