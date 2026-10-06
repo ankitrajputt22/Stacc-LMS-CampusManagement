@@ -18,6 +18,19 @@ Department
 
 `Department`, `Program`, `AcademicSession`, `Semester`, `Course`, and `CourseOffering` exist so far. Read `A ------< B` as "one A has many B".
 
+Students are linked to this structure through their profile:
+
+```text
+UserAccount
+     |
+     v
+StudentProfile
+     |
+     +------> Program ------> Department
+     |
+     +------> admission AcademicSession
+```
+
 ## Department
 
 A department is an official academic department of the college. The code is in `com.stacc.backend.academic.department` and the table is `departments`.
@@ -96,13 +109,38 @@ The two are separate on purpose. Everything that depends on a particular semeste
 
 Deleting an offering never deletes its course or semester, and neither can be deleted while an offering refers to it.
 
+## StudentProfile
+
+A student profile is the academic side of a student's account. It lives in the `identity` module, in `com.stacc.backend.identity.student`, and refers to academic data from the `academic` module. The table is `student_profiles`.
+
+- A profile belongs to exactly one `UserAccount`, and an account can have at most one student profile.
+- The student's ID is the account's `loginId`. It is not stored again on the profile, and neither is the student's name or any other personal detail.
+- A profile belongs to one program. The department is reached through the program and is not stored on the profile, so the two can never disagree.
+- `admissionSession` is the academic session in which the student originally joined the program. It is history. It is not the student's current session and must never be used as one.
+- The profile holds no current semester. Which semester a student is in will come from enrollment records, which also keep the history.
+- `status` is `ACTIVE` or `INACTIVE`. New profiles are `ACTIVE`.
+
+A student profile is meant for an account with the `STUDENT` role. That rule is not checked by the model itself. The future feature that creates profiles must check it.
+
+Deleting a profile never deletes the account, program, or session, and none of them can be deleted while a profile refers to them.
+
 ## Enrollment and the LMS, later
 
-A course offering is the official academic offering in the ERP. A later phase will add official enrollment of students in offerings, and that ERP enrollment will decide who gets access to the matching LMS course. Neither enrollment nor the LMS link exists yet.
+```text
+StudentProfile
+      |
+      v
+future Enrollment
+      |
+      v
+Semester / CourseOffering
+```
+
+ERP enrollment will be the official record of what a student is taking part in, and that enrollment will later decide who gets access to the matching LMS course. A student profile on its own must never grant LMS access. Neither enrollment nor the LMS link exists yet.
 
 ## Keeping history
 
-A department, program, or course that is no longer used is made `INACTIVE`, and a finished session, semester, or offering is `CLOSED`. None of them is deleted. Older enrollments and student records may still refer to them, so academic history is kept.
+A department, program, course, or student profile that is no longer used is made `INACTIVE`, and a finished session, semester, or offering is `CLOSED`. None of them is deleted. Older enrollments and student records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
