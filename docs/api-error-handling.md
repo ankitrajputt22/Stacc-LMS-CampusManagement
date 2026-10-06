@@ -20,4 +20,6 @@ For example:
 }
 ```
 
+Unknown URLs return HTTP 404 and unsupported HTTP methods return HTTP 405, both in the same format with an empty `fieldErrors` list.
+
 Unexpected server errors return a safe HTTP 500 response and must not expose stack traces, database details, secrets, or internal paths. Future APIs should reuse the shared handler, and request DTOs should use Jakarta Validation annotations where needed.

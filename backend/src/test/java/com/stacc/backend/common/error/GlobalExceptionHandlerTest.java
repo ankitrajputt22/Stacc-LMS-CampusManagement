@@ -3,9 +3,11 @@ package com.stacc.backend.common.error;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
@@ -78,6 +81,33 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)));
+    }
+
+    @Test
+    void unknownUrlReturnsNotFound() throws Exception {
+        mockMvc.perform(get("/test/unknown"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("The requested resource was not found."))
+                .andExpect(jsonPath("$.path").value("/test/unknown"))
+                .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
+                .andExpect(content().string(not(containsString("Exception"))));
+    }
+
+    @Test
+    void unsupportedHttpMethodReturnsMethodNotAllowed() throws Exception {
+        mockMvc.perform(delete("/test/requests"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string(HttpHeaders.ALLOW, "POST"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(405))
+                .andExpect(jsonPath("$.error").value("Method Not Allowed"))
+                .andExpect(jsonPath("$.message").value("The request method is not supported for this resource."))
+                .andExpect(jsonPath("$.path").value("/test/requests"))
+                .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
+                .andExpect(content().string(not(containsString("Exception"))));
     }
 
     @Test
