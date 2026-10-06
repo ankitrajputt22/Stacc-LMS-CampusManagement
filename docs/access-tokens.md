@@ -75,5 +75,5 @@ The database is not asked on each request. Everything comes from the token, so i
 
 ## Not built yet
 
-- All routes are still temporarily open, so a request without a token still works. Requiring a token, and checking roles and permissions, come in later phases.
+- Checking roles and permissions. A valid token is now required for every protected `/api/` route (see `api-security.md`), but any signed-in account may use them.
 - There are no refresh tokens, no logout, and no way to cancel a token before it expires.

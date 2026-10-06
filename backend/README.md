@@ -32,7 +32,7 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 ## Security
 
-Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Requiring tokens for routes and authorization rules are not implemented yet. See `../docs/security-foundation.md`.
+Spring Security is set up in `auth.security.SecurityConfig`. Everything under `/api/` requires a valid access token, except `POST /api/auth/login`; the Swagger documentation is public during development. Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. See `../docs/api-security.md`. Rules for specific roles and permissions are not implemented yet. See `../docs/security-foundation.md`.
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 

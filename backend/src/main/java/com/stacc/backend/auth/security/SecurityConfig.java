@@ -3,6 +3,7 @@ package com.stacc.backend.auth.security;
 import com.stacc.backend.auth.token.AccessTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -18,8 +19,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * The one shared Spring Security configuration for Stacc. It only sets up the
- * security foundation: sign-in and access rules are added in later phases.
+ * The one shared Spring Security configuration for Stacc. Everything under /api/ needs a
+ * signed-in account unless it is listed here as public. Rules for specific roles and
+ * permissions are added in later phases.
  */
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
@@ -28,9 +30,16 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http, StaccAuthenticationEntryPoint authenticationEntryPoint)
             throws Exception {
         http
-                // Temporary: Stacc has no sign-in yet, so nothing can be protected.
-                // Real access rules replace this when authentication is built.
-                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
+                .authorizeHttpRequests(requests -> requests
+                        // Public: the college login, because nobody has a token before signing in.
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        // Public during development: the API documentation. It only describes the API.
+                        .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
+                        .permitAll()
+                        // Every other API route, including ones added later, needs a signed-in account.
+                        .requestMatchers("/api/**").authenticated()
+                        // Nothing else is served, so other paths simply return 404.
+                        .anyRequest().permitAll())
                 // Stacc will have its own sign-in, so Spring's built-in sign-in page,
                 // sign-out handling, and browser password prompt are switched off.
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -38,7 +47,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // A request that carries "Authorization: Bearer <access token>" is signed in for that
-                // request only. A token that cannot be accepted is answered with 401, never ignored.
+                // request only. A missing or unacceptable token on a protected route is answered with 401.
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(authenticationEntryPoint))

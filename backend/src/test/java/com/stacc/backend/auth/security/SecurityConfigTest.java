@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 class SecurityConfigTest extends DatabaseFreeApiTest {
 
     @Test
-    void currentRoutesAreOpenWhileSignInDoesNotExist() throws Exception {
+    void apiDocumentationIsPublic() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"));
@@ -53,7 +53,7 @@ class SecurityConfigTest extends DatabaseFreeApiTest {
 
     @Test
     void requestsThatChangeDataAreNotBlockedForAMissingCsrfToken() throws Exception {
-        mockMvc.perform(post("/api/does-not-exist"))
+        mockMvc.perform(post("/does-not-exist"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }

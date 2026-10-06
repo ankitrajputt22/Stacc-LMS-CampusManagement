@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.stacc.backend.auth.token.TestTokens;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 
 class StaccApplicationTests extends DatabaseFreeApiTest {
 
@@ -19,7 +21,13 @@ class StaccApplicationTests extends DatabaseFreeApiTest {
 
     @Test
     void unknownUrlReturnsNotFound() throws Exception {
-        mockMvc.perform(get("/api/does-not-exist"))
+        mockMvc.perform(get("/does-not-exist"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.path").value("/does-not-exist"));
+
+        // Inside /api the caller must be signed in before the route is even looked up.
+        String token = TestTokens.valid("2408400100011", 12, "ROLE_STUDENT");
+        mockMvc.perform(get("/api/does-not-exist").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))

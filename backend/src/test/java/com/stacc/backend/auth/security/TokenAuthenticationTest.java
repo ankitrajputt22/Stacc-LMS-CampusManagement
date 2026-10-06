@@ -45,7 +45,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Sends requests with and without access tokens. "/api/test/whoami" exists only in test code
+ * Sends requests with good and bad access tokens. "/api/test/whoami" exists only in test code
  * and reports who Spring Security thinks is calling.
  */
 class TokenAuthenticationTest extends DatabaseFreeApiTest {
@@ -79,15 +79,6 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
                 .andExpect(content().string(not(containsString("Exception"))))
                 .andExpect(content().string(not(containsString("Jwt"))))
                 .andExpect(content().string(not(containsString("signature"))));
-    }
-
-    @Test
-    void requestWithoutATokenStillReachesTheCurrentlyOpenRoutes() throws Exception {
-        mockMvc.perform(get(WHO_AM_I))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false));
-        mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
-        mockMvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
     }
 
     @Test
@@ -220,17 +211,17 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
     void tokenInTheUrlIsNotAccepted() throws Exception {
         String token = TestTokens.valid("2408400100011", 12, "ROLE_STUDENT");
 
+        // A token in the URL is ignored, so the request counts as not signed in.
         mockMvc.perform(get(WHO_AM_I).param("access_token", token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication is required."));
         mockMvc.perform(get(WHO_AM_I).param("token", token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication is required."));
     }
 
     @Test
-    void unknownRouteIsNotFoundWithOrWithoutAValidTokenButRefusedWithABadOne() throws Exception {
-        mockMvc.perform(get("/api/does-not-exist")).andExpect(status().isNotFound());
+    void unknownApiRouteIsNotFoundWithAValidTokenButRefusedWithABadOne() throws Exception {
         getWithToken("/api/does-not-exist", TestTokens.valid("2408400100011", 12, "ROLE_STUDENT"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
