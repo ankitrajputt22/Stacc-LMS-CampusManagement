@@ -32,7 +32,7 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 ## Security
 
-Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Checking tokens on requests and authorization rules are not implemented yet. See `../docs/security-foundation.md`.
+Spring Security is set up in `auth.security.SecurityConfig`. For now it is a foundation only: all routes are temporarily open, Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. Requiring tokens for routes and authorization rules are not implemented yet. See `../docs/security-foundation.md`.
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
@@ -44,6 +44,8 @@ The backend needs two more environment variables for tokens:
 
 - `JWT_SECRET` — required. Base64 text for at least 32 random bytes, for example from `openssl rand -base64 48`. The backend does not start without it.
 - `JWT_ACCESS_TOKEN_MINUTES` (defaults to `15`)
+
+Clients send the token on later requests as `Authorization: Bearer <access-token>`.
 
 ## API validation and errors
 

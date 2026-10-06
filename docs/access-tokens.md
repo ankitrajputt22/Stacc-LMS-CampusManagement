@@ -50,8 +50,30 @@ There is no default secret. The backend refuses to start if `JWT_SECRET` is miss
 
 Access tokens must not be logged either.
 
+## Using a token
+
+A client sends the token in the standard header:
+
+```text
+Authorization: Bearer <access-token>
+```
+
+The header is the only place a token is accepted. Tokens in a URL or query parameter are ignored, and tokens must never be put in URLs.
+
+Spring Security checks every token it receives:
+
+- the signature, using the same secret and algorithm (HS256 only) that signed it;
+- that it has not expired;
+- that the issuer is `stacc`;
+- that it names an account (`sub` and `accountId`).
+
+A valid token signs the request in for that one request. The caller's name is the `loginId` from `sub`, the `accountId` claim stays available, and the authorities come straight from the `authorities` claim. Stacc adds no prefix to them: `ROLE_STUDENT` stays `ROLE_STUDENT` and a permission code stays as it is, with no `SCOPE_` in front. Spring Security also adds its own marker, `FACTOR_BEARER`, which only says the request was signed in with a token. It is not a Stacc role or permission.
+
+A token that cannot be accepted (malformed, wrong signature, changed, expired, or from another issuer) is answered with HTTP 401, a `WWW-Authenticate: Bearer` header, and the message `Invalid or expired access token.` in the common error format. The reason is never revealed, and a bad token is never treated as if no token had been sent.
+
+The database is not asked on each request. Everything comes from the token, so if an account is disabled or its roles change, a token issued before that keeps working until it expires. The short lifetime limits this.
+
 ## Not built yet
 
-- The backend does not read tokens on incoming requests yet. Sending `Authorization: Bearer <token>` has no effect until that is added.
-- All routes are still temporarily open.
+- All routes are still temporarily open, so a request without a token still works. Requiring a token, and checking roles and permissions, come in later phases.
 - There are no refresh tokens, no logout, and no way to cancel a token before it expires.

@@ -29,6 +29,8 @@
 - For an expected failure with a specific status, throw `ApiException` with a client-safe message.
 - Create access tokens only through the shared `AccessTokenService`. Keep them short-lived, and never put passwords, hashes, or private data in token claims.
 - Never hard-code, log, or expose the JWT signing secret, and never log access tokens. Do not add refresh tokens until their own phase.
+- Access tokens are accepted only in the `Authorization: Bearer` header. Never put tokens in URLs.
+- Token authorities are used unchanged, with no `SCOPE_` prefix. Do not query the database on every token request unless a later phase explicitly requires it.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
