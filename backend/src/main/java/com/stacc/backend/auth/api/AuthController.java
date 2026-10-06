@@ -26,8 +26,8 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
             summary = "College login",
-            description = "Checks a college-issued login ID and password. The account's roles come from "
-                    + "the college's records and are never chosen by the user.")
+            description = "Checks a college-issued login ID and password and returns a short-lived access "
+                    + "token. The account's roles come from the college's records and are never chosen by the user.")
     @ApiResponse(responseCode = "200", description = "The login ID and password are correct.")
     @ApiResponse(
             responseCode = "400",

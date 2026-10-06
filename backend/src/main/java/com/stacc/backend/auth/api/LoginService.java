@@ -1,6 +1,8 @@
 package com.stacc.backend.auth.api;
 
 import com.stacc.backend.auth.security.StaccUserPrincipal;
+import com.stacc.backend.auth.token.AccessToken;
+import com.stacc.backend.auth.token.AccessTokenService;
 import com.stacc.backend.common.error.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AccountStatusException;
@@ -17,18 +19,27 @@ public class LoginService {
     static final String INVALID_LOGIN_MESSAGE = "Invalid login ID or password.";
 
     private final AuthenticationManager authenticationManager;
+    private final AccessTokenService accessTokenService;
 
-    public LoginService(AuthenticationManager authenticationManager) {
+    public LoginService(AuthenticationManager authenticationManager, AccessTokenService accessTokenService) {
         this.authenticationManager = authenticationManager;
+        this.accessTokenService = accessTokenService;
     }
 
     /**
-     * Checks the login ID and password through Spring Security. Nothing is stored on the
-     * server afterwards: no session is created and no token is issued yet.
+     * Checks the login ID and password through Spring Security and, only when they are
+     * correct, issues an access token. Nothing is stored on the server: no session is created.
      */
     public LoginResponse login(LoginRequest request) {
         StaccUserPrincipal principal = (StaccUserPrincipal) authenticate(request).getPrincipal();
-        return new LoginResponse(principal.getAccountId(), principal.getLoginId(), principal.getRoleNames());
+        AccessToken accessToken = accessTokenService.issue(principal);
+        return new LoginResponse(
+                principal.getAccountId(),
+                principal.getLoginId(),
+                principal.getRoleNames(),
+                accessToken.value(),
+                LoginResponse.BEARER,
+                accessToken.expiresInSeconds());
     }
 
     private Authentication authenticate(LoginRequest request) {

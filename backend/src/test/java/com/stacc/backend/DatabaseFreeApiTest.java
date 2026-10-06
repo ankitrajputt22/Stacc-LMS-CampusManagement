@@ -13,11 +13,13 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Base for tests that call the API through the whole application without a database,
  * so they need no MySQL credentials. The account repository is replaced by a stand-in
- * that each test can prepare. Requests pass through the Spring Security filter chain,
- * as they do in the running app.
+ * that each test can prepare, and tokens are signed with a made-up test secret. Requests
+ * pass through the Spring Security filter chain, as they do in the running app.
  */
-@SpringBootTest(properties =
-        "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
+@SpringBootTest(properties = {
+    "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+    "stacc.jwt.secret=" + TestSecrets.JWT_SECRET
+})
 public abstract class DatabaseFreeApiTest {
 
     @Autowired
