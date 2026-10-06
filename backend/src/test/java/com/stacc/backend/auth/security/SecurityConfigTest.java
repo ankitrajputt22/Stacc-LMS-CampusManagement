@@ -1,6 +1,7 @@
 package com.stacc.backend.auth.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,22 +9,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.stacc.backend.auth.account.UserAccountRepository;
 import jakarta.servlet.Filter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * Checks the security foundation without a database. Every request goes through
- * the real Spring Security filter chain.
+ * Checks the security foundation without a database, with the account repository
+ * replaced by a stand-in. Every request goes through the real Spring Security filter chain.
  */
 @SpringBootTest(properties =
         "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
@@ -34,6 +38,9 @@ class SecurityConfigTest {
 
     @Autowired
     private Filter springSecurityFilterChain;
+
+    @MockitoBean
+    private UserAccountRepository userAccountRepository;
 
     private MockMvc mockMvc;
 
@@ -91,8 +98,14 @@ class SecurityConfigTest {
     }
 
     @Test
-    void springBootDoesNotCreateAGeneratedUser() {
-        assertEquals(0, context.getBeanNamesForType(UserDetailsService.class).length);
+    void accountsComeOnlyFromStaccNotFromAGeneratedUser() {
+        assertEquals(1, context.getBeanNamesForType(UserDetailsService.class).length);
+        assertInstanceOf(StaccUserDetailsService.class, context.getBean(UserDetailsService.class));
+    }
+
+    @Test
+    void thereIsOneAuthenticationManagerForTheFutureSignIn() {
+        assertEquals(1, context.getBeanNamesForType(AuthenticationManager.class).length);
     }
 
     @Test

@@ -24,4 +24,4 @@ All password hashing goes through one Spring Security `PasswordEncoder` bean, de
 
 ## Not built yet
 
-Login, account creation, and password change or reset are not implemented yet. Nothing in the running application calls the encoder so far.
+The sign-in endpoint, account creation, and password change or reset are not implemented yet. The authentication manager already uses the encoder to check passwords (see `authentication-foundation.md`), but nothing calls it over HTTP so far.

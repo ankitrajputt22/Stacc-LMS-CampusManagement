@@ -36,6 +36,8 @@ Spring Security is set up in `auth.security.SecurityConfig`. For now it is a fou
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
+Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides an `AuthenticationManager` for the future sign-in endpoint. See `../docs/authentication-foundation.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
