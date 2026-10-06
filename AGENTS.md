@@ -22,6 +22,7 @@
 - Roles and permissions are shared reference data. Do not use cascading deletes on their relationships.
 - Users never grant themselves roles or permissions.
 - Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
+- Every route under `/api/` requires authentication by default. Make a route public only deliberately, with a clear reason, by listing it in `SecurityConfig`. The login stays public.
 - Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
 - Sign-in goes through the shared `AuthenticationManager`, with `loginId` as the identifier. Roles map to `ROLE_*` authorities, and permission codes are used as authorities unchanged.
 - There is one central college login (`POST /api/auth/login`) and no public signup. The login request never carries a role.

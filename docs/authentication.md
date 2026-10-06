@@ -56,9 +56,9 @@ Passwords and login requests are never logged.
 ## After login
 
 ```text
-login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  ->  Spring Security checks the token
+login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  ->  reach protected /api routes
 ```
 
-A request that carries a valid access token is recognised as that account. See `access-tokens.md`. Login does not create a server session or set a cookie.
+A request that carries a valid access token is recognised as that account, and every `/api/` route other than the login requires one. See `access-tokens.md` and `api-security.md`. Login does not create a server session or set a cookie.
 
-Not built yet: refresh tokens, logout, password change or reset, and access rules for other routes. All routes are still temporarily open.
+Not built yet: refresh tokens, logout, password change or reset, and rules for specific roles or permissions.

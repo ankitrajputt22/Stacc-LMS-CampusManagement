@@ -2,12 +2,12 @@
 
 Spring Security is part of the Stacc backend. All of its settings live in one place: `SecurityConfig` in `com.stacc.backend.auth.security`. Every request passes through its filter chain before it reaches a controller.
 
-The college login returns an access token, and a request that sends it as `Authorization: Bearer <token>` is recognised as that account (see `authentication.md` and `access-tokens.md`). No route requires a token yet.
+The college login returns an access token, and a request that sends it as `Authorization: Bearer <token>` is recognised as that account (see `authentication.md` and `access-tokens.md`). Everything under `/api/` now requires one (see `api-security.md`).
 
 ## Current behaviour
 
-- **All routes are open, temporarily.** A request without a token still works. This is not the final policy. Real access rules replace it in the next phase.
-- **A bad token is refused.** A request that sends an invalid or expired access token gets HTTP 401, even on an open route.
+- **API routes are protected by default.** Everything under `/api/` needs a valid access token. Only the login and the API documentation are public.
+- **A bad token is refused.** A request that sends an invalid or expired access token gets HTTP 401, even on a public route.
 - **No Spring sign-in page.** Spring's generated login page and its default `/logout` handling are switched off. Stacc will have its own sign-in screen.
 - **No HTTP Basic.** The browser's username and password prompt is not used.
 - **No generated user.** Spring Boot normally creates a `user` account with a random password printed in the log. That is switched off in `StaccApplication`. Stacc has no built-in or demo users, and accounts come only from `UserAccount`.
@@ -20,8 +20,8 @@ CSRF protection is switched off. It guards against attacks on cookie-based sessi
 
 ## Not built yet
 
-- Requiring a token for protected routes, and sign-out.
-- Enforcing roles and permissions. They exist in the database but nothing checks them yet.
+- Sign-out and refresh tokens.
+- Enforcing roles and permissions. They are carried in the token but nothing checks them yet.
 - CORS for the frontend. It will be set up for known origins when the first real frontend and backend feature is connected.
 
-Existing behaviour is unchanged: Swagger and the OpenAPI document still load, unknown URLs return 404, and unsupported methods return 405.
+Swagger and the OpenAPI document still load without a token. Unknown URLs still return 404 and unsupported methods 405, except that inside `/api/` a caller must be signed in first.

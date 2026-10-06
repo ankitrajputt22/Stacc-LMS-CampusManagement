@@ -25,6 +25,7 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.role.Role;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.token.JwtProperties;
+import com.stacc.backend.auth.token.TestTokens;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,7 +221,12 @@ class AuthControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void loginOnlyAcceptsPost() throws Exception {
+        // Only POST is public. Any other method is an ordinary protected API request.
         mockMvc.perform(get("/api/auth/login"))
+                .andExpect(status().isUnauthorized());
+
+        String token = TestTokens.valid(LOGIN_ID, 12, "ROLE_STUDENT");
+        mockMvc.perform(get("/api/auth/login").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(header().string(HttpHeaders.ALLOW, "POST"))
                 .andExpect(jsonPath("$.status").value(405));
