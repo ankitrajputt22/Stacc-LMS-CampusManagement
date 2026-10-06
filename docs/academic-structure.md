@@ -10,11 +10,13 @@ Department
     +------< Program
     |           |
     |           +------< Semester >------ AcademicSession
-    |
-    +------< Course
+    |                       |
+    |                       +------< CourseOffering
+    |                                     |
+    +------< Course >---------------------+
 ```
 
-`Department`, `Program`, `AcademicSession`, `Semester`, and `Course` exist so far. `CourseOffering` is not built yet.
+`Department`, `Program`, `AcademicSession`, `Semester`, `Course`, and `CourseOffering` exist so far. Read `A ------< B` as "one A has many B".
 
 ## Department
 
@@ -74,21 +76,36 @@ A course is a permanent entry in the college's course catalog, such as a subject
 
 Deleting a course never deletes its department, and a department that still has courses cannot be deleted.
 
-## Course and course offering
+## CourseOffering
+
+A course offering is one course offered in one semester. The code is in `com.stacc.backend.academic.offering` and the table is `course_offerings`.
 
 ```text
 Course          = the permanent definition
-CourseOffering  = one course offered in one semester   (not built yet)
+CourseOffering  = one course offered in one semester
 ```
 
-The two are separate on purpose. The same course will be offered again in many semesters, and everything that depends on a particular semester belongs to the offering, not to the course.
+The two are separate on purpose. Everything that depends on a particular semester belongs to the offering, not to the course.
+
+- An offering belongs to exactly one course and exactly one semester. They cannot be changed after creation, because together they say what the offering is.
+- The same course can be offered in many semesters, and a semester can have many offerings, but one course can appear only once in a given semester.
+- The program and the academic session are reached through the semester. The owning department is reached through the course. None of them is stored on the offering again, so they can never disagree.
+- The course's code, name, and credits are not copied onto the offering either.
+- `status` is `PLANNED`, `ACTIVE`, or `CLOSED`. New offerings are `PLANNED`. A closed offering cannot be made active again.
+- An offering has no teacher, section, timetable, or learning material yet. Those are separate concepts for later phases. Sections must not be modelled by duplicating offerings.
+
+Deleting an offering never deletes its course or semester, and neither can be deleted while an offering refers to it.
+
+## Enrollment and the LMS, later
+
+A course offering is the official academic offering in the ERP. A later phase will add official enrollment of students in offerings, and that ERP enrollment will decide who gets access to the matching LMS course. Neither enrollment nor the LMS link exists yet.
 
 ## Keeping history
 
-A department, program, or course that is no longer used is made `INACTIVE`, and a finished session or semester is `CLOSED`. None of them is deleted. Older offerings, enrollments, and student records may still refer to them, so academic history is kept.
+A department, program, or course that is no longer used is made `INACTIVE`, and a finished session, semester, or offering is `CLOSED`. None of them is deleted. Older enrollments and student records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
 - There is no API, service, or screen for any of these models. Only the stored models exist.
-- No department, program, session, semester, or course rows are seeded. The college's real data will be entered through a later administrative feature.
+- No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
 - No permissions for this data exist yet. They will be added together with the API they protect.
