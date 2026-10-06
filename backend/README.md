@@ -53,7 +53,7 @@ The `academic` module holds the college's academic master data. So far it contai
 
 ## LMS
 
-The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. There is no API for either yet. See `../docs/lms-foundation.md`.
+The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. There is no API for any of this yet. See `../docs/lms-foundation.md`.
 
 ## API validation and errors
 

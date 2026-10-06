@@ -201,6 +201,8 @@ LMS:   CourseEnrollment
 - The student, course, program, semester, and academic session are not stored again on the LMS records.
 - The ERP remains authoritative. An LMS membership is not an academic enrollment.
 
+The ERP course enrollment is the source for LMS membership provisioning. An explicit LMS service creates a membership from a course enrollment that is still `ENROLLED`. It only reads ERP data and never changes it.
+
 Future access to an LMS course should be granted from the official ERP course enrollment, not merely from a student profile or a semester enrollment. A withdrawn course enrollment should later remove or disable that access, as the LMS integration decides. Nothing creates memberships automatically, and nothing grants LMS access today.
 
 ## Keeping history

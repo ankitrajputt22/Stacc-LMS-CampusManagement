@@ -47,6 +47,7 @@
 - Frontend pages reuse the shared `AppLayout`. Do not create separate global navigation for each module.
 - Reuse `LoadingState`, `EmptyState`, and `ErrorState` for page states.
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
+- App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
 - Keep commit messages simple and human-readable.
 
 ## Academic Data
@@ -80,9 +81,11 @@
 - The `lms` module may use academic data. Academic models must never refer to LMS models.
 - ERP `CourseEnrollment` is the source of truth for official student course participation. `LmsStudentMembership` is only an LMS-side projection of it.
 - One course enrollment has at most one `LmsStudentMembership`, and its course enrollment and LMS course must belong to the same course offering.
+- Create LMS student memberships only through `LmsStudentMembershipProvisioningService`, from an official ERP course enrollment. Only an `ENROLLED` enrollment may get an active membership.
+- Provisioning must stay idempotent. It must never modify ERP data, create a missing `LmsCourse`, or move a membership to another LMS course.
 - Do not copy the student, account, course offering, course, or semester onto an LMS membership. Make a membership inactive instead of deleting it.
 - An `ACTIVE` membership alone does not give access. The LMS course's status and the ERP enrollment still count.
-- Do not synchronize ERP data into the LMS automatically until a dedicated provisioning phase.
+- Provisioning is an explicit call. Do not add automatic ERP-to-LMS synchronization (listeners, schedulers, startup scans, or bulk jobs) without a dedicated phase.
 - Faculty access must not be modelled from student course enrollment or added to the student membership.
 - Add LMS content models only in their own feature phases.
 
