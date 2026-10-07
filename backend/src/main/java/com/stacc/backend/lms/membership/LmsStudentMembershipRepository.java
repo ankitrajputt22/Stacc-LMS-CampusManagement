@@ -28,4 +28,25 @@ public interface LmsStudentMembershipRepository extends JpaRepository<LmsStudent
             """)
     List<LmsStudentMembership> findAllByUserAccountIdAndLmsCourseId(
             @Param("userAccountId") Long userAccountId, @Param("lmsCourseId") Long lmsCourseId);
+
+    /**
+     * Every membership of the student behind one account, in one query, loaded together with
+     * what is needed to decide access and to describe each LMS course: the enrollments and
+     * student profile on one side, and the course, semester, programme, and session on the other.
+     */
+    @Query("""
+            select membership
+            from LmsStudentMembership membership
+            join fetch membership.courseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch membership.lmsCourse lmsCourse
+            join fetch lmsCourse.courseOffering courseOffering
+            join fetch courseOffering.course
+            join fetch courseOffering.semester semester
+            join fetch semester.program
+            join fetch semester.academicSession
+            where studentProfile.userAccount.id = :userAccountId
+            """)
+    List<LmsStudentMembership> findAllWithCourseDetailsByUserAccountId(@Param("userAccountId") Long userAccountId);
 }

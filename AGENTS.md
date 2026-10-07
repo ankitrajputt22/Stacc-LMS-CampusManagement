@@ -88,6 +88,12 @@
 - Student access to an LMS course is decided on the backend by `LmsStudentAccessService`, from the signed-in account's ID. Hiding things in the frontend is not security, and an ID sent by the client never says who the caller is.
 - Current student access needs all of: an `ACTIVE` student profile, an `ENROLLED` semester enrollment and course enrollment, an `ACTIVE` membership, a `PUBLISHED` LMS course, and the same course offering on both sides.
 - An access check only reads. It must never provision, reactivate, repair, or change data.
+- The access rule is written once, in `LmsStudentAccessPolicy`. Every LMS check and list must use it instead of repeating or loosening the conditions.
+- Self-service endpoints take the caller from the access token with `AuthenticatedAccount.idFrom(...)`. Never accept an account, student, profile, or enrollment ID from the client to decide whose data is returned.
+- `GET /api/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment and membership policy still decides what is returned.
+- LMS read endpoints must be side-effect free and must never provision a missing membership.
+- `ADMIN` gets no implicit student LMS access. Design any admin or faculty LMS access explicitly, with its own permission.
+- A migration that adds a permission also lists it in `docs/permissions.md` and looks roles and permissions up by name, never by ID.
 - Do not add historical or read-only LMS access rules without an explicit feature phase.
 - Provisioning is an explicit call. Do not add automatic ERP-to-LMS synchronization (listeners, schedulers, startup scans, or bulk jobs) without a dedicated phase.
 - Faculty access must not be modelled from student course enrollment or added to the student membership.

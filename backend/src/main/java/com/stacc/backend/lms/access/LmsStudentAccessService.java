@@ -2,19 +2,13 @@ package com.stacc.backend.lms.access;
 
 import java.util.Optional;
 
-import com.stacc.backend.academic.enrollment.CourseEnrollment;
-import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
-import com.stacc.backend.academic.enrollment.SemesterEnrollment;
-import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
 import com.stacc.backend.identity.student.StudentProfile;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembershipStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +39,8 @@ public class LmsStudentAccessService {
      * True only when the account has an active student profile, the LMS course is published,
      * and the student has an active membership in it that rests on a semester enrollment and
      * a course enrollment that are both still enrolled, for the same course offering as the
-     * LMS course. Anything else, including an unknown account or course, is false.
+     * LMS course. Anything else, including an unknown account or course, is false. The rule
+     * itself is stated once, in {@link LmsStudentAccessPolicy}.
      *
      * @param userAccountId the ID of the signed-in account, taken from its access token and
      *                      never from anything the client sends in the request
@@ -66,23 +61,10 @@ public class LmsStudentAccessService {
             return false;
         }
 
+        // The lookup already asks for this LMS course. It is checked again here, so that access
+        // never depends on the lookup alone.
         return memberships.findAllByUserAccountIdAndLmsCourseId(userAccountId, lmsCourseId).stream()
-                .anyMatch(membership -> grantsAccess(membership, userAccountId, lmsCourse.get()));
-    }
-
-    // The lookup already asks for this account and this LMS course. Both are checked again here,
-    // so that access never depends on the lookup alone.
-    private static boolean grantsAccess(LmsStudentMembership membership, Long userAccountId, LmsCourse lmsCourse) {
-        CourseEnrollment courseEnrollment = membership.getCourseEnrollment();
-        SemesterEnrollment semesterEnrollment = courseEnrollment.getSemesterEnrollment();
-        Long courseOfferingId = courseEnrollment.getCourseOffering().getId();
-
-        return membership.getStatus() == LmsStudentMembershipStatus.ACTIVE
-                && userAccountId.equals(semesterEnrollment.getStudentProfile().getUserAccount().getId())
-                && lmsCourse.getId().equals(membership.getLmsCourse().getId())
-                && semesterEnrollment.getStatus() == SemesterEnrollmentStatus.ENROLLED
-                && courseEnrollment.getStatus() == CourseEnrollmentStatus.ENROLLED
-                && courseOfferingId != null
-                && courseOfferingId.equals(lmsCourse.getCourseOffering().getId());
+                .anyMatch(membership -> lmsCourseId.equals(membership.getLmsCourse().getId())
+                        && LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId));
     }
 }

@@ -28,11 +28,11 @@ The `auth.account` package holds the first persistent model: `UserAccount`, stor
 
 The `auth.role` package holds the `Role` model. An account can hold several roles through the `user_account_roles` table, and the initial roles are `STUDENT`, `FACULTY`, and `ADMIN`. See `../docs/account-roles.md`.
 
-The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table, but no permissions or mappings exist yet. See `../docs/permissions.md`.
+The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table. The first real permission is `LMS_COURSE_VIEW`, held by `STUDENT`. See `../docs/permissions.md`.
 
 ## Security
 
-Spring Security is set up in `auth.security.SecurityConfig`. Everything under `/api/` requires a valid access token, except `POST /api/auth/login`; the Swagger documentation is public during development. Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. See `../docs/api-security.md`. Operations can require a role with `@PreAuthorize("hasRole('ADMIN')")` or a permission with `hasAuthority(...)`; a signed-in account without it gets HTTP 403. No real endpoint has such a rule yet. See `../docs/authorization.md`.
+Spring Security is set up in `auth.security.SecurityConfig`. Everything under `/api/` requires a valid access token, except `POST /api/auth/login`; the Swagger documentation is public during development. Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. See `../docs/api-security.md`. Operations can require a role with `@PreAuthorize("hasRole('ADMIN')")` or a permission with `hasAuthority(...)`; a signed-in account without it gets HTTP 403. See `../docs/authorization.md`.
 
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
@@ -53,7 +53,7 @@ The `academic` module holds the college's academic master data. So far it contai
 
 ## LMS
 
-The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. `LmsStudentAccessService` decides on the backend whether a signed-in student may currently use an LMS course, from official ERP enrollment and LMS state. There is no API for any of this yet. See `../docs/lms-foundation.md`.
+The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. `LmsStudentAccessService` decides on the backend whether a signed-in student may currently use an LMS course, from official ERP enrollment and LMS state. `GET /api/lms/my-courses` returns the signed-in student's current LMS courses under that same policy; it needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission. See `../docs/lms-foundation.md`.
 
 ## API validation and errors
 

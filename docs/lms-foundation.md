@@ -171,12 +171,68 @@ Things to know:
 - The statuses of the course offering, the semester, and the academic session are not part of this policy.
 - Access to archived courses or finished enrollments, for example read-only history, has not been designed yet.
 
-Hiding a course in the frontend is never the security check. Any future LMS endpoint must ask this service on the backend.
+Hiding a course in the frontend is never the security check. Every LMS endpoint must apply this policy on the backend.
+
+The rule itself is written once, in `LmsStudentAccessPolicy`. The single-course check above and the course list below both use it, so they cannot disagree.
+
+## Student API: my courses
+
+```text
+GET /api/lms/my-courses
+        |
+        v
+account ID from the access token
+        |
+        v
+STUDENT role  +  LMS_COURSE_VIEW permission
+        |
+        v
+current ERP and LMS access policy
+        |
+        v
+summaries of the courses the student may use
+```
+
+The first LMS endpoint returns the LMS courses the signed-in student can currently use. The code is in `com.stacc.backend.lms.api`.
+
+```json
+[
+  {
+    "lmsCourseId": 42,
+    "courseCode": "BCS301",
+    "courseName": "Data Structures",
+    "credits": 4.00,
+    "semesterNumber": 3,
+    "programCode": "BTECH",
+    "academicSessionCode": "2026-27"
+  }
+]
+```
+
+- The student is the account in the access token. The request takes no account, student, profile, or enrollment ID, and anything of that kind sent by the browser is ignored.
+- The caller needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission together (see `permissions.md`). An admin who is not a student is refused: there is no automatic pass.
+- Only courses that pass the access policy above appear. A draft or archived course, an inactive or missing membership, and a completed or withdrawn enrollment are all left out. There is no history in this list.
+- A student with no such course gets `200` with `[]`, not an error.
+- Courses come in course code order.
+- `lmsCourseId` identifies the learning space. The course code, name, and credits are read from the official course every time, and the semester, program, and session from the course offering. The LMS keeps no copy of them.
+- The response holds nothing else: no account details, and no enrollment or membership IDs or statuses.
+- It is a pure read. It never creates a missing membership, and it changes nothing. A student who is enrolled but has no membership yet simply does not see the course until it is provisioned.
+- The list is read with a single database query.
+
+| Request | Response |
+| --- | --- |
+| No token | 401 |
+| Invalid or expired token | 401 |
+| Signed in, but not a student or without the permission | 403 |
+| Student with the permission | 200 with the list, which may be empty |
+
+A student's token carries the permission from the moment they sign in after the `V17` migration. A token issued before that does not, and is refused with 403 until the student signs in again.
 
 ## Not built yet
 
-- No API or screen for LMS courses, memberships, or access. The stored models and the two services exist, and nothing calls the services yet.
-- No rows are seeded, and none is created automatically from existing course offerings or course enrollments.
+- No LMS API beyond the student's course list: no course detail, no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
+- No screen for any of it. The frontend is not connected yet, and CORS is not configured.
+- No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No teacher assignment, and no content such as modules, assignments, or announcements.
-- No permissions for LMS data. They will be added together with the API they protect.
+- No other LMS permissions. Each will be added together with the action it protects.
