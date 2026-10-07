@@ -110,26 +110,73 @@ Makes the membership of a course enrollment `INACTIVE`. If the enrollment has no
 ### What the service does not do
 
 - It never changes ERP data. The course enrollment, semester enrollment, course offering, and student profile are only read. Deactivating a membership does not withdraw the enrollment: that is the academic side's decision.
-- It does not grant access. An active membership is one input to the access rule below, not the answer.
+- It does not grant access. An active membership is one input to the access policy below, not the answer.
 - It does not run automatically. Nothing provisions a membership when a course enrollment is created, nothing deactivates one when an enrollment is withdrawn, and there is no bulk synchronization.
 - It does not decide what a student may still see after a course enrollment is `COMPLETED`. Such an enrollment cannot be newly provisioned, and an existing membership is left as it is. That policy belongs to a later phase.
 
 The expected failures in the table use the shared `ApiException`, so a future API can return them in the common error format.
 
-## Student access, later
+## Student access
 
-Neither a `PUBLISHED` LMS course nor an `ACTIVE` membership lets a student in by itself. The intended rule is:
+`LmsStudentAccessService` in `com.stacc.backend.lms.access` answers one question: may the student behind this account use this LMS course right now?
 
-```text
-valid ERP CourseEnrollment  +  ACTIVE LmsStudentMembership  +  PUBLISHED LmsCourse   ->   the student may be given access
+```java
+boolean canAccessCourse(Long userAccountId, Long lmsCourseId)
 ```
 
-**This is not implemented yet.** Memberships can be provisioned, but only by an explicit call to the service. Nothing keeps them in step when an enrollment is withdrawn, and nothing answers whether a student may open a course.
+`userAccountId` is the ID of the signed-in account, taken from its access token. The caller is never identified by a student, profile, enrollment, or membership ID sent in a request.
+
+Access is allowed only when every one of these is true:
+
+```text
+Signed-in account
+       |
+       v
+StudentProfile         ACTIVE
+       |
+       v
+SemesterEnrollment     ENROLLED
+       |
+       v
+CourseEnrollment       ENROLLED
+       |
+       v
+LmsStudentMembership   ACTIVE, for this student and this LMS course
+       |
+       v
+LmsCourse              PUBLISHED
+       |
+       v
+Same CourseOffering on the course enrollment and the LMS course
+       |
+       v
+ACCESS
+```
+
+Anything else is refused:
+
+- an account with no student profile, or an inactive one;
+- an LMS course that does not exist, is still a `DRAFT`, or is `ARCHIVED`;
+- no membership, an `INACTIVE` membership, or a membership that belongs to another student;
+- a semester enrollment or course enrollment that is `COMPLETED` or `WITHDRAWN`;
+- a course enrollment and an LMS course that belong to different course offerings.
+
+Things to know:
+
+- The ERP stays authoritative. A membership and a published course are not enough if the official enrollment is no longer `ENROLLED`. The semester enrollment is checked as well, so an old course enrollment cannot keep a student in after their semester has ended.
+- `COMPLETED` only means the enrollment is no longer current. It says nothing about passing or failing.
+- The answer is a plain yes or no. It does not say why access was refused, so a future API can answer with an ordinary 403 without revealing details.
+- Checking access changes nothing. It never creates, reactivates, or repairs a membership. A student without a membership is simply refused; provisioning stays a separate, explicit step.
+- The check reads the student profile, the LMS course, and the membership with its enrollments. It does not check roles, and it does not reload the account's own status: both belong to sign-in and endpoint security.
+- The statuses of the course offering, the semester, and the academic session are not part of this policy.
+- Access to archived courses or finished enrollments, for example read-only history, has not been designed yet.
+
+Hiding a course in the frontend is never the security check. Any future LMS endpoint must ask this service on the backend.
 
 ## Not built yet
 
-- No API or screen for LMS courses or memberships. The stored models and the provisioning service exist, and nothing calls the service yet.
-- No rows are seeded for either, and none is created automatically from existing course offerings or course enrollments.
+- No API or screen for LMS courses, memberships, or access. The stored models and the two services exist, and nothing calls the services yet.
+- No rows are seeded, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No teacher assignment, and no content such as modules, assignments, or announcements.
 - No permissions for LMS data. They will be added together with the API they protect.

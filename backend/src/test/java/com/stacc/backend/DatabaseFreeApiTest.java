@@ -2,6 +2,7 @@ package com.stacc.backend;
 
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
+import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import jakarta.servlet.Filter;
@@ -29,7 +30,8 @@ import org.springframework.web.context.WebApplicationContext;
 @MockitoBean(types = {
     CourseEnrollmentRepository.class,
     LmsCourseRepository.class,
-    LmsStudentMembershipRepository.class
+    LmsStudentMembershipRepository.class,
+    StudentProfileRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

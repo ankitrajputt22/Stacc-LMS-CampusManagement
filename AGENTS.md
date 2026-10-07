@@ -67,7 +67,7 @@
 - `SemesterEnrollment` is the official ERP record of semester participation. Do not copy the account, program, department, or session onto it, and keep its history instead of deleting it.
 - Creating a semester enrollment must check that the student's program is the semester's program. Semester enrollment alone must not grant LMS course access, and course enrollment is a separate, explicit step.
 - `CourseEnrollment` links a semester enrollment to a course offering. Do not copy the student, semester, program, session, or course onto it, and never auto-enroll a student in all offerings of a semester.
-- Creating a course enrollment must check that the offering's semester is the semester enrollment's semester. ERP course enrollment is the future source of truth for LMS course access.
+- Creating a course enrollment must check that the offering's semester is the semester enrollment's semester. ERP course enrollment is the source of truth for LMS course access.
 - An enrollment status is not an academic result. Keep grades and results in their own models.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
@@ -76,7 +76,7 @@
 - LMS data belongs in the `lms` module. An ERP `CourseOffering` and an LMS `LmsCourse` are different concepts; do not put LMS state on the course offering.
 - One course offering maps to at most one `LmsCourse`.
 - Do not copy the course, program, semester, academic session, or department onto `LmsCourse`.
-- ERP `CourseEnrollment` remains the source of truth for future official LMS student access. A `PUBLISHED` LMS course alone grants no student access.
+- ERP `CourseEnrollment` remains the source of truth for official LMS student access. A `PUBLISHED` LMS course alone grants no student access.
 - Archive an LMS course instead of deleting it, so its history is kept.
 - The `lms` module may use academic data. Academic models must never refer to LMS models.
 - ERP `CourseEnrollment` is the source of truth for official student course participation. `LmsStudentMembership` is only an LMS-side projection of it.
@@ -85,6 +85,10 @@
 - Provisioning must stay idempotent. It must never modify ERP data, create a missing `LmsCourse`, or move a membership to another LMS course.
 - Do not copy the student, account, course offering, course, or semester onto an LMS membership. Make a membership inactive instead of deleting it.
 - An `ACTIVE` membership alone does not give access. The LMS course's status and the ERP enrollment still count.
+- Student access to an LMS course is decided on the backend by `LmsStudentAccessService`, from the signed-in account's ID. Hiding things in the frontend is not security, and an ID sent by the client never says who the caller is.
+- Current student access needs all of: an `ACTIVE` student profile, an `ENROLLED` semester enrollment and course enrollment, an `ACTIVE` membership, a `PUBLISHED` LMS course, and the same course offering on both sides.
+- An access check only reads. It must never provision, reactivate, repair, or change data.
+- Do not add historical or read-only LMS access rules without an explicit feature phase.
 - Provisioning is an explicit call. Do not add automatic ERP-to-LMS synchronization (listeners, schedulers, startup scans, or bulk jobs) without a dedicated phase.
 - Faculty access must not be modelled from student course enrollment or added to the student membership.
 - Add LMS content models only in their own feature phases.
