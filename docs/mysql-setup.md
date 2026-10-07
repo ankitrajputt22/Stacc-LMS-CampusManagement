@@ -7,6 +7,8 @@ Stacc uses MySQL as its primary database. The local development defaults are:
 - **Database:** `stacc`
 - **Character set:** `utf8mb4`
 
+A MySQL installed on the machine is one way to get this database. The Docker stack is another: it starts MySQL 8.4 in a container and creates the database and its user by itself (see `docker.md`).
+
 Keep real database credentials in local environment configuration. Never commit usernames, passwords, or other secrets. The repository's `.env.example` lists the supported placeholders, while a real `.env` file remains ignored by Git.
 
 The Spring Boot application connects to MySQL using these environment variables. Flyway manages versioned schema migrations; Phase 7 adds only the migration baseline and no application tables.

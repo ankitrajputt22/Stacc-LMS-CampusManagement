@@ -1,0 +1,18 @@
+# Dependencies and build output are created inside the image, never copied from this machine.
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+.git/
+.gitignore
+.idea/
+.vscode/
+*.log
+# Local environment files must not end up in the image. The API address is set by the Dockerfile.
+.env
+.env.*
+.DS_Store
+Dockerfile
+.dockerignore
+README.md
