@@ -61,4 +61,4 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 
 A request that carries a valid access token is recognised as that account, and every `/api/` route other than the login requires one. See `access-tokens.md` and `api-security.md`. Login does not create a server session or set a cookie.
 
-Not built yet: refresh tokens, logout, password change or reset, and rules for specific roles or permissions.
+Not built yet: refresh tokens, logout, and password change or reset.

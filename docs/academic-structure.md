@@ -203,7 +203,7 @@ LMS:   CourseEnrollment
 
 The ERP course enrollment is the source for LMS membership provisioning. An explicit LMS service creates a membership from a course enrollment that is still `ENROLLED`. It only reads ERP data and never changes it.
 
-The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, on top of the LMS-side conditions. A withdrawn or completed enrollment therefore ends normal access at once, without anything being copied. Nothing creates memberships automatically, and no API uses the policy yet.
+The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, on top of the LMS-side conditions. A withdrawn or completed enrollment therefore ends normal access at once, without anything being copied. The student course list, `GET /api/lms/my-courses`, returns only courses that satisfy this policy. Nothing creates memberships automatically.
 
 ## Keeping history
 

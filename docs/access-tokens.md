@@ -71,9 +71,10 @@ A valid token signs the request in for that one request. The caller's name is th
 
 A token that cannot be accepted (malformed, wrong signature, changed, expired, or from another issuer) is answered with HTTP 401, a `WWW-Authenticate: Bearer` header, and the message `Invalid or expired access token.` in the common error format. The reason is never revealed, and a bad token is never treated as if no token had been sent.
 
+An endpoint that acts for the caller reads the account from the token with `AuthenticatedAccount.idFrom(...)`. It never takes the account from an ID in the request.
+
 The database is not asked on each request. Everything comes from the token, so if an account is disabled or its roles change, a token issued before that keeps working until it expires. The short lifetime limits this.
 
 ## Not built yet
 
-- Real role and permission rules. A valid token is required for every protected `/api/` route (see `api-security.md`), and operations can require roles or permissions (see `authorization.md`), but no real endpoint does yet.
 - There are no refresh tokens, no logout, and no way to cancel a token before it expires.

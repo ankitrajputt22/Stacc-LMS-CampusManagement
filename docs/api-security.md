@@ -30,7 +30,7 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 
 Both 401 responses use the common error format and carry a `WWW-Authenticate: Bearer` header.
 
-Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. No real endpoint has one yet.
+Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. The first one is on `GET /api/lms/my-courses`, which needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission.
 
 ## Unknown routes
 

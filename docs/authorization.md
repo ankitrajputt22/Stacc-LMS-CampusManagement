@@ -31,7 +31,7 @@ Method security is switched on, so an operation can state the role it needs:
 - There is no role hierarchy. `ADMIN` does not include `FACULTY`, and `FACULTY` does not include `STUDENT`.
 - `ADMIN` is not an automatic pass. `hasRole('STUDENT')` means a student. If an admin should also be allowed, the rule must say so.
 
-No real endpoint has a role rule yet. Add one only when a real feature needs it, and enforce it on the backend even if the frontend hides the action.
+Add a role rule only when a real feature needs it, and enforce it on the backend even if the frontend hides the action.
 
 ## Permissions
 
@@ -51,7 +51,23 @@ A permission's stored code is its authority name, exactly as written. Nothing is
 - `ADMIN` is not an automatic pass here either. An admin has a permission only if a role actually grants it.
 - Permissions travel in the access token, so a check never asks the database. A change to a role's permissions takes effect in tokens issued after the change.
 
-No real permission codes exist yet, so no real endpoint has a permission rule. A permission is introduced by a migration together with the real feature it protects (see `permissions.md`).
+A permission is introduced by a migration together with the real feature it protects (see `permissions.md`).
+
+## A real example
+
+`GET /api/lms/my-courses` is the first endpoint with a rule:
+
+```java
+@PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
+```
+
+Three separate things are checked, in this order:
+
+1. The role: the caller is a student account.
+2. The permission: that account may use the LMS course-view feature.
+3. The data: the query returns only the LMS courses this particular student may currently use, decided from official enrollment and LMS membership.
+
+The first two are the method rule. The third is not, and a method rule can never replace it: passing the rule only lets the caller ask. What they may see is still decided from the data, for the account in the token. An admin who is not a student is refused by the rule, even with the permission.
 
 ## Refused requests
 
