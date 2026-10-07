@@ -18,6 +18,8 @@ The backend includes Spring Data JPA and MySQL Connector/J. Its connection confi
 
 Set the username and password in the local environment before running the application. Never commit real credentials.
 
+The backend can also run in Docker together with MySQL and the frontend. `backend/Dockerfile` builds the image, and the root `compose.yaml` supplies these variables. See `../docs/docker.md`.
+
 Flyway manages database schema changes. Versioned migrations live in `src/main/resources/db/migration` and must use names such as `V1__baseline.sql`. Do not make schema changes manually or edit migrations already applied to a shared database; add a new migration instead.
 
 Hibernate automatic schema management remains disabled.

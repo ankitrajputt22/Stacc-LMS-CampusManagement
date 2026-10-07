@@ -39,3 +39,7 @@ Create a production build:
 ```bash
 npm run build
 ```
+
+## Docker
+
+`Dockerfile` builds the production files and serves them with Nginx, using `nginx.conf`. In that image the API address is `/api`, and Nginx passes those requests to the backend. It is started together with the backend and MySQL from the repository root. See `../docs/docker.md`.

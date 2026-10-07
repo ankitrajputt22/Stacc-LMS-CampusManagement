@@ -20,3 +20,19 @@ Stacc will initially use a modular-monolith architecture, keeping business domai
 - **Future AI:** Python, FastAPI, PyTorch, and Hugging Face Transformers
 
 Planned capabilities will be delivered incrementally through small, explicitly scoped development phases.
+
+## Run with Docker
+
+The whole application (MySQL, backend, and frontend) can be started with Docker:
+
+```bash
+cp .env.example .env
+```
+
+Fill in the empty values in `.env`, then:
+
+```bash
+docker compose up --build
+```
+
+The frontend is then at <http://localhost:3000> and the backend at <http://localhost:8080>. See [docs/docker.md](docs/docker.md) for details. Docker is optional: the backend and frontend can still be run directly.

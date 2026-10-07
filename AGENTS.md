@@ -99,6 +99,16 @@
 - Faculty access must not be modelled from student course enrollment or added to the student membership.
 - Add LMS content models only in their own feature phases.
 
+## Docker
+
+- The Docker stack (`compose.yaml`, see `docs/docker.md`) is additive. Running the backend with Maven and the frontend with `npm run dev` must keep working without Docker.
+- In Docker the browser calls the API as `/api` on the frontend's own address, and Nginx passes it to the backend with the prefix kept. Never build a Docker service name into the frontend.
+- Docker service names such as `mysql` and `backend` belong in `compose.yaml`, never in application source or its defaults.
+- Never commit `.env` or real secrets. Required values in `compose.yaml` have no defaults, so a missing one stops the start.
+- Flyway stays inside the backend. Do not add a separate migration container.
+- MySQL data lives in a named volume. Do not delete it as part of normal commands.
+- Do not add wildcard CORS, and do not add Redis, Kafka, Kubernetes, or other infrastructure without a real requirement.
+
 ## Git Workflow
 
 - Codex may create phase branches, commit completed phase work, push phase branches, and merge completed and checked phases into `development`.
