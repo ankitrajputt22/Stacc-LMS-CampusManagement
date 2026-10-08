@@ -27,8 +27,12 @@ Restart the Vite dev server after changing an environment file. Real `.env` file
 
 `frontend/src/types/api.ts` describes the backend's common error format (see `api-error-handling.md`). `getApiError` in `frontend/src/api/apiError.ts` returns that error from a failed request, or `null` when there is none, such as a network failure.
 
+## Signing in
+
+`apiClient` adds the signed-in user's access token to every request and reports a token the backend refuses. API functions never set the `Authorization` header themselves. See `frontend-authentication.md`.
+
 ## CORS
 
-The backend does not allow cross-origin requests yet. The Vite dev server (`http://localhost:5173`) and the backend (`http://localhost:8080`) are different origins, so browsers will block these requests until CORS is configured. Handle this when the first real feature is connected, and allow only the known frontend origins rather than every origin.
+The Vite dev server (`http://localhost:5173`) and the backend (`http://localhost:8080`) are different origins. The backend allows browser calls only from the origins listed in its `FRONTEND_ORIGIN` setting, which defaults to `http://localhost:5173`. Wildcards are refused. See `frontend-authentication.md`.
 
 The Docker stack does not need CORS: there the page and the API are served from one origin.

@@ -36,6 +36,8 @@ The `auth.permission` package holds the `Permission` model, stored in the `permi
 
 Spring Security is set up in `auth.security.SecurityConfig`. Everything under `/api/` requires a valid access token, except `POST /api/auth/login`; the Swagger documentation is public during development. Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. See `../docs/api-security.md`. Operations can require a role with `@PreAuthorize("hasRole('ADMIN')")` or a permission with `hasAuthority(...)`; a signed-in account without it gets HTTP 403. See `../docs/authorization.md`.
 
+A browser page on another origin may call the API only if its origin is listed in `FRONTEND_ORIGIN` (default `http://localhost:5173`, the frontend dev server). Wildcards are refused at startup. See `../docs/frontend-authentication.md`.
+
 Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
 
 Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides the `AuthenticationManager`. See `../docs/authentication-foundation.md`.

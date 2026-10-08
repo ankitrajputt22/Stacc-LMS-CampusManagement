@@ -1,6 +1,10 @@
 package com.stacc.backend.auth.security;
 
+import java.time.Duration;
+import java.util.List;
+
 import com.stacc.backend.auth.token.AccessTokenService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * The one shared Spring Security configuration for Stacc. Everything under /api/ needs a
@@ -29,15 +36,20 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
+@EnableConfigurationProperties(CorsProperties.class)
 public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             StaccAuthenticationEntryPoint authenticationEntryPoint,
-            StaccAccessDeniedHandler accessDeniedHandler)
+            StaccAccessDeniedHandler accessDeniedHandler,
+            CorsConfigurationSource corsConfigurationSource)
             throws Exception {
         http
+                // Lets the listed frontend addresses, and only those, call the API from a browser.
+                // It decides who may ask. Every request still needs its token and its permissions.
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(requests -> requests
                         // Public: the college login, because nobody has a token before signing in.
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
@@ -68,6 +80,25 @@ public class SecurityConfig {
                 // use tokens, so it is off. Review this if authentication ever moves to cookies.
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
+    }
+
+    /**
+     * The browser rule for calls from another web address, used by the frontend dev server.
+     * Only the origins in {@link CorsProperties} are accepted, and only for the API. Sign-in
+     * uses a Bearer token in a header, so cookies and other browser credentials are not allowed.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(properties.allowedOrigins());
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowCredentials(false);
+        configuration.setMaxAge(Duration.ofMinutes(30));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 
     // The token's "authorities" claim already holds the final names, such as ROLE_STUDENT or a

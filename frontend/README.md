@@ -20,6 +20,12 @@ cp .env.example .env
 
 `VITE_` values are public in the built frontend, so never put secrets in them. See `../docs/frontend-api.md` for details.
 
+## Signing in
+
+`/login` is the only public page. Everything else needs a signed-in user and sends other visitors to the sign-in page. The session lives in `sessionStorage` for the current tab, and the shared API client adds the access token to every request. The code is in `src/auth`. See `../docs/frontend-authentication.md`.
+
+With `npm run dev`, the backend must allow the dev server's origin. It allows `http://localhost:5173` by default (`FRONTEND_ORIGIN`), so open the dev server with `localhost`, not `127.0.0.1`.
+
 ## Development
 
 Install dependencies:

@@ -78,6 +78,8 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 **One address for the browser.** The frontend image is built with `VITE_API_BASE_URL=/api`, so the browser calls the API on the same address the page came from. Nginx passes every `/api/...` request to the backend and keeps the `/api` prefix. Because page and API share one origin, no CORS setting is needed. A Docker name such as `backend` is never built into the frontend: a browser could not resolve it.
 
+**Signing in.** <http://localhost:3000> opens the sign-in page, and the login goes to `/api/auth/login` through Nginx. The `FRONTEND_ORIGIN` value in `.env` is not needed for this. It only matters if a frontend dev server on this machine (`npm run dev`) calls the Docker backend directly on port 8080.
+
 **Pages inside the app.** React Router handles pages in the browser. Nginx therefore answers any path that is not a real file with the app itself, so opening an address such as `/courses` directly works. A missing file under `/assets/` is still a real 404.
 
 **The database address.** Inside Docker the backend reaches MySQL as `mysql`, on port `3306`. That is set in `compose.yaml`. The application's own defaults still point at `localhost`, so nothing changes for direct runs.
