@@ -40,6 +40,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env, for example with - openssl rand -base64 48}
       JWT_ACCESS_TOKEN_MINUTES: ${JWT_ACCESS_TOKEN_MINUTES:-15}
+      # Only for a frontend dev server on this machine that calls this backend directly. The
+      # Docker frontend needs no such permission: its page and the API share one address.
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
     depends_on:
       mysql:
         condition: service_healthy

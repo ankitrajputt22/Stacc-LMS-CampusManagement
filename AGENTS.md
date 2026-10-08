@@ -99,6 +99,17 @@
 - Faculty access must not be modelled from student course enrollment or added to the student membership.
 - Add LMS content models only in their own feature phases.
 
+## Frontend Authentication
+
+- Sign-in is one form at `/login` with a college ID or employee ID and a password. There is no public signup and no role selector, and the frontend never chooses a role.
+- Frontend route guards and stored roles are for the interface only. They are not security: the backend checks every request.
+- The access token lives in `sessionStorage` for the current tab. Do not move it to `localStorage` or cookies, and do not add "remember me" or refresh tokens without their own phase.
+- Never store a password, a signing secret, or any other secret in frontend code or storage.
+- Only `apiClient` sets the `Authorization` header. A 401 on a request that carried the token ends the session; a 403 never signs the user out; a failed login is an ordinary form error.
+- Keep one auth path: one `AuthProvider`, one `authStorage`, one Axios client, one login page.
+- Browser calls from another origin are allowed only for the exact origins in `FRONTEND_ORIGIN`. Never use a wildcard. The Docker frontend uses same-origin `/api` through Nginx and needs no CORS.
+- Role-aware navigation is a separate phase. Do not branch the sidebar or dashboards on roles before it.
+
 ## Docker
 
 - The Docker stack (`compose.yaml`, see `docs/docker.md`) is additive. Running the backend with Maven and the frontend with `npm run dev` must keep working without Docker.

@@ -3,6 +3,8 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
   variant?: 'primary' | 'secondary'
+  /** Keeps the button as wide as its container on every screen size, for forms. */
+  fullWidth?: boolean
 }
 
 const variantClasses = {
@@ -17,12 +19,13 @@ export function Button({
   className = '',
   type = 'button',
   variant = 'primary',
+  fullWidth = false,
   ...props
 }: ButtonProps) {
   return (
     <button
       type={type}
-      className={`inline-flex h-11 w-full items-center justify-center rounded-control border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:h-9 sm:w-auto ${variantClasses[variant]} ${className}`}
+      className={`inline-flex h-11 w-full items-center justify-center rounded-control border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary ${fullWidth ? '' : 'sm:h-9 sm:w-auto'} ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {children}

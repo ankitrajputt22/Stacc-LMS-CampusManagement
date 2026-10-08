@@ -6,6 +6,8 @@ Every Stacc page is shown inside one shared app shell, so ERP, LMS, hostel, and 
 
 `frontend/src/layouts/AppLayout.tsx` combines the sidebar, the top bar, and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. `/` is the Dashboard, and any unknown URL shows the not-found page.
 
+The whole layout is for signed-in users. It sits inside the `RequireAuth` route guard, so a visitor who is not signed in sees the sign-in page instead. `/login` is the one page outside the layout, with its own simple design. See `frontend-authentication.md`.
+
 New pages go in `frontend/src/pages` and are added as routes inside the `AppLayout` route.
 
 ## Sidebar
@@ -16,7 +18,7 @@ The active item is marked with a left bar, a background, and bold text, not by c
 
 ## Top bar
 
-`components/navigation/TopBar.tsx` holds the mobile menu button and the Help, notifications, and account placeholders. The placeholders are disabled until those features are built.
+`components/navigation/TopBar.tsx` holds the mobile menu button, the Help and notifications placeholders, and the account area: the signed-in login ID and the **Sign out** button. The placeholders are disabled until those features are built. On small screens the login ID is hidden to save space, but screen readers still read it.
 
 ## Mobile navigation
 

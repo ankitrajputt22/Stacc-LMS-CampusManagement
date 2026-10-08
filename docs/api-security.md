@@ -42,7 +42,12 @@ The token is checked before the route is looked up, so:
 
 This is intended. It also means an anonymous caller cannot probe which API paths exist.
 
+## Calls from a browser on another origin
+
+A web page on another origin may call the API from a browser only if its origin is listed in `FRONTEND_ORIGIN`. The default is the frontend dev server, `http://localhost:5173`. Only exact origins are accepted: a wildcard is refused when the backend starts. The rule covers `/api/` only and does not allow cookies.
+
+This decides which pages may send requests. It never replaces the token: every request is still checked as described above. See `frontend-authentication.md`.
+
 ## Still to come
 
-- CORS for the frontend, with known origins only.
-- Refresh tokens and sign-out.
+- Refresh tokens and sign-out on the backend.
