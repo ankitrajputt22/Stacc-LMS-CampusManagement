@@ -20,13 +20,13 @@ The list is in sections:
 | --- | --- | --- |
 | (no title) | everyone | Dashboard |
 | Student | `STUDENT` | **Courses** (`/courses`), Academic, Campus |
-| Faculty | `FACULTY` | Teaching, Assignments, Attendance |
+| Faculty | `FACULTY` | **Teaching** (`/teaching`), Assignments, Attendance |
 | Admin | `ADMIN` | Academic Admin, Users, Reports |
 | Common | everyone | Calendar, Inbox, Support |
 
 An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
 
-An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. Courses is the only working item so far besides the Dashboard; everything else is still "Soon".
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. Courses and Teaching are the only working items so far besides the Dashboard; everything else is still "Soon".
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 

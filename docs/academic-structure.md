@@ -199,6 +199,8 @@ A teaching assignment is the official ERP record that a faculty member teaches o
 - There is no lead or co-teacher distinction yet. Every assignment counts the same.
 - `status` is `ACTIVE` or `INACTIVE`. New assignments are `ACTIVE`. An assignment that has ended is made `INACTIVE` and kept for history; it can be made active again.
 
+Faculty LMS access is decided from active teaching assignments (see `lms-foundation.md`).
+
 **Rule for the future assignment-management feature:** before creating an assignment or making one active again, it should check that the faculty profile is `ACTIVE`. The model itself does not check this. The course offering's status is not part of this rule: an assignment may be prepared before the offering starts.
 
 Deleting an assignment never deletes the faculty profile or the course offering, and neither can be deleted while an assignment refers to it.
@@ -256,6 +258,6 @@ A department, program, course, student profile, faculty profile, or teaching ass
 ## Not built yet
 
 - There is no API, service, or screen for any of these models. Only the stored models exist.
-- Teaching assignments give no access to anything yet. Faculty LMS access will be built in its own phase.
+- Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
 - No permissions for this data exist yet. They will be added together with the API they protect.

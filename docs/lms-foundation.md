@@ -286,11 +286,12 @@ A course that does not exist and a course the student may not use get the same a
 
 The frontend's course home (`/courses/{lmsCourseId}`) is the screen that uses this endpoint (see `frontend-authentication.md`). It shows the course's academic information and nothing else yet.
 
-## Faculty access (planned)
-
-Faculty profiles and teaching assignments exist (see `academic-structure.md`), but they give no LMS access yet. The planned path is:
+## Faculty access
 
 ```text
+UserAccount (from the access token)
+      |
+      v
 FacultyProfile
       |
       v
@@ -303,13 +304,71 @@ CourseOffering
 LmsCourse
 ```
 
-Faculty LMS access will come from official ERP teaching assignments, never from a faculty member's department or from student course enrollment. The teaching assignment points only at the course offering; it knows nothing about the LMS, and the LMS will reach it, as it reaches course enrollments today. That access policy will be built in its own phase.
+Faculty LMS access comes straight from official ERP teaching assignments. There is no separate LMS membership for faculty: the teaching assignment is the source of truth, and nothing is copied from it. It never comes from a faculty member's department, from student course enrollment, or from the student membership.
+
+`LmsFacultyAccessService.canAccessCourse(userAccountId, lmsCourseId)` in `com.stacc.backend.lms.access` says whether a faculty account may use an LMS course right now. Access is allowed only when all of these hold:
+
+- the account has a faculty profile, and it is `ACTIVE`;
+- that profile has a teaching assignment for the LMS course's course offering, and the assignment is `ACTIVE`;
+- the LMS course is `DRAFT` or `PUBLISHED`.
+
+| LMS course | Faculty | Students |
+| --- | --- | --- |
+| `DRAFT` | Allowed, to prepare the course | Never |
+| `PUBLISHED` | Allowed | Allowed, under the student policy above |
+| `ARCHIVED` | Not allowed | Not allowed |
+
+- The rule is written once, in `LmsFacultyAccessPolicy`. The single-course check and the faculty course list both use it. It does not change the student policy in any way.
+- The statuses of the course offering, the semester, and the academic session are not part of it. The teaching assignment is the official teaching relation.
+- It only reads. It never creates a teaching assignment or an LMS course, and never changes a status.
+- A teaching assignment whose offering has no LMS course yet gives access to nothing; the course is not created for it.
+
+## Faculty API: my courses
+
+```text
+GET /api/lms/faculty/my-courses
+```
+
+This endpoint returns the LMS courses the signed-in faculty member is actively assigned to teach and may currently use.
+
+```json
+[
+  {
+    "lmsCourseId": 42,
+    "courseCode": "BCS301",
+    "courseName": "Data Structures",
+    "credits": 4.00,
+    "semesterNumber": 3,
+    "programCode": "BTECH",
+    "academicSessionCode": "2026-27",
+    "lmsCourseStatus": "DRAFT"
+  }
+]
+```
+
+- The faculty member is the account in the access token. The request takes no account, faculty profile, employee, or teaching assignment ID, and anything of that kind sent by the browser is ignored.
+- The caller needs the `FACULTY` role and the `FACULTY_COURSE_VIEW` permission together (see `permissions.md`). An admin or a student who is not faculty is refused: there is no automatic pass.
+- Only courses that pass the faculty access policy appear. An archived course, an inactive assignment or profile, and another faculty member's assignment are all left out.
+- `lmsCourseStatus` is `DRAFT` or `PUBLISHED`, so faculty can tell which courses students can already use.
+- The response holds nothing else: no account details, and no faculty profile, teaching assignment, or course offering IDs.
+- Courses come in course code order, then by LMS course ID. No courses gives `200` with `[]`.
+- It is a pure read, with two queries whatever the number of courses: one for the teaching assignments with their academic details, and one for the LMS courses of those offerings.
+
+| Request | Response |
+| --- | --- |
+| No token, or an invalid or expired one | 401 |
+| Signed in, but not faculty or without the permission | 403 |
+| Faculty with the permission | 200 with the list, which may be empty |
+
+A faculty token carries the permission from the first sign-in after the `V20` migration. A token issued before it does not, and is refused with 403 until the faculty member signs in again.
+
+The frontend's **Teaching** page (`/teaching`) uses this endpoint (see `frontend-authentication.md`). There is no faculty course page yet: the faculty side has no single-course endpoint, and the student course home is never used for faculty.
 
 ## Not built yet
 
-- No LMS API beyond the student's course list and single course: no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
-- No screen beyond the student's course list and the course home, which shows only the course's academic information.
+- No LMS API beyond the student's course list and single course and the faculty course list: no faculty single-course or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
+- No screen beyond the student's course list and course home and the faculty Teaching list, which show only academic information.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
-- No teacher assignment, and no content such as modules, assignments, or announcements.
+- No way to manage teaching assignments, and no content such as modules, assignments, or announcements.
 - No other LMS permissions. Each will be added together with the action it protects.

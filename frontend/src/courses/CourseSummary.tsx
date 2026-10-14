@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import type { LmsCourseSummary } from '../types/lms'
-import { creditsText } from './credits'
+import { CourseFacts } from './CourseFacts'
 
 type CourseSummaryProps = {
   course: LmsCourseSummary
@@ -26,21 +26,7 @@ export function CourseSummary({ course }: CourseSummaryProps) {
           {course.courseName}
         </Link>
       </h2>
-      {/* Short spoken labels give each value its meaning; the dots are only for the eye. */}
-      <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
-        <span className="sr-only">Program </span>
-        {course.programCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        Semester {course.semesterNumber}
-      </p>
-      <p className="text-sm leading-6 break-words text-ink-muted">
-        <span className="sr-only">Academic session </span>
-        {course.academicSessionCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        {creditsText(course.credits)}
-      </p>
+      <CourseFacts course={course} />
     </article>
   )
 }

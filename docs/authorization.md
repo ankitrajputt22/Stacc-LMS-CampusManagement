@@ -71,6 +71,8 @@ The first two are the method rule. The third is not, and a method rule can never
 
 `GET /api/lms/courses/{lmsCourseId}` has the same rule and the same three checks. There the third check is made again for the one course on every request, and a course the student may not use answers 404, exactly like a course that does not exist.
 
+`GET /api/lms/faculty/my-courses` follows the same pattern for faculty, with `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')`. Its data check comes from official teaching assignments. A student or an admin who is not faculty is refused by the rule, and the faculty permission opens no student route.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

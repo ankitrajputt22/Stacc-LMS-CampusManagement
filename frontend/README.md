@@ -12,6 +12,8 @@ The navigation adapts to the signed-in account's roles. Its items are one list i
 
 The first real feature page is **Courses** (`src/pages/CoursesPage.tsx`, at `/courses`). It lists the signed-in student's courses from `GET /api/lms/my-courses`. Each course opens its course home (`src/pages/CoursePage.tsx`, at `/courses/:lmsCourseId`), which shows the course's academic information from `GET /api/lms/courses/{lmsCourseId}`. The requests are in `src/courses`, built on the shared `src/api/useApiRequest.ts`.
 
+Faculty have **Teaching** (`src/pages/TeachingPage.tsx`, at `/teaching`), which lists the courses they teach from `GET /api/lms/faculty/my-courses`. Its request and course card are in `src/teaching`.
+
 Reusable `LoadingState`, `EmptyState`, and `ErrorState` components live in `src/components/states`. See `../docs/frontend-layout.md` for details.
 
 ## API configuration
