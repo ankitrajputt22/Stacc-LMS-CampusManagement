@@ -230,10 +230,66 @@ A student's token carries the permission from the moment they sign in after the 
 
 The frontend's **Courses** page (`/courses`) is the first screen that uses this endpoint. It shows exactly what comes back, in the order it comes back, and keeps the user signed in on a 403 (see `frontend-authentication.md`).
 
+## Student API: one course
+
+```text
+GET /api/lms/courses/{lmsCourseId}
+        |
+        v
+account ID from the access token
+        |
+        v
+STUDENT role  +  LMS_COURSE_VIEW permission
+        |
+        v
+current ERP and LMS access policy, for this course
+        |
+        v
+the course's academic information
+```
+
+This endpoint feeds the course home: one LMS course for the signed-in student, if they may currently use it.
+
+```json
+{
+  "lmsCourseId": 42,
+  "courseCode": "BCS301",
+  "courseName": "Data Structures",
+  "credits": 4.00,
+  "departmentCode": "CSE",
+  "departmentName": "Computer Science and Engineering",
+  "programCode": "BTECH",
+  "programName": "Bachelor of Technology",
+  "semesterNumber": 3,
+  "academicSessionCode": "2026-27"
+}
+```
+
+- The path names the LMS course by `lmsCourseId`, the same ID the course list returns. Whose access is checked comes only from the access token; any other ID or parameter in the request is ignored.
+- The method rule is the same as for the list: `STUDENT` and `LMS_COURSE_VIEW` together.
+- Every request runs `LmsStudentAccessService.canAccessCourse` again, so the access policy above decides. Having seen the course in the list proves nothing: a course that has since been withdrawn, archived, or unpublished is refused at once.
+- The department is the course's owning department, which may differ from the program's department. The program and session come from the course offering's semester.
+- The answer holds only these fields: no account details, no enrollment or membership IDs, and no statuses. Everything is read from the academic records each time; the LMS keeps no copy.
+- It is a pure read. It never provisions or repairs a membership. It takes four queries: three for the access check and one for the course with its academic records.
+
+A course that does not exist and a course the student may not use get the same answer, so the endpoint never reveals which LMS course IDs exist:
+
+| Request | Response |
+| --- | --- |
+| No token, or an invalid or expired one | 401 |
+| Signed in, but not a student or without the permission | 403 |
+| The course passes the access policy for this student | 200 with the course |
+| The course is missing, a draft, archived, another student's, or not open to this student for any other reason | 404 "Course not found or unavailable." |
+| `lmsCourseId` is not a whole number | 400 |
+
+403 and 404 mean different things. A 403 says the account may not use the student course feature at all. A 404 says this one course is not available to it.
+
+The frontend's course home (`/courses/{lmsCourseId}`) is the screen that uses this endpoint (see `frontend-authentication.md`). It shows the course's academic information and nothing else yet.
+
 ## Not built yet
 
-- No LMS API beyond the student's course list: no course detail, no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
-- No screen beyond the student's course list, and no course page to open from it.
+- No LMS API beyond the student's course list and single course: no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
+- No screen beyond the student's course list and the course home, which shows only the course's academic information.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No teacher assignment, and no content such as modules, assignments, or announcements.

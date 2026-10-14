@@ -21,7 +21,7 @@ A permission is added by a new migration only when the real feature it protects 
 
 | Code | Held by | What it allows |
 | --- | --- | --- |
-| `LMS_COURSE_VIEW` | `STUDENT` | Using the student LMS course-view feature, starting with `GET /api/lms/my-courses`. |
+| `LMS_COURSE_VIEW` | `STUDENT` | Using the student LMS course-view feature: `GET /api/lms/my-courses` and `GET /api/lms/courses/{lmsCourseId}`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided by official enrollment and LMS membership (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 
@@ -53,7 +53,7 @@ A permission reaches an account through its access token, which is issued at log
 
 A permission code can be used directly in a method rule: `@PreAuthorize("hasAuthority('PERMISSION_CODE')")`. The code is the authority name as stored, with no prefix. See `authorization.md`.
 
-The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together.
+The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together. `GET /api/lms/courses/{lmsCourseId}` uses the same rule.
 
 ## Not built yet
 

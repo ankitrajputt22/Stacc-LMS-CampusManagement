@@ -92,6 +92,7 @@
 - Self-service endpoints take the caller from the access token with `AuthenticatedAccount.idFrom(...)`. Never accept an account, student, profile, or enrollment ID from the client to decide whose data is returned.
 - `GET /api/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment and membership policy still decides what is returned.
 - LMS read endpoints must be side-effect free and must never provision a missing membership.
+- `GET /api/lms/courses/{lmsCourseId}` uses the same rule as `my-courses` and runs the access policy again on every request. A missing course and one the student may not use get the same 404, so the API never reveals which LMS course IDs exist.
 - `ADMIN` gets no implicit student LMS access. Design any admin or faculty LMS access explicitly, with its own permission.
 - A migration that adds a permission also lists it in `docs/permissions.md` and looks roles and permissions up by name, never by ID.
 - Do not add historical or read-only LMS access rules without an explicit feature phase.
@@ -117,7 +118,9 @@
 - The student Courses page (`/courses`) gets its data only from `GET /api/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
-- Do not add course-detail routes or links before the course-detail phase.
+- A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
+- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` returns. Do not add placeholder tabs, modules, or other course content before their phases.
+- On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 
 ## Docker
 

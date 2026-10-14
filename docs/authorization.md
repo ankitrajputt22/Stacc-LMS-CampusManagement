@@ -69,6 +69,8 @@ Three separate things are checked, in this order:
 
 The first two are the method rule. The third is not, and a method rule can never replace it: passing the rule only lets the caller ask. What they may see is still decided from the data, for the account in the token. An admin who is not a student is refused by the rule, even with the permission.
 
+`GET /api/lms/courses/{lmsCourseId}` has the same rule and the same three checks. There the third check is made again for the one course on every request, and a course the student may not use answers 404, exactly like a course that does not exist.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

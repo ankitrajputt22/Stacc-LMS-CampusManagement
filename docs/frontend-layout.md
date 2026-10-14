@@ -30,6 +30,8 @@ An item without a route is shown as "Soon" and is not a link, so add the route o
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
+An item stays marked on the pages below it, so Courses is also marked on a course home (`/courses/:lmsCourseId`). Screen readers hear it there as the current section, not the current page; the page's breadcrumb names the page itself. Only the Dashboard (`/`) is marked on its exact URL alone.
+
 ## Top bar
 
 `components/navigation/TopBar.tsx` holds the mobile menu button, the Help and notifications placeholders, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
@@ -47,7 +49,9 @@ Use the shared components in `components/states` instead of writing new ones for
 - `ErrorState` — a `title`, a `message`, and an optional `onRetry` action. It takes plain text, so it works with any error source, including `getApiError`.
 - `AccessDeniedState` — a `title` and a `message` for a page the account may not use, for example after a 403. It is not an error, and the user stays signed in.
 
-When a page shows one of these on its own, put it in the same plain bordered panel as the content it stands in for, as the Courses page does, so the page does not jump.
+When a page shows one of these on its own, put it in `StatePanel`, the plain bordered panel the Courses and course pages use, so the page does not jump when the content arrives.
+
+A page that loads one thing from the API can use `useApiRequest` (see `frontend-api.md`). Its five states map onto these components.
 
 The Dashboard currently shows a temporary preview of these states. Real content will replace it in later phases.
 

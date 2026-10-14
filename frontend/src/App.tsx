@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
+import { CoursePage } from './pages/CoursePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
@@ -17,6 +18,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="courses" element={<CoursesPage />} />
+          <Route path="courses/:lmsCourseId" element={<CoursePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
