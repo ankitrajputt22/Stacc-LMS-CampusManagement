@@ -1,5 +1,6 @@
 import type { RefObject } from 'react'
 import { useAuth } from '../../auth/AuthContext'
+import { AccountRoles } from './AccountRoles'
 import { Brand } from './Brand'
 import { BellIcon, MenuIcon, UserIcon } from './icons'
 
@@ -66,10 +67,20 @@ export function TopBar({
           >
             <UserIcon />
           </span>
+          {/* Who is signed in, and with which roles. The roles are shown, never chosen here. */}
           {account && (
-            <span className="sr-only max-w-48 truncate text-sm text-ink sm:not-sr-only">
-              <span className="sr-only">Signed in as </span>
-              {account.loginId}
+            <span className="sr-only sm:not-sr-only sm:flex sm:max-w-48 sm:min-w-0 sm:flex-col sm:leading-tight">
+              <span
+                className="truncate text-sm text-ink"
+                title={account.loginId}
+              >
+                <span className="sr-only">Signed in as </span>
+                {account.loginId}
+              </span>
+              <AccountRoles
+                roles={account.roles}
+                className="truncate text-xs text-ink-muted"
+              />
             </span>
           )}
           <button

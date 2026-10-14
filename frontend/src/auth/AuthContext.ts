@@ -3,7 +3,10 @@ import type { AuthAccount } from './types'
 
 export type AuthContextValue = {
   isAuthenticated: boolean
-  /** The signed-in account, or null. Use it for display only: the backend decides what is allowed. */
+  /**
+   * The signed-in account, or null. Use it for display only: the backend decides what is allowed.
+   * Its roles are the known ones in a fixed order, and an account may hold several.
+   */
   account: AuthAccount | null
   /** True after the user chose "Sign out", until someone signs in again. */
   signedOutByUser: boolean

@@ -74,9 +74,22 @@ While the request is running the button reads "Signing in…" and cannot be pres
 
 The route guard and the stored roles are for convenience. They decide what the interface shows, nothing more. The backend checks the token and the permissions on every request, so editing `sessionStorage` gains nothing: a changed token is refused, and changed roles are ignored.
 
-The roles are stored because the login answer contains them and the navigation will need them. Nothing uses them yet: role-aware navigation is the next phase.
-
 Never put a password, a signing secret, or any other secret in frontend code or storage. There must be no `VITE_JWT_SECRET`.
+
+## Roles and the app shell
+
+The app shell shows each account the navigation for its roles. This is about what is shown, never about what is allowed.
+
+- The roles come from the login answer, which the backend builds from the college's records. They are plain names: `STUDENT`, `FACULTY`, `ADMIN`. Users never choose or switch a role, and there is no role selector.
+- `src/auth/roles.ts` turns the stored names into the roles the app knows, once, in `AuthProvider`. It keeps only those three exact names, removes repeats, and puts them in a fixed order: Student, Faculty, Admin. Anything else is dropped, so an unknown or changed value never unlocks a menu.
+- An account can hold several roles. None of them is the main one: the order the backend sends means nothing, and nothing looks at the first role.
+- An account with several roles sees each of its role sections, in the fixed order. The Dashboard and the shared items appear once.
+- An account with no known role sees only the Dashboard and the shared items, and can still sign out.
+- The top bar shows the login ID with the roles as plain words, such as "Student · Faculty". On small screens the navigation drawer shows them instead.
+
+The navigation itself is one list in `src/components/navigation/navigation.ts`, used on every screen size. Most items there are upcoming features, shown as "Soon": they are not links and have no pages. Each will get its route when its feature is built.
+
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
 
 ## Dev server and Docker
 
@@ -94,5 +107,5 @@ Being an allowed origin never replaces signing in. It only decides which web pag
 ## Not built yet
 
 - Refresh tokens, "remember me", password change or reset, single sign-on, and multi-factor sign-in.
-- Role-aware navigation and dashboards.
+- Dashboards and pages for each role. The navigation only marks them as coming.
 - Automated frontend tests. The frontend has no test framework yet, so this was checked with lint, the build, and by hand in a browser.
