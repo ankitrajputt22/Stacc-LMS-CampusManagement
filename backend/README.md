@@ -53,7 +53,7 @@ Clients send the token on later requests as `Authorization: Bearer <access-token
 
 ## Academic structure
 
-The `academic` module holds the college's academic master data. So far it contains `Department`, `Program` (each program belongs to one department), the college-wide `AcademicSession`, `Semester` (one numbered semester of a program in a session), `Course` (the permanent course catalog), and `CourseOffering` (one course offered in one semester). The `identity` module holds `StudentProfile`, which links a student's `UserAccount` to a program and to the session of admission. In the `academic` module, `SemesterEnrollment` records a student's official participation in a semester and `CourseEnrollment` records participation in a course offering. There is no API for any of them yet. See `../docs/academic-structure.md`.
+The `academic` module holds the college's academic master data. So far it contains `Department`, `Program` (each program belongs to one department), the college-wide `AcademicSession`, `Semester` (one numbered semester of a program in a session), `Course` (the permanent course catalog), and `CourseOffering` (one course offered in one semester). The `identity` module holds `StudentProfile`, which links a student's `UserAccount` to a program and to the session of admission, and `FacultyProfile`, which links a faculty member's `UserAccount` to their primary department. In the `academic` module, `SemesterEnrollment` records a student's official participation in a semester and `CourseEnrollment` records participation in a course offering. There is no API for any of them yet. See `../docs/academic-structure.md`.
 
 ## LMS
 

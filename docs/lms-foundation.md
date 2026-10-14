@@ -286,6 +286,16 @@ A course that does not exist and a course the student may not use get the same a
 
 The frontend's course home (`/courses/{lmsCourseId}`) is the screen that uses this endpoint (see `frontend-authentication.md`). It shows the course's academic information and nothing else yet.
 
+## Faculty access (planned)
+
+Faculty profiles exist (see `academic-structure.md`), but they give no LMS access. The planned path is:
+
+```text
+FacultyProfile ---> TeachingAssignment ---> CourseOffering ---> LmsCourse
+```
+
+Faculty LMS access will come from official ERP teaching assignments, never from a faculty member's department or from student course enrollment. Teaching assignments and that access policy will each be built in their own phase.
+
 ## Not built yet
 
 - No LMS API beyond the student's course list and single course: no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.

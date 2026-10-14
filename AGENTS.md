@@ -64,6 +64,9 @@
 - Sections, teaching assignments, timetables, and enrollment are separate concepts. Do not fold them into the course offering.
 - `StudentProfile` belongs in the `identity` module. The student ID is the account's `loginId`; do not store it, the student's name, or the department on the profile.
 - Never store a current semester or current session on `StudentProfile`. `admissionSession` is the session of original admission only. Ongoing participation comes from ERP enrollment, and a profile alone must not grant LMS access.
+- `FacultyProfile` belongs in the `identity` module. The employee ID is the account's `loginId`; do not store it, the name, or other personal details on the profile. The future service that creates faculty profiles must check that the account holds `FACULTY`.
+- `FacultyProfile.department` is the primary department only. It never limits or stands in for teaching responsibility, which must come from an explicit teaching assignment to a `CourseOffering`. Never map a faculty profile directly to `Course` or `CourseOffering`.
+- Make a faculty profile inactive instead of deleting it. An account may hold both a student profile and a faculty profile.
 - `SemesterEnrollment` is the official ERP record of semester participation. Do not copy the account, program, department, or session onto it, and keep its history instead of deleting it.
 - Creating a semester enrollment must check that the student's program is the semester's program. Semester enrollment alone must not grant LMS course access, and course enrollment is a separate, explicit step.
 - `CourseEnrollment` links a semester enrollment to a course offering. Do not copy the student, semester, program, session, or course onto it, and never auto-enroll a student in all offerings of a semester.

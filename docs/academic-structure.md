@@ -35,6 +35,18 @@ StudentProfile
                      +------< CourseEnrollment >------ CourseOffering ------> Course
 ```
 
+Faculty members are linked through their own profile:
+
+```text
+UserAccount
+     |
+     v
+FacultyProfile
+     |
+     v
+Department
+```
+
 ## Department
 
 A department is an official academic department of the college. The code is in `com.stacc.backend.academic.department` and the table is `departments`.
@@ -159,6 +171,22 @@ A course enrollment is the official ERP record that a student takes part in one 
 
 Deleting a course enrollment never deletes the semester enrollment or the course offering, and neither can be deleted while a course enrollment refers to it.
 
+## FacultyProfile
+
+A faculty profile is the academic side of a faculty member's account. Like the student profile, it lives in the `identity` module, in `com.stacc.backend.identity.faculty`, and refers to academic data from the `academic` module. The table is `faculty_profiles`.
+
+- `UserAccount` stays the sign-in identity. The faculty profile is the faculty member's academic identity.
+- A profile belongs to exactly one `UserAccount`, and an account can have at most one faculty profile. An account that really holds both roles may have a student profile and a faculty profile: each table allows one profile per account on its own.
+- The employee ID is the account's `loginId`. It is not stored again on the profile, and neither is the person's name or any other personal detail.
+- A profile has one primary `Department`. A faculty member has no program to reach a department through, so unlike a student's department it is stored on the profile.
+- The primary department is where the faculty member belongs. It does not limit what they teach: they may teach a course owned by another department.
+- The profile holds no courses. What a faculty member teaches will come from teaching assignments, which will link a faculty profile to a course offering, one course in one semester, never to the permanent course.
+- `status` is `ACTIVE` or `INACTIVE`. New profiles are `ACTIVE`.
+
+A faculty profile is meant for an account with the `FACULTY` role. That rule is not checked by the model itself. The future feature that creates faculty profiles must check it.
+
+Deleting a profile never deletes the account or the department, and neither can be deleted while a profile refers to it.
+
 ## The ERP is the source of truth for the LMS
 
 ```text
@@ -207,10 +235,11 @@ The LMS student access policy consults this official ERP state on every check. A
 
 ## Keeping history
 
-A department, program, course, or student profile that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
+A department, program, course, student profile, or faculty profile that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
 - There is no API, service, or screen for any of these models. Only the stored models exist.
+- No teaching assignments. A faculty profile is not yet connected to any course offering, and gives no access to anything.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
 - No permissions for this data exist yet. They will be added together with the API they protect.
