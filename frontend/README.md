@@ -10,6 +10,8 @@ All pages share one app shell in `src/layouts/AppLayout.tsx`, made of a sidebar,
 
 The navigation adapts to the signed-in account's roles. Its items are one list in `src/components/navigation/navigation.ts`, and an account with several roles sees each of its role sections. This only changes what is shown: the backend decides what is allowed.
 
+The first real feature page is **Courses** (`src/pages/CoursesPage.tsx`, at `/courses`). It lists the signed-in student's courses from `GET /api/lms/my-courses`, with the request and its loading, empty, error, and no-access states in `src/courses`.
+
 Reusable `LoadingState`, `EmptyState`, and `ErrorState` components live in `src/components/states`. See `../docs/frontend-layout.md` for details.
 
 ## API configuration

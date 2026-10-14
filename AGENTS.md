@@ -114,6 +114,10 @@
 - The navigation is one list in `src/components/navigation/navigation.ts`, shared by the sidebar and the mobile drawer. Do not create a sidebar per role, and do not repeat shared items for multi-role accounts.
 - An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
 - Do not build role-specific dashboards or role route trees before their roadmap phases.
+- The student Courses page (`/courses`) gets its data only from `GET /api/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
+- The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
+- Read pages must never provision LMS memberships or change data.
+- Do not add course-detail routes or links before the course-detail phase.
 
 ## Docker
 
