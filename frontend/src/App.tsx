@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
+import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -15,6 +16,7 @@ function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="courses" element={<CoursesPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

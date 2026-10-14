@@ -19,14 +19,14 @@ The list is in sections:
 | Section | Shown to | Items |
 | --- | --- | --- |
 | (no title) | everyone | Dashboard |
-| Student | `STUDENT` | Courses, Academic, Campus |
+| Student | `STUDENT` | **Courses** (`/courses`), Academic, Campus |
 | Faculty | `FACULTY` | Teaching, Assignments, Attendance |
 | Admin | `ADMIN` | Academic Admin, Users, Reports |
 | Common | everyone | Calendar, Inbox, Support |
 
 An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
 
-An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items.
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. Courses is the only working item so far besides the Dashboard; everything else is still "Soon".
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
@@ -45,6 +45,9 @@ Use the shared components in `components/states` instead of writing new ones for
 - `LoadingState` — a small spinner with a text label.
 - `EmptyState` — a `title`, an optional `description`, and an optional `action`.
 - `ErrorState` — a `title`, a `message`, and an optional `onRetry` action. It takes plain text, so it works with any error source, including `getApiError`.
+- `AccessDeniedState` — a `title` and a `message` for a page the account may not use, for example after a 403. It is not an error, and the user stays signed in.
+
+When a page shows one of these on its own, put it in the same plain bordered panel as the content it stands in for, as the Courses page does, so the page does not jump.
 
 The Dashboard currently shows a temporary preview of these states. Real content will replace it in later phases.
 

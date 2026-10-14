@@ -89,6 +89,17 @@ The app shell shows each account the navigation for its roles. This is about wha
 
 The navigation itself is one list in `src/components/navigation/navigation.ts`, used on every screen size. Most items there are upcoming features, shown as "Soon": they are not links and have no pages. Each will get its route when its feature is built.
 
+### The Courses page
+
+`/courses` is the first real student page. It sits inside the signed-in app shell, and its Courses link is in the Student section, so any account that holds `STUDENT` sees it, including an account that is also faculty.
+
+- Its data comes only from `GET /api/lms/my-courses`, through `apiClient`, with no ID of any kind in the request. The backend decides which courses are listed (see `lms-foundation.md`), and nothing on the page is made up.
+- An account without `STUDENT` that opens `/courses` directly sees a short explanation, and no request is sent. That is for convenience: the backend would refuse anyway.
+- A **403** from the backend, for example a student whose token lacks `LMS_COURSE_VIEW`, shows "You don't have access to student courses." The user stays signed in.
+- A **401** is left to the shared client: the session ends and the sign-in page opens, as everywhere else.
+- Any other failure shows "Couldn't load your courses" with a **Retry** button. An empty list is not an error: it says no courses are available yet.
+- The courses are shown in the backend's order, by course code. They are information only: there is no course page to open yet, so nothing on a course is a link or a button.
+
 Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
 
 ## Dev server and Docker

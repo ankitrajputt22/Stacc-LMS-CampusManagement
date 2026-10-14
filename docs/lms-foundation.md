@@ -228,10 +228,12 @@ The first LMS endpoint returns the LMS courses the signed-in student can current
 
 A student's token carries the permission from the moment they sign in after the `V17` migration. A token issued before that does not, and is refused with 403 until the student signs in again.
 
+The frontend's **Courses** page (`/courses`) is the first screen that uses this endpoint. It shows exactly what comes back, in the order it comes back, and keeps the user signed in on a 403 (see `frontend-authentication.md`).
+
 ## Not built yet
 
 - No LMS API beyond the student's course list: no course detail, no faculty or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
-- No screen for any of it. The frontend is not connected yet, and CORS is not configured.
+- No screen beyond the student's course list, and no course page to open from it.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No teacher assignment, and no content such as modules, assignments, or announcements.

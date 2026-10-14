@@ -29,7 +29,11 @@ const navigationSections: readonly NavigationSection[] = [
     id: 'student',
     title: 'Student',
     roles: ['STUDENT'],
-    items: [{ label: 'Courses' }, { label: 'Academic' }, { label: 'Campus' }],
+    items: [
+      { label: 'Courses', to: '/courses' },
+      { label: 'Academic' },
+      { label: 'Campus' },
+    ],
   },
   {
     id: 'faculty',
