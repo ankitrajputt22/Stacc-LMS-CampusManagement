@@ -288,13 +288,22 @@ The frontend's course home (`/courses/{lmsCourseId}`) is the screen that uses th
 
 ## Faculty access (planned)
 
-Faculty profiles exist (see `academic-structure.md`), but they give no LMS access. The planned path is:
+Faculty profiles and teaching assignments exist (see `academic-structure.md`), but they give no LMS access yet. The planned path is:
 
 ```text
-FacultyProfile ---> TeachingAssignment ---> CourseOffering ---> LmsCourse
+FacultyProfile
+      |
+      v
+TeachingAssignment
+      |
+      v
+CourseOffering
+      |
+      v
+LmsCourse
 ```
 
-Faculty LMS access will come from official ERP teaching assignments, never from a faculty member's department or from student course enrollment. Teaching assignments and that access policy will each be built in their own phase.
+Faculty LMS access will come from official ERP teaching assignments, never from a faculty member's department or from student course enrollment. The teaching assignment points only at the course offering; it knows nothing about the LMS, and the LMS will reach it, as it reaches course enrollments today. That access policy will be built in its own phase.
 
 ## Not built yet
 
