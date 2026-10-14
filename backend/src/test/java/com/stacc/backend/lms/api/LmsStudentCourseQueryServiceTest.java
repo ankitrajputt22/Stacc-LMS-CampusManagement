@@ -1,11 +1,14 @@
 package com.stacc.backend.lms.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -28,6 +31,7 @@ import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.auth.account.UserAccount;
+import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.student.StudentProfile;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileStatus;
@@ -40,6 +44,7 @@ import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import com.stacc.backend.lms.membership.LmsStudentMembershipStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -58,9 +63,10 @@ class LmsStudentCourseQueryServiceTest {
     private final StudentProfileRepository studentProfiles = mock(StudentProfileRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
-    private final LmsStudentCourseQueryService service = new LmsStudentCourseQueryService(memberships);
     private final LmsStudentAccessService accessCheck =
             new LmsStudentAccessService(studentProfiles, lmsCourses, memberships);
+    private final LmsStudentCourseQueryService service =
+            new LmsStudentCourseQueryService(memberships, lmsCourses, accessCheck);
 
     private final Department department = new Department("TST", "Test Department");
     private final Program program = new Program(department, "BTECH", "Test Program", 8);
@@ -317,6 +323,105 @@ class LmsStudentCourseQueryServiceTest {
         assertEquals(LmsStudentMembershipStatus.INACTIVE, membership.getStatus());
         assertEquals(StudentProfileStatus.ACTIVE, student.getStatus());
         assertEquals(SemesterEnrollmentStatus.ENROLLED, semesterEnrollment.getStatus());
+        assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
+        assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
+    }
+
+    // The course page. It uses the real single-course access check over the same stand-in data.
+
+    private void detailStandIn(LmsCourse course) {
+        when(lmsCourses.findWithAcademicContextById(course.getId())).thenReturn(Optional.of(course));
+    }
+
+    private void expectUnavailable(Long accountId, Long lmsCourseId) {
+        ApiException exception =
+                assertThrows(ApiException.class, () -> service.getAccessibleCourse(accountId, lmsCourseId));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Course not found or unavailable.", exception.getMessage());
+    }
+
+    @Test
+    void courseTheStudentMayUseIsShownWithItsAcademicDetails() {
+        detailStandIn(lmsCourse);
+
+        assertEquals(
+                new LmsCourseDetailResponse(
+                        LMS_COURSE_ID, "TST301", "Test Course One", new BigDecimal("4.00"),
+                        "TST", "Test Department", "BTECH", "Test Program", 3, "2026-27"),
+                service.getAccessibleCourse(ACCOUNT_ID, LMS_COURSE_ID));
+    }
+
+    @Test
+    void departmentShownIsTheCoursesOwningDepartmentNotTheProgrammes() {
+        Course sharedCourse = new Course(
+                new Department("OWN", "Owning Department"), "OWN201", "Test Shared Course", new BigDecimal("3.00"));
+        CourseOffering shared = new CourseOffering(sharedCourse, semester);
+        ReflectionTestUtils.setField(shared, "id", 60L);
+        LmsCourse sharedLmsCourse = publishedLmsCourse(shared, 30L);
+        stored.add(new LmsStudentMembership(new CourseEnrollment(semesterEnrollment, shared), sharedLmsCourse));
+        detailStandIn(sharedLmsCourse);
+
+        LmsCourseDetailResponse detail = service.getAccessibleCourse(ACCOUNT_ID, 30L);
+
+        assertEquals("OWN", detail.departmentCode());
+        assertEquals("Owning Department", detail.departmentName());
+        assertEquals("BTECH", detail.programCode());
+    }
+
+    @Test
+    void courseTheStudentCanNoLongerUseIsUnavailableAndItsDetailsAreNeverRead() {
+        detailStandIn(lmsCourse);
+        courseEnrollment.withdraw();
+
+        expectUnavailable(ACCOUNT_ID, LMS_COURSE_ID);
+        verify(lmsCourses, never()).findWithAcademicContextById(any());
+    }
+
+    @Test
+    void archivedCourseIsUnavailable() {
+        detailStandIn(lmsCourse);
+        lmsCourse.archive();
+
+        expectUnavailable(ACCOUNT_ID, LMS_COURSE_ID);
+    }
+
+    @Test
+    void anotherStudentsCourseGetsTheSameAnswerAsAMissingOne() {
+        CourseOffering theirs = offering("TST309", "Test Course Of Someone Else", 59L, semester);
+        LmsCourse theirLmsCourse = publishedLmsCourse(theirs, 8L);
+        detailStandIn(theirLmsCourse);
+
+        expectUnavailable(ACCOUNT_ID, 8L);
+        expectUnavailable(ACCOUNT_ID, 999L);
+        verify(lmsCourses, never()).findWithAcademicContextById(any());
+    }
+
+    @Test
+    void courseThatDisappearsBetweenTheTwoReadsIsUnavailable() {
+        expectUnavailable(ACCOUNT_ID, LMS_COURSE_ID);
+    }
+
+    @Test
+    void missingIdsAreUnavailableWithoutAnyLookup() {
+        expectUnavailable(null, LMS_COURSE_ID);
+        expectUnavailable(ACCOUNT_ID, null);
+
+        verifyNoInteractions(studentProfiles, lmsCourses, memberships);
+    }
+
+    @Test
+    void showingACourseOnlyReadsAndChangesNothing() {
+        detailStandIn(lmsCourse);
+
+        service.getAccessibleCourse(ACCOUNT_ID, LMS_COURSE_ID);
+
+        verify(studentProfiles).findByUserAccountId(ACCOUNT_ID);
+        verify(lmsCourses).findById(LMS_COURSE_ID);
+        verify(memberships).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
+        verify(lmsCourses).findWithAcademicContextById(LMS_COURSE_ID);
+        verifyNoMoreInteractions(studentProfiles, lmsCourses, memberships);
+        assertEquals(LmsStudentMembershipStatus.ACTIVE, membership.getStatus());
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }

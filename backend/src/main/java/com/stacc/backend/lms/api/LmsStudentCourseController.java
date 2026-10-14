@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,5 +50,33 @@ public class LmsStudentCourseController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public List<LmsCourseSummaryResponse> myCourses(@AuthenticationPrincipal Jwt accessToken) {
         return courseQueryService.getAccessibleCourses(AuthenticatedAccount.idFrom(accessToken));
+    }
+
+    // The same rule as the course list: a student account that may use the course-view feature.
+    // Whether this student may open this particular course is decided by the query, every time.
+    @GetMapping("/courses/{lmsCourseId}")
+    @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
+    @Operation(
+            summary = "Get an accessible LMS course",
+            description = "Returns one LMS course that the signed-in student can currently use. The student is "
+                    + "taken from the access token. A course that does not exist and a course the student "
+                    + "cannot use both answer 404.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The course and its academic details.")
+    @ApiResponse(
+            responseCode = "401",
+            description = "No valid access token was sent.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "403",
+            description = "The account is not allowed to use this operation.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "The course does not exist or is not available to this student.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsCourseDetailResponse course(
+            @PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
+        return courseQueryService.getAccessibleCourse(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
 }

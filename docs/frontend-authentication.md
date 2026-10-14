@@ -98,7 +98,22 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 - A **403** from the backend, for example a student whose token lacks `LMS_COURSE_VIEW`, shows "You don't have access to student courses." The user stays signed in.
 - A **401** is left to the shared client: the session ends and the sign-in page opens, as everywhere else.
 - Any other failure shows "Couldn't load your courses" with a **Retry** button. An empty list is not an error: it says no courses are available yet.
-- The courses are shown in the backend's order, by course code. They are information only: there is no course page to open yet, so nothing on a course is a link or a button.
+- The courses are shown in the backend's order, by course code. Each one opens its course home; the whole card can be clicked, and the course name is the link for keyboards and screen readers.
+
+### The course home
+
+`/courses/:lmsCourseId` is the course home, opened from a course in the list. It sits in the app shell like the list, and Courses stays marked in the navigation.
+
+- The URL holds the `lmsCourseId` the list returned: the LMS course's own ID. It never holds a course code, an enrollment ID, or anything about the account.
+- Its data comes only from `GET /api/lms/courses/{lmsCourseId}`, through `apiClient`. The backend checks access again on every request (see `lms-foundation.md`), so a refresh, a bookmark, or a link from someone else gets no further than the student's own access. Having come from the list proves nothing.
+- It shows the course code and name, then the program, department, semester, academic session, and credits, exactly as sent. There are no tabs, modules, teachers, progress, or anything else the API does not send.
+- A URL whose ID is not a positive whole number shows "Course unavailable" without asking the backend.
+- A **404** shows the same "Course unavailable" message with a link back to Courses. The page cannot tell a missing course from one the student may not use, and does not try.
+- A **403** shows "You don't have access to this course." The user stays signed in.
+- A **401** is left to the shared client, as everywhere else. After signing in again, the student returns to the same course URL, and the backend checks it again.
+- Any other failure shows "Couldn't load this course" with a **Retry** button.
+- An account without `STUDENT` sees the same short explanation as on `/courses`, and no request is sent.
+- The breadcrumb, "Courses / course name", leads back to the list.
 
 Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
 

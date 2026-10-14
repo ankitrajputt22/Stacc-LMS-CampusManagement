@@ -27,6 +27,25 @@ Restart the Vite dev server after changing an environment file. Real `.env` file
 
 `frontend/src/types/api.ts` describes the backend's common error format (see `api-error-handling.md`). `getApiError` in `frontend/src/api/apiError.ts` returns that error from a failed request, or `null` when there is none, such as a network failure.
 
+## Loading data in a page
+
+`frontend/src/api/useApiRequest.ts` runs one API request for a page and says what to show:
+
+| State | When |
+| --- | --- |
+| `loading` | The request is under way. |
+| `loaded` | The answer arrived, with its `data`. |
+| `notFound` | 404: it does not exist, or it is not available to this account. |
+| `denied` | 403: signed in, but not allowed. The user stays signed in. |
+| `failed` | Anything else: no answer, a timeout, or a server error. `retry()` asks again. |
+
+- A 401 gets no state of its own: `apiClient` has already ended the session, and the sign-in page opens.
+- A request still running when the page closes, the request changes, or a retry starts is cancelled, and an answer is shown only for the request it belongs to. A slow old answer never replaces a newer one.
+- Passing `null` instead of a request sends nothing and gives `notFound`. The course home does this for a URL whose ID cannot be valid.
+- The request function must keep its identity between renders: a module function, or one made with `useMemo`.
+
+`useMyCourses` and `useLmsCourse` in `frontend/src/courses` are built on it.
+
 ## Signing in
 
 `apiClient` adds the signed-in user's access token to every request and reports a token the backend refuses. API functions never set the `Authorization` header themselves. See `frontend-authentication.md`.

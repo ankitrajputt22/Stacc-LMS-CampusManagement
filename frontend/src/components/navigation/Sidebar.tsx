@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
 import { Button } from '../Button'
 import { AccountRoles } from './AccountRoles'
@@ -19,6 +19,7 @@ type SidebarProps = {
 export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const { account, logout } = useAuth()
+  const { pathname } = useLocation()
   const sections = navigationFor(account?.roles ?? [])
 
   useEffect(() => {
@@ -86,7 +87,10 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
                     {item.to ? (
                       <NavLink
                         to={item.to}
-                        end
+                        // Only the Dashboard needs an exact match. Courses stays marked on a course page,
+                        // as the current section rather than the current page.
+                        end={item.to === '/'}
+                        aria-current={pathname === item.to ? 'page' : 'true'}
                         onClick={onClose}
                         className={({ isActive }) =>
                           `${itemClasses} focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary ${

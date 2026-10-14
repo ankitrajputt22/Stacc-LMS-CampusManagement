@@ -1,23 +1,16 @@
-import type { ReactNode } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
+import { StatePanel } from '../components/states/StatePanel'
 import { CourseSummary } from '../courses/CourseSummary'
 import { useMyCourses } from '../courses/useMyCourses'
 
 const NOT_A_STUDENT = 'Courses are for student accounts.'
 const NO_STUDENT_ACCESS = 'You don’t have access to student courses.'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-
-/** The page states share one quiet frame, so the page does not jump between them. */
-function StatePanel({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-panel border border-line bg-surface">{children}</div>
-  )
-}
 
 function MyCourses() {
   const courses = useMyCourses()
@@ -38,7 +31,7 @@ function MyCourses() {
     )
   }
 
-  if (courses.status === 'failed') {
+  if (courses.status === 'failed' || courses.status === 'notFound') {
     return (
       <StatePanel>
         <ErrorState
@@ -50,7 +43,7 @@ function MyCourses() {
     )
   }
 
-  if (courses.courses.length === 0) {
+  if (courses.data.length === 0) {
     return (
       <StatePanel>
         <EmptyState
@@ -63,7 +56,7 @@ function MyCourses() {
 
   return (
     <ul aria-label="Your courses" className="grid gap-3 lg:grid-cols-2">
-      {courses.courses.map((course) => (
+      {courses.data.map((course) => (
         <li key={course.lmsCourseId}>
           <CourseSummary course={course} />
         </li>
