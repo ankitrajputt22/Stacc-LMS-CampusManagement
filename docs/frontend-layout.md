@@ -12,17 +12,31 @@ New pages go in `frontend/src/pages` and are added as routes inside the `AppLayo
 
 ## Sidebar
 
-`components/navigation/Sidebar.tsx` holds the global navigation. Its items are listed at the top of the file. An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists.
+`components/navigation/Sidebar.tsx` shows the global navigation. The items themselves are one list in `components/navigation/navigation.ts`, used for the desktop sidebar and the mobile drawer alike. There is one sidebar for every role, not one per role.
 
-The active item is marked with a left bar, a background, and bold text, not by colour alone.
+The list is in sections:
+
+| Section | Shown to | Items |
+| --- | --- | --- |
+| (no title) | everyone | Dashboard |
+| Student | `STUDENT` | Courses, Academic, Campus |
+| Faculty | `FACULTY` | Teaching, Assignments, Attendance |
+| Admin | `ADMIN` | Academic Admin, Users, Reports |
+| Common | everyone | Calendar, Inbox, Support |
+
+An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
+
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items.
+
+The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
 ## Top bar
 
-`components/navigation/TopBar.tsx` holds the mobile menu button, the Help and notifications placeholders, and the account area: the signed-in login ID and the **Sign out** button. The placeholders are disabled until those features are built. On small screens the login ID is hidden to save space, but screen readers still read it.
+`components/navigation/TopBar.tsx` holds the mobile menu button, the Help and notifications placeholders, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
 
 ## Mobile navigation
 
-Below the `lg` breakpoint the sidebar becomes a drawer opened from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link.
+Below the `lg` breakpoint the sidebar becomes a drawer opened from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link. The drawer shows the same sections as the desktop sidebar, and at its foot the login ID, the roles, and a **Sign out** button.
 
 ## Page states
 

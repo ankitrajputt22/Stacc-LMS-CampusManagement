@@ -8,6 +8,8 @@ Tailwind CSS is configured through its Vite plugin. The interface follows the ap
 
 All pages share one app shell in `src/layouts/AppLayout.tsx`, made of a sidebar, a top bar, and the main content area. Routing uses React Router, with routes defined in `src/App.tsx`. Future pages should be added as routes inside `AppLayout` rather than building their own navigation.
 
+The navigation adapts to the signed-in account's roles. Its items are one list in `src/components/navigation/navigation.ts`, and an account with several roles sees each of its role sections. This only changes what is shown: the backend decides what is allowed.
+
 Reusable `LoadingState`, `EmptyState`, and `ErrorState` components live in `src/components/states`. See `../docs/frontend-layout.md` for details.
 
 ## API configuration

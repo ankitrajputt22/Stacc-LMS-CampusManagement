@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAuth } from '../auth/AuthContext'
+import { roleLabel } from '../auth/roles'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
@@ -11,8 +13,15 @@ const previewOptions: { value: PreviewState; label: string }[] = [
   { value: 'error', label: 'Error' },
 ]
 
+const listFormat = new Intl.ListFormat('en', {
+  style: 'long',
+  type: 'conjunction',
+})
+
 export function DashboardPage() {
   const [previewState, setPreviewState] = useState<PreviewState>('empty')
+  const { account } = useAuth()
+  const roles = account?.roles ?? []
 
   return (
     <>
@@ -22,6 +31,19 @@ export function DashboardPage() {
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         Welcome to Stacc. Your college services will appear here.
+      </p>
+      <p className="mt-1 text-sm leading-6 text-ink-muted">
+        {roles.length > 0 ? (
+          <>
+            Signed in as{' '}
+            <span className="font-medium text-ink">
+              {listFormat.format(roles.map(roleLabel))}
+            </span>
+            .
+          </>
+        ) : (
+          'Your account has no Stacc role yet, so only general items are shown. Contact the college administration if this is unexpected.'
+        )}
       </p>
 
       {/* Temporary preview of the shared page states until real dashboard content exists. */}

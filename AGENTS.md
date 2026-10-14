@@ -108,7 +108,12 @@
 - Only `apiClient` sets the `Authorization` header. A 401 on a request that carried the token ends the session; a 403 never signs the user out; a failed login is an ordinary form error.
 - Keep one auth path: one `AuthProvider`, one `authStorage`, one Axios client, one login page.
 - Browser calls from another origin are allowed only for the exact origins in `FRONTEND_ORIGIN`. Never use a wildcard. The Docker frontend uses same-origin `/api` through Nginx and needs no CORS.
-- Role-aware navigation is a separate phase. Do not branch the sidebar or dashboards on roles before it.
+- Users never select or switch roles. The roles come from the login answer and are read in one place, `src/auth/roles.ts`.
+- Support accounts with several roles. Never treat `roles[0]` or any other role as the main one; show every role's section in the fixed order Student, Faculty, Admin.
+- Role-aware navigation is for the interface only, never authorization. Every feature must be protected by the backend whether or not its item is visible.
+- The navigation is one list in `src/components/navigation/navigation.ts`, shared by the sidebar and the mobile drawer. Do not create a sidebar per role, and do not repeat shared items for multi-role accounts.
+- An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
+- Do not build role-specific dashboards or role route trees before their roadmap phases.
 
 ## Docker
 

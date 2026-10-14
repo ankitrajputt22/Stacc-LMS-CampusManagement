@@ -3,6 +3,7 @@ import { onUnauthorized } from '../api/apiClient'
 import { login as requestLogin } from '../api/authApi'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 import { clearSession, loadSession, saveSession } from './authStorage'
+import { toAccountRoles } from './roles'
 import { isSessionExpired, sessionFromLogin } from './session'
 import type { AuthSession } from './types'
 
@@ -93,7 +94,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           : {
               accountId: session.accountId,
               loginId: session.loginId,
-              roles: session.roles,
+              // The one place where the stored role names become roles the app works with.
+              roles: toAccountRoles(session.roles),
             },
       signedOutByUser,
       login,

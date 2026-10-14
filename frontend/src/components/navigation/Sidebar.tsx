@@ -1,33 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router'
+import { useAuth } from '../../auth/AuthContext'
+import { Button } from '../Button'
+import { AccountRoles } from './AccountRoles'
 import { Brand } from './Brand'
 import { CloseIcon } from './icons'
-
-type NavigationItem = {
-  label: string
-  // Items without a route are shown as upcoming and are not links yet.
-  to?: string
-}
-
-type NavigationSection = {
-  title?: string
-  items: NavigationItem[]
-}
-
-const navigationSections: NavigationSection[] = [
-  {
-    items: [
-      { label: 'Dashboard', to: '/' },
-      { label: 'Courses' },
-      { label: 'Calendar' },
-      { label: 'Inbox' },
-    ],
-  },
-  {
-    title: 'Campus',
-    items: [{ label: 'Campus' }, { label: 'Support' }],
-  },
-]
+import { navigationFor } from './navigation'
 
 const itemClasses =
   'flex min-h-11 items-center justify-between border-l-[3px] px-4 text-sm lg:min-h-10'
@@ -40,6 +18,8 @@ type SidebarProps = {
 
 export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const { account, logout } = useAuth()
+  const sections = navigationFor(account?.roles ?? [])
 
   useEffect(() => {
     if (isOpen) {
@@ -83,17 +63,24 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
         </div>
 
         <nav aria-label="Main" className="flex-1 py-3">
-          {navigationSections.map((section, index) => (
+          {sections.map((section, index) => (
             <div
-              key={section.title ?? index}
+              key={section.id}
               className={index > 0 ? 'mt-3 border-t border-line pt-4' : ''}
             >
               {section.title && (
-                <p className="px-4 pb-1 text-xs font-semibold tracking-[0.08em] text-ink-muted uppercase">
+                <p
+                  id={`${id}-${section.id}`}
+                  className="px-4 pb-1 text-xs font-semibold tracking-[0.08em] text-ink-muted uppercase"
+                >
                   {section.title}
                 </p>
               )}
-              <ul>
+              <ul
+                aria-labelledby={
+                  section.title ? `${id}-${section.id}` : undefined
+                }
+              >
                 {section.items.map((item) => (
                   <li key={item.label}>
                     {item.to ? (
@@ -125,6 +112,31 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
             </div>
           ))}
         </nav>
+
+        {/* On small screens the top bar has little room, so the drawer shows who is signed in. */}
+        {account && (
+          <div className="border-t border-line px-4 py-4 lg:hidden">
+            <p
+              className="truncate text-sm font-medium text-ink"
+              title={account.loginId}
+            >
+              <span className="sr-only">Signed in as </span>
+              {account.loginId}
+            </p>
+            <AccountRoles
+              roles={account.roles}
+              className="mt-0.5 block truncate text-xs text-ink-muted"
+            />
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={logout}
+              className="mt-3"
+            >
+              Sign out
+            </Button>
+          </div>
+        )}
       </div>
     </>
   )
