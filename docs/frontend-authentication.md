@@ -115,6 +115,18 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 - An account without `STUDENT` sees the same short explanation as on `/courses`, and no request is sent.
 - The breadcrumb, "Courses / course name", leads back to the list.
 
+### The Teaching page
+
+`/teaching` is the first real faculty page. Its Teaching link is in the Faculty section, so any account that holds `FACULTY` sees it. An account that is both student and faculty sees Courses and Teaching, and both pages work.
+
+- Its data comes only from `GET /api/lms/faculty/my-courses`, through `apiClient`, with no ID of any kind in the request. The backend decides which courses are listed (see `lms-foundation.md`).
+- Each course shows its code, name, program, semester, session, credits, and its LMS status as the word "Draft" or "Published". There are no student counts, progress, or other figures the API does not send.
+- The courses are information only. There is no faculty course page yet, so nothing on a course is a link, and the student course home is never used for them.
+- An account without `FACULTY` that opens `/teaching` directly sees "This page is for faculty accounts.", and no request is sent.
+- A **403** shows "You don't have access to faculty courses." and suggests signing in again: a token issued before the faculty permission existed lacks it. The user stays signed in.
+- A **401** is left to the shared client, as everywhere else.
+- Any other failure shows "Couldn't load your teaching courses" with a **Retry** button. An empty list is not an error.
+
 Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
 
 ## Dev server and Docker

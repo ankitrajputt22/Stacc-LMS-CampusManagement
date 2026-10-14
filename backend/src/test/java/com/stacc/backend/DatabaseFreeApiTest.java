@@ -1,6 +1,7 @@
 package com.stacc.backend;
 
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.course.LmsCourseRepository;
@@ -31,7 +32,8 @@ import org.springframework.web.context.WebApplicationContext;
     CourseEnrollmentRepository.class,
     LmsCourseRepository.class,
     LmsStudentMembershipRepository.class,
-    StudentProfileRepository.class
+    StudentProfileRepository.class,
+    TeachingAssignmentRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

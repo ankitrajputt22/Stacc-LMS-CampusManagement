@@ -30,7 +30,7 @@ The `auth.account` package holds the first persistent model: `UserAccount`, stor
 
 The `auth.role` package holds the `Role` model. An account can hold several roles through the `user_account_roles` table, and the initial roles are `STUDENT`, `FACULTY`, and `ADMIN`. See `../docs/account-roles.md`.
 
-The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table. The first real permission is `LMS_COURSE_VIEW`, held by `STUDENT`. See `../docs/permissions.md`.
+The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table. The first real permissions are `LMS_COURSE_VIEW`, held by `STUDENT`, and `FACULTY_COURSE_VIEW`, held by `FACULTY`. See `../docs/permissions.md`.
 
 ## Security
 
@@ -57,7 +57,7 @@ The `academic` module holds the college's academic master data. So far it contai
 
 ## LMS
 
-The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. `LmsStudentAccessService` decides on the backend whether a signed-in student may currently use an LMS course, from official ERP enrollment and LMS state. `GET /api/lms/my-courses` returns the signed-in student's current LMS courses under that same policy; it needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission. See `../docs/lms-foundation.md`.
+The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. `LmsStudentAccessService` decides on the backend whether a signed-in student may currently use an LMS course, from official ERP enrollment and LMS state. `GET /api/lms/my-courses` and `GET /api/lms/courses/{lmsCourseId}` return the signed-in student's current LMS courses under that same policy; they need the `STUDENT` role and the `LMS_COURSE_VIEW` permission. `LmsFacultyAccessService` decides faculty access from official teaching assignments, with no separate faculty membership, and `GET /api/lms/faculty/my-courses` returns the courses a faculty member teaches; it needs the `FACULTY` role and the `FACULTY_COURSE_VIEW` permission. See `../docs/lms-foundation.md`.
 
 ## API validation and errors
 

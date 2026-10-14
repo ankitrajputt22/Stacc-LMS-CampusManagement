@@ -103,6 +103,9 @@
 - Do not add historical or read-only LMS access rules without an explicit feature phase.
 - Provisioning is an explicit call. Do not add automatic ERP-to-LMS synchronization (listeners, schedulers, startup scans, or bulk jobs) without a dedicated phase.
 - Faculty access must not be modelled from student course enrollment or added to the student membership.
+- Faculty LMS access derives directly from official `TeachingAssignment` records through `LmsFacultyAccessService` and the single rule in `LmsFacultyAccessPolicy`. Do not add an `LmsFacultyMembership` without a real need.
+- Faculty access needs an `ACTIVE` faculty profile, an `ACTIVE` teaching assignment for the LMS course's offering, and a `DRAFT` or `PUBLISHED` LMS course. Students stay `PUBLISHED`-only; faculty draft access must never reach the student policy.
+- `GET /api/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
 - Add LMS content models only in their own feature phases.
 
 ## Frontend Authentication
@@ -126,6 +129,7 @@
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
 - The course home shows only what `GET /api/lms/courses/{lmsCourseId}` returns. Do not add placeholder tabs, modules, or other course content before their phases.
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
+- The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and never links to the student course home. A 403 there never ends the session. Do not add faculty course pages or invented faculty figures before their phases.
 
 ## Docker
 
