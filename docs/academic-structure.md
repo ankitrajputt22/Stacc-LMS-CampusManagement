@@ -35,16 +35,15 @@ StudentProfile
                      +------< CourseEnrollment >------ CourseOffering ------> Course
 ```
 
-Faculty members are linked through their own profile:
+Faculty members are linked through their own profile, and to what they teach through teaching assignments:
 
 ```text
 UserAccount
      |
      v
-FacultyProfile
+FacultyProfile ------> primary Department
      |
-     v
-Department
+     +------< TeachingAssignment >------ CourseOffering ------> Course, Semester
 ```
 
 ## Department
@@ -180,12 +179,29 @@ A faculty profile is the academic side of a faculty member's account. Like the s
 - The employee ID is the account's `loginId`. It is not stored again on the profile, and neither is the person's name or any other personal detail.
 - A profile has one primary `Department`. A faculty member has no program to reach a department through, so unlike a student's department it is stored on the profile.
 - The primary department is where the faculty member belongs. It does not limit what they teach: they may teach a course owned by another department.
-- The profile holds no courses. What a faculty member teaches will come from teaching assignments, which will link a faculty profile to a course offering, one course in one semester, never to the permanent course.
+- The profile holds no courses. What a faculty member teaches comes from teaching assignments, described below.
 - `status` is `ACTIVE` or `INACTIVE`. New profiles are `ACTIVE`.
 
 A faculty profile is meant for an account with the `FACULTY` role. That rule is not checked by the model itself. The future feature that creates faculty profiles must check it.
 
 Deleting a profile never deletes the account or the department, and neither can be deleted while a profile refers to it.
+
+## TeachingAssignment
+
+A teaching assignment is the official ERP record that a faculty member teaches one course offering. The faculty profile says who the faculty member is; the teaching assignment says what they actually teach. The code is in `com.stacc.backend.academic.teaching` and the table is `teaching_assignments`.
+
+- An assignment belongs to one faculty profile and one course offering. Neither can be changed after creation.
+- It targets the course offering, the course in one particular semester, never the permanent course. Who teaches a course can change from one semester to the next.
+- One faculty member can teach many offerings, and one offering can have several faculty members. The same faculty member and offering can be paired only once.
+- It is its own model, not a list of courses on the faculty profile or a teacher column on the offering, because it has its own status and history.
+- The account and department are reached through the faculty profile, and the course, semester, program, and session through the course offering. None of them is stored on the assignment again.
+- The faculty member's primary department does not have to own the course. Teaching across departments is allowed.
+- There is no lead or co-teacher distinction yet. Every assignment counts the same.
+- `status` is `ACTIVE` or `INACTIVE`. New assignments are `ACTIVE`. An assignment that has ended is made `INACTIVE` and kept for history; it can be made active again.
+
+**Rule for the future assignment-management feature:** before creating an assignment or making one active again, it should check that the faculty profile is `ACTIVE`. The model itself does not check this. The course offering's status is not part of this rule: an assignment may be prepared before the offering starts.
+
+Deleting an assignment never deletes the faculty profile or the course offering, and neither can be deleted while an assignment refers to it.
 
 ## The ERP is the source of truth for the LMS
 
@@ -235,11 +251,11 @@ The LMS student access policy consults this official ERP state on every check. A
 
 ## Keeping history
 
-A department, program, course, student profile, or faculty profile that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
+A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
 - There is no API, service, or screen for any of these models. Only the stored models exist.
-- No teaching assignments. A faculty profile is not yet connected to any course offering, and gives no access to anything.
+- Teaching assignments give no access to anything yet. Faculty LMS access will be built in its own phase.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
 - No permissions for this data exist yet. They will be added together with the API they protect.

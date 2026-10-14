@@ -67,6 +67,8 @@
 - `FacultyProfile` belongs in the `identity` module. The employee ID is the account's `loginId`; do not store it, the name, or other personal details on the profile. The future service that creates faculty profiles must check that the account holds `FACULTY`.
 - `FacultyProfile.department` is the primary department only. It never limits or stands in for teaching responsibility, which must come from an explicit teaching assignment to a `CourseOffering`. Never map a faculty profile directly to `Course` or `CourseOffering`.
 - Make a faculty profile inactive instead of deleting it. An account may hold both a student profile and a faculty profile.
+- Teaching responsibility is the explicit `TeachingAssignment` entity in `academic.teaching`, from a faculty profile to a `CourseOffering`, never to a `Course` and never a plain many-to-many mapping. Several faculty may teach one offering; each faculty and offering pair exists once.
+- Do not copy the account, department, course, semester, program, or session onto a teaching assignment. Make it inactive instead of deleting it, and keep it free of any LMS reference.
 - `SemesterEnrollment` is the official ERP record of semester participation. Do not copy the account, program, department, or session onto it, and keep its history instead of deleting it.
 - Creating a semester enrollment must check that the student's program is the semester's program. Semester enrollment alone must not grant LMS course access, and course enrollment is a separate, explicit step.
 - `CourseEnrollment` links a semester enrollment to a course offering. Do not copy the student, semester, program, session, or course onto it, and never auto-enroll a student in all offerings of a semester.
