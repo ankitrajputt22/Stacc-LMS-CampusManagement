@@ -14,87 +14,34 @@ import {
 import { Button } from '../components/Button'
 import { EmptyState } from '../components/states/EmptyState'
 import { StatePanel } from '../components/states/StatePanel'
+import { ActionButton } from '../components/ActionButton'
+import { useMaterialDownload } from '../courses/useMaterialDownload'
 import type {
   LmsFacultyCourseContent,
   LmsFacultyModuleContent,
-  LmsFacultyTopic,
+  LmsFacultyTopicContent,
 } from '../types/lms'
-import { ActionButton } from './ActionButton'
-import { ContentForm, type FormOutcome } from './ContentForm'
+import { ContentForm } from './ContentForm'
+import { ArchiveConfirmation } from './ArchiveConfirmation'
+import {
+  asOutcome,
+  type Changes,
+  type Confirming,
+  CONTENT_MAX,
+  DESCRIPTION_MAX,
+  moved,
+  type OpenForm,
+  srContext,
+  TITLE_MAX,
+} from './editorState'
 import { StatusTag } from './StatusTag'
-import { type ChangeResult, useContentChanges } from './useContentChanges'
+import { TopicMaterials } from './TopicMaterials'
+import { useContentChanges } from './useContentChanges'
 
-// The limits the backend enforces, so the form can say so before sending.
-const TITLE_MAX = 200
-const DESCRIPTION_MAX = 2000
-const CONTENT_MAX = 20_000
-
-type OpenForm =
-  | { type: 'addModule'; returnFocus: string }
-  | { type: 'editModule'; id: number }
-  | { type: 'addTopic'; moduleId: number }
-  | { type: 'editTopic'; id: number }
-
-type Confirming = { kind: 'module' | 'topic'; id: number }
-
-type Changes = ReturnType<typeof useContentChanges>
-
-function asOutcome<T>(result: ChangeResult<T> | null): FormOutcome {
-  if (result === null) {
-    // Ignored because another change was saving, or the session ended: nothing to show in the form.
-    return { ok: false, message: null, fieldErrors: {} }
-  }
-  return result.ok ? { ok: true } : result
-}
-
-/** The ids in a new order: the item at `from` moved one place up or down. */
-function moved(ids: number[], from: number, direction: -1 | 1): number[] {
-  const next = [...ids]
-  const [item] = next.splice(from, 1)
-  next.splice(from + direction, 0, item)
-  return next
-}
-
-function srContext(text: string) {
-  return <span className="sr-only"> {text}</span>
-}
-
-type ArchiveConfirmationProps = {
-  what: string
-  onConfirm: () => void
-  onCancel: () => void
-}
-
-/** Archiving takes the item out of this list for good, so it is confirmed first. Nothing is deleted. */
-function ArchiveConfirmation({ what, onConfirm, onCancel }: ArchiveConfirmationProps) {
-  const confirmRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    confirmRef.current?.focus()
-  }, [])
-
-  return (
-    <div role="group" aria-label={`Archive ${what}`} className="mt-3 rounded-control border border-line-strong bg-surface-muted p-3">
-      <p className="text-sm leading-6 text-ink">
-        Archive {what}? Students will no longer see it, and it will leave this list. Nothing is deleted.
-      </p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button
-          ref={confirmRef}
-          type="button"
-          onClick={onConfirm}
-          className="inline-flex min-h-11 items-center rounded-control border border-transparent bg-stacc-primary px-3 text-sm font-medium text-white hover:bg-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8"
-        >
-          Archive
-        </button>
-        <ActionButton onClick={onCancel}>Cancel</ActionButton>
-      </div>
-    </div>
-  )
-}
+type Downloads = ReturnType<typeof useMaterialDownload>
 
 type TopicItemProps = {
-  topic: LmsFacultyTopic
+  topic: LmsFacultyTopicContent
   moduleId: number
   index: number
   topicIds: number[]
@@ -103,6 +50,7 @@ type TopicItemProps = {
   confirming: Confirming | null
   setConfirming: (confirming: Confirming | null) => void
   changes: Changes
+  downloads: Downloads
 }
 
 function TopicItem({
@@ -115,6 +63,7 @@ function TopicItem({
   confirming,
   setConfirming,
   changes,
+  downloads,
 }: TopicItemProps) {
   const key = `topic-${topic.id}`
   const isEditing = openForm?.type === 'editTopic' && openForm.id === topic.id
@@ -223,6 +172,16 @@ function TopicItem({
           </ActionButton>
         </div>
       )}
+
+      <TopicMaterials
+        topic={topic}
+        openForm={openForm}
+        setOpenForm={setOpenForm}
+        confirming={confirming}
+        setConfirming={setConfirming}
+        changes={changes}
+        downloads={downloads}
+      />
     </article>
   )
 }
@@ -237,6 +196,7 @@ type ModuleItemProps = {
   confirming: Confirming | null
   setConfirming: (confirming: Confirming | null) => void
   changes: Changes
+  downloads: Downloads
 }
 
 function ModuleItem({
@@ -249,6 +209,7 @@ function ModuleItem({
   confirming,
   setConfirming,
   changes,
+  downloads,
 }: ModuleItemProps) {
   const key = `module-${module.id}`
   const isEditing = openForm?.type === 'editModule' && openForm.id === module.id
@@ -381,6 +342,7 @@ function ModuleItem({
                   confirming={confirming}
                   setConfirming={setConfirming}
                   changes={changes}
+                  downloads={downloads}
                 />
               </li>
             ))}
@@ -443,6 +405,7 @@ type CourseContentEditorProps = {
  */
 export function CourseContentEditor({ course, reload }: CourseContentEditorProps) {
   const changes = useContentChanges(reload)
+  const downloads = useMaterialDownload()
   const { pendingFocus, focusHandled } = changes
   const containerRef = useRef<HTMLElement>(null)
   const courseWhenAsked = useRef<LmsFacultyCourseContent | null>(null)
@@ -583,6 +546,7 @@ export function CourseContentEditor({ course, reload }: CourseContentEditorProps
                   confirming={confirming}
                   setConfirming={setConfirming}
                   changes={changes}
+                  downloads={downloads}
                 />
               </li>
             ))}

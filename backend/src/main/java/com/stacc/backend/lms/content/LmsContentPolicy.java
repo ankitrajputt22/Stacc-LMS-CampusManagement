@@ -30,6 +30,23 @@ public final class LmsContentPolicy {
         return topic.getStatus() == LmsContentStatus.PUBLISHED && isVisibleToStudents(topic.getLmsModule());
     }
 
+    /**
+     * A study material is shown to students only when the material, its topic, and its module are all
+     * published. A published material under a draft or archived topic or module stays hidden.
+     */
+    public static boolean isVisibleToStudents(LmsStudyMaterial material) {
+        return material.getStatus() == LmsContentStatus.PUBLISHED && isVisibleToStudents(material.getLmsTopic());
+    }
+
+    /**
+     * Faculty work with a material while it, its topic, and its module are all in use. Archiving any of
+     * them takes the material out of the editor.
+     */
+    public static boolean isInUseByFaculty(LmsStudyMaterial material) {
+        LmsTopic topic = material.getLmsTopic();
+        return isInUse(material.getStatus()) && isInUse(topic.getStatus()) && isInUse(topic.getLmsModule().getStatus());
+    }
+
     /** Faculty see and manage everything that is not archived. Archived content is kept but not listed. */
     public static boolean isInUse(LmsContentStatus status) {
         return IN_USE.contains(status);

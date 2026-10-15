@@ -108,14 +108,15 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void studentGetsThePublishedContentOfTheirCourse() throws Exception {
         when(studentContent.getPublishedContent(ACCOUNT_ID, 7L)).thenReturn(new LmsCourseContentResponse(List.of(
                 new LmsCourseModuleResponse(12L, "Introduction", null,
-                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two"))))));
+                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two", List.of()))))));
 
         mockMvc.perform(as(studentToken(), get("/api/lms/courses/7/content").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.modules", hasSize(1)))
                 .andExpect(jsonPath("$.modules[0].*", hasSize(4)))
                 .andExpect(jsonPath("$.modules[0].title").value("Introduction"))
-                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(3)))
+                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(4)))
+                .andExpect(jsonPath("$.modules[0].topics[0].materials", hasSize(0)))
                 .andExpect(jsonPath("$.modules[0].topics[0].content").value("Line one\nLine two"))
                 .andExpect(content().string(not(containsString("status"))))
                 .andExpect(content().string(not(containsString("position"))));
@@ -154,7 +155,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void facultyMemberGetsTheContentTheyManage() throws Exception {
         when(facultyContent.getCourseContent(ACCOUNT_ID, 7L)).thenReturn(new LmsFacultyCourseContentResponse(
                 7L, "TST301", "Test Data Structures", null, 3, "BTECH", "2026-27", "DRAFT", List.of(
-                        LmsFacultyModuleContentResponse.of(module, List.of(LmsFacultyTopicResponse.of(topic))))));
+                        LmsFacultyModuleContentResponse.of(module, List.of(LmsFacultyTopicContentResponse.of(topic, List.of()))))));
 
         mockMvc.perform(as(facultyViewToken(), get("/api/lms/faculty/courses/7/content").param("facultyProfileId", "9")))
                 .andExpect(status().isOk())

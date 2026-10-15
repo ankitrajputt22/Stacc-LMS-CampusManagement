@@ -1,7 +1,9 @@
-# The complete Stacc development stack: MySQL, the Spring Boot backend, and the React frontend
-# served by Nginx. Values come from a local .env file (copy .env.example). See docs/docker.md.
+# The complete Stacc development stack: MySQL, MinIO object storage, the Spring Boot backend, and
+# the React frontend served by Nginx. Values come from a local .env file (copy .env.example).
+# See docs/docker.md.
 #
 #   Browser -> frontend (Nginx) -> /api -> backend (Spring Boot) -> mysql
+#                                                                -> minio (private file storage)
 #
 # Ports are published on this machine only (127.0.0.1), not on the local network.
 name: stacc
@@ -29,6 +31,30 @@ services:
       start_period: 60s
       start_interval: 3s
 
+  minio:
+    # MinIO stopped publishing official images in 2025. This is the community-maintained build that
+    # follows its releases, pinned to one release.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      # The storage API, for a backend run with Maven, and the web console. Browsers never fetch
+      # study materials from here: every download goes through the backend, which checks access.
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      # MinIO's own liveness address, which needs no login. curl is part of this image.
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      start_interval: 2s
+
   backend:
     build: ./backend
     environment:
@@ -43,8 +69,16 @@ services:
       # Only for a frontend dev server on this machine that calls this backend directly. The
       # Docker frontend needs no such permission: its page and the API share one address.
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      # Inside Docker the storage is reached by its service name. The backend uses the MinIO account
+      # and creates its private bucket on the first upload.
+      STACC_STORAGE_ENDPOINT: http://minio:9000
+      STACC_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      STACC_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+      STACC_STORAGE_BUCKET: ${STACC_STORAGE_BUCKET:-stacc-materials}
     depends_on:
       mysql:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
@@ -77,5 +111,7 @@ services:
       start_interval: 2s
 
 volumes:
-  # The database files. They survive "docker compose down" and are removed only by "down -v".
+  # The database files and the stored study materials. Both survive "docker compose down" and are
+  # removed only by "docker compose down -v".
   mysql-data:
+  minio-data:

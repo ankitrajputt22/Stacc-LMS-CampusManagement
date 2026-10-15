@@ -23,7 +23,7 @@ Planned capabilities will be delivered incrementally through small, explicitly s
 
 ## Run with Docker
 
-The whole application (MySQL, backend, and frontend) can be started with Docker:
+The whole application (MySQL, MinIO file storage, backend, and frontend) can be started with Docker:
 
 ```bash
 cp .env.example .env

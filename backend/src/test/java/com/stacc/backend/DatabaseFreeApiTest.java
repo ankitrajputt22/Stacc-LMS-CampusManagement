@@ -5,6 +5,7 @@ import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.content.LmsModuleRepository;
+import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
@@ -35,6 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsCourseRepository.class,
     LmsModuleRepository.class,
     LmsStudentMembershipRepository.class,
+    LmsStudyMaterialRepository.class,
     LmsTopicRepository.class,
     StudentProfileRepository.class,
     TeachingAssignmentRepository.class

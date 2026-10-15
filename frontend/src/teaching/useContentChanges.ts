@@ -31,6 +31,10 @@ function refusalMessage(status: number | null, apiMessage: string | null, hasFie
       return `This content is no longer available. ${REFRESHED}`
     case 409:
       return `${apiMessage ?? 'This content can no longer be changed.'} ${REFRESHED}`
+    case 413:
+      return 'The file is larger than the upload limit. Choose a smaller file.'
+    case 503:
+      return apiMessage ?? 'File storage is not available right now. Try again later.'
     default:
       return 'Couldn’t save the change. Check your connection and try again.'
   }

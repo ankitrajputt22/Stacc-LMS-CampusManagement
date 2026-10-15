@@ -1,8 +1,11 @@
 import type {
   LmsCourseContent,
   LmsFacultyCourseContent,
+  LmsFacultyMaterial,
   LmsFacultyModule,
   LmsFacultyTopic,
+  LmsMaterialInput,
+  LmsMaterialUpload,
   LmsModuleInput,
   LmsTopicInput,
 } from '../types/lms'
@@ -132,5 +135,80 @@ export async function reorderTopics(
     `/lms/faculty/modules/${moduleId}/topics/reorder`,
     { topicIds },
   )
+  return response.data
+}
+
+// Files can take longer than ordinary requests, so uploads and downloads get more time.
+const FILE_TIMEOUT_MS = 5 * 60_000
+
+/**
+ * Uploads a study material as multipart/form-data. The browser sets the multipart header itself; no
+ * Content-Type is set here. The file is stored privately and the material starts as a draft.
+ */
+export async function uploadMaterial(
+  topicId: number,
+  upload: LmsMaterialUpload,
+): Promise<LmsFacultyMaterial> {
+  const form = new FormData()
+  form.append('title', upload.title)
+  if (upload.description) {
+    form.append('description', upload.description)
+  }
+  form.append('file', upload.file)
+  const response = await apiClient.post<LmsFacultyMaterial>(
+    `/lms/faculty/topics/${topicId}/materials`,
+    form,
+    { timeout: FILE_TIMEOUT_MS },
+  )
+  return response.data
+}
+
+export async function updateMaterial(
+  materialId: number,
+  input: LmsMaterialInput,
+): Promise<LmsFacultyMaterial> {
+  const response = await apiClient.put<LmsFacultyMaterial>(
+    `/lms/faculty/materials/${materialId}`,
+    input,
+  )
+  return response.data
+}
+
+export async function publishMaterial(materialId: number): Promise<LmsFacultyMaterial> {
+  const response = await apiClient.post<LmsFacultyMaterial>(
+    `/lms/faculty/materials/${materialId}/publish`,
+  )
+  return response.data
+}
+
+/** Archives the material. Its record and stored file are kept, and it leaves the content list. */
+export async function archiveMaterial(materialId: number): Promise<LmsFacultyMaterial> {
+  const response = await apiClient.post<LmsFacultyMaterial>(
+    `/lms/faculty/materials/${materialId}/archive`,
+  )
+  return response.data
+}
+
+/** Puts the topic's current materials in this order. The list must hold each of them exactly once. */
+export async function reorderMaterials(
+  topicId: number,
+  materialIds: number[],
+): Promise<LmsFacultyMaterial[]> {
+  const response = await apiClient.put<LmsFacultyMaterial[]>(
+    `/lms/faculty/topics/${topicId}/materials/reorder`,
+    { materialIds },
+  )
+  return response.data
+}
+
+/**
+ * Downloads a study material's file through the API, with the signed-in user's token. The backend
+ * decides whether this user may have it; storage is never contacted from the browser.
+ */
+export async function downloadMaterialFile(materialId: number): Promise<Blob> {
+  const response = await apiClient.get<Blob>(`/lms/materials/${materialId}/download`, {
+    responseType: 'blob',
+    timeout: FILE_TIMEOUT_MS,
+  })
   return response.data
 }

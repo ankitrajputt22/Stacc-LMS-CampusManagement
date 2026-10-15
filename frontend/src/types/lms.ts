@@ -50,11 +50,23 @@ export type LmsCourseDetail = {
 /** Where a module or topic is in its life. Students only ever receive published content. */
 export type LmsContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
+/** One published study material, as a student sees it. Where the file is stored is never sent. */
+export type LmsCourseMaterial = {
+  id: number
+  title: string
+  description: string | null
+  originalFileName: string
+  contentType: string
+  sizeBytes: number
+}
+
 /** One published topic, as a student sees it. The content is plain text, never HTML. */
 export type LmsCourseTopic = {
   id: number
   title: string
   content: string | null
+  /** Its published study materials. Often empty. */
+  materials: LmsCourseMaterial[]
 }
 
 /** One published module with its published topics, as a student sees it. */
@@ -79,6 +91,17 @@ export type LmsFacultyTopic = {
   status: LmsContentStatus
 }
 
+/** One study material as faculty manage it. */
+export type LmsFacultyMaterial = LmsCourseMaterial & {
+  position: number
+  status: LmsContentStatus
+}
+
+/** One topic with its study materials that are not archived. */
+export type LmsFacultyTopicContent = LmsFacultyTopic & {
+  materials: LmsFacultyMaterial[]
+}
+
 /** One module as faculty manage it, without its topics: the answer to a change. */
 export type LmsFacultyModule = {
   id: number
@@ -90,7 +113,7 @@ export type LmsFacultyModule = {
 
 /** One module with its topics that are not archived. */
 export type LmsFacultyModuleContent = LmsFacultyModule & {
-  topics: LmsFacultyTopic[]
+  topics: LmsFacultyTopicContent[]
 }
 
 /** A course a faculty member teaches, with its content, from GET /api/lms/faculty/courses/{lmsCourseId}/content. */
@@ -109,6 +132,19 @@ export type LmsFacultyCourseContent = {
 
 /** The text of a module, for adding or editing one. */
 export type LmsModuleInput = {
+  title: string
+  description: string | null
+}
+
+/** A new study material: its text and the chosen file. Everything else is decided by the server. */
+export type LmsMaterialUpload = {
+  title: string
+  description: string | null
+  file: File
+}
+
+/** The text of a study material, for editing one. The file itself cannot be changed. */
+export type LmsMaterialInput = {
   title: string
   description: string | null
 }
