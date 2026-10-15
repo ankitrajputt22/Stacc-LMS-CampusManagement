@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   archiveModule,
   archiveTopic,
@@ -36,7 +36,7 @@ import {
 } from './editorState'
 import { StatusTag } from './StatusTag'
 import { TopicMaterials } from './TopicMaterials'
-import { useContentChanges } from './useContentChanges'
+import { useContentChanges, useFocusAfterChanges } from './useContentChanges'
 
 type Downloads = ReturnType<typeof useMaterialDownload>
 
@@ -408,36 +408,12 @@ export function CourseContentEditor({ course, reload }: CourseContentEditorProps
   const downloads = useMaterialDownload()
   const { pendingFocus, focusHandled } = changes
   const containerRef = useRef<HTMLElement>(null)
-  const courseWhenAsked = useRef<LmsFacultyCourseContent | null>(null)
   const [openForm, setOpenForm] = useState<OpenForm | null>(null)
   const [confirming, setConfirming] = useState<Confirming | null>(null)
   const moduleIds = course.modules.map((module) => module.id)
 
   // After a change, focus waits for the reloaded content, so it lands on the item in its new place.
-  useEffect(() => {
-    if (pendingFocus === null) {
-      courseWhenAsked.current = null
-      return
-    }
-    if (pendingFocus.afterRefresh) {
-      if (courseWhenAsked.current === null) {
-        courseWhenAsked.current = course
-        return
-      }
-      if (courseWhenAsked.current === course) {
-        return
-      }
-    }
-    for (const key of pendingFocus.keys) {
-      const target = containerRef.current?.querySelector<HTMLElement>(`[data-focus-key="${key}"]`)
-      if (target && !(target instanceof HTMLButtonElement && target.disabled)) {
-        target.focus()
-        break
-      }
-    }
-    courseWhenAsked.current = null
-    focusHandled()
-  }, [course, pendingFocus, focusHandled])
+  useFocusAfterChanges(containerRef, course, pendingFocus, focusHandled)
 
   const addModuleForm = openForm?.type === 'addModule' ? openForm : null
   const isAddingModule = addModuleForm !== null

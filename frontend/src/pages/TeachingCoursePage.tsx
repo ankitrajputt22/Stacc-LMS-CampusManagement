@@ -9,6 +9,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
 import { creditsText } from '../courses/credits'
+import { AnnouncementsEditor } from '../teaching/AnnouncementsEditor'
 import { CourseContentEditor } from '../teaching/CourseContentEditor'
 import { StatusTag } from '../teaching/StatusTag'
 import { useFacultyCourseContent } from '../teaching/useFacultyCourseContent'
@@ -102,6 +103,7 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
           <title>{`${course.data.courseName} · Teaching · Stacc`}</title>
           <Breadcrumb parent={TEACHING} current={course.data.courseName} />
           <CourseHeader course={course.data} />
+          <AnnouncementsEditor lmsCourseId={course.data.lmsCourseId} />
           <CourseContentEditor course={course.data} reload={course.refresh} />
         </>
       )

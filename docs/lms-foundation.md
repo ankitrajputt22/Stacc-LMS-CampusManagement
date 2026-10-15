@@ -523,11 +523,57 @@ The content routes list the materials inside each topic. The faculty content sho
 
 The file comes through the backend, streamed from storage, with its stored content type, its size as `Content-Length`, and `Content-Disposition: attachment` with the original file name, so it is always saved and never shown inline. Range requests are not supported.
 
+## Announcements
+
+An announcement is a course-wide update from faculty to the students of one LMS course, such as "Friday's lab moves to Room 204". The code is `LmsAnnouncement` and `LmsAnnouncementManagementService` in `com.stacc.backend.lms.announcement`, and the table is `lms_announcements`.
+
+```text
+LmsCourse ------< LmsAnnouncement   (title, plain-text message, status, publishedAt)
+```
+
+- An announcement belongs to one LMS course and cannot be moved to another. It is not attached to a module, a topic, a student, or a semester, and none of those is copied onto it.
+- It has a title (up to 200 characters) and a message (up to 10,000). Both are required. The message is **plain text**: stored as typed and shown as text with its line breaks, never as HTML.
+- The table has no foreign-key cascade. Changing or archiving the LMS course never touches its announcements.
+
+### Lifecycle
+
+Announcements use the same `LmsContentStatus` as course content:
+
+| Status | Meaning |
+| --- | --- |
+| `DRAFT` | Being written. Students never see it. New announcements start here. |
+| `PUBLISHED` | Shown to the course's students, under the student access policy. |
+| `ARCHIVED` | Kept for history. Students no longer see it, faculty no longer see it in the list, and it can no longer be edited or published. |
+
+- `publishedAt` is set by the server the first time an announcement is published and never changes after that. Publishing a published announcement changes nothing.
+- A published announcement can still be edited, to correct a mistake. It stays published, keeps its `publishedAt`, and students see the new text on their next load. `updatedAt` records the change.
+- Archiving keeps the row, including its `publishedAt`. There is no delete endpoint and no way to bring an archived announcement back yet.
+
+### Who sees and changes announcements
+
+- A student sees an announcement only when the student access policy allows the course and the announcement is `PUBLISHED`. Students see them newest published first.
+- Faculty see and manage the announcements of courses they teach under the faculty access policy. For an existing announcement, the course is found from the stored announcement, never from the request. Faculty see drafts and published announcements, newest created first.
+- There is no announcement permission. Reading uses the existing `LMS_COURSE_VIEW` (students) and `FACULTY_COURSE_VIEW` (faculty), and every change uses `LMS_CONTENT_MANAGE`.
+
+| Route | Rule | What it does |
+| --- | --- | --- |
+| `GET /api/lms/courses/{lmsCourseId}/announcements` | `STUDENT` + `LMS_COURSE_VIEW` | The published announcements: `id`, `title`, `message`, `publishedAt`. No statuses are sent. |
+| `GET /api/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published announcements, with their status and dates. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft from `{"title", "message"}`. `201`. |
+| `PUT /api/lms/faculty/announcements/{announcementId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and message of a draft or published announcement. |
+| `POST /api/lms/faculty/announcements/{announcementId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes it and sets `publishedAt` the first time. |
+| `POST /api/lms/faculty/announcements/{announcementId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives it. Archiving again is accepted. |
+
+- Every route takes the caller from the access token and runs the access check again. The request body can only carry a title and a message: the course, status, and dates are never taken from the client.
+- A course or announcement the caller may not use answers 404, the same as one that does not exist. Editing or publishing an archived announcement answers 409. A missing or too-long title or message answers 400 with field errors. No token answers 401, and a token without the route's role and permission, an admin's included, answers 403.
+- The reads are side-effect free. Nothing is sent to anyone when an announcement is published.
+
 ## Not built yet
 
 - No admin LMS endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
 - No rich text, no file previews or versions, no virus scanning, and no way to see or restore archived content.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
-- No way to manage teaching assignments, and no assignments, submissions, grades, or announcements.
+- No way to manage teaching assignments, and no assignments, submissions, or grades.
+- No notifications, email, read receipts, comments, attachments, or scheduled publishing for announcements, and no rich text or pinning.
 - No other LMS permissions. Each will be added together with the action it protects.

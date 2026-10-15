@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 
 /** Where focus should go next. After a change it waits until the refreshed content is on screen. */
@@ -97,4 +97,43 @@ export function useContentChanges(reload: () => void) {
   const focusHandled = useCallback(() => setPendingFocus(null), [])
 
   return { busy, error, announcement, run, pendingFocus, focusNext, focusHandled }
+}
+
+/**
+ * Moves focus to the first available element named by the pending focus keys, inside the container.
+ * After a change it waits until the reloaded data is on screen, so focus lands on the item in its new
+ * place; a disabled button is skipped.
+ */
+export function useFocusAfterChanges<T>(
+  container: RefObject<HTMLElement | null>,
+  data: T,
+  pendingFocus: PendingFocus | null,
+  focusHandled: () => void,
+) {
+  const dataWhenAsked = useRef<{ data: T } | null>(null)
+
+  useEffect(() => {
+    if (pendingFocus === null) {
+      dataWhenAsked.current = null
+      return
+    }
+    if (pendingFocus.afterRefresh) {
+      if (dataWhenAsked.current === null) {
+        dataWhenAsked.current = { data }
+        return
+      }
+      if (dataWhenAsked.current.data === data) {
+        return
+      }
+    }
+    for (const key of pendingFocus.keys) {
+      const target = container.current?.querySelector<HTMLElement>(`[data-focus-key="${key}"]`)
+      if (target && !(target instanceof HTMLButtonElement && target.disabled)) {
+        target.focus()
+        break
+      }
+    }
+    dataWhenAsked.current = null
+    focusHandled()
+  }, [container, data, pendingFocus, focusHandled])
 }

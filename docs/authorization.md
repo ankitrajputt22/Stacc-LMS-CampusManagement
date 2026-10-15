@@ -75,6 +75,8 @@ The first two are the method rule. The third is not, and a method rule can never
 
 The course content routes follow the same three steps. Reading needs `FACULTY_COURSE_VIEW`, changing needs `LMS_CONTENT_MANAGE`, and in both cases the data check is made for the course behind the module or topic, found from stored data. A faculty member who passes the rule but does not teach that course gets 404, never the content.
 
+Announcements follow the same steps with the same permissions: students read published announcements with `LMS_COURSE_VIEW`, faculty list them with `FACULTY_COURSE_VIEW`, and every change needs `LMS_CONTENT_MANAGE`. The data check is made for the course behind the stored announcement.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

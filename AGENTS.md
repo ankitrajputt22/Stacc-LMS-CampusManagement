@@ -112,6 +112,10 @@
 - Students see and download a material only when the student access policy allows the course and the module, topic, and material are all `PUBLISHED`. Faculty manage materials with `LMS_CONTENT_MANAGE` under the faculty access policy; there is no separate material permission.
 - Uploads are checked against the allow-list of academic file types, the size limit, the declared type, and the first bytes. Downloads are always attachments. Archive materials and keep their stored files; no hard delete and no file replacement.
 - Topic text and descriptions are plain text, rendered as text. Do not add HTML rendering, Markdown, rich-text editors, or files before their own phases.
+- Announcements (`LmsAnnouncement` in `lms.announcement`) belong to one `LmsCourse`, use `LmsContentStatus`, and are plain text. Archive them; never hard-delete them or add delete routes.
+- `publishedAt` is set by the server on the first publish and never changes. A published announcement may be edited; an archived one can no longer be edited or published.
+- Students see only `PUBLISHED` announcements of courses the student access policy allows. Faculty manage them under the faculty access policy, finding the course from the stored announcement. Announcements reuse `LMS_COURSE_VIEW`, `FACULTY_COURSE_VIEW`, and `LMS_CONTENT_MANAGE`; do not add an announcement permission.
+- Do not add notifications, email, read receipts, comments, attachments, or scheduled publishing to announcements before their own phases.
 - Faculty LMS access derives directly from official `TeachingAssignment` records through `LmsFacultyAccessService` and the single rule in `LmsFacultyAccessPolicy`. Do not add an `LmsFacultyMembership` without a real need.
 - Faculty access needs an `ACTIVE` faculty profile, an `ACTIVE` teaching assignment for the LMS course's offering, and a `DRAFT` or `PUBLISHED` LMS course. Students stay `PUBLISHED`-only; faculty draft access must never reach the student policy.
 - `GET /api/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
@@ -136,7 +140,7 @@
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
-- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` and its `/content` route return. Do not add placeholder tabs or content before their phases.
+- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` and its `/content` and `/announcements` routes return. Do not add placeholder tabs or content before their phases.
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and links each course to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.

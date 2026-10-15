@@ -23,13 +23,15 @@ A permission is added by a new migration only when the real feature it protects 
 | --- | --- | --- |
 | `LMS_COURSE_VIEW` | `STUDENT` | Using the student LMS course-view feature: `GET /api/lms/my-courses` and `GET /api/lms/courses/{lmsCourseId}`. |
 | `FACULTY_COURSE_VIEW` | `FACULTY` | Using the faculty LMS course-view feature: `GET /api/lms/faculty/my-courses` and `GET /api/lms/faculty/courses/{lmsCourseId}/content`. Added by `V20`. |
-| `LMS_CONTENT_MANAGE` | `FACULTY` | Changing the modules, topics, and study materials of LMS courses: adding or uploading, editing, publishing, archiving, and reordering them. Added by `V22`. |
+| `LMS_CONTENT_MANAGE` | `FACULTY` | Changing the modules, topics, study materials, and announcements of LMS courses: adding or uploading, editing, publishing, archiving, and reordering them. Added by `V22`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided by official enrollment and LMS membership (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 
 `FACULTY_COURSE_VIEW` works the same way for faculty. Which courses a faculty member gets is decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and an account that holds `FACULTY` as well as other roles gets it through `FACULTY`. A faculty member signed in before `V20` must sign in again to get it.
 
 `LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use and download its published study materials. Faculty download materials with `FACULTY_COURSE_VIEW`.
+
+Announcements added no permission. Students read the published announcements of their courses with `LMS_COURSE_VIEW`, faculty list the announcements of courses they teach with `FACULTY_COURSE_VIEW`, and creating, editing, publishing, or archiving one needs `LMS_CONTENT_MANAGE`.
 
 Add a row to this table whenever a migration adds a real permission. It is a record of what exists, not a plan.
 
