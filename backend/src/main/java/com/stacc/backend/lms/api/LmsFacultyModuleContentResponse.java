@@ -25,9 +25,9 @@ public record LmsFacultyModuleContentResponse(
         LmsContentStatus status,
 
         @ArraySchema(arraySchema = @Schema(description = "The topics that are not archived, in module order."))
-        List<LmsFacultyTopicResponse> topics) {
+        List<LmsFacultyTopicContentResponse> topics) {
 
-    static LmsFacultyModuleContentResponse of(LmsModule module, List<LmsFacultyTopicResponse> topics) {
+    static LmsFacultyModuleContentResponse of(LmsModule module, List<LmsFacultyTopicContentResponse> topics) {
         return new LmsFacultyModuleContentResponse(
                 module.getId(), module.getTitle(), module.getDescription(), module.getPosition(), module.getStatus(), topics);
     }

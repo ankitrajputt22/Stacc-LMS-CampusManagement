@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
@@ -43,6 +44,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         return response(HttpStatus.BAD_REQUEST, "Validation failed", servletRequest(request), headers, fieldErrors);
+    }
+
+    // Spring answers 413 when an upload is larger than its configured limit. The limit itself is not repeated here.
+    @Override
+    protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException exception,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        return response(
+                HttpStatus.CONTENT_TOO_LARGE,
+                "The upload is larger than the allowed size.",
+                servletRequest(request),
+                headers,
+                List.of());
     }
 
     @Override

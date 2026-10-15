@@ -3,6 +3,8 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import type { LmsCourseContent, LmsCourseModule } from '../types/lms'
+import { StudyMaterialList } from './StudyMaterialList'
+import { useMaterialDownload } from './useMaterialDownload'
 
 type CourseContentProps = {
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
@@ -10,7 +12,13 @@ type CourseContentProps = {
 
 const HEADING_ID = 'course-content-heading'
 
-function PublishedModule({ module, number }: { module: LmsCourseModule; number: number }) {
+type PublishedModuleProps = {
+  module: LmsCourseModule
+  number: number
+  downloads: ReturnType<typeof useMaterialDownload>
+}
+
+function PublishedModule({ module, number, downloads }: PublishedModuleProps) {
   const headingId = `course-module-${module.id}`
 
   return (
@@ -43,6 +51,7 @@ function PublishedModule({ module, number }: { module: LmsCourseModule; number: 
                   {topic.content}
                 </p>
               )}
+              <StudyMaterialList materials={topic.materials} downloads={downloads} />
             </li>
           ))}
         </ol>
@@ -60,6 +69,8 @@ function PublishedModule({ module, number }: { module: LmsCourseModule; number: 
  * so no status is shown. A failure here does not hide the course details above it.
  */
 export function CourseContent({ content }: CourseContentProps) {
+  const downloads = useMaterialDownload()
+
   return (
     <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
       <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
@@ -100,7 +111,7 @@ export function CourseContent({ content }: CourseContentProps) {
           <ol className="space-y-3">
             {content.data.modules.map((module, index) => (
               <li key={module.id}>
-                <PublishedModule module={module} number={index + 1} />
+                <PublishedModule module={module} number={index + 1} downloads={downloads} />
               </li>
             ))}
           </ol>

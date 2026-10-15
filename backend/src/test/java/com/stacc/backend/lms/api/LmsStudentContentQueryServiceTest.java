@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.api;
 
+import static com.stacc.backend.lms.content.ContentFixtures.material;
 import static com.stacc.backend.lms.content.ContentFixtures.module;
 import static com.stacc.backend.lms.content.ContentFixtures.topic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,6 +20,8 @@ import com.stacc.backend.lms.content.LmsContentPolicy;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsModule;
 import com.stacc.backend.lms.content.LmsModuleRepository;
+import com.stacc.backend.lms.content.LmsStudyMaterial;
+import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourse;
@@ -38,7 +41,9 @@ class LmsStudentContentQueryServiceTest {
     private final LmsStudentAccessService accessService = mock(LmsStudentAccessService.class);
     private final LmsModuleRepository modules = mock(LmsModuleRepository.class);
     private final LmsTopicRepository topics = mock(LmsTopicRepository.class);
-    private final LmsStudentContentQueryService service = new LmsStudentContentQueryService(accessService, modules, topics);
+    private final LmsStudyMaterialRepository materials = mock(LmsStudyMaterialRepository.class);
+    private final LmsStudentContentQueryService service =
+            new LmsStudentContentQueryService(accessService, modules, topics, materials);
 
     private final LmsCourse course = ContentFixtures.lmsCourse(COURSE_ID);
 
@@ -69,7 +74,7 @@ class LmsStudentContentQueryServiceTest {
         LmsCourseContentResponse content = service.getPublishedContent(ACCOUNT_ID, COURSE_ID);
 
         assertEquals(new LmsCourseContentResponse(List.of(new LmsCourseModuleResponse(11L, "Module 11", null,
-                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31"))))), content);
+                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31", List.of()))))), content);
     }
 
     @Test
@@ -111,7 +116,7 @@ class LmsStudentContentQueryServiceTest {
 
         assertEquals(HttpStatus.NOT_FOUND, refused.getStatus());
         assertEquals("Course not found or unavailable.", refused.getMessage());
-        verifyNoInteractions(modules, topics);
+        verifyNoInteractions(modules, topics, materials);
     }
 
     @Test
@@ -122,6 +127,66 @@ class LmsStudentContentQueryServiceTest {
 
         verify(modules).findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY);
         verify(topics).findAllInCourse(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY);
-        verifyNoMoreInteractions(modules, topics);
+        verify(materials).findAllInCourse(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
+                LmsContentPolicy.PUBLISHED_ONLY);
+        verifyNoMoreInteractions(modules, topics, materials);
+    }
+
+    // Study materials
+
+    private List<Long> materialIdsShown(List<LmsStudyMaterial> storedMaterials, LmsModule module, LmsTopic... storedTopics) {
+        stored(List.of(module), List.of(storedTopics));
+        when(materials.findAllInCourse(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
+                LmsContentPolicy.PUBLISHED_ONLY)).thenReturn(storedMaterials);
+        return service.getPublishedContent(ACCOUNT_ID, COURSE_ID).modules().stream()
+                .flatMap(shownModule -> shownModule.topics().stream())
+                .flatMap(shownTopic -> shownTopic.materials().stream())
+                .map(LmsCourseMaterialResponse::id)
+                .toList();
+    }
+
+    @Test
+    void publishedMaterialOfAPublishedTopicInAPublishedModuleIsShownWithItsFileDetails() {
+        LmsModule module = module(course, 11, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic topic = topic(module, 31, 1, LmsContentStatus.PUBLISHED);
+        stored(List.of(module), List.of(topic));
+        when(materials.findAllInCourse(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
+                LmsContentPolicy.PUBLISHED_ONLY)).thenReturn(List.of(material(topic, 7, 1, LmsContentStatus.PUBLISHED)));
+
+        LmsCourseTopicResponse shown = service.getPublishedContent(ACCOUNT_ID, COURSE_ID).modules().get(0).topics().get(0);
+
+        assertEquals(List.of(new LmsCourseMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007)),
+                shown.materials());
+    }
+
+    @Test
+    void materialIsHiddenUnlessItsModuleTopicAndItselfArePublished() {
+        LmsModule published = module(course, 11, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic publishedTopic = topic(published, 31, 1, LmsContentStatus.PUBLISHED);
+        LmsModule draftModule = module(course, 12, 2, LmsContentStatus.DRAFT);
+        LmsTopic topicInDraftModule = topic(draftModule, 32, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic draftTopic = topic(published, 33, 2, LmsContentStatus.DRAFT);
+
+        assertEquals(List.of(), materialIdsShown(
+                List.of(material(topicInDraftModule, 1, 1, LmsContentStatus.PUBLISHED)), published, publishedTopic));
+        assertEquals(List.of(), materialIdsShown(
+                List.of(material(draftTopic, 2, 1, LmsContentStatus.PUBLISHED)), published, publishedTopic));
+        assertEquals(List.of(), materialIdsShown(
+                List.of(material(publishedTopic, 3, 1, LmsContentStatus.DRAFT)), published, publishedTopic));
+        assertEquals(List.of(), materialIdsShown(
+                List.of(material(publishedTopic, 4, 1, LmsContentStatus.ARCHIVED)), published, publishedTopic));
+        assertEquals(List.of(5L), materialIdsShown(
+                List.of(material(publishedTopic, 5, 1, LmsContentStatus.PUBLISHED)), published, publishedTopic));
+    }
+
+    @Test
+    void materialsKeepTheTopicOrderGivenByTheQuery() {
+        LmsModule module = module(course, 11, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic topic = topic(module, 31, 1, LmsContentStatus.PUBLISHED);
+
+        assertEquals(List.of(9L, 3L, 7L), materialIdsShown(List.of(
+                material(topic, 9, 1, LmsContentStatus.PUBLISHED),
+                material(topic, 3, 2, LmsContentStatus.PUBLISHED),
+                material(topic, 7, 3, LmsContentStatus.PUBLISHED)), module, topic));
     }
 }

@@ -11,6 +11,8 @@ import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.content.LmsContentPolicy;
 import com.stacc.backend.lms.content.LmsModuleRepository;
+import com.stacc.backend.lms.content.LmsStudyMaterial;
+import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourse;
@@ -29,23 +31,27 @@ public class LmsFacultyContentQueryService {
     private final LmsCourseRepository lmsCourses;
     private final LmsModuleRepository modules;
     private final LmsTopicRepository topics;
+    private final LmsStudyMaterialRepository materials;
 
     public LmsFacultyContentQueryService(
             LmsFacultyAccessService accessService,
             LmsCourseRepository lmsCourses,
             LmsModuleRepository modules,
-            LmsTopicRepository topics) {
+            LmsTopicRepository topics,
+            LmsStudyMaterialRepository materials) {
         this.accessService = accessService;
         this.lmsCourses = lmsCourses;
         this.modules = modules;
         this.topics = topics;
+        this.materials = materials;
     }
 
     /**
      * One course the faculty member may use, with every module and topic that is not archived, drafts
-     * included, in course order. Access is decided by {@link LmsFacultyAccessService} for this course on
-     * every call. A course they may not use answers the same 404 as a course that does not exist.
-     * Archived content stays stored but is not listed.
+     * included, and each topic's study materials that are not archived, in course order. Access is
+     * decided by {@link LmsFacultyAccessService} for this course on every call. A course they may not
+     * use answers the same 404 as a course that does not exist. Archived content stays stored but is
+     * not listed.
      *
      * @param userAccountId the ID of the signed-in account, never an ID sent by the client
      */
@@ -57,13 +63,24 @@ public class LmsFacultyContentQueryService {
         LmsCourse lmsCourse = lmsCourses.findWithAcademicContextById(lmsCourseId).orElseThrow(
                 LmsFacultyContentQueryService::courseUnavailable);
 
-        Map<Long, List<LmsFacultyTopicResponse>> topicsByModule = topics
+        Map<Long, List<LmsFacultyMaterialResponse>> materialsByTopic = materials
+                .findAllInCourse(lmsCourseId, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE)
+                .stream()
+                .filter(LmsContentPolicy::isInUseByFaculty)
+                .collect(Collectors.groupingBy(
+                        (LmsStudyMaterial material) -> material.getLmsTopic().getId(),
+                        Collectors.mapping(LmsFacultyMaterialResponse::of, Collectors.toList())));
+
+        Map<Long, List<LmsFacultyTopicContentResponse>> topicsByModule = topics
                 .findAllInCourse(lmsCourseId, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE).stream()
                 .filter(topic -> LmsContentPolicy.isInUse(topic.getStatus())
                         && LmsContentPolicy.isInUse(topic.getLmsModule().getStatus()))
                 .collect(Collectors.groupingBy(
                         (LmsTopic topic) -> topic.getLmsModule().getId(),
-                        Collectors.mapping(LmsFacultyTopicResponse::of, Collectors.toList())));
+                        Collectors.mapping(
+                                topic -> LmsFacultyTopicContentResponse.of(
+                                        topic, materialsByTopic.getOrDefault(topic.getId(), List.of())),
+                                Collectors.toList())));
 
         List<LmsFacultyModuleContentResponse> moduleContent = modules
                 .findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(lmsCourseId, LmsContentPolicy.IN_USE).stream()

@@ -37,6 +37,14 @@ public final class ContentFixtures {
         return module;
     }
 
+    public static LmsStudyMaterial material(LmsTopic topic, long id, int position, LmsContentStatus status) {
+        LmsStudyMaterial material = new LmsStudyMaterial(topic, "Material " + id, null, "lms/test/key-" + id,
+                "material-" + id + ".pdf", "application/pdf", 1000 + id, position);
+        ReflectionTestUtils.setField(material, "id", id);
+        ReflectionTestUtils.setField(material, "status", status);
+        return material;
+    }
+
     public static LmsTopic topic(LmsModule module, long id, int position, LmsContentStatus status) {
         LmsTopic topic = new LmsTopic(module, "Topic " + id, "Text of topic " + id, position);
         ReflectionTestUtils.setField(topic, "id", id);

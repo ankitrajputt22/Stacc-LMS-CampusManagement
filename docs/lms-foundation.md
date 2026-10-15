@@ -372,13 +372,15 @@ LmsCourse
     +------< LmsModule
                  |
                  +------< LmsTopic
+                              |
+                              +------< LmsStudyMaterial   (details in MySQL, file in private storage)
 ```
 
 The content of an LMS course is organised in modules, such as "Introduction" or "Arrays", and each module holds topics. The code is in `com.stacc.backend.lms.content`, and the tables are `lms_modules` and `lms_topics`.
 
 - A module belongs to one LMS course, and a topic to one module. Neither can be moved to another parent. Nothing is cascaded: archiving or changing content never touches the course or the module above it.
 - A module has a title (up to 200 characters) and an optional description (up to 2,000). A topic has a title (up to 200) and optional content (up to 20,000). Titles need not be unique.
-- Descriptions and topic content are **plain text**. They are stored exactly as typed and shown as text with their line breaks. HTML is never interpreted, and there is no rich-text or Markdown editor. There are no files yet.
+- Descriptions and topic content are **plain text**. They are stored exactly as typed and shown as text with their line breaks. HTML is never interpreted, and there is no rich-text or Markdown editor. Files are study materials, described below.
 - Modules are ordered by `position`, then by ID; topics the same way inside their module. A new module or topic is added after the current ones. A reorder numbers them 1, 2, 3 in one transaction. Positions are not unique in the database, so a reorder never trips over a half-finished numbering.
 
 ### Status
@@ -469,10 +471,62 @@ A faculty token carries `LMS_CONTENT_MANAGE` from the first sign-in after the `V
 
 The frontend's faculty course page (`/teaching/{lmsCourseId}`) uses these routes, and the student course home (`/courses/{lmsCourseId}`) shows the published content (see `frontend-authentication.md`).
 
+## Study materials
+
+A study material is a titled file attached to a topic, such as lecture notes or a lab sheet. It belongs to a topic, not to a module or a course, so every file has a clear place in the course. The code is `LmsStudyMaterial` and `LmsStudyMaterialService` in `com.stacc.backend.lms.content`, and the table is `lms_study_materials`.
+
+```text
+lms_study_materials (MySQL)                  private bucket (MinIO)
+  title, description                          lms/courses/{lmsCourseId}/topics/{topicId}/{uuid}
+  original file name, content type, size  --> the file's bytes
+  position, status, object_key
+```
+
+- **Only details in the database.** The row holds the title, an optional plain-text description (up to 1,000 characters), the original file name, the content type, the size, the position, the status, and `object_key`. The file's bytes are never stored in MySQL.
+- **Private storage.** The bytes are in object storage behind `ObjectStorageService` (`com.stacc.backend.common.storage`), implemented for MinIO by `MinioObjectStorageService`. The application uses one bucket, created on the first upload and never made public. Nothing outside the backend reads it: there are no public, MinIO, or pre-signed links.
+- **Keys made by the server.** `object_key` is `lms/courses/{lmsCourseId}/topics/{topicId}/{uuid}`, generated for every upload. The original file name is only a label and never part of the key. The key is never sent to a client.
+- **Status.** Materials use the same `DRAFT`, `PUBLISHED`, `ARCHIVED` lifecycle as modules and topics. A new upload is a draft. Publishing a material never publishes its topic or module. Archiving keeps both the row and the stored file. There is no delete, and a file cannot be replaced: archive the wrong one and upload another.
+- **Order.** By position, then ID, inside the topic. New uploads go to the end.
+
+### Who sees and changes materials
+
+- A student sees a material, in the course content and as a download, only when the student access policy allows the course **and** the module, the topic, and the material are all `PUBLISHED` (`LmsContentPolicy`).
+- Faculty manage the materials of courses they teach under the faculty access policy, found from the stored topic or material. They see and download materials that are not archived, drafts included, in topics and modules that are not archived.
+
+### Upload
+
+`POST /api/lms/faculty/topics/{topicId}/materials`, as `multipart/form-data` with `title`, an optional `description`, and `file`. The same rule as the other content changes: `FACULTY` and `LMS_CONTENT_MANAGE`. There is no separate material permission.
+
+1. The topic is found, and faculty access is checked for its course. Another faculty member's topic answers 404; an archived topic or module answers 409.
+2. The file is checked: not empty, at most 25 MB (`STACC_MATERIAL_MAX_FILE_SIZE`), an allowed type (PDF, TXT, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPEG), a declared type that does not contradict it, and first bytes that match it. A refused file answers 400 with the reason, and nothing is stored.
+3. A new key is generated and the file is stored.
+4. The details are saved as a draft at the end of the topic.
+
+The database and the storage cannot share one transaction. If storing fails, nothing is saved and the answer is 503. If saving fails after the file was stored, the backend tries to remove the stored file. Anything the client sends besides the three fields, such as a key, a status, a size, or a course, is ignored.
+
+### Changes and listing
+
+| Route | What it does |
+| --- | --- |
+| `PUT /api/lms/faculty/materials/{materialId}` | Edits the title and description only. |
+| `POST /api/lms/faculty/materials/{materialId}/publish` | Publishes the material. |
+| `POST /api/lms/faculty/materials/{materialId}/archive` | Archives it. The stored file is kept. |
+| `PUT /api/lms/faculty/topics/{topicId}/materials/reorder` | Takes `{"materialIds": [...]}`: every material of the topic that is not archived, once each. |
+
+All need `FACULTY` and `LMS_CONTENT_MANAGE`, and answer 404 for materials in courses the caller does not teach, 409 for archived content, and 400 for an invalid body or reorder list, like the module and topic routes.
+
+The content routes list the materials inside each topic. The faculty content shows every material that is not archived, with its status and position. The student content shows only materials visible to students, without statuses. Neither ever includes the key or anything about the storage.
+
+### Download
+
+`GET /api/lms/materials/{materialId}/download` lets in a student with `LMS_COURSE_VIEW` or a faculty member with `FACULTY_COURSE_VIEW`. The service then allows the download through the student rule or the faculty rule, whichever the token holds. An account that is both may use either. A material the caller may not have, an archived one, and one that does not exist all answer the same 404.
+
+The file comes through the backend, streamed from storage, with its stored content type, its size as `Content-Length`, and `Content-Disposition: attachment` with the original file name, so it is always saved and never shown inline. Range requests are not supported.
+
 ## Not built yet
 
 - No admin LMS endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
-- No files, study materials, or attachments in content, no rich text, and no way to see or restore archived content.
+- No rich text, no file previews or versions, no virus scanning, and no way to see or restore archived content.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No way to manage teaching assignments, and no assignments, submissions, grades, or announcements.

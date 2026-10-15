@@ -48,6 +48,17 @@ A web page on another origin may call the API from a browser only if its origin 
 
 This decides which pages may send requests. It never replaces the token: every request is still checked as described above. See `frontend-authentication.md`.
 
+## Files
+
+Study materials are the API's only files. See `lms-foundation.md` for who may upload and download them.
+
+- Uploads may be at most 25 MB (`STACC_MATERIAL_MAX_FILE_SIZE`). Spring refuses whole requests over 26 MB before reading them.
+- Only an allow-list of academic types is accepted: PDF, TXT, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, and JPEG. HTML, SVG, scripts, programs, and archives are refused. The extension, the type the browser declares, and the first bytes of the file must all agree.
+- The stored content type comes from the allow-list, never from the browser.
+- Every download is sent as an attachment, with `X-Content-Type-Options: nosniff`, so an uploaded file is never shown as a page of this site.
+- Files live in a private bucket under keys the backend generates. Storage addresses, bucket names, keys, and storage credentials never reach a browser, and there are no public or pre-signed links.
+- There is no virus scanning yet. A production setup could add it in front of storage.
+
 ## Still to come
 
 - Refresh tokens and sign-out on the backend.

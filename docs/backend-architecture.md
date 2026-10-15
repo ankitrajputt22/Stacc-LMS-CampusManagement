@@ -4,7 +4,7 @@ Stacc starts as a modular monolith. It has one Spring Boot application, and its 
 
 The backend modules are:
 
-- `common` — small pieces of shared technical code.
+- `common` — small pieces of shared technical code, such as the private object-storage abstraction (`common.storage`).
 - `auth` — authentication, authorization, roles, and permissions.
 - `identity` — user, student, and faculty profiles.
 - `academic` — academic structures and ERP workflows.

@@ -46,7 +46,7 @@ Restart the Vite dev server after changing an environment file. Real `.env` file
 - Passing `null` instead of a request sends nothing and gives `notFound`. The course home does this for a URL whose ID cannot be valid.
 - The request function must keep its identity between renders: a module function, or one made with `useMemo`.
 
-`useMyCourses`, `useLmsCourse`, and `useLmsCourseContent` in `frontend/src/courses`, and the faculty hooks in `frontend/src/teaching`, are built on it. The content requests and changes are in `frontend/src/api/lmsContentApi.ts`.
+`useMyCourses`, `useLmsCourse`, and `useLmsCourseContent` in `frontend/src/courses`, and the faculty hooks in `frontend/src/teaching`, are built on it. The content requests and changes are in `frontend/src/api/lmsContentApi.ts`. Study-material uploads send `FormData` through `apiClient`, which lets the browser set the multipart header. Downloads ask for a `blob`, which `frontend/src/courses/materials.ts` saves through a temporary object URL that is released right after. Both get a longer time limit than ordinary requests. The browser never contacts file storage.
 
 ## Signing in
 
