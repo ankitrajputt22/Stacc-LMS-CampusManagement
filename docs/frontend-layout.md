@@ -30,7 +30,7 @@ An item without a route is shown as "Soon" and is not a link, so add the route o
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
-An item stays marked on the pages below it, so Courses is also marked on a course home (`/courses/:lmsCourseId`). Screen readers hear it there as the current section, not the current page; the page's breadcrumb names the page itself. Only the Dashboard (`/`) is marked on its exact URL alone.
+An item stays marked on the pages below it, so Courses is also marked on a course home (`/courses/:lmsCourseId`) and Teaching on a faculty course page (`/teaching/:lmsCourseId`). Screen readers hear it there as the current section, not the current page; the page's breadcrumb names the page itself. Only the Dashboard (`/`) is marked on its exact URL alone.
 
 ## Top bar
 
@@ -52,6 +52,8 @@ Use the shared components in `components/states` instead of writing new ones for
 When a page shows one of these on its own, put it in `StatePanel`, the plain bordered panel the Courses and course pages use, so the page does not jump when the content arrives.
 
 A page that loads one thing from the API can use `useApiRequest` (see `frontend-api.md`). Its five states map onto these components.
+
+Pages below a list show a breadcrumb back to it with `components/navigation/Breadcrumb.tsx`, such as "Courses / Data Structures".
 
 The Dashboard currently shows a temporary preview of these states. Real content will replace it in later phases.
 

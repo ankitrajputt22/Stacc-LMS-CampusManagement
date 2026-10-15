@@ -106,7 +106,9 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 
 - The URL holds the `lmsCourseId` the list returned: the LMS course's own ID. It never holds a course code, an enrollment ID, or anything about the account.
 - Its data comes only from `GET /api/lms/courses/{lmsCourseId}`, through `apiClient`. The backend checks access again on every request (see `lms-foundation.md`), so a refresh, a bookmark, or a link from someone else gets no further than the student's own access. Having come from the list proves nothing.
-- It shows the course code and name, then the program, department, semester, academic session, and credits, exactly as sent. There are no tabs, modules, teachers, progress, or anything else the API does not send.
+- It shows the course code and name, then the program, department, semester, academic session, and credits, exactly as sent.
+- Below that, **Course content** shows the published modules and their published topics from `GET /api/lms/courses/{lmsCourseId}/content`, in order. No status is shown: everything there is published. Topic text is shown as plain text with its line breaks; HTML in it is never interpreted. With nothing published, it says "No course content published yet." If only the content fails to load, the course details stay and the content shows its own **Retry**.
+- There are no teachers, progress, or anything else the API does not send.
 - A URL whose ID is not a positive whole number shows "Course unavailable" without asking the backend.
 - A **404** shows the same "Course unavailable" message with a link back to Courses. The page cannot tell a missing course from one the student may not use, and does not try.
 - A **403** shows "You don't have access to this course." The user stays signed in.
@@ -121,11 +123,24 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 
 - Its data comes only from `GET /api/lms/faculty/my-courses`, through `apiClient`, with no ID of any kind in the request. The backend decides which courses are listed (see `lms-foundation.md`).
 - Each course shows its code, name, program, semester, session, credits, and its LMS status as the word "Draft" or "Published". There are no student counts, progress, or other figures the API does not send.
-- The courses are information only. There is no faculty course page yet, so nothing on a course is a link, and the student course home is never used for them.
+- Each course opens its faculty content page at `/teaching/:lmsCourseId`; the whole card can be clicked, and the course name is the link. The student course home is never used for faculty.
 - An account without `FACULTY` that opens `/teaching` directly sees "This page is for faculty accounts.", and no request is sent.
 - A **403** shows "You don't have access to faculty courses." and suggests signing in again: a token issued before the faculty permission existed lacks it. The user stays signed in.
 - A **401** is left to the shared client, as everywhere else.
 - Any other failure shows "Couldn't load your teaching courses" with a **Retry** button. An empty list is not an error.
+
+### The faculty course page
+
+`/teaching/:lmsCourseId` is where a faculty member manages the modules and topics of a course they teach. Teaching stays marked in the navigation.
+
+- Its data comes from `GET /api/lms/faculty/courses/{lmsCourseId}/content`, and every change goes to its own faculty route (see `lms-foundation.md`). The backend checks the teaching assignment on every request; the URL holds only the `lmsCourseId`.
+- It shows the course details and the LMS course's status, then **Course content**: each module with its status, description, and topics, and each topic with its status and text. Archived content is not shown.
+- **Add module** and **Add topic** open a small form in place, with a title and a plain-text text area. Modules and topics can be edited the same way, published while they are drafts, and archived after a short confirmation. Archiving hides them for good in this editor; nothing is deleted.
+- Order is changed with **Move up** and **Move down** buttons. They work from the keyboard, and there is no drag and drop.
+- After each change the content reloads quietly, focus moves to the changed item (or its next sensible place), and the change is announced to screen readers. A second click while a change is saving is ignored.
+- Form errors appear next to their fields. A refused change shows a message above the content: a **403** suggests signing in again and never signs the user out, and a **404** or **409** reloads the list.
+- Loading shows "Loading course content…". A course with no modules offers **Add your first module**. A course the faculty member does not teach, or a URL with an impossible ID, shows "Course unavailable". A **403** on the page shows "You don't have access to manage this course." Any other failure shows "Couldn't load course content" with **Retry**.
+- An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent. An account that is also a student uses both its course pages normally.
 
 Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
 
