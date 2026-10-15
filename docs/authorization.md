@@ -73,6 +73,8 @@ The first two are the method rule. The third is not, and a method rule can never
 
 `GET /api/lms/faculty/my-courses` follows the same pattern for faculty, with `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')`. Its data check comes from official teaching assignments. A student or an admin who is not faculty is refused by the rule, and the faculty permission opens no student route.
 
+The course content routes follow the same three steps. Reading needs `FACULTY_COURSE_VIEW`, changing needs `LMS_CONTENT_MANAGE`, and in both cases the data check is made for the course behind the module or topic, found from stored data. A faculty member who passes the rule but does not teach that course gets 404, never the content.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

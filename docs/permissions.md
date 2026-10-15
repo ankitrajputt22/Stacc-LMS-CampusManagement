@@ -22,11 +22,14 @@ A permission is added by a new migration only when the real feature it protects 
 | Code | Held by | What it allows |
 | --- | --- | --- |
 | `LMS_COURSE_VIEW` | `STUDENT` | Using the student LMS course-view feature: `GET /api/lms/my-courses` and `GET /api/lms/courses/{lmsCourseId}`. |
-| `FACULTY_COURSE_VIEW` | `FACULTY` | Using the faculty LMS course-view feature: `GET /api/lms/faculty/my-courses`. Added by `V20`. |
+| `FACULTY_COURSE_VIEW` | `FACULTY` | Using the faculty LMS course-view feature: `GET /api/lms/faculty/my-courses` and `GET /api/lms/faculty/courses/{lmsCourseId}/content`. Added by `V20`. |
+| `LMS_CONTENT_MANAGE` | `FACULTY` | Changing the modules and topics of LMS courses: adding, editing, publishing, archiving, and reordering them. Added by `V22`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided by official enrollment and LMS membership (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 
 `FACULTY_COURSE_VIEW` works the same way for faculty. Which courses a faculty member gets is decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and an account that holds `FACULTY` as well as other roles gets it through `FACULTY`. A faculty member signed in before `V20` must sign in again to get it.
+
+`LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use.
 
 Add a row to this table whenever a migration adds a real permission. It is a record of what exists, not a plan.
 
@@ -56,7 +59,7 @@ A permission reaches an account through its access token, which is issued at log
 
 A permission code can be used directly in a method rule: `@PreAuthorize("hasAuthority('PERMISSION_CODE')")`. The code is the authority name as stored, with no prefix. See `authorization.md`.
 
-The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together. `GET /api/lms/courses/{lmsCourseId}` uses the same rule. `GET /api/lms/faculty/my-courses` requires the `FACULTY` role and `FACULTY_COURSE_VIEW` together.
+The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together. `GET /api/lms/courses/{lmsCourseId}` uses the same rule. `GET /api/lms/faculty/my-courses` requires the `FACULTY` role and `FACULTY_COURSE_VIEW` together. The faculty content changes require the `FACULTY` role and `LMS_CONTENT_MANAGE` together (see `lms-foundation.md`).
 
 ## Not built yet
 

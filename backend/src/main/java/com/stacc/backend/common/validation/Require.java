@@ -25,6 +25,14 @@ public final class Require {
         return trimmed;
     }
 
+    /** Like {@link #text}, but the value may be left out: missing or blank text becomes null. */
+    public static String optionalText(String value, String name, int maxLength) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return text(value, name, maxLength);
+    }
+
     public static int range(int value, String name, int min, int max) {
         if (value < min || value > max) {
             throw new IllegalArgumentException(name + " must be between " + min + " and " + max);

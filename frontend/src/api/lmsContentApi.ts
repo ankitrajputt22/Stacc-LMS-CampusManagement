@@ -1,0 +1,136 @@
+import type {
+  LmsCourseContent,
+  LmsFacultyCourseContent,
+  LmsFacultyModule,
+  LmsFacultyTopic,
+  LmsModuleInput,
+  LmsTopicInput,
+} from '../types/lms'
+import { apiClient } from './apiClient'
+
+// The client's base URL already ends in /api, so every path here starts below it. The signed-in
+// account is the one in the access token; no account, faculty, or student ID is ever sent from here.
+
+/** The published content of a course the signed-in student may use. Access is checked again by the backend. */
+export async function getLmsCourseContent(
+  lmsCourseId: number,
+  signal?: AbortSignal,
+): Promise<LmsCourseContent> {
+  const response = await apiClient.get<LmsCourseContent>(
+    `/lms/courses/${lmsCourseId}/content`,
+    { signal },
+  )
+  return response.data
+}
+
+/** A course the signed-in faculty member teaches, with every module and topic that is not archived. */
+export async function getFacultyCourseContent(
+  lmsCourseId: number,
+  signal?: AbortSignal,
+): Promise<LmsFacultyCourseContent> {
+  const response = await apiClient.get<LmsFacultyCourseContent>(
+    `/lms/faculty/courses/${lmsCourseId}/content`,
+    { signal },
+  )
+  return response.data
+}
+
+/** Adds a draft module after the course's current modules. */
+export async function createModule(
+  lmsCourseId: number,
+  input: LmsModuleInput,
+): Promise<LmsFacultyModule> {
+  const response = await apiClient.post<LmsFacultyModule>(
+    `/lms/faculty/courses/${lmsCourseId}/modules`,
+    input,
+  )
+  return response.data
+}
+
+export async function updateModule(
+  moduleId: number,
+  input: LmsModuleInput,
+): Promise<LmsFacultyModule> {
+  const response = await apiClient.put<LmsFacultyModule>(
+    `/lms/faculty/modules/${moduleId}`,
+    input,
+  )
+  return response.data
+}
+
+export async function publishModule(moduleId: number): Promise<LmsFacultyModule> {
+  const response = await apiClient.post<LmsFacultyModule>(
+    `/lms/faculty/modules/${moduleId}/publish`,
+  )
+  return response.data
+}
+
+/** Archives the module. Nothing is deleted, and it no longer appears in the content list. */
+export async function archiveModule(moduleId: number): Promise<LmsFacultyModule> {
+  const response = await apiClient.post<LmsFacultyModule>(
+    `/lms/faculty/modules/${moduleId}/archive`,
+  )
+  return response.data
+}
+
+/** Puts the course's current modules in this order. The list must hold each of them exactly once. */
+export async function reorderModules(
+  lmsCourseId: number,
+  moduleIds: number[],
+): Promise<LmsFacultyModule[]> {
+  const response = await apiClient.put<LmsFacultyModule[]>(
+    `/lms/faculty/courses/${lmsCourseId}/modules/reorder`,
+    { moduleIds },
+  )
+  return response.data
+}
+
+/** Adds a draft topic after the module's current topics. */
+export async function createTopic(
+  moduleId: number,
+  input: LmsTopicInput,
+): Promise<LmsFacultyTopic> {
+  const response = await apiClient.post<LmsFacultyTopic>(
+    `/lms/faculty/modules/${moduleId}/topics`,
+    input,
+  )
+  return response.data
+}
+
+export async function updateTopic(
+  topicId: number,
+  input: LmsTopicInput,
+): Promise<LmsFacultyTopic> {
+  const response = await apiClient.put<LmsFacultyTopic>(
+    `/lms/faculty/topics/${topicId}`,
+    input,
+  )
+  return response.data
+}
+
+export async function publishTopic(topicId: number): Promise<LmsFacultyTopic> {
+  const response = await apiClient.post<LmsFacultyTopic>(
+    `/lms/faculty/topics/${topicId}/publish`,
+  )
+  return response.data
+}
+
+/** Archives the topic. Nothing is deleted, and it no longer appears in the content list. */
+export async function archiveTopic(topicId: number): Promise<LmsFacultyTopic> {
+  const response = await apiClient.post<LmsFacultyTopic>(
+    `/lms/faculty/topics/${topicId}/archive`,
+  )
+  return response.data
+}
+
+/** Puts the module's current topics in this order. The list must hold each of them exactly once. */
+export async function reorderTopics(
+  moduleId: number,
+  topicIds: number[],
+): Promise<LmsFacultyTopic[]> {
+  const response = await apiClient.put<LmsFacultyTopic[]>(
+    `/lms/faculty/modules/${moduleId}/topics/reorder`,
+    { topicIds },
+  )
+  return response.data
+}

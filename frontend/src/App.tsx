@@ -6,6 +6,7 @@ import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { TeachingCoursePage } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="courses" element={<CoursesPage />} />
           <Route path="courses/:lmsCourseId" element={<CoursePage />} />
           <Route path="teaching" element={<TeachingPage />} />
+          <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

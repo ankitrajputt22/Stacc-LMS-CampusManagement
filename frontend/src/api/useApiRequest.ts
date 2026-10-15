@@ -21,7 +21,9 @@ type Answer<T> = {
 }
 
 /**
- * Runs one backend request for a page and tracks what to show. retry() asks again.
+ * Runs one backend request for a page and tracks what to show. retry() asks again from scratch,
+ * showing loading meanwhile. refresh() asks again quietly: what is on screen stays until the new
+ * answer arrives, for example after the user changed something.
  *
  * A request still running when the page closes, the request changes, or a retry starts is
  * cancelled, and an answer is only shown for the request and attempt it belongs to, so an old
@@ -34,8 +36,9 @@ type Answer<T> = {
  */
 export function useApiRequest<T>(
   request: Request<T> | null,
-): ApiRequestState<T> & { retry: () => void } {
+): ApiRequestState<T> & { retry: () => void; refresh: () => void } {
   const [attempt, setAttempt] = useState(0)
+  const [refreshes, setRefreshes] = useState(0)
   const [answer, setAnswer] = useState<Answer<T> | null>(null)
 
   useEffect(() => {
@@ -68,16 +71,18 @@ export function useApiRequest<T>(
     )
 
     return () => controller.abort()
-  }, [request, attempt])
+  }, [request, attempt, refreshes])
 
   const retry = useCallback(() => setAttempt((previous) => previous + 1), [])
+  const refresh = useCallback(() => setRefreshes((previous) => previous + 1), [])
 
   if (request === null) {
-    return { status: 'notFound', retry }
+    return { status: 'notFound', retry, refresh }
   }
 
+  // A refresh keeps the same request and attempt, so the last answer stays on screen until it is replaced.
   const isCurrent =
     answer !== null && answer.request === request && answer.attempt === attempt
 
-  return { ...(isCurrent ? answer.state : { status: 'loading' }), retry }
+  return { ...(isCurrent ? answer.state : { status: 'loading' }), retry, refresh }
 }

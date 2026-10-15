@@ -39,12 +39,14 @@ Restart the Vite dev server after changing an environment file. Real `.env` file
 | `denied` | 403: signed in, but not allowed. The user stays signed in. |
 | `failed` | Anything else: no answer, a timeout, or a server error. `retry()` asks again. |
 
+`refresh()` asks again quietly: what is on screen stays until the new answer arrives. The faculty content editor uses it after each change.
+
 - A 401 gets no state of its own: `apiClient` has already ended the session, and the sign-in page opens.
 - A request still running when the page closes, the request changes, or a retry starts is cancelled, and an answer is shown only for the request it belongs to. A slow old answer never replaces a newer one.
 - Passing `null` instead of a request sends nothing and gives `notFound`. The course home does this for a URL whose ID cannot be valid.
 - The request function must keep its identity between renders: a module function, or one made with `useMemo`.
 
-`useMyCourses` and `useLmsCourse` in `frontend/src/courses` are built on it.
+`useMyCourses`, `useLmsCourse`, and `useLmsCourseContent` in `frontend/src/courses`, and the faculty hooks in `frontend/src/teaching`, are built on it. The content requests and changes are in `frontend/src/api/lmsContentApi.ts`.
 
 ## Signing in
 

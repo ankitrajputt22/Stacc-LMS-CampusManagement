@@ -362,13 +362,118 @@ This endpoint returns the LMS courses the signed-in faculty member is actively a
 
 A faculty token carries the permission from the first sign-in after the `V20` migration. A token issued before it does not, and is refused with 403 until the faculty member signs in again.
 
-The frontend's **Teaching** page (`/teaching`) uses this endpoint (see `frontend-authentication.md`). There is no faculty course page yet: the faculty side has no single-course endpoint, and the student course home is never used for faculty.
+The frontend's **Teaching** page (`/teaching`) uses this endpoint (see `frontend-authentication.md`). Each course opens its faculty content page, described below. The student course home is never used for faculty.
+
+## Course content: modules and topics
+
+```text
+LmsCourse
+    |
+    +------< LmsModule
+                 |
+                 +------< LmsTopic
+```
+
+The content of an LMS course is organised in modules, such as "Introduction" or "Arrays", and each module holds topics. The code is in `com.stacc.backend.lms.content`, and the tables are `lms_modules` and `lms_topics`.
+
+- A module belongs to one LMS course, and a topic to one module. Neither can be moved to another parent. Nothing is cascaded: archiving or changing content never touches the course or the module above it.
+- A module has a title (up to 200 characters) and an optional description (up to 2,000). A topic has a title (up to 200) and optional content (up to 20,000). Titles need not be unique.
+- Descriptions and topic content are **plain text**. They are stored exactly as typed and shown as text with their line breaks. HTML is never interpreted, and there is no rich-text or Markdown editor. There are no files yet.
+- Modules are ordered by `position`, then by ID; topics the same way inside their module. A new module or topic is added after the current ones. A reorder numbers them 1, 2, 3 in one transaction. Positions are not unique in the database, so a reorder never trips over a half-finished numbering.
+
+### Status
+
+Modules and topics share one lifecycle, `LmsContentStatus`:
+
+| Status | Meaning |
+| --- | --- |
+| `DRAFT` | Being written by faculty. Students never see it. New modules and topics start here. |
+| `PUBLISHED` | Ready for students, once its parents are visible too. |
+| `ARCHIVED` | Kept for history. Students never see it, faculty no longer see it in the editor, and it can no longer be edited or published. |
+
+- Publishing or archiving again changes nothing. Publishing a module never publishes its topics, and publishing a topic never publishes its module.
+- Archiving a module keeps its topics; they are hidden with it. Nothing is ever deleted, and there is no delete endpoint.
+- Archived content stays in the database but is not shown in the normal editor. There is no way to bring it back yet.
+
+### Who sees what
+
+A student sees a topic only when **all** of these hold, decided once in `LmsContentPolicy`:
+
+- the student may use the LMS course under the student access policy above, which already requires the course to be `PUBLISHED`;
+- the topic's module is `PUBLISHED`;
+- the topic is `PUBLISHED`.
+
+A published topic in a draft or archived module stays hidden. A published module is shown even when none of its topics are published yet.
+
+Faculty manage the content of a course only when `LmsFacultyAccessService` allows the signed-in account to use that course: an active faculty profile, an active teaching assignment for the course's offering, and a draft or published LMS course. For a module or topic, the course is found from the stored module or topic, never from anything the request says, so knowing an ID gives nothing.
+
+## Student API: course content
+
+```text
+GET /api/lms/courses/{lmsCourseId}/content
+```
+
+```json
+{
+  "modules": [
+    {
+      "id": 12,
+      "title": "Introduction",
+      "description": "What the course covers.",
+      "topics": [
+        { "id": 31, "title": "Course overview", "content": "Read the syllabus.\nBring a notebook." }
+      ]
+    }
+  ]
+}
+```
+
+- Same rule as the other student routes: `STUDENT` and `LMS_COURSE_VIEW` together, with the student taken from the access token. There is no separate content permission.
+- The student access policy is checked again on every request. A course the student may not use answers 404 "Course not found or unavailable.", like a course that does not exist.
+- Only published modules, each with only its published topics, in order. No statuses are sent: everything sent is published. A course with nothing published answers `200` with `"modules": []`.
+- It is a pure read with five queries whatever the amount of content.
+
+## Faculty API: course content
+
+All faculty content routes take the faculty member from the access token. A course, module, or topic the faculty member does not teach answers 404, exactly like one that does not exist.
+
+| Route | Rule | What it does |
+| --- | --- | --- |
+| `GET /api/lms/faculty/courses/{lmsCourseId}/content` | `FACULTY` + `FACULTY_COURSE_VIEW` | The course details, its LMS status, and every module and topic that is not archived, with their status and position. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/modules` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft module at the end. `201`. |
+| `PUT /api/lms/faculty/courses/{lmsCourseId}/modules/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"moduleIds": [...]}`. |
+| `PUT /api/lms/faculty/modules/{moduleId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and description. |
+| `POST /api/lms/faculty/modules/{moduleId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the module. |
+| `POST /api/lms/faculty/modules/{moduleId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the module. |
+| `POST /api/lms/faculty/modules/{moduleId}/topics` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft topic at the end of the module. `201`. |
+| `PUT /api/lms/faculty/modules/{moduleId}/topics/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"topicIds": [...]}`. |
+| `PUT /api/lms/faculty/topics/{topicId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and content. |
+| `POST /api/lms/faculty/topics/{topicId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the topic. |
+| `POST /api/lms/faculty/topics/{topicId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the topic. |
+
+- Edit requests take only a title and text. The course, module, status, and position cannot be changed through them: those have their own routes, and anything else in the body is ignored.
+- A reorder list must hold every module (or topic) that is not archived, each exactly once, and nothing else. A repeated, missing, archived, or foreign ID answers 400 and changes nothing.
+- Editing or publishing archived content, adding a topic to an archived module, or reordering its topics answers 409. Archiving again is accepted.
+- A missing or too-long title or text answers 400 with field errors.
+- Every change and every read runs the faculty access check again. The changes are made by `LmsContentManagementService` in one transaction each; the controllers only pass on the request.
+
+| Request | Response |
+| --- | --- |
+| No token, or an invalid or expired one | 401 |
+| Not faculty, or without the route's permission (an admin is not let in) | 403 |
+| A course, module, or topic this faculty member does not teach, or that does not exist | 404 |
+| Invalid body, or a reorder list that does not match | 400 |
+| Archived content | 409 |
+
+A faculty token carries `LMS_CONTENT_MANAGE` from the first sign-in after the `V22` migration. Until then the editor opens, but every change is refused with 403.
+
+The frontend's faculty course page (`/teaching/{lmsCourseId}`) uses these routes, and the student course home (`/courses/{lmsCourseId}`) shows the published content (see `frontend-authentication.md`).
 
 ## Not built yet
 
-- No LMS API beyond the student's course list and single course and the faculty course list: no faculty single-course or admin endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
-- No screen beyond the student's course list and course home and the faculty Teaching list, which show only academic information.
+- No admin LMS endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
+- No files, study materials, or attachments in content, no rich text, and no way to see or restore archived content.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
-- No way to manage teaching assignments, and no content such as modules, assignments, or announcements.
+- No way to manage teaching assignments, and no assignments, submissions, grades, or announcements.
 - No other LMS permissions. Each will be added together with the action it protects.

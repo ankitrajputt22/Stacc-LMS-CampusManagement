@@ -2,48 +2,28 @@ import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
+import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { parseCourseId } from '../courses/courseRoute'
 import { creditsText, formatCredits } from '../courses/credits'
+import { CourseContent } from '../courses/CourseContent'
 import { useLmsCourse } from '../courses/useLmsCourse'
-import type { LmsCourseDetail } from '../types/lms'
+import { useLmsCourseContent } from '../courses/useLmsCourseContent'
+import type { ApiRequestState } from '../api/useApiRequest'
+import type { LmsCourseContent, LmsCourseDetail } from '../types/lms'
 
 const COURSES_PATH = '/courses'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-
-// A positive whole number that JavaScript holds exactly. Anything else is never sent to the API.
-const COURSE_ID_PATTERN = /^[1-9][0-9]{0,14}$/
-
-function parseCourseId(value: string | undefined): number | null {
-  return value !== undefined && COURSE_ID_PATTERN.test(value) ? Number(value) : null
-}
 
 const backLinkClasses =
   'inline-flex min-h-11 items-center rounded-control font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0'
 
 /** "Courses / Course name": the way back to the list, and where the student is. */
 function CourseBreadcrumb({ courseName }: { courseName?: string }) {
-  return (
-    <nav aria-label="Breadcrumb" className="text-sm">
-      <ol className="flex min-w-0 items-center gap-2">
-        <li className="shrink-0">
-          <Link to={COURSES_PATH} className={backLinkClasses}>
-            Courses
-          </Link>
-        </li>
-        {courseName && (
-          <li className="flex min-w-0 items-center gap-2 text-ink-muted">
-            <span aria-hidden="true">/</span>
-            <span aria-current="page" className="truncate">
-              {courseName}
-            </span>
-          </li>
-        )}
-      </ol>
-    </nav>
-  )
+  return <Breadcrumb parent={{ to: COURSES_PATH, label: 'Courses' }} current={courseName} />
 }
 
 /** A page state with the breadcrumb above it and a heading for screen readers. */
@@ -87,8 +67,13 @@ function InformationRow({ term, children }: { term: string; children: ReactNode 
   )
 }
 
-/** The course home. It shows only what the backend sent; course content comes in later phases. */
-function CourseHome({ course }: { course: LmsCourseDetail }) {
+type CourseHomeProps = {
+  course: LmsCourseDetail
+  content: ApiRequestState<LmsCourseContent> & { retry: () => void }
+}
+
+/** The course home: the course's academic information, then its published content. Only what the backend sent. */
+function CourseHome({ course, content }: CourseHomeProps) {
   return (
     <>
       <title>{`${course.courseName} · Stacc`}</title>
@@ -139,12 +124,16 @@ function CourseHome({ course }: { course: LmsCourseDetail }) {
           <InformationRow term="Credits">{formatCredits(course.credits)}</InformationRow>
         </dl>
       </section>
+
+      <CourseContent content={content} />
     </>
   )
 }
 
 function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
+  // Both requests start together. The content has its own states below the course details.
   const course = useLmsCourse(lmsCourseId)
+  const content = useLmsCourseContent(lmsCourseId)
 
   switch (course.status) {
     case 'loading':
@@ -175,7 +164,7 @@ function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
         </CourseState>
       )
     case 'loaded':
-      return <CourseHome course={course.data} />
+      return <CourseHome course={course.data} content={content} />
   }
 }
 
