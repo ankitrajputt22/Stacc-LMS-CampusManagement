@@ -154,3 +154,30 @@ export type LmsTopicInput = {
   title: string
   content: string | null
 }
+
+/** One published announcement of a course, as a student sees it. The message is plain text. */
+export type LmsCourseAnnouncement = {
+  id: number
+  title: string
+  message: string
+  /** When it was first published, as an ISO 8601 time in UTC. */
+  publishedAt: string
+}
+
+/** One announcement as faculty manage it. Archived announcements are not sent. */
+export type LmsFacultyAnnouncement = {
+  id: number
+  title: string
+  message: string
+  status: LmsContentStatus
+  /** When it was first published, or null for a draft. Corrections never change it. */
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** The title and message of an announcement, for adding or editing one. */
+export type LmsAnnouncementInput = {
+  title: string
+  message: string
+}

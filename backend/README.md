@@ -61,6 +61,8 @@ The `lms` module holds `LmsCourse`, the learning space for one official course o
 
 Topics can hold study materials (`LmsStudyMaterial`). Their details are stored in MySQL and the files in private object storage, behind `ObjectStorageService` in `common.storage`; `MinioObjectStorageService` implements it for MinIO. Uploads are checked against an allow-list of academic file types and a 25 MB limit, and downloads go through `GET /api/lms/materials/{materialId}/download`, which checks access and always sends an attachment. Set `STACC_STORAGE_ENDPOINT`, `STACC_STORAGE_ACCESS_KEY`, `STACC_STORAGE_SECRET_KEY`, and `STACC_STORAGE_BUCKET` to use them; the backend starts without storage, but uploads and downloads then answer that storage is unavailable. See `../docs/lms-foundation.md` and `../docs/docker.md`.
 
+The `lms.announcement` package holds `LmsAnnouncement`, a course-wide plain-text update with the same draft, published, and archived lifecycle and no deletion. Students read the published ones through `GET /api/lms/courses/{lmsCourseId}/announcements`; faculty manage them through the `/api/lms/faculty/...` announcement routes with the existing `LMS_CONTENT_MANAGE` permission, and `LmsAnnouncementManagementService` checks their access for every change. See `../docs/lms-foundation.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.

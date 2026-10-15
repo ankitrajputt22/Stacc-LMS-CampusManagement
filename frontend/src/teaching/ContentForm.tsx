@@ -11,7 +11,11 @@ type ContentFormProps = {
   titleLabel: string
   bodyLabel: string
   /** The backend's name for the second field, so its validation messages land in the right place. */
-  bodyField: 'description' | 'content'
+  bodyField: 'description' | 'content' | 'message'
+  /** When set, the second field is required and this is said when it is left empty. */
+  bodyMissing?: string
+  /** A short neutral note shown above the fields. */
+  note?: string
   bodyRows: number
   titleMaxLength: number
   bodyMaxLength: number
@@ -39,6 +43,8 @@ export function ContentForm({
   titleLabel,
   bodyLabel,
   bodyField,
+  bodyMissing,
+  note,
   bodyRows,
   titleMaxLength,
   bodyMaxLength,
@@ -74,7 +80,9 @@ export function ContentForm({
     } else if (title.trim().length > titleMaxLength) {
       found.title = `Use at most ${titleMaxLength} characters.`
     }
-    if (body.trim().length > bodyMaxLength) {
+    if (bodyMissing && body.trim() === '') {
+      found[bodyField] = bodyMissing
+    } else if (body.trim().length > bodyMaxLength) {
       found[bodyField] = `Use at most ${bodyMaxLength.toLocaleString('en')} characters.`
     }
     setFormError(null)
@@ -112,6 +120,8 @@ export function ContentForm({
       <p id={`${id}-heading`} className="text-sm font-semibold text-ink">
         {heading}
       </p>
+
+      {note && <p className="mt-1 text-sm leading-6 text-ink-muted">{note}</p>}
 
       <div className="mt-3">
         <label htmlFor={`${id}-title`} className="block text-sm font-medium text-ink">
