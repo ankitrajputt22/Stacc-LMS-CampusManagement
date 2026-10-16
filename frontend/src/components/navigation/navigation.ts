@@ -41,7 +41,7 @@ const navigationSections: readonly NavigationSection[] = [
     roles: ['FACULTY'],
     items: [
       { label: 'Teaching', to: '/teaching' },
-      { label: 'Assignments' },
+      { label: 'Assignments', to: '/assignments' },
       { label: 'Attendance' },
     ],
   },

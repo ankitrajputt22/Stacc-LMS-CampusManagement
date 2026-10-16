@@ -181,3 +181,63 @@ export type LmsAnnouncementInput = {
   title: string
   message: string
 }
+
+/** One published assignment in a student's course list. Past-due assignments are included. */
+export type LmsCourseAssignment = {
+  id: number
+  title: string
+  /** The deadline, as an ISO 8601 time in UTC. */
+  dueAt: string
+  /** An exact decimal on the backend, such as 20.00 or 12.50. JSON carries it as a number. */
+  maxMarks: number
+}
+
+/** One published assignment as a student opens it. The instructions are plain text. */
+export type LmsCourseAssignmentDetail = {
+  id: number
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  title: string
+  instructions: string
+  /** The deadline, as an ISO 8601 time in UTC. */
+  dueAt: string
+  maxMarks: number
+  /** When it was first published, as an ISO 8601 time in UTC. */
+  publishedAt: string
+}
+
+/** One assignment as faculty manage it. Archived assignments are not sent. */
+export type LmsFacultyAssignment = {
+  id: number
+  title: string
+  instructions: string
+  dueAt: string
+  maxMarks: number
+  status: LmsContentStatus
+  /** When it was first published, or null for a draft. Edits never change it. */
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** One assignment in a faculty member's list across their courses, from GET /api/lms/faculty/my-assignments. */
+export type LmsFacultyAssignmentOverview = {
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  assignmentId: number
+  title: string
+  dueAt: string
+  maxMarks: number
+  status: LmsContentStatus
+}
+
+/** The definition of an assignment, for adding or editing one. */
+export type LmsAssignmentInput = {
+  title: string
+  instructions: string
+  /** An absolute moment as an ISO 8601 time with a zone, such as 2026-10-20T18:29:00.000Z. */
+  dueAt: string
+  maxMarks: number
+}

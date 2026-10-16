@@ -10,6 +10,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
 import { creditsText } from '../courses/credits'
 import { AnnouncementsEditor } from '../teaching/AnnouncementsEditor'
+import { AssignmentsEditor } from '../teaching/AssignmentsEditor'
 import { CourseContentEditor } from '../teaching/CourseContentEditor'
 import { StatusTag } from '../teaching/StatusTag'
 import { useFacultyCourseContent } from '../teaching/useFacultyCourseContent'
@@ -104,6 +105,7 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
           <Breadcrumb parent={TEACHING} current={course.data.courseName} />
           <CourseHeader course={course.data} />
           <AnnouncementsEditor lmsCourseId={course.data.lmsCourseId} />
+          <AssignmentsEditor lmsCourseId={course.data.lmsCourseId} />
           <CourseContentEditor course={course.data} reload={course.refresh} />
         </>
       )
@@ -112,7 +114,7 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
 
 /**
  * One course the signed-in faculty member teaches, at /teaching/:lmsCourseId, where they manage its
- * modules and topics. The backend checks access from official teaching assignments on every request.
+ * announcements, assignments, modules, and topics. The backend checks access from official teaching assignments on every request.
  * Accounts without the faculty role see an explanation instead, and no request is made.
  */
 export function TeachingCoursePage() {

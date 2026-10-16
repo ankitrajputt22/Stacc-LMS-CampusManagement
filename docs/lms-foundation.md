@@ -568,12 +568,67 @@ Announcements use the same `LmsContentStatus` as course content:
 - A course or announcement the caller may not use answers 404, the same as one that does not exist. Editing or publishing an archived announcement answers 409. A missing or too-long title or message answers 400 with field errors. No token answers 401, and a token without the route's role and permission, an admin's included, answers 403.
 - The reads are side-effect free. Nothing is sent to anyone when an announcement is published.
 
+## Assignments
+
+An assignment defines a piece of work in one LMS course: what to do, by when, and for how many marks. The code is `LmsAssignment` and `LmsAssignmentManagementService` in `com.stacc.backend.lms.assignment`, and the table is `lms_assignments`.
+
+```text
+LmsCourse ------< LmsAssignment   (title, plain-text instructions, dueAt, maxMarks, status, publishedAt)
+                       |
+                       +-- (later) submissions, then grades and feedback: not built
+```
+
+- An assignment belongs to one LMS course and cannot be moved to another. It is not attached to a module, a topic, a course offering, or a teacher, and none of those is copied onto it. The course offering is reached through the LMS course.
+- It has a title (up to 200 characters), instructions (up to 20,000), a deadline, and maximum marks. All are required. The instructions are **plain text**: stored as typed and shown as text with their line breaks, never as HTML. The column is `MEDIUMTEXT`, because 20,000 characters can need more bytes than `TEXT` holds.
+- **The deadline** (`dueAt`) is an absolute moment: a Java `Instant`, stored in UTC in a `DATETIME(6)` column, and sent as ISO 8601 such as `2026-10-20T18:29:00Z`. A request must give a time zone or offset; a date and time without one is refused. The year must be between 2000 and 9999. Each browser shows the deadline in its own time zone.
+- **Maximum marks** (`maxMarks`) are a `BigDecimal` in a `DECIMAL(8,2)` column: greater than zero, at most two decimal places, below 1,000,000, such as 10, 20, or 12.5. A student's marks are not part of the assignment; they belong to the later grading records.
+- The table has no foreign-key cascade, and a database check keeps `max_marks` above zero.
+
+### Lifecycle
+
+Assignments use the same `LmsContentStatus` as course content:
+
+| Status | Meaning |
+| --- | --- |
+| `DRAFT` | Being prepared. Students never see it. New assignments start here. |
+| `PUBLISHED` | Shown to the course's students, under the student access policy. |
+| `ARCHIVED` | Kept for history. Students no longer see it, faculty no longer see it in their lists, and it can no longer be edited or published. |
+
+- `publishedAt` is set by the server the first time an assignment is published and never changes after that. Publishing a published assignment changes nothing. It is stored to the microsecond, and the publish answer shows exactly what is stored.
+- A published assignment can still be edited, including a new deadline or different marks. It stays published, keeps its `publishedAt`, and students see the change on their next load. No history of earlier deadlines is kept, and nobody is notified.
+- **A deadline that has passed changes nothing.** A published assignment stays visible to students after its deadline; it is never hidden or archived automatically. The frontend may show "Past due" next to the date, which describes the date only. What happens to work handed in late belongs to the submissions phase.
+- Archiving keeps the row, including its `publishedAt`. There is no delete endpoint and no way to bring an archived assignment back yet.
+
+### Who sees and changes assignments
+
+- A student sees an assignment only when the student access policy allows the course and the assignment is `PUBLISHED`. Students see them earliest deadline first, then in the order they were added.
+- Faculty see and manage the assignments of courses they teach under the faculty access policy, which comes from official teaching assignments. For an existing assignment, the course is found from the stored assignment, never from the request. Faculty see drafts and published assignments, in the same order.
+- Reading reuses `LMS_COURSE_VIEW` (students) and `FACULTY_COURSE_VIEW` (faculty). Every change needs the new `LMS_ASSIGNMENT_MANAGE` together with `FACULTY` and `FACULTY_COURSE_VIEW` (see `permissions.md`). Course content, materials, and announcements keep `LMS_CONTENT_MANAGE`.
+
+| Route | Rule | What it does |
+| --- | --- | --- |
+| `GET /api/lms/courses/{lmsCourseId}/assignments` | `STUDENT` + `LMS_COURSE_VIEW` | The published assignments: `id`, `title`, `dueAt`, `maxMarks`. Past-due ones are included. No statuses are sent. |
+| `GET /api/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | `STUDENT` + `LMS_COURSE_VIEW` | One published assignment of that course, with the course code and name, the instructions, and `publishedAt`. |
+| `GET /api/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of one course, with status and dates. |
+| `GET /api/lms/faculty/my-assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of every course the faculty member may use now, with the course code and name, earliest deadline first. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` + `LMS_ASSIGNMENT_MANAGE` | Adds a draft from `{"title", "instructions", "dueAt", "maxMarks"}`. `201`. |
+| `PUT /api/lms/faculty/assignments/{assignmentId}` | same | Edits the four fields of a draft or published assignment. |
+| `POST /api/lms/faculty/assignments/{assignmentId}/publish` | same | Publishes it and sets `publishedAt` the first time. |
+| `POST /api/lms/faculty/assignments/{assignmentId}/archive` | same | Archives it. Archiving again is accepted. |
+
+- `my-assignments` lists only courses that pass the faculty access policy, the same rule as the faculty course list: an active faculty profile, an active teaching assignment, and a draft or published LMS course. It reuses `LmsFacultyCourseQueryService` for that, then reads the assignments of those courses in one query. There is no pagination yet.
+- Every route takes the caller from the access token and runs the access check again. The request body can only carry the four fields: the course, status, dates, and any faculty, student, or offering ID are never taken from the client.
+- A course or assignment the caller may not use answers 404, the same as one that does not exist. For students, a draft, an archived assignment, one of another course, and one in a course they may not use all answer the same 404 "Assignment not found or unavailable." Editing or publishing an archived assignment answers 409. Invalid fields answer 400 with field errors; a deadline without a time zone answers 400 as an unreadable body. No token answers 401, and a token without the route's roles and permissions, an admin's included, answers 403.
+- The reads are side-effect free. Nothing is sent to anyone when an assignment is published or changed.
+- Assignments have no submissions, grades, feedback, rubrics, attachments, or reminders yet. Students cannot hand anything in.
+
 ## Not built yet
 
 - No admin LMS endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
 - No rich text, no file previews or versions, no virus scanning, and no way to see or restore archived content.
 - No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
-- No way to manage teaching assignments, and no assignments, submissions, or grades.
+- No way to manage teaching assignments, and no submissions, grades, or feedback for assignments.
+- No attachments, rubrics, deadline history, reminders, or late-work rules for assignments.
 - No notifications, email, read receipts, comments, attachments, or scheduled publishing for announcements, and no rich text or pinning.
 - No other LMS permissions. Each will be added together with the action it protects.

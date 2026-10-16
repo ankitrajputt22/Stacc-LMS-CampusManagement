@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Button } from '../components/Button'
+import { border, fieldClasses } from './formStyles'
 
 /** What happened to a submitted form: done, or refused with messages to show. */
 export type FormOutcome =
@@ -25,13 +26,6 @@ type ContentFormProps = {
   submittingLabel: string
   onSubmit: (title: string, body: string | null) => Promise<FormOutcome>
   onCancel: () => void
-}
-
-const fieldClasses =
-  'mt-1.5 block w-full rounded-control border bg-surface px-3 text-base text-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-stacc-primary sm:text-sm'
-
-function border(hasError: boolean): string {
-  return hasError ? 'border-danger' : 'border-line-strong hover:border-slate-400'
 }
 
 /**

@@ -63,6 +63,8 @@ Topics can hold study materials (`LmsStudyMaterial`). Their details are stored i
 
 The `lms.announcement` package holds `LmsAnnouncement`, a course-wide plain-text update with the same draft, published, and archived lifecycle and no deletion. Students read the published ones through `GET /api/lms/courses/{lmsCourseId}/announcements`; faculty manage them through the `/api/lms/faculty/...` announcement routes with the existing `LMS_CONTENT_MANAGE` permission, and `LmsAnnouncementManagementService` checks their access for every change. See `../docs/lms-foundation.md`.
 
+The `lms.assignment` package holds `LmsAssignment`, the definition of a piece of work in one LMS course: a title, plain-text instructions, a UTC deadline (`Instant`), and maximum marks (`BigDecimal`), with the same lifecycle and no deletion. Published assignments stay visible after their deadline. Students read them through `GET /api/lms/courses/{lmsCourseId}/assignments` and `/assignments/{assignmentId}`; faculty read them per course and across their courses (`GET /api/lms/faculty/my-assignments`), and change them through `LmsAssignmentManagementService` with the new `LMS_ASSIGNMENT_MANAGE` permission. There are no submissions or grades yet. See `../docs/lms-foundation.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.

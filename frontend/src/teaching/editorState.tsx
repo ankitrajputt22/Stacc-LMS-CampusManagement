@@ -7,6 +7,10 @@ export const DESCRIPTION_MAX = 2000
 export const CONTENT_MAX = 20_000
 export const MATERIAL_DESCRIPTION_MAX = 1000
 export const ANNOUNCEMENT_MESSAGE_MAX = 10_000
+export const ASSIGNMENT_INSTRUCTIONS_MAX = 20_000
+
+/** The id of the assignments section of a faculty course page, so the overview can link straight to it. */
+export const ASSIGNMENTS_SECTION_ID = 'assignments'
 
 /** The one form open in the editor at a time. */
 export type OpenForm =
