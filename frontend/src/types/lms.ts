@@ -241,3 +241,29 @@ export type LmsAssignmentInput = {
   dueAt: string
   maxMarks: number
 }
+
+/** One file of a submission attempt. Where it is stored is never sent. */
+export type LmsSubmissionAttachment = {
+  attachmentId: number
+  originalFileName: string
+  contentType: string
+  sizeBytes: number
+}
+
+/** One of the signed-in student's own attempts. It never changes once it is made. */
+export type LmsSubmissionAttempt = {
+  attemptId: number
+  attemptNumber: number
+  /** Plain text with line breaks, or null when only files were sent. */
+  textContent: string | null
+  /** When the server accepted it, as an ISO 8601 time in UTC. */
+  submittedAt: string
+  /** Decided by the server against the deadline that applied at the time. Never recomputed here. */
+  late: boolean
+  attachments: LmsSubmissionAttachment[]
+}
+
+/** The signed-in student's attempts for one assignment, newest first. Empty before the first. */
+export type LmsSubmissionHistory = {
+  attempts: LmsSubmissionAttempt[]
+}

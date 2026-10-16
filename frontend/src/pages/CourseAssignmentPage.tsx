@@ -7,6 +7,7 @@ import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { AssignmentSubmission } from '../courses/AssignmentSubmission'
 import { parseCourseId, parseRouteId } from '../courses/courseRoute'
 import { formatDateTime, isPast } from '../courses/dates'
 import { marksText } from '../courses/marks'
@@ -69,7 +70,10 @@ function InformationRow({ term, children }: { term: string; children: ReactNode 
   )
 }
 
-/** One published assignment: what to do, by when, and for how many marks. Only what the backend sent. */
+/**
+ * One published assignment: what to do, by when, and for how many marks, then the student's own submission.
+ * Only what the backend sent.
+ */
 function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetail }) {
   const [now] = useState(() => Date.now())
 
@@ -111,6 +115,8 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           <p className="text-sm leading-6 break-words whitespace-pre-line text-ink">{assignment.instructions}</p>
         </div>
       </section>
+
+      <AssignmentSubmission lmsCourseId={assignment.lmsCourseId} assignmentId={assignment.id} dueAt={assignment.dueAt} />
 
       <BackToCourse lmsCourseId={assignment.lmsCourseId} />
     </>

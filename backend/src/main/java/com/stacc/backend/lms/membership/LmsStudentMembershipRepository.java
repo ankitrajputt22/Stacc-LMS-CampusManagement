@@ -3,13 +3,24 @@ package com.stacc.backend.lms.membership;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface LmsStudentMembershipRepository extends JpaRepository<LmsStudentMembership, Long> {
 
     Optional<LmsStudentMembership> findByCourseEnrollmentId(Long courseEnrollmentId);
+
+    /**
+     * One membership, locked against other writers until the transaction ends. A student's own
+     * records in a course, such as assignment submissions, are changed under this lock, so two
+     * requests from the same student are handled one after the other.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select membership from LmsStudentMembership membership where membership.id = :id")
+    Optional<LmsStudentMembership> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * The memberships that the student behind one account has in one LMS course, loaded

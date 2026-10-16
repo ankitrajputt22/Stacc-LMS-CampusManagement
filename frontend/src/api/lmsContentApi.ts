@@ -139,7 +139,7 @@ export async function reorderTopics(
 }
 
 // Files can take longer than ordinary requests, so uploads and downloads get more time.
-const FILE_TIMEOUT_MS = 5 * 60_000
+export const FILE_TIMEOUT_MS = 5 * 60_000
 
 /**
  * Uploads a study material as multipart/form-data. The browser sets the multipart header itself; no

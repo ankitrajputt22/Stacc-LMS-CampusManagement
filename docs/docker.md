@@ -12,9 +12,9 @@ frontend   Nginx, serves the built React app
    v
 backend    Spring Boot
    |
-   +--> mysql   MySQL 8.4: all data, including study-material details
+   +--> mysql   MySQL 8.4: all data, including file details
    |
-   +--> minio   MinIO: the study-material files themselves, in a private bucket
+   +--> minio   MinIO: study-material and submission files, in a private bucket
 ```
 
 The browser only ever talks to the frontend. It never reaches MinIO: every file upload and download goes through the backend, which checks access first.
@@ -78,7 +78,7 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 | Stop everything and keep the database | `docker compose down` |
 | Stop everything and **delete the database and stored files** | `docker compose down -v` |
 
-`docker compose down -v` permanently deletes the local Docker database and every uploaded study-material file. Use it only when you want to start from nothing.
+`docker compose down -v` permanently deletes the local Docker database and every uploaded file, study materials and submissions alike. Use it only when you want to start from nothing.
 
 ## How it fits together
 
@@ -94,7 +94,7 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 **File storage.** The `minio` service runs `pgsty/minio`, pinned to one release. MinIO stopped publishing official images in 2025, and this is the community-maintained build that follows its releases. Inside Docker the backend reaches it as `http://minio:9000`, set in `compose.yaml`, and signs in with the MinIO account from `.env`. The backend creates its bucket (`stacc-materials` by default, `STACC_STORAGE_BUCKET`) on the first upload and never makes it public. Files are kept under keys the backend generates, never under their original names.
 
-**Upload size.** Study materials may be up to 25 MB. Nginx accepts requests up to 26 MB, so a file a little too large gets a clear message from the backend, and anything much larger is refused by Nginx at once.
+**Upload size.** Every file may be up to 25 MB, and a submission attempt may have up to 3 files. Nginx accepts up to 80 MB on the submission route (`/api/lms/courses/{id}/assignments/{id}/submissions`) and 26 MB on every other request, so a file a little too large gets a clear message from the backend, and anything much larger is refused by Nginx at once.
 
 **Migrations.** Flyway runs inside the backend when it starts, exactly as in a direct run. An empty database gets every migration. There is no separate migration container.
 
@@ -127,7 +127,7 @@ The backend reads the same variables as in `.env.example`, but Spring Boot does 
 
 A mixed setup also works, and is the easiest way to work on the backend: start only the database and the storage with `docker compose up -d mysql minio`, and run the backend directly with `MYSQL_HOST=localhost`, the `MYSQL_PORT` from `.env`, `STACC_STORAGE_ENDPOINT=http://localhost:9000`, and `STACC_STORAGE_ACCESS_KEY` and `STACC_STORAGE_SECRET_KEY` set to the MinIO account. Never put `minio:9000` in the application's settings: that name exists only inside Docker.
 
-The backend starts without storage. Only uploading and downloading study materials need it; without it they answer that file storage is not available.
+The backend starts without storage. Only uploading and downloading files need it, for study materials and submissions; without it they answer that file storage is not available. A text-only submission does not need storage.
 
 ## If something goes wrong
 
