@@ -10,12 +10,19 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
 import { creditsText, formatCredits } from '../courses/credits'
 import { CourseAnnouncements } from '../courses/CourseAnnouncements'
+import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
+import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { ApiRequestState } from '../api/useApiRequest'
-import type { LmsCourseAnnouncement, LmsCourseContent, LmsCourseDetail } from '../types/lms'
+import type {
+  LmsCourseAnnouncement,
+  LmsCourseAssignment,
+  LmsCourseContent,
+  LmsCourseDetail,
+} from '../types/lms'
 
 const COURSES_PATH = '/courses'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -72,14 +79,15 @@ function InformationRow({ term, children }: { term: string; children: ReactNode 
 type CourseHomeProps = {
   course: LmsCourseDetail
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
+  assignments: ApiRequestState<LmsCourseAssignment[]> & { retry: () => void }
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
 }
 
 /**
- * The course home: the course's academic information, its published announcements, then its published
- * content. Only what the backend sent.
+ * The course home: the course's academic information, its published announcements and assignments, then
+ * its published content. Only what the backend sent.
  */
-function CourseHome({ course, announcements, content }: CourseHomeProps) {
+function CourseHome({ course, announcements, assignments, content }: CourseHomeProps) {
   return (
     <>
       <title>{`${course.courseName} · Stacc`}</title>
@@ -132,15 +140,17 @@ function CourseHome({ course, announcements, content }: CourseHomeProps) {
       </section>
 
       <CourseAnnouncements announcements={announcements} />
+      <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
       <CourseContent content={content} />
     </>
   )
 }
 
 function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
-  // All three requests start together. Announcements and content have their own states below the course details.
+  // All the requests start together. Each section below the course details has its own states.
   const course = useLmsCourse(lmsCourseId)
   const announcements = useCourseAnnouncements(lmsCourseId)
+  const assignments = useCourseAssignments(lmsCourseId)
   const content = useLmsCourseContent(lmsCourseId)
 
   switch (course.status) {
@@ -172,7 +182,9 @@ function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
         </CourseState>
       )
     case 'loaded':
-      return <CourseHome course={course.data} announcements={announcements} content={content} />
+      return (
+        <CourseHome course={course.data} announcements={announcements} assignments={assignments} content={content} />
+      )
   }
 }
 

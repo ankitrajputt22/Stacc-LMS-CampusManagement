@@ -77,6 +77,8 @@ The course content routes follow the same three steps. Reading needs `FACULTY_CO
 
 Announcements follow the same steps with the same permissions: students read published announcements with `LMS_COURSE_VIEW`, faculty list them with `FACULTY_COURSE_VIEW`, and every change needs `LMS_CONTENT_MANAGE`. The data check is made for the course behind the stored announcement.
 
+Assignments follow the same steps. Students read published assignments with `LMS_COURSE_VIEW`, and faculty read them, in one course or across all their courses, with `FACULTY_COURSE_VIEW`. Every change needs `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')`. The data check is made for the course behind the stored assignment, and the list across courses uses the same faculty access rule as the faculty course list.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

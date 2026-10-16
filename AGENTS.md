@@ -116,6 +116,11 @@
 - `publishedAt` is set by the server on the first publish and never changes. A published announcement may be edited; an archived one can no longer be edited or published.
 - Students see only `PUBLISHED` announcements of courses the student access policy allows. Faculty manage them under the faculty access policy, finding the course from the stored announcement. Announcements reuse `LMS_COURSE_VIEW`, `FACULTY_COURSE_VIEW`, and `LMS_CONTENT_MANAGE`; do not add an announcement permission.
 - Do not add notifications, email, read receipts, comments, attachments, or scheduled publishing to announcements before their own phases.
+- Assignments (`LmsAssignment` in `lms.assignment`) belong to one `LmsCourse` and store only the definition: title, plain-text instructions, `dueAt`, and `maxMarks`. Never put student submissions, marks, grades, or feedback on them.
+- `dueAt` is an `Instant` stored in UTC and sent as ISO 8601 with a zone; refuse zone-less times and never assume a time zone. `maxMarks` is `BigDecimal`/`DECIMAL(8,2)`, greater than zero.
+- Assignments use `LmsContentStatus` with the same `publishedAt` rules as announcements. Archive them; never hard-delete them. A published assignment stays visible to students after its deadline; never hide or archive it automatically.
+- Students see only `PUBLISHED` assignments of courses the student access policy allows. Faculty read them with `FACULTY_COURSE_VIEW` under the faculty access policy, finding the course from the stored assignment; every change also needs `LMS_ASSIGNMENT_MANAGE`.
+- Do not add submissions before Phase 28, or grading and feedback before Phase 29. Do not add assignment attachments, rubrics, or notifications without their own phase.
 - Faculty LMS access derives directly from official `TeachingAssignment` records through `LmsFacultyAccessService` and the single rule in `LmsFacultyAccessPolicy`. Do not add an `LmsFacultyMembership` without a real need.
 - Faculty access needs an `ACTIVE` faculty profile, an `ACTIVE` teaching assignment for the LMS course's offering, and a `DRAFT` or `PUBLISHED` LMS course. Students stay `PUBLISHED`-only; faculty draft access must never reach the student policy.
 - `GET /api/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
@@ -140,7 +145,8 @@
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
-- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` and its `/content` and `/announcements` routes return. Do not add placeholder tabs or content before their phases.
+- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return. Do not add placeholder tabs or content before their phases.
+- Deadlines are entered and shown in the browser's own time zone; "Past due" is display only. The faculty `/assignments` overview links to course pages and is not a second editor.
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and links each course to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.

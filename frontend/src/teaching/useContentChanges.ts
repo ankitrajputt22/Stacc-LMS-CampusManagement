@@ -20,13 +20,22 @@ type ChangeOptions<T> = {
 
 const REFRESHED = 'The list has been refreshed.'
 
-function refusalMessage(status: number | null, apiMessage: string | null, hasFieldErrors: boolean): string | null {
+/** What a 403 says by default: the account may not change course content. */
+const CONTENT_FORBIDDEN =
+  'You don’t have permission to change this course’s content. If your access changed recently, sign out and sign in again.'
+
+function refusalMessage(
+  status: number | null,
+  apiMessage: string | null,
+  hasFieldErrors: boolean,
+  forbidden: string,
+): string | null {
   switch (status) {
     case 400:
       // Field errors are shown next to their fields. A bare 400 here means the content changed meanwhile.
       return hasFieldErrors ? null : `The course content changed in the meantime. ${REFRESHED} Try again.`
     case 403:
-      return 'You don’t have permission to change this course’s content. If your access changed recently, sign out and sign in again.'
+      return forbidden
     case 404:
       return `This content is no longer available. ${REFRESHED}`
     case 409:
@@ -44,8 +53,9 @@ function refusalMessage(status: number | null, apiMessage: string | null, hasFie
  * Runs the editor's changes one at a time. A second click while one is saving is ignored, so nothing
  * is sent twice. After every change, and after a refusal that means the list is out of date, the
  * content is quietly reloaded. A 403 never signs the user out; a 401 is left to the shared client.
+ * `forbidden` is what a 403 says, for changes that need a permission of their own.
  */
-export function useContentChanges(reload: () => void) {
+export function useContentChanges(reload: () => void, forbidden: string = CONTENT_FORBIDDEN) {
   const busyRef = useRef(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -77,7 +87,7 @@ export function useContentChanges(reload: () => void) {
         const fieldErrors = Object.fromEntries(
           (apiError?.fieldErrors ?? []).map((fieldError) => [fieldError.field, fieldError.message]),
         )
-        const message = refusalMessage(status, apiError?.message ?? null, Object.keys(fieldErrors).length > 0)
+        const message = refusalMessage(status, apiError?.message ?? null, Object.keys(fieldErrors).length > 0, forbidden)
         if ((status === 400 && Object.keys(fieldErrors).length === 0) || status === 404 || status === 409) {
           reload()
         }
@@ -90,7 +100,7 @@ export function useContentChanges(reload: () => void) {
         setBusy(false)
       }
     },
-    [reload],
+    [reload, forbidden],
   )
 
   const focusNext = useCallback((keys: string[]) => setPendingFocus({ keys, afterRefresh: false }), [])

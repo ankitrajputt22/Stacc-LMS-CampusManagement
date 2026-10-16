@@ -5,6 +5,7 @@ import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
+import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopicRepository;
@@ -35,6 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 @MockitoBean(types = {
     CourseEnrollmentRepository.class,
     LmsAnnouncementRepository.class,
+    LmsAssignmentRepository.class,
     LmsCourseRepository.class,
     LmsModuleRepository.class,
     LmsStudentMembershipRepository.class,
