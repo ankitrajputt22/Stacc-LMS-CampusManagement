@@ -41,7 +41,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     ports:
       # The storage API, for a backend run with Maven, and the web console. Browsers never fetch
-      # study materials from here: every download goes through the backend, which checks access.
+      # files from here: every download goes through the backend, which checks access.
       - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
       - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
@@ -111,7 +111,7 @@ services:
       start_interval: 2s
 
 volumes:
-  # The database files and the stored study materials. Both survive "docker compose down" and are
+  # The database files and the stored files. Both survive "docker compose down" and are
   # removed only by "docker compose down -v".
   mysql-data:
   minio-data:

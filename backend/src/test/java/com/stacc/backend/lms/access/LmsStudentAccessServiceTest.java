@@ -2,6 +2,7 @@ package com.stacc.backend.lms.access;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -283,5 +284,24 @@ class LmsStudentAccessServiceTest {
         verify(lmsCourses, times(2)).findById(LMS_COURSE_ID);
         verify(memberships, times(2)).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
         verifyNoMoreInteractions(studentProfiles, lmsCourses, memberships);
+    }
+
+    @Test
+    void allowedStudentGetsTheMembershipThatGrantsAccessWithItsCourseEnrollment() {
+        Optional<LmsStudentMembership> granting = service.findAccessGrantingMembership(ACCOUNT_ID, LMS_COURSE_ID);
+
+        assertSame(membership, granting.orElseThrow());
+        assertSame(courseEnrollment, granting.orElseThrow().getCourseEnrollment());
+    }
+
+    @Test
+    void membershipLookupFollowsExactlyTheSameRuleAsTheAccessCheck() {
+        membership.deactivate();
+
+        assertFalse(canAccess());
+        assertTrue(service.findAccessGrantingMembership(ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingMembership(OTHER_ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingMembership(null, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingMembership(ACCOUNT_ID, null).isEmpty());
     }
 }

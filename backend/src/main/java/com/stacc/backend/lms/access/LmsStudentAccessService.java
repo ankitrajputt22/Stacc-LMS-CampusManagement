@@ -8,6 +8,7 @@ import com.stacc.backend.identity.student.StudentProfileStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
+import com.stacc.backend.lms.membership.LmsStudentMembership;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,24 +48,39 @@ public class LmsStudentAccessService {
      */
     @Transactional(readOnly = true)
     public boolean canAccessCourse(Long userAccountId, Long lmsCourseId) {
+        return findAccessGrantingMembership(userAccountId, lmsCourseId).isPresent();
+    }
+
+    /**
+     * The membership through which the student behind this account may use the LMS course right
+     * now, by exactly the rule of {@link #canAccessCourse}. Its course enrollment is the student's
+     * official place in the course, for features that act on the student's own records. Empty
+     * whenever access is not granted.
+     *
+     * @param userAccountId the ID of the signed-in account, taken from its access token and
+     *                      never from anything the client sends in the request
+     */
+    @Transactional(readOnly = true)
+    public Optional<LmsStudentMembership> findAccessGrantingMembership(Long userAccountId, Long lmsCourseId) {
         if (userAccountId == null || lmsCourseId == null) {
-            return false;
+            return Optional.empty();
         }
 
         Optional<StudentProfile> studentProfile = studentProfiles.findByUserAccountId(userAccountId);
         if (studentProfile.isEmpty() || studentProfile.get().getStatus() != StudentProfileStatus.ACTIVE) {
-            return false;
+            return Optional.empty();
         }
 
         Optional<LmsCourse> lmsCourse = lmsCourses.findById(lmsCourseId);
         if (lmsCourse.isEmpty() || lmsCourse.get().getStatus() != LmsCourseStatus.PUBLISHED) {
-            return false;
+            return Optional.empty();
         }
 
         // The lookup already asks for this LMS course. It is checked again here, so that access
         // never depends on the lookup alone.
         return memberships.findAllByUserAccountIdAndLmsCourseId(userAccountId, lmsCourseId).stream()
-                .anyMatch(membership -> lmsCourseId.equals(membership.getLmsCourse().getId())
-                        && LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId));
+                .filter(membership -> lmsCourseId.equals(membership.getLmsCourse().getId())
+                        && LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId))
+                .findFirst();
     }
 }

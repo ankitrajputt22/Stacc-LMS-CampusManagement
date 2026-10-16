@@ -249,7 +249,7 @@ function MaterialItem({
   const isEditing = openForm?.type === 'editMaterial' && openForm.id === material.id
   const isConfirming = confirming?.kind === 'material' && confirming.id === material.id
   const isDownloading = downloads.downloadingId === material.id
-  const downloadFailure = downloads.failure?.materialId === material.id ? downloads.failure.message : null
+  const downloadFailure = downloads.failure?.fileId === material.id ? downloads.failure.message : null
 
   function move(direction: -1 | 1) {
     const away = direction === -1 ? 'up' : 'down'

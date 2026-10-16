@@ -50,13 +50,14 @@ This decides which pages may send requests. It never replaces the token: every r
 
 ## Files
 
-Study materials are the API's only files. See `lms-foundation.md` for who may upload and download them.
+The API's files are study materials and assignment submission files. See `lms-foundation.md` for who may upload and download them.
 
-- Uploads may be at most 25 MB (`STACC_MATERIAL_MAX_FILE_SIZE`). Spring refuses whole requests over 26 MB before reading them.
+- Each file may be at most 25 MB (`STACC_MATERIAL_MAX_FILE_SIZE`), and a submission attempt may have at most 3 files (`STACC_SUBMISSION_MAX_FILES`). Spring refuses whole requests over 80 MB (`STACC_UPLOAD_MAX_REQUEST_SIZE`) before reading them; the Docker proxy allows 80 MB only on the submission route and 26 MB everywhere else.
 - Only an allow-list of academic types is accepted: PDF, TXT, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, and JPEG. HTML, SVG, scripts, programs, and archives are refused. The extension, the type the browser declares, and the first bytes of the file must all agree.
 - The stored content type comes from the allow-list, never from the browser.
 - Every download is sent as an attachment, with `X-Content-Type-Options: nosniff`, so an uploaded file is never shown as a page of this site.
 - Files live in a private bucket under keys the backend generates. Storage addresses, bucket names, keys, and storage credentials never reach a browser, and there are no public or pre-signed links.
+- Submission files are the student's own: the student is taken from the token, their course enrollment is found on the server, and another student's file answers the same 404 as a missing one.
 - There is no virus scanning yet. A production setup could add it in front of storage.
 
 ## Still to come

@@ -44,7 +44,7 @@ export function StudyMaterialList({ materials, downloads }: StudyMaterialListPro
       <ul className="mt-1.5 divide-y divide-line rounded-control border border-line">
         {materials.map((material) => {
           const isDownloading = downloads.downloadingId === material.id
-          const failed = downloads.failure?.materialId === material.id ? downloads.failure.message : null
+          const failed = downloads.failure?.fileId === material.id ? downloads.failure.message : null
           return (
             <li key={material.id} className="px-3 py-2.5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
