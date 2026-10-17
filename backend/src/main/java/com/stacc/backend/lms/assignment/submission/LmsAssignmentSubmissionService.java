@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.stacc.backend.common.error.ApiException;
@@ -57,6 +58,7 @@ public class LmsAssignmentSubmissionService {
     private final LmsAssignmentSubmissionRepository submissions;
     private final LmsSubmissionAttemptRepository attempts;
     private final LmsSubmissionAttachmentRepository attachments;
+    private final LmsSubmissionGradeRepository grades;
     private final ObjectStorageService storage;
     private final Clock clock;
     private final long maxFileBytes;
@@ -69,6 +71,7 @@ public class LmsAssignmentSubmissionService {
             LmsAssignmentSubmissionRepository submissions,
             LmsSubmissionAttemptRepository attempts,
             LmsSubmissionAttachmentRepository attachments,
+            LmsSubmissionGradeRepository grades,
             ObjectStorageService storage,
             Clock clock,
             LmsMaterialProperties materialProperties,
@@ -79,14 +82,16 @@ public class LmsAssignmentSubmissionService {
         this.submissions = submissions;
         this.attempts = attempts;
         this.attachments = attachments;
+        this.grades = grades;
         this.storage = storage;
         this.clock = clock;
         this.maxFileBytes = materialProperties.maxFileSize().toBytes();
         this.maxFiles = submissionProperties.maxFiles();
     }
 
-    /** One attempt with its files, in the order they were sent. */
-    public record SubmittedAttempt(LmsSubmissionAttempt attempt, List<LmsSubmissionAttachment> attachments) {
+    /** One attempt with its files, in the order they were sent, and its grade, or null while it has none. */
+    public record SubmittedAttempt(
+            LmsSubmissionAttempt attempt, List<LmsSubmissionAttachment> attachments, LmsSubmissionGrade grade) {
     }
 
     /** An opened file for a download. The caller must close the content stream. */
@@ -147,7 +152,7 @@ public class LmsAssignmentSubmissionService {
             }
             List<LmsSubmissionAttachment> savedAttachments = attachments.saveAllAndFlush(saved);
             submissions.saveAndFlush(submission);
-            return new SubmittedAttempt(attempt, savedAttachments);
+            return new SubmittedAttempt(attempt, savedAttachments, null);
         } catch (RuntimeException failure) {
             removeQuietly(storedKeys);
             throw failure;
@@ -155,8 +160,9 @@ public class LmsAssignmentSubmissionService {
     }
 
     /**
-     * The student's own attempts for an assignment they may see now, newest first, each with its files.
-     * A student who has not handed anything in gets an empty list, not an error.
+     * The student's own attempts for an assignment they may see now, newest first, each with its files and
+     * its own grade, if it has been graded. A student who has not handed anything in gets an empty list, not
+     * an error.
      *
      * @param userAccountId the ID of the signed-in account, never an ID sent by the client
      */
@@ -222,12 +228,16 @@ public class LmsAssignmentSubmissionService {
         if (found.isEmpty()) {
             return List.of();
         }
-        Map<Long, List<LmsSubmissionAttachment>> filesByAttempt = attachments
-                .findAllByAttemptIdInOrderByIdAsc(found.stream().map(LmsSubmissionAttempt::getId).toList())
+        List<Long> attemptIds = found.stream().map(LmsSubmissionAttempt::getId).toList();
+        Map<Long, List<LmsSubmissionAttachment>> filesByAttempt = attachments.findAllByAttemptIdInOrderByIdAsc(attemptIds)
                 .stream()
                 .collect(Collectors.groupingBy(attachment -> attachment.getAttempt().getId()));
+        // Each grade stays with the attempt it was given for; a newer attempt starts without one.
+        Map<Long, LmsSubmissionGrade> gradeByAttempt = grades.findAllByAttemptIdIn(attemptIds).stream()
+                .collect(Collectors.toMap(grade -> grade.getAttempt().getId(), Function.identity()));
         return found.stream()
-                .map(attempt -> new SubmittedAttempt(attempt, filesByAttempt.getOrDefault(attempt.getId(), List.of())))
+                .map(attempt -> new SubmittedAttempt(attempt, filesByAttempt.getOrDefault(attempt.getId(), List.of()),
+                        gradeByAttempt.get(attempt.getId())))
                 .toList();
     }
 

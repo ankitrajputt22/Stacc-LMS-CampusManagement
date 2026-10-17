@@ -261,9 +261,69 @@ export type LmsSubmissionAttempt = {
   /** Decided by the server against the deadline that applied at the time. Never recomputed here. */
   late: boolean
   attachments: LmsSubmissionAttachment[]
+  /** This attempt's own grade, or null while it is not graded. A newer attempt starts without one. */
+  grade: LmsSubmissionGrade | null
 }
 
 /** The signed-in student's attempts for one assignment, newest first. Empty before the first. */
 export type LmsSubmissionHistory = {
   attempts: LmsSubmissionAttempt[]
+}
+
+/** The grade of one attempt. Who graded it is not sent. */
+export type LmsSubmissionGrade = {
+  /** An exact decimal on the backend, such as 18.00 or 12.50. JSON carries it as a number. */
+  marksAwarded: number
+  /** The assignment's maximum when the attempt was first graded. It never changes afterwards. */
+  maxMarksSnapshot: number
+  /** Plain text with line breaks, or null. */
+  feedback: string | null
+  /** When the current marks and feedback were saved, as an ISO 8601 time in UTC. */
+  gradedAt: string
+}
+
+/** One student's submission for an assignment, summed up by its latest attempt, for faculty. */
+export type LmsFacultySubmissionSummary = {
+  submissionId: number
+  /** The student's college ID. There is no name to show. */
+  studentLoginId: string
+  latestAttemptNumber: number
+  attemptCount: number
+  latestSubmittedAt: string
+  latestLate: boolean
+  /** Whether the latest attempt is graded. An older attempt's grade does not count. */
+  latestGraded: boolean
+  latestMarksAwarded: number | null
+  latestMaxMarksSnapshot: number | null
+}
+
+/** One attempt as faculty review it. */
+export type LmsFacultySubmissionAttempt = {
+  attemptId: number
+  attemptNumber: number
+  textContent: string | null
+  submittedAt: string
+  /** The deadline that applied when the attempt was made. */
+  dueAtSnapshot: string
+  late: boolean
+  attachments: LmsSubmissionAttachment[]
+  grade: LmsSubmissionGrade | null
+}
+
+/** One student's submission with every attempt, newest first, for faculty review. */
+export type LmsFacultySubmissionDetail = {
+  assignmentId: number
+  title: string
+  /** The assignment's maximum now. A first grade is out of this. */
+  maxMarks: number
+  dueAt: string
+  studentLoginId: string
+  submissionId: number
+  attempts: LmsFacultySubmissionAttempt[]
+}
+
+/** The marks and feedback for one attempt. */
+export type LmsGradeInput = {
+  marksAwarded: number
+  feedback: string | null
 }

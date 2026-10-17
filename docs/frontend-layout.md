@@ -30,7 +30,7 @@ An item without a route is shown as "Soon" and is not a link, so add the route o
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
-An item stays marked on the pages below it: Courses on a course home and its assignment pages, Teaching on a faculty course page, and Assignments on `/assignments`. Only the exact page is announced as the current page.
+An item stays marked on the pages below it: Courses on a course home and its assignment pages, Teaching on a faculty course page and its submissions pages, and Assignments on `/assignments`. Only the exact page is announced as the current page.
 
 An item stays marked on the pages below it, so Courses is also marked on a course home (`/courses/:lmsCourseId`) and Teaching on a faculty course page (`/teaching/:lmsCourseId`). Screen readers hear it there as the current section, not the current page; the page's breadcrumb names the page itself. Only the Dashboard (`/`) is marked on its exact URL alone.
 

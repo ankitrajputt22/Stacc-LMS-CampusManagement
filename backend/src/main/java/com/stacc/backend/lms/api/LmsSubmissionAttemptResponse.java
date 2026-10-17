@@ -25,7 +25,10 @@ public record LmsSubmissionAttemptResponse(
                 + "change if the deadline is moved later.", example = "false")
         boolean late,
 
-        List<LmsSubmissionAttachmentResponse> attachments) {
+        List<LmsSubmissionAttachmentResponse> attachments,
+
+        @Schema(description = "The grade of this attempt, or null while it is not graded. A newer attempt starts without one.")
+        LmsSubmissionGradeResponse grade) {
 
     static LmsSubmissionAttemptResponse of(LmsAssignmentSubmissionService.SubmittedAttempt submitted) {
         return new LmsSubmissionAttemptResponse(
@@ -34,6 +37,7 @@ public record LmsSubmissionAttemptResponse(
                 submitted.attempt().getTextContent(),
                 submitted.attempt().getSubmittedAt(),
                 submitted.attempt().isLate(),
-                submitted.attachments().stream().map(LmsSubmissionAttachmentResponse::of).toList());
+                submitted.attachments().stream().map(LmsSubmissionAttachmentResponse::of).toList(),
+                LmsSubmissionGradeResponse.of(submitted.grade()));
     }
 }

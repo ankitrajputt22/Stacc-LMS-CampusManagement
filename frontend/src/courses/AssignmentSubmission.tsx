@@ -4,8 +4,8 @@ import { downloadSubmissionAttachment, submitAssignment } from '../api/lmsSubmis
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
 import type { LmsSubmissionAttempt } from '../types/lms'
+import { AttemptFiles, GradeSummary, TimingTag } from './AttemptParts'
 import { formatDateTime, isPast } from './dates'
-import { fileTypeLabel, formatFileSize } from './materials'
 import { SubmissionForm, type SubmitOutcome } from './SubmissionForm'
 import { useFileDownload } from './useFileDownload'
 import { useMySubmissions } from './useMySubmissions'
@@ -34,15 +34,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
     default:
       return `Couldn’t submit your assignment. ${NOT_CHANGED}`
   }
-}
-
-/** On time or late, as the backend decided it for this attempt. Words, never colour alone. */
-function TimingTag({ late }: { late: boolean }) {
-  return (
-    <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
-      {late ? 'Late' : 'On time'}
-    </span>
-  )
 }
 
 type AttemptItemProps = {
@@ -75,50 +66,9 @@ function AttemptItem({ attempt, isLatest, downloads }: AttemptItemProps) {
       {attempt.textContent && (
         <p className="mt-2 text-sm leading-6 break-words whitespace-pre-line text-ink">{attempt.textContent}</p>
       )}
-      {attempt.attachments.length > 0 && (
-        <ul aria-label={`Files of attempt ${attempt.attemptNumber}`} className="mt-2 divide-y divide-line rounded-control border border-line">
-          {attempt.attachments.map((file) => {
-            const isDownloading = downloads.downloadingId === file.attachmentId
-            const failed = downloads.failure?.fileId === file.attachmentId ? downloads.failure.message : null
-            const type = fileTypeLabel(file.originalFileName)
-            return (
-              <li key={file.attachmentId} className="px-3 py-2">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="min-w-0 text-sm text-ink">
-                    {/* Only the name may break anywhere; the type and size stay whole. */}
-                    <span className="break-all">{file.originalFileName}</span>
-                    <span className="whitespace-nowrap text-ink-muted">
-                      {type && (
-                        <>
-                          <span aria-hidden="true"> · </span>
-                          <span className="sr-only">, </span>
-                          {type}
-                        </>
-                      )}
-                      <span aria-hidden="true"> · </span>
-                      <span className="sr-only">, </span>
-                      {formatFileSize(file.sizeBytes)}
-                    </span>
-                  </p>
-                  <ActionButton
-                    className="shrink-0 self-start sm:self-auto"
-                    aria-disabled={isDownloading || undefined}
-                    onClick={() => void downloads.download({ id: file.attachmentId, originalFileName: file.originalFileName })}
-                  >
-                    {isDownloading ? 'Downloading…' : 'Download'}
-                    <span className="sr-only"> {file.originalFileName}</span>
-                  </ActionButton>
-                </div>
-                {failed && (
-                  <p role="alert" className="mt-1 text-sm text-danger">
-                    {failed}
-                  </p>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+      <AttemptFiles attemptNumber={attempt.attemptNumber} files={attempt.attachments} downloads={downloads} />
+      {/* This attempt's own grade: an earlier attempt's grade never shows here. */}
+      <GradeSummary grade={attempt.grade} />
     </article>
   )
 }

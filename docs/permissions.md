@@ -26,6 +26,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `LMS_CONTENT_MANAGE` | `FACULTY` | Changing the modules, topics, study materials, and announcements of LMS courses: adding or uploading, editing, publishing, archiving, and reordering them. Added by `V22`. |
 | `LMS_ASSIGNMENT_MANAGE` | `FACULTY` | Creating, editing, publishing, and archiving the assignments of LMS courses. Added by `V26`. |
 | `LMS_ASSIGNMENT_SUBMIT` | `STUDENT` | Handing in attempts for assignments, and reading back and downloading one's own attempts and files. Added by `V28`. |
+| `LMS_ASSIGNMENT_GRADE` | `FACULTY` | Reviewing students' submissions for published assignments, downloading their files, and saving or changing the grade and feedback of an attempt. Added by `V30`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided by official enrollment and LMS membership (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 
@@ -38,6 +39,8 @@ Announcements added no permission. Students read the published announcements of 
 `LMS_ASSIGNMENT_MANAGE` is separate from content editing because assignments are assessment. It opens assignment changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. Every change needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_MANAGE` together. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. Reading assignments needs no new permission: students use `LMS_COURSE_VIEW` and faculty `FACULTY_COURSE_VIEW`. A faculty member signed in before `V26` must sign in again to get it; until then the assignment pages open, but every change is refused with 403.
 
 `LMS_ASSIGNMENT_SUBMIT` lets a student hand in work; it does not decide for which assignments. Every submission route needs `STUDENT`, `LMS_COURSE_VIEW`, and `LMS_ASSIGNMENT_SUBMIT` together, and the student's course enrollment and access are still decided from official enrollment by the student access rule. `FACULTY` and `ADMIN` do not hold it, and there is no admin pass. A student signed in before `V28` must sign in again to get it; until then the assignment page shows the assignment, and its submission area says that access is missing.
+
+`LMS_ASSIGNMENT_GRADE` is separate from `LMS_ASSIGNMENT_MANAGE` because reading students' work and deciding their marks is a different responsibility from defining the assignment. It opens grading, not the courses: which assignments a faculty member may grade is still decided by official teaching assignments. Every grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_GRADE` together. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. Students read their own grades with their submission history, under `LMS_ASSIGNMENT_SUBMIT`; no grade permission is needed for that. A faculty member signed in before `V30` must sign in again to get it; until then the submissions page says that access is missing.
 
 Add a row to this table whenever a migration adds a real permission. It is a record of what exists, not a plan.
 
@@ -67,7 +70,7 @@ A permission reaches an account through its access token, which is issued at log
 
 A permission code can be used directly in a method rule: `@PreAuthorize("hasAuthority('PERMISSION_CODE')")`. The code is the authority name as stored, with no prefix. See `authorization.md`.
 
-The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together. `GET /api/lms/courses/{lmsCourseId}` uses the same rule. `GET /api/lms/faculty/my-courses` requires the `FACULTY` role and `FACULTY_COURSE_VIEW` together. The faculty content changes require the `FACULTY` role and `LMS_CONTENT_MANAGE` together, the assignment changes require the `FACULTY` role, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_MANAGE` together, and the submission routes require the `STUDENT` role, `LMS_COURSE_VIEW`, and `LMS_ASSIGNMENT_SUBMIT` together (see `lms-foundation.md`).
+The first real rule is on `GET /api/lms/my-courses`, which requires the `STUDENT` role and `LMS_COURSE_VIEW` together. `GET /api/lms/courses/{lmsCourseId}` uses the same rule. `GET /api/lms/faculty/my-courses` requires the `FACULTY` role and `FACULTY_COURSE_VIEW` together. The faculty content changes require the `FACULTY` role and `LMS_CONTENT_MANAGE` together, the assignment changes require the `FACULTY` role, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_MANAGE` together, the submission routes require the `STUDENT` role, `LMS_COURSE_VIEW`, and `LMS_ASSIGNMENT_SUBMIT` together, and the grading routes require the `FACULTY` role, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_GRADE` together (see `lms-foundation.md`).
 
 ## Not built yet
 

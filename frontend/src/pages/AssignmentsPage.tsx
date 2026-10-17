@@ -10,7 +10,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime, isPast } from '../courses/dates'
 import { marksText } from '../courses/marks'
 import { PastDueLabel } from '../courses/PastDueLabel'
-import { ASSIGNMENTS_SECTION_ID } from '../teaching/editorState'
+import { ASSIGNMENTS_SECTION_ID, submissionsPath } from '../teaching/editorState'
 import { StatusTag } from '../teaching/StatusTag'
 import { useMyFacultyAssignments } from '../teaching/useMyFacultyAssignments'
 import type { LmsFacultyAssignmentOverview } from '../types/lms'
@@ -50,6 +50,16 @@ function AssignmentRow({ assignment, now }: { assignment: LmsFacultyAssignmentOv
         <span className="sr-only">, </span>
         {marksText(assignment.maxMarks)}
       </p>
+      {assignment.status === 'PUBLISHED' && (
+        // Above the row's stretched link, so it opens the submissions instead of the course.
+        <Link
+          to={submissionsPath(assignment.lmsCourseId, assignment.assignmentId)}
+          className="relative z-10 mt-1 inline-flex min-h-11 items-center rounded-control text-sm font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
+        >
+          Review submissions
+          <span className="sr-only"> for {assignment.title}</span>
+        </Link>
+      )}
     </li>
   )
 }

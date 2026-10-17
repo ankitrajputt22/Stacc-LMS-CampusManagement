@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -74,6 +75,7 @@ class LmsAssignmentSubmissionServiceTest {
     private final LmsAssignmentSubmissionRepository submissions = mock(LmsAssignmentSubmissionRepository.class);
     private final LmsSubmissionAttemptRepository attempts = mock(LmsSubmissionAttemptRepository.class);
     private final LmsSubmissionAttachmentRepository attachments = mock(LmsSubmissionAttachmentRepository.class);
+    private final LmsSubmissionGradeRepository grades = mock(LmsSubmissionGradeRepository.class);
     private final ObjectStorageService storage = mock(ObjectStorageService.class);
 
     private final LmsCourse course = SubmissionFixtures.course(7);
@@ -87,7 +89,7 @@ class LmsAssignmentSubmissionServiceTest {
 
     private LmsAssignmentSubmissionService serviceAt(Instant now) {
         return new LmsAssignmentSubmissionService(studentAccess, assignmentRows, memberships, submissions, attempts, attachments,
-                storage, Clock.fixed(now, ZoneOffset.UTC), new LmsMaterialProperties(DataSize.ofBytes(1024)),
+                grades, storage, Clock.fixed(now, ZoneOffset.UTC), new LmsMaterialProperties(DataSize.ofBytes(1024)),
                 new LmsSubmissionProperties(3));
     }
 
@@ -360,7 +362,7 @@ class LmsAssignmentSubmissionServiceTest {
     }
 
     @Test
-    void historyIsTheStudentsOwnAttemptsNewestFirstWithTheirFiles() {
+    void historyIsTheStudentsOwnAttemptsNewestFirstWithTheirFilesAndEachAttemptsOwnGrade() {
         LmsAssignmentSubmission own = new LmsAssignmentSubmission(published, membershipA.getCourseEnrollment());
         ReflectionTestUtils.setField(own, "id", 70L);
         LmsSubmissionAttempt first = withId(new LmsSubmissionAttempt(own, 1, "First", BEFORE_DUE, SubmissionFixtures.DUE));
@@ -369,12 +371,18 @@ class LmsAssignmentSubmissionServiceTest {
         when(submissions.findByAssignmentIdAndCourseEnrollmentId(5L, 40L)).thenReturn(Optional.of(own));
         when(attempts.findAllBySubmissionIdOrderByAttemptNumberDesc(70L)).thenReturn(List.of(second, first));
         when(attachments.findAllByAttemptIdInOrderByIdAsc(List.of(second.getId(), first.getId()))).thenReturn(List.of(file));
+        // The first attempt was graded before the student handed in again; the second is not graded yet.
+        LmsSubmissionGrade firstGrade = new LmsSubmissionGrade(first, SubmissionFixtures.faculty(course, 21, 61),
+                new BigDecimal("14"), new BigDecimal("20"), "Good start.", BEFORE_DUE);
+        when(grades.findAllByAttemptIdIn(List.of(second.getId(), first.getId()))).thenReturn(List.of(firstGrade));
 
         List<LmsAssignmentSubmissionService.SubmittedAttempt> history = service.history(STUDENT_A, 7L, 5L);
 
         assertEquals(List.of(2, 1), history.stream().map(entry -> entry.attempt().getAttemptNumber()).toList());
         assertEquals(List.of(file), history.get(0).attachments());
         assertEquals(List.of(), history.get(1).attachments());
+        assertNull(history.get(0).grade());
+        assertSame(firstGrade, history.get(1).grade());
         assertTrue(history.get(0).attempt().isLate());
         verify(submissions).findByAssignmentIdAndCourseEnrollmentId(5L, 40L);
     }

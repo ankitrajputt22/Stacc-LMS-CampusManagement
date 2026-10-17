@@ -3,6 +3,7 @@ package com.stacc.backend.lms.api;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -31,11 +33,13 @@ import java.util.List;
 import com.stacc.backend.DatabaseFreeApiTest;
 import com.stacc.backend.auth.token.TestTokens;
 import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmission;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmissionService;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmissionService.SubmittedAttempt;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionAttachment;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionAttempt;
+import com.stacc.backend.lms.assignment.submission.LmsSubmissionGrade;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpHeaders;
@@ -92,7 +96,14 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
             ReflectionTestUtils.setField(file, "id", 200L + index);
             files.add(file);
         }
-        return new SubmittedAttempt(attempt, files);
+        return new SubmittedAttempt(attempt, files, null);
+    }
+
+    private static SubmittedAttempt graded(SubmittedAttempt submitted, String marks, String feedback) {
+        LmsSubmissionGrade grade = new LmsSubmissionGrade(submitted.attempt(), mock(FacultyProfile.class), new BigDecimal(marks),
+                new BigDecimal("20"), feedback, Instant.parse("2026-10-21T04:00:00Z"));
+        ReflectionTestUtils.setField(grade, "id", 900L);
+        return new SubmittedAttempt(submitted.attempt(), submitted.attachments(), grade);
     }
 
     private static List<AbstractMockHttpServletRequestBuilder<?>> routes() {
@@ -110,7 +121,8 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
                         .param("userAccountId", "999")
                         .param("submittedAt", "2020-01-01T00:00:00Z")))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.*", hasSize(6)))
+                .andExpect(jsonPath("$.*", hasSize(7)))
+                .andExpect(jsonPath("$.grade").value(nullValue()))
                 .andExpect(jsonPath("$.attemptId").value(101))
                 .andExpect(jsonPath("$.attemptNumber").value(1))
                 .andExpect(jsonPath("$.textContent").value("My answer\nLine two"))
@@ -213,6 +225,24 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
+    void historyShowsEachAttemptsOwnGradeAndNothingAboutTheGrader() throws Exception {
+        when(submissionService.history(ACCOUNT_ID, 7L, 5L)).thenReturn(List.of(
+                submitted(2, "Second", false),
+                graded(submitted(1, "First", true), "14", "Good start.\nExplain question 4.")));
+
+        mockMvc.perform(as(studentToken(), get(SUBMISSIONS + "/me")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.attempts[0].attemptNumber").value(2))
+                .andExpect(jsonPath("$.attempts[0].grade").value(nullValue()))
+                .andExpect(jsonPath("$.attempts[1].grade.*", hasSize(4)))
+                .andExpect(jsonPath("$.attempts[1].grade.feedback").value("Good start.\nExplain question 4."))
+                .andExpect(jsonPath("$.attempts[1].grade.gradedAt").value("2026-10-21T04:00:00Z"))
+                .andExpect(content().string(containsString("\"marksAwarded\":14.00")))
+                .andExpect(content().string(containsString("\"maxMarksSnapshot\":20.00")))
+                .andExpect(content().string(not(containsString("gradedBy"))));
+    }
+
+    @Test
     void ownFileIsSentAsAnAttachmentWithItsStoredDetails() throws Exception {
         when(submissionService.openOwnAttachment(ACCOUNT_ID, 200L)).thenReturn(new LmsAssignmentSubmissionService.Download(
                 "Week 1 – Answers.pdf", "application/pdf", PDF.length, new ByteArrayInputStream(PDF)));
@@ -269,8 +299,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath(operation + ".responses['403']").exists());
         }
         result.andExpect(jsonPath("$.components.schemas.LmsSubmissionAttachmentResponse.properties.objectKey").doesNotExist())
-                .andExpect(jsonPath("$.components.schemas.LmsSubmissionAttemptResponse.properties.courseEnrollmentId").doesNotExist())
-                .andExpect(jsonPath("$.paths['/api/lms/faculty/assignments/{assignmentId}/submissions']").doesNotExist());
+                .andExpect(jsonPath("$.components.schemas.LmsSubmissionAttemptResponse.properties.courseEnrollmentId").doesNotExist());
     }
 
     @Test
