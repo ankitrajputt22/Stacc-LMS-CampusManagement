@@ -199,11 +199,24 @@ A teaching assignment is the official ERP record that a faculty member teaches o
 - There is no lead or co-teacher distinction yet. Every assignment counts the same.
 - `status` is `ACTIVE` or `INACTIVE`. New assignments are `ACTIVE`. An assignment that has ended is made `INACTIVE` and kept for history; it can be made active again.
 
-Faculty LMS access is decided from active teaching assignments (see `lms-foundation.md`).
+Faculty LMS access is decided from active teaching assignments (see `lms-foundation.md`). Academic features use `FacultyTeachingAccessService` in the same package instead, which needs no LMS course: the account's faculty profile is `ACTIVE` and has an `ACTIVE` teaching assignment for the course offering.
 
 **Rule for the future assignment-management feature:** before creating an assignment or making one active again, it should check that the faculty profile is `ACTIVE`. The model itself does not check this. The course offering's status is not part of this rule: an assignment may be prepared before the offering starts.
 
 Deleting an assignment never deletes the faculty profile or the course offering, and neither can be deleted while an assignment refers to it.
+
+## Attendance
+
+Attendance is academic data of a course offering, not LMS data (see `attendance.md`).
+
+```text
+CourseOffering ------< AttendanceSession ------< AttendanceRecord >------ CourseEnrollment
+```
+
+- A session is one class meeting of one course offering, never of a course or an LMS course, so attendance works whether or not an LMS course exists.
+- Creating a session snapshots the offering's currently `ENROLLED` course enrollments as `UNMARKED` records. Later withdrawals keep their records, and later enrollments only join later sessions.
+- Faculty who teach the offering mark students `PRESENT` or `ABSENT` and finalize the session once all are marked. Only finalized sessions are visible to students, and finalized records can still be corrected between `PRESENT` and `ABSENT`.
+- Sessions are never reopened or deleted, and records are never deleted.
 
 ## The ERP is the source of truth for the LMS
 
@@ -253,11 +266,11 @@ The LMS student access policy consults this official ERP state on every check. A
 
 ## Keeping history
 
-A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted. Later records may still refer to them, so academic history is kept.
+A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted, and neither are attendance sessions or records. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
-- There is no API, service, or screen for any of these models. Only the stored models exist.
+- Apart from attendance, there is no API, service, or screen for these models. Only the stored models exist.
 - Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
-- No permissions for this data exist yet. They will be added together with the API they protect.
+- Apart from `ATTENDANCE_MANAGE` and `ATTENDANCE_VIEW`, no permissions for this data exist yet. They will be added together with the API they protect.
