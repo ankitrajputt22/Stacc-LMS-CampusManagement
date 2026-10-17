@@ -207,6 +207,18 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Results are grouped by academic session and semester ("2026-27 · Semester 3"), newest first. Each shows the course name, code, and credits, **Marks** such as "84 / 100", **Grade** only when one was entered, **Remarks** only when there are any, and when it was published. Only published results appear. There is no percentage, GPA, SGPA, CGPA, rank, division, or pass or fail.
 - With none it says "No published results available yet." Loading says "Loading results…"; 403 and failures behave as on the faculty pages. An account without `STUDENT` sees "This page is for student accounts."
 
+### The Academic Masters page
+
+**Academic Admin** is the first real Admin item in the navigation, shown to any account holding `ADMIN`, once also for an account with other roles. It opens `/admin/academic`, which goes to `/admin/academic/departments`; the other sections are `/admin/academic/programs`, `/sessions`, `/semesters`, and `/courses`. Academic Admin stays marked on all of them.
+
+- The page is "Academic Masters", with a small section navigation of text links (Departments, Programs, Academic Sessions, Semesters, Courses). The current section is marked with an underline, bold text, and `aria-current`, not by colour alone, and a refresh opens the same section.
+- Each section lists its records from `/api/admin/academic/...` through `apiClient`: a compact table on wider screens and stacked records on phones, with each record's fields, its parents' codes and names, and its status as a word. Every record has **Edit**; there is no Delete anywhere.
+- **Add** and **Edit** open one contained form at a time with labelled fields that mirror the backend: codes, names, the program duration, dates as native date inputs, credits, and status. Parents are chosen from selects filled from the admin API ("CSE · Computer Science and Engineering", inactive ones marked), and only the parent's ID is sent. Fields that never change after creation, such as codes, are not editable, and the form says so. Sessions and semesters only offer the statuses they can move to.
+- Obvious mistakes are caught before sending (required fields, lengths, whole numbers, credits with at most two decimals, an end date after the start date, a semester number within the program's length), and the backend checks everything again. Its refusals are shown in safe words, such as "A course with this code already exists.", and keep what was entered.
+- While saving the button says "Saving…" and a second press does nothing. Afterwards the list reloads without reloading the page, the form closes, the change is announced, and focus returns to the button that opened the form.
+- Loading says "Loading departments…" (and so on), an empty list says "No departments yet." with an Add button, and a failure says "Couldn't load departments." with **Retry**. A **403** says "You don't have access to academic administration." and suggests signing in again; it never signs the user out. A **401** is left to the shared client.
+- An account without `ADMIN` that opens these addresses sees "This page is for admin accounts." and no admin request is sent; the backend refuses such requests anyway.
+
 ### The submissions page
 
 `/teaching/:lmsCourseId/assignments/:assignmentId/submissions` is where a faculty member reviews and grades the work handed in for one published assignment. Teaching stays marked in the navigation.

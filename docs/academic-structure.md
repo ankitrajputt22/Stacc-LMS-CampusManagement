@@ -18,6 +18,8 @@ Department
 
 `Department`, `Program`, `AcademicSession`, `Semester`, `Course`, and `CourseOffering` exist so far. Read `A ------< B` as "one A has many B".
 
+`Department`, `Program`, `AcademicSession`, `Semester`, and `Course` are the reusable academic masters; admins manage them (see `admin-academic.md`). A `CourseOffering` is separate: it is semester-specific delivery data, one course taught in one semester, and is not part of the masters.
+
 Students are linked to this structure through their profile and their enrollments:
 
 ```text
@@ -283,7 +285,7 @@ A department, program, course, student profile, faculty profile, or teaching ass
 
 ## Not built yet
 
-- Apart from attendance and results, there is no API, service, or screen for these models. Only the stored models exist.
+- Admins create and edit the five masters (see `admin-academic.md`). Apart from that, attendance, and results, there is no API, service, or screen for these models yet.
 - Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
 - Apart from `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, and `ACADEMIC_RESULT_VIEW`, no permissions for this data exist yet. They will be added together with the API they protect.

@@ -2,8 +2,13 @@ package com.stacc.backend;
 
 import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
 import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
+import com.stacc.backend.academic.course.CourseRepository;
+import com.stacc.backend.academic.department.DepartmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.result.CourseResultRepository;
+import com.stacc.backend.academic.semester.SemesterRepository;
+import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
@@ -42,10 +47,13 @@ import org.springframework.web.context.WebApplicationContext;
     "stacc.jwt.secret=" + TestSecrets.JWT_SECRET
 })
 @MockitoBean(types = {
+    AcademicSessionRepository.class,
     AttendanceRecordRepository.class,
     AttendanceSessionRepository.class,
     CourseEnrollmentRepository.class,
+    CourseRepository.class,
     CourseResultRepository.class,
+    DepartmentRepository.class,
     FacultyProfileRepository.class,
     LmsAnnouncementRepository.class,
     LmsAssignmentRepository.class,
@@ -58,6 +66,8 @@ import org.springframework.web.context.WebApplicationContext;
     LmsSubmissionAttemptRepository.class,
     LmsSubmissionGradeRepository.class,
     LmsTopicRepository.class,
+    ProgramRepository.class,
+    SemesterRepository.class,
     StudentProfileRepository.class,
     TeachingAssignmentRepository.class
 })

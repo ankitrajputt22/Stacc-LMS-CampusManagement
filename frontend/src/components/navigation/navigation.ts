@@ -52,7 +52,7 @@ const navigationSections: readonly NavigationSection[] = [
     id: 'admin',
     title: 'Admin',
     roles: ['ADMIN'],
-    items: [{ label: 'Academic Admin' }, { label: 'Users' }, { label: 'Reports' }],
+    items: [{ label: 'Academic Admin', to: '/admin/academic' }, { label: 'Users' }, { label: 'Reports' }],
   },
   {
     id: 'common',

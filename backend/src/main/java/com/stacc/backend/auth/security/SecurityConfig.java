@@ -56,6 +56,9 @@ public class SecurityConfig {
                         // Public during development: the API documentation. It only describes the API.
                         .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                         .permitAll()
+                        // The admin workspace is for admin accounts only, checked before a request body is even
+                        // read. Each route still needs its own permission as well.
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Every other API route, including ones added later, needs a signed-in account.
                         .requestMatchers("/api/**").authenticated()
                         // Nothing else is served, so other paths simply return 404.
