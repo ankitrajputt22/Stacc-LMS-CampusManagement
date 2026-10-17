@@ -1,5 +1,7 @@
 package com.stacc.backend;
 
+import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
+import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
@@ -39,6 +41,8 @@ import org.springframework.web.context.WebApplicationContext;
     "stacc.jwt.secret=" + TestSecrets.JWT_SECRET
 })
 @MockitoBean(types = {
+    AttendanceRecordRepository.class,
+    AttendanceSessionRepository.class,
     CourseEnrollmentRepository.class,
     FacultyProfileRepository.class,
     LmsAnnouncementRepository.class,

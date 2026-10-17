@@ -76,6 +76,16 @@
 - An enrollment status is not an academic result. Keep grades and results in their own models.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
+## Attendance
+
+- Attendance (`academic.attendance`) belongs to `CourseOffering`, never to `Course` or `LmsCourse`, and must not depend on LMS data or provisioning. See `docs/attendance.md`.
+- Faculty attendance access comes from `FacultyTeachingAccessService`: an `ACTIVE` faculty profile with an `ACTIVE` teaching assignment for the offering. Find the offering from the stored session, never from the client. No admin pass.
+- Creating a session snapshots the offering's currently `ENROLLED` course enrollments in the same transaction. Later enrollment changes never alter an existing roster, and faculty never add or remove students.
+- Records start `UNMARKED`, never `ABSENT`. Saves name records by `attendanceRecordId` only, each once and from that session. The server sets `markedBy` and `markedAt`.
+- Finalizing needs every record `PRESENT` or `ABSENT`. Students see only `FINALIZED` sessions, which can still be corrected between `PRESENT` and `ABSENT`, never back to `UNMARKED`.
+- Never reopen or hard-delete sessions or records, and never store the attendance percentage. Do not add attendance thresholds, notifications, self check-in, QR, location, or biometrics without their own phase.
+- Faculty routes need `FACULTY` and `ATTENDANCE_MANAGE`; `GET /api/attendance/student/me` needs `STUDENT` and `ATTENDANCE_VIEW` and takes the student from the access token.
+
 ## LMS Data
 
 - LMS data belongs in the `lms` module. An ERP `CourseOffering` and an LMS `LmsCourse` are different concepts; do not put LMS state on the course offering.
@@ -160,6 +170,7 @@
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and links each course to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.
+- Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
 
 ## Docker
 

@@ -173,6 +173,23 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 - Loading says "Loading your assignments…". With none it says "No assignments yet." and that assignments created for teaching courses will appear here. A **403** shows "You don't have access to faculty assignments." and suggests signing in again; the user stays signed in. Any other failure shows "Couldn't load your assignments" with **Retry**.
 - An account without `FACULTY` that opens `/assignments` directly sees "This page is for faculty accounts.", and no request is sent.
 
+### The Attendance pages
+
+**Attendance** is a faculty item in the navigation, shown to any account holding `FACULTY`. Attendance is academic data of a course offering, so it never depends on an LMS course.
+
+- `/attendance` lists the course offerings the faculty member teaches, from `GET /api/attendance/faculty/my-courses`: code, name, program and semester, session and credits, and **Manage attendance**. Loading says "Loading teaching courses…"; with none it says "No teaching courses available."
+- `/attendance/:courseOfferingId` shows that offering's sessions, latest class first, with the date and time, the topic, and **Open** or **Finalized** as words. An open session offers **Continue marking**, a finalized one **View / Correct**. **New session** opens a form with **Date and time** (a `datetime-local` field in the browser's own time zone, sent as an absolute moment; it starts at the current minute) and **Topic (optional)**, with **Create session** and **Cancel**. The new session opens straight away.
+- A session opens at `?session=` on the same page. It shows when the class was held, the topic, and the status, then one row per student on its roster with the **Student ID** and two real radio buttons, **Present** and **Absent**. A student nobody has marked shows "Not marked"; nothing is ever preselected as absent. Arrow keys move between a student's two choices.
+- **Mark all present** only changes the choices on the page. Nothing is saved until **Save attendance**, which can be pressed part of the way; it says "Saving…" while sending and a second press does nothing. Unsaved changes are counted, and the page shows the backend's answer afterwards without reloading.
+- **Finalize session** is shown only for an open session. It stays unavailable, with the reason beside it, while a student is not marked ("Mark every student before finalizing attendance.") or changes are unsaved; the backend checks again. It asks "Finalize attendance?" and says that students will be able to view this attendance once finalized.
+- A finalized session shows Present and Absent only, says "Corrections are visible to students after saving.", and saves with **Save corrections**. There is no reopen and no delete. An open session's date and topic can be changed with **Edit date and topic**.
+- Loading says "Loading attendance…". A course offering the faculty member does not teach, or an impossible ID, shows "Attendance course unavailable"; a session that is missing, not theirs, or of another offering shows that the session is unavailable. A **403** says "You don't have access to attendance." and suggests signing in again; it never signs the user out. Other failures say "Couldn't load attendance." with **Retry**. An account without `FACULTY` sees "This page is for faculty accounts." and no request is sent.
+
+**Academic** is a student item that opens `/academic/attendance`, the student's own attendance from `GET /api/attendance/student/me`. Only accounts holding `STUDENT` send that request; an account that is also faculty sees both areas, each with its own API.
+
+- Each course shows its code and name, program, semester, and session, then **Present**, **Absent**, **Sessions**, and **Attendance** with the backend's percentage written naturally ("80%", "83.33%", never "80.00%"), then **Session history**, latest class first, with the date and time, the topic, and Present or Absent as words. Only finalized sessions appear. No faculty, record, or enrollment IDs are shown, and there is no threshold, shortage, or eligibility message.
+- With no finalized attendance it says "No attendance recorded yet." rather than showing 0%. Loading, 403, and failures behave as on the faculty pages. An account without `STUDENT` sees "This page is for student accounts."
+
 ### The submissions page
 
 `/teaching/:lmsCourseId/assignments/:assignmentId/submissions` is where a faculty member reviews and grades the work handed in for one published assignment. Teaching stays marked in the navigation.

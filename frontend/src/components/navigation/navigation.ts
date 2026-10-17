@@ -31,7 +31,7 @@ const navigationSections: readonly NavigationSection[] = [
     roles: ['STUDENT'],
     items: [
       { label: 'Courses', to: '/courses' },
-      { label: 'Academic' },
+      { label: 'Academic', to: '/academic/attendance' },
       { label: 'Campus' },
     ],
   },
@@ -42,7 +42,7 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       { label: 'Teaching', to: '/teaching' },
       { label: 'Assignments', to: '/assignments' },
-      { label: 'Attendance' },
+      { label: 'Attendance', to: '/attendance' },
     ],
   },
   {
