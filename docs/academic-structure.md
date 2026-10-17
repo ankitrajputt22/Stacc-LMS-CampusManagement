@@ -218,6 +218,19 @@ CourseOffering ------< AttendanceSession ------< AttendanceRecord >------ Course
 - Faculty who teach the offering mark students `PRESENT` or `ABSENT` and finalize the session once all are marked. Only finalized sessions are visible to students, and finalized records can still be corrected between `PRESENT` and `ABSENT`.
 - Sessions are never reopened or deleted, and records are never deleted.
 
+## Results
+
+An official course result is academic data of a course enrollment, not LMS data (see `results.md`).
+
+```text
+CourseEnrollment ------ 0..1 CourseResult
+```
+
+- There is at most one official result per course enrollment, enforced by a unique constraint. The student, course, offering, semester, program, and session are reached through the enrollment and are not stored again.
+- It is separate from LMS assignment grades: it is recorded explicitly by faculty and never calculated from assignment grades or attendance. It needs no LMS course.
+- A result starts as a draft and is visible to the student once published; a published result can be corrected and stays published. A new result needs an enrolled or completed enrollment.
+- Results are historical academic records: they are never deleted or unpublished, and a later change to the enrollment keeps them.
+
 ## The ERP is the source of truth for the LMS
 
 ```text
@@ -266,11 +279,11 @@ The LMS student access policy consults this official ERP state on every check. A
 
 ## Keeping history
 
-A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted, and neither are attendance sessions or records. Later records may still refer to them, so academic history is kept.
+A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted, and neither are attendance sessions, attendance records, or course results. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
-- Apart from attendance, there is no API, service, or screen for these models. Only the stored models exist.
+- Apart from attendance and results, there is no API, service, or screen for these models. Only the stored models exist.
 - Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
-- Apart from `ATTENDANCE_MANAGE` and `ATTENDANCE_VIEW`, no permissions for this data exist yet. They will be added together with the API they protect.
+- Apart from `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, and `ACADEMIC_RESULT_VIEW`, no permissions for this data exist yet. They will be added together with the API they protect.

@@ -185,10 +185,27 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 - A finalized session shows Present and Absent only, says "Corrections are visible to students after saving.", and saves with **Save corrections**. There is no reopen and no delete. An open session's date and topic can be changed with **Edit date and topic**.
 - Loading says "Loading attendance…". A course offering the faculty member does not teach, or an impossible ID, shows "Attendance course unavailable"; a session that is missing, not theirs, or of another offering shows that the session is unavailable. A **403** says "You don't have access to attendance." and suggests signing in again; it never signs the user out. Other failures say "Couldn't load attendance." with **Retry**. An account without `FACULTY` sees "This page is for faculty accounts." and no request is sent.
 
-**Academic** is a student item that opens `/academic/attendance`, the student's own attendance from `GET /api/attendance/student/me`. Only accounts holding `STUDENT` send that request; an account that is also faculty sees both areas, each with its own API.
+The student's **Attendance** item (in the Student section) opens `/academic/attendance`, the student's own attendance from `GET /api/attendance/student/me`. Only accounts holding `STUDENT` send that request; an account that is also faculty sees both areas, each with its own API.
 
 - Each course shows its code and name, program, semester, and session, then **Present**, **Absent**, **Sessions**, and **Attendance** with the backend's percentage written naturally ("80%", "83.33%", never "80.00%"), then **Session history**, latest class first, with the date and time, the topic, and Present or Absent as words. Only finalized sessions appear. No faculty, record, or enrollment IDs are shown, and there is no threshold, shortage, or eligibility message.
 - With no finalized attendance it says "No attendance recorded yet." rather than showing 0%. Loading, 403, and failures behave as on the faculty pages. An account without `STUDENT` sees "This page is for student accounts."
+
+### The Results pages
+
+**Results** is a faculty item in the navigation, shown to any account holding `FACULTY`, and a separate student item. Official results are academic data of a course enrollment; they never depend on an LMS course, and nothing is calculated from assignments or attendance.
+
+- `/results` lists the course offerings the faculty member teaches, from `GET /api/results/faculty/my-courses`: code, name, program and semester, session and credits, and **Manage results**. Loading says "Loading result courses…"; with none it says "No teaching courses available."
+- `/results/:courseOfferingId` shows the course code, name, credits, program, semester, and session, then every official enrollment in student ID order from `GET /api/results/faculty/course-offerings/{courseOfferingId}`. Each student shows the **Student ID**, the enrollment status (Enrolled, Completed, Withdrawn) and the result status (Not recorded, Draft, Published with its date) as words, and a form with **Marks obtained**, **Maximum marks**, **Grade (optional)**, and **Remarks (optional)**. Nothing assumes a maximum of 100.
+- **Save draft** saves without publishing; it says "Saving…" while sending, a second press does nothing, and only that student's row changes, so what was typed in another row stays. Obvious mistakes are caught first ("Marks obtained cannot exceed maximum marks.", negative marks, a maximum not above zero, more than two decimals), and the backend checks everything again.
+- A saved draft offers **Publish**, which asks "Publish result?" and says the student will be able to view this result after publication. Unsaved changes must be saved first.
+- A published result shows "Published" with its date, says "Corrections are visible to the student after saving.", and saves with **Save correction**. There is no unpublish, archive, or delete.
+- A withdrawn enrollment without a result says that a new result cannot be recorded; one that already has a result keeps it, and it can still be corrected.
+- Loading says "Loading course results…". An offering the faculty member does not teach, or an impossible ID, shows "Course results unavailable". A **403** says "You don't have access to results." and suggests signing in again; it never signs the user out. Other failures say "Couldn't load results." with **Retry**. An account without `FACULTY` sees "This page is for faculty accounts." and no request is sent.
+
+The student's **Results** item opens `/academic/results`, from `GET /api/results/student/me`. Only accounts holding `STUDENT` send that request; an account that is also faculty uses both sides, each with its own API.
+
+- Results are grouped by academic session and semester ("2026-27 · Semester 3"), newest first. Each shows the course name, code, and credits, **Marks** such as "84 / 100", **Grade** only when one was entered, **Remarks** only when there are any, and when it was published. Only published results appear. There is no percentage, GPA, SGPA, CGPA, rank, division, or pass or fail.
+- With none it says "No published results available yet." Loading says "Loading results…"; 403 and failures behave as on the faculty pages. An account without `STUDENT` sees "This page is for student accounts."
 
 ### The submissions page
 

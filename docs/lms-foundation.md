@@ -682,7 +682,7 @@ LmsSubmissionAttempt ------ 0..1 LmsSubmissionGrade >------ FacultyProfile   (wh
 - **The maximum is kept.** `maxMarksSnapshot` is the assignment's `maxMarks` when the attempt is first graded, and it never changes after that. If the assignment's maximum changes later, an existing grade is still out of its own snapshot and a regrade is checked against it; nothing is rescaled. A first grade after the change uses the new maximum. A database check keeps `0 <= marks_awarded <= max_marks_snapshot` and the snapshot above zero.
 - **Feedback** is optional plain text, up to 10,000 characters, stored as typed and shown as text with its line breaks, never as HTML. Blank feedback is stored as none.
 - **`gradedAt`** is set by the server's clock each time the grade is saved, to the microsecond. `graded_by_faculty_profile_id` is the faculty profile that saved it last, which must be active. The grader is never sent to students or in any answer.
-- **Students see a grade as soon as it is saved.** There is no release step yet. A grade is an LMS assignment result only: it is not an ERP result, and nothing here computes a course grade, GPA, SGPA, or CGPA.
+- **Students see a grade as soon as it is saved.** There is no release step yet. A grade is an LMS assignment result only: it is not an ERP result, and nothing here computes a course grade, GPA, SGPA, or CGPA. Official course results are recorded separately and never derived from these grades (see `results.md`).
 - Late attempts are graded like any other. There is no late penalty, and marks are never changed automatically.
 - The table has foreign keys to `lms_submission_attempts` and `faculty_profiles` with no cascade.
 

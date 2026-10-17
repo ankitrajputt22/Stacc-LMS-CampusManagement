@@ -31,7 +31,9 @@ const navigationSections: readonly NavigationSection[] = [
     roles: ['STUDENT'],
     items: [
       { label: 'Courses', to: '/courses' },
-      { label: 'Academic', to: '/academic/attendance' },
+      // The student's academic records: one real link each, no separate menu.
+      { label: 'Attendance', to: '/academic/attendance' },
+      { label: 'Results', to: '/academic/results' },
       { label: 'Campus' },
     ],
   },
@@ -43,6 +45,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Teaching', to: '/teaching' },
       { label: 'Assignments', to: '/assignments' },
       { label: 'Attendance', to: '/attendance' },
+      { label: 'Results', to: '/results' },
     ],
   },
   {

@@ -83,6 +83,8 @@ Submissions follow the same three steps for students: `hasRole('STUDENT') and ha
 
 Attendance follows the same three steps without any LMS data. Faculty routes need `hasRole('FACULTY') and hasAuthority('ATTENDANCE_MANAGE')`, then `FacultyTeachingAccessService`, which checks the account's active teaching assignment for the course offering, found from the stored session when there is one. The student route needs `hasRole('STUDENT') and hasAuthority('ATTENDANCE_VIEW')`, and returns only the finalized records of the student's own course enrollments. A faculty member who does not teach the offering gets 404.
 
+Official results follow the same three steps without any LMS data. Faculty routes need `hasRole('FACULTY') and hasAuthority('ACADEMIC_RESULT_MANAGE')`, then `FacultyTeachingAccessService` for the course offering in the route, and the enrollment must belong to that offering. The student route needs `hasRole('STUDENT') and hasAuthority('ACADEMIC_RESULT_VIEW')`, and returns only the published results of the student's own course enrollments. A faculty member who does not teach the offering, or names an enrollment of another offering, gets 404.
+
 Grading follows the same steps for faculty: `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_GRADE')`, then the data. The assignment is found from the stored submission, attempt, or file, never from the request, and must be published in a course the faculty member teaches now. A faculty member who passes the rule but does not teach that course gets 404.
 
 ## Refused requests
