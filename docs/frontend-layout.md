@@ -19,18 +19,18 @@ The list is in sections:
 | Section | Shown to | Items |
 | --- | --- | --- |
 | (no title) | everyone | Dashboard |
-| Student | `STUDENT` | **Courses** (`/courses`), **Academic** (`/academic/attendance`), Campus |
-| Faculty | `FACULTY` | **Teaching** (`/teaching`), **Assignments** (`/assignments`), **Attendance** (`/attendance`) |
+| Student | `STUDENT` | **Courses** (`/courses`), **Attendance** (`/academic/attendance`), **Results** (`/academic/results`), Campus |
+| Faculty | `FACULTY` | **Teaching** (`/teaching`), **Assignments** (`/assignments`), **Attendance** (`/attendance`), **Results** (`/results`) |
 | Admin | `ADMIN` | Academic Admin, Users, Reports |
 | Common | everyone | Calendar, Inbox, Support |
 
 An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
 
-An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. Courses, Academic, Teaching, Assignments, and Attendance are the only working items so far besides the Dashboard; everything else is still "Soon". Academic opens the student's attendance, its only page so far.
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. The Courses, Attendance, and Results items of both sections, Teaching, and Assignments are the only working items so far besides the Dashboard; everything else is still "Soon". The student's Attendance and Results are the student's academic records, each a plain link, so an account with both roles sees Attendance and Results once in each of its sections.
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
-An item stays marked on the pages below it: Courses on a course home and its assignment pages, Teaching on a faculty course page and its submissions pages, Assignments on `/assignments`, and Attendance on each course offering's attendance page. Only the exact page is announced as the current page.
+An item stays marked on the pages below it: Courses on a course home and its assignment pages, Teaching on a faculty course page and its submissions pages, Assignments on `/assignments`, Attendance on each course offering's attendance page, and Results on each course offering's results page. Only the exact page is announced as the current page.
 
 An item stays marked on the pages below it, so Courses is also marked on a course home (`/courses/:lmsCourseId`) and Teaching on a faculty course page (`/teaching/:lmsCourseId`). Screen readers hear it there as the current section, not the current page; the page's breadcrumb names the page itself. Only the Dashboard (`/`) is marked on its exact URL alone.
 

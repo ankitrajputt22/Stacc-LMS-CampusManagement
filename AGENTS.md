@@ -86,6 +86,16 @@
 - Never reopen or hard-delete sessions or records, and never store the attendance percentage. Do not add attendance thresholds, notifications, self check-in, QR, location, or biometrics without their own phase.
 - Faculty routes need `FACULTY` and `ATTENDANCE_MANAGE`; `GET /api/attendance/student/me` needs `STUDENT` and `ATTENDANCE_VIEW` and takes the student from the access token.
 
+## Results
+
+- An official result (`CourseResult` in `academic.result`) belongs to one `CourseEnrollment`, at most one each. Never store the student, account, course, offering, semester, program, or session on it again. See `docs/results.md`.
+- It is official academic data, separate from `LmsSubmissionGrade`. Never calculate or synchronize it from LMS grades, assignments, or attendance, and never let it depend on an `LmsCourse`.
+- Marks are `BigDecimal`/`DECIMAL(8,2)`: `0 <= marksObtained <= maxMarks`, `maxMarks > 0`, and the maximum is always given explicitly. The grade code is optional explicit data kept as entered; do not invent a grading scale.
+- New results start `DRAFT`. Students see only `PUBLISHED` results. Published corrections stay published and keep the first `publishedAt`. Never delete, unpublish, or archive a result.
+- New results need an `ENROLLED` or `COMPLETED` enrollment; existing results stay after any later enrollment change.
+- Faculty routes need `FACULTY` and `ACADEMIC_RESULT_MANAGE` plus `FacultyTeachingAccessService` for the offering in the route, and the enrollment must belong to that offering. `GET /api/results/student/me` needs `STUDENT` and `ACADEMIC_RESULT_VIEW` and takes the student from the access token. No admin pass.
+- Do not add GPA, SGPA, CGPA, ranks, pass or fail, approval workflows, or revision history without their own phase.
+
 ## LMS Data
 
 - LMS data belongs in the `lms` module. An ERP `CourseOffering` and an LMS `LmsCourse` are different concepts; do not put LMS state on the course offering.
@@ -170,6 +180,7 @@
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and links each course to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.
+- Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
 
 ## Docker

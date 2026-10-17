@@ -3,6 +3,7 @@ package com.stacc.backend;
 import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
 import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
@@ -44,6 +45,7 @@ import org.springframework.web.context.WebApplicationContext;
     AttendanceRecordRepository.class,
     AttendanceSessionRepository.class,
     CourseEnrollmentRepository.class,
+    CourseResultRepository.class,
     FacultyProfileRepository.class,
     LmsAnnouncementRepository.class,
     LmsAssignmentRepository.class,
