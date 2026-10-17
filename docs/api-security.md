@@ -58,6 +58,7 @@ The API's files are study materials and assignment submission files. See `lms-fo
 - Every download is sent as an attachment, with `X-Content-Type-Options: nosniff`, so an uploaded file is never shown as a page of this site.
 - Files live in a private bucket under keys the backend generates. Storage addresses, bucket names, keys, and storage credentials never reach a browser, and there are no public or pre-signed links.
 - Submission files are the student's own: the student is taken from the token, their course enrollment is found on the server, and another student's file answers the same 404 as a missing one.
+- Faculty download submission files for grading through their own route, only for published assignments of courses they teach now. Anything else answers the same 404 as a missing file.
 - There is no virus scanning yet. A production setup could add it in front of storage.
 
 ## Still to come

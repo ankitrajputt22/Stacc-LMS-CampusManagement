@@ -3,12 +3,14 @@ package com.stacc.backend;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
+import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
 import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmissionRepository;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionAttachmentRepository;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionAttemptRepository;
+import com.stacc.backend.lms.assignment.submission.LmsSubmissionGradeRepository;
 import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopicRepository;
@@ -38,6 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 })
 @MockitoBean(types = {
     CourseEnrollmentRepository.class,
+    FacultyProfileRepository.class,
     LmsAnnouncementRepository.class,
     LmsAssignmentRepository.class,
     LmsAssignmentSubmissionRepository.class,
@@ -47,6 +50,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsStudyMaterialRepository.class,
     LmsSubmissionAttachmentRepository.class,
     LmsSubmissionAttemptRepository.class,
+    LmsSubmissionGradeRepository.class,
     LmsTopicRepository.class,
     StudentProfileRepository.class,
     TeachingAssignmentRepository.class

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { archiveAssignment, createAssignment, publishAssignment, updateAssignment } from '../api/lmsAssignmentsApi'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
@@ -9,7 +9,7 @@ import { PastDueLabel } from '../courses/PastDueLabel'
 import type { LmsAssignmentInput, LmsFacultyAssignment } from '../types/lms'
 import { ArchiveConfirmation } from './ArchiveConfirmation'
 import { AssignmentForm } from './AssignmentForm'
-import { ASSIGNMENTS_SECTION_ID, asOutcome, srContext } from './editorState'
+import { ASSIGNMENTS_SECTION_ID, asOutcome, srContext, submissionsPath } from './editorState'
 import { StatusTag } from './StatusTag'
 import { type ChangeResult, useContentChanges, useFocusAfterChanges } from './useContentChanges'
 import { useFacultyAssignments } from './useFacultyAssignments'
@@ -22,7 +22,12 @@ type Changes = ReturnType<typeof useContentChanges>
 const ASSIGNMENTS_FORBIDDEN =
   'You don’t have permission to manage assignments. If your access changed recently, sign out and sign in again.'
 
+// Looks like the action buttons beside it, but it opens another page.
+const actionLinkClasses =
+  'inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8'
+
 type AssignmentItemProps = {
+  lmsCourseId: number
   assignment: LmsFacultyAssignment
   now: number
   isEditing: boolean
@@ -32,7 +37,7 @@ type AssignmentItemProps = {
   changes: Changes
 }
 
-function AssignmentItem({ assignment, now, isEditing, isConfirming, setOpenForm, setConfirming, changes }: AssignmentItemProps) {
+function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming, setOpenForm, setConfirming, changes }: AssignmentItemProps) {
   const key = `assignment-${assignment.id}`
   const name = `assignment “${assignment.title}”`
 
@@ -121,6 +126,11 @@ function AssignmentItem({ assignment, now, isEditing, isConfirming, setOpenForm,
         />
       ) : (
         <div className="mt-2 flex flex-wrap gap-2">
+          {assignment.status === 'PUBLISHED' && (
+            <Link to={submissionsPath(lmsCourseId, assignment.id)} className={actionLinkClasses}>
+              Review submissions{srContext(`for ${name}`)}
+            </Link>
+          )}
           <ActionButton focusKey={`${key}-edit`} onClick={() => setOpenForm({ type: 'edit', id: assignment.id })}>
             Edit{srContext(name)}
           </ActionButton>
@@ -148,7 +158,7 @@ function AssignmentItem({ assignment, now, isEditing, isConfirming, setOpenForm,
 /**
  * The assignments of a course in the faculty page: drafts and published ones, earliest deadline first.
  * Each change goes to the backend, which checks access and the assignment permission again, and the list
- * then reloads. Archived assignments are kept but not listed. Nothing here is about students' work.
+ * then reloads. Archived assignments are kept but not listed. Students' work is reviewed on its own page.
  */
 export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const assignments = useFacultyAssignments(lmsCourseId)
@@ -274,6 +284,7 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
             {list.map((assignment) => (
               <li key={assignment.id}>
                 <AssignmentItem
+                  lmsCourseId={lmsCourseId}
                   assignment={assignment}
                   now={now}
                   isEditing={openForm?.type === 'edit' && openForm.id === assignment.id}

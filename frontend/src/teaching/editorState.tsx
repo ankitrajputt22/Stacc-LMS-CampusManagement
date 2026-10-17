@@ -12,6 +12,11 @@ export const ASSIGNMENT_INSTRUCTIONS_MAX = 20_000
 /** The id of the assignments section of a faculty course page, so the overview can link straight to it. */
 export const ASSIGNMENTS_SECTION_ID = 'assignments'
 
+/** Where faculty review and grade the submissions for a published assignment. */
+export function submissionsPath(lmsCourseId: number, assignmentId: number): string {
+  return `/teaching/${lmsCourseId}/assignments/${assignmentId}/submissions`
+}
+
 /** The one form open in the editor at a time. */
 export type OpenForm =
   | { type: 'addModule'; returnFocus: string }

@@ -81,6 +81,8 @@ Assignments follow the same steps. Students read published assignments with `LMS
 
 Submissions follow the same three steps for students: `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')`, then the data. The student's course enrollment is found from the account in the token by the student access rule, never sent by the client, and a file is downloadable only through the enrollment that gives this account access now. Another student's attempts and files answer 404.
 
+Grading follows the same steps for faculty: `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_GRADE')`, then the data. The assignment is found from the stored submission, attempt, or file, never from the request, and must be published in a course the faculty member teaches now. A faculty member who passes the rule but does not teach that course gets 404.
+
 ## Refused requests
 
 A refused request gets HTTP 403 in the common error format:

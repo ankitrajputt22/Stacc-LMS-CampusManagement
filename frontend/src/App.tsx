@@ -6,6 +6,7 @@ import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
 import { CoursePage } from './pages/CoursePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmissionsPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { TeachingCoursePage } from './pages/TeachingCoursePage'
@@ -26,6 +27,10 @@ function App() {
           <Route path="courses/:lmsCourseId/assignments/:assignmentId" element={<CourseAssignmentPage />} />
           <Route path="teaching" element={<TeachingPage />} />
           <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
+          <Route
+            path="teaching/:lmsCourseId/assignments/:assignmentId/submissions"
+            element={<FacultyAssignmentSubmissionsPage />}
+          />
           <Route path="assignments" element={<AssignmentsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

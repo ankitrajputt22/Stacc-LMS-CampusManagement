@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.assignment.submission;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
@@ -26,4 +27,34 @@ public interface LmsAssignmentSubmissionRepository extends JpaRepository<LmsAssi
             """)
     Optional<LmsAssignmentSubmission> findForUpdate(
             @Param("assignmentId") Long assignmentId, @Param("courseEnrollmentId") Long courseEnrollmentId);
+
+    /**
+     * The submissions of one assignment that have at least one attempt, each loaded with the student's
+     * account, whose login ID identifies them to faculty. Nothing else about the student is loaded.
+     */
+    @Query("""
+            select submission
+            from LmsAssignmentSubmission submission
+            join fetch submission.courseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch studentProfile.userAccount
+            where submission.assignment.id = :assignmentId
+              and submission.latestAttemptNumber > 0
+            """)
+    List<LmsAssignmentSubmission> findAllWithStudentByAssignmentId(@Param("assignmentId") Long assignmentId);
+
+    /** One submission with its assignment and the student's account. */
+    @Query("""
+            select submission
+            from LmsAssignmentSubmission submission
+            join fetch submission.assignment assignment
+            join fetch assignment.lmsCourse
+            join fetch submission.courseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch studentProfile.userAccount
+            where submission.id = :submissionId
+            """)
+    Optional<LmsAssignmentSubmission> findWithStudentById(@Param("submissionId") Long submissionId);
 }
