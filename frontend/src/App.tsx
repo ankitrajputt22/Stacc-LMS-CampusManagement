@@ -1,6 +1,7 @@
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
+import { AcademicAdminPage } from './pages/AcademicAdminPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
 import { AttendancePage } from './pages/AttendancePage'
 import { CourseAttendancePage } from './pages/CourseAttendancePage'
@@ -44,6 +45,9 @@ function App() {
           <Route path="academic/results" element={<StudentResultsPage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
+          {/* Departments are the first section, so the bare address opens them with their link marked. */}
+          <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
+          <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

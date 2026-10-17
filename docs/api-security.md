@@ -32,6 +32,10 @@ Both 401 responses use the common error format and carry a `WWW-Authenticate: Be
 
 Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. The first one is on `GET /api/lms/my-courses`, which needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission.
 
+## Admin routes
+
+Everything under `/api/admin/` also needs the `ADMIN` role, checked in `SecurityConfig` before the route is run or its request body is read. Another signed-in account gets 403 there, also for an unknown path or a malformed body. Each admin operation still needs its own permission on top (see `admin-academic.md`).
+
 ## Unknown routes
 
 The token is checked before the route is looked up, so:

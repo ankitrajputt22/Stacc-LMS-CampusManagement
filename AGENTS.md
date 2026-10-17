@@ -76,6 +76,15 @@
 - An enrollment status is not an academic result. Keep grades and results in their own models.
 - Add each academic model only in its own phase, and add its permissions only together with the action they protect.
 
+## Admin Academic Masters
+
+- Admins manage `Department`, `Program`, `AcademicSession`, `Semester`, and `Course` in `academic.admin` under `/api/admin/academic`. See `docs/admin-academic.md`.
+- `Course` is permanent catalog data; `CourseOffering` is semester-specific. Do not manage offerings, enrollments, profiles, teaching assignments, LMS courses, or accounts here.
+- Use explicit request and response records; never bind or return entities. Requests carry no own ID: the route names the record. Parents are loaded on the server by ID and never created.
+- Keep each master's existing fields and lifecycle. Codes and parents are fixed after creation. Do not add status, soft-delete, or version columns, and never add delete routes.
+- Unique clashes answer 409 with a safe message, also when the database constraint catches a race. Never let SQL errors or constraint names reach a client.
+- Reading needs `ADMIN` and `ACADEMIC_MASTER_VIEW`; changing also needs `ACADEMIC_MASTER_MANAGE`. `SecurityConfig` keeps `/api/admin/**` to `ADMIN`. There is no admin pass outside these explicit rules.
+
 ## Attendance
 
 - Attendance (`academic.attendance`) belongs to `CourseOffering`, never to `Course` or `LmsCourse`, and must not depend on LMS data or provisioning. See `docs/attendance.md`.
@@ -180,6 +189,7 @@
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/my-courses`, is shown to any account holding `FACULTY`, and links each course to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.
+- Admins manage the academic masters at `/admin/academic/:section` (departments, programs, sessions, semesters, courses), with Edit but never Delete, and parent selects filled from the admin API.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
 
