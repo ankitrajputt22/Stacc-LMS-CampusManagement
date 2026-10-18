@@ -18,7 +18,13 @@ Department
 
 `Department`, `Program`, `AcademicSession`, `Semester`, `Course`, and `CourseOffering` exist so far. Read `A ------< B` as "one A has many B".
 
-`Department`, `Program`, `AcademicSession`, `Semester`, and `Course` are the reusable academic masters; admins manage them (see `admin-academic.md`). A `CourseOffering` is separate: it is semester-specific delivery data, one course taught in one semester, and is not part of the masters.
+`Department`, `Program`, `AcademicSession`, `Semester`, and `Course` are the reusable academic masters; admins manage them (see `admin-academic.md`). A `CourseOffering` is separate: it is semester-specific delivery data, one course taught in one semester, and is not part of the masters. Admins also create offerings and the official enrollments described below.
+
+```text
+Course        = permanent catalog data
+CourseOffering = that course in one semester
+StudentProfile ---> SemesterEnrollment ---> CourseEnrollment ---> CourseOffering
+```
 
 Students are linked to this structure through their profile and their enrollments:
 
@@ -123,6 +129,7 @@ The two are separate on purpose. Everything that depends on a particular semeste
 - The course's code, name, and credits are not copied onto the offering either.
 - `status` is `PLANNED`, `ACTIVE`, or `CLOSED`. New offerings are `PLANNED`. A closed offering cannot be made active again.
 - An offering has no teacher, section, timetable, or learning material yet. Those are separate concepts for later phases. Sections must not be modelled by duplicating offerings.
+- Admins create offerings and move them through their status (see `admin-academic.md`). The course and semester are never reassigned, even before anything depends on the offering, and there is no delete.
 
 Deleting an offering never deletes its course or semester, and neither can be deleted while an offering refers to it.
 
@@ -153,7 +160,7 @@ A semester enrollment is the official ERP record that one student takes part in 
 - The session of the enrollment comes from its semester. It is a different thing from the student's `admissionSession`.
 - `status` is `ENROLLED`, `COMPLETED`, or `WITHDRAWN`. New enrollments are `ENROLLED`. Once completed or withdrawn, an enrollment cannot change again. These statuses say nothing about results: passing, failing, and promotion belong to later features.
 
-**Rule for the future enrollment feature:** before creating an enrollment, it must check that the student's program is the same as the semester's program. The stored model does not check this itself, and there is no database trigger for it.
+Admins create semester enrollments and end them (see `admin-academic.md`). Before creating one, that feature checks that the student profile is `ACTIVE` and that the student's program is the semester's program; the stored model does not check this itself, and there is no database trigger for it. The unique `(student_profile_id, semester_id)` constraint refuses a second enrollment in the same semester. A semester enrollment ends only after each of its course enrollments has ended on its own: nothing cascades from one to the other.
 
 Deleting an enrollment never deletes the student profile or the semester, and neither can be deleted while an enrollment refers to it.
 
@@ -168,7 +175,7 @@ A course enrollment is the official ERP record that a student takes part in one 
 - `status` is `ENROLLED`, `COMPLETED`, or `WITHDRAWN`. New course enrollments are `ENROLLED`. Once completed or withdrawn, a course enrollment cannot change again.
 - The status describes the enrollment only. It is not a grade or a result, and `COMPLETED` does not mean passed. Marks, grades, attendance, and results belong to later models.
 
-**Rule for the future course-enrollment feature:** before creating a course enrollment, it must check that the course offering belongs to the same semester as the semester enrollment. The stored model does not check this itself, the semester is not stored a second time to force it, and there is no database trigger for it.
+Admins create course enrollments and end them (see `admin-academic.md`). Before creating one, that feature checks that the semester enrollment is still `ENROLLED` and that the course offering belongs to the same semester as the semester enrollment, so a student is never enrolled across semesters. The stored model does not check this itself, the semester is not stored a second time to force it, and there is no database trigger for it. The unique `(semester_enrollment_id, course_offering_id)` constraint refuses a second enrollment in the same offering.
 
 Deleting a course enrollment never deletes the semester enrollment or the course offering, and neither can be deleted while a course enrollment refers to it.
 
@@ -275,9 +282,9 @@ LMS:   CourseEnrollment
 - The student, course, program, semester, and academic session are not stored again on the LMS records.
 - The ERP remains authoritative. An LMS membership is not an academic enrollment.
 
-The ERP course enrollment is the source for LMS membership provisioning. An explicit LMS service creates a membership from a course enrollment that is still `ENROLLED`. It only reads ERP data and never changes it.
+The ERP course enrollment is the source for LMS membership provisioning. An explicit LMS service creates a membership from a course enrollment that is still `ENROLLED`. It only reads ERP data and never changes it. Admin course enrollment calls it right after the official enrollment is saved, when the offering already has an LMS course, and makes the membership inactive when the enrollment ends. Academic enrollment succeeds without an LMS course and never creates one.
 
-The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, on top of the LMS-side conditions. A withdrawn or completed enrollment therefore ends normal access at once, without anything being copied. The student course list, `GET /api/lms/my-courses`, returns only courses that satisfy this policy. Nothing creates memberships automatically.
+The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, on top of the LMS-side conditions. A withdrawn or completed enrollment therefore ends normal access at once, without anything being copied. The student course list, `GET /api/lms/my-courses`, returns only courses that satisfy this policy. Nothing else creates memberships: there is no listener, scheduler, or bulk job.
 
 ## Keeping history
 
@@ -285,7 +292,7 @@ A department, program, course, student profile, faculty profile, or teaching ass
 
 ## Not built yet
 
-- Admins create and edit the five masters (see `admin-academic.md`). Apart from that, attendance, and results, there is no API, service, or screen for these models yet.
+- Admins create and edit the five masters, create course offerings, and create and end semester and course enrollments (see `admin-academic.md`). Apart from that, attendance, and results, there is no API, service, or screen for these models yet; student and faculty profiles cannot be created through any API.
 - Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
-- Apart from `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, and `ACADEMIC_RESULT_VIEW`, no permissions for this data exist yet. They will be added together with the API they protect.
+- The permissions for this data are the academic master, offering, and enrollment permissions for admins, and `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, and `ACADEMIC_RESULT_VIEW` (see `permissions.md`). Others will be added together with the API they protect.

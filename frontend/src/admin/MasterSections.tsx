@@ -27,23 +27,13 @@ import type {
   LifecycleStatus,
 } from '../types/admin'
 import { type FieldOption, type FieldSpec, MasterForm, type Values } from './MasterForm'
-import { MasterStatus } from './MasterList'
+import { CodeName, MasterStatus } from './MasterList'
 import { MasterSection } from './MasterSection'
-import { statusOptions } from './masterStatus'
+import { lifecycleOptions, statusOptions } from './masterStatus'
 
 // The limits the backend enforces for each master, so the forms can say so before sending.
 const ACTIVE_STATUSES = statusOptions(['ACTIVE', 'INACTIVE'])
 const UPPERCASE = 'Stored in uppercase. It cannot be changed later.'
-
-function lifecycleOptions(current: LifecycleStatus): FieldOption[] {
-  // A record moves forward from planned to active to closed, never back.
-  const allowed: Record<LifecycleStatus, LifecycleStatus[]> = {
-    PLANNED: ['PLANNED', 'ACTIVE', 'CLOSED'],
-    ACTIVE: ['ACTIVE', 'CLOSED'],
-    CLOSED: ['CLOSED'],
-  }
-  return statusOptions(allowed[current])
-}
 
 function departmentOptions(departments: AdminDepartment[]): FieldOption[] {
   return departments.map((department) => ({
@@ -52,16 +42,6 @@ function departmentOptions(departments: AdminDepartment[]): FieldOption[] {
   }))
 }
 
-function CodeName({ code, name }: { code: string; name: string }) {
-  return (
-    <>
-      <span className="font-medium">{code}</span>
-      <span aria-hidden="true"> · </span>
-      <span className="sr-only">, </span>
-      {name}
-    </>
-  )
-}
 
 export function DepartmentsSection() {
   const request = useApiRequest(getDepartments)

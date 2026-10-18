@@ -5,6 +5,8 @@ import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
 import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.department.DepartmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
+import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
@@ -51,6 +53,7 @@ import org.springframework.web.context.WebApplicationContext;
     AttendanceRecordRepository.class,
     AttendanceSessionRepository.class,
     CourseEnrollmentRepository.class,
+    CourseOfferingRepository.class,
     CourseRepository.class,
     CourseResultRepository.class,
     DepartmentRepository.class,
@@ -67,6 +70,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsSubmissionGradeRepository.class,
     LmsTopicRepository.class,
     ProgramRepository.class,
+    SemesterEnrollmentRepository.class,
     SemesterRepository.class,
     StudentProfileRepository.class,
     TeachingAssignmentRepository.class

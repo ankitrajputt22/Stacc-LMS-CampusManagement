@@ -29,6 +29,28 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllWithStudentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
+    /** A semester enrollment's course enrollments with each offering and course, by course code. */
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.courseOffering courseOffering
+            join fetch courseOffering.course course
+            where courseEnrollment.semesterEnrollment.id = :semesterEnrollmentId
+            order by course.code asc, courseEnrollment.id asc
+            """)
+    List<CourseEnrollment> findAllWithOfferingBySemesterEnrollmentId(@Param("semesterEnrollmentId") Long semesterEnrollmentId);
+
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.courseOffering courseOffering
+            join fetch courseOffering.course
+            where courseEnrollment.id = :courseEnrollmentId
+            """)
+    Optional<CourseEnrollment> findWithOfferingById(@Param("courseEnrollmentId") Long courseEnrollmentId);
+
+    boolean existsBySemesterEnrollmentIdAndStatus(Long semesterEnrollmentId, CourseEnrollmentStatus status);
+
     /** One enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")

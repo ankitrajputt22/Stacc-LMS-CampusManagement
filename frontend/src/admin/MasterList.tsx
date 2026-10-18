@@ -16,13 +16,15 @@ type MasterListProps<T> = {
   /** How the row's Edit button is named for screen readers, such as "department CSE". */
   rowName: (row: T) => string
   onEdit: (row: T) => void
+  /** More actions after Edit, such as a link to the record's roster. `mobile` tells the two layouts apart. */
+  rowActions?: (row: T, mobile: boolean) => ReactNode
 }
 
 /**
  * The records of one master: a compact table on wider screens, and stacked records on phones, so no page ever scrolls
- * sideways. Each record has Edit and nothing else; academic masters are never deleted.
+ * sideways. Each record has Edit and, where a section adds them, links such as a roster; nothing is ever deleted.
  */
-export function MasterList<T>({ label, rows, columns, rowKey, rowName, onEdit }: MasterListProps<T>) {
+export function MasterList<T>({ label, rows, columns, rowKey, rowName, onEdit, rowActions }: MasterListProps<T>) {
   return (
     <>
       <div className="hidden overflow-hidden rounded-panel border border-line bg-surface md:block">
@@ -35,7 +37,7 @@ export function MasterList<T>({ label, rows, columns, rowKey, rowName, onEdit }:
                   {column.header}
                 </th>
               ))}
-              <th scope="col" className="w-24 px-4 py-2.5 font-semibold">
+              <th scope="col" className={`${rowActions ? 'w-56' : 'w-24'} px-4 py-2.5 font-semibold`}>
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -49,9 +51,12 @@ export function MasterList<T>({ label, rows, columns, rowKey, rowName, onEdit }:
                   </td>
                 ))}
                 <td className="px-4 py-2.5 text-right">
-                  <ActionButton focusKey={`edit-${rowKey(row)}`} onClick={() => onEdit(row)}>
-                    Edit<span className="sr-only"> {rowName(row)}</span>
-                  </ActionButton>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <ActionButton focusKey={`edit-${rowKey(row)}`} onClick={() => onEdit(row)}>
+                      Edit<span className="sr-only"> {rowName(row)}</span>
+                    </ActionButton>
+                    {rowActions?.(row, false)}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -70,9 +75,12 @@ export function MasterList<T>({ label, rows, columns, rowKey, rowName, onEdit }:
                 </div>
               ))}
             </dl>
-            <ActionButton className="mt-2" focusKey={`edit-${rowKey(row)}-mobile`} onClick={() => onEdit(row)}>
-              Edit<span className="sr-only"> {rowName(row)}</span>
-            </ActionButton>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <ActionButton focusKey={`edit-${rowKey(row)}-mobile`} onClick={() => onEdit(row)}>
+                Edit<span className="sr-only"> {rowName(row)}</span>
+              </ActionButton>
+              {rowActions?.(row, true)}
+            </div>
           </li>
         ))}
       </ul>
@@ -86,5 +94,17 @@ export function MasterStatus({ status }: { status: string }) {
     <span className="inline-block rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
       {statusWord(status)}
     </span>
+  )
+}
+
+/** A code and a name, such as "CS301 · Data Structures", read as "CS301, Data Structures". */
+export function CodeName({ code, name }: { code: string; name: string }) {
+  return (
+    <>
+      <span className="font-medium">{code}</span>
+      <span aria-hidden="true"> · </span>
+      <span className="sr-only">, </span>
+      {name}
+    </>
   )
 }

@@ -36,6 +36,8 @@ type MasterFormProps = {
   /** Sends the values. A refusal is thrown and shown here; what was entered stays. */
   onSubmit: (values: Values) => Promise<void>
   onCancel: () => void
+  /** What a 403 says, such as "You don’t have access to academic enrollment administration." */
+  deniedMessage?: string
 }
 
 const DECIMAL_PATTERN = /^\d{1,2}(\.\d{1,2})?$/
@@ -66,14 +68,14 @@ function checked(fields: FieldSpec[], values: Values): Partial<Record<string, st
   return errors
 }
 
-function refusal(status: number | null, apiMessage: string | null): string {
+function refusal(status: number | null, apiMessage: string | null, deniedMessage: string): string {
   switch (status) {
     case 400:
     case 404:
     case 409:
       return apiMessage ?? 'Couldn’t save. Check the values and try again.'
     case 403:
-      return 'You don’t have access to academic administration. If your access changed recently, sign out and sign in again.'
+      return `${deniedMessage} If your access changed recently, sign out and sign in again.`
     default:
       return 'Couldn’t save. Check your connection and try again. What you entered is still here.'
   }
@@ -85,7 +87,17 @@ function refusal(status: number | null, apiMessage: string | null): string {
  * "Saving…" and a second press does nothing. A refusal is shown in safe words and keeps what was entered; a 403 never
  * signs the user out.
  */
-export function MasterForm({ heading, note, fields, initial, submitLabel, validate, onSubmit, onCancel }: MasterFormProps) {
+export function MasterForm({
+  heading,
+  note,
+  fields,
+  initial,
+  submitLabel,
+  validate,
+  onSubmit,
+  onCancel,
+  deniedMessage = 'You don’t have access to academic administration.',
+}: MasterFormProps) {
   const id = useId()
   const formRef = useRef<HTMLFormElement>(null)
   const submittingRef = useRef(false)
@@ -134,7 +146,7 @@ export function MasterForm({ heading, note, fields, initial, submitLabel, valida
         const fieldErrors = Object.fromEntries((apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]))
         const hasFieldErrors = status === 400 && Object.keys(fieldErrors).length > 0
         setErrors(fieldErrors)
-        setFormError(hasFieldErrors ? 'Check the highlighted field.' : refusal(status, apiError?.message ?? null))
+        setFormError(hasFieldErrors ? 'Check the highlighted field.' : refusal(status, apiError?.message ?? null, deniedMessage))
         focusFirst(fieldErrors)
       }
     } finally {
