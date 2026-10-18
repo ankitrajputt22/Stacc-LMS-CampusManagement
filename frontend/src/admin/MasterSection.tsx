@@ -28,6 +28,13 @@ type MasterSectionProps<T> = {
   /** The form for a new record. It calls `done` with an announcement once saved. */
   renderCreate: (done: (announcement: string) => void, cancel: () => void) => ReactNode
   renderEdit: (row: T, done: (announcement: string) => void, cancel: () => void) => ReactNode
+  /** Instead of "No … yet.", such as "No course offerings available." */
+  emptyTitle?: string
+  /** Instead of the academic-administration wording of a 403. */
+  deniedTitle?: string
+  /** Shown above the list, such as filters. */
+  toolbar?: ReactNode
+  rowActions?: (row: T, mobile: boolean) => ReactNode
 }
 
 type Open = { type: 'create' } | { type: 'edit'; key: number } | null
@@ -48,6 +55,10 @@ export function MasterSection<T>({
   blockedReason,
   renderCreate,
   renderEdit,
+  emptyTitle,
+  deniedTitle = ADMIN_DENIED,
+  toolbar,
+  rowActions,
 }: MasterSectionProps<T>) {
   const sectionRef = useRef<HTMLElement>(null)
   const [open, setOpen] = useState<Open>(null)
@@ -81,10 +92,12 @@ export function MasterSection<T>({
     close(focusKey)
   }
 
-  const add = (
+  // The empty state's Add has its own key: after the first record is saved, focus waits for the Add above the list
+  // instead of landing on the empty state's button just before it disappears.
+  const add = (focusKey: string) => (
     <Button
       variant="secondary"
-      data-focus-key="add"
+      data-focus-key={focusKey}
       aria-disabled={blockedReason ? true : undefined}
       aria-describedby={blockedReason ? 'master-blocked' : undefined}
       onClick={() => {
@@ -97,6 +110,7 @@ export function MasterSection<T>({
       Add {singular}
     </Button>
   )
+  const emptyList = rows !== null && rows.length === 0
 
   return (
     <section ref={sectionRef} aria-labelledby="master-heading" className="mt-6">
@@ -104,7 +118,7 @@ export function MasterSection<T>({
         <h2 id="master-heading" className="text-lg font-semibold text-ink">
           {title}
         </h2>
-        {rows !== null && rows.length > 0 && open?.type !== 'create' && <div className="w-full sm:w-auto">{add}</div>}
+        {rows !== null && rows.length > 0 && open?.type !== 'create' && <div className="w-full sm:w-auto">{add('add')}</div>}
       </div>
       <p className="mt-1 text-sm leading-6 text-ink-muted">{intro}</p>
       {rows !== null && blockedReason && (
@@ -117,7 +131,9 @@ export function MasterSection<T>({
       </p>
 
       {open?.type === 'create' && (
-        <div className="mt-3">{renderCreate((message) => done(message, 'add'), () => close('add'))}</div>
+        <div className="mt-3">
+          {renderCreate((message) => done(message, 'add'), () => close(emptyList ? 'add-empty' : 'add'))}
+        </div>
       )}
       {editing !== null && (
         <div className="mt-3">
@@ -129,6 +145,8 @@ export function MasterSection<T>({
         </div>
       )}
 
+      {toolbar && <div className="mt-4">{toolbar}</div>}
+
       <div className="mt-4">
         {request.status === 'loading' && (
           <StatePanel>
@@ -137,7 +155,7 @@ export function MasterSection<T>({
         )}
         {request.status === 'denied' && (
           <StatePanel>
-            <AccessDeniedState title={ADMIN_DENIED} message={SIGN_IN_AGAIN} />
+            <AccessDeniedState title={deniedTitle} message={SIGN_IN_AGAIN} />
           </StatePanel>
         )}
         {(request.status === 'failed' || request.status === 'notFound') && (
@@ -151,7 +169,7 @@ export function MasterSection<T>({
         )}
         {rows !== null && rows.length === 0 && open?.type !== 'create' && (
           <StatePanel>
-            <EmptyState title={`No ${title.toLowerCase()} yet.`} action={add} />
+            <EmptyState title={emptyTitle ?? `No ${title.toLowerCase()} yet.`} action={add('add-empty')} />
           </StatePanel>
         )}
         {rows !== null && rows.length > 0 && (
@@ -165,6 +183,7 @@ export function MasterSection<T>({
               setAnnouncement('')
               setOpen({ type: 'edit', key: rowKey(row) })
             }}
+            rowActions={rowActions}
           />
         )}
       </div>

@@ -64,3 +64,100 @@ export type SemesterCreate = { programId: number; academicSessionId: number; sem
 export type SemesterUpdate = { status: LifecycleStatus }
 export type CourseCreate = { departmentId: number; code: string; name: string; credits: number }
 export type CourseUpdate = { name: string; credits: number; status: ActiveStatus }
+
+// Course offerings and official enrollments as the admin API sends them. A course offering is one course taught in
+// one semester; its course and semester never change. Enrollments start ENROLLED and may end once, as COMPLETED or
+// WITHDRAWN. A student appears only by profile ID, login ID, program, and admission session.
+
+export type EnrollmentStatus = 'ENROLLED' | 'COMPLETED' | 'WITHDRAWN'
+
+export type AdminCourseOffering = {
+  courseOfferingId: number
+  courseId: number
+  courseCode: string
+  courseName: string
+  credits: number
+  semesterId: number
+  semesterNumber: number
+  programId: number
+  programCode: string
+  academicSessionId: number
+  academicSessionCode: string
+  status: LifecycleStatus
+}
+
+export type CourseOfferingFilters = { semesterId?: number; academicSessionId?: number }
+export type CourseOfferingCreate = { courseId: number; semesterId: number }
+export type CourseOfferingUpdate = { status: LifecycleStatus }
+
+export type EnrollmentStudent = {
+  studentProfileId: number
+  loginId: string
+  programId: number
+  programCode: string
+  programName: string
+  /** The session of original admission only, never a current session. */
+  admissionSessionCode: string
+  studentProfileStatus: ActiveStatus
+}
+
+export type AdminSemesterEnrollment = {
+  semesterEnrollmentId: number
+  studentProfileId: number
+  semesterId: number
+  semesterNumber: number
+  programId: number
+  programCode: string
+  academicSessionId: number
+  academicSessionCode: string
+  status: EnrollmentStatus
+}
+
+export type StudentSemesterEnrollments = {
+  student: EnrollmentStudent
+  /** The latest session first. */
+  semesterEnrollments: AdminSemesterEnrollment[]
+}
+
+export type AdminCourseEnrollment = {
+  courseEnrollmentId: number
+  semesterEnrollmentId: number
+  courseOfferingId: number
+  courseId: number
+  courseCode: string
+  courseName: string
+  credits: number
+  status: EnrollmentStatus
+}
+
+export type SemesterCourseEnrollments = {
+  student: EnrollmentStudent
+  semesterEnrollment: AdminSemesterEnrollment
+  /** By course code. */
+  courseEnrollments: AdminCourseEnrollment[]
+}
+
+/**
+ * What happened on the LMS side once the official course enrollment was saved. The enrollment stands in every case.
+ * NO_LMS_COURSE: the offering has no LMS course yet. FAILED: membership can be retried.
+ */
+export type LmsProvisioning = 'PROVISIONED' | 'NO_LMS_COURSE' | 'FAILED'
+
+export type CourseEnrollmentCreated = {
+  courseEnrollment: AdminCourseEnrollment
+  lmsProvisioning: LmsProvisioning
+}
+
+export type RosterEntry = {
+  courseEnrollmentId: number
+  semesterEnrollmentId: number
+  studentProfileId: number
+  studentLoginId: string
+  status: EnrollmentStatus
+}
+
+export type OfferingRoster = {
+  courseOffering: AdminCourseOffering
+  /** Every enrollment of this offering, whatever its status, by student login ID. */
+  enrollments: RosterEntry[]
+}

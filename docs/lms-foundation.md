@@ -111,10 +111,18 @@ Makes the membership of a course enrollment `INACTIVE`. If the enrollment has no
 
 - It never changes ERP data. The course enrollment, semester enrollment, course offering, and student profile are only read. Deactivating a membership does not withdraw the enrollment: that is the academic side's decision.
 - It does not grant access. An active membership is one input to the access policy below, not the answer.
-- It does not run automatically. Nothing provisions a membership when a course enrollment is created, nothing deactivates one when an enrollment is withdrawn, and there is no bulk synchronization.
+- It does not run on its own. There is no listener, scheduler, startup scan, or bulk synchronization. Its one caller outside tests is admin course enrollment (below).
 - It does not decide what a student may still see after a course enrollment is `COMPLETED`. Such an enrollment cannot be newly provisioned, and an existing membership is left as it is. That policy belongs to a later phase.
 
-The expected failures in the table use the shared `ApiException`, so a future API can return them in the common error format.
+The expected failures in the table use the shared `ApiException`, so an API can return them in the common error format.
+
+### Called from admin course enrollment
+
+Admin course enrollment (see `admin-academic.md`) calls this service through `AcademicEnrollmentLmsAdapter`, which implements the academic module's `CourseEnrollmentLmsPort`; academic code never refers to LMS models.
+
+- Right after an official course enrollment is saved and committed, the adapter looks for the offering's existing LMS course. If there is one, it calls `provision`; if there is none, the academic enrollment still succeeds and no LMS course is created.
+- A provisioning failure never undoes the academic enrollment. The admin is told that LMS access could not be provisioned and can retry with `POST /api/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms`.
+- When the admin completes or withdraws a course enrollment, the adapter calls `deactivate`. The membership is kept as `INACTIVE` and never deleted; the access policy already refuses the ended enrollment either way.
 
 ## Student access
 
@@ -705,9 +713,9 @@ Every faculty grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASS
 
 ## Not built yet
 
-- No admin LMS endpoints, and no way to create or publish an LMS course or to provision a membership over HTTP.
+- No admin LMS endpoints, and no way to create or publish an LMS course over HTTP. A membership is provisioned over HTTP only through admin course enrollment and its retry route.
 - No rich text, no file previews or versions, no virus scanning, and no way to see or restore archived content.
-- No rows are seeded for LMS courses or memberships, and none is created automatically from existing course offerings or course enrollments.
+- No rows are seeded for LMS courses or memberships. No LMS course is ever created from a course offering, and memberships for enrollments made before an LMS course existed are not created in bulk.
 - No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
 - No way to manage teaching assignments.
 - No late cut-off, extensions, attempt limits, withdrawals, plagiarism checks, or submission notifications.

@@ -48,6 +48,7 @@ function App() {
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
+          <Route path="admin/academic/offerings/:courseOfferingId/enrollments" element={<AcademicAdminPage roster />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
