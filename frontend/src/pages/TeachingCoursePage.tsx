@@ -12,7 +12,7 @@ import { creditsText } from '../courses/credits'
 import { AnnouncementsEditor } from '../teaching/AnnouncementsEditor'
 import { AssignmentsEditor } from '../teaching/AssignmentsEditor'
 import { CourseContentEditor } from '../teaching/CourseContentEditor'
-import { StatusTag } from '../teaching/StatusTag'
+import { CourseSettings } from '../teaching/CourseSettings'
 import { useFacultyCourseContent } from '../teaching/useFacultyCourseContent'
 import type { LmsFacultyCourseContent } from '../types/lms'
 
@@ -52,11 +52,6 @@ function CourseHeader({ course }: { course: LmsFacultyCourseContent }) {
         <span className="sr-only">, </span>
         {creditsText(course.credits)}
       </p>
-      <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
-        <span aria-hidden="true">LMS course:</span>
-        <StatusTag status={course.lmsCourseStatus} label="LMS course" />
-        {course.lmsCourseStatus === 'DRAFT' && <span>Students can’t open this course until it is published.</span>}
-      </p>
     </header>
   )
 }
@@ -73,9 +68,9 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
       )
     case 'notFound':
       return (
-        <TeachingCourseState heading="Course unavailable" srOnlyHeading={false}>
+        <TeachingCourseState heading="Teaching course unavailable" srOnlyHeading={false}>
           <p className="px-4 py-6 text-sm leading-6 text-ink-muted">
-            This course could not be found, or it is not one you currently teach.
+            This course could not be found, it is not one you currently teach, or its LMS course is archived.
           </p>
         </TeachingCourseState>
       )
@@ -104,6 +99,7 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
           <title>{`${course.data.courseName} · Teaching · Stacc`}</title>
           <Breadcrumb parent={TEACHING} current={course.data.courseName} />
           <CourseHeader course={course.data} />
+          <CourseSettings course={course.data} reload={course.refresh} />
           <AnnouncementsEditor lmsCourseId={course.data.lmsCourseId} />
           <AssignmentsEditor lmsCourseId={course.data.lmsCourseId} />
           <CourseContentEditor course={course.data} reload={course.refresh} />
@@ -114,7 +110,7 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
 
 /**
  * One course the signed-in faculty member teaches, at /teaching/:lmsCourseId, where they manage its
- * announcements, assignments, modules, and topics. The backend checks access from official teaching assignments on every request.
+ * LMS lifecycle in Course settings and its announcements, assignments, modules, and topics. The backend checks access from official teaching assignments on every request.
  * Accounts without the faculty role see an explanation instead, and no request is made.
  */
 export function TeachingCoursePage() {

@@ -1,8 +1,4 @@
-import type {
-  LmsCourseDetail,
-  LmsCourseSummary,
-  LmsFacultyCourseSummary,
-} from '../types/lms'
+import type { LmsCourseDetail, LmsCourseSummary } from '../types/lms'
 import { apiClient } from './apiClient'
 
 /**
@@ -32,23 +28,6 @@ export async function getLmsCourse(
   // The client's base URL already ends in /api, so this is GET /api/lms/courses/{lmsCourseId}.
   const response = await apiClient.get<LmsCourseDetail>(
     `/lms/courses/${lmsCourseId}`,
-    { signal },
-  )
-
-  return response.data
-}
-
-/**
- * The LMS courses the signed-in faculty member teaches, in the order the backend gives them (course
- * code). The faculty member is the one in the access token; nothing about them is sent from here.
- * The backend decides which courses are included, from official teaching assignments.
- */
-export async function getMyFacultyCourses(
-  signal?: AbortSignal,
-): Promise<LmsFacultyCourseSummary[]> {
-  // The client's base URL already ends in /api, so this is GET /api/lms/faculty/my-courses.
-  const response = await apiClient.get<LmsFacultyCourseSummary[]>(
-    '/lms/faculty/my-courses',
     { signal },
   )
 

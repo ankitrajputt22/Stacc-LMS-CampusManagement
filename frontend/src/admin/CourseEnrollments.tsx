@@ -15,14 +15,14 @@ import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { StatusConfirmation } from '../components/StatusConfirmation'
+import { usePendingFocus } from '../components/usePendingFocus'
 import { creditsText } from '../courses/credits'
 import type { AdminCourseEnrollment, AdminSemesterEnrollment, EnrollmentStatus } from '../types/admin'
 import { ENROLLMENT_DENIED, offeringLabel, refusalText, semesterContext } from './enrollmentText'
 import { MasterForm } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterList'
 import { SIGN_IN_AGAIN } from './MasterSection'
-import { StatusConfirmation } from './StatusConfirmation'
-import { usePendingFocus } from './usePendingFocus'
 
 type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
 
@@ -268,6 +268,7 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
                         setEnding(null)
                         focusLater(`${confirming.status === 'COMPLETED' ? 'complete' : 'withdraw'}-course-${row.courseEnrollmentId}`)
                       }}
+                      describeRefusal={refusalText}
                     />
                   )}
                 </li>

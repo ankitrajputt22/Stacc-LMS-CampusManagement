@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,4 +33,12 @@ public interface LmsCourseRepository extends JpaRepository<LmsCourse, Long> {
             where lmsCourse.id = :lmsCourseId
             """)
     Optional<LmsCourse> findWithAcademicContextById(@Param("lmsCourseId") Long lmsCourseId);
+
+    /**
+     * One LMS course, locked until the transaction ends ({@code SELECT ... FOR UPDATE}), so two lifecycle changes or
+     * membership synchronizations of the same course never run at once.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select lmsCourse from LmsCourse lmsCourse where lmsCourse.id = :lmsCourseId")
+    Optional<LmsCourse> findByIdForUpdate(@Param("lmsCourseId") Long lmsCourseId);
 }
