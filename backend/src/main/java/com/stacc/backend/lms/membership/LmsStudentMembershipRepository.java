@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.membership;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,15 @@ import org.springframework.data.repository.query.Param;
 public interface LmsStudentMembershipRepository extends JpaRepository<LmsStudentMembership, Long> {
 
     Optional<LmsStudentMembership> findByCourseEnrollmentId(Long courseEnrollmentId);
+
+    /** The memberships of these course enrollments, with their LMS courses. An enrollment without one has none here. */
+    @Query("""
+            select membership
+            from LmsStudentMembership membership
+            join fetch membership.lmsCourse
+            where membership.courseEnrollment.id in :courseEnrollmentIds
+            """)
+    List<LmsStudentMembership> findAllByCourseEnrollmentIdIn(@Param("courseEnrollmentIds") Collection<Long> courseEnrollmentIds);
 
     /**
      * One membership, locked against other writers until the transaction ends. A student's own

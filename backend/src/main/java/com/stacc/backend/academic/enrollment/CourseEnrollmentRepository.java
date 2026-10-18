@@ -51,6 +51,24 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
     boolean existsBySemesterEnrollmentIdAndStatus(Long semesterEnrollmentId, CourseEnrollmentStatus status);
 
+    /**
+     * The course enrollments of one offering whose student currently takes part in it: the course enrollment and its
+     * semester enrollment are both {@code ENROLLED} and the student profile is {@code ACTIVE}. The semester enrollment
+     * and profile are loaded with each, in course-enrollment order.
+     */
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            where courseEnrollment.courseOffering.id = :courseOfferingId
+              and courseEnrollment.status = com.stacc.backend.academic.enrollment.CourseEnrollmentStatus.ENROLLED
+              and semesterEnrollment.status = com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus.ENROLLED
+              and studentProfile.status = com.stacc.backend.identity.student.StudentProfileStatus.ACTIVE
+            order by courseEnrollment.id asc
+            """)
+    List<CourseEnrollment> findAllCurrentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
+
     /** One enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")

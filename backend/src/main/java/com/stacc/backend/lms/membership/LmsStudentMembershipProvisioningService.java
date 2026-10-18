@@ -1,6 +1,10 @@
 package com.stacc.backend.lms.membership;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
@@ -61,9 +65,42 @@ public class LmsStudentMembershipProvisioningService {
         Long courseOfferingId = courseEnrollment.getCourseOffering().getId();
         LmsCourse lmsCourse = lmsCourses.findByCourseOfferingId(courseOfferingId)
                 .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, NO_LMS_COURSE_MESSAGE));
+        // A wrong LMS course is refused before any membership is read.
         requireSameCourseOffering(courseEnrollmentId, courseOfferingId, lmsCourse);
+        return provisionInto(courseEnrollment, lmsCourse, memberships.findByCourseEnrollmentId(courseEnrollmentId));
+    }
 
-        Optional<LmsStudentMembership> existing = memberships.findByCourseEnrollmentId(courseEnrollmentId);
+    /**
+     * Gives every student who currently takes part in the LMS course's offering an active membership in it, exactly
+     * as {@link #provision(Long)} would one by one: a course enrollment and its semester enrollment that are both
+     * {@code ENROLLED}, for an {@code ACTIVE} student profile. It is safe to call again. It never creates, changes, or
+     * ends an enrollment, and it leaves the memberships of anyone else as they are. A membership linked to another LMS
+     * course is reported as an error, never repaired, so the caller's transaction rolls back.
+     *
+     * @return how many current students now have an active membership in this LMS course
+     */
+    @Transactional
+    public int provisionCurrentEnrollments(LmsCourse lmsCourse) {
+        Require.notNull(lmsCourse, "lmsCourse");
+        List<CourseEnrollment> current = courseEnrollments.findAllCurrentByCourseOfferingId(lmsCourse.getCourseOffering().getId());
+        if (current.isEmpty()) {
+            return 0;
+        }
+        Map<Long, LmsStudentMembership> existing = memberships
+                .findAllByCourseEnrollmentIdIn(current.stream().map(CourseEnrollment::getId).toList()).stream()
+                .collect(Collectors.toMap(membership -> membership.getCourseEnrollment().getId(), Function.identity()));
+        for (CourseEnrollment courseEnrollment : current) {
+            provisionInto(courseEnrollment, lmsCourse, Optional.ofNullable(existing.get(courseEnrollment.getId())));
+        }
+        return current.size();
+    }
+
+    // The one membership step for an enrolled course enrollment and the LMS course of its offering.
+    private LmsStudentMembership provisionInto(
+            CourseEnrollment courseEnrollment, LmsCourse lmsCourse, Optional<LmsStudentMembership> existing) {
+        Long courseEnrollmentId = courseEnrollment.getId();
+        Long courseOfferingId = courseEnrollment.getCourseOffering().getId();
+        requireSameCourseOffering(courseEnrollmentId, courseOfferingId, lmsCourse);
         if (existing.isEmpty()) {
             return memberships.save(new LmsStudentMembership(courseEnrollment, lmsCourse));
         }

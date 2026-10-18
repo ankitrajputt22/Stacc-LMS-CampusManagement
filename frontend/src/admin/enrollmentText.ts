@@ -17,10 +17,6 @@ export function offeringLabel(offering: AdminCourseOffering): string {
   return `${offering.courseCode} — ${offering.courseName}${offering.status === 'CLOSED' ? ' (closed)' : ''}`
 }
 
-/** Link styles that match ActionButton, for actions that open another page. */
-export const actionLinkClasses =
-  'inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8'
-
 /** A refusal in safe words: the backend's own message for an expected refusal, never a raw error. */
 export function refusalText(status: number | null, apiMessage: string | null): string {
   switch (status) {

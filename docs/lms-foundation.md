@@ -22,7 +22,7 @@ LMS:                    LmsCourse
 An LMS course is the learning space for one official course offering. The code is in `com.stacc.backend.lms.course` and the table is `lms_courses`.
 
 - An LMS course belongs to exactly one course offering, and the offering cannot be changed after creation.
-- A course offering can have at most one LMS course. It may also have none: no LMS course is created automatically.
+- A course offering can have at most one LMS course (`uk_lms_courses_course_offering`). It may also have none: no LMS course is created automatically. A faculty member who teaches the offering creates it (see "Faculty LMS course management" below).
 - The course offering stays ERP data in the `academic` module. It knows nothing about the LMS, and no LMS state is stored on it.
 - The course, semester, program, academic session, and department are reached through the course offering. None of them is stored on the LMS course again, and neither are the course's code, name, or credits.
 - An LMS course has no title of its own, no teacher, and no content yet. Its students are found through memberships, described below.
@@ -37,7 +37,7 @@ An LMS course is the learning space for one official course offering. The code i
 
 An archived LMS course cannot be published again.
 
-The status of an LMS course is separate from the status of its course offering. The model does not require the offering, course, or semester to be active, because planned and historical learning spaces are both legitimate. The future feature that creates and publishes LMS courses decides when that is allowed.
+The status of an LMS course is separate from the status of its course offering. The model does not require the offering, course, or semester to be active, because planned and historical learning spaces are both legitimate, and faculty management does not require it either.
 
 An LMS course is archived, never deleted, because assignments, submissions, and grades will later depend on it. Deleting an LMS course never deletes its course offering, and an offering cannot be deleted while an LMS course refers to it.
 
@@ -111,7 +111,7 @@ Makes the membership of a course enrollment `INACTIVE`. If the enrollment has no
 
 - It never changes ERP data. The course enrollment, semester enrollment, course offering, and student profile are only read. Deactivating a membership does not withdraw the enrollment: that is the academic side's decision.
 - It does not grant access. An active membership is one input to the access policy below, not the answer.
-- It does not run on its own. There is no listener, scheduler, startup scan, or bulk synchronization. Its one caller outside tests is admin course enrollment (below).
+- It does not run on its own. There is no listener, scheduler, startup scan, or background synchronization. It is called by admin course enrollment (below) and by faculty LMS course management, which synchronizes one LMS course's current students when asked.
 - It does not decide what a student may still see after a course enrollment is `COMPLETED`. Such an enrollment cannot be newly provisioned, and an existing membership is left as it is. That policy belongs to a later phase.
 
 The expected failures in the table use the shared `ApiException`, so an API can return them in the common error format.
@@ -329,7 +329,7 @@ Faculty LMS access comes straight from official ERP teaching assignments. There 
 - The rule is written once, in `LmsFacultyAccessPolicy`. The single-course check and the faculty course list both use it. It does not change the student policy in any way.
 - The statuses of the course offering, the semester, and the academic session are not part of it. The teaching assignment is the official teaching relation.
 - It only reads. It never creates a teaching assignment or an LMS course, and never changes a status.
-- A teaching assignment whose offering has no LMS course yet gives access to nothing; the course is not created for it.
+- A teaching assignment whose offering has no LMS course yet gives access to nothing here; the course is not created for it. Faculty see and create it through the management list below.
 
 ## Faculty API: my courses
 
@@ -370,7 +370,36 @@ This endpoint returns the LMS courses the signed-in faculty member is actively a
 
 A faculty token carries the permission from the first sign-in after the `V20` migration. A token issued before it does not, and is refused with 403 until the faculty member signs in again.
 
-The frontend's **Teaching** page (`/teaching`) uses this endpoint (see `frontend-authentication.md`). Each course opens its faculty content page, described below. The student course home is never used for faculty.
+It lists only the LMS courses a faculty member can open now. The frontend's **Teaching** page uses the management list below instead, which also shows offerings without an LMS course and archived ones; this endpoint stays for that narrower question. The student course home is never used for faculty.
+
+## Faculty LMS course management
+
+```text
+TeachingAssignment (ACTIVE, for an ACTIVE FacultyProfile)
+        |
+        v
+CourseOffering ------> LmsCourse (at most one: DRAFT, PUBLISHED, ARCHIVED)
+```
+
+Faculty manage the LMS courses of the course offerings they officially teach, through `LmsCourseManagementService` in `com.stacc.backend.lms.management` and `LmsFacultyManagedCourseQueryService`. Who may manage an offering comes from `FacultyTeachingAccessService`: the signed-in account, an `ACTIVE` faculty profile, and an `ACTIVE` teaching assignment for the offering. For a route that names an LMS course, the offering is found from the stored LMS course, never from the client. The normal faculty access policy, which refuses archived courses, is not used or loosened for this, so an archived course stays visible here. Anything the faculty member does not teach answers the same 404 as a missing record. Every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_COURSE_MANAGE` (`V37`); `ADMIN` gets no pass.
+
+| Route | What it does |
+| --- | --- |
+| `GET /api/lms/faculty/managed-courses` | Every offering the faculty member teaches now, in course code order: `courseOfferingId`, course code, name, credits, semester number, program code, session code, and `lmsCourseId` and `lmsCourseStatus`, both null when there is no LMS course yet. Archived courses are listed as `ARCHIVED`, never as missing. Two queries, whatever the number of offerings. |
+| `POST /api/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | Creates the offering's LMS course as `DRAFT` and synchronizes its students (201). A second LMS course answers 409 ("An LMS course already exists for this course offering."), also when the unique constraint catches two requests at once. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/sync-student-memberships` | Synchronizes the students of a `DRAFT` or `PUBLISHED` course again. An archived one answers 409. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/publish` | Synchronizes, then moves `DRAFT` to `PUBLISHED`; a published course stays published and is synchronized again. An archived one answers 409. |
+| `POST /api/lms/faculty/courses/{lmsCourseId}/archive` | Moves `DRAFT` or `PUBLISHED` to `ARCHIVED`; an archived course stays archived. |
+
+- **Synchronizing** gives every current student of the offering an active membership through `LmsStudentMembershipProvisioningService.provisionCurrentEnrollments`, the same membership step as `provision`: the course enrollment and its semester enrollment are `ENROLLED` and the student profile is `ACTIVE`. A missing membership is created, an inactive one is reactivated, an active one stays as it is, and one linked to another LMS course is an error that rolls the change back. It answers `synchronizedCount`, the number of current students who now have an active membership. It never creates, changes, or ends an enrollment, and it leaves other memberships alone: a completed or withdrawn student keeps their membership row but gets no access, because the student access policy requires the official enrollment.
+- **Creating** runs the course and its memberships in one transaction, so an LMS course is never left half provisioned. That differs on purpose from admin course enrollment, where the official enrollment must survive an LMS failure: here the LMS data itself is being created.
+- Lifecycle changes lock the LMS course row, so two changes of the same course never overlap.
+- **Archiving** changes only the status. Modules, topics, materials, announcements, assignments, submissions, grades, and memberships are all kept. Students lose access at once, and so do the normal faculty pages, which refuse archived courses. There is no restore, unarchive, or republish, and no delete.
+- Students still see a course only when the student access policy allows it: official enrollment, an active membership, and a `PUBLISHED` course. A draft course with memberships is invisible to them.
+- Course offerings, enrollments, and teaching assignments are only read. Faculty cannot create or change any of them, and there is no way to add or remove a student by hand: memberships follow official enrollment.
+- An LMS course has no title, description, or other settings of its own; everything shown comes from the offering.
+
+The frontend's **Teaching** page (`/teaching`) uses this list, and the faculty course page has **Course settings** for the lifecycle (see `frontend-authentication.md`).
 
 ## Course content: modules and topics
 
@@ -713,10 +742,11 @@ Every faculty grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASS
 
 ## Not built yet
 
-- No admin LMS endpoints, and no way to create or publish an LMS course over HTTP. A membership is provisioned over HTTP only through admin course enrollment and its retry route.
+- No admin LMS endpoints. LMS courses are created, published, and archived only by the faculty who teach their offerings, and memberships are provisioned over HTTP only through admin course enrollment, its retry route, and faculty synchronization.
+- No restore of an archived LMS course, no LMS course settings such as a title or description, and no manual membership editor.
 - No rich text, no file previews or versions, no virus scanning, and no way to see or restore archived content.
-- No rows are seeded for LMS courses or memberships. No LMS course is ever created from a course offering, and memberships for enrollments made before an LMS course existed are not created in bulk.
-- No automatic synchronization from the ERP to the LMS, and no service that creates LMS courses.
+- No rows are seeded for LMS courses or memberships, and no LMS course is created automatically for a course offering.
+- No automatic synchronization from the ERP to the LMS: memberships are synchronized only when an enrollment is made, a course is created or published, or faculty ask.
 - No way to manage teaching assignments.
 - No late cut-off, extensions, attempt limits, withdrawals, plagiarism checks, or submission notifications.
 - No gradebook, course totals, GPA, SGPA, or CGPA, no rubrics, no grade history or release step, no late penalties, no rescaling when the maximum changes, and no grade notifications. Students cannot change grades.

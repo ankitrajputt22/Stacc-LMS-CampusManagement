@@ -13,14 +13,14 @@ import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { StatusConfirmation } from '../components/StatusConfirmation'
+import { usePendingFocus } from '../components/usePendingFocus'
 import type { AdminSemesterEnrollment, EnrollmentStatus } from '../types/admin'
 import { CourseEnrollments } from './CourseEnrollments'
-import { ENROLLMENT_DENIED, semesterContext, semesterLabel } from './enrollmentText'
+import { ENROLLMENT_DENIED, refusalText, semesterContext, semesterLabel } from './enrollmentText'
 import { MasterForm } from './MasterForm'
 import { MasterStatus } from './MasterList'
 import { SIGN_IN_AGAIN } from './MasterSection'
-import { StatusConfirmation } from './StatusConfirmation'
-import { usePendingFocus } from './usePendingFocus'
 
 type Ending = { semesterEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
 
@@ -295,6 +295,7 @@ function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, 
           confirmLabel={ending === 'COMPLETED' ? 'Complete semester enrollment' : 'Withdraw from semester'}
           onConfirm={() => onConfirmEnd(ending)}
           onCancel={() => onCancelEnd(ending)}
+          describeRefusal={refusalText}
         />
       )}
     </li>

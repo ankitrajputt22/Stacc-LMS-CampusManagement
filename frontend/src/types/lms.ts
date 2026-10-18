@@ -16,21 +16,6 @@ export type LmsCourseSummary = {
 /** The states in which faculty can use an LMS course. Archived courses are never listed for them. */
 export type LmsFacultyCourseStatus = 'DRAFT' | 'PUBLISHED'
 
-/** One LMS course the signed-in faculty member teaches, from GET /api/lms/faculty/my-courses. */
-export type LmsFacultyCourseSummary = {
-  /** Identifies the LMS learning space. */
-  lmsCourseId: number
-  courseCode: string
-  courseName: string
-  /** An exact decimal on the backend, such as 4.00 or 1.50. JSON carries it as a number. */
-  credits: number
-  semesterNumber: number
-  programCode: string
-  academicSessionCode: string
-  /** DRAFT while it is being prepared and students cannot use it yet; PUBLISHED once they can. */
-  lmsCourseStatus: LmsFacultyCourseStatus
-}
-
 /** One LMS course the signed-in student can currently open, from GET /api/lms/courses/{lmsCourseId}. */
 export type LmsCourseDetail = {
   lmsCourseId: number
@@ -326,4 +311,32 @@ export type LmsFacultySubmissionDetail = {
 export type LmsGradeInput = {
   marksAwarded: number
   feedback: string | null
+}
+
+/** An LMS course's whole lifecycle, as faculty management sees it. Archived is final. */
+export type LmsCourseLifecycleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+
+/**
+ * One course offering the faculty member officially teaches, with its LMS course if it has one. An offering without
+ * one has null for both LMS fields; that is not a stored status.
+ */
+export type LmsManagedCourse = {
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  credits: number
+  semesterNumber: number
+  programCode: string
+  academicSessionCode: string
+  lmsCourseId: number | null
+  lmsCourseStatus: LmsCourseLifecycleStatus | null
+}
+
+/** An LMS course after a management change. */
+export type LmsCourseManagement = {
+  lmsCourseId: number
+  courseOfferingId: number
+  lmsCourseStatus: LmsCourseLifecycleStatus
+  /** How many current students have an active membership now; null when the change did not synchronize them. */
+  synchronizedCount: number | null
 }

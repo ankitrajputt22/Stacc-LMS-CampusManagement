@@ -97,9 +97,10 @@ A semester enrollment cannot end while any of its course enrollments is still `E
 The official course enrollment is saved and committed first. Only then does `CourseEnrollmentWorkflow`, which is not transactional, ask the LMS through `CourseEnrollmentLmsPort`. The academic module defines that port; `lms.membership.AcademicEnrollmentLmsAdapter` implements it with the existing `LmsStudentMembershipProvisioningService`, so academic code never refers to LMS models.
 
 - If the offering has an LMS course, the student gets an active membership (or an inactive one is reactivated): `lmsProvisioning` is `PROVISIONED`. The LMS course does not have to be published; student access still follows the access policy.
-- If the offering has no LMS course, the enrollment still succeeds: `NO_LMS_COURSE`. No LMS course is ever created here.
+- If the offering has no LMS course, the enrollment still succeeds: `NO_LMS_COURSE`. No LMS course is ever created here. The faculty who teach the offering create it later, and creating it gives the offering's current students their memberships (see `lms-foundation.md`).
 - If provisioning fails, the enrollment still stands, the failure is logged without personal data, and the answer says `FAILED`. `POST /api/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms` retries it: 200 when the membership exists, 409 when the enrollment is no longer `ENROLLED` or the offering has no LMS course, and 503 when it fails again. It is safe to repeat.
 - When a course enrollment ends, its membership is made inactive through the same service, never deleted. The student access policy already refuses an enrollment that is not `ENROLLED`, so a failure there is only logged.
+- Academic enrollment stays an admin responsibility. Faculty LMS management only derives LMS memberships from it and never creates, changes, or ends an enrollment.
 
 ## Roster
 
@@ -124,6 +125,6 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Not built yet
 
-- Teaching assignments, student and faculty profiles, accounts, and LMS courses (later phases).
+- Teaching assignments, student and faculty profiles, and accounts (later phases). LMS courses are created by faculty, not here.
 - Bulk or CSV enrollment, select-all actions, timetables, fees, and admissions.
 - Deletion and change history.
