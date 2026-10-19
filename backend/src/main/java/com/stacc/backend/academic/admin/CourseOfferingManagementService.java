@@ -12,6 +12,7 @@ import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.offering.CourseOfferingStatus;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,7 @@ public class CourseOfferingManagementService {
     /** Offerings narrowed by any of the given IDs that are not null: the latest session first. */
     @Transactional(readOnly = true)
     public List<CourseOfferingResponse> list(Long semesterId, Long courseId, Long academicSessionId, Long programId) {
-        return offerings.findAllWithContext(semesterId, courseId, academicSessionId, programId).stream()
+        return offerings.findAllWithContext(semesterId, courseId, academicSessionId, programId, Pageable.unpaged()).stream()
                 .map(CourseOfferingResponse::of)
                 .toList();
     }

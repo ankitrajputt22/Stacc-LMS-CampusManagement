@@ -1,4 +1,4 @@
-import type { FacultyDashboard, StudentDashboard } from '../types/dashboard'
+import type { AdminDashboard, FacultyDashboard, StudentDashboard } from '../types/dashboard'
 import { apiClient } from './apiClient'
 
 /**
@@ -16,5 +16,11 @@ export async function getStudentDashboard(signal?: AbortSignal): Promise<Student
  */
 export async function getFacultyDashboard(signal?: AbortSignal): Promise<FacultyDashboard> {
   const response = await apiClient.get<FacultyDashboard>('/dashboard/faculty', { signal })
+  return response.data
+}
+
+/** The admin dashboard, GET /api/dashboard/admin. It takes no parameters. */
+export async function getAdminDashboard(signal?: AbortSignal): Promise<AdminDashboard> {
+  const response = await apiClient.get<AdminDashboard>('/dashboard/admin', { signal })
   return response.data
 }

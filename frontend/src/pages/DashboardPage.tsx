@@ -4,6 +4,7 @@ import { hasAnyRole, roleLabel } from '../auth/roles'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
+import { AdminDashboard } from '../dashboard/AdminDashboard'
 import { FacultyDashboard } from '../dashboard/FacultyDashboard'
 import { StudentDashboard } from '../dashboard/StudentDashboard'
 
@@ -20,72 +21,73 @@ const listFormat = new Intl.ListFormat('en', {
   type: 'conjunction',
 })
 
+// One part per role, always in this order, whatever order the account's roles come in.
+const PARTS = [
+  {
+    role: 'STUDENT',
+    title: 'Student Dashboard',
+    summary: 'An overview of your courses and academic activity.',
+    Part: StudentDashboard,
+  },
+  { role: 'FACULTY', title: 'Faculty Dashboard', summary: 'An overview of your teaching activity.', Part: FacultyDashboard },
+  {
+    role: 'ADMIN',
+    title: 'Admin Dashboard',
+    summary: 'An overview of academic setup and enrollment operations.',
+    Part: AdminDashboard,
+  },
+] as const
+
 /**
  * The home page. Its content follows every role the account holds, never one picked from the list: STUDENT gets the
- * student dashboard, FACULTY the faculty dashboard, and an account with both gets both, one under the other in the
- * fixed order Student, Faculty. Other accounts keep the general welcome until their own dashboards exist, and send no
- * dashboard request. The role check is for the interface only: the backend checks every request.
+ * student dashboard, FACULTY the faculty dashboard, and ADMIN the admin dashboard. An account with one of them gets
+ * that dashboard as the page; an account with several gets them one under the other, in the fixed order Student,
+ * Faculty, Admin. There is no role switcher. Other accounts keep the general welcome and send no dashboard request.
+ * The role check is for the interface only: the backend checks every request.
  */
 export function DashboardPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []
-  const isStudent = hasAnyRole(roles, ['STUDENT'])
-  const isFaculty = hasAnyRole(roles, ['FACULTY'])
+  const parts = PARTS.filter((part) => hasAnyRole(roles, [part.role]))
 
-  if (isStudent && isFaculty) {
-    return (
-      <>
-        <title>Dashboard · Stacc</title>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          An overview of your courses, academic activity, and teaching.
-        </p>
-        <section aria-labelledby="student-dashboard-heading" className="mt-6">
-          <h2 id="student-dashboard-heading" className="text-xl font-semibold tracking-tight text-ink">
-            Student Dashboard
-          </h2>
-          <div className="mt-4">
-            <StudentDashboard level={3} />
-          </div>
-        </section>
-        <section aria-labelledby="faculty-dashboard-heading" className="mt-10 border-t border-line pt-6">
-          <h2 id="faculty-dashboard-heading" className="text-xl font-semibold tracking-tight text-ink">
-            Faculty Dashboard
-          </h2>
-          <div className="mt-4">
-            <FacultyDashboard level={3} />
-          </div>
-        </section>
-      </>
-    )
+  if (parts.length === 0) {
+    return <GeneralDashboard />
   }
-  if (isStudent) {
+  if (parts.length === 1) {
+    const { title, summary, Part } = parts[0]
     return (
       <>
         <title>Dashboard · Stacc</title>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Student Dashboard</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          An overview of your courses and academic activity.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
+        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">{summary}</p>
         <div className="mt-6">
-          <StudentDashboard />
+          <Part />
         </div>
       </>
     )
   }
-  if (isFaculty) {
-    return (
-      <>
-        <title>Dashboard · Stacc</title>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Faculty Dashboard</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">An overview of your teaching activity.</p>
-        <div className="mt-6">
-          <FacultyDashboard />
-        </div>
-      </>
-    )
-  }
-  return <GeneralDashboard />
+  return (
+    <>
+      <title>Dashboard · Stacc</title>
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard</h1>
+      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">An overview for each of your roles.</p>
+      {parts.map(({ role, title, summary, Part }, index) => (
+        <section
+          key={role}
+          aria-labelledby={`${role.toLowerCase()}-dashboard-heading`}
+          className={index === 0 ? 'mt-6' : 'mt-10 border-t border-line pt-6'}
+        >
+          <h2 id={`${role.toLowerCase()}-dashboard-heading`} className="text-xl font-semibold tracking-tight text-ink">
+            {title}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-ink-muted">{summary}</p>
+          <div className="mt-4">
+            <Part level={3} />
+          </div>
+        </section>
+      ))}
+    </>
+  )
 }
 
 function GeneralDashboard() {

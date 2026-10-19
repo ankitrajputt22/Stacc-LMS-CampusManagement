@@ -3,6 +3,7 @@ package com.stacc.backend.academic.offering;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +15,8 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     /**
      * Course offerings with their course, semester, program, and academic session, in one query, narrowed by any of
      * the given IDs that are not null. The latest session comes first, then program code, semester number, and
-     * course code.
+     * course code. The admin list asks for every row ({@code Pageable.unpaged()}); a preview asks for the first page,
+     * in the same order.
      */
     @Query("""
             select offering
@@ -34,7 +36,8 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             @Param("semesterId") Long semesterId,
             @Param("courseId") Long courseId,
             @Param("academicSessionId") Long academicSessionId,
-            @Param("programId") Long programId);
+            @Param("programId") Long programId,
+            Pageable page);
 
     @Query("""
             select offering

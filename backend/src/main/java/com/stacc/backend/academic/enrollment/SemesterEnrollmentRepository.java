@@ -13,6 +13,9 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
 
     Optional<SemesterEnrollment> findByStudentProfileIdAndSemesterId(Long studentProfileId, Long semesterId);
 
+    /** How many semester enrollments have this status, such as every one still {@code ENROLLED}. */
+    long countByStatus(SemesterEnrollmentStatus status);
+
     /** A student's semester enrollments with each semester, program, and session: the latest session first. */
     @Query("""
             select enrollment

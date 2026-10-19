@@ -193,7 +193,7 @@
 - Role-aware navigation is for the interface only, never authorization. Every feature must be protected by the backend whether or not its item is visible.
 - The navigation is one list in `src/components/navigation/navigation.ts`, shared by the sidebar and the mobile drawer. Do not create a sidebar per role, and do not repeat shared items for multi-role accounts.
 - An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
-- Do not build role-specific dashboards or role route trees before their roadmap phases. The student and faculty dashboards render on `/` for accounts holding `STUDENT` or `FACULTY`, both for an account with both, in the fixed order Student, Faculty; never pick a role with `roles[0]`, and add no role switcher.
+- Do not build role-specific dashboards or role route trees before their roadmap phases. The student, faculty, and admin dashboards render on `/`, one part per role the account holds, in the fixed order Student, Faculty, Admin; never pick a role with `roles[0]`, and add no role switcher.
 - The student Courses page (`/courses`) gets its data only from `GET /api/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
@@ -226,6 +226,13 @@
 - Upcoming assignments are future `DRAFT` or `PUBLISHED` ones in LMS courses faculty can open. Needs grading means a submission's latest attempt (`latestAttemptNumber`) has no grade, for a `PUBLISHED` assignment; never count older ungraded attempts.
 - Open attendance is `OPEN` sessions of the offerings taught and needs no `LmsCourse`.
 - Link to the existing pages; add no grading or attendance editor, and no class averages, ranks, or engagement scores.
+
+## Admin Dashboard
+
+- `GET /api/dashboard/admin` is a read-only aggregation in the `dashboard` module; never persist or cache its counts. It needs `ADMIN` and `ADMIN_DASHBOARD_VIEW` and grants no change rights. See `docs/admin-dashboard.md`.
+- Master counts are every row, whatever the status; the offering count counts `CourseOffering`, never `Course` or `LmsCourse`. Active enrollment means `ENROLLED` only.
+- The offering preview reuses the admin offering list's query and order (first page). Never call it recent.
+- Show no student, faculty, or account details, and no activity feeds, trends, rates, rankings, or performance analytics.
 
 ## Docker
 

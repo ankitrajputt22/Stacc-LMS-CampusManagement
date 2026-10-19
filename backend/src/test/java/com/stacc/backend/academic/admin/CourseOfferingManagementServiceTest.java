@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 class CourseOfferingManagementServiceTest {
@@ -80,7 +81,7 @@ class CourseOfferingManagementServiceTest {
 
     @Test
     void theListAndDetailCarryTheOfferingsContextAndTheFiltersReachTheQuery() {
-        when(offerings.findAllWithContext(9L, null, 2L, null)).thenReturn(List.of(college.offeringA, college.offeringB));
+        when(offerings.findAllWithContext(9L, null, 2L, null, Pageable.unpaged())).thenReturn(List.of(college.offeringA, college.offeringB));
 
         List<CourseOfferingResponse> listed = service.list(9L, null, 2L, null);
 

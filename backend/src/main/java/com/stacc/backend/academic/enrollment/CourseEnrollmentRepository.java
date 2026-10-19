@@ -51,6 +51,9 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
     boolean existsBySemesterEnrollmentIdAndStatus(Long semesterEnrollmentId, CourseEnrollmentStatus status);
 
+    /** How many course enrollments have this status, such as every one still {@code ENROLLED}. */
+    long countByStatus(CourseEnrollmentStatus status);
+
     /**
      * The course enrollments of one offering whose student currently takes part in it: the course enrollment and its
      * semester enrollment are both {@code ENROLLED} and the student profile is {@code ACTIVE}. The semester enrollment

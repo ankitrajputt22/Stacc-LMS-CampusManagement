@@ -121,7 +121,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one sub-navigation for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), and Enrollments (`/admin/academic/enrollments`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has one sub-navigation for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), and Enrollments (`/admin/academic/enrollments`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 
 ## Not built yet
 

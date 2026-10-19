@@ -38,5 +38,4 @@ The existing home page, `/`, shows "Student Dashboard" for any account holding `
 
 ## Not built yet
 
-- The admin dashboard (Phase 37).
 - Notifications, unread counts, calendars, charts, progress, predictions, and recommendations.
