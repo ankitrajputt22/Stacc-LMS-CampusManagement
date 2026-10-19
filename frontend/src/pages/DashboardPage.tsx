@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { roleLabel } from '../auth/roles'
+import { hasAnyRole, roleLabel } from '../auth/roles'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
+import { StudentDashboard } from '../dashboard/StudentDashboard'
 
 type PreviewState = 'empty' | 'loading' | 'error'
 
@@ -18,7 +19,32 @@ const listFormat = new Intl.ListFormat('en', {
   type: 'conjunction',
 })
 
+/**
+ * The home page. An account holding STUDENT, whatever its other roles, gets the student dashboard; the others keep
+ * the general welcome until their own dashboards exist, and send no dashboard request. The role check is for the
+ * interface only: the backend checks every request.
+ */
 export function DashboardPage() {
+  const { account } = useAuth()
+
+  if (hasAnyRole(account?.roles ?? [], ['STUDENT'])) {
+    return (
+      <>
+        <title>Dashboard · Stacc</title>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">Student Dashboard</h1>
+        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
+          An overview of your courses and academic activity.
+        </p>
+        <div className="mt-6">
+          <StudentDashboard />
+        </div>
+      </>
+    )
+  }
+  return <GeneralDashboard />
+}
+
+function GeneralDashboard() {
   const [previewState, setPreviewState] = useState<PreviewState>('empty')
   const { account } = useAuth()
   const roles = account?.roles ?? []

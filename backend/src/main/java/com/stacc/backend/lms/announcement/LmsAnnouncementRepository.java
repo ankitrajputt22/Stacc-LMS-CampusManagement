@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.stacc.backend.lms.content.LmsContentStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LmsAnnouncementRepository extends JpaRepository<LmsAnnouncement, Long> {
@@ -11,6 +12,9 @@ public interface LmsAnnouncementRepository extends JpaRepository<LmsAnnouncement
     /** For faculty: the course's announcements in these statuses, newest created first. */
     List<LmsAnnouncement> findAllByLmsCourseIdAndStatusInOrderByCreatedAtDescIdDesc(
             Long lmsCourseId, Collection<LmsContentStatus> statuses);
+
+    /** The announcements of several courses in one status, as many as the page asks for, in the page's order. */
+    List<LmsAnnouncement> findByLmsCourseIdInAndStatus(Collection<Long> lmsCourseIds, LmsContentStatus status, Pageable page);
 
     /** For students: the course's announcements in one status, newest published first. */
     List<LmsAnnouncement> findAllByLmsCourseIdAndStatusOrderByPublishedAtDescIdDesc(
