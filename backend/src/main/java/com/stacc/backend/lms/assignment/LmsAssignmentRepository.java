@@ -44,4 +44,11 @@ public interface LmsAssignmentRepository extends JpaRepository<LmsAssignment, Lo
             """)
     Optional<LmsAssignment> findWithCourseByIdAndLmsCourseId(
             @Param("assignmentId") Long assignmentId, @Param("lmsCourseId") Long lmsCourseId);
+
+    /**
+     * The assignments of several courses in these statuses whose deadline is at or after a moment, one page of them,
+     * in the page's order, with the total count of all of them.
+     */
+    Page<LmsAssignment> findByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqual(
+            Collection<Long> lmsCourseIds, Collection<LmsContentStatus> statuses, Instant dueFrom, Pageable page);
 }

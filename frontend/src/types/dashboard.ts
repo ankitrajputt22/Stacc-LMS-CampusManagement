@@ -1,3 +1,5 @@
+import type { LmsCourseLifecycleStatus } from './lms'
+
 // The student dashboard as GET /api/dashboard/student sends it: short previews with their full counts. Every value
 // comes from the feature that owns it; nothing is derived here.
 
@@ -69,4 +71,67 @@ export type StudentDashboard = {
   attendance: DashboardAttendanceCourse[]
   resultCount: number
   recentResults: DashboardResult[]
+}
+
+// The faculty dashboard as GET /api/dashboard/faculty sends it.
+
+export type FacultyDashboardCourse = {
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  credits: number
+  semesterNumber: number
+  programCode: string
+  academicSessionCode: string
+  /** Both null when the offering has no LMS course yet. */
+  lmsCourseId: number | null
+  lmsCourseStatus: LmsCourseLifecycleStatus | null
+}
+
+export type FacultyDashboardAssignment = {
+  assignmentId: number
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  title: string
+  dueAt: string
+  maxMarks: number
+  status: 'DRAFT' | 'PUBLISHED'
+}
+
+/** A submission whose latest attempt has no grade yet. */
+export type FacultyDashboardPendingSubmission = {
+  submissionId: number
+  assignmentId: number
+  lmsCourseId: number
+  studentLoginId: string
+  courseCode: string
+  courseName: string
+  assignmentTitle: string
+  latestAttemptId: number
+  latestAttemptNumber: number
+  latestSubmittedAt: string
+  latestLate: boolean
+}
+
+export type FacultyDashboardOpenSession = {
+  attendanceSessionId: number
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  heldAt: string
+  topic: string | null
+  totalRecords: number
+  unmarkedCount: number
+}
+
+export type FacultyDashboard = {
+  teachingCourseCount: number
+  teachingCourses: FacultyDashboardCourse[]
+  upcomingAssignmentCount: number
+  upcomingAssignments: FacultyDashboardAssignment[]
+  needsGradingCount: number
+  needsGrading: FacultyDashboardPendingSubmission[]
+  openAttendanceCount: number
+  openAttendanceSessions: FacultyDashboardOpenSession[]
 }

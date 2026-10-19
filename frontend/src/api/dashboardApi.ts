@@ -1,4 +1,4 @@
-import type { StudentDashboard } from '../types/dashboard'
+import type { FacultyDashboard, StudentDashboard } from '../types/dashboard'
 import { apiClient } from './apiClient'
 
 /**
@@ -7,5 +7,14 @@ import { apiClient } from './apiClient'
  */
 export async function getStudentDashboard(signal?: AbortSignal): Promise<StudentDashboard> {
   const response = await apiClient.get<StudentDashboard>('/dashboard/student', { signal })
+  return response.data
+}
+
+/**
+ * The signed-in faculty member's dashboard, GET /api/dashboard/faculty. The faculty member is the one in the access
+ * token; nothing about them is sent from here.
+ */
+export async function getFacultyDashboard(signal?: AbortSignal): Promise<FacultyDashboard> {
+  const response = await apiClient.get<FacultyDashboard>('/dashboard/faculty', { signal })
   return response.data
 }

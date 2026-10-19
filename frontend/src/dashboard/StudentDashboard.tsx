@@ -16,9 +16,9 @@ const itemLinkClasses =
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-function Courses({ dashboard }: { dashboard: Dashboard }) {
+function Courses({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection id="dashboard-courses" title="My Courses" link={{ to: '/courses', label: 'View all' }}>
+    <DashboardSection level={level} id="dashboard-courses" title="My Courses" link={{ to: '/courses', label: 'View all' }}>
       {dashboard.courses.length === 0 ? (
         <SectionEmpty>No LMS courses available.</SectionEmpty>
       ) : (
@@ -48,9 +48,9 @@ function Courses({ dashboard }: { dashboard: Dashboard }) {
   )
 }
 
-function UpcomingAssignments({ dashboard }: { dashboard: Dashboard }) {
+function UpcomingAssignments({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection id="dashboard-assignments" title="Upcoming Assignments">
+    <DashboardSection level={level} id="dashboard-assignments" title="Upcoming Assignments">
       {dashboard.upcomingAssignments.length === 0 ? (
         <SectionEmpty>No upcoming assignments.</SectionEmpty>
       ) : (
@@ -82,9 +82,9 @@ function UpcomingAssignments({ dashboard }: { dashboard: Dashboard }) {
   )
 }
 
-function RecentAnnouncements({ dashboard }: { dashboard: Dashboard }) {
+function RecentAnnouncements({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection id="dashboard-announcements" title="Recent Announcements">
+    <DashboardSection level={level} id="dashboard-announcements" title="Recent Announcements">
       {dashboard.recentAnnouncements.length === 0 ? (
         <SectionEmpty>No recent announcements.</SectionEmpty>
       ) : (
@@ -110,9 +110,9 @@ function RecentAnnouncements({ dashboard }: { dashboard: Dashboard }) {
   )
 }
 
-function Attendance({ dashboard }: { dashboard: Dashboard }) {
+function Attendance({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection id="dashboard-attendance" title="Attendance" link={{ to: '/academic/attendance', label: 'View attendance' }}>
+    <DashboardSection level={level} id="dashboard-attendance" title="Attendance" link={{ to: '/academic/attendance', label: 'View attendance' }}>
       {dashboard.attendance.length === 0 ? (
         <SectionEmpty>No attendance recorded yet.</SectionEmpty>
       ) : (
@@ -142,9 +142,9 @@ function Attendance({ dashboard }: { dashboard: Dashboard }) {
   )
 }
 
-function RecentResults({ dashboard }: { dashboard: Dashboard }) {
+function RecentResults({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection id="dashboard-results" title="Recent Results" link={{ to: '/academic/results', label: 'View results' }}>
+    <DashboardSection level={level} id="dashboard-results" title="Recent Results" link={{ to: '/academic/results', label: 'View results' }}>
       {dashboard.recentResults.length === 0 ? (
         <SectionEmpty>No published results available yet.</SectionEmpty>
       ) : (
@@ -184,7 +184,7 @@ function RecentResults({ dashboard }: { dashboard: Dashboard }) {
  * The student dashboard: what GET /api/dashboard/student sends, as short previews that link to the full pages.
  * The backend already decided what is visible; nothing is filtered, calculated, or invented here.
  */
-export function StudentDashboard() {
+export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {
   const dashboard = useApiRequest(getStudentDashboard)
 
   if (dashboard.status === 'loading') {
@@ -223,12 +223,12 @@ export function StudentDashboard() {
           <dd className="text-xl font-semibold text-ink">{data.upcomingAssignmentCount}</dd>
         </div>
       </dl>
-      <Courses dashboard={data} />
+      <Courses dashboard={data} level={level} />
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <UpcomingAssignments dashboard={data} />
-        <RecentAnnouncements dashboard={data} />
-        <Attendance dashboard={data} />
-        <RecentResults dashboard={data} />
+        <UpcomingAssignments dashboard={data} level={level} />
+        <RecentAnnouncements dashboard={data} level={level} />
+        <Attendance dashboard={data} level={level} />
+        <RecentResults dashboard={data} level={level} />
       </div>
     </div>
   )

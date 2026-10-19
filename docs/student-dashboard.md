@@ -34,9 +34,9 @@ The dashboard reads in a fixed number of queries, whatever the number of courses
 
 ## Frontend
 
-The existing home page, `/`, shows "Student Dashboard" for any account holding `STUDENT` (see `frontend-authentication.md`). Its sections link to the full pages: `/courses`, `/courses/:lmsCourseId`, `/courses/:lmsCourseId/assignments/:assignmentId`, `/academic/attendance`, and `/academic/results`.
+The existing home page, `/`, shows "Student Dashboard" for any account holding `STUDENT`; an account that is also faculty sees it above its faculty dashboard (see `frontend-authentication.md` and `faculty-dashboard.md`). Its sections link to the full pages: `/courses`, `/courses/:lmsCourseId`, `/courses/:lmsCourseId/assignments/:assignmentId`, `/academic/attendance`, and `/academic/results`.
 
 ## Not built yet
 
-- Faculty and admin dashboards (later phases).
+- The admin dashboard (Phase 37).
 - Notifications, unread counts, calendars, charts, progress, predictions, and recommendations.

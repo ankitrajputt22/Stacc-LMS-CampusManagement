@@ -57,7 +57,7 @@ A page that loads one thing from the API can use `useApiRequest` (see `frontend-
 
 Pages below a list show a breadcrumb back to it with `components/navigation/Breadcrumb.tsx`, such as "Courses / Data Structures".
 
-For an account holding `STUDENT`, the Dashboard is the student dashboard (see `student-dashboard.md`). Other accounts still see the general welcome with a temporary preview of these states until their own dashboards exist.
+For an account holding `STUDENT`, the Dashboard is the student dashboard (see `student-dashboard.md`), for `FACULTY` the faculty dashboard (see `faculty-dashboard.md`), and an account with both shows both. Admin-only accounts still see the general welcome with a temporary preview of these states until their own dashboard exists.
 
 ## Deployment note
 

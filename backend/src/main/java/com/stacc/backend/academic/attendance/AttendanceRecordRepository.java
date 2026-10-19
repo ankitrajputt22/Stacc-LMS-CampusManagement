@@ -1,5 +1,6 @@
 package com.stacc.backend.academic.attendance;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,4 +43,26 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             order by session.heldAt desc, session.id desc
             """)
     List<AttendanceRecord> findAllFinalizedByUserAccountId(@Param("userAccountId") Long userAccountId);
+
+    /** How many records each of these sessions has, and how many of them are still unmarked, in one query. */
+    @Query("""
+            select record.attendanceSession.id as sessionId,
+                   count(record) as totalRecords,
+                   sum(case when record.status = com.stacc.backend.academic.attendance.AttendanceStatus.UNMARKED
+                            then 1 else 0 end) as unmarkedRecords
+            from AttendanceRecord record
+            where record.attendanceSession.id in :sessionIds
+            group by record.attendanceSession.id
+            """)
+    List<SessionRecordCounts> countRecordsBySessionIdIn(@Param("sessionIds") Collection<Long> sessionIds);
+
+    /** The record counts of one session. */
+    interface SessionRecordCounts {
+
+        Long getSessionId();
+
+        Long getTotalRecords();
+
+        Long getUnmarkedRecords();
+    }
 }
