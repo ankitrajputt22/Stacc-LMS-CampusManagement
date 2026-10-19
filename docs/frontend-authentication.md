@@ -91,7 +91,14 @@ The navigation itself is one list in `src/components/navigation/navigation.ts`, 
 
 ### The Dashboard
 
-The home page, `/`, is the Dashboard. For any account holding `STUDENT`, whatever its other roles, it is the **Student Dashboard** ("An overview of your courses and academic activity."), from `GET /api/dashboard/student` through `apiClient`; no role is picked from a list, and there is no role switcher. Other accounts keep the general welcome and send no dashboard request.
+The home page, `/`, is the Dashboard. It follows every role the account holds, never one picked from the list, and there is no role switcher:
+
+- `STUDENT` only: the **Student Dashboard** ("An overview of your courses and academic activity."), from `GET /api/dashboard/student`.
+- `FACULTY` only: the **Faculty Dashboard** ("An overview of your teaching activity."), from `GET /api/dashboard/faculty` (below).
+- Both: the page is "Dashboard", with **Student Dashboard** and then **Faculty Dashboard** as two parts, each loading on its own, in that fixed order whatever order the roles come in.
+- Others: the general welcome, and no dashboard request is sent.
+
+The student dashboard:
 
 - Two real counts sit at the top: **My Courses** and **Upcoming Assignments**. There is no name greeting, average, rank, streak, or chart.
 - **My Courses** lists up to six current courses with code, name, program, semester, and session; each name opens `/courses/:lmsCourseId`, and **View all** opens `/courses`.
@@ -102,6 +109,15 @@ The home page, `/`, is the Dashboard. For any account holding `STUDENT`, whateve
 - A preview shorter than its full count says "Showing 5 of 7." Empty sections say "No LMS courses available.", "No upcoming assignments.", "No recent announcements.", "No attendance recorded yet.", and "No published results available yet."
 - Loading says "Loading your dashboard…". A failure says "Couldn't load your dashboard." with **Retry**. A **403** says "You don't have access to the Student Dashboard." and suggests signing in again; it never signs the user out. A **401** is left to the shared client.
 - Sections stack on phones and sit two by two on wide screens, without equal-height boxes. The backend has already decided what is visible; the page filters and calculates nothing.
+
+The faculty dashboard:
+
+- Three real counts sit at the top: **Teaching Courses**, **Needs Grading**, and **Open Attendance**. There is no name greeting, average, rank, score, or chart.
+- **Teaching Courses** lists up to six offerings with code, name, program, semester, session, and **LMS course** as "Published", "Draft", "Archived", or "Not created". A draft or published course has **Open LMS course** (`/teaching/:lmsCourseId`); one without an LMS course has **Manage teaching**, and an archived one **View teaching**, both opening `/teaching`, where courses are created and archived ones are shown. **View teaching** opens `/teaching`.
+- **Upcoming Assignments** lists up to five future deadlines with the title, course code, "Due" with the local date and time, the maximum marks, and "Draft" or "Published". Each opens the course page's Assignments section (`/teaching/:lmsCourseId#assignments`); **View assignments** opens `/assignments`.
+- **Needs Grading** lists up to five submissions whose latest attempt has no grade, with the student's login ID, the assignment, the course code, the attempt number, when it was submitted, and "Late" or "On time". **Review** opens that submission on the existing grading page (`?submission=`).
+- **Open Attendance** lists up to five open sessions with the course, the local date and time, the topic, and "3 unmarked", "All students marked", or "No students on the roster". **Continue** opens that session on the existing attendance page (`?session=`); **View attendance** opens `/attendance`.
+- Empty sections say "No teaching courses available.", "No upcoming assignments.", "No submissions need grading.", and "No open attendance sessions." Loading says "Loading your dashboard…"; a failure says "Couldn't load your dashboard." with **Retry**; a **403** says "You don't have access to the Faculty Dashboard." and never signs the user out.
 
 ### The Courses page
 
@@ -266,7 +282,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Loading says "Loading submissions…". With no submissions it says "No submissions yet." and "No students have submitted this assignment." A **404**, a draft or archived assignment, an assignment of another course, and a URL whose IDs cannot be valid show "Assignment unavailable". A missing submission shows that the submission could not be found. A **403** shows "You don't have access to grade this assignment." and suggests signing in again: a token issued before `LMS_ASSIGNMENT_GRADE` existed lacks it. Any other failure shows "Couldn't load submissions." with **Retry**.
 - An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent.
 
-Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student dashboard is the only role-based dashboard so far, and there are no role-based routes.
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student and faculty dashboards are the only role-based dashboards so far, both on `/`, and there are no role-based routes.
 
 ## Dev server and Docker
 
@@ -284,5 +300,5 @@ Being an allowed origin never replaces signing in. It only decides which web pag
 ## Not built yet
 
 - Refresh tokens, "remember me", password change or reset, single sign-on, and multi-factor sign-in.
-- Faculty and admin dashboards, and the pages the navigation still marks as coming.
+- The admin dashboard, and the pages the navigation still marks as coming.
 - Automated frontend tests. The frontend has no test framework yet, so this was checked with lint, the build, and by hand in a browser.

@@ -14,7 +14,7 @@ The backend modules are:
 - `engagement` — clubs, events, sports, elections, and campus activities.
 - `career` — placements and internships.
 - `analytics` — reports and analytics.
-- `dashboard` — read-only overviews, such as the student dashboard, composed from other modules' query services. It owns no data and stores nothing (see `student-dashboard.md`).
+- `dashboard` — read-only overviews, such as the student and faculty dashboards, composed from other modules' query services. It owns no data and stores nothing (see `student-dashboard.md` and `faculty-dashboard.md`).
 
 Each module should own its business logic and should not depend directly on another module's internal implementation without a clear reason. Shared technical code may live in `common`, but `common` should remain small rather than becoming a home for unrelated features.
 
