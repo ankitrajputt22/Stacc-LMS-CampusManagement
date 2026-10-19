@@ -95,7 +95,8 @@ The home page, `/`, is the Dashboard. It follows every role the account holds, n
 
 - `STUDENT` only: the **Student Dashboard** ("An overview of your courses and academic activity."), from `GET /api/dashboard/student`.
 - `FACULTY` only: the **Faculty Dashboard** ("An overview of your teaching activity."), from `GET /api/dashboard/faculty` (below).
-- Both: the page is "Dashboard", with **Student Dashboard** and then **Faculty Dashboard** as two parts, each loading on its own, in that fixed order whatever order the roles come in.
+- `ADMIN` only: the **Admin Dashboard** ("An overview of academic setup and enrollment operations."), from `GET /api/dashboard/admin` (below).
+- Several of them: the page is "Dashboard" ("An overview for each of your roles."), with one part per role, each with its own heading and loading on its own, always in the fixed order Student, Faculty, Admin, whatever order the roles come in. Each part sends only its own request.
 - Others: the general welcome, and no dashboard request is sent.
 
 The student dashboard:
@@ -118,6 +119,14 @@ The faculty dashboard:
 - **Needs Grading** lists up to five submissions whose latest attempt has no grade, with the student's login ID, the assignment, the course code, the attempt number, when it was submitted, and "Late" or "On time". **Review** opens that submission on the existing grading page (`?submission=`).
 - **Open Attendance** lists up to five open sessions with the course, the local date and time, the topic, and "3 unmarked", "All students marked", or "No students on the roster". **Continue** opens that session on the existing attendance page (`?session=`); **View attendance** opens `/attendance`.
 - Empty sections say "No teaching courses available.", "No upcoming assignments.", "No submissions need grading.", and "No open attendance sessions." Loading says "Loading your dashboard…"; a failure says "Couldn't load your dashboard." with **Retry**; a **403** says "You don't have access to the Faculty Dashboard." and never signs the user out.
+
+The admin dashboard:
+
+- **Academic Masters** lists Departments, Programs, Academic Sessions, Semesters, and Courses with their counts, and **Manage academic data** opens `/admin/academic`.
+- **Academic Operations** lists Course Offerings, Active Semester Enrollments, and Active Course Enrollments, says that active means currently enrolled, and links to **Manage course offerings** (`/admin/academic/offerings`) and **Manage enrollments** (`/admin/academic/enrollments`).
+- **Course Offerings** lists up to five offerings in the admin list's order with code, name, program, semester, session, and credits, each with **View roster** (`/admin/academic/offerings/:courseOfferingId/enrollments`), and **View all** opens `/admin/academic/offerings`. With none it says "No course offerings available."
+- A zero is shown as 0. There are no charts, trends, rates, rankings, activity feeds, or student and faculty totals. Users and Reports stay "Soon" in the navigation.
+- Loading, failure, and Retry are as on the other dashboards; a **403** says "You don't have access to the Admin Dashboard." and never signs the user out.
 
 ### The Courses page
 
@@ -282,7 +291,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Loading says "Loading submissions…". With no submissions it says "No submissions yet." and "No students have submitted this assignment." A **404**, a draft or archived assignment, an assignment of another course, and a URL whose IDs cannot be valid show "Assignment unavailable". A missing submission shows that the submission could not be found. A **403** shows "You don't have access to grade this assignment." and suggests signing in again: a token issued before `LMS_ASSIGNMENT_GRADE` existed lacks it. Any other failure shows "Couldn't load submissions." with **Retry**.
 - An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent.
 
-Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student and faculty dashboards are the only role-based dashboards so far, both on `/`, and there are no role-based routes.
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student, faculty, and admin dashboards share `/`, and there are no role-based routes.
 
 ## Dev server and Docker
 
@@ -300,5 +309,5 @@ Being an allowed origin never replaces signing in. It only decides which web pag
 ## Not built yet
 
 - Refresh tokens, "remember me", password change or reset, single sign-on, and multi-factor sign-in.
-- The admin dashboard, and the pages the navigation still marks as coming.
+- The pages the navigation still marks as coming.
 - Automated frontend tests. The frontend has no test framework yet, so this was checked with lint, the build, and by hand in a browser.

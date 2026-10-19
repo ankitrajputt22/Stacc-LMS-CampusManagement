@@ -36,5 +36,4 @@ The home page, `/`, shows "Faculty Dashboard" for an account holding `FACULTY` (
 
 ## Not built yet
 
-- The admin dashboard (Phase 37).
 - Class averages, ranks, pass rates, engagement or performance scores, predictions, recommendations, charts, calendars, and notifications.

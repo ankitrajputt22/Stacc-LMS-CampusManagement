@@ -135,3 +135,38 @@ export type FacultyDashboard = {
   openAttendanceCount: number
   openAttendanceSessions: FacultyDashboardOpenSession[]
 }
+
+// The admin dashboard as GET /api/dashboard/admin sends it: exact counts and a short offering preview.
+
+/** Every record of each master, whatever its status. */
+export type AdminAcademicMasterSummary = {
+  departmentCount: number
+  programCount: number
+  academicSessionCount: number
+  semesterCount: number
+  courseCount: number
+}
+
+export type AdminAcademicOperationsSummary = {
+  courseOfferingCount: number
+  /** ENROLLED only; completed and withdrawn enrollments are not counted. */
+  activeSemesterEnrollmentCount: number
+  activeCourseEnrollmentCount: number
+}
+
+export type AdminDashboardCourseOffering = {
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  credits: number
+  semesterNumber: number
+  programCode: string
+  academicSessionCode: string
+}
+
+export type AdminDashboard = {
+  academicMasters: AdminAcademicMasterSummary
+  academicOperations: AdminAcademicOperationsSummary
+  /** The first offerings in the admin list's order. */
+  courseOfferings: AdminDashboardCourseOffering[]
+}
