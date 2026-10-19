@@ -89,6 +89,20 @@ The app shell shows each account the navigation for its roles. This is about wha
 
 The navigation itself is one list in `src/components/navigation/navigation.ts`, used on every screen size. Most items there are upcoming features, shown as "Soon": they are not links and have no pages. Each will get its route when its feature is built.
 
+### The Dashboard
+
+The home page, `/`, is the Dashboard. For any account holding `STUDENT`, whatever its other roles, it is the **Student Dashboard** ("An overview of your courses and academic activity."), from `GET /api/dashboard/student` through `apiClient`; no role is picked from a list, and there is no role switcher. Other accounts keep the general welcome and send no dashboard request.
+
+- Two real counts sit at the top: **My Courses** and **Upcoming Assignments**. There is no name greeting, average, rank, streak, or chart.
+- **My Courses** lists up to six current courses with code, name, program, semester, and session; each name opens `/courses/:lmsCourseId`, and **View all** opens `/courses`.
+- **Upcoming Assignments** lists up to five future deadlines with the title, course code, "Due" with the local date and time, and the maximum marks; each opens its assignment page. It never says missing, incomplete, or overdue.
+- **Recent Announcements** lists up to five with the title, course code, and "Published" with the local time; each opens the course page, which holds the full announcement.
+- **Attendance** lists up to four courses with present and absent counts and the backend's percentage, and links to **View attendance** (`/academic/attendance`). Nothing recorded says "No attendance recorded yet." rather than 0%.
+- **Recent Results** lists up to five with the course, "82 / 100", and the grade only when one was entered, and links to **View results** (`/academic/results`).
+- A preview shorter than its full count says "Showing 5 of 7." Empty sections say "No LMS courses available.", "No upcoming assignments.", "No recent announcements.", "No attendance recorded yet.", and "No published results available yet."
+- Loading says "Loading your dashboard…". A failure says "Couldn't load your dashboard." with **Retry**. A **403** says "You don't have access to the Student Dashboard." and suggests signing in again; it never signs the user out. A **401** is left to the shared client.
+- Sections stack on phones and sit two by two on wide screens, without equal-height boxes. The backend has already decided what is visible; the page filters and calculates nothing.
+
 ### The Courses page
 
 `/courses` is the first real student page. It sits inside the signed-in app shell, and its Courses link is in the Student section, so any account that holds `STUDENT` sees it, including an account that is also faculty.
@@ -252,7 +266,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Loading says "Loading submissions…". With no submissions it says "No submissions yet." and "No students have submitted this assignment." A **404**, a draft or archived assignment, an assignment of another course, and a URL whose IDs cannot be valid show "Assignment unavailable". A missing submission shows that the submission could not be found. A **403** shows "You don't have access to grade this assignment." and suggests signing in again: a token issued before `LMS_ASSIGNMENT_GRADE` existed lacks it. Any other failure shows "Couldn't load submissions." with **Retry**.
 - An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent.
 
-Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. There are no role-based dashboards and no role-based routes yet.
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student dashboard is the only role-based dashboard so far, and there are no role-based routes.
 
 ## Dev server and Docker
 
@@ -270,5 +284,5 @@ Being an allowed origin never replaces signing in. It only decides which web pag
 ## Not built yet
 
 - Refresh tokens, "remember me", password change or reset, single sign-on, and multi-factor sign-in.
-- Dashboards and pages for each role. The navigation only marks them as coming.
+- Faculty and admin dashboards, and the pages the navigation still marks as coming.
 - Automated frontend tests. The frontend has no test framework yet, so this was checked with lint, the build, and by hand in a browser.

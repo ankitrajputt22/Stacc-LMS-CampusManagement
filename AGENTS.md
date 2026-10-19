@@ -193,7 +193,7 @@
 - Role-aware navigation is for the interface only, never authorization. Every feature must be protected by the backend whether or not its item is visible.
 - The navigation is one list in `src/components/navigation/navigation.ts`, shared by the sidebar and the mobile drawer. Do not create a sidebar per role, and do not repeat shared items for multi-role accounts.
 - An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
-- Do not build role-specific dashboards or role route trees before their roadmap phases.
+- Do not build role-specific dashboards or role route trees before their roadmap phases. The student dashboard renders on `/` for any account holding `STUDENT`; never pick a role with `roles[0]`.
 - The student Courses page (`/courses`) gets its data only from `GET /api/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
@@ -210,6 +210,14 @@
 - Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Show LMS provisioning outcomes neutrally, and never offer to create an LMS course there.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
+
+## Student Dashboard
+
+- `GET /api/dashboard/student` (`dashboard` module) is a read-only aggregation, not a source of truth. Never persist or cache dashboard data. See `docs/student-dashboard.md`.
+- It needs `STUDENT` and `STUDENT_DASHBOARD_VIEW` and takes the student from the access token; never accept a student, profile, account, or enrollment ID from the client.
+- Courses come from `LmsStudentCourseQueryService`, the same rule as the course list. Assignment and announcement previews query only those course IDs, `PUBLISHED` only; upcoming means a `dueAt` now or later. Skip those queries when there is no course.
+- Attendance reuses `StudentAttendanceQueryService` (own, finalized) and results reuse `StudentResultQueryService` (own, published); they show even without current LMS courses.
+- Keep previews bounded in the query, not by loading everything. Never calculate overall attendance, GPA, rank, pass or fail, completion, or progress.
 
 ## Docker
 

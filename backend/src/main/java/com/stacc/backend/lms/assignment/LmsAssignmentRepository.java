@@ -1,10 +1,13 @@
 package com.stacc.backend.lms.assignment;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import com.stacc.backend.lms.content.LmsContentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +17,13 @@ public interface LmsAssignmentRepository extends JpaRepository<LmsAssignment, Lo
     /** One course's assignments in these statuses, earliest deadline first. */
     List<LmsAssignment> findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(
             Long lmsCourseId, Collection<LmsContentStatus> statuses);
+
+    /**
+     * The assignments of several courses in one status whose deadline is at or after a moment, one page of them, in
+     * the page's order, with the total count of all of them.
+     */
+    Page<LmsAssignment> findByLmsCourseIdInAndStatusAndDueAtGreaterThanEqual(
+            Collection<Long> lmsCourseIds, LmsContentStatus status, Instant dueFrom, Pageable page);
 
     /** The assignments of several courses in these statuses, earliest deadline first. */
     List<LmsAssignment> findAllByLmsCourseIdInAndStatusInOrderByDueAtAscIdAsc(
