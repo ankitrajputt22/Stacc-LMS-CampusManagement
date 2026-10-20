@@ -102,6 +102,16 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 **Accounts.** Nothing creates user accounts. The stack starts with the reference data from the migrations only, so the login endpoint answers but nobody can sign in until accounts are added by a later feature.
 
+## Local test data
+
+An empty database has no accounts. To try the application with test accounts and connected demo data, set `STACC_TEST_PASSWORD` in `.env` and start with the `dev-seed` profile:
+
+```bash
+SPRING_PROFILES_ACTIVE=dev-seed docker compose up -d --build
+```
+
+It only adds what is missing and is safe to repeat. Without the profile nothing is created. See `local-test-data.md` for the accounts and the data.
+
 ## Changing `.env` later
 
 - **Ports and token lifetime:** change the value and run `docker compose up -d`.

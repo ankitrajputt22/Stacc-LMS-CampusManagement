@@ -79,6 +79,10 @@ The `lms.assignment.submission` package holds students' work. `LmsAssignmentSubm
 
 The same package holds grading. `LmsSubmissionGrade` is the one grade of an attempt: marks (`BigDecimal`), the maximum it was first graded out of, optional plain-text feedback, when it was saved, and the faculty profile that saved it last. `LmsAssignmentGradingService` checks the faculty access rule for the course behind the stored attempt, and locks the attempt before creating or replacing its grade. `LmsFacultySubmissionQueryService` in `lms.api` lists and shows submissions for faculty and streams their files. Faculty use the `/api/lms/faculty/assignments/{id}/submissions`, `/api/lms/faculty/submission-attachments/{id}/download`, and `PUT /api/lms/faculty/submission-attempts/{id}/grade` routes with the new `LMS_ASSIGNMENT_GRADE` permission; students see each attempt's grade in their own history. See `../docs/lms-foundation.md`.
 
+## Local test data
+
+The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.
+
 ## API validation and errors
 
 The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
