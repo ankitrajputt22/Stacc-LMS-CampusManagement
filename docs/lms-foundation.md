@@ -659,6 +659,10 @@ Assignments use the same `LmsContentStatus` as course content:
 - The reads are side-effect free. Nothing is sent to anyone when an assignment is published or changed.
 - Assignments have no rubrics, attachments, or reminders yet. Students hand in work and faculty grade it as described below.
 
+### Deadlines on the calendar
+
+The shared calendar (`GET /api/calendar/me`, see `academic-calendar.md`) reads `dueAt` straight from the assignments every time it is loaded. Deadlines are never copied into calendar tables, so a changed deadline shows on the next load. Students get the published assignments of the courses `LmsStudentCourseQueryService` lists for them; faculty get the draft and published assignments of the courses `LmsFacultyCourseQueryService` lists for them. Archived assignments and archived LMS courses never appear. The calendar's time zone only decides which days a deadline falls on.
+
 ## Assignment submissions
 
 Students hand in work for published assignments. The code is in `com.stacc.backend.lms.assignment.submission`, and the tables are `lms_assignment_submissions`, `lms_submission_attempts`, and `lms_submission_attachments`.

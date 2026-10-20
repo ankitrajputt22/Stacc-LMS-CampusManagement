@@ -240,6 +240,24 @@ CourseEnrollment ------ 0..1 CourseResult
 - A result starts as a draft and is visible to the student once published; a published result can be corrected and stays published. A new result needs an enrolled or completed enrollment.
 - Results are historical academic records: they are never deleted or unpublished, and a later change to the enrollment keeps them.
 
+## Academic calendar
+
+Official calendar events are academic data of an academic session, not LMS data (see `academic-calendar.md`).
+
+```text
+AcademicSession
+      |
+      +------< AcademicCalendarEvent
+                      |
+                      +------> optional Semester of the same session
+```
+
+- Every event belongs to one academic session. Without a semester it applies across the session; with one, only to that semester, which must belong to the same session.
+- Events are plain dates with no time zone: a start date and an included end date, never before the start.
+- An event starts as a draft, is published by an admin, and may be cancelled. A cancelled event that was published stays visible, marked as cancelled. Once published, its session and semester are fixed. Events are never deleted or restored.
+- Students see the events of the semesters they are enrolled in or have completed, and faculty those of the semesters they actively teach in, with the session-wide events of those sessions. No LMS course is needed.
+- Assignment deadlines are not calendar events: they stay on the LMS assignment and are only read alongside these events.
+
 ## The ERP is the source of truth for the LMS
 
 ```text
@@ -288,11 +306,11 @@ The LMS student access policy consults this official ERP state on every check. A
 
 ## Keeping history
 
-A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted, and neither are attendance sessions, attendance records, or course results. Later records may still refer to them, so academic history is kept.
+A department, program, course, student profile, faculty profile, or teaching assignment that is no longer used is made `INACTIVE`, a finished session, semester, or offering is `CLOSED`, and an enrollment ends as `COMPLETED` or `WITHDRAWN`. None of them is deleted, and neither are attendance sessions, attendance records, course results, or calendar events, which are cancelled instead. Later records may still refer to them, so academic history is kept.
 
 ## Not built yet
 
-- Admins create and edit the five masters, create course offerings, and create and end semester and course enrollments (see `admin-academic.md`). Apart from that, attendance, and results, there is no API, service, or screen for these models yet; student and faculty profiles cannot be created through any API.
+- Admins create and edit the five masters, create course offerings, create and end semester and course enrollments, and manage calendar events (see `admin-academic.md` and `academic-calendar.md`). Apart from that, attendance, and results, there is no API, service, or screen for these models yet; student and faculty profiles cannot be created through any API.
 - Teaching assignments cannot be created or changed through any API yet.
 - No rows are seeded for any of them. The college's real data will be entered through a later administrative feature.
-- The permissions for this data are the academic master, offering, and enrollment permissions for admins, and `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, and `ACADEMIC_RESULT_VIEW` (see `permissions.md`). Others will be added together with the API they protect.
+- The permissions for this data are the academic master, offering, and enrollment permissions for admins, `ATTENDANCE_MANAGE`, `ATTENDANCE_VIEW`, `ACADEMIC_RESULT_MANAGE`, `ACADEMIC_RESULT_VIEW`, `ACADEMIC_CALENDAR_VIEW`, and `ACADEMIC_CALENDAR_MANAGE` (see `permissions.md`). Others will be added together with the API they protect.

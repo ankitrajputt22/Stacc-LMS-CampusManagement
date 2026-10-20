@@ -4,6 +4,8 @@ export type NavigationItem = {
   label: string
   /** An item without a route is an upcoming feature. It is shown as "Soon" and is not a link. */
   to?: string
+  /** Shown to accounts with any of these roles. An item without roles is shown to everyone who sees its section. */
+  roles?: readonly AccountRole[]
 }
 
 export type NavigationSection = {
@@ -57,13 +59,24 @@ const navigationSections: readonly NavigationSection[] = [
   {
     id: 'common',
     title: 'Common',
-    items: [{ label: 'Calendar' }, { label: 'Inbox' }, { label: 'Support' }],
+    items: [
+      // One calendar for every role: the backend decides which events and deadlines each account gets.
+      { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
+      { label: 'Inbox' },
+      { label: 'Support' },
+    ],
   },
 ]
 
-/** The sections to show for an account with these roles. No roles gives only the shared sections. */
+/**
+ * The sections to show for an account with these roles, each with the items meant for it. No roles gives only the
+ * shared sections and their shared items.
+ */
 export function navigationFor(roles: readonly AccountRole[]): NavigationSection[] {
-  return navigationSections.filter(
-    (section) => section.roles === undefined || hasAnyRole(roles, section.roles),
-  )
+  return navigationSections
+    .filter((section) => section.roles === undefined || hasAnyRole(roles, section.roles))
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => item.roles === undefined || hasAnyRole(roles, item.roles)),
+    }))
 }

@@ -4,6 +4,7 @@ import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
 import { AttendancePage } from './pages/AttendancePage'
+import { CalendarPage } from './pages/CalendarPage'
 import { CourseAttendancePage } from './pages/CourseAttendancePage'
 import { CourseResultsPage } from './pages/CourseResultsPage'
 import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
@@ -45,6 +46,7 @@ function App() {
           <Route path="academic/results" element={<StudentResultsPage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
+          <Route path="calendar" element={<CalendarPage />} />
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
