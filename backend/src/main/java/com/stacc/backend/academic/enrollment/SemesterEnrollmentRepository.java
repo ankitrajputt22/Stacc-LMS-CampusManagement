@@ -1,5 +1,6 @@
 package com.stacc.backend.academic.enrollment;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +48,26 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select enrollment from SemesterEnrollment enrollment where enrollment.id = :semesterEnrollmentId")
     Optional<SemesterEnrollment> findByIdForUpdate(@Param("semesterEnrollmentId") Long semesterEnrollmentId);
+
+    /**
+     * The semester and academic session of each semester enrollment in these statuses of the student behind one
+     * account, in one query and without loading the enrollments.
+     */
+    @Query("""
+            select semester.id as semesterId, semester.academicSession.id as academicSessionId
+            from SemesterEnrollment enrollment
+            join enrollment.semester semester
+            where enrollment.studentProfile.userAccount.id = :userAccountId
+              and enrollment.status in :statuses
+            """)
+    List<EnrolledSemester> findEnrolledSemestersByUserAccountId(
+            @Param("userAccountId") Long userAccountId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
+
+    /** One semester a student is enrolled in, and its academic session. */
+    interface EnrolledSemester {
+
+        Long getSemesterId();
+
+        Long getAcademicSessionId();
+    }
 }

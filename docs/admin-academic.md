@@ -4,9 +4,10 @@ Admins manage academic data in `com.stacc.backend.academic.admin`:
 
 - the reusable masters: departments, programs, academic sessions, semesters, and courses (one controller and one management service per master, with records in `AcademicMasterRequests` and `AcademicMasterResponses`);
 - course offerings, one course taught in one semester (`AdminCourseOfferingController`, `CourseOfferingManagementService`);
-- official student enrollments in semesters and course offerings (`AdminEnrollmentController`, `AdminEnrollmentQueryService`, `AcademicEnrollmentManagementService`, `CourseEnrollmentWorkflow`), with records in `OfferingEnrollmentRequests` and `OfferingEnrollmentResponses`.
+- official student enrollments in semesters and course offerings (`AdminEnrollmentController`, `AdminEnrollmentQueryService`, `AcademicEnrollmentManagementService`, `CourseEnrollmentWorkflow`), with records in `OfferingEnrollmentRequests` and `OfferingEnrollmentResponses`;
+- official academic calendar events (`AdminAcademicCalendarController`, `AcademicCalendarManagementService`, with records in `AcademicCalendarRequests` and `AdminCalendarEventResponse`), described in `academic-calendar.md`.
 
-All of it works on the existing tables; no table was changed.
+The masters, offerings, and enrollments work on their existing tables; calendar events have their own table, `academic_calendar_events`.
 
 ```text
 Department ------< Program ------< Semester >------ AcademicSession
@@ -121,7 +122,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one sub-navigation for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), and Enrollments (`/admin/academic/enrollments`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
+`/admin/academic` has one sub-navigation for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 
 ## Not built yet
 

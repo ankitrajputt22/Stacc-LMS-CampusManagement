@@ -116,6 +116,17 @@
 - Faculty routes need `FACULTY` and `ACADEMIC_RESULT_MANAGE` plus `FacultyTeachingAccessService` for the offering in the route, and the enrollment must belong to that offering. `GET /api/results/student/me` needs `STUDENT` and `ACADEMIC_RESULT_VIEW` and takes the student from the access token. No admin pass.
 - Do not add GPA, SGPA, CGPA, ranks, pass or fail, approval workflows, or revision history without their own phase.
 
+## Academic Calendar
+
+- Official calendar events (`AcademicCalendarEvent` in `academic.calendar`) are academic data, not LMS data. Each needs one `AcademicSession` and may name one `Semester`, which must belong to that same session; the server checks it. See `docs/academic-calendar.md`.
+- Events are date-based: `LocalDate` start and end, the end included and never before the start. Categories are `ACADEMIC`, `HOLIDAY`, `EXAM`, `REGISTRATION`, and `OTHER`, stored as text; there is no assignment category.
+- New events start `DRAFT`. Publishing sets `publishedAt` once; cancelling sets `cancelledAt` and keeps `publishedAt`. Both are idempotent, a cancelled event cannot be published or edited, and there is no restore and no hard delete. After the first publication the session and semester never change (409).
+- Users see `PUBLISHED` events and `CANCELLED` ones that were published first, marked as cancelled; drafts never leak. Students get the events of their own `ENROLLED` or `COMPLETED` semester enrollments, faculty those of semesters they actively teach (no `LmsCourse` needed), each with the session-wide events of those sessions, and admins every visible event.
+- Assignment deadlines always come from `LmsAssignment.dueAt` at read time; never copy them into calendar tables. Students get published deadlines of courses `LmsStudentCourseQueryService` lists, faculty draft and published ones of courses `LmsFacultyCourseQueryService` lists. Do not repeat or loosen those rules.
+- `GET /api/calendar/me` (the read-only `calendar` module) needs `ACADEMIC_CALENDAR_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`, takes the caller from the access token, and gives every role the account holds its part; never use `roles[0]`. `from` and `to` are dates at most 366 days apart; `timeZone` is a validated IANA zone that only maps days to deadline moments and decides no access.
+- Admin event routes under `/api/admin/academic/calendar/events` need `ADMIN` with `ACADEMIC_CALENDAR_VIEW` and, to change, `ACADEMIC_CALENDAR_MANAGE`. Students and faculty never create events.
+- Publishing or cancelling sends nothing. Do not add recurring events, reminders, notifications, personal calendars, bookings, timetables, attachments, or calendar import or export without their own phase.
+
 ## LMS Data
 
 - LMS data belongs in the `lms` module. An ERP `CourseOffering` and an LMS `LmsCourse` are different concepts; do not put LMS state on the course offering.
@@ -210,6 +221,8 @@
 - Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Show LMS provisioning outcomes neutrally, and never offer to create an LMS course there.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
+- The Calendar item opens `/calendar` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. It loads one month at a time from `GET /api/calendar/me` with the browser's time zone, lists a multi-day event once with its range, shows Cancelled in words, and adds no data the API does not send. Student deadlines link to the assignment page and teaching deadlines to `/teaching/:lmsCourseId`; it is not an assignment editor.
+- Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
 
 ## Student Dashboard
 

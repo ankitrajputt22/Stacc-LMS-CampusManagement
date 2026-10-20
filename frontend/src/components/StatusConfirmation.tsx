@@ -10,6 +10,8 @@ type StatusConfirmationProps = {
   confirmLabel: string
   /** What the confirm button says while the change is sent, such as "Publishing…". */
   busyLabel?: string
+  /** What the button that closes without changing anything says, when "Cancel" would be unclear. */
+  dismissLabel?: string
   /** Sends the change. A refusal is thrown and shown here in safe words. */
   onConfirm: () => Promise<void>
   onCancel: () => void
@@ -27,6 +29,7 @@ export function StatusConfirmation({
   detail,
   confirmLabel,
   busyLabel = 'Saving…',
+  dismissLabel = 'Cancel',
   onConfirm,
   onCancel,
   describeRefusal,
@@ -95,7 +98,7 @@ export function StatusConfirmation({
         >
           {busy ? busyLabel : confirmLabel}
         </button>
-        <ActionButton onClick={onCancel}>Cancel</ActionButton>
+        <ActionButton onClick={onCancel}>{dismissLabel}</ActionButton>
       </div>
     </div>
   )

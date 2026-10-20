@@ -1,4 +1,5 @@
 import { NavLink, useParams } from 'react-router'
+import { CalendarSection } from '../admin/CalendarSection'
 import { EnrollmentsSection } from '../admin/EnrollmentsSection'
 import { OfferingRoster } from '../admin/OfferingRoster'
 import { OfferingsSection } from '../admin/OfferingsSection'
@@ -23,6 +24,7 @@ const SECTIONS = [
   { path: 'courses', label: 'Courses', Section: CoursesSection },
   { path: 'offerings', label: 'Course Offerings', Section: OfferingsSection },
   { path: 'enrollments', label: 'Enrollments', Section: EnrollmentsSection },
+  { path: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
 ] as const
 
 const ID_PATTERN = /^[1-9]\d{0,17}$/
@@ -55,10 +57,11 @@ function SectionNavigation() {
 
 /**
  * The admin workspace for academic data, at /admin/academic/:section; /admin/academic opens the departments. The
- * reusable masters can be added and edited, course offerings added and moved through their status, and students
- * enrolled in semesters and course offerings; nothing is deleted. An offering's roster is at
- * /admin/academic/offerings/:courseOfferingId/enrollments. Accounts without the admin role see an explanation instead
- * and no request is made; the backend checks the role and the permissions on every request.
+ * reusable masters can be added and edited, course offerings added and moved through their status, students enrolled
+ * in semesters and course offerings, and official calendar events prepared, published, and cancelled; nothing is
+ * deleted. An offering's roster is at /admin/academic/offerings/:courseOfferingId/enrollments. Accounts without the
+ * admin role see an explanation instead and no request is made; the backend checks the role and the permissions on
+ * every request.
  */
 export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
   const { account } = useAuth()
@@ -75,7 +78,7 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
       <title>{`${roster ? 'Offering Roster' : current.label} · Academic Admin · Stacc`}</title>
       <h1 className="text-2xl font-semibold tracking-tight text-ink">Academic Admin</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        Manage academic masters, course offerings, and official student enrollments.
+        Manage academic masters, course offerings, official student enrollments, and the academic calendar.
       </p>
       {isAdmin ? (
         <>

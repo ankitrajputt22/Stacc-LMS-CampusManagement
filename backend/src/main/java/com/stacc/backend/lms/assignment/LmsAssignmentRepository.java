@@ -51,4 +51,11 @@ public interface LmsAssignmentRepository extends JpaRepository<LmsAssignment, Lo
      */
     Page<LmsAssignment> findByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqual(
             Collection<Long> lmsCourseIds, Collection<LmsContentStatus> statuses, Instant dueFrom, Pageable page);
+
+    /**
+     * The assignments of several courses in these statuses whose deadline is at or after one moment and before another,
+     * earliest deadline first. The end is exclusive, so consecutive ranges never share a deadline.
+     */
+    List<LmsAssignment> findAllByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqualAndDueAtLessThanOrderByDueAtAscIdAsc(
+            Collection<Long> lmsCourseIds, Collection<LmsContentStatus> statuses, Instant dueFrom, Instant dueBefore);
 }
