@@ -15,6 +15,7 @@ The backend modules are:
 - `career` — placements and internships.
 - `analytics` — reports and analytics.
 - `dashboard` — read-only overviews, such as the student, faculty, and admin dashboards, composed from other modules' query services and repositories. It owns no data and stores nothing (see `student-dashboard.md`, `faculty-dashboard.md`, and `admin-dashboard.md`).
+- `devdata` — local development data only: the demo accounts and records of the `dev-seed` profile, created through the other modules' services. It does nothing unless that profile is switched on (see `local-test-data.md`).
 - `calendar` — the shared, read-only calendar of the signed-in account (`GET /api/calendar/me`), composed from the academic calendar events and the LMS assignment deadlines under their own rules. It owns no data and stores nothing; the official events themselves belong to `academic.calendar` (see `academic-calendar.md`).
 
 Each module should own its business logic and should not depend directly on another module's internal implementation without a clear reason. Shared technical code may live in `common`, but `common` should remain small rather than becoming a home for unrelated features.

@@ -75,6 +75,10 @@ services:
       STACC_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
       STACC_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
       STACC_STORAGE_BUCKET: ${STACC_STORAGE_BUCKET:-stacc-materials}
+      # Off unless set. "dev-seed" fills a local database with the demo data and test accounts of
+      # docs/local-test-data.md, all with the password in STACC_TEST_PASSWORD. Never use it for real data.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      STACC_TEST_PASSWORD: ${STACC_TEST_PASSWORD:-}
     depends_on:
       mysql:
         condition: service_healthy

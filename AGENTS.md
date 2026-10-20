@@ -247,6 +247,13 @@
 - The offering preview reuses the admin offering list's query and order (first page). Never call it recent.
 - Show no student, faculty, or account details, and no activity feeds, trends, rates, rankings, or performance analytics.
 
+## Local Test Data
+
+- Demo accounts and data exist only in `com.stacc.backend.devdata` under the `dev-seed` profile, never in Flyway migrations or production. See `docs/local-test-data.md`.
+- All test accounts use the one password in `STACC_TEST_PASSWORD`, hashed with the shared `PasswordEncoder`. Never write its value into code, docs, logs, or `.env.example`.
+- The seeder must stay idempotent: find each record by its natural key, create only what is missing, and never change or delete what exists. Create records through the feature services where they exist, so their rules apply.
+- Keep it connected to finished features only, and update it when a phase changes a model it seeds.
+
 ## Docker
 
 - The Docker stack (`compose.yaml`, see `docs/docker.md`) is additive. Running the backend with Maven and the frontend with `npm run dev` must keep working without Docker.
