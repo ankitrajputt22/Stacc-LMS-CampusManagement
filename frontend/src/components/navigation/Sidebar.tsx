@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
+import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { Button } from '../Button'
 import { AccountRoles } from './AccountRoles'
 import { Brand } from './Brand'
@@ -14,6 +15,25 @@ type SidebarProps = {
   id: string
   isOpen: boolean
   onClose: () => void
+}
+
+/** The unread count beside Inbox: hidden at 0, "99+" from a hundred on, and read out in words. */
+function UnreadBadge() {
+  const { unreadCount } = useUnreadCount()
+  if (!unreadCount) {
+    return null
+  }
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className="min-w-6 rounded-full bg-stacc-primary px-1.5 py-0.5 text-center text-xs leading-4 font-semibold text-white"
+      >
+        {badgeText(unreadCount)}
+      </span>
+      <span className="sr-only">, {unreadCount} unread</span>
+    </>
+  )
 }
 
 export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
@@ -100,7 +120,8 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
                           }`
                         }
                       >
-                        {item.label}
+                        <span>{item.label}</span>
+                        {item.badge === 'unreadNotifications' && <UnreadBadge />}
                       </NavLink>
                     ) : (
                       <span

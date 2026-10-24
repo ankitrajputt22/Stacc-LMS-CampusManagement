@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -31,9 +34,14 @@ import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.faculty.FacultyProfile;
+import com.stacc.backend.notification.NotificationMessage;
+import com.stacc.backend.notification.NotificationService;
+import com.stacc.backend.notification.NotificationSourceType;
+import com.stacc.backend.notification.NotificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -57,6 +65,7 @@ class CourseResultManagementServiceTest {
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
     private final CourseResultRepository results = mock(CourseResultRepository.class);
+    private final NotificationService notifications = mock(NotificationService.class);
 
     private final CourseOffering offering = AttendanceFixtures.offering(OFFERING, "BCS301", "Data Structures");
     private final CourseOffering otherOffering = AttendanceFixtures.offering(18, "BCS401", "Operating Systems");
@@ -74,7 +83,7 @@ class CourseResultManagementServiceTest {
 
     private CourseResultManagementService serviceAt(Instant now) {
         return new CourseResultManagementService(results, courseEnrollments,
-                new FacultyTeachingAccessService(teachingAssignments), Clock.fixed(now, ZoneOffset.UTC));
+                new FacultyTeachingAccessService(teachingAssignments), Clock.fixed(now, ZoneOffset.UTC), notifications);
     }
 
     @BeforeEach
@@ -226,5 +235,45 @@ class CourseResultManagementServiceTest {
         assertEquals(NOW_STORED, corrected.getPublishedAt());
         assertEquals(new BigDecimal("84.00"), corrected.getMarksObtained());
         assertSame(facultyC, corrected.getRecordedByFacultyProfile());
+    }
+
+    private NotificationMessage onlyNotificationTo(long accountId) {
+        ArgumentCaptor<NotificationMessage> message = ArgumentCaptor.forClass(NotificationMessage.class);
+        verify(notifications).notifyUser(message.capture(), eq(accountId));
+        return message.getValue();
+    }
+
+    @Test
+    void draftsNotifyNobodyAndTheFirstPublicationNotifiesTheStudentOnce() {
+        save(FACULTY_A, studentA, "82", "100", "A");
+        serviceAt(NOW).save(FACULTY_A, OFFERING, studentA.getId(), new BigDecimal("83"), new BigDecimal("100"), "A", null);
+        verifyNoInteractions(notifications);
+
+        serviceAt(NOW).publish(FACULTY_A, OFFERING, studentA.getId());
+        serviceAt(LATER).publish(FACULTY_C, OFFERING, studentA.getId());
+
+        NotificationMessage published = onlyNotificationTo(11L);
+        assertEquals(NotificationType.RESULT_PUBLISHED, published.type());
+        assertEquals(NotificationSourceType.COURSE_RESULT, published.sourceType());
+        assertEquals("/academic/results", published.actionPath());
+        assertEquals("Your result for BCS301 Data Structures was published.", published.message());
+    }
+
+    @Test
+    void aPublishedResultNotifiesOnRealCorrectionsOnly() {
+        save(FACULTY_A, studentA, "82", "100", "A");
+        serviceAt(NOW).publish(FACULTY_A, OFFERING, studentA.getId());
+        clearInvocations(notifications);
+
+        // The same values, written differently, change nothing.
+        serviceAt(LATER).save(FACULTY_C, OFFERING, studentA.getId(), new BigDecimal("82.00"), new BigDecimal("100.0"),
+                " A ", "   ");
+        verifyNoInteractions(notifications);
+
+        serviceAt(LATER).save(FACULTY_C, OFFERING, studentA.getId(), new BigDecimal("82"), new BigDecimal("100"), "A",
+                "Rechecked.");
+        NotificationMessage updated = onlyNotificationTo(11L);
+        assertEquals(NotificationType.RESULT_UPDATED, updated.type());
+        verify(notifications, never()).notifyUser(any(), eq(12L));
     }
 }

@@ -44,4 +44,20 @@ public interface TeachingAssignmentRepository extends JpaRepository<TeachingAssi
             where facultyProfile.userAccount.id = :userAccountId
             """)
     List<TeachingAssignment> findAllWithCourseDetailsByUserAccountId(@Param("userAccountId") Long userAccountId);
+
+    /**
+     * The teaching assignments of the offerings in one academic session, and, when a semester is given, in that
+     * semester only, with each faculty profile. Whether an assignment still counts is decided by the caller.
+     */
+    @Query("""
+            select assignment
+            from TeachingAssignment assignment
+            join fetch assignment.facultyProfile
+            join assignment.courseOffering courseOffering
+            join courseOffering.semester semester
+            where semester.academicSession.id = :academicSessionId
+              and (:semesterId is null or semester.id = :semesterId)
+            """)
+    List<TeachingAssignment> findAllWithFacultyInSession(@Param("academicSessionId") Long academicSessionId,
+            @Param("semesterId") Long semesterId);
 }

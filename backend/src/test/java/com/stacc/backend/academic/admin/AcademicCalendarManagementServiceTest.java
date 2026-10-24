@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import com.stacc.backend.academic.calendar.AcademicCalendarEvent;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventCategory;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventRepository;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventStatus;
+import com.stacc.backend.academic.calendar.AcademicCalendarNotifications;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.semester.Semester;
@@ -50,8 +52,10 @@ class AcademicCalendarManagementServiceTest {
     private final AcademicCalendarEventRepository events = mock(AcademicCalendarEventRepository.class);
     private final AcademicSessionRepository sessions = mock(AcademicSessionRepository.class);
     private final SemesterRepository semesters = mock(SemesterRepository.class);
+    private final AcademicCalendarNotifications notifications = mock(AcademicCalendarNotifications.class);
     private final AcademicCalendarManagementService service =
-            new AcademicCalendarManagementService(events, sessions, semesters, Clock.fixed(NOW, ZoneOffset.UTC));
+            new AcademicCalendarManagementService(events, sessions, semesters, Clock.fixed(NOW, ZoneOffset.UTC),
+                    notifications);
 
     @BeforeEach
     void setUp() {
@@ -213,7 +217,7 @@ class AcademicCalendarManagementServiceTest {
         assertThat(published.publishedAt()).isEqualTo(NOW);
 
         AcademicCalendarManagementService later = new AcademicCalendarManagementService(events, sessions, semesters,
-                Clock.fixed(NOW.plusSeconds(3600), ZoneOffset.UTC));
+                Clock.fixed(NOW.plusSeconds(3600), ZoneOffset.UTC), notifications);
         assertThat(later.publish(14L).publishedAt()).isEqualTo(NOW);
         assertThat(event.getPublishedAt()).isEqualTo(NOW);
     }
@@ -229,7 +233,7 @@ class AcademicCalendarManagementServiceTest {
         assertThat(cancelled.publishedAt()).isEqualTo(Instant.parse("2026-08-01T00:00:00Z"));
 
         AcademicCalendarManagementService later = new AcademicCalendarManagementService(events, sessions, semesters,
-                Clock.fixed(NOW.plusSeconds(3600), ZoneOffset.UTC));
+                Clock.fixed(NOW.plusSeconds(3600), ZoneOffset.UTC), notifications);
         assertThat(later.cancel(14L).cancelledAt()).isEqualTo(NOW);
     }
 
@@ -265,9 +269,43 @@ class AcademicCalendarManagementServiceTest {
 
         AcademicCalendarEventRepository untouched = mock(AcademicCalendarEventRepository.class);
         AcademicCalendarManagementService fresh = new AcademicCalendarManagementService(untouched, sessions, semesters,
-                Clock.fixed(NOW, ZoneOffset.UTC));
+                Clock.fixed(NOW, ZoneOffset.UTC), notifications);
         assertRefused(() -> fresh.list(OCT_25, OCT_20, null, null, null), HttpStatus.BAD_REQUEST,
                 AcademicCalendarManagementService.FILTER_DATES);
         verifyNoInteractions(untouched);
+    }
+
+    @Test
+    void publishingNotifiesOnceAndCancellingAPublishedEventNotifiesOnce() {
+        AcademicCalendarEvent event = stored(third);
+
+        service.publish(14L);
+        service.publish(14L);
+        verify(notifications, times(1)).published(event);
+
+        service.cancel(14L);
+        service.cancel(14L);
+        verify(notifications, times(1)).cancelled(event);
+    }
+
+    @Test
+    void draftsAndCancelledDraftsNotifyNobody() {
+        stored(null);
+        service.create(create(2L, null, OCT_20, OCT_20));
+        service.update(14L, update(2L, null, "Changed", OCT_20, OCT_20));
+
+        service.cancel(14L);
+
+        verifyNoInteractions(notifications);
+    }
+
+    @Test
+    void correctingAPublishedEventNotifiesNobodyAgain() {
+        AcademicCalendarEvent event = stored(third);
+        event.publish(NOW);
+
+        service.update(14L, update(2L, 9L, "Exam week (revised)", OCT_25, OCT_25));
+
+        verifyNoInteractions(notifications);
     }
 }

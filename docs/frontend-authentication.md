@@ -260,6 +260,17 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - An empty month says "No calendar events or deadlines for this month.", or "No academic calendar events for this month." for an admin-only account. Loading says "Loading calendar…"; a failure says "Couldn't load the calendar." with **Retry**. A **403** says "You don't have access to the academic calendar." and suggests signing in again; it never signs the user out. A **401** is left to the shared client.
 - An account with none of the three roles sees an explanation and sends no request.
 
+### The Inbox
+
+**Inbox** in the Common section opens `/inbox` (`src/pages/InboxPage.tsx`) for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. There is one Inbox per account, never one per role. The bell in the top bar opens it too. See `notifications-inbox.md`.
+
+- The page is "Inbox" ("Updates from your courses and academic activity.") with **All** and **Unread** (`aria-pressed`). Choosing one loads its first page; there are 20 per page, newest first, with **Previous**, "Page 1 of 2", and **Next**. Focus stays on the pager button while the next page loads.
+- Each notification shows **Unread** or **Read** in words (unread rows also have a slightly darker background), its title, its plain-text message, and its local time. It has a link (View assignment, View calendar, View results, or View attendance) to the page it is about, and **Mark as read** or **Mark as unread**.
+- Opening the Inbox marks nothing read. A row changes only through its button, its link, or **Mark all as read**, which is shown while anything is unread. Following a link marks it read without waiting, so navigation never depends on that request. Only paths inside the app are followed, through React Router. The page there checks access as always.
+- After a change the row shows its new state where it is, the change is announced, and the shared unread count is asked for again, so the badge follows without a reload. After **Mark all as read**, focus moves to the heading.
+- Empty states say "No notifications yet." and, under Unread, "You’re all caught up." Loading says "Loading notifications…"; a failure says "Couldn’t load notifications." with **Retry**. A **403** says "You don’t have access to the Inbox." and never signs the user out. A refused change is shown in words above the list. A **401** is left to the shared client.
+- The badge beside Inbox and on the bell shows the unread count from the backend: hidden at 0, "99+" from 100, and read out as ", 3 unread". It is one shared count (`src/notifications`), asked for when the app shell appears, when the Inbox loads a page, and after each change. There is no polling.
+
 ### The Academic Admin page
 
 **Academic Admin** is the first real Admin item in the navigation, shown to any account holding `ADMIN`, once also for an account with other roles. It opens `/admin/academic`, which goes to `/admin/academic/departments`; the other sections are `/admin/academic/programs`, `/sessions`, `/semesters`, `/courses`, `/offerings`, `/enrollments`, and `/calendar`, and an offering's roster is `/admin/academic/offerings/:courseOfferingId/enrollments`. Academic Admin stays marked on all of them.
@@ -311,7 +322,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Loading says "Loading submissions…". With no submissions it says "No submissions yet." and "No students have submitted this assignment." A **404**, a draft or archived assignment, an assignment of another course, and a URL whose IDs cannot be valid show "Assignment unavailable". A missing submission shows that the submission could not be found. A **403** shows "You don't have access to grade this assignment." and suggests signing in again: a token issued before `LMS_ASSIGNMENT_GRADE` existed lacks it. Any other failure shows "Couldn't load submissions." with **Retry**.
 - An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent.
 
-Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student, faculty, and admin dashboards share `/`, the calendar is one page for every role at `/calendar`, and there are no role-based routes.
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student, faculty, and admin dashboards share `/`, the calendar and the Inbox are one page each for every role, at `/calendar` and `/inbox`, and there are no role-based routes.
 
 ## Dev server and Docker
 

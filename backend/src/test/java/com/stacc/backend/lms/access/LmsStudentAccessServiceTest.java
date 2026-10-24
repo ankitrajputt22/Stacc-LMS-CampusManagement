@@ -304,4 +304,27 @@ class LmsStudentAccessServiceTest {
         assertTrue(service.findAccessGrantingMembership(null, LMS_COURSE_ID).isEmpty());
         assertTrue(service.findAccessGrantingMembership(ACCOUNT_ID, null).isEmpty());
     }
+
+    @Test
+    void theStudentsToTellAboutACourseAreExactlyThoseWhoMayUseItNow() {
+        LmsStudentMembership second = new LmsStudentMembership(
+                new CourseEnrollment(new SemesterEnrollment(student("TEST-STUDENT-2", 14L), semester), offering), lmsCourse);
+        CourseEnrollment withdrawn = new CourseEnrollment(new SemesterEnrollment(student("TEST-STUDENT-3", 15L), semester), offering);
+        withdrawn.withdraw();
+        LmsStudentMembership withdrawnMembership = new LmsStudentMembership(withdrawn, lmsCourse);
+        when(memberships.findAllWithStudentByLmsCourseId(LMS_COURSE_ID))
+                .thenReturn(List.of(membership, second, withdrawnMembership, membership));
+
+        assertEquals(List.of(ACCOUNT_ID, 14L), service.findStudentAccountIdsWithAccess(LMS_COURSE_ID));
+        assertEquals(List.of(), service.findStudentAccountIdsWithAccess(null));
+    }
+
+    @Test
+    void nobodyIsToldAboutACourseThatIsNotPublished() {
+        LmsCourse draft = lmsCourse(offering("TST399", 99L), 9L);
+        when(memberships.findAllWithStudentByLmsCourseId(9L)).thenReturn(List.of(
+                new LmsStudentMembership(new CourseEnrollment(semesterEnrollment, draft.getCourseOffering()), draft)));
+
+        assertEquals(List.of(), service.findStudentAccountIdsWithAccess(9L));
+    }
 }

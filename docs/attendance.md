@@ -78,6 +78,6 @@ A permanent `Course` does not say which semester's class it is, and an `LmsCours
 ## Not built yet
 
 - Reopening or deleting sessions, and admin attendance management or reports.
-- Other statuses such as late or excused, attendance rules or thresholds, and notifications.
+- Other statuses such as late or excused, attendance rules or thresholds, and notifications beyond corrections. Only a real correction of a finalized record tells its student in their Inbox (`ATTENDANCE_UPDATED`, see `notifications-inbox.md`); marking an open session and finalizing tell nobody.
 - Self check-in, QR codes, location, or biometrics. Attendance is taken by faculty only.
 - Importing or exporting attendance.

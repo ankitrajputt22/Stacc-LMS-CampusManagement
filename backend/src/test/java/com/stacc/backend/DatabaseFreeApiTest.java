@@ -27,6 +27,8 @@ import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
+import com.stacc.backend.notification.NotificationRecipientRepository;
+import com.stacc.backend.notification.NotificationRepository;
 import jakarta.servlet.Filter;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,8 @@ import org.springframework.web.context.WebApplicationContext;
     LmsSubmissionAttemptRepository.class,
     LmsSubmissionGradeRepository.class,
     LmsTopicRepository.class,
+    NotificationRecipientRepository.class,
+    NotificationRepository.class,
     ProgramRepository.class,
     SemesterEnrollmentRepository.class,
     SemesterRepository.class,

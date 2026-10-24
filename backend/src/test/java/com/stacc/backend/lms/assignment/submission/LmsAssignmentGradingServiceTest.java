@@ -10,7 +10,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -30,6 +32,7 @@ import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.assignment.LmsAssignmentNotifications;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
@@ -60,6 +63,7 @@ class LmsAssignmentGradingServiceTest {
     private final FacultyProfileRepository facultyProfiles = mock(FacultyProfileRepository.class);
     private final LmsSubmissionAttemptRepository attempts = mock(LmsSubmissionAttemptRepository.class);
     private final LmsSubmissionGradeRepository grades = mock(LmsSubmissionGradeRepository.class);
+    private final LmsAssignmentNotifications notifications = mock(LmsAssignmentNotifications.class);
 
     private final LmsCourse course = SubmissionFixtures.course(7);
     private final LmsCourse otherCourse = SubmissionFixtures.course(8);
@@ -78,7 +82,7 @@ class LmsAssignmentGradingServiceTest {
 
     private LmsAssignmentGradingService serviceAt(Instant now) {
         return new LmsAssignmentGradingService(attempts, grades, new LmsFacultyAccessService(lmsCourses, teachingAssignments),
-                facultyProfiles, Clock.fixed(now, ZoneOffset.UTC));
+                facultyProfiles, Clock.fixed(now, ZoneOffset.UTC), notifications);
     }
 
     private final LmsAssignmentGradingService service = serviceAt(NOW);
@@ -143,6 +147,27 @@ class LmsAssignmentGradingServiceTest {
         assertSame(facultyA, grade.getGradedByFacultyProfile());
         assertEquals(NOW_STORED, grade.getGradedAt());
         assertEquals("Good solution.", grade.getFeedback());
+    }
+
+    @Test
+    void theStudentHearsAboutTheFirstGradeAndAboutRealChangesOnly() {
+        LmsSubmissionGrade grade = service.grade(FACULTY_A, 301L, new BigDecimal("18"), "Good solution.");
+        verify(notifications).graded(grade, true);
+
+        serviceAt(LATER).grade(FACULTY_C, 301L, new BigDecimal("18.00"), "Good solution.");
+        verify(notifications, never()).graded(grade, false);
+
+        serviceAt(LATER).grade(FACULTY_C, 301L, new BigDecimal("19"), "Good solution.");
+        serviceAt(LATER).grade(FACULTY_C, 301L, new BigDecimal("19"), "Better after the fix.");
+        verify(notifications, times(2)).graded(grade, false);
+    }
+
+    @Test
+    void refusedGradesNotifyNobody() {
+        assertThrows(ApiException.class, () -> service.grade(FACULTY_B, 301L, new BigDecimal("18"), null));
+        assertThrows(ApiException.class, () -> service.grade(FACULTY_A, 301L, new BigDecimal("21"), null));
+
+        verifyNoInteractions(notifications);
     }
 
     @Test

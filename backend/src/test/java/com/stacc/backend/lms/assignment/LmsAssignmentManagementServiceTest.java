@@ -7,7 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -57,8 +59,10 @@ class LmsAssignmentManagementServiceTest {
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
+    private final LmsAssignmentNotifications notifications = mock(LmsAssignmentNotifications.class);
     private final LmsAssignmentManagementService service = new LmsAssignmentManagementService(
-            lmsCourses, assignments, new LmsFacultyAccessService(lmsCourses, teachingAssignments), Clock.fixed(NOW, ZoneOffset.UTC));
+            lmsCourses, assignments, new LmsFacultyAccessService(lmsCourses, teachingAssignments), Clock.fixed(NOW, ZoneOffset.UTC),
+            notifications);
 
     private final Department department = new Department("CSE", "Computer Science and Engineering");
     private final Semester semester = new Semester(
@@ -194,6 +198,23 @@ class LmsAssignmentManagementServiceTest {
         course.archive();
 
         assertEveryActionOfAIsRefused();
+    }
+
+    @Test
+    void onlyTheFirstPublicationNotifiesStudents() {
+        service.publish(ACCOUNT_ID, 5L);
+        service.publish(ACCOUNT_ID, 5L);
+
+        verify(notifications, times(1)).published(draft);
+    }
+
+    @Test
+    void creatingEditingAndArchivingNotifyNobody() {
+        service.create(ACCOUNT_ID, 7L, "Title", "Text", DUE, MARKS);
+        service.update(ACCOUNT_ID, 5L, "New title", "Text", DUE, MARKS);
+        service.archive(ACCOUNT_ID, 5L);
+
+        verifyNoInteractions(notifications);
     }
 
     @Test

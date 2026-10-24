@@ -2,6 +2,7 @@ package com.stacc.backend.academic.attendance;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
@@ -16,6 +18,10 @@ import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
 import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.faculty.FacultyProfile;
+import com.stacc.backend.notification.NotificationMessage;
+import com.stacc.backend.notification.NotificationService;
+import com.stacc.backend.notification.NotificationSourceType;
+import com.stacc.backend.notification.NotificationType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,18 +56,21 @@ public class AttendanceManagementService {
     private final CourseEnrollmentRepository courseEnrollments;
     private final FacultyTeachingAccessService teachingAccess;
     private final Clock clock;
+    private final NotificationService notifications;
 
     public AttendanceManagementService(
             AttendanceSessionRepository sessions,
             AttendanceRecordRepository records,
             CourseEnrollmentRepository courseEnrollments,
             FacultyTeachingAccessService teachingAccess,
-            Clock clock) {
+            Clock clock,
+            NotificationService notifications) {
         this.sessions = sessions;
         this.records = records;
         this.courseEnrollments = courseEnrollments;
         this.teachingAccess = teachingAccess;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /**
@@ -121,11 +130,29 @@ public class AttendanceManagementService {
         }
 
         Instant now = clock.instant();
+        List<AttendanceRecord> corrected = new ArrayList<>();
         for (RecordChange change : changes) {
-            roster.get(change.attendanceRecordId()).mark(change.status(), actor, now);
+            AttendanceRecord record = roster.get(change.attendanceRecordId());
+            AttendanceStatus before = record.getStatus();
+            record.mark(change.status(), actor, now);
+            // Marking an open session is ordinary work; only a real correction of attendance students already see
+            // tells the student.
+            if (session.isFinalized() && record.getStatus() != before) {
+                corrected.add(record);
+            }
         }
         records.flush();
+        corrected.forEach(record -> notifyCorrection(session, record));
         return session;
+    }
+
+    private void notifyCorrection(AttendanceSession session, AttendanceRecord record) {
+        Course course = session.getCourseOffering().getCourse();
+        Long student = record.getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount().getId();
+        String status = record.getStatus() == AttendanceStatus.PRESENT ? "Present" : "Absent";
+        notifications.notifyUser(new NotificationMessage(NotificationType.ATTENDANCE_UPDATED, "Attendance corrected",
+                "Your attendance for a " + course.getCode() + " " + course.getName() + " class was corrected to " + status + ".",
+                NotificationSourceType.ATTENDANCE_RECORD, record.getId(), "/academic/attendance"), student);
     }
 
     /**

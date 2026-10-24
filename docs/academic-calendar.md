@@ -126,7 +126,7 @@ All routes are under `/api/admin/academic/calendar/events`. Reading needs `ADMIN
 
 Every change locks the event's own row first, so an edit and a cancellation of the same event never overwrite each other. Assignment deadlines are never listed or edited here.
 
-Publishing and cancelling send nothing to anyone: there are no notifications, emails, or messages.
+Publishing an event, and cancelling a published one, tells the users who see it in their Inbox, once each; cancelling a draft tells nobody. Nothing is sent by email or push (see `notifications-inbox.md`).
 
 ## Permissions
 
@@ -146,4 +146,4 @@ See `frontend-authentication.md` for the page details.
 
 ## Not built yet
 
-Recurring events, personal calendars, reminders, notifications, email, room or venue booking, timetables and exam timetables, attachments, iCal or Google Calendar import and export, drag and drop, comments, and events created by students or faculty.
+Recurring events, personal calendars, reminders, email or push notifications, room or venue booking, timetables and exam timetables, attachments, iCal or Google Calendar import and export, drag and drop, comments, and events created by students or faculty.
