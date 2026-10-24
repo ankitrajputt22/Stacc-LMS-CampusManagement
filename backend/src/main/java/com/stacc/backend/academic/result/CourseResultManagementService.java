@@ -2,14 +2,20 @@ package com.stacc.backend.academic.result;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.util.Objects;
 import java.util.Optional;
 
+import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
 import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.notification.NotificationMessage;
+import com.stacc.backend.notification.NotificationService;
+import com.stacc.backend.notification.NotificationSourceType;
+import com.stacc.backend.notification.NotificationType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,16 +49,19 @@ public class CourseResultManagementService {
     private final CourseEnrollmentRepository courseEnrollments;
     private final FacultyTeachingAccessService teachingAccess;
     private final Clock clock;
+    private final NotificationService notifications;
 
     public CourseResultManagementService(
             CourseResultRepository results,
             CourseEnrollmentRepository courseEnrollments,
             FacultyTeachingAccessService teachingAccess,
-            Clock clock) {
+            Clock clock,
+            NotificationService notifications) {
         this.results = results;
         this.courseEnrollments = courseEnrollments;
         this.teachingAccess = teachingAccess;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /**
@@ -76,8 +85,18 @@ public class CourseResultManagementService {
         Optional<CourseResult> existing = results.findForUpdateByCourseEnrollmentId(enrollment.getId());
         if (existing.isPresent()) {
             CourseResult result = existing.get();
+            boolean changed = result.getMarksObtained().compareTo(marksObtained) != 0
+                    || result.getMaxMarks().compareTo(maxMarks) != 0
+                    || !Objects.equals(result.getGradeCode(), CourseResult.gradeCodeOrNull(gradeCode))
+                    || !Objects.equals(result.getRemarks(), CourseResult.remarksOrNull(remarks));
             result.record(teaching.getFacultyProfile(), marksObtained, maxMarks, gradeCode, remarks);
-            return results.saveAndFlush(result);
+            CourseResult saved = results.saveAndFlush(result);
+            // A student who can see the result hears about a real correction; a draft, or a save that changes
+            // nothing, tells nobody.
+            if (saved.isPublished() && changed) {
+                notify(saved, NotificationType.RESULT_UPDATED, "Result updated", "Your result for %s was updated.");
+            }
+            return saved;
         }
         if (enrollment.getStatus() == CourseEnrollmentStatus.WITHDRAWN) {
             throw new ApiException(HttpStatus.CONFLICT, WITHDRAWN);
@@ -101,7 +120,19 @@ public class CourseResultManagementService {
             return result;
         }
         result.publish(clock.instant());
-        return results.saveAndFlush(result);
+        CourseResult saved = results.saveAndFlush(result);
+        notify(saved, NotificationType.RESULT_PUBLISHED, "Result published", "Your result for %s was published.");
+        return saved;
+    }
+
+    // The student of the result's own enrollment, found on the server. The result stays the source of truth.
+    private void notify(CourseResult result, NotificationType type, String title, String message) {
+        CourseEnrollment enrollment = result.getCourseEnrollment();
+        Course course = enrollment.getCourseOffering().getCourse();
+        Long student = enrollment.getSemesterEnrollment().getStudentProfile().getUserAccount().getId();
+        notifications.notifyUser(new NotificationMessage(type, title,
+                message.formatted(course.getCode() + " " + course.getName()), NotificationSourceType.COURSE_RESULT,
+                result.getId(), "/academic/results"), student);
     }
 
     // The enrollment must exist and belong to the offering in the route, which the caller teaches.

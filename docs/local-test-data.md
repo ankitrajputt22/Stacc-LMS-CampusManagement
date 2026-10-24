@@ -36,6 +36,8 @@ The seeding runs once the application has started and the database migrations ha
 - It only adds records. If your database already has records with the same codes, such as a `CSE` department, they are reused, not changed.
 - Dates are relative to the day it first runs. Deadlines, attendance, and calendar events lie around that day, and the academic session is the one that day falls in (July to June).
 
+Because the seeder works through the feature services, a fresh database also gets the notifications those actions send: published assignments, grades, published results, and calendar events appear in the test accounts' Inboxes (see `notifications-inbox.md`). A database seeded earlier keeps what it has.
+
 ## Test accounts
 
 All test accounts use the password in `STACC_TEST_PASSWORD`.

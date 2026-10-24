@@ -1,5 +1,7 @@
 package com.stacc.backend.lms.access;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.stacc.backend.identity.student.StudentProfile;
@@ -82,5 +84,24 @@ public class LmsStudentAccessService {
                 .filter(membership -> lmsCourseId.equals(membership.getLmsCourse().getId())
                         && LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId))
                 .findFirst();
+    }
+
+    /**
+     * The accounts of every student who may use the LMS course right now, by exactly the rule of
+     * {@link #canAccessCourse}, in one query. It only reads, and is meant for telling those students about a change in
+     * the course; it grants nothing.
+     */
+    @Transactional(readOnly = true)
+    public List<Long> findStudentAccountIdsWithAccess(Long lmsCourseId) {
+        if (lmsCourseId == null) {
+            return List.of();
+        }
+        return memberships.findAllWithStudentByLmsCourseId(lmsCourseId).stream()
+                .map(membership -> Map.entry(membership,
+                        membership.getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount().getId()))
+                .filter(entry -> LmsStudentAccessPolicy.grantsCurrentAccess(entry.getKey(), entry.getValue()))
+                .map(Map.Entry::getValue)
+                .distinct()
+                .toList();
     }
 }

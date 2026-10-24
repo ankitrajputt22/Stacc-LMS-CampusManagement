@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -33,9 +35,13 @@ import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.faculty.FacultyProfile;
+import com.stacc.backend.notification.NotificationMessage;
+import com.stacc.backend.notification.NotificationService;
+import com.stacc.backend.notification.NotificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -60,6 +66,7 @@ class AttendanceManagementServiceTest {
     private final AttendanceSessionRepository sessions = mock(AttendanceSessionRepository.class);
     private final AttendanceRecordRepository records = mock(AttendanceRecordRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final NotificationService notifications = mock(NotificationService.class);
 
     private final CourseOffering offering = AttendanceFixtures.offering(OFFERING, "BCS301", "Data Structures");
     private final FacultyProfile facultyA = AttendanceFixtures.faculty(FACULTY_A, 61);
@@ -78,7 +85,7 @@ class AttendanceManagementServiceTest {
 
     private AttendanceManagementService serviceAt(Instant now) {
         return new AttendanceManagementService(sessions, records, courseEnrollments,
-                new FacultyTeachingAccessService(teachingAssignments), Clock.fixed(now, ZoneOffset.UTC));
+                new FacultyTeachingAccessService(teachingAssignments), Clock.fixed(now, ZoneOffset.UTC), notifications);
     }
 
     @BeforeEach
@@ -310,6 +317,30 @@ class AttendanceManagementServiceTest {
         assertEquals(LATER, recordOf(session, studentB).getMarkedAt());
         assertEquals(AttendanceSessionStatus.FINALIZED, session.getStatus());
         assertEquals(NOW_STORED, session.getFinalizedAt());
+    }
+
+    @Test
+    void markingAndFinalizingNotifyNobodyButARealCorrectionTellsThatStudent() {
+        AttendanceSession session = createdSession();
+        Long a = recordOf(session, studentA).getId();
+        Long b = recordOf(session, studentB).getId();
+        serviceAt(NOW).saveRecords(FACULTY_A, session.getId(), List.of(new RecordChange(a, AttendanceStatus.ABSENT)));
+        serviceAt(NOW).saveRecords(FACULTY_A, session.getId(),
+                List.of(new RecordChange(a, AttendanceStatus.PRESENT), new RecordChange(b, AttendanceStatus.ABSENT)));
+        serviceAt(NOW).finalizeSession(FACULTY_A, session.getId());
+        verifyNoInteractions(notifications);
+
+        // Student A stays present, so only student B, whose record really changes, is told.
+        serviceAt(LATER).saveRecords(FACULTY_C, session.getId(),
+                List.of(new RecordChange(a, AttendanceStatus.PRESENT), new RecordChange(b, AttendanceStatus.PRESENT)));
+
+        ArgumentCaptor<NotificationMessage> message = ArgumentCaptor.forClass(NotificationMessage.class);
+        verify(notifications).notifyUser(message.capture(), eq(12L));
+        verify(notifications, never()).notifyUser(any(), eq(11L));
+        assertEquals(NotificationType.ATTENDANCE_UPDATED, message.getValue().type());
+        assertEquals("/academic/attendance", message.getValue().actionPath());
+        assertEquals(b, message.getValue().sourceId());
+        assertEquals("Your attendance for a BCS301 Data Structures class was corrected to Present.", message.getValue().message());
     }
 
     @Test

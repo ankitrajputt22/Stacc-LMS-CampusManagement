@@ -656,7 +656,7 @@ Assignments use the same `LmsContentStatus` as course content:
 - `my-assignments` lists only courses that pass the faculty access policy, the same rule as the faculty course list: an active faculty profile, an active teaching assignment, and a draft or published LMS course. It reuses `LmsFacultyCourseQueryService` for that, then reads the assignments of those courses in one query. There is no pagination yet.
 - Every route takes the caller from the access token and runs the access check again. The request body can only carry the four fields: the course, status, dates, and any faculty, student, or offering ID are never taken from the client.
 - A course or assignment the caller may not use answers 404, the same as one that does not exist. For students, a draft, an archived assignment, one of another course, and one in a course they may not use all answer the same 404 "Assignment not found or unavailable." Editing or publishing an archived assignment answers 409. Invalid fields answer 400 with field errors; a deadline without a time zone answers 400 as an unreadable body. No token answers 401, and a token without the route's roles and permissions, an admin's included, answers 403.
-- The reads are side-effect free. Nothing is sent to anyone when an assignment is published or changed.
+- The reads are side-effect free. The first publication of an assignment tells the students who may use the course in their Inbox (`ASSIGNMENT_PUBLISHED`, see `notifications-inbox.md`); publishing again, editing, and archiving tell nobody.
 - Assignments have no rubrics, attachments, or reminders yet. Students hand in work and faculty grade it as described below.
 
 ### Deadlines on the calendar
@@ -742,7 +742,7 @@ Every faculty grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASS
 - The list uses a fixed number of queries whatever the number of students: the submissions with their students, the latest attempts, the attempt counts, and their grades. There is no pagination yet.
 - Missing marks, negative marks, more than two decimal places, or feedback over 10,000 characters answer 400 with field errors. Marks above the maximum answer 400 "Marks cannot exceed 20." (with the maximum that applies). No token answers 401, and a token without the route's role and permissions, a student's or an admin's included, answers 403.
 - To save a grade, the attempt row is locked (`SELECT ... FOR UPDATE`) and the grade is read with a lock, so two faculty saving at once are handled one after the other and the first grade is created once. The unique constraint on `attempt_id` is the last safety net.
-- The reads are side-effect free. Nobody is notified when a grade is saved.
+- The reads are side-effect free. A first grade, and a revision that really changes the marks or feedback, tell the student in their Inbox (`ASSIGNMENT_GRADED`); saving the same grade again tells nobody.
 
 ## Not built yet
 
@@ -752,8 +752,8 @@ Every faculty grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASS
 - No rows are seeded for LMS courses or memberships, and no LMS course is created automatically for a course offering.
 - No automatic synchronization from the ERP to the LMS: memberships are synchronized only when an enrollment is made, a course is created or published, or faculty ask.
 - No way to manage teaching assignments.
-- No late cut-off, extensions, attempt limits, withdrawals, plagiarism checks, or submission notifications.
-- No gradebook, course totals, GPA, SGPA, or CGPA, no rubrics, no grade history or release step, no late penalties, no rescaling when the maximum changes, and no grade notifications. Students cannot change grades.
+- No late cut-off, extensions, attempt limits, withdrawals, plagiarism checks, or notifications about submissions to faculty.
+- No gradebook, course totals, GPA, SGPA, or CGPA, no rubrics, no grade history or release step, no late penalties, and no rescaling when the maximum changes. Students cannot change grades.
 - No attachments, rubrics, deadline history, reminders, or late-work rules for assignments.
 - No notifications, email, read receipts, comments, attachments, or scheduled publishing for announcements, and no rich text or pinning.
 - No other LMS permissions. Each will be added together with the action it protects.

@@ -1,5 +1,8 @@
 import type { RefObject } from 'react'
+import { Link } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
+import { hasAnyRole } from '../../auth/roles'
+import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { AccountRoles } from './AccountRoles'
 import { Brand } from './Brand'
 import { BellIcon, MenuIcon, UserIcon } from './icons'
@@ -11,9 +14,40 @@ type TopBarProps = {
   menuButtonRef: RefObject<HTMLButtonElement | null>
 }
 
-// Help and notifications are visual placeholders until those features exist.
+// Help is a visual placeholder until that feature exists.
 const placeholderClasses =
   'flex h-11 min-w-11 items-center justify-center rounded-control px-2 text-sm font-medium text-ink-muted disabled:cursor-default'
+
+/**
+ * The bell opens the Inbox, with the same shared unread count as the navigation, for accounts that have one. It asks
+ * nothing itself: the count comes from the app shell.
+ */
+function InboxLink() {
+  const { account } = useAuth()
+  const { unreadCount } = useUnreadCount()
+  if (!hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])) {
+    return null
+  }
+  const label = unreadCount ? `Inbox, ${unreadCount} unread` : 'Inbox'
+  return (
+    <Link
+      to="/inbox"
+      aria-label={label}
+      title={label}
+      className="relative flex size-11 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+    >
+      <BellIcon />
+      {!!unreadCount && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1 right-0.5 min-w-5 rounded-full bg-stacc-primary px-1 text-center text-[11px] leading-4 font-semibold text-white"
+        >
+          {badgeText(unreadCount)}
+        </span>
+      )}
+    </Link>
+  )
+}
 
 export function TopBar({
   menuId,
@@ -51,14 +85,7 @@ export function TopBar({
         >
           Help
         </button>
-        <button
-          type="button"
-          disabled
-          aria-label="Notifications"
-          className={placeholderClasses}
-        >
-          <BellIcon />
-        </button>
+        <InboxLink />
 
         <div className="ml-1 flex items-center gap-2 border-l border-line pl-3">
           <span

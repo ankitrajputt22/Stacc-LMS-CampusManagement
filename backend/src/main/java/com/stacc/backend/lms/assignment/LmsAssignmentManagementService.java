@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
+import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.springframework.http.HttpStatus;
@@ -31,16 +32,19 @@ public class LmsAssignmentManagementService {
     private final LmsAssignmentRepository assignments;
     private final LmsFacultyAccessService facultyAccess;
     private final Clock clock;
+    private final LmsAssignmentNotifications notifications;
 
     public LmsAssignmentManagementService(
             LmsCourseRepository lmsCourses,
             LmsAssignmentRepository assignments,
             LmsFacultyAccessService facultyAccess,
-            Clock clock) {
+            Clock clock,
+            LmsAssignmentNotifications notifications) {
         this.lmsCourses = lmsCourses;
         this.assignments = assignments;
         this.facultyAccess = facultyAccess;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /** Adds a draft assignment to the course. */
@@ -64,11 +68,18 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /** Publishes a draft now. Publishing a published assignment changes nothing. */
+    /**
+     * Publishes a draft now and tells the students who may use the course. Publishing a published assignment changes
+     * nothing and tells nobody again.
+     */
     public LmsAssignment publish(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
+        boolean firstPublication = assignment.getStatus() != LmsContentStatus.PUBLISHED;
         // The database keeps microseconds, so this answer shows the same moment as every later read.
         assignment.publish(clock.instant().truncatedTo(ChronoUnit.MICROS));
+        if (firstPublication) {
+            notifications.published(assignment);
+        }
         return assignment;
     }
 

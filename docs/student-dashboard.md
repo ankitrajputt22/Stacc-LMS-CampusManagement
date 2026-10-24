@@ -38,4 +38,4 @@ The existing home page, `/`, shows "Student Dashboard" for any account holding `
 
 ## Not built yet
 
-- Notifications, unread counts, calendars, charts, progress, predictions, and recommendations.
+- Notifications and unread counts (they are in the Inbox), calendars, charts, progress, predictions, and recommendations.

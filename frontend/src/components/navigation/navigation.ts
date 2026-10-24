@@ -6,6 +6,8 @@ export type NavigationItem = {
   to?: string
   /** Shown to accounts with any of these roles. An item without roles is shown to everyone who sees its section. */
   roles?: readonly AccountRole[]
+  /** A count shown beside the label, such as the unread notifications of the Inbox. */
+  badge?: 'unreadNotifications'
 }
 
 export type NavigationSection = {
@@ -62,7 +64,8 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       // One calendar for every role: the backend decides which events and deadlines each account gets.
       { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
-      { label: 'Inbox' },
+      // One Inbox per account, whatever roles it holds: notifications are sent to accounts, not to roles.
+      { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications' },
       { label: 'Support' },
     ],
   },

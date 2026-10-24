@@ -10,6 +10,7 @@ import com.stacc.backend.academic.admin.AcademicCalendarRequests.AcademicCalenda
 import com.stacc.backend.academic.calendar.AcademicCalendarEvent;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventRepository;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventStatus;
+import com.stacc.backend.academic.calendar.AcademicCalendarNotifications;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.session.AcademicSession;
@@ -22,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
  * and, optionally, to one semester of that same session, both loaded on the server from the IDs sent. A new event is
  * a draft. A draft can be edited in full; once published, its session and semester are fixed and only its title,
  * description, category, and dates can be corrected; a cancelled event cannot be changed at all. Publishing and
- * cancelling record their time from the server's clock. Nothing is ever restored or deleted, and nothing is sent to
- * anyone: there are no notifications.
+ * cancelling record their time from the server's clock and tell the users who see the event in their Inbox, with no
+ * email or push. Nothing is ever restored or deleted.
  */
 @Service
 @Transactional
@@ -46,13 +47,15 @@ public class AcademicCalendarManagementService {
     private final AcademicSessionRepository sessions;
     private final SemesterRepository semesters;
     private final Clock clock;
+    private final AcademicCalendarNotifications notifications;
 
     public AcademicCalendarManagementService(AcademicCalendarEventRepository events, AcademicSessionRepository sessions,
-            SemesterRepository semesters, Clock clock) {
+            SemesterRepository semesters, Clock clock, AcademicCalendarNotifications notifications) {
         this.events = events;
         this.sessions = sessions;
         this.semesters = semesters;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /**
@@ -105,21 +108,37 @@ public class AcademicCalendarManagementService {
         return AdminCalendarEventResponse.of(events.saveAndFlush(event));
     }
 
-    /** Publishes a draft. An already published event stays as it is; a cancelled one is refused. */
+    /**
+     * Publishes a draft and tells everyone who will see it. An already published event stays as it is and tells nobody
+     * again; a cancelled one is refused.
+     */
     public AdminCalendarEventResponse publish(Long eventId) {
         AcademicCalendarEvent event = findForUpdate(eventId);
         if (event.isCancelled()) {
             throw AcademicMasterErrors.conflict(CANCELLED_PUBLISH);
         }
+        boolean firstPublication = event.getStatus() == AcademicCalendarEventStatus.DRAFT;
         event.publish(clock.instant());
-        return AdminCalendarEventResponse.of(events.saveAndFlush(event));
+        AcademicCalendarEvent saved = events.saveAndFlush(event);
+        if (firstPublication) {
+            notifications.published(saved);
+        }
+        return AdminCalendarEventResponse.of(saved);
     }
 
-    /** Cancels a draft or a published event. An already cancelled event stays as it is. */
+    /**
+     * Cancels a draft or a published event. A published one tells everyone who saw it; a draft was never seen, so
+     * nobody is told. An already cancelled event stays as it is.
+     */
     public AdminCalendarEventResponse cancel(Long eventId) {
         AcademicCalendarEvent event = findForUpdate(eventId);
+        boolean wasPublished = event.getStatus() == AcademicCalendarEventStatus.PUBLISHED;
         event.cancel(clock.instant());
-        return AdminCalendarEventResponse.of(events.saveAndFlush(event));
+        AcademicCalendarEvent saved = events.saveAndFlush(event);
+        if (wasPublished) {
+            notifications.cancelled(saved);
+        }
+        return AdminCalendarEventResponse.of(saved);
     }
 
     private static void requireDates(LocalDate startDate, LocalDate endDate) {

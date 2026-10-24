@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.stacc.backend.common.error.ApiException;
@@ -12,6 +13,7 @@ import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileStatus;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.assignment.LmsAssignmentNotifications;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,18 +42,21 @@ public class LmsAssignmentGradingService {
     private final LmsFacultyAccessService facultyAccess;
     private final FacultyProfileRepository facultyProfiles;
     private final Clock clock;
+    private final LmsAssignmentNotifications notifications;
 
     public LmsAssignmentGradingService(
             LmsSubmissionAttemptRepository attempts,
             LmsSubmissionGradeRepository grades,
             LmsFacultyAccessService facultyAccess,
             FacultyProfileRepository facultyProfiles,
-            Clock clock) {
+            Clock clock,
+            LmsAssignmentNotifications notifications) {
         this.attempts = attempts;
         this.grades = grades;
         this.facultyAccess = facultyAccess;
         this.facultyProfiles = facultyProfiles;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /**
@@ -84,12 +89,22 @@ public class LmsAssignmentGradingService {
         if (existing.isPresent()) {
             LmsSubmissionGrade grade = existing.get();
             requireWithin(marksAwarded, grade.getMaxMarksSnapshot());
+            // The student hears about a revision only when the marks or the feedback really changed.
+            boolean changed = grade.getMarksAwarded().compareTo(marksAwarded) != 0
+                    || !Objects.equals(grade.getFeedback(), validFeedback);
             grade.revise(grader, marksAwarded, validFeedback, now);
-            return grades.saveAndFlush(grade);
+            LmsSubmissionGrade saved = grades.saveAndFlush(grade);
+            if (changed) {
+                notifications.graded(saved, false);
+            }
+            return saved;
         }
         BigDecimal maxMarks = attempt.getSubmission().getAssignment().getMaxMarks();
         requireWithin(marksAwarded, maxMarks);
-        return grades.saveAndFlush(new LmsSubmissionGrade(attempt, grader, marksAwarded, maxMarks, validFeedback, now));
+        LmsSubmissionGrade saved = grades.saveAndFlush(
+                new LmsSubmissionGrade(attempt, grader, marksAwarded, maxMarks, validFeedback, now));
+        notifications.graded(saved, true);
+        return saved;
     }
 
     // Grading is part of the normal workflow of a published assignment in a course the caller teaches now.

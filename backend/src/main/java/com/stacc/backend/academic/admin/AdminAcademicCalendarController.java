@@ -134,7 +134,7 @@ public class AdminAcademicCalendarController {
     @PreAuthorize(AdminAcademicAccess.CALENDAR_MANAGE)
     @Operation(
             summary = "Publish an academic calendar event",
-            description = "Puts a DRAFT event on the calendar of the students and faculty it applies to, and records the time. Publishing an already published event changes nothing. Nothing is sent to anyone.",
+            description = "Puts a DRAFT event on the calendar of the students and faculty it applies to, and records the time. The students, faculty, and admins who will see it get an Inbox notification. Publishing an already published event changes nothing and notifies nobody again.",
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The published event.")
     @ApiResponse(
@@ -153,7 +153,7 @@ public class AdminAcademicCalendarController {
     @PreAuthorize(AdminAcademicAccess.CALENDAR_MANAGE)
     @Operation(
             summary = "Cancel an academic calendar event",
-            description = "Calls off a DRAFT or PUBLISHED event for good and records the time. An event that was published stays on the calendar, marked as cancelled; a draft never appears. Cancelling an already cancelled event changes nothing. Nothing is deleted or sent to anyone.",
+            description = "Calls off a DRAFT or PUBLISHED event for good and records the time. An event that was published stays on the calendar, marked as cancelled; a draft never appears. The users who saw a published event get an Inbox notification; a draft notifies nobody. Cancelling an already cancelled event changes nothing. Nothing is deleted.",
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The cancelled event.")
     @ApiResponse(

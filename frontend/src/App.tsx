@@ -12,6 +12,7 @@ import { CoursePage } from './pages/CoursePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmissionsPage'
+import { InboxPage } from './pages/InboxPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ResultsPage } from './pages/ResultsPage'
@@ -47,6 +48,7 @@ function App() {
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
+          <Route path="inbox" element={<InboxPage />} />
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />

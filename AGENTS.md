@@ -125,7 +125,7 @@
 - Assignment deadlines always come from `LmsAssignment.dueAt` at read time; never copy them into calendar tables. Students get published deadlines of courses `LmsStudentCourseQueryService` lists, faculty draft and published ones of courses `LmsFacultyCourseQueryService` lists. Do not repeat or loosen those rules.
 - `GET /api/calendar/me` (the read-only `calendar` module) needs `ACADEMIC_CALENDAR_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`, takes the caller from the access token, and gives every role the account holds its part; never use `roles[0]`. `from` and `to` are dates at most 366 days apart; `timeZone` is a validated IANA zone that only maps days to deadline moments and decides no access.
 - Admin event routes under `/api/admin/academic/calendar/events` need `ADMIN` with `ACADEMIC_CALENDAR_VIEW` and, to change, `ACADEMIC_CALENDAR_MANAGE`. Students and faculty never create events.
-- Publishing or cancelling sends nothing. Do not add recurring events, reminders, notifications, personal calendars, bookings, timetables, attachments, or calendar import or export without their own phase.
+- Publishing an event, or cancelling a published one, notifies its viewers once through the Inbox; a draft or a repeat notifies nobody. Do not add recurring events, reminders, email or push, personal calendars, bookings, timetables, attachments, or calendar import or export without their own phase.
 
 ## LMS Data
 
@@ -171,7 +171,7 @@
 - `dueAt` is an `Instant` stored in UTC and sent as ISO 8601 with a zone; refuse zone-less times and never assume a time zone. `maxMarks` is `BigDecimal`/`DECIMAL(8,2)`, greater than zero.
 - Assignments use `LmsContentStatus` with the same `publishedAt` rules as announcements. Archive them; never hard-delete them. A published assignment stays visible to students after its deadline; never hide or archive it automatically.
 - Students see only `PUBLISHED` assignments of courses the student access policy allows. Faculty read them with `FACULTY_COURSE_VIEW` under the faculty access policy, finding the course from the stored assignment; every change also needs `LMS_ASSIGNMENT_MANAGE`.
-- Do not add assignment attachments, rubrics, or notifications without their own phase.
+- Do not add assignment attachments, rubrics, or reminders without their own phase. Only the first publication notifies students, through the Inbox.
 - A submission (`lms.assignment.submission`) belongs to one assignment and the student's official `CourseEnrollment`, unique per pair. Never store an account, profile, or login ID on it, and never accept one from the client for "my" submissions: find the enrollment with `LmsStudentAccessService.findAccessGrantingMembership`.
 - Every hand-in is a new immutable `LmsSubmissionAttempt`. Never edit, overwrite, or delete attempts or their attachments. Reserve attempt numbers under the membership row lock and a locking read of the submission, never from `MAX + 1` alone.
 - Each attempt keeps `dueAtSnapshot`; `late` is computed from it, never from the assignment's current deadline. Late work is accepted and marked late until a phase adds cut-offs.
@@ -246,6 +246,16 @@
 - Master counts are every row, whatever the status; the offering count counts `CourseOffering`, never `Course` or `LmsCourse`. Active enrollment means `ENROLLED` only.
 - The offering preview reuses the admin offering list's query and order (first page). Never call it recent.
 - Show no student, faculty, or account details, and no activity feeds, trends, rates, rankings, or performance analytics.
+
+## Notifications and Inbox
+
+- Notifications (`com.stacc.backend.notification`) are shared infrastructure for in-app delivery only. It depends on no feature module. See `docs/notifications-inbox.md`.
+- `Notification` holds the content once; `NotificationRecipient` holds one account's delivery and read state, unique per notification and account. `readAt` null means unread; do not add a read flag or history.
+- Only backend feature services create notifications, through `NotificationService`, in the same transaction as a real change. Never add an endpoint that creates, sends, or deletes notifications, and never take recipients from a client.
+- Notify only on real transitions: compare the state before and after, so repeated or no-op calls never notify twice. Resolve recipients with the feature's existing rules (student access policy, calendar relevance, the enrollment's own student), and deduplicate accounts.
+- Store only a plain-text title and message, a loose `sourceType`/`sourceId`, and a safe internal `actionPath` (one leading `/`, never `//`, a scheme, or a host). Never copy source records, and never let a source ID or path bypass the destination's own authorization.
+- The Inbox is per `UserAccount`, never per role, and never uses `roles[0]`. Its routes need `NOTIFICATION_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN` and take the account from the token; another account's row answers 404. There is no deletion.
+- The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add email, SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
 
 ## Local Test Data
 

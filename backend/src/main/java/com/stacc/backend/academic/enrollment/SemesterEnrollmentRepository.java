@@ -70,4 +70,20 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
 
         Long getAcademicSessionId();
     }
+
+    /**
+     * The accounts of the students with a semester enrollment in these statuses in one academic session, and, when a
+     * semester is given, in that semester only. Each account once.
+     */
+    @Query("""
+            select distinct studentProfile.userAccount.id
+            from SemesterEnrollment enrollment
+            join enrollment.studentProfile studentProfile
+            join enrollment.semester semester
+            where semester.academicSession.id = :academicSessionId
+              and (:semesterId is null or semester.id = :semesterId)
+              and enrollment.status in :statuses
+            """)
+    List<Long> findStudentAccountIdsInSession(@Param("academicSessionId") Long academicSessionId,
+            @Param("semesterId") Long semesterId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
 }

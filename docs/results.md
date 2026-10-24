@@ -62,10 +62,10 @@ There is no grading scale: the grade code is never derived from the marks, and n
 - The student's results come newest academic session first (by its start date), then the highest semester number, then course code.
 - Invalid values answer 400: missing marks, negative marks, a maximum that is not above zero, more than two decimal places, marks above the maximum ("Marks obtained cannot exceed maximum marks."), or a grade or remarks that are too long. Nothing is saved.
 - Saving locks the enrollment row and reads the result with a lock, so two saves of the same student take turns and the result is created once; the unique constraint is the last safety net.
-- The reads are side-effect free. Nobody is notified when a result is published or corrected.
+- The reads are side-effect free. Publishing a result, and a real correction of a published one, tell the student in their Inbox (`RESULT_PUBLISHED`, `RESULT_UPDATED`, see `notifications-inbox.md`). Drafts, repeated publishing, and saves that change nothing tell nobody.
 
 ## Not built yet
 
 - Grading scales, grade points, GPA, SGPA, CGPA, ranks, divisions, pass or fail rules, and semester or overall totals.
 - Approval workflows, correction requests, revision history, and unpublishing.
-- Admin result management, reports, transcripts, exports, and notifications.
+- Admin result management, reports, transcripts, exports, and email notifications.

@@ -22,11 +22,11 @@ The list is in sections:
 | Student | `STUDENT` | **Courses** (`/courses`), **Attendance** (`/academic/attendance`), **Results** (`/academic/results`), Campus |
 | Faculty | `FACULTY` | **Teaching** (`/teaching`), **Assignments** (`/assignments`), **Attendance** (`/attendance`), **Results** (`/results`) |
 | Admin | `ADMIN` | **Academic Admin** (`/admin/academic`), Users, Reports |
-| Common | everyone | **Calendar** (`/calendar`, to accounts holding `STUDENT`, `FACULTY`, or `ADMIN`), Inbox, Support |
+| Common | everyone | **Calendar** (`/calendar`) and **Inbox** (`/inbox`, with the unread count), both to accounts holding `STUDENT`, `FACULTY`, or `ADMIN`; Support |
 
 An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
 
-An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. The Courses, Attendance, and Results items of both sections, Teaching, Assignments, Academic Admin, and Calendar are the only working items so far besides the Dashboard; everything else is still "Soon". An item may also name the roles it is for, like a section: Calendar is shown once to any account holding one of the three roles, and hidden for an account with none. The student's Attendance and Results are the student's academic records, each a plain link, so an account with both roles sees Attendance and Results once in each of its sections.
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. The Courses, Attendance, and Results items of both sections, Teaching, Assignments, Academic Admin, Calendar, and Inbox are the only working items so far besides the Dashboard; everything else is still "Soon". An item may also name the roles it is for, like a section: Calendar is shown once to any account holding one of the three roles, and hidden for an account with none. The student's Attendance and Results are the student's academic records, each a plain link, so an account with both roles sees Attendance and Results once in each of its sections.
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 
@@ -36,7 +36,7 @@ An item stays marked on the pages below it, so Courses is also marked on a cours
 
 ## Top bar
 
-`components/navigation/TopBar.tsx` holds the mobile menu button, the Help and notifications placeholders, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
+`components/navigation/TopBar.tsx` holds the mobile menu button, the Help placeholder, the bell that opens the Inbox with the same unread count as the navigation, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
 
 ## Mobile navigation
 
