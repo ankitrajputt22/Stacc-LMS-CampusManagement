@@ -30,7 +30,7 @@ The seeding runs once the application has started and the database migrations ha
 - Nothing happens without the `dev-seed` profile. Tests and normal starts never create these accounts.
 - With the profile but no `STACC_TEST_PASSWORD` (or one shorter than 8 characters), the backend refuses to start and says why. It also refuses to run next to a `prod` or `production` profile.
 - Passwords are hashed with the shared `PasswordEncoder`, like any other account. Authentication and permissions are unchanged; each account gets its permissions from its roles, as usual.
-- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code and a ticket by its requester and subject. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
+- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code, a ticket by its requester and subject, an approval workflow by its code, and a demo approval request by its source ID. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
 - Records are created through the same services the API uses wherever one exists. So LMS memberships come from provisioning, attendance rosters are snapshots, attempt numbers are reserved as usual, and every rule applies.
 - Everything is created in one transaction: if any step fails, nothing is saved.
 - It only adds records. If your database already has records with the same codes, such as a `CSE` department, they are reused, not changed.
@@ -109,6 +109,13 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - `faculty1`, technical: high priority, assigned to `admin1` by `facultyadmin1`, answered, in progress;
   - `student1`, general: low priority, answered by `admin1`, resolved;
   - `student2`, academic: answered by `admin1`, resolved and then closed.
+
+**Approvals (development only)**
+- One demo workflow, `DEMO_TWO_STEP_APPROVAL`: Faculty review, then Administrative approval. It is labelled as not a real college process.
+- Three demo requests, started through the approval engine with source type `DEV_DEMO`, each waiting at the faculty step:
+  - `student1` (`demo-1`) and `student2` (`demo-2`): in the queues of `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`;
+  - `studentfaculty1` (`demo-3`): in the same queues except their own.
+- Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/approvals`.
 
 ## Starting over
 

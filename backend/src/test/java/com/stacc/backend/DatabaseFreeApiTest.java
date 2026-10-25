@@ -1,5 +1,9 @@
 package com.stacc.backend;
 
+import com.stacc.backend.approval.ApprovalRequestHistoryRepository;
+import com.stacc.backend.approval.ApprovalRequestRepository;
+import com.stacc.backend.approval.ApprovalRequestStepRepository;
+import com.stacc.backend.approval.ApprovalWorkflowDefinitionRepository;
 import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
 import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventRepository;
@@ -14,6 +18,7 @@ import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
+import com.stacc.backend.auth.role.RoleRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
@@ -58,6 +63,10 @@ import org.springframework.web.context.WebApplicationContext;
 @MockitoBean(types = {
     AcademicCalendarEventRepository.class,
     AcademicSessionRepository.class,
+    ApprovalRequestHistoryRepository.class,
+    ApprovalRequestRepository.class,
+    ApprovalRequestStepRepository.class,
+    ApprovalWorkflowDefinitionRepository.class,
     AttendanceRecordRepository.class,
     AttendanceSessionRepository.class,
     CourseEnrollmentRepository.class,
@@ -84,6 +93,7 @@ import org.springframework.web.context.WebApplicationContext;
     NotificationRecipientRepository.class,
     NotificationRepository.class,
     ProgramRepository.class,
+    RoleRepository.class,
     SemesterEnrollmentRepository.class,
     SemesterRepository.class,
     StudentProfileRepository.class,

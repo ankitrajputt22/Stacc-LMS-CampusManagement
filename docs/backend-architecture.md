@@ -16,6 +16,7 @@ The backend modules are:
 - `analytics` — reports and analytics.
 - `dashboard` — read-only overviews, such as the student, faculty, and admin dashboards, composed from other modules' query services and repositories. It owns no data and stores nothing (see `student-dashboard.md`, `faculty-dashboard.md`, and `admin-dashboard.md`).
 - `notification` — in-app notifications and the Inbox: shared infrastructure that feature services call when a real change happens, so it depends on no feature module. It has no endpoint that creates notifications (see `notifications-inbox.md`).
+- `approval` — the one reusable approval workflow engine: admin-configured workflows of ordered, role-based steps, requests started and cancelled by business modules through Java, and approvers' decisions. It stores only workflow and decision state, never business records, and changes no other module's data (see `approval-workflow.md`).
 - `devdata` — local development data only: the demo accounts and records of the `dev-seed` profile, created through the other modules' services. It does nothing unless that profile is switched on (see `local-test-data.md`).
 - `calendar` — the shared, read-only calendar of the signed-in account (`GET /api/calendar/me`), composed from the academic calendar events and the LMS assignment deadlines under their own rules. It owns no data and stores nothing; the official events themselves belong to `academic.calendar` (see `academic-calendar.md`).
 

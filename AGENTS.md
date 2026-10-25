@@ -273,6 +273,17 @@
 - Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves, linking to `/support/tickets/{ticketId}`. Do not rewrite old notification rows.
 - Do not add attachments, email, SMS, push, SLAs or escalation, reopening, internal notes, or helpdesk analytics without their own phase.
 
+## Approval Workflow Engine
+
+- The approval engine (`com.stacc.backend.approval`) is shared infrastructure, one for all of Stacc. Business modules own their records, forms, eligibility, and pages; never build an approval engine per module. See `docs/approval-workflow.md`.
+- Never expose a public route to start or cancel an approval request. Modules call `ApprovalWorkflowService.startApproval` and `cancelApproval` with the requester they authenticated; the engine stores only `sourceType`, `sourceId`, and a subject, never business payloads, JSON, or attachments, and never changes the business record.
+- Workflows are ordered, sequential, role-based steps (1 to 10), each naming an existing `Role` that holds `APPROVAL_TASK_DECIDE`, never an account. Codes are uppercase and fixed; deactivate workflows instead of deleting them.
+- A request copies its workflow's steps when it starts; editing a workflow affects future requests only. A PENDING request has exactly one PENDING step and `currentStepOrder` pointing at it.
+- A step is decided only by an account with `APPROVAL_TASK_DECIDE` that holds the step's role in its token and in the database and is not the requester. There is no admin pass, and never use `roles[0]`.
+- Rejecting needs a comment, rejects the request, and skips later steps. Finished requests never change; deciding an already decided step answers 409. Lock the request row before every decision or cancellation.
+- History is append-only and written only by the engine's single recorder. Notifications go to the step's role holders and the requester, with no link until a module adds pages.
+- Do not add parallel or conditional steps, quorum, delegation, escalation, deadlines, attachments, form builders, or a generic approval UI without their own phase.
+
 ## Local Test Data
 
 - Demo accounts and data exist only in `com.stacc.backend.devdata` under the `dev-seed` profile, never in Flyway migrations or production. See `docs/local-test-data.md`.

@@ -87,6 +87,10 @@ The `notification` module holds in-app notifications. A `Notification` is one ev
 
 The `support.helpdesk` package is the one helpdesk ticket engine. Admins configure `HelpdeskCategory` rows; any student, faculty, or admin account raises a `HelpdeskTicket` (numbered `STC-000042`) as itself and follows its append-only messages and history; admins work through the queue, assign tickets to admin accounts, set the priority, and move them from `OPEN` through `IN_PROGRESS` and `RESOLVED` to `CLOSED`, never back. Routes are under `/api/helpdesk`, with six `HELPDESK_TICKET_*` permissions. Replies, status changes, and assignments notify through the Inbox. Nothing is deleted. See `../docs/helpdesk.md`.
 
+## Approvals
+
+The `approval` package is the reusable approval workflow engine. Admins define `ApprovalWorkflowDefinition`s with 1 to 10 ordered steps, each decided by one role. Business modules start and cancel `ApprovalRequest`s for their own records through `ApprovalWorkflowService` (there is no REST route for that); each request copies the workflow's steps, so later edits affect new requests only. Approvers holding a step's role decide it at `/api/approvals/tasks`, with no admin pass; requesters read their own at `/api/approvals/me`. Decisions lock the request row, history is append-only, and the Inbox tells approvers and requesters. See `../docs/approval-workflow.md`.
+
 ## Local test data
 
 The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.
