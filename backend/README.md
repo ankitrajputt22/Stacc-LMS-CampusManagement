@@ -91,6 +91,10 @@ The `support.helpdesk` package is the one helpdesk ticket engine. Admins configu
 
 The `approval` package is the reusable approval workflow engine. Admins define `ApprovalWorkflowDefinition`s with 1 to 10 ordered steps, each decided by one role. Business modules start and cancel `ApprovalRequest`s for their own records through `ApprovalWorkflowService` (there is no REST route for that); each request copies the workflow's steps, so later edits affect new requests only. Approvers holding a step's role decide it at `/api/approvals/tasks`, with no admin pass; requesters read their own at `/api/approvals/me`. Decisions lock the request row, history is append-only, and the Inbox tells approvers and requesters. See `../docs/approval-workflow.md`.
 
+## Hostel
+
+The `hostel` package manages hostels, rooms, and beds, students' applications for an academic session, and bed allocations. An application starts a request with the `HOSTEL_APPLICATION` approval workflow (one ADMIN step, created by `V53`) and reads its status from it; admins decide on the approval task routes. Approved students are allocated a bed under row locks, so a bed, an application, and a student each have at most one active allocation; vacating keeps history. Student routes are under `/api/hostel/student`, admin routes under `/api/hostel/admin`. See `../docs/hostel-management.md`.
+
 ## Local test data
 
 The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.

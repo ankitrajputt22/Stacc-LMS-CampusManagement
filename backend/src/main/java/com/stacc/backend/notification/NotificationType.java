@@ -29,5 +29,9 @@ public enum NotificationType {
     /** An approval request was rejected. */
     APPROVAL_REJECTED,
     /** An approval request was cancelled by the module that owns its record. */
-    APPROVAL_CANCELLED
+    APPROVAL_CANCELLED,
+    /** A student was allocated a hostel bed. */
+    HOSTEL_ALLOCATED,
+    /** A student's active hostel allocation was vacated. */
+    HOSTEL_VACATED
 }

@@ -38,6 +38,8 @@ const navigationSections: readonly NavigationSection[] = [
       // The student's academic records: one real link each, no separate menu.
       { label: 'Attendance', to: '/academic/attendance' },
       { label: 'Results', to: '/academic/results' },
+      // Hostel applications and allocation; other campus services come in their own phase.
+      { label: 'Hostel', to: '/hostel' },
       { label: 'Campus' },
     ],
   },
@@ -56,7 +58,12 @@ const navigationSections: readonly NavigationSection[] = [
     id: 'admin',
     title: 'Admin',
     roles: ['ADMIN'],
-    items: [{ label: 'Academic Admin', to: '/admin/academic' }, { label: 'Users' }, { label: 'Reports' }],
+    items: [
+      { label: 'Academic Admin', to: '/admin/academic' },
+      { label: 'Hostel Management', to: '/admin/hostel' },
+      { label: 'Users' },
+      { label: 'Reports' },
+    ],
   },
   {
     id: 'common',

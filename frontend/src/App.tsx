@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
+import { AdminHostelPage } from './pages/AdminHostelPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
 import { AttendancePage } from './pages/AttendancePage'
 import { CalendarPage } from './pages/CalendarPage'
@@ -17,6 +18,7 @@ import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ResultsPage } from './pages/ResultsPage'
 import { StudentAttendancePage } from './pages/StudentAttendancePage'
+import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
@@ -63,6 +65,11 @@ function App() {
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
+          {/* Hostel: the student's page, and the hostel office's sections; the applications section opens first. */}
+          <Route path="hostel" element={<StudentHostelPage />} />
+          <Route path="admin/hostel" element={<Navigate to="/admin/hostel/applications" replace />} />
+          <Route path="admin/hostel/:section" element={<AdminHostelPage />} />
+          <Route path="admin/hostel/applications/:applicationId" element={<AdminHostelPage review />} />
           <Route path="admin/academic/offerings/:courseOfferingId/enrollments" element={<AcademicAdminPage roster />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

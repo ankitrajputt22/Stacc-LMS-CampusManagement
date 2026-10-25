@@ -280,6 +280,10 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Lists are stacked rows on every screen size, with one descriptive link each, and server paging with **Previous** and **Next**. Filters and the page live in the address.
 - A ticket that does not exist or belongs to another account shows "Ticket unavailable". A **403** never signs the user out.
 
+### Hostel
+
+**Hostel** in the Student section opens `/hostel` for accounts holding `STUDENT`: applying for an eligible session, the student's applications with their approval progress, cancelling a pending one, and the allocation. **Hostel Management** in the Admin section opens `/admin/hostel` (Applications, Hostels & Rooms, Allocations, with review at `/admin/hostel/applications/:applicationId`) for accounts holding `ADMIN`. Requests go through `src/api/hostelApi.ts` and, for decisions, `src/api/approvalsApi.ts`; labels come from `src/hostel/hostelText.ts`. Students never choose a bed; approval and occupancy are shown exactly as the backend returns them. See `hostel-management.md`.
+
 ### The Academic Admin page
 
 **Academic Admin** is the first real Admin item in the navigation, shown to any account holding `ADMIN`, once also for an account with other roles. It opens `/admin/academic`, which goes to `/admin/academic/departments`; the other sections are `/admin/academic/programs`, `/sessions`, `/semesters`, `/courses`, `/offerings`, `/enrollments`, and `/calendar`, and an offering's roster is `/admin/academic/offerings/:courseOfferingId/enrollments`. Academic Admin stays marked on all of them.

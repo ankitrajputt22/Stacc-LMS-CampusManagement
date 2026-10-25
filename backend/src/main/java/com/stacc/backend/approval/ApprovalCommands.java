@@ -33,4 +33,8 @@ public final class ApprovalCommands {
                     request.getSubmittedAt(), request.getCompletedAt());
         }
     }
+
+    /** The step of a request that can be decided now, for a module that shows its own review page. */
+    public record CurrentApprovalStep(Long approvalRequestStepId, int stepOrder, String stepName, String requiredRoleCode) {
+    }
 }

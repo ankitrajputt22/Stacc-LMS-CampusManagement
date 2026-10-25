@@ -30,7 +30,7 @@ The seeding runs once the application has started and the database migrations ha
 - Nothing happens without the `dev-seed` profile. Tests and normal starts never create these accounts.
 - With the profile but no `STACC_TEST_PASSWORD` (or one shorter than 8 characters), the backend refuses to start and says why. It also refuses to run next to a `prod` or `production` profile.
 - Passwords are hashed with the shared `PasswordEncoder`, like any other account. Authentication and permissions are unchanged; each account gets its permissions from its roles, as usual.
-- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code, a ticket by its requester and subject, an approval workflow by its code, and a demo approval request by its source ID. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
+- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code, a ticket by its requester and subject, an approval workflow by its code, a demo approval request by its source ID, a hostel by its code, a room by its hostel and number, and a bed by its room and number. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
 - Records are created through the same services the API uses wherever one exists. So LMS memberships come from provisioning, attendance rosters are snapshots, attempt numbers are reserved as usual, and every rule applies.
 - Everything is created in one transaction: if any step fails, nothing is saved.
 - It only adds records. If your database already has records with the same codes, such as a `CSE` department, they are reused, not changed.
@@ -116,6 +116,10 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - `student1` (`demo-1`) and `student2` (`demo-2`): in the queues of `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`;
   - `studentfaculty1` (`demo-3`): in the same queues except their own.
 - Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/approvals`.
+
+**Hostel (development only)**
+- Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active and free.
+- No applications: sign in as `student1`, `student2`, or `studentfaculty1` and apply at `/hostel` for the current session, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
 
 ## Starting over
 
