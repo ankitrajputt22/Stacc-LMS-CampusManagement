@@ -226,6 +226,7 @@
 - The ticket form never offers Urgent and never sends a requester, status, or assignee; replies send only the text. Show statuses, priorities, transitions, and activity only through `src/support/helpdeskText.ts`.
 - Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
 - Category codes are read-only once created, categories are deactivated rather than deleted, and the admin list shows inactive ones. A 404 on a ticket shows "Ticket unavailable" with none of its data; a 409 shows the backend's message and reloads the ticket.
+- Students use `/hostel` (the Hostel item for `STUDENT`) and admins `/admin/hostel` (Hostel Management for `ADMIN`): applications with approval decisions through the approval task routes, Hostels & Rooms, and Allocations. Show approval status and occupancy only as the backend returns them, confirm cancelling and vacating, and offer no Delete and no student bed choice.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
 
 ## Student Dashboard
@@ -283,6 +284,16 @@
 - Rejecting needs a comment, rejects the request, and skips later steps. Finished requests never change; deciding an already decided step answers 409. Lock the request row before every decision or cancellation.
 - History is append-only and written only by the engine's single recorder. Notifications go to the step's role holders and the requester, with no link until a module adds pages.
 - Do not add parallel or conditional steps, quorum, delegation, escalation, deadlines, attachments, form builders, or a generic approval UI without their own phase.
+
+## Hostel
+
+- Hostel (`com.stacc.backend.hostel`) is the first real business consumer of the approval engine. Approval state always comes from the linked `ApprovalRequest`: never add a status column to `HostelApplication`, never change approval tables from Hostel, and decide only through the approval task routes. `HOSTEL_MANAGE` is no approval pass. See `docs/hostel-management.md`.
+- Applications use the `HOSTEL_APPLICATION` workflow by code (reference data from `V53`, one ADMIN step). Apply and cancel through `ApprovalWorkflowService`; the student always comes from the token.
+- A student applies only for a session with an ENROLLED semester enrollment and an ACTIVE profile; no LMS data is needed. One PENDING or APPROVED application per student and session; rejected or cancelled ones allow reapplying. Only pending applications without an active allocation can be cancelled.
+- Students never choose a hostel, room, or bed. Only APPROVED applications are allocated, by an admin from the token.
+- Occupancy is derived from ACTIVE `HostelAllocation`s; never store an occupied flag or room capacity. A bed, an application, and a student each have at most one ACTIVE allocation, enforced under the fixed lock order student, application, hostel and room (shared), bed.
+- Vacating keeps history and allows reallocation. Never hard-delete hostels, rooms, beds, applications, or allocations. Do not deactivate what holds an active allocation, and fix room and bed numbers once they have allocation history.
+- Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, maintenance, or campus services without their own phase. Never use `roles[0]`.
 
 ## Local Test Data
 

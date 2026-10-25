@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import com.stacc.backend.academic.session.AcademicSession;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -62,6 +63,33 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             """)
     List<EnrolledSemester> findEnrolledSemestersByUserAccountId(
             @Param("userAccountId") Long userAccountId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
+
+    /**
+     * The academic sessions in which a student has at least one semester enrollment in this status, the latest first.
+     * Hostel eligibility uses it with ENROLLED.
+     */
+    @Query("""
+            select distinct academicSession
+            from SemesterEnrollment enrollment
+            join enrollment.semester semester
+            join semester.academicSession academicSession
+            where enrollment.studentProfile.id = :studentProfileId
+              and enrollment.status = :status
+            order by academicSession.startDate desc, academicSession.id desc
+            """)
+    List<AcademicSession> findSessionsOfStudentWithStatus(@Param("studentProfileId") Long studentProfileId,
+            @Param("status") SemesterEnrollmentStatus status);
+
+    /** Whether a student has a semester enrollment in this status in a semester of the academic session. */
+    @Query("""
+            select count(enrollment) > 0
+            from SemesterEnrollment enrollment
+            where enrollment.studentProfile.id = :studentProfileId
+              and enrollment.semester.academicSession.id = :academicSessionId
+              and enrollment.status = :status
+            """)
+    boolean existsInSessionWithStatus(@Param("studentProfileId") Long studentProfileId,
+            @Param("academicSessionId") Long academicSessionId, @Param("status") SemesterEnrollmentStatus status);
 
     /** One semester a student is enrolled in, and its academic session. */
     interface EnrolledSemester {

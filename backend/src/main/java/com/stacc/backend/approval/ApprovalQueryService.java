@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import com.stacc.backend.approval.ApprovalCommands.ApprovalRequestOutcome;
+import com.stacc.backend.approval.ApprovalCommands.CurrentApprovalStep;
 import com.stacc.backend.approval.ApprovalResponses.ApprovalRequestDetail;
 import com.stacc.backend.approval.ApprovalResponses.ApprovalRequestPage;
 import com.stacc.backend.approval.ApprovalResponses.ApprovalRequestSummary;
@@ -96,6 +97,24 @@ public class ApprovalQueryService {
     public Optional<ApprovalRequestOutcome> requestStatus(Long approvalRequestId) {
         return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
                 .map(ApprovalRequestOutcome::of);
+    }
+
+    /**
+     * One request with its steps and history, for the module that owns its record and has checked its own access rules,
+     * such as a hostel admin's review page. It is never a route of its own.
+     */
+    public Optional<ApprovalRequestDetail> requestDetail(Long approvalRequestId) {
+        return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
+                .map(request -> ApprovalRequestDetail.of(request, steps.findAllWithActorByRequestId(request.getId()),
+                        history.findAllWithActorByRequestId(request.getId())));
+    }
+
+    /** The step of a PENDING request that can be decided now, with its ID for the task routes. */
+    public Optional<CurrentApprovalStep> currentStep(Long approvalRequestId) {
+        return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
+                .flatMap(ApprovalRequest::currentStep)
+                .map(step -> new CurrentApprovalStep(step.getId(), step.getStepOrder(), step.getStepName(),
+                        step.getRequiredRoleCode()));
     }
 
     /** Every approval request for one business record, oldest first. */

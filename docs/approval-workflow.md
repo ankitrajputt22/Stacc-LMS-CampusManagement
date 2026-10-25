@@ -195,6 +195,15 @@ Approvals notify through the Phase 39 Inbox, in the same transaction as the chan
 
 The source is `APPROVAL_REQUEST` with the request ID. There is no link (`actionPath` is empty), because there is no approval page; the business modules that use a workflow add their own. `V50` widens the notification type check. Stale or refused decisions notify nobody.
 
+## Hostel: the first real consumer
+
+Hostel applications (`docs/hostel-management.md`) use the `HOSTEL_APPLICATION` workflow. `V53` creates it as product reference data: "Hostel Application Approval", one step, **Administrative Approval**, decided by `ADMIN`.
+- **Starting:** the hostel module starts a request for each application, with source type `HOSTEL_APPLICATION` and the application ID as the source ID.
+- **Status:** it reads the request's status instead of keeping its own.
+- **Cancelling:** it cancels pending requests through `cancelApproval`.
+- **Deciding:** admins decide on the task routes above.
+- **Review page:** for that page, `ApprovalQueryService` also offers two internal reads to modules that have checked their own access, `requestDetail(approvalRequestId)` (steps and history) and `currentStep(approvalRequestId)` (the decidable step with its ID). They are Java calls, not routes.
+
 ## Local test data
 
 The `dev-seed` profile creates one clearly labelled demo workflow, `DEMO_TWO_STEP_APPROVAL` (Faculty review, then Administrative approval), and three demo requests by `student1`, `student2`, and `studentfaculty1`, each waiting at the faculty step. They are started through the engine with source type `DEV_DEMO`. It is development data only, never a migration or production data. See `local-test-data.md`.

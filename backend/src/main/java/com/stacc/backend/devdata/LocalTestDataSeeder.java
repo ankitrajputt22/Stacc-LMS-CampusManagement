@@ -57,6 +57,13 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.role.RoleRepository;
+import com.stacc.backend.hostel.HostelBedRepository;
+import com.stacc.backend.hostel.HostelManagementService;
+import com.stacc.backend.hostel.HostelRepository;
+import com.stacc.backend.hostel.HostelRequests.CreateBedRequest;
+import com.stacc.backend.hostel.HostelRequests.CreateHostelRequest;
+import com.stacc.backend.hostel.HostelRequests.CreateRoomRequest;
+import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -175,6 +182,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HelpdeskCategoryRepository helpdeskCategories;
         final HelpdeskTicketRepository helpdeskTickets;
         final ApprovalWorkflowDefinitionRepository approvalWorkflows;
+        final HostelRepository hostels;
+        final HostelRoomRepository hostelRooms;
+        final HostelBedRepository hostelBeds;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -187,7 +197,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 LmsSubmissionGradeRepository grades, AttendanceSessionRepository attendanceSessions,
                 AttendanceRecordRepository attendanceRecords, CourseResultRepository results,
                 AcademicCalendarEventRepository calendarEvents, HelpdeskCategoryRepository helpdeskCategories,
-                HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows) {
+                HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows,
+                HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -216,6 +227,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.helpdeskCategories = helpdeskCategories;
             this.helpdeskTickets = helpdeskTickets;
             this.approvalWorkflows = approvalWorkflows;
+            this.hostels = hostels;
+            this.hostelRooms = hostelRooms;
+            this.hostelBeds = hostelBeds;
         }
     }
 
@@ -237,6 +251,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final ApprovalWorkflowDefinitionService approvalWorkflows;
         final ApprovalWorkflowService approvals;
         final ApprovalQueryService approvalQueries;
+        final HostelManagementService hostels;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
@@ -244,7 +259,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 AttendanceManagementService attendance, CourseResultManagementService results,
                 AcademicCalendarManagementService calendar, HelpdeskCategoryService helpdeskCategories,
                 HelpdeskTicketCommandService helpdeskTickets, ApprovalWorkflowDefinitionService approvalWorkflows,
-                ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries) {
+                ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries,
+                HostelManagementService hostels) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -259,6 +275,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.approvalWorkflows = approvalWorkflows;
             this.approvals = approvals;
             this.approvalQueries = approvalQueries;
+            this.hostels = hostels;
         }
     }
 
@@ -483,6 +500,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         demoApproval(student1, "demo-1", "Demo approval request 1 (development only)");
         demoApproval(student2, "demo-2", "Demo approval request 2 (development only)");
         demoApproval(studentFaculty, "demo-3", "Demo approval request 3 (development only)");
+
+        // --- Hostel: a small inventory to try applications and allocations. Real hostels are added by admins.
+        Long mainHostel = hostel("MAIN", "Main Hostel", "Development test hostel.");
+        for (String roomNumber : List.of("A-101", "A-102")) {
+            Long roomId = hostelRoom(mainHostel, roomNumber);
+            hostelBed(roomId, "B1");
+            hostelBed(roomId, "B2");
+        }
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -776,6 +801,21 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         boolean exists = !services.approvalQueries.requestsForSource(DEMO_APPROVAL_SOURCE, sourceId).isEmpty();
         createUnless(exists, () -> services.approvals.startApproval(new StartApprovalCommand(DEMO_APPROVAL_WORKFLOW,
                 requester.getId(), DEMO_APPROVAL_SOURCE, sourceId, subject)));
+    }
+
+    private Long hostel(String code, String name, String description) {
+        return findOrCreate(repositories.hostels.findByCode(code).map(found -> found.getId()),
+                () -> services.hostels.createHostel(new CreateHostelRequest(code, name, description)).hostelId());
+    }
+
+    private Long hostelRoom(Long hostelId, String roomNumber) {
+        return findOrCreate(repositories.hostelRooms.findByHostelIdAndRoomNumber(hostelId, roomNumber).map(found -> found.getId()),
+                () -> services.hostels.createRoom(hostelId, new CreateRoomRequest(roomNumber)).roomId());
+    }
+
+    private void hostelBed(Long roomId, String bedNumber) {
+        createUnless(repositories.hostelBeds.existsByRoomIdAndBedNumber(roomId, bedNumber),
+                () -> services.hostels.createBed(roomId, new CreateBedRequest(bedNumber)));
     }
 
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */

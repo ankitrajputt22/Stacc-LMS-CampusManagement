@@ -110,4 +110,19 @@ class ApprovalQueryServiceTest {
         assertThat(service.requestsForSource("DEMO_SOURCE", "source-12")).hasSize(1);
         assertThat(service.hasPendingApproval("DEMO_SOURCE", "source-12", " two_step ")).isTrue();
     }
+
+    @Test
+    void businessModulesCanReadADetailAndTheCurrentStep() {
+        when(requests.findWithContextById(12L)).thenReturn(Optional.of(request));
+        when(steps.findAllWithActorByRequestId(12L)).thenReturn(request.getSteps());
+        when(history.findAllWithActorByRequestId(12L)).thenReturn(List.of());
+
+        assertThat(service.requestDetail(12L)).get().satisfies(detail -> assertThat(detail.steps()).hasSize(2));
+        assertThat(service.currentStep(12L)).get().satisfies(step -> {
+            assertThat(step.approvalRequestStepId()).isEqualTo(121L);
+            assertThat(step.requiredRoleCode()).isEqualTo("FACULTY");
+        });
+        assertThat(service.requestDetail(null)).isEmpty();
+        assertThat(service.currentStep(404L)).isEmpty();
+    }
 }

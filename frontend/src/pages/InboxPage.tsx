@@ -45,6 +45,8 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   APPROVAL_APPROVED: 'View request',
   APPROVAL_REJECTED: 'View request',
   APPROVAL_CANCELLED: 'View request',
+  HOSTEL_ALLOCATED: 'View hostel',
+  HOSTEL_VACATED: 'View hostel',
 }
 
 /** Only a path inside the app is ever followed: never a full address, "//host", or "/\host". */
