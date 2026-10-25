@@ -2,7 +2,7 @@
 
 Stacc has **one helpdesk ticket engine** for every kind of issue: academic records, LMS courses, technical problems, and anything else. The kinds of issue are told apart by **categories**, which admins configure. There is no separate ticket engine per module, and later Support features build on this one.
 
-Phase 40 is the backend only. The Support item in the navigation stays "Soon", and the pages arrive in a later phase.
+The backend (Phase 40) is the source of truth. The **Support** pages (Phase 41, under "Frontend" below) only show what it returns and send what it accepts; every rule is checked again by the backend.
 
 ```text
 HelpdeskCategory (configurable, never deleted)
@@ -44,7 +44,7 @@ Table `helpdesk_tickets`.
 | `description` | Required plain text, at most 10,000 characters: the original description of the issue. It is shown as text, never as HTML. |
 | `priority` | `LOW`, `NORMAL`, `HIGH`, or `URGENT`. Requesters choose `LOW`, `NORMAL` (the default), or `HIGH`; only the support team sets `URGENT`. |
 | `status` | `OPEN`, `IN_PROGRESS`, `RESOLVED`, or `CLOSED`. A new ticket is `OPEN`. |
-| `assignedTo` | Optional. Always an account holding `ADMIN`. |
+| `assignedTo` | Optional. Always an active account holding `ADMIN` when it is assigned. |
 | `resolvedAt`, `closedAt` | Set by the server's clock on the first move to `RESOLVED` and to `CLOSED`. A ticket closed straight from `OPEN` or `IN_PROGRESS` has no `resolvedAt`. |
 | `createdAt`, `updatedAt` | Set by the server. |
 
@@ -115,14 +115,15 @@ Each route also needs one of `STUDENT`, `FACULTY`, or `ADMIN`. The page answer i
 | Route | What it does |
 | --- | --- |
 | `GET /api/helpdesk/admin/tickets` | One page of every ticket, newest first. Filters `status`, `priority`, `categoryId`, `assignedToMe` (the signed-in admin's), and `requesterLoginId`; paging as above. Needs `ADMIN` and `HELPDESK_TICKET_VIEW_ALL`. |
-| `PUT /api/helpdesk/admin/tickets/{ticketId}/assignment` | `{ "assignedToLoginId": "admin1" }`, or `null` to unassign. The account must exist and hold `ADMIN` (otherwise 400). The same assignee changes nothing. |
+| `GET /api/helpdesk/admin/assignees` | The accounts a ticket can be assigned to: active accounts holding `ADMIN`, as `[{ "loginId": "admin1" }]`, in login ID order. Login IDs only, nothing else about the accounts. Added in Phase 41 so the support team can choose an assignee. |
+| `PUT /api/helpdesk/admin/tickets/{ticketId}/assignment` | `{ "assignedToLoginId": "admin1" }`, or `null` to unassign. The account must exist, hold `ADMIN`, and be active (otherwise 400), the same rule as the assignee list. The same assignee changes nothing. |
 | `PUT /api/helpdesk/admin/tickets/{ticketId}/priority` | `{ "priority": "URGENT" }`: any of the four. The same priority changes nothing. |
 | `PUT /api/helpdesk/admin/tickets/{ticketId}/status` | `{ "status": "IN_PROGRESS" }`, following the lifecycle above. |
 | `GET /api/helpdesk/admin/categories` | Every category, active and inactive, by code. |
 | `POST /api/helpdesk/admin/categories` | Creates one (201): `code`, `name`, optional `description` and `active` (true by default). A taken code is 409, also when two requests race. |
 | `PUT /api/helpdesk/admin/categories/{categoryId}` | Replaces `name`, `description`, and `active`. The code is not part of the request and never changes. A missing category is 404. |
 
-The ticket changes and category routes need `ADMIN` and `HELPDESK_TICKET_MANAGE`. Each change answers the whole ticket, as `GET /api/helpdesk/tickets/{ticketId}` does. There is **no delete route** for tickets, messages, history, or categories, and no route to reopen a ticket.
+The assignee list, ticket changes, and category routes need `ADMIN` and `HELPDESK_TICKET_MANAGE`. Each change answers the whole ticket, as `GET /api/helpdesk/tickets/{ticketId}` does. There is **no delete route** for tickets, messages, history, or categories, and no route to reopen a ticket.
 
 Answers name people by login ID only. No account ID, password hash, role, or permission is ever included, and no entity is sent as it is.
 
@@ -136,7 +137,7 @@ Real changes tell people in their Inbox (see `notifications-inbox.md`), in the s
 | `HELPDESK_STATUS_CHANGED` | The status really changes. | The requester. |
 | `HELPDESK_ASSIGNED` | The ticket is assigned to an admin. | That admin. |
 
-Nobody is told about their own action: a requester's own reply, or an admin assigning a ticket to themselves, notifies nobody. No-op requests, creating a ticket, priority changes, and unassigning notify nobody. The source is `HELPDESK_TICKET` with the ticket ID. There is no link yet (`actionPath` is empty), because the helpdesk pages do not exist; `V47` widens the notification type check for the three new types.
+Nobody is told about their own action: a requester's own reply, or an admin assigning a ticket to themselves, notifies nobody. No-op requests, creating a ticket, priority changes, and unassigning notify nobody. The source is `HELPDESK_TICKET` with the ticket ID, and the link (`actionPath`) is the shared ticket page, `/support/tickets/{ticketId}`. Opening it checks access as always, so the link grants nothing. Notifications sent before Phase 41 keep their empty link; old rows are not rewritten. `V47` widens the notification type check for the three new types.
 
 ## Permissions
 
@@ -155,6 +156,40 @@ All six are added by `V46`. Accounts signed in before it must sign in again to g
 
 The `dev-seed` profile creates the categories `GENERAL`, `ACADEMIC`, `LMS`, and `TECHNICAL`, and one ticket in each status, through the ticket engine (see `local-test-data.md`).
 
+## Frontend
+
+Support is one area for every account holding `STUDENT`, `FACULTY`, or `ADMIN`: the **Support** item in the Common navigation section, shown once whatever roles the account holds, and marked as current on every `/support` page. Tickets belong to accounts, not roles. Admin controls appear for accounts holding `ADMIN`, for the interface only; the backend decides every request.
+
+| Route | Page |
+| --- | --- |
+| `/support` | **Support**: "Get help with academic, LMS, technical, and campus-related issues.", **Create ticket**, and **My tickets**. Admins also get **Admin ticket queue** and **Manage categories**. |
+| `/support/new` | **Create ticket**: the form. |
+| `/support/tickets/:ticketId` | The shared ticket page for the requester and the support team. |
+| `/support/admin` | **Support Queue**: every ticket, for admins. |
+| `/support/admin/categories` | **Helpdesk Categories**: add and edit, for admins. |
+
+### Requester workflow
+
+1. **My tickets** lists the account's own tickets from `GET /api/helpdesk/tickets/me`, 20 per page, newest first: number, subject, category, priority, status, and the updated and created times, never the description. **All**, **Open**, **In Progress**, **Resolved**, and **Closed** (`aria-pressed`) and a **Category** select use the backend's own filters, and **Previous**, "Page X of Y", and **Next** its paging. The filters and page are kept in the address, so going back from a ticket returns to the same list. With nothing yet it says "You haven't created any support tickets yet." with **Create ticket**; with filters and nothing found, "No tickets match this filter."
+2. **Create ticket** asks for the **Category** (the active ones from `GET /api/helpdesk/categories`), **Subject** (at most 200 characters), **Priority** (**Low**, **Normal** by default, or **High**; Urgent is never offered), and **Description** (at most 10,000). It never asks for a requester, number, status, or assignee. Obvious mistakes are caught before sending; while sending, the button says "Creating ticket…" and a second press does nothing. On success the ticket page opens without a reload and says "Ticket STC-000042 created." A category removed meanwhile says "This category is no longer available." and the list is loaded again; other refusals are shown in the backend's words.
+3. **The ticket page** shows the number, subject, priority and status tags, and the category, status, assignee (or Unassigned), and times; admins also see who raised it. **Original issue** is the description, then **Conversation** lists the replies oldest first, each with its author and time, at full width. All text is plain and keeps its line breaks. **Ticket activity** turns the history into sentences, such as "Status changed from Open to In Progress." and "Assigned to admin1."
+4. **Reply** sends only the text; the author comes from the token. While sending it says "Sending…"; afterwards the text box is emptied and the ticket loads again. On a **Resolved** ticket the form says replying does not change the status, and the ticket stays Resolved. A **Closed** ticket has no form and says "This ticket is closed and is read-only." There is no Reopen.
+
+### Admin workflow
+
+1. **Support Queue** lists every ticket from `GET /api/helpdesk/admin/tickets`, 20 per page: number, subject, who raised it, category, priority, status, assignee or Unassigned, and the times, each with **Open**. Filters: **Status**, **Priority**, **Category** (inactive ones marked), **Raised by (login ID)** with **Apply**, and **Assigned to me**, with **Clear filters**. With nothing found it says "No matching support tickets." There are no counts per category, charts, or deadlines.
+2. **Open** leads to the same ticket page, where **Manage ticket** offers:
+   - **Assigned to**: Unassigned or the login IDs from `GET /api/helpdesk/admin/assignees`, with **Save assignee** and an **Assign to me** shortcut;
+   - **Priority**: Low, Normal, High, or Urgent, with **Save priority**;
+   - **Status**: only the moves the lifecycle allows from the current status, with **Change status**. Closing first asks "Close this ticket?" ("After closing, no more replies or management changes can be made.") with **Close ticket** and **Cancel**; Escape cancels.
+   Each change shows the backend's answer straight away and adds to the activity. A **409**, such as a ticket changed by someone else, is shown in the backend's words and the ticket is loaded again. A closed ticket has no controls.
+3. Admins reply with the same form as requesters; the backend checks `HELPDESK_TICKET_REPLY_ALL`.
+4. **Helpdesk Categories** lists every category with its code, name, description, and **Active** or **Inactive**, each with **Edit**. **Add category** asks for the code, name, and optional description; a new category is active. When editing, the code is shown but cannot be changed, and unticking **Active** explains: "Existing tickets keep this category, but it cannot be selected for new tickets." A taken code shows the backend's 409 message. There is no Delete.
+
+### Page states
+
+Loading says "Loading your tickets…", "Loading ticket…", "Loading support queue…", or "Loading categories…". A failure says "Couldn't load your support tickets." (or this ticket, the support queue, helpdesk categories) with **Retry**. A **404** on a ticket, including another account's ticket, shows "Ticket unavailable" and none of its data. A **403** shows that access is missing and never signs the user out; a **401** is left to the shared client.
+
 ## Not built yet
 
-Helpdesk pages and the Support navigation item, attachments, email, SMS, or push, service-level targets and escalation, reopening tickets, internal notes, canned replies, satisfaction ratings, deleting anything, and module-specific ticket engines.
+Attachments, email, SMS, or push, service-level targets and escalation, reopening tickets, internal notes, canned replies, satisfaction ratings, deleting anything, and module-specific ticket engines.

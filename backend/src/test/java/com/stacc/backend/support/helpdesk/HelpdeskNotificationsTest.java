@@ -33,7 +33,7 @@ class HelpdeskNotificationsTest {
     }
 
     @Test
-    void anAdminReplyTellsTheRequesterWithoutALinkYet() {
+    void anAdminReplyTellsTheRequesterWithALinkToTheTicket() {
         notifications.replied(ticket, 1L);
 
         NotificationMessage message = sentTo(70);
@@ -41,7 +41,7 @@ class HelpdeskNotificationsTest {
         assertThat(message.message()).contains("STC-000042").contains("Cannot open my course");
         assertThat(message.sourceType()).isEqualTo(NotificationSourceType.HELPDESK_TICKET);
         assertThat(message.sourceId()).isEqualTo(42L);
-        assertThat(message.actionPath()).isNull();
+        assertThat(message.actionPath()).isEqualTo("/support/tickets/42");
     }
 
     @Test
@@ -62,13 +62,16 @@ class HelpdeskNotificationsTest {
         NotificationMessage message = sentTo(70);
         assertThat(message.type()).isEqualTo(NotificationType.HELPDESK_STATUS_CHANGED);
         assertThat(message.message()).endsWith("is now in progress.");
+        assertThat(message.actionPath()).isEqualTo("/support/tickets/42");
     }
 
     @Test
     void anAssignmentTellsTheAssigneeAndUnassigningTellsNobody() {
         ticket.assignTo(HelpdeskFixtures.account(2, "facultyadmin1", RoleName.ADMIN));
         notifications.assigned(ticket, 1L);
-        assertThat(sentTo(2).type()).isEqualTo(NotificationType.HELPDESK_ASSIGNED);
+        NotificationMessage assigned = sentTo(2);
+        assertThat(assigned.type()).isEqualTo(NotificationType.HELPDESK_ASSIGNED);
+        assertThat(assigned.actionPath()).isEqualTo("/support/tickets/42");
 
         ticket.assignTo(null);
         notifications.assigned(ticket, 1L);

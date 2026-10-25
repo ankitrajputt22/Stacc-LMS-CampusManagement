@@ -22,11 +22,11 @@ The list is in sections:
 | Student | `STUDENT` | **Courses** (`/courses`), **Attendance** (`/academic/attendance`), **Results** (`/academic/results`), Campus |
 | Faculty | `FACULTY` | **Teaching** (`/teaching`), **Assignments** (`/assignments`), **Attendance** (`/attendance`), **Results** (`/results`) |
 | Admin | `ADMIN` | **Academic Admin** (`/admin/academic`), Users, Reports |
-| Common | everyone | **Calendar** (`/calendar`) and **Inbox** (`/inbox`, with the unread count), both to accounts holding `STUDENT`, `FACULTY`, or `ADMIN`; Support |
+| Common | everyone | **Calendar** (`/calendar`) and **Inbox** (`/inbox`, with the unread count), and **Support** (`/support`), all to accounts holding `STUDENT`, `FACULTY`, or `ADMIN` |
 
 An account sees the sections for all of its roles, always in this order, and each section once. Which items are shown is for convenience only and protects nothing (see `frontend-authentication.md`).
 
-An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. The Courses, Attendance, and Results items of both sections, Teaching, Assignments, Academic Admin, Calendar, and Inbox are the only working items so far besides the Dashboard; everything else is still "Soon". An item may also name the roles it is for, like a section: Calendar is shown once to any account holding one of the three roles, and hidden for an account with none. The student's Attendance and Results are the student's academic records, each a plain link, so an account with both roles sees Attendance and Results once in each of its sections.
+An item without a route is shown as "Soon" and is not a link, so add the route only when the page really exists. Do not create placeholder pages for "Soon" items. The Courses, Attendance, and Results items of both sections, Teaching, Assignments, Academic Admin, Calendar, Inbox, and Support are the only working items so far besides the Dashboard; everything else is still "Soon". An item may also name the roles it is for, like a section: Calendar is shown once to any account holding one of the three roles, and hidden for an account with none. The student's Attendance and Results are the student's academic records, each a plain link, so an account with both roles sees Attendance and Results once in each of its sections.
 
 The active item is marked with a left bar, a background, and bold text, not by colour alone. Each titled section is a list named after its title for screen readers.
 

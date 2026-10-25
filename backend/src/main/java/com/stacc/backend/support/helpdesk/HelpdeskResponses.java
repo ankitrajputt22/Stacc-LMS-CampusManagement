@@ -70,6 +70,10 @@ public final class HelpdeskResponses {
         }
     }
 
+    /** An account a ticket can be assigned to: an active admin account, by login ID only. */
+    public record HelpdeskAssigneeResponse(@Schema(example = "admin1") String loginId) {
+    }
+
     /** One page of tickets, newest first. */
     public record HelpdeskTicketPage(
             List<HelpdeskTicketSummary> items,

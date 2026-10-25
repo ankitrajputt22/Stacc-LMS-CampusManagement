@@ -271,6 +271,15 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Empty states say "No notifications yet." and, under Unread, "You’re all caught up." Loading says "Loading notifications…"; a failure says "Couldn’t load notifications." with **Retry**. A **403** says "You don’t have access to the Inbox." and never signs the user out. A refused change is shown in words above the list. A **401** is left to the shared client.
 - The badge beside Inbox and on the bell shows the unread count from the backend: hidden at 0, "99+" from 100, and read out as ", 3 unread". It is one shared count (`src/notifications`), asked for when the app shell appears, when the Inbox loads a page, and after each change. There is no polling.
 
+### Support
+
+**Support** in the Common section opens `/support` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`: one Support area per account, never one per role, marked as current on every `/support` page. The pages are `/support` (My tickets), `/support/new` (Create ticket), `/support/tickets/:ticketId` (the shared ticket page), and, for admins, `/support/admin` (Support Queue) and `/support/admin/categories` (Helpdesk Categories). Admin links and controls are shown to accounts holding `ADMIN`, for the interface only. See `helpdesk.md` for the workflows.
+
+- Requests go through `src/api/helpdeskApi.ts` and the shared client; the types are in `src/types/helpdesk.ts`. No request names a requester or author.
+- Status, priority, lifecycle moves, and activity sentences come from one place, `src/support/helpdeskText.ts`. Status and priority are shown as words in quiet tags, never only as colour.
+- Lists are stacked rows on every screen size, with one descriptive link each, and server paging with **Previous** and **Next**. Filters and the page live in the address.
+- A ticket that does not exist or belongs to another account shows "Ticket unavailable". A **403** never signs the user out.
+
 ### The Academic Admin page
 
 **Academic Admin** is the first real Admin item in the navigation, shown to any account holding `ADMIN`, once also for an account with other roles. It opens `/admin/academic`, which goes to `/admin/academic/departments`; the other sections are `/admin/academic/programs`, `/sessions`, `/semesters`, `/courses`, `/offerings`, `/enrollments`, and `/calendar`, and an offering's roster is `/admin/academic/offerings/:courseOfferingId/enrollments`. Academic Admin stays marked on all of them.
@@ -322,7 +331,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 - Loading says "Loading submissions…". With no submissions it says "No submissions yet." and "No students have submitted this assignment." A **404**, a draft or archived assignment, an assignment of another course, and a URL whose IDs cannot be valid show "Assignment unavailable". A missing submission shows that the submission could not be found. A **403** shows "You don't have access to grade this assignment." and suggests signing in again: a token issued before `LMS_ASSIGNMENT_GRADE` existed lacks it. Any other failure shows "Couldn't load submissions." with **Retry**.
 - An account without `FACULTY` sees "This page is for faculty accounts.", and no request is sent.
 
-Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student, faculty, and admin dashboards share `/`, the calendar and the Inbox are one page each for every role, at `/calendar` and `/inbox`, and there are no role-based routes.
+Hiding an item is never authorization. Every feature behind an item must be protected by the backend on its own, for every role, whether or not the item is visible. The student, faculty, and admin dashboards share `/`, the calendar and the Inbox are one page each for every role, at `/calendar` and `/inbox`, Support is one area at `/support` with one shared ticket page, and there are no role-based routes.
 
 ## Dev server and Docker
 
