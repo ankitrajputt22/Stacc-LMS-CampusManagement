@@ -66,7 +66,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
       // One Inbox per account, whatever roles it holds: notifications are sent to accounts, not to roles.
       { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications' },
-      { label: 'Support' },
+      // One Support area per account: tickets belong to accounts, and admins manage the queue from the same place.
+      { label: 'Support', to: '/support', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
     ],
   },
 ]

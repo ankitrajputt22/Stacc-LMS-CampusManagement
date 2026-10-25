@@ -12,7 +12,10 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
+import com.stacc.backend.auth.account.AccountStatus;
+import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
+import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskAssigneeResponse;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskTicketPage;
 import org.junit.jupiter.api.Test;
@@ -25,8 +28,9 @@ class HelpdeskTicketQueryServiceTest {
     private final HelpdeskTicketRepository tickets = mock(HelpdeskTicketRepository.class);
     private final HelpdeskTicketMessageRepository messages = mock(HelpdeskTicketMessageRepository.class);
     private final HelpdeskTicketHistoryRepository history = mock(HelpdeskTicketHistoryRepository.class);
+    private final UserAccountRepository accounts = mock(UserAccountRepository.class);
     private final HelpdeskTicketQueryService service =
-            new HelpdeskTicketQueryService(tickets, messages, history, new HelpdeskAccessService());
+            new HelpdeskTicketQueryService(tickets, messages, history, new HelpdeskAccessService(), accounts);
 
     private final HelpdeskTicket ticket = HelpdeskFixtures.ticket(42,
             HelpdeskFixtures.account(70, "student1", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
@@ -109,5 +113,20 @@ class HelpdeskTicketQueryServiceTest {
         assertThatThrownBy(() -> service.ticket(HelpdeskFixtures.admin(1), 404L))
                 .hasMessage(HelpdeskTicketCommandService.TICKET_NOT_FOUND);
         verifyNoInteractions(messages, history);
+    }
+
+    @Test
+    void assigneesAreActiveAdminLoginIdsForManagersOnly() {
+        when(accounts.findLoginIdsByRoleNameAndStatus(RoleName.ADMIN, AccountStatus.ACTIVE))
+                .thenReturn(List.of("admin1", "facultyadmin1"));
+
+        assertThat(service.assignees(HelpdeskFixtures.admin(1))).extracting(HelpdeskAssigneeResponse::loginId)
+                .containsExactly("admin1", "facultyadmin1");
+
+        assertRefused(() -> service.assignees(HelpdeskFixtures.actor(1, "ROLE_ADMIN", HelpdeskActor.VIEW_ALL)),
+                HttpStatus.FORBIDDEN);
+        assertRefused(() -> service.assignees(HelpdeskFixtures.actor(80, "ROLE_FACULTY", HelpdeskActor.MANAGE)),
+                HttpStatus.FORBIDDEN);
+        verify(accounts).findLoginIdsByRoleNameAndStatus(RoleName.ADMIN, AccountStatus.ACTIVE);
     }
 }

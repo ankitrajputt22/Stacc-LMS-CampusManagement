@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
 
+import com.stacc.backend.auth.account.AccountStatus;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
@@ -32,7 +33,7 @@ public class HelpdeskTicketCommandService {
     static final String CANNOT_REPLY = "You cannot reply to this ticket.";
     static final String CLOSED = "This ticket is closed and can no longer be changed.";
     static final String ASSIGNEE_UNKNOWN = "The selected account does not exist.";
-    static final String ASSIGNEE_NOT_ADMIN = "Tickets can only be assigned to admin accounts.";
+    static final String ASSIGNEE_NOT_ADMIN = "Tickets can only be assigned to active admin accounts.";
     static final String NOT_MANAGER = "You cannot manage helpdesk tickets.";
 
     private final HelpdeskTicketRepository tickets;
@@ -96,14 +97,17 @@ public class HelpdeskTicketCommandService {
         return HelpdeskMessageResponse.of(message);
     }
 
-    /** Assigns the ticket to an admin account by login ID, or unassigns it with null. The same assignee changes nothing. */
+    /**
+     * Assigns the ticket to an active admin account by login ID, or unassigns it with null. The same assignee changes
+     * nothing.
+     */
     public HelpdeskTicketDetail assign(HelpdeskActor actor, Long ticketId, String assigneeLoginId) {
         HelpdeskTicket ticket = managed(actor, ticketId);
         UserAccount assignee = null;
         if (assigneeLoginId != null && !assigneeLoginId.isBlank()) {
             assignee = accounts.findByLoginId(assigneeLoginId.strip())
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, ASSIGNEE_UNKNOWN));
-            if (!assignee.hasRole(RoleName.ADMIN)) {
+            if (!isAssignable(assignee)) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, ASSIGNEE_NOT_ADMIN);
             }
         }
@@ -156,6 +160,11 @@ public class HelpdeskTicketCommandService {
                 from.name(), target.name());
         notifications.statusChanged(ticket, actor.accountId());
         return detailOf(ticket);
+    }
+
+    /** Whether tickets can be assigned to the account: an active account holding ADMIN, as the assignee list shows. */
+    static boolean isAssignable(UserAccount account) {
+        return account.hasRole(RoleName.ADMIN) && account.getStatus() == AccountStatus.ACTIVE;
     }
 
     // The one place history is written, so no change can forget it.

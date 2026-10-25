@@ -28,6 +28,7 @@ import com.stacc.backend.auth.token.TestTokens;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.support.helpdesk.HelpdeskActor;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryService;
+import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskAssigneeResponse;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskCategoryResponse;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskMessageResponse;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskTicketPage;
@@ -50,6 +51,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
     private static final String ADMIN_TICKETS = "/api/helpdesk/admin/tickets";
     private static final String CATEGORIES = "/api/helpdesk/categories";
     private static final String ADMIN_CATEGORIES = "/api/helpdesk/admin/categories";
+    private static final String ASSIGNEES = "/api/helpdesk/admin/assignees";
 
     private static final String[] OWN = {HelpdeskActor.CREATE, HelpdeskActor.VIEW_OWN, HelpdeskActor.REPLY_OWN};
     private static final String[] ALL = {HelpdeskActor.VIEW_ALL, HelpdeskActor.MANAGE, HelpdeskActor.REPLY_ALL};
@@ -94,7 +96,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
                 json(post(TICKETS), "{\"categoryId\":3,\"subject\":\"S\",\"description\":\"D\"}"),
                 get(TICKETS + "/me"), get(TICKETS + "/42"),
                 json(post(TICKETS + "/42/messages"), "{\"message\":\"Hello\"}"),
-                get(ADMIN_TICKETS),
+                get(ADMIN_TICKETS), get(ASSIGNEES),
                 json(put(ADMIN_TICKETS + "/42/assignment"), "{\"assignedToLoginId\":\"admin1\"}"),
                 json(put(ADMIN_TICKETS + "/42/priority"), "{\"priority\":\"HIGH\"}"),
                 json(put(ADMIN_TICKETS + "/42/status"), "{\"status\":\"CLOSED\"}"));
@@ -141,6 +143,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
 
             expect(get(ADMIN_CATEGORIES), requester, HttpStatus.FORBIDDEN);
             expect(get(ADMIN_TICKETS), requester, HttpStatus.FORBIDDEN);
+            expect(get(ASSIGNEES), requester, HttpStatus.FORBIDDEN);
             expect(json(put(ADMIN_TICKETS + "/42/status"), "{\"status\":\"CLOSED\"}"), requester, HttpStatus.FORBIDDEN);
         }
         verify(commands, never()).changeStatus(any(), anyLong(), any());
@@ -149,7 +152,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
     @Test
     void theAllPermissionsNeedTheAdminRole() throws Exception {
         String facultyWithAll = token(80, with("ROLE_FACULTY", ALL));
-        for (MockHttpServletRequestBuilder request : List.of(get(ADMIN_TICKETS), get(ADMIN_CATEGORIES),
+        for (MockHttpServletRequestBuilder request : List.of(get(ADMIN_TICKETS), get(ADMIN_CATEGORIES), get(ASSIGNEES),
                 get(TICKETS + "/42"), json(post(TICKETS + "/42/messages"), "{\"message\":\"Hello\"}"),
                 json(put(ADMIN_TICKETS + "/42/priority"), "{\"priority\":\"HIGH\"}"))) {
             expect(request, facultyWithAll, HttpStatus.FORBIDDEN);
@@ -165,10 +168,12 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
         expect(json(put(ADMIN_TICKETS + "/42/assignment"), "{\"assignedToLoginId\":null}"), viewOnly,
                 HttpStatus.FORBIDDEN);
         expect(get(ADMIN_CATEGORIES), viewOnly, HttpStatus.FORBIDDEN);
+        expect(get(ASSIGNEES), viewOnly, HttpStatus.FORBIDDEN);
 
         String manageOnly = token(1, "ROLE_ADMIN", HelpdeskActor.MANAGE);
         expect(get(ADMIN_TICKETS), manageOnly, HttpStatus.FORBIDDEN);
         expect(get(ADMIN_CATEGORIES), manageOnly, HttpStatus.OK);
+        expect(get(ASSIGNEES), manageOnly, HttpStatus.OK);
         expect(json(put(ADMIN_TICKETS + "/42/status"), "{\"status\":\"CLOSED\"}"), manageOnly, HttpStatus.OK);
 
         for (MockHttpServletRequestBuilder request : everyRoute()) {
@@ -261,6 +266,18 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].code").value("LMS"))
                 .andExpect(jsonPath("$[0]", not(hasKey("active"))));
+    }
+
+    @Test
+    void theAssigneeListHasLoginIdsOnly() throws Exception {
+        when(queries.assignees(any())).thenReturn(List.of(new HelpdeskAssigneeResponse("admin1")));
+
+        mockMvc.perform(get(ASSIGNEES).header(HttpHeaders.AUTHORIZATION, admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loginId").value("admin1"))
+                .andExpect(jsonPath("$[0].length()").value(1));
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.paths['" + ASSIGNEES + "'].get.security[0].bearerAuth").exists());
     }
 
     @Test

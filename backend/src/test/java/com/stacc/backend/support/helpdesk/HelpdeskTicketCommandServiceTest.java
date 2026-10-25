@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.stacc.backend.auth.account.AccountStatus;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
@@ -234,6 +235,16 @@ class HelpdeskTicketCommandServiceTest {
         assertRefused(() -> service.assign(adminActor, 42L, "nobody"), HttpStatus.BAD_REQUEST);
         assertThat(ticket.getAssignedTo()).isNull();
         assertThat(trail).isEmpty();
+    }
+
+    @Test
+    void aDisabledAdminAccountCannotBeAssigned() {
+        secondAdmin.setStatus(AccountStatus.DISABLED);
+
+        assertThatThrownBy(() -> service.assign(adminActor, 42L, "facultyadmin1"))
+                .hasMessage("Tickets can only be assigned to active admin accounts.");
+        assertThat(ticket.getAssignedTo()).isNull();
+        verifyNoInteractions(notifications);
     }
 
     // Priority

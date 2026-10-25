@@ -222,6 +222,10 @@
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
 - The Calendar item opens `/calendar` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. It loads one month at a time from `GET /api/calendar/me` with the browser's time zone, lists a multi-day event once with its range, shows Cancelled in words, and adds no data the API does not send. Student deadlines link to the assignment page and teaching deadlines to `/teaching/:lmsCourseId`; it is not an assignment editor.
+- Support is one area per `UserAccount` at `/support`, shown once to any account holding `STUDENT`, `FACULTY`, or `ADMIN`; never build a support area or ticket engine per role, and never use `roles[0]`. Requester pages are `/support` and `/support/new`; the ticket page `/support/tickets/:ticketId` is shared by requesters and admins; admins add `/support/admin` and `/support/admin/categories`. See `docs/helpdesk.md`.
+- The ticket form never offers Urgent and never sends a requester, status, or assignee; replies send only the text. Show statuses, priorities, transitions, and activity only through `src/support/helpdeskText.ts`.
+- Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
+- Category codes are read-only once created, categories are deactivated rather than deleted, and the admin list shows inactive ones. A 404 on a ticket shows "Ticket unavailable" with none of its data; a 409 shows the backend's message and reloads the ticket.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
 
 ## Student Dashboard
@@ -262,12 +266,12 @@
 - Stacc has one helpdesk ticket engine, `support.helpdesk`, for every kind of issue. Kinds are configurable `HelpdeskCategory` rows, never an enum; do not build a ticket engine per module. See `docs/helpdesk.md`.
 - Category codes are unique, uppercase, and fixed after creation. Make a category inactive instead of deleting it; an inactive category keeps its tickets but takes no new ones.
 - The requester, every author, and every actor come from the access token; never accept an account, requester, author, or actor ID from a client. Ticket numbers (`STC-%06d`), `resolvedAt`, and `closedAt` are set by the server.
-- Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only accounts holding `ADMIN` can be assigned.
+- Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only active accounts holding `ADMIN` can be assigned, and `GET /api/helpdesk/admin/assignees` lists exactly those, by login ID only.
 - Statuses only move forward: `OPEN` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `RESOLVED` or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. A `CLOSED` ticket refuses every change, and nothing reopens a ticket. A reply never changes the status.
 - Messages and history are append-only. Write history only for real changes, through the command service's single recorder, and lock the ticket row before every change. Never add delete routes for tickets, messages, history, or categories.
 - Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
-- Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves. Keep `actionPath` empty until the helpdesk pages exist.
-- Do not add helpdesk pages, attachments, email, SMS, push, SLAs or escalation, reopening, or internal notes without their own phase.
+- Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves, linking to `/support/tickets/{ticketId}`. Do not rewrite old notification rows.
+- Do not add attachments, email, SMS, push, SLAs or escalation, reopening, internal notes, or helpdesk analytics without their own phase.
 
 ## Local Test Data
 

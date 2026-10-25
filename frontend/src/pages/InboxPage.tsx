@@ -37,7 +37,6 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   ATTENDANCE_UPDATED: 'View attendance',
   RESULT_PUBLISHED: 'View results',
   RESULT_UPDATED: 'View results',
-  // Helpdesk notifications carry no link until the Support pages exist.
   HELPDESK_REPLY: 'View ticket',
   HELPDESK_STATUS_CHANGED: 'View ticket',
   HELPDESK_ASSIGNED: 'View ticket',

@@ -1,6 +1,12 @@
 package com.stacc.backend.support.helpdesk;
 
+import java.util.List;
+
+import com.stacc.backend.auth.account.AccountStatus;
+import com.stacc.backend.auth.account.UserAccountRepository;
+import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskAssigneeResponse;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskTicketDetail;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskTicketPage;
 import com.stacc.backend.support.helpdesk.HelpdeskResponses.HelpdeskTicketSummary;
@@ -26,13 +32,28 @@ public class HelpdeskTicketQueryService {
     private final HelpdeskTicketMessageRepository messages;
     private final HelpdeskTicketHistoryRepository history;
     private final HelpdeskAccessService access;
+    private final UserAccountRepository accounts;
 
     public HelpdeskTicketQueryService(HelpdeskTicketRepository tickets, HelpdeskTicketMessageRepository messages,
-            HelpdeskTicketHistoryRepository history, HelpdeskAccessService access) {
+            HelpdeskTicketHistoryRepository history, HelpdeskAccessService access, UserAccountRepository accounts) {
         this.tickets = tickets;
         this.messages = messages;
         this.history = history;
         this.access = access;
+        this.accounts = accounts;
+    }
+
+    /**
+     * The accounts a ticket can be assigned to, for the support team's assignment choice: active admin accounts, by
+     * login ID only. Assignment checks the same rule again.
+     */
+    public List<HelpdeskAssigneeResponse> assignees(HelpdeskActor actor) {
+        if (!access.canManage(actor)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You cannot manage helpdesk tickets.");
+        }
+        return accounts.findLoginIdsByRoleNameAndStatus(RoleName.ADMIN, AccountStatus.ACTIVE).stream()
+                .map(HelpdeskAssigneeResponse::new)
+                .toList();
     }
 
     /** The acting account's own tickets, newest first. */

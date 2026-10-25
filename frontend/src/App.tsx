@@ -18,6 +18,11 @@ import { NotFoundPage } from './pages/NotFoundPage'
 import { ResultsPage } from './pages/ResultsPage'
 import { StudentAttendancePage } from './pages/StudentAttendancePage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
+import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
+import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
+import { SupportPage } from './pages/SupportPage'
+import { SupportQueuePage } from './pages/SupportQueuePage'
+import { SupportTicketPage } from './pages/SupportTicketPage'
 import { TeachingCoursePage } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 
@@ -49,6 +54,12 @@ function App() {
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="inbox" element={<InboxPage />} />
+          {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
+          <Route path="support" element={<SupportPage />} />
+          <Route path="support/new" element={<SupportNewTicketPage />} />
+          <Route path="support/tickets/:ticketId" element={<SupportTicketPage />} />
+          <Route path="support/admin" element={<SupportQueuePage />} />
+          <Route path="support/admin/categories" element={<SupportCategoriesPage />} />
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />

@@ -7,8 +7,8 @@ import com.stacc.backend.notification.NotificationType;
 import org.springframework.stereotype.Component;
 
 /**
- * The Inbox notifications about tickets, worded in one place. Nobody is told about their own action. There is no link
- * yet: the helpdesk pages arrive in a later phase, so the action path stays empty rather than pointing nowhere.
+ * The Inbox notifications about tickets, worded in one place. Nobody is told about their own action. Each links to the
+ * shared ticket page, which checks access as always.
  */
 @Component
 public class HelpdeskNotifications {
@@ -49,7 +49,13 @@ public class HelpdeskNotifications {
     }
 
     private static NotificationMessage message(HelpdeskTicket ticket, NotificationType type, String title, String text) {
-        return new NotificationMessage(type, title, text, NotificationSourceType.HELPDESK_TICKET, ticket.getId(), null);
+        return new NotificationMessage(type, title, text, NotificationSourceType.HELPDESK_TICKET, ticket.getId(),
+                actionPathFor(ticket));
+    }
+
+    /** The shared ticket page. Opening it checks access again, so the link grants nothing by itself. */
+    static String actionPathFor(HelpdeskTicket ticket) {
+        return "/support/tickets/" + ticket.getId();
     }
 
     private static String wordOf(HelpdeskTicketStatus status) {
