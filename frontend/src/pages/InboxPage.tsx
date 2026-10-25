@@ -37,6 +37,10 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   ATTENDANCE_UPDATED: 'View attendance',
   RESULT_PUBLISHED: 'View results',
   RESULT_UPDATED: 'View results',
+  // Helpdesk notifications carry no link until the Support pages exist.
+  HELPDESK_REPLY: 'View ticket',
+  HELPDESK_STATUS_CHANGED: 'View ticket',
+  HELPDESK_ASSIGNED: 'View ticket',
 }
 
 /** Only a path inside the app is ever followed: never a full address, "//host", or "/\host". */

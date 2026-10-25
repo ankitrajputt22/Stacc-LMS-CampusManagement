@@ -15,5 +15,11 @@ public enum NotificationType {
     /** An official result was published. */
     RESULT_PUBLISHED,
     /** A published official result was corrected. */
-    RESULT_UPDATED
+    RESULT_UPDATED,
+    /** Someone other than the requester replied on a helpdesk ticket. */
+    HELPDESK_REPLY,
+    /** A helpdesk ticket's status changed. */
+    HELPDESK_STATUS_CHANGED,
+    /** A helpdesk ticket was assigned to an admin. */
+    HELPDESK_ASSIGNED
 }

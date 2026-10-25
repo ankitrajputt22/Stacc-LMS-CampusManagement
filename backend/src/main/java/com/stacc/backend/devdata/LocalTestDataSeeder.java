@@ -76,6 +76,15 @@ import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
 import com.stacc.backend.lms.management.LmsCourseManagementService;
+import com.stacc.backend.support.helpdesk.HelpdeskActor;
+import com.stacc.backend.support.helpdesk.HelpdeskCategoryRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskCategoryService;
+import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskCategoryRequest;
+import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskTicketRequest;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketCommandService;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketPriority;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -154,6 +163,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final AttendanceRecordRepository attendanceRecords;
         final CourseResultRepository results;
         final AcademicCalendarEventRepository calendarEvents;
+        final HelpdeskCategoryRepository helpdeskCategories;
+        final HelpdeskTicketRepository helpdeskTickets;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -165,7 +176,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 LmsAssignmentSubmissionRepository submissions, LmsSubmissionAttemptRepository attempts,
                 LmsSubmissionGradeRepository grades, AttendanceSessionRepository attendanceSessions,
                 AttendanceRecordRepository attendanceRecords, CourseResultRepository results,
-                AcademicCalendarEventRepository calendarEvents) {
+                AcademicCalendarEventRepository calendarEvents, HelpdeskCategoryRepository helpdeskCategories,
+                HelpdeskTicketRepository helpdeskTickets) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -191,6 +203,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.attendanceRecords = attendanceRecords;
             this.results = results;
             this.calendarEvents = calendarEvents;
+            this.helpdeskCategories = helpdeskCategories;
+            this.helpdeskTickets = helpdeskTickets;
         }
     }
 
@@ -207,12 +221,15 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final AttendanceManagementService attendance;
         final CourseResultManagementService results;
         final AcademicCalendarManagementService calendar;
+        final HelpdeskCategoryService helpdeskCategories;
+        final HelpdeskTicketCommandService helpdeskTickets;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
                 LmsAssignmentSubmissionService submissions, LmsAssignmentGradingService grading,
                 AttendanceManagementService attendance, CourseResultManagementService results,
-                AcademicCalendarManagementService calendar) {
+                AcademicCalendarManagementService calendar, HelpdeskCategoryService helpdeskCategories,
+                HelpdeskTicketCommandService helpdeskTickets) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -222,6 +239,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.attendance = attendance;
             this.results = results;
             this.calendar = calendar;
+            this.helpdeskCategories = helpdeskCategories;
+            this.helpdeskTickets = helpdeskTickets;
         }
     }
 
@@ -274,7 +293,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         UserAccount student2 = account("student2", password, RoleName.STUDENT);
         UserAccount faculty1 = account("faculty1", password, RoleName.FACULTY);
         UserAccount faculty2 = account("faculty2", password, RoleName.FACULTY);
-        account("admin1", password, RoleName.ADMIN);
+        UserAccount admin1 = account("admin1", password, RoleName.ADMIN);
         UserAccount studentFaculty = account("studentfaculty1", password, RoleName.STUDENT, RoleName.FACULTY);
         UserAccount facultyAdmin = account("facultyadmin1", password, RoleName.FACULTY, RoleName.ADMIN);
 
@@ -413,6 +432,31 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 today.plusDays(25), null, AcademicCalendarEventStatus.PUBLISHED);
         calendarEvent(current, fourth, "Semester 4 orientation", AcademicCalendarEventCategory.ACADEMIC,
                 today.plusDays(30), today.plusDays(30), null, AcademicCalendarEventStatus.PUBLISHED);
+
+        // --- Helpdesk: the four categories, and tickets in every status. Changes go through the ticket engine, so
+        // history and Inbox notifications are written as usual.
+        Long general = helpdeskCategory("GENERAL", "General", "Questions that fit no other category.");
+        Long academic = helpdeskCategory("ACADEMIC", "Academic records",
+                "Enrollment, attendance, results, and the academic calendar.");
+        Long lms = helpdeskCategory("LMS", "LMS and courses", "Course access, content, assignments, and submissions.");
+        Long technical = helpdeskCategory("TECHNICAL", "Technical issues",
+                "Sign-in, devices, classrooms, and the campus network.");
+        ticket(student1, lms, "CS302 is missing from my courses",
+                "CS302 is on my enrollment but it does not appear under Courses.", HelpdeskTicketPriority.NORMAL,
+                List.of(), null, null, HelpdeskTicketStatus.OPEN);
+        ticket(faculty1, technical, "Projector in room 204 does not turn on",
+                "The projector shows no picture since Monday. I teach CS301 there every morning.",
+                HelpdeskTicketPriority.HIGH, List.of("A technician will check the projector tomorrow morning."),
+                admin1, facultyAdmin, HelpdeskTicketStatus.IN_PROGRESS);
+        ticket(student1, general, "Bonafide certificate for a scholarship",
+                "I need a bonafide certificate for a scholarship application.", HelpdeskTicketPriority.LOW,
+                List.of("Your certificate is ready at the front office."), admin1, admin1,
+                HelpdeskTicketStatus.RESOLVED);
+        ticket(student2, academic, "Attendance shows me absent for the arrays recap",
+                "I was in the arrays recap session of CS301, but my attendance shows absent.",
+                HelpdeskTicketPriority.NORMAL,
+                List.of("Your teacher confirmed the record; it was corrected in the attendance register."), admin1,
+                admin1, HelpdeskTicketStatus.CLOSED);
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -657,6 +701,46 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 services.calendar.cancel(eventId);
             }
         });
+    }
+
+    private Long helpdeskCategory(String code, String name, String description) {
+        return findOrCreate(repositories.helpdeskCategories.findByCode(code).map(category -> category.getId()),
+                () -> services.helpdeskCategories.create(new CreateHelpdeskCategoryRequest(code, name, description, true))
+                        .categoryId());
+    }
+
+    /**
+     * Raises a ticket as its requester, then lets the support team assign it, answer it, and move it to its status,
+     * all through the ticket engine. A ticket is known by its requester and subject.
+     */
+    private void ticket(UserAccount requester, Long categoryId, String subject, String description,
+            HelpdeskTicketPriority priority, List<String> adminReplies, UserAccount assignee, UserAccount assignedBy,
+            HelpdeskTicketStatus target) {
+        boolean exists = repositories.helpdeskTickets.existsByRequesterIdAndSubject(requester.getId(), subject);
+        createUnless(exists, () -> {
+            HelpdeskActor asRequester = new HelpdeskActor(requester.getId(), false, true, true, false, false, false);
+            Long ticketId = services.helpdeskTickets.create(asRequester,
+                    new CreateHelpdeskTicketRequest(categoryId, subject, description, priority)).ticketId();
+            if (assignee != null) {
+                services.helpdeskTickets.assign(supportTeam(assignedBy), ticketId, assignee.getLoginId());
+            }
+            HelpdeskActor support = supportTeam(assignee);
+            for (String reply : adminReplies) {
+                services.helpdeskTickets.addMessage(support, ticketId, reply);
+            }
+            // A closed ticket was resolved first, as the support team usually does.
+            if (target == HelpdeskTicketStatus.CLOSED) {
+                services.helpdeskTickets.changeStatus(support, ticketId, HelpdeskTicketStatus.RESOLVED);
+            }
+            if (target != HelpdeskTicketStatus.OPEN) {
+                services.helpdeskTickets.changeStatus(support, ticketId, target);
+            }
+        });
+    }
+
+    /** An admin acting with the helpdesk permissions every ADMIN account receives. */
+    private static HelpdeskActor supportTeam(UserAccount admin) {
+        return new HelpdeskActor(admin == null ? null : admin.getId(), true, true, true, true, true, true);
     }
 
     private void createUnless(boolean exists, Runnable create) {

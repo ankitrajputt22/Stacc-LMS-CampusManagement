@@ -8,6 +8,9 @@ export type NotificationType =
   | 'ATTENDANCE_UPDATED'
   | 'RESULT_PUBLISHED'
   | 'RESULT_UPDATED'
+  | 'HELPDESK_REPLY'
+  | 'HELPDESK_STATUS_CHANGED'
+  | 'HELPDESK_ASSIGNED'
 
 export type NotificationSourceType =
   | 'ASSIGNMENT'
@@ -15,6 +18,7 @@ export type NotificationSourceType =
   | 'ACADEMIC_CALENDAR_EVENT'
   | 'ATTENDANCE_RECORD'
   | 'COURSE_RESULT'
+  | 'HELPDESK_TICKET'
 
 /** One notification in the signed-in account's own Inbox. */
 export type NotificationInboxItem = {

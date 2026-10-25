@@ -9,7 +9,7 @@ The backend modules are:
 - `identity` — user, student, and faculty profiles.
 - `academic` — academic structures and ERP workflows.
 - `lms` — learning and teaching features.
-- `support` — helpdesk, approval, and grievance workflows.
+- `support` — helpdesk, approval, and grievance workflows. Its first part is the one shared helpdesk ticket engine, `support.helpdesk`, used for every kind of issue through configurable categories (see `helpdesk.md`).
 - `hostel` — hostel management.
 - `engagement` — clubs, events, sports, elections, and campus activities.
 - `career` — placements and internships.

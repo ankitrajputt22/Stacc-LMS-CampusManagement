@@ -81,7 +81,11 @@ The same package holds grading. `LmsSubmissionGrade` is the one grade of an atte
 
 ## Notifications
 
-The `notification` module holds in-app notifications. A `Notification` is one event (type, plain-text title and message, a loose source reference, and an internal action path); a `NotificationRecipient` is one account's copy with its `readAt`. Feature services create them through `NotificationService` in the same transaction as a real change: assignment publication and grading, result publication and correction, attendance correction, and calendar publication and cancellation. Accounts read their own Inbox at `/api/notifications` with `NOTIFICATION_VIEW`. Nothing creates notifications over HTTP, and nothing deletes them. See `../docs/notifications-inbox.md`.
+The `notification` module holds in-app notifications. A `Notification` is one event (type, plain-text title and message, a loose source reference, and an internal action path); a `NotificationRecipient` is one account's copy with its `readAt`. Feature services create them through `NotificationService` in the same transaction as a real change: assignment publication and grading, result publication and correction, attendance correction, calendar publication and cancellation, and helpdesk replies, status changes, and assignments. Accounts read their own Inbox at `/api/notifications` with `NOTIFICATION_VIEW`. Nothing creates notifications over HTTP, and nothing deletes them. See `../docs/notifications-inbox.md`.
+
+## Helpdesk
+
+The `support.helpdesk` package is the one helpdesk ticket engine. Admins configure `HelpdeskCategory` rows; any student, faculty, or admin account raises a `HelpdeskTicket` (numbered `STC-000042`) as itself and follows its append-only messages and history; admins work through the queue, assign tickets to admin accounts, set the priority, and move them from `OPEN` through `IN_PROGRESS` and `RESOLVED` to `CLOSED`, never back. Routes are under `/api/helpdesk`, with six `HELPDESK_TICKET_*` permissions. Replies, status changes, and assignments notify through the Inbox. Nothing is deleted. See `../docs/helpdesk.md`.
 
 ## Local test data
 
