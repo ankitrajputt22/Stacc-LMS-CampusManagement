@@ -257,6 +257,18 @@
 - The Inbox is per `UserAccount`, never per role, and never uses `roles[0]`. Its routes need `NOTIFICATION_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN` and take the account from the token; another account's row answers 404. There is no deletion.
 - The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add email, SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
 
+## Helpdesk
+
+- Stacc has one helpdesk ticket engine, `support.helpdesk`, for every kind of issue. Kinds are configurable `HelpdeskCategory` rows, never an enum; do not build a ticket engine per module. See `docs/helpdesk.md`.
+- Category codes are unique, uppercase, and fixed after creation. Make a category inactive instead of deleting it; an inactive category keeps its tickets but takes no new ones.
+- The requester, every author, and every actor come from the access token; never accept an account, requester, author, or actor ID from a client. Ticket numbers (`STC-%06d`), `resolvedAt`, and `closedAt` are set by the server.
+- Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only accounts holding `ADMIN` can be assigned.
+- Statuses only move forward: `OPEN` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `RESOLVED` or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. A `CLOSED` ticket refuses every change, and nothing reopens a ticket. A reply never changes the status.
+- Messages and history are append-only. Write history only for real changes, through the command service's single recorder, and lock the ticket row before every change. Never add delete routes for tickets, messages, history, or categories.
+- Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
+- Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves. Keep `actionPath` empty until the helpdesk pages exist.
+- Do not add helpdesk pages, attachments, email, SMS, push, SLAs or escalation, reopening, or internal notes without their own phase.
+
 ## Local Test Data
 
 - Demo accounts and data exist only in `com.stacc.backend.devdata` under the `dev-seed` profile, never in Flyway migrations or production. See `docs/local-test-data.md`.

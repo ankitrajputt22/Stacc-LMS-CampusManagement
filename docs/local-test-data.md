@@ -30,13 +30,13 @@ The seeding runs once the application has started and the database migrations ha
 - Nothing happens without the `dev-seed` profile. Tests and normal starts never create these accounts.
 - With the profile but no `STACC_TEST_PASSWORD` (or one shorter than 8 characters), the backend refuses to start and says why. It also refuses to run next to a `prod` or `production` profile.
 - Passwords are hashed with the shared `PasswordEncoder`, like any other account. Authentication and permissions are unchanged; each account gets its permissions from its roles, as usual.
-- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
+- Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code and a ticket by its requester and subject. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
 - Records are created through the same services the API uses wherever one exists. So LMS memberships come from provisioning, attendance rosters are snapshots, attempt numbers are reserved as usual, and every rule applies.
 - Everything is created in one transaction: if any step fails, nothing is saved.
 - It only adds records. If your database already has records with the same codes, such as a `CSE` department, they are reused, not changed.
 - Dates are relative to the day it first runs. Deadlines, attendance, and calendar events lie around that day, and the academic session is the one that day falls in (July to June).
 
-Because the seeder works through the feature services, a fresh database also gets the notifications those actions send: published assignments, grades, published results, and calendar events appear in the test accounts' Inboxes (see `notifications-inbox.md`). A database seeded earlier keeps what it has.
+Because the seeder works through the feature services, a fresh database also gets the notifications those actions send: published assignments, grades, published results, calendar events, and helpdesk replies, status changes, and assignments appear in the test accounts' Inboxes (see `notifications-inbox.md`). A database seeded earlier keeps what it has.
 
 ## Test accounts
 
@@ -44,13 +44,13 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 
 | Login ID | Roles | Useful for testing |
 | --- | --- | --- |
-| `student1` | `STUDENT` | **Main student.**<br>• Student dashboard and Courses: CS301 is published; CS302 is a draft and CS303 is archived, so neither shows.<br>• Course content, announcements, and assignments.<br>• A graded late attempt, and an ungraded on-time one.<br>• Attendance: present in both finalized sessions.<br>• Results: published, including a completed course from the previous session.<br>• Calendar: semester 3 events and deadlines. |
-| `student2` | `STUDENT` | **Second student.**<br>• Two attempts on one assignment: the first graded, the latest not.<br>• An absence.<br>• A draft result, so no published results show.<br>• A withdrawn course enrollment (CS304). |
-| `faculty1` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard. |
+| `student1` | `STUDENT` | **Main student.**<br>• Student dashboard and Courses: CS301 is published; CS302 is a draft and CS303 is archived, so neither shows.<br>• Course content, announcements, and assignments.<br>• A graded late attempt, and an ungraded on-time one.<br>• Attendance: present in both finalized sessions.<br>• Results: published, including a completed course from the previous session.<br>• Calendar: semester 3 events and deadlines.<br>• Helpdesk: an open LMS ticket, and a resolved one with a reply. |
+| `student2` | `STUDENT` | **Second student.**<br>• Two attempts on one assignment: the first graded, the latest not.<br>• An absence.<br>• A draft result, so no published results show.<br>• A withdrawn course enrollment (CS304).<br>• Helpdesk: a closed ticket that was resolved first. |
+| `faculty1` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard.<br>• Helpdesk: a high-priority ticket in progress, assigned to `admin1`, with a reply. |
 | `faculty2` | `FACULTY` | **Draft LMS course and no LMS course.**<br>• CS302 has a draft LMS course with draft content and a draft assignment.<br>• CS304 has no LMS course, so Teaching offers Create.<br>• An open, unmarked attendance session. |
-| `admin1` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view. |
+| `admin1` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view.<br>• Helpdesk queue: every ticket, three of them assigned to `admin1`. |
 | `studentfaculty1` | `STUDENT`, `FACULTY` | **Student and teacher at once.**<br>• Enrolled in CS301, and co-teaches CS302 with `faculty2`.<br>• Both dashboard parts.<br>• Student and teaching deadlines on the calendar. |
-| `facultyadmin1` | `FACULTY`, `ADMIN` | **Teacher and admin at once.**<br>• Teaches CS401 in semester 4, which has no LMS course.<br>• Faculty and admin dashboards.<br>• The admin calendar, including the semester 4 event. |
+| `facultyadmin1` | `FACULTY`, `ADMIN` | **Teacher and admin at once.**<br>• Teaches CS401 in semester 4, which has no LMS course.<br>• Faculty and admin dashboards.<br>• The admin calendar, including the semester 4 event.<br>• Helpdesk: assigned the projector ticket to `admin1`. |
 
 ## What is created
 
@@ -101,6 +101,14 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - a semester 4 event;
   - a draft event;
   - an event cancelled after it was published.
+
+**Helpdesk**
+- Categories `GENERAL`, `ACADEMIC`, `LMS`, and `TECHNICAL`, all active.
+- Tickets, created through the ticket engine so their numbers, history, and notifications are real:
+  - `student1`, LMS: open, normal priority, unassigned;
+  - `faculty1`, technical: high priority, assigned to `admin1` by `facultyadmin1`, answered, in progress;
+  - `student1`, general: low priority, answered by `admin1`, resolved;
+  - `student2`, academic: answered by `admin1`, resolved and then closed.
 
 ## Starting over
 

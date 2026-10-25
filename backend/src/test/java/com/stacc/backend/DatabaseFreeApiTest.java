@@ -29,6 +29,10 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import com.stacc.backend.notification.NotificationRecipientRepository;
 import com.stacc.backend.notification.NotificationRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskCategoryRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketHistoryRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketMessageRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTicketRepository;
 import jakarta.servlet.Filter;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,10 @@ import org.springframework.web.context.WebApplicationContext;
     CourseResultRepository.class,
     DepartmentRepository.class,
     FacultyProfileRepository.class,
+    HelpdeskCategoryRepository.class,
+    HelpdeskTicketHistoryRepository.class,
+    HelpdeskTicketMessageRepository.class,
+    HelpdeskTicketRepository.class,
     LmsAnnouncementRepository.class,
     LmsAssignmentRepository.class,
     LmsAssignmentSubmissionRepository.class,
