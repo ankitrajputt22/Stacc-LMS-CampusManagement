@@ -46,6 +46,13 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
+import com.stacc.backend.approval.ApprovalApiRequests.ApprovalWorkflowStepRequest;
+import com.stacc.backend.approval.ApprovalApiRequests.CreateApprovalWorkflowRequest;
+import com.stacc.backend.approval.ApprovalCommands.StartApprovalCommand;
+import com.stacc.backend.approval.ApprovalQueryService;
+import com.stacc.backend.approval.ApprovalWorkflowDefinitionRepository;
+import com.stacc.backend.approval.ApprovalWorkflowDefinitionService;
+import com.stacc.backend.approval.ApprovalWorkflowService;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
@@ -123,6 +130,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalTestDataSeeder.class);
     private static final Set<String> PRODUCTION_PROFILES = Set.of("prod", "production");
     private static final Set<LmsContentStatus> ANY_CONTENT_STATUS = EnumSet.allOf(LmsContentStatus.class);
+    static final String DEMO_APPROVAL_WORKFLOW = "DEMO_TWO_STEP_APPROVAL";
+    static final String DEMO_APPROVAL_SOURCE = "DEV_DEMO";
 
     private final Environment environment;
     private final TransactionTemplate transaction;
@@ -165,6 +174,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final AcademicCalendarEventRepository calendarEvents;
         final HelpdeskCategoryRepository helpdeskCategories;
         final HelpdeskTicketRepository helpdeskTickets;
+        final ApprovalWorkflowDefinitionRepository approvalWorkflows;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -177,7 +187,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 LmsSubmissionGradeRepository grades, AttendanceSessionRepository attendanceSessions,
                 AttendanceRecordRepository attendanceRecords, CourseResultRepository results,
                 AcademicCalendarEventRepository calendarEvents, HelpdeskCategoryRepository helpdeskCategories,
-                HelpdeskTicketRepository helpdeskTickets) {
+                HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -205,6 +215,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.calendarEvents = calendarEvents;
             this.helpdeskCategories = helpdeskCategories;
             this.helpdeskTickets = helpdeskTickets;
+            this.approvalWorkflows = approvalWorkflows;
         }
     }
 
@@ -223,13 +234,17 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final AcademicCalendarManagementService calendar;
         final HelpdeskCategoryService helpdeskCategories;
         final HelpdeskTicketCommandService helpdeskTickets;
+        final ApprovalWorkflowDefinitionService approvalWorkflows;
+        final ApprovalWorkflowService approvals;
+        final ApprovalQueryService approvalQueries;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
                 LmsAssignmentSubmissionService submissions, LmsAssignmentGradingService grading,
                 AttendanceManagementService attendance, CourseResultManagementService results,
                 AcademicCalendarManagementService calendar, HelpdeskCategoryService helpdeskCategories,
-                HelpdeskTicketCommandService helpdeskTickets) {
+                HelpdeskTicketCommandService helpdeskTickets, ApprovalWorkflowDefinitionService approvalWorkflows,
+                ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -241,6 +256,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.calendar = calendar;
             this.helpdeskCategories = helpdeskCategories;
             this.helpdeskTickets = helpdeskTickets;
+            this.approvalWorkflows = approvalWorkflows;
+            this.approvals = approvals;
+            this.approvalQueries = approvalQueries;
         }
     }
 
@@ -457,6 +475,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HelpdeskTicketPriority.NORMAL,
                 List.of("Your teacher confirmed the record; it was corrected in the attendance register."), admin1,
                 admin1, HelpdeskTicketStatus.CLOSED);
+
+        // --- Approvals: one clearly labelled demo workflow for trying the engine, and demo requests waiting at its
+        // first step. There is no approval page yet; real workflows come with the modules that use them.
+        approvalWorkflow(DEMO_APPROVAL_WORKFLOW, "Demo two-step approval (development only)",
+                "For trying the approval engine on local test data. Not a real college process.");
+        demoApproval(student1, "demo-1", "Demo approval request 1 (development only)");
+        demoApproval(student2, "demo-2", "Demo approval request 2 (development only)");
+        demoApproval(studentFaculty, "demo-3", "Demo approval request 3 (development only)");
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -736,6 +762,20 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 services.helpdeskTickets.changeStatus(support, ticketId, target);
             }
         });
+    }
+
+    private void approvalWorkflow(String code, String name, String description) {
+        boolean exists = repositories.approvalWorkflows.findWithStepsByCode(code).isPresent();
+        createUnless(exists, () -> services.approvalWorkflows.create(new CreateApprovalWorkflowRequest(code, name,
+                description, List.of(new ApprovalWorkflowStepRequest("Faculty review", "FACULTY"),
+                        new ApprovalWorkflowStepRequest("Administrative approval", "ADMIN")))));
+    }
+
+    /** Starts a demo request through the engine, once per demo source ID. */
+    private void demoApproval(UserAccount requester, String sourceId, String subject) {
+        boolean exists = !services.approvalQueries.requestsForSource(DEMO_APPROVAL_SOURCE, sourceId).isEmpty();
+        createUnless(exists, () -> services.approvals.startApproval(new StartApprovalCommand(DEMO_APPROVAL_WORKFLOW,
+                requester.getId(), DEMO_APPROVAL_SOURCE, sourceId, subject)));
     }
 
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */

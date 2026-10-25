@@ -40,6 +40,11 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   HELPDESK_REPLY: 'View ticket',
   HELPDESK_STATUS_CHANGED: 'View ticket',
   HELPDESK_ASSIGNED: 'View ticket',
+  // Approval notifications have no link until a module that uses a workflow adds its own pages.
+  APPROVAL_ACTION_REQUIRED: 'View request',
+  APPROVAL_APPROVED: 'View request',
+  APPROVAL_REJECTED: 'View request',
+  APPROVAL_CANCELLED: 'View request',
 }
 
 /** Only a path inside the app is ever followed: never a full address, "//host", or "/\host". */

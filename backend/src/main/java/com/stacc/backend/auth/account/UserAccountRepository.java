@@ -21,6 +21,10 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     @Query("select account.id from UserAccount account join account.roles role where role.name = :roleName")
     List<Long> findIdsByRoleName(@Param("roleName") RoleName roleName);
 
+    /** The IDs of the accounts in this status that hold the role. */
+    @Query("select account.id from UserAccount account join account.roles role where role.name = :roleName and account.status = :status")
+    List<Long> findIdsByRoleNameAndStatus(@Param("roleName") RoleName roleName, @Param("status") AccountStatus status);
+
     /** The login IDs of the accounts in this status that hold the role, in login ID order. */
     @Query("""
             select account.loginId

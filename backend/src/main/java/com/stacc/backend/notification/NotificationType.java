@@ -21,5 +21,13 @@ public enum NotificationType {
     /** A helpdesk ticket's status changed. */
     HELPDESK_STATUS_CHANGED,
     /** A helpdesk ticket was assigned to an admin. */
-    HELPDESK_ASSIGNED
+    HELPDESK_ASSIGNED,
+    /** An approval step became the current step and waits for one of the account's roles. */
+    APPROVAL_ACTION_REQUIRED,
+    /** An approval request was approved at its last step. */
+    APPROVAL_APPROVED,
+    /** An approval request was rejected. */
+    APPROVAL_REJECTED,
+    /** An approval request was cancelled by the module that owns its record. */
+    APPROVAL_CANCELLED
 }
