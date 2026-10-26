@@ -29,6 +29,7 @@ import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
+import com.stacc.backend.lms.ai.AiCourseKnowledgeIndexRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
 import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmissionRepository;
@@ -70,6 +71,7 @@ import org.springframework.web.context.WebApplicationContext;
 })
 @MockitoBean(types = {
     AcademicCalendarEventRepository.class,
+    AiCourseKnowledgeIndexRepository.class,
     AcademicSessionRepository.class,
     ApprovalRequestHistoryRepository.class,
     ApprovalRequestRepository.class,

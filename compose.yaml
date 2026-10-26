@@ -6,6 +6,11 @@
 #                                                                -> minio (private file storage)
 #
 # Ports are published on this machine only (127.0.0.1), not on the local network.
+#
+# Optional AI learning features (docs/ai-learning.md) run only with the "ai" profile:
+#   docker compose --profile ai up
+#   backend -> ai-service (internal, no published port) -> ollama (local models, no published port)
+# Without the profile, Stacc starts and works as before, and its AI routes answer 503.
 name: stacc
 
 services:
@@ -79,6 +84,11 @@ services:
       # docs/local-test-data.md, all with the password in STACC_TEST_PASSWORD. Never use it for real data.
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
       STACC_TEST_PASSWORD: ${STACC_TEST_PASSWORD:-}
+      # AI learning features stay off unless AI_ENABLED=true and the "ai" profile runs. The backend reaches the AI
+      # service by its service name, with the shared internal token; browsers never reach it.
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_SERVICE_URL: http://ai-service:8000
+      STACC_AI_INTERNAL_TOKEN: ${STACC_AI_INTERNAL_TOKEN:-}
     depends_on:
       mysql:
         condition: service_healthy
@@ -114,8 +124,37 @@ services:
       start_period: 20s
       start_interval: 2s
 
+  # --- Optional AI learning features: only with "docker compose --profile ai up" ---
+  ai-service:
+    build: ./ai-service
+    profiles: ["ai"]
+    environment:
+      # "ollama" for real use. "fake" quotes course text without a model and is for testing the wiring only.
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Local models of your choice, pulled into Ollama once (see docs/ai-learning.md). No default on purpose.
+      AI_CHAT_MODEL: ${AI_CHAT_MODEL:-}
+      AI_EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:-}
+      # The service refuses to start without a token of at least 32 characters; the backend must use the same one.
+      STACC_AI_INTERNAL_TOKEN: ${STACC_AI_INTERNAL_TOKEN:-}
+      AI_INDEX_DIR: /data/indexes
+    volumes:
+      - ai-index-data:/data/indexes
+    # No published port: only the backend calls it, over the private Docker network.
+
+  ollama:
+    image: ollama/ollama:0.13.0
+    profiles: ["ai"]
+    volumes:
+      - ollama-data:/root/.ollama
+    # No published port: only the AI service calls it. Models are pulled once with
+    #   docker compose --profile ai exec ollama ollama pull <model>
+
 volumes:
   # The database files and the stored files. Both survive "docker compose down" and are
   # removed only by "docker compose down -v".
   mysql-data:
   minio-data:
+  # AI learning (profile "ai"): the course vector indexes, and the downloaded local models.
+  ai-index-data:
+  ollama-data:

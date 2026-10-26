@@ -1,6 +1,10 @@
 package com.stacc.backend.devdata;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -106,6 +110,10 @@ import com.stacc.backend.lms.content.LmsContentManagementService;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsModule;
 import com.stacc.backend.lms.content.LmsModuleRepository;
+import com.stacc.backend.lms.content.LmsStudyMaterial;
+import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
+import com.stacc.backend.lms.content.LmsStudyMaterialService;
+import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
@@ -129,6 +137,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Fills a local development database with connected demo data, so every finished feature can be tried by hand: test
@@ -171,6 +180,17 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     private final Services services;
 
     private int created;
+    private Long materialFacultyId;
+    private Long materialTopicId;
+
+    private static final String LINKED_LIST_NOTES = """
+            Linked list cheat sheet
+            A node holds a value and a reference to the next node. The head is the first node; the last node points to null.
+            Insert at the head: create a node, point it at the old head, and make it the new head. This takes O(1) time.
+            Delete a node: point the previous node at the node after it. Keep a reference to the previous node while walking.
+            Traversal visits every node from the head until the reference is null, which takes O(n) time.
+            A sentinel (dummy) head node removes the special case of inserting or deleting at the front.
+            """;
     private int existing;
 
     /** The repositories the seeder reads and writes, grouped to keep the constructor readable. */
@@ -193,6 +213,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final LmsCourseRepository lmsCourses;
         final LmsModuleRepository modules;
         final LmsTopicRepository topics;
+        final LmsStudyMaterialRepository materials;
         final LmsAnnouncementRepository announcements;
         final LmsAssignmentRepository assignments;
         final LmsAssignmentSubmissionRepository submissions;
@@ -220,6 +241,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 FacultyProfileRepository facultyProfiles, TeachingAssignmentRepository teaching,
                 SemesterEnrollmentRepository semesterEnrollments, CourseEnrollmentRepository courseEnrollments,
                 LmsCourseRepository lmsCourses, LmsModuleRepository modules, LmsTopicRepository topics,
+                LmsStudyMaterialRepository materials,
                 LmsAnnouncementRepository announcements, LmsAssignmentRepository assignments,
                 LmsAssignmentSubmissionRepository submissions, LmsSubmissionAttemptRepository attempts,
                 LmsSubmissionGradeRepository grades, AttendanceSessionRepository attendanceSessions,
@@ -246,6 +268,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.lmsCourses = lmsCourses;
             this.modules = modules;
             this.topics = topics;
+            this.materials = materials;
             this.announcements = announcements;
             this.assignments = assignments;
             this.submissions = submissions;
@@ -275,6 +298,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     static class Services {
         final LmsCourseManagementService lmsCourses;
         final LmsContentManagementService content;
+        final LmsStudyMaterialService studyMaterials;
         final LmsAnnouncementManagementService announcements;
         final LmsAssignmentManagementService assignments;
         final LmsAssignmentSubmissionService submissions;
@@ -295,6 +319,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelAllocationService hostelAllocations;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
+                LmsStudyMaterialService studyMaterials,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
                 LmsAssignmentSubmissionService submissions, LmsAssignmentGradingService grading,
                 AttendanceManagementService attendance, CourseResultManagementService results,
@@ -306,6 +331,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations) {
             this.lmsCourses = lmsCourses;
             this.content = content;
+            this.studyMaterials = studyMaterials;
             this.announcements = announcements;
             this.assignments = assignments;
             this.submissions = submissions;
@@ -343,6 +369,13 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         created = 0;
         existing = 0;
         transaction.executeWithoutResult(status -> seed(password));
+        // Separate, so a missing object store skips only this file and never undoes the rest.
+        try {
+            transaction.executeWithoutResult(status -> studyMaterial(materialFacultyId, materialTopicId,
+                    "Linked list cheat sheet (development)", "linked-list-cheat-sheet.txt", LINKED_LIST_NOTES));
+        } catch (RuntimeException exception) {
+            LOGGER.info("Local test data: the study material was not created, because object storage is not available.");
+        }
         LOGGER.info("Local test data ({} profile): {} records created, {} already present. Test accounts: {}.",
                 PROFILE, created, existing, String.join(", ", TEST_LOGIN_IDS));
     }
@@ -448,7 +481,19 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 "Contiguous storage, then nodes and pointers.", true);
         topic(faculty1, unit1, "Arrays and memory layout",
                 "How arrays are stored, indexed, and resized.\nRead chapter 2 before the lab.", true);
-        topic(faculty1, unit1, "Singly linked lists", "Insertion, deletion, and traversal with a head pointer.", true);
+        Long singlyLinked = topic(faculty1, unit1, "Singly linked lists",
+                "Insertion, deletion, and traversal with a head pointer.", true);
+        // Enough published text for the AI study assistant to answer from (Phase 47).
+        topic(faculty1, unit1, "Choosing between arrays and linked lists", """
+                An array keeps its elements next to each other in memory, so reading the element at any index takes \
+                constant time, O(1). Inserting or deleting in the middle of an array is slow, O(n), because the later \
+                elements have to shift.
+                A linked list stores each element in a node that points to the next node. Inserting or deleting after a \
+                known node takes constant time, but finding the element at a position means walking from the head, O(n).
+                Choose an array when you mostly read by index and the size changes rarely. Choose a linked list when you \
+                often insert and delete in the middle and walk the elements in order.""", true);
+        materialFacultyId = faculty1.getId();
+        materialTopicId = singlyLinked;
         topic(faculty1, unit1, "Doubly linked lists", "Draft notes: previous pointers and sentinel nodes.", false);
         Long unit2 = module(faculty1, lms301, "Unit 2: Stacks and Queues", "Being prepared.", false);
         topic(faculty1, unit2, "Stack operations", "Push, pop, and peek with arrays and lists.", false);
@@ -721,16 +766,83 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         }).getId();
     }
 
-    private void topic(UserAccount faculty, Long moduleId, String title, String content, boolean publish) {
-        boolean exists = repositories.topics
+    private Long topic(UserAccount faculty, Long moduleId, String title, String content, boolean publish) {
+        Optional<LmsTopic> found = repositories.topics
                 .findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(moduleId, ANY_CONTENT_STATUS).stream()
-                .anyMatch(topic -> topic.getTitle().equals(title));
-        createUnless(exists, () -> {
-            Long topicId = services.content.createTopic(faculty.getId(), moduleId, title, content).getId();
+                .filter(topic -> topic.getTitle().equals(title))
+                .findFirst();
+        return findOrCreate(found, () -> {
+            LmsTopic topic = services.content.createTopic(faculty.getId(), moduleId, title, content);
             if (publish) {
-                services.content.publishTopic(faculty.getId(), topicId);
+                services.content.publishTopic(faculty.getId(), topic.getId());
             }
+            return topic;
+        }).getId();
+    }
+
+    /**
+     * A small published plain-text study material, so AI knowledge has a file to index. It is stored through the normal
+     * upload, so it needs object storage; seeding it runs in its own transaction after the rest, and is skipped when
+     * storage is not reachable.
+     */
+    private void studyMaterial(Long facultyAccountId, Long topicId, String title, String fileName, String text) {
+        boolean exists = repositories.materials
+                .findAllByLmsTopicIdAndStatusInOrderByPositionAscIdAsc(topicId, ANY_CONTENT_STATUS).stream()
+                .map(LmsStudyMaterial::getTitle)
+                .anyMatch(title::equals);
+        createUnless(exists, () -> {
+            LmsStudyMaterial material = services.studyMaterials.upload(facultyAccountId, topicId, title, null,
+                    new TextFile(fileName, text));
+            services.studyMaterials.publishMaterial(facultyAccountId, material.getId());
         });
+    }
+
+    /** A plain-text file held in memory, uploaded like a browser upload would be. */
+    private record TextFile(String fileName, String text) implements MultipartFile {
+
+        private byte[] bytes() {
+            return text.getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public String getName() {
+            return "file";
+        }
+
+        @Override
+        public String getOriginalFilename() {
+            return fileName;
+        }
+
+        @Override
+        public String getContentType() {
+            return "text/plain";
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return text.isEmpty();
+        }
+
+        @Override
+        public long getSize() {
+            return bytes().length;
+        }
+
+        @Override
+        public byte[] getBytes() {
+            return bytes();
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return new ByteArrayInputStream(bytes());
+        }
+
+        @Override
+        public void transferTo(File destination) {
+            throw new UnsupportedOperationException("Seeded files are never written to disk");
+        }
     }
 
     private void announcement(UserAccount faculty, Long lmsCourseId, String title, String message, boolean publish) {

@@ -107,6 +107,10 @@ The `search` package answers `GET /api/search` (up to 5 results per kind, groupe
 
 The `report` package answers the faculty reports (`/api/reports/faculty/my-courses` and `/course-offerings/{courseOfferingId}`, with `FACULTY` and `FACULTY_REPORT_VIEW`, the latter only for an offering taught through an active teaching assignment) and the admin reports (`/api/reports/admin/overview`, `/enrollments`, and `/enrollments/export.csv`, with `ADMIN` and `ADMIN_REPORT_VIEW`). Every figure is a live grouped count in the owning module's repository; nothing is stored or cached, and there are no averages, percentages, ranks, or pass or fail. Operational sections of the admin overview appear only with their domain permission. See `../docs/reports-analytics.md`.
 
+## AI learning
+
+The `lms.ai` package adds AI learning on published LMS content: `GET /api/lms/faculty/courses/{lmsCourseId}/ai/status`, `POST .../ai/sync`, and `POST .../ai/assessment-draft` for faculty, and `POST /api/lms/courses/{lmsCourseId}/ai/ask`, `.../ai/topics/{topicId}/summary`, and `.../ai/practice` for students. Access always comes from the LMS access services; the internal Python AI service (`../ai-service`) is reached only through `HttpAiServiceClient` with the shared internal token and timeouts. AI is off unless `AI_ENABLED=true`; then the routes answer 503 when the AI service is unavailable, and nothing else is affected. MySQL keeps only `ai_course_knowledge_indexes` metadata. See `../docs/ai-learning.md`.
+
 ## Local test data
 
 The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.

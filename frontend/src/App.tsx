@@ -11,6 +11,7 @@ import { CampusPage } from './pages/CampusPage'
 import { CampusRequestPage } from './pages/CampusRequestPage'
 import { CourseAttendancePage } from './pages/CourseAttendancePage'
 import { CourseResultsPage } from './pages/CourseResultsPage'
+import { CourseAiPage } from './pages/CourseAiPage'
 import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
 import { CoursePage } from './pages/CoursePage'
 import { CoursesPage } from './pages/CoursesPage'
@@ -31,6 +32,7 @@ import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
 import { SupportPage } from './pages/SupportPage'
 import { SupportQueuePage } from './pages/SupportQueuePage'
 import { SupportTicketPage } from './pages/SupportTicketPage'
+import { TeachingAiPage } from './pages/TeachingAiPage'
 import { TeachingCoursePage } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 
@@ -47,8 +49,10 @@ function App() {
           <Route path="courses" element={<CoursesPage />} />
           <Route path="courses/:lmsCourseId" element={<CoursePage />} />
           <Route path="courses/:lmsCourseId/assignments/:assignmentId" element={<CourseAssignmentPage />} />
+          <Route path="courses/:lmsCourseId/ai" element={<CourseAiPage />} />
           <Route path="teaching" element={<TeachingPage />} />
           <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
+          <Route path="teaching/:lmsCourseId/ai" element={<TeachingAiPage />} />
           <Route
             path="teaching/:lmsCourseId/assignments/:assignmentId/submissions"
             element={<FacultyAssignmentSubmissionsPage />}

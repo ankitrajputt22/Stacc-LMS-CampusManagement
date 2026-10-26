@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -99,6 +99,14 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
           <title>{`${course.data.courseName} · Teaching · Stacc`}</title>
           <Breadcrumb parent={TEACHING} current={course.data.courseName} />
           <CourseHeader course={course.data} />
+          <nav aria-label="Course tools" className="mt-3">
+            <Link
+              to={`/teaching/${course.data.lmsCourseId}/ai`}
+              className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9"
+            >
+              AI Tools
+            </Link>
+          </nav>
           <CourseSettings course={course.data} reload={course.refresh} />
           <AnnouncementsEditor lmsCourseId={course.data.lmsCourseId} />
           <AssignmentsEditor lmsCourseId={course.data.lmsCourseId} />

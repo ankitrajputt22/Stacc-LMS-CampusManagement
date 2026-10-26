@@ -8,7 +8,7 @@ The backend modules are:
 - `auth` — authentication, authorization, roles, and permissions.
 - `identity` — user, student, and faculty profiles.
 - `academic` — academic structures and ERP workflows.
-- `lms` — learning and teaching features.
+- `lms` — learning and teaching features. Its `lms.ai` package holds the AI learning features: course AI knowledge metadata, the published-content fingerprint, and the client of the internal AI service, which lives outside the backend in `ai-service/` (see `ai-learning.md`).
 - `support` — helpdesk, approval, and grievance workflows. Its first part is the one shared helpdesk ticket engine, `support.helpdesk`, used for every kind of issue through configurable categories (see `helpdesk.md`).
 - `hostel` — hostel management.
 - `engagement` — clubs, events, sports, elections, and campus activities.
