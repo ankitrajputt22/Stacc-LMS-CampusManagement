@@ -227,6 +227,7 @@
 - Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
 - Category codes are read-only once created, categories are deactivated rather than deleted, and the admin list shows inactive ones. A 404 on a ticket shows "Ticket unavailable" with none of its data; a 409 shows the backend's message and reloads the ticket.
 - Students use `/hostel` (the Hostel item for `STUDENT`) and admins `/admin/hostel` (Hostel Management for `ADMIN`): applications with approval decisions through the approval task routes, Hostels & Rooms, and Allocations. Show approval status and occupancy only as the backend returns them, confirm cancelling and vacating, and offer no Delete and no student bed choice.
+- Reports is one page at `/reports`, linked from the Faculty and Admin sections (no Student item), with a part per role in the order Faculty, Admin; the faculty course report is `/reports/faculty/course-offerings/:courseOfferingId`. Keep admin filters and the page in the address, show only the counts the API sends, export CSV through `apiClient` as a blob, and show access denied on a 403 without signing out.
 - Search is one page at `/search`, reached from the top bar (a field from 768 px, an icon link below), with the query and View all state in the address (`q`, `type`, `page`). Send a search only on submit, never per keystroke, and never with fewer than 2 characters. Render results as plain text with router links, and never use `dangerouslySetInnerHTML`. A 403 shows access denied without signing out. See `docs/search.md`.
 - Campus is one page per `UserAccount` at `/campus` in the Common section for `STUDENT`, `FACULTY`, or `ADMIN`: services and own requests for accounts holding `STUDENT` or `FACULTY`, notices for all; requests open at `/campus/requests/:requestId`. Admins use `/admin/campus/:section` (Campus Management) with review at `/admin/campus/requests/:requestId`. Show the request status and the approval status as separate words, decide only through `approveTask` and `rejectTask`, choose workflows from the approval admin list, confirm cancelling, completing, publishing, and archiving, and offer no Delete or Restore. Shared approval UI lives in `src/approvals/`. See `docs/campus-services.md`.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
@@ -253,6 +254,15 @@
 - Master counts are every row, whatever the status; the offering count counts `CourseOffering`, never `Course` or `LmsCourse`. Active enrollment means `ENROLLED` only.
 - The offering preview reuses the admin offering list's query and order (first page). Never call it recent.
 - Show no student, faculty, or account details, and no activity feeds, trends, rates, rankings, or performance analytics.
+
+## Reports
+
+- Reports (`com.stacc.backend.report`) are read-only, live `COUNT`/`GROUP BY` queries over other modules' repositories. Never add report or analytics tables, snapshots, caches, saved or scheduled reports, or PDF export. See `docs/reports-analytics.md`.
+- Show counts only: never GPA, SGPA, CGPA, ranks, toppers, pass or fail, percentages, averages, trends, predictions, or performance scores.
+- Faculty routes need `FACULTY` and `FACULTY_REPORT_VIEW`, take the faculty member from the access token, and open a course report only through `FacultyTeachingAccessService` for the offering in the route; anything else is the same 404. No admin pass.
+- Assignment counts exclude archived assignments and need an open LMS course; needs grading uses the latest attempt only. Attendance counts present and absent records of finalized sessions only.
+- Admin routes need `ADMIN` and `ADMIN_REPORT_VIEW`. Filters are validated (400), including a semester outside the chosen program or session. Helpdesk, hostel, and campus sections appear only with `HELPDESK_TICKET_VIEW_ALL`, `HOSTEL_MANAGE`, or `CAMPUS_SERVICE_MANAGE`; a missing permission omits the section, never shows zero.
+- The enrollment CSV carries no IDs, quotes every cell, neutralises formula-like cells, and is built per request, never stored.
 
 ## Notifications and Inbox
 

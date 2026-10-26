@@ -1,5 +1,6 @@
 package com.stacc.backend.support.helpdesk;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
@@ -141,4 +142,14 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
             """)
     Page<HelpdeskTicket> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
+
+    /** Reports: how many tickets are in each status, in one grouped query. */
+    @Query("select ticket.status as status, count(ticket) as total from HelpdeskTicket ticket group by ticket.status")
+    List<StatusCount> countByStatus();
+
+    interface StatusCount {
+        HelpdeskTicketStatus getStatus();
+
+        Long getTotal();
+    }
 }

@@ -97,4 +97,20 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
             """)
     Page<LmsSubmissionAttempt> findLatestUngradedByLmsCourseIdIn(
             @Param("lmsCourseIds") Collection<Long> lmsCourseIds, Pageable page);
+
+    /**
+     * The count of {@link #findLatestUngradedByLmsCourseIdIn}, without loading anything: submissions of published
+     * assignments whose latest attempt has no grade. Older ungraded attempts never count.
+     */
+    @Query("""
+            select count(attempt)
+            from LmsSubmissionAttempt attempt
+            join attempt.submission submission
+            join submission.assignment assignment
+            where assignment.lmsCourse.id in :lmsCourseIds
+              and assignment.status = com.stacc.backend.lms.content.LmsContentStatus.PUBLISHED
+              and attempt.attemptNumber = submission.latestAttemptNumber
+              and not exists (select grade.id from LmsSubmissionGrade grade where grade.attempt = attempt)
+            """)
+    long countLatestUngradedByLmsCourseIdIn(@Param("lmsCourseIds") Collection<Long> lmsCourseIds);
 }

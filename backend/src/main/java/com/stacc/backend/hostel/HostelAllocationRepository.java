@@ -154,4 +154,14 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
     Page<HostelAllocation> findPage(@Param("status") HostelAllocationStatus status, @Param("hostelId") Long hostelId,
             @Param("academicSessionId") Long academicSessionId, @Param("studentLoginId") String studentLoginId,
             Pageable page);
+
+    /** Reports: how many allocations are in each status, in one grouped query. */
+    @Query("select allocation.status as status, count(allocation) as total from HostelAllocation allocation group by allocation.status")
+    List<StatusCount> countByStatus();
+
+    interface StatusCount {
+        HostelAllocationStatus getStatus();
+
+        Long getTotal();
+    }
 }

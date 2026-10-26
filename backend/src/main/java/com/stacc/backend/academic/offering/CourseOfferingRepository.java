@@ -82,4 +82,16 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             """)
     Page<CourseOffering> search(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
+
+    /** Reports: how many offerings {@link #findAllWithContext} lists for these filters (no course filter). */
+    @Query("""
+            select count(offering)
+            from CourseOffering offering
+            join offering.semester semester
+            where (:semesterId is null or semester.id = :semesterId)
+              and (:programId is null or semester.program.id = :programId)
+              and (:academicSessionId is null or semester.academicSession.id = :academicSessionId)
+            """)
+    long countWithin(@Param("semesterId") Long semesterId, @Param("programId") Long programId,
+            @Param("academicSessionId") Long academicSessionId);
 }

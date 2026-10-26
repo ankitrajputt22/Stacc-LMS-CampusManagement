@@ -125,7 +125,7 @@ The admin dashboard:
 - **Academic Masters** lists Departments, Programs, Academic Sessions, Semesters, and Courses with their counts, and **Manage academic data** opens `/admin/academic`.
 - **Academic Operations** lists Course Offerings, Active Semester Enrollments, and Active Course Enrollments, says that active means currently enrolled, and links to **Manage course offerings** (`/admin/academic/offerings`) and **Manage enrollments** (`/admin/academic/enrollments`).
 - **Course Offerings** lists up to five offerings in the admin list's order with code, name, program, semester, session, and credits, each with **View roster** (`/admin/academic/offerings/:courseOfferingId/enrollments`), and **View all** opens `/admin/academic/offerings`. With none it says "No course offerings available."
-- A zero is shown as 0. There are no charts, trends, rates, rankings, activity feeds, or student and faculty totals. Users and Reports stay "Soon" in the navigation.
+- A zero is shown as 0. There are no charts, trends, rates, rankings, activity feeds, or student and faculty totals. Users stays "Soon" in the navigation.
 - Loading, failure, and Retry are as on the other dashboards; a **403** says "You don't have access to the Admin Dashboard." and never signs the user out.
 
 ### The Courses page
@@ -291,6 +291,10 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 ### Campus
 
 **Campus** in the Common section opens `/campus` once for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. Accounts holding `STUDENT` or `FACULTY` see Campus Services (Request service opens a form with only Subject and Details) and My Service Requests; every account sees Campus Notices. A request opens at `/campus/requests/:requestId` with its approval progress and Cancel request. **Campus Management** in the Admin section opens `/admin/campus` (Service Catalog, Service Requests with review at `/admin/campus/requests/:requestId`, and Notices). Requests go through `src/api/campusApi.ts` and, for decisions, `src/api/approvalsApi.ts`; labels come from `src/campus/campusText.ts` and the shared `src/approvals/approvalText.ts`. The request status and the approval status are always shown as separate words, a missing or foreign request shows "Request unavailable", and nothing uses `roles[0]`. See `campus-services.md`.
+
+### Reports
+
+**Reports** opens `/reports` from the Faculty section (accounts holding `FACULTY`) and the Admin section (accounts holding `ADMIN`); there is no Student item. One page shows a part per role in the order Faculty, Admin, never chosen with `roles[0]`. The faculty part lists the offerings taught, each opening its **Course Report** at `/reports/faculty/course-offerings/:courseOfferingId`; a 404 there shows "Course report unavailable". The admin part keeps its filters and page in the address (`session`, `program`, `semester`, `page`), offers **Clear filters**, shows stacked records instead of a table on phones, and **Export CSV** downloads the file through `apiClient`, never through a link with a token. Only counts the API sends are shown: no percentages, averages, ranks, charts, or invented figures. A 403 shows access denied and never signs out. Requests go through `src/api/reportsApi.ts`. See `reports-analytics.md`.
 
 ### The Academic Admin page
 
