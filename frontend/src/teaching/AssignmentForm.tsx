@@ -1,6 +1,7 @@
 import { type FormEvent, type RefObject, useEffect, useId, useRef, useState } from 'react'
 import { Button } from '../components/Button'
 import { fromLocalInputValue, localTimeZoneName, toLocalInputValue } from '../courses/dates'
+import type { AssignmentDraftPrefill } from '../types/ai'
 import type { LmsAssignmentInput } from '../types/lms'
 import type { FormOutcome } from './ContentForm'
 import { ASSIGNMENT_INSTRUCTIONS_MAX, TITLE_MAX } from './editorState'
@@ -13,6 +14,8 @@ type AssignmentFormProps = {
   /** A short neutral note shown above the fields. */
   note?: string
   initial?: { title: string; instructions: string; dueAt: string; maxMarks: number }
+  /** Values to start a new assignment with, such as a reviewed AI draft. The teacher still checks and submits them. */
+  prefill?: AssignmentDraftPrefill
   submitLabel: string
   submittingLabel: string
   onSubmit: (input: LmsAssignmentInput) => Promise<FormOutcome>
@@ -70,6 +73,7 @@ export function AssignmentForm({
   heading,
   note,
   initial,
+  prefill,
   submitLabel,
   submittingLabel,
   onSubmit,
@@ -86,10 +90,12 @@ export function AssignmentForm({
     dueAt: dueAtRef,
     maxMarks: maxMarksRef,
   }
-  const [title, setTitle] = useState(initial?.title ?? '')
-  const [instructions, setInstructions] = useState(initial?.instructions ?? '')
+  const [title, setTitle] = useState(initial?.title ?? prefill?.title ?? '')
+  const [instructions, setInstructions] = useState(initial?.instructions ?? prefill?.instructions ?? '')
   const [dueAt, setDueAt] = useState(initial ? toLocalInputValue(initial.dueAt) : '')
-  const [maxMarks, setMaxMarks] = useState(initial ? String(initial.maxMarks) : '')
+  const [maxMarks, setMaxMarks] = useState(
+    initial ? String(initial.maxMarks) : prefill?.maxMarks != null ? String(prefill.maxMarks) : '',
+  )
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)

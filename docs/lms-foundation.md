@@ -560,6 +560,10 @@ The content routes list the materials inside each topic. The faculty content sho
 
 The file comes through the backend, streamed from storage, with its stored content type, its size as `Content-Length`, and `Content-Disposition: attachment` with the original file name, so it is always saved and never shown inline. Range requests are not supported.
 
+### AI knowledge
+
+The AI study assistant and the faculty AI tools (Phase 47) are built only from **published** topics and **published** study materials, by the same student visibility rule (`LmsContentPolicy`): the material, its topic, and its module all published. Drafts and archived content never enter AI knowledge. The backend reads a material's bytes through `ObjectStorageService` and hands them to the internal AI service during a faculty refresh; the AI service never gets storage access or keys. See `ai-learning.md`.
+
 ## Announcements
 
 An announcement is a course-wide update from faculty to the students of one LMS course, such as "Friday's lab moves to Room 204". The code is `LmsAnnouncement` and `LmsAnnouncementManagementService` in `com.stacc.backend.lms.announcement`, and the table is `lms_announcements`.

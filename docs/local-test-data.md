@@ -79,7 +79,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 **LMS**
 - LMS courses: CS301 published, CS302 draft, CS303 archived. Their current students get memberships through provisioning.
 - Course content:
-  - CS301 has a published unit with two published topics and one draft topic, and a draft unit.
+  - CS301 has a published unit with three published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `faculty1` at `/teaching/:lmsCourseId/ai`.
   - CS302 has a draft unit.
 - Announcements: one published and one draft in CS301, and a draft in CS302.
 - Assignments in CS301:
@@ -125,7 +125,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Services `ID_CARD` ("ID card replacement", students and faculty) and `TRANSPORT` ("Transport pass", students only), both approved through the `CAMPUS_SERVICE_REQUEST` workflow from migration `V57`, and `GENERAL_ADMIN` ("General administrative request", students and faculty, no approval).
 - The notice "Welcome to Campus services (development)", published for every role (so each test account has one Inbox notification for it), and the draft "Library hours during exams (development draft)".
 - Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Phase 46 adds two for the reports: `student2`'s "Course transcript copy (development)", completed by `admin1`, and `studentfaculty1`'s "Library card renewal (development)", cancelled by its requester. Both use the General administrative request service. Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
-- Study materials are not seeded, because they need object storage; upload one at `/teaching/:lmsCourseId` to try material search (`docs/search.md`).
+- One study material is seeded since Phase 47, so AI knowledge has a file to index: the published plain-text "Linked list cheat sheet (development)" (`linked-list-cheat-sheet.txt`) under CS301's "Singly linked lists". It is uploaded through the normal material service, so it needs object storage; seeding it runs in its own transaction after the rest and is skipped, with a log line, when storage is not reachable. Upload more at `/teaching/:lmsCourseId`.
 
 ## Starting over
 

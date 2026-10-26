@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { isAssignmentDraftPrefill } from '../ai/assignmentPrefill'
 import { archiveAssignment, createAssignment, publishAssignment, updateAssignment } from '../api/lmsAssignmentsApi'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
@@ -165,14 +166,31 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const changes = useContentChanges(assignments.refresh, ASSIGNMENTS_FORBIDDEN)
   const containerRef = useRef<HTMLElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const { hash } = useLocation()
-  const [openForm, setOpenForm] = useState<AssignmentFormState | null>(null)
+  const location = useLocation()
+  const { hash } = location
+  const navigate = useNavigate()
+  // A reviewed AI draft arrives once, through navigation state, and only fills the add form: nothing is created until
+  // the teacher submits it. The state is then cleared, so a refresh or Back never fills the form again.
+  const [prefill] = useState(() => {
+    const state: unknown = location.state
+    const draft = typeof state === 'object' && state !== null ? (state as { assignmentDraft?: unknown }).assignmentDraft : undefined
+    return isAssignmentDraftPrefill(draft) ? draft : null
+  })
+  const [openForm, setOpenForm] = useState<AssignmentFormState | null>(() => (prefill ? { type: 'add' } : null))
   const [confirming, setConfirming] = useState<number | null>(null)
   const [now] = useState(() => Date.now())
   const list = assignments.status === 'loaded' ? assignments.data : null
   const arrivedHere = useRef(false)
 
   useFocusAfterChanges(containerRef, list, changes.pendingFocus, changes.focusHandled)
+
+  const prefillCleared = useRef(false)
+  useEffect(() => {
+    if (prefill && !prefillCleared.current) {
+      prefillCleared.current = true
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+    }
+  }, [prefill, navigate, location.pathname, location.search])
 
   // Coming from the assignments overview (#assignments), go to this section once it has loaded.
   useEffect(() => {
@@ -262,7 +280,12 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
         {openForm?.type === 'add' && (
           <AssignmentForm
             heading="New assignment"
-            note="It is saved as a draft. Students see it once you publish it."
+            note={
+              prefill
+                ? 'Filled in from the AI draft. Review and edit every field, choose a due date, then create it yourself. It is saved as a draft; students see it once you publish it.'
+                : 'It is saved as a draft. Students see it once you publish it.'
+            }
+            prefill={prefill ?? undefined}
             submitLabel="Create assignment"
             submittingLabel="Creating…"
             onSubmit={add}

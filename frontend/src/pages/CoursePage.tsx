@@ -115,6 +115,21 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
         </p>
       </header>
 
+      <section
+        aria-labelledby="course-ai-heading"
+        className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5"
+      >
+        <h2 id="course-ai-heading" className="text-base font-semibold text-ink">
+          AI Study Assistant
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-ink-muted">
+          Ask questions, summarise topics, and practise, based on this course’s published materials.
+        </p>
+        <Link to={`/courses/${course.lmsCourseId}/ai`} className={`mt-1 text-sm ${backLinkClasses}`}>
+          Open AI Study Assistant
+        </Link>
+      </section>
+
       <section aria-labelledby="course-academic-information" className="mt-8 max-w-2xl">
         <h2
           id="course-academic-information"
