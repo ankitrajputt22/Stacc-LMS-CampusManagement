@@ -119,12 +119,13 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 
 **Hostel (development only)**
 - Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active and free.
-- No applications: sign in as `student1`, `student2`, or `studentfaculty1` and apply at `/hostel` for the current session, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
+- One pending application by `student2` for the current session (added in Phase 45 so search has something to find). Sign in as `student1` or `studentfaculty1` to apply at `/hostel` yourself, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
 
 **Campus (development only)**
 - Services `ID_CARD` ("ID card replacement", students and faculty) and `TRANSPORT` ("Transport pass", students only), both approved through the `CAMPUS_SERVICE_REQUEST` workflow from migration `V57`, and `GENERAL_ADMIN` ("General administrative request", students and faculty, no approval).
 - The notice "Welcome to Campus services (development)", published for every role (so each test account has one Inbox notification for it), and the draft "Library hours during exams (development draft)".
-- No requests: sign in as a student or faculty account and request a service at `/campus`, then review, approve, and complete it as `admin1` at `/admin/campus`. Services are found by code and notices by title, so running again creates nothing new.
+- Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
+- Study materials are not seeded, because they need object storage; upload one at `/teaching/:lmsCourseId` to try material search (`docs/search.md`).
 
 ## Starting over
 

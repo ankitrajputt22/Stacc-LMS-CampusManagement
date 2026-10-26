@@ -110,4 +110,60 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             @Param("approvalStatus") ApprovalRequestStatus approvalStatus,
             @Param("studentLoginId") String studentLoginId,
             @Param("hasActiveAllocation") Boolean hasActiveAllocation, Pageable page);
+
+    /**
+     * Search: one student's own applications whose number or academic session code contains the text. Exact numbers
+     * or sessions first, then those that start with the text, then the rest; within each, the newest first.
+     */
+    @Query(value = """
+            select application
+            from HostelApplication application
+            join fetch application.academicSession academicSession
+            left join fetch application.approvalRequest
+            where application.studentProfile.userAccount.id = :userAccountId
+              and (lower(application.applicationNumber) like :contains escape '!'
+                   or lower(academicSession.code) like :contains escape '!')
+            order by case when lower(application.applicationNumber) = :exact or lower(academicSession.code) = :exact then 0 when lower(application.applicationNumber) like :prefix escape '!' or lower(academicSession.code) like :prefix escape '!' then 1 else 2 end, application.submittedAt desc,
+                     application.id desc
+            """,
+            countQuery = """
+            select count(application)
+            from HostelApplication application
+            join application.academicSession academicSession
+            where application.studentProfile.userAccount.id = :userAccountId
+              and (lower(application.applicationNumber) like :contains escape '!'
+                   or lower(academicSession.code) like :contains escape '!')
+            """)
+    Page<HostelApplication> searchOwn(@Param("userAccountId") Long userAccountId, @Param("exact") String exact,
+            @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
+
+    /**
+     * Search: every application whose number, student login ID, or academic session code contains the text, for the
+     * hostel office, ordered as {@link #searchOwn}.
+     */
+    @Query(value = """
+            select application
+            from HostelApplication application
+            join fetch application.studentProfile studentProfile
+            join fetch studentProfile.userAccount account
+            join fetch application.academicSession academicSession
+            left join fetch application.approvalRequest
+            where lower(application.applicationNumber) like :contains escape '!'
+               or lower(account.loginId) like :contains escape '!'
+               or lower(academicSession.code) like :contains escape '!'
+            order by case when lower(application.applicationNumber) = :exact or lower(account.loginId) = :exact then 0 when lower(application.applicationNumber) like :prefix escape '!' or lower(account.loginId) like :prefix escape '!' then 1 else 2 end, application.submittedAt desc,
+                     application.id desc
+            """,
+            countQuery = """
+            select count(application)
+            from HostelApplication application
+            join application.studentProfile studentProfile
+            join studentProfile.userAccount account
+            join application.academicSession academicSession
+            where lower(application.applicationNumber) like :contains escape '!'
+               or lower(account.loginId) like :contains escape '!'
+               or lower(academicSession.code) like :contains escape '!'
+            """)
+    Page<HostelApplication> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
+            @Param("contains") String contains, Pageable page);
 }

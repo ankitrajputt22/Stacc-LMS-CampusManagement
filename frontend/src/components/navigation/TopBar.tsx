@@ -6,6 +6,7 @@ import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { AccountRoles } from './AccountRoles'
 import { Brand } from './Brand'
 import { BellIcon, MenuIcon, UserIcon } from './icons'
+import { TopBarSearch } from './TopBarSearch'
 
 type TopBarProps = {
   menuId: string
@@ -77,7 +78,8 @@ export function TopBar({
         <Brand />
       </div>
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-1 md:ml-4 lg:ml-0">
+        <TopBarSearch />
         <button
           type="button"
           disabled

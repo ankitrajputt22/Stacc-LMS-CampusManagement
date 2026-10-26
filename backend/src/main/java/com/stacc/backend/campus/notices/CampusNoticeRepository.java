@@ -52,4 +52,32 @@ public interface CampusNoticeRepository extends JpaRepository<CampusNotice, Long
             """,
             countQuery = "select count(notice) from CampusNotice notice where (:status is null or notice.status = :status)")
     Page<CampusNotice> findAdminPage(@Param("status") CampusNoticeStatus status, Pageable page);
+
+    /**
+     * Search: the published notices visible to any of the account's roles, as {@link #findFeed} decides, whose title
+     * or message contains the text. Each notice appears once, however many of its flags match. Exact titles first,
+     * then titles that start with the text, then the rest; within each, the newest first.
+     */
+    @Query(value = """
+            select notice
+            from CampusNotice notice
+            where notice.status = com.stacc.backend.campus.notices.CampusNoticeStatus.PUBLISHED
+              and ((:student = true and notice.visibleToStudent = true)
+                   or (:faculty = true and notice.visibleToFaculty = true)
+                   or (:admin = true and notice.visibleToAdmin = true))
+              and (lower(notice.title) like :contains escape '!' or lower(notice.message) like :contains escape '!')
+            order by case when lower(notice.title) = :exact then 0 when lower(notice.title) like :prefix escape '!' then 1 else 2 end, notice.publishedAt desc, notice.id desc
+            """,
+            countQuery = """
+            select count(notice)
+            from CampusNotice notice
+            where notice.status = com.stacc.backend.campus.notices.CampusNoticeStatus.PUBLISHED
+              and ((:student = true and notice.visibleToStudent = true)
+                   or (:faculty = true and notice.visibleToFaculty = true)
+                   or (:admin = true and notice.visibleToAdmin = true))
+              and (lower(notice.title) like :contains escape '!' or lower(notice.message) like :contains escape '!')
+            """)
+    Page<CampusNotice> searchFeed(@Param("student") boolean student, @Param("faculty") boolean faculty,
+            @Param("admin") boolean admin, @Param("exact") String exact, @Param("prefix") String prefix,
+            @Param("contains") String contains, Pageable page);
 }

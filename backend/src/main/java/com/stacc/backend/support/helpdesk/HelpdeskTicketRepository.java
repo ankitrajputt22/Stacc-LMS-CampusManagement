@@ -88,4 +88,57 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
     Page<HelpdeskTicket> findQueue(@Param("status") HelpdeskTicketStatus status,
             @Param("priority") HelpdeskTicketPriority priority, @Param("categoryId") Long categoryId,
             @Param("assigneeId") Long assigneeId, @Param("requesterLoginId") String requesterLoginId, Pageable page);
+
+    /**
+     * Search: one requester's own tickets whose number, subject, or category code or name contains the text. The
+     * description is not searched. Exact numbers or subjects first, then those that start with the text, then the
+     * rest; within each, the newest first.
+     */
+    @Query(value = """
+            select ticket
+            from HelpdeskTicket ticket
+            join fetch ticket.category category
+            where ticket.requester.id = :requesterId
+              and (lower(ticket.ticketNumber) like :contains escape '!'
+                   or lower(ticket.subject) like :contains escape '!'
+                   or lower(category.code) like :contains escape '!'
+                   or lower(category.name) like :contains escape '!')
+            order by case when lower(ticket.ticketNumber) = :exact or lower(ticket.subject) = :exact then 0 when lower(ticket.ticketNumber) like :prefix escape '!' or lower(ticket.subject) like :prefix escape '!' then 1 else 2 end, ticket.createdAt desc, ticket.id desc
+            """,
+            countQuery = """
+            select count(ticket)
+            from HelpdeskTicket ticket
+            join ticket.category category
+            where ticket.requester.id = :requesterId
+              and (lower(ticket.ticketNumber) like :contains escape '!'
+                   or lower(ticket.subject) like :contains escape '!'
+                   or lower(category.code) like :contains escape '!'
+                   or lower(category.name) like :contains escape '!')
+            """)
+    Page<HelpdeskTicket> searchOwn(@Param("requesterId") Long requesterId, @Param("exact") String exact,
+            @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
+
+    /** Search: every ticket, as {@link #searchOwn} matches and orders them, for admins who may see all tickets. */
+    @Query(value = """
+            select ticket
+            from HelpdeskTicket ticket
+            join fetch ticket.category category
+            join fetch ticket.requester
+            where (lower(ticket.ticketNumber) like :contains escape '!'
+                   or lower(ticket.subject) like :contains escape '!'
+                   or lower(category.code) like :contains escape '!'
+                   or lower(category.name) like :contains escape '!')
+            order by case when lower(ticket.ticketNumber) = :exact or lower(ticket.subject) = :exact then 0 when lower(ticket.ticketNumber) like :prefix escape '!' or lower(ticket.subject) like :prefix escape '!' then 1 else 2 end, ticket.createdAt desc, ticket.id desc
+            """,
+            countQuery = """
+            select count(ticket)
+            from HelpdeskTicket ticket
+            join ticket.category category
+            where (lower(ticket.ticketNumber) like :contains escape '!'
+                   or lower(ticket.subject) like :contains escape '!'
+                   or lower(category.code) like :contains escape '!'
+                   or lower(category.name) like :contains escape '!')
+            """)
+    Page<HelpdeskTicket> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
+            @Param("contains") String contains, Pageable page);
 }

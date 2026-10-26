@@ -20,6 +20,7 @@ import { InboxPage } from './pages/InboxPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ResultsPage } from './pages/ResultsPage'
+import { SearchPage } from './pages/SearchPage'
 import { StudentAttendancePage } from './pages/StudentAttendancePage'
 import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
@@ -58,6 +59,8 @@ function App() {
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
+          {/* One search page for every role; the address holds the query, and View all the kind and page. */}
+          <Route path="search" element={<SearchPage />} />
           <Route path="inbox" element={<InboxPage />} />
           {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
           <Route path="support" element={<SupportPage />} />

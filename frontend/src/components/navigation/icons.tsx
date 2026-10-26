@@ -50,3 +50,12 @@ export function UserIcon() {
     </Icon>
   )
 }
+
+export function SearchIcon() {
+  return (
+    <Icon>
+      <circle cx="8.5" cy="8.5" r="5" />
+      <path d="M12.5 12.5l4 4" />
+    </Icon>
+  )
+}
