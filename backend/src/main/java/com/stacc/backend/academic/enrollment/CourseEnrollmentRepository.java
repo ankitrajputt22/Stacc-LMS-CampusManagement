@@ -1,5 +1,6 @@
 package com.stacc.backend.academic.enrollment;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,4 +77,45 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")
     Optional<CourseEnrollment> findByIdForUpdate(@Param("courseEnrollmentId") Long courseEnrollmentId);
+
+    /** Reports: how many enrollments of each of these course offerings are in each status, in one grouped query. */
+    @Query("""
+            select courseEnrollment.courseOffering.id as courseOfferingId, courseEnrollment.status as status,
+                   count(courseEnrollment) as total
+            from CourseEnrollment courseEnrollment
+            where courseEnrollment.courseOffering.id in :courseOfferingIds
+            group by courseEnrollment.courseOffering.id, courseEnrollment.status
+            """)
+    List<OfferingStatusCount> countByOfferingAndStatus(@Param("courseOfferingIds") Collection<Long> courseOfferingIds);
+
+    /**
+     * Reports: how many course enrollments are in each status, for the offerings of the semesters that match every
+     * filter that is not null.
+     */
+    @Query("""
+            select courseEnrollment.status as status, count(courseEnrollment) as total
+            from CourseEnrollment courseEnrollment
+            join courseEnrollment.courseOffering offering
+            join offering.semester semester
+            where (:semesterId is null or semester.id = :semesterId)
+              and (:programId is null or semester.program.id = :programId)
+              and (:academicSessionId is null or semester.academicSession.id = :academicSessionId)
+            group by courseEnrollment.status
+            """)
+    List<StatusCount> countByStatusWithin(@Param("semesterId") Long semesterId, @Param("programId") Long programId,
+            @Param("academicSessionId") Long academicSessionId);
+
+    interface OfferingStatusCount {
+        Long getCourseOfferingId();
+
+        CourseEnrollmentStatus getStatus();
+
+        Long getTotal();
+    }
+
+    interface StatusCount {
+        CourseEnrollmentStatus getStatus();
+
+        Long getTotal();
+    }
 }

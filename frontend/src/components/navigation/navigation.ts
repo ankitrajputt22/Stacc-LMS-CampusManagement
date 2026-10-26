@@ -51,6 +51,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Assignments', to: '/assignments' },
       { label: 'Attendance', to: '/attendance' },
       { label: 'Results', to: '/results' },
+      // Counts for the offerings taught; the backend decides access with FACULTY_REPORT_VIEW.
+      { label: 'Reports', to: '/reports' },
     ],
   },
   {
@@ -62,7 +64,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Hostel Management', to: '/admin/hostel' },
       { label: 'Campus Management', to: '/admin/campus' },
       { label: 'Users' },
-      { label: 'Reports' },
+      { label: 'Reports', to: '/reports' },
     ],
   },
   {

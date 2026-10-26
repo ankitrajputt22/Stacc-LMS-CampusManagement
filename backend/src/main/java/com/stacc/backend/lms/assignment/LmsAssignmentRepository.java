@@ -82,4 +82,23 @@ public interface LmsAssignmentRepository extends JpaRepository<LmsAssignment, Lo
     Page<LmsAssignment> search(@Param("lmsCourseIds") Collection<Long> lmsCourseIds,
             @Param("statuses") Collection<LmsContentStatus> statuses, @Param("exact") String exact,
             @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
+
+    /** Reports: how many assignments of each of these LMS courses are in each of these statuses, in one grouped query. */
+    @Query("""
+            select assignment.lmsCourse.id as lmsCourseId, assignment.status as status, count(assignment) as total
+            from LmsAssignment assignment
+            where assignment.lmsCourse.id in :lmsCourseIds
+              and assignment.status in :statuses
+            group by assignment.lmsCourse.id, assignment.status
+            """)
+    List<CourseStatusCount> countByCourseAndStatus(@Param("lmsCourseIds") Collection<Long> lmsCourseIds,
+            @Param("statuses") Collection<LmsContentStatus> statuses);
+
+    interface CourseStatusCount {
+        Long getLmsCourseId();
+
+        LmsContentStatus getStatus();
+
+        Long getTotal();
+    }
 }

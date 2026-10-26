@@ -41,4 +41,22 @@ public interface CourseResultRepository extends JpaRepository<CourseResult, Long
             order by academicSession.startDate desc, semester.semesterNumber desc, course.code asc, result.id asc
             """)
     List<CourseResult> findAllPublishedByUserAccountId(@Param("userAccountId") Long userAccountId);
+
+    /** Reports: how many results of each of these offerings are in each status, in one grouped query. */
+    @Query("""
+            select result.courseEnrollment.courseOffering.id as courseOfferingId, result.status as status,
+                   count(result) as total
+            from CourseResult result
+            where result.courseEnrollment.courseOffering.id in :courseOfferingIds
+            group by result.courseEnrollment.courseOffering.id, result.status
+            """)
+    List<OfferingStatusCount> countByOfferingAndStatus(@Param("courseOfferingIds") Collection<Long> courseOfferingIds);
+
+    interface OfferingStatusCount {
+        Long getCourseOfferingId();
+
+        CourseResultStatus getStatus();
+
+        Long getTotal();
+    }
 }

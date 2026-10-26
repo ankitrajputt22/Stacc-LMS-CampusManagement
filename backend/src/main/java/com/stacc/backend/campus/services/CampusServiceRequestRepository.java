@@ -1,5 +1,6 @@
 package com.stacc.backend.campus.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.stacc.backend.approval.ApprovalRequestStatus;
@@ -163,4 +164,24 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
             """)
     Page<CampusServiceRequest> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
+
+    /**
+     * Reports: how many requests have each stored status and approval status, in one grouped query, so the effective
+     * status ({@link CampusServiceRequestStatus#withApproval}) can be counted without loading any request.
+     */
+    @Query("""
+            select request.status as status, approval.status as approvalStatus, count(request) as total
+            from CampusServiceRequest request
+            left join request.approvalRequest approval
+            group by request.status, approval.status
+            """)
+    List<StatusCount> countByStatusAndApprovalStatus();
+
+    interface StatusCount {
+        CampusServiceRequestStatus getStatus();
+
+        ApprovalRequestStatus getApprovalStatus();
+
+        Long getTotal();
+    }
 }

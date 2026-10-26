@@ -54,4 +54,21 @@ public interface AttendanceSessionRepository extends JpaRepository<AttendanceSes
             """)
     Page<AttendanceSession> findOpenByCourseOfferingIdIn(
             @Param("courseOfferingIds") Collection<Long> courseOfferingIds, Pageable page);
+
+    /** Reports: how many attendance sessions of each of these offerings are in each status, in one grouped query. */
+    @Query("""
+            select session.courseOffering.id as courseOfferingId, session.status as status, count(session) as total
+            from AttendanceSession session
+            where session.courseOffering.id in :courseOfferingIds
+            group by session.courseOffering.id, session.status
+            """)
+    List<OfferingStatusCount> countByOfferingAndStatus(@Param("courseOfferingIds") Collection<Long> courseOfferingIds);
+
+    interface OfferingStatusCount {
+        Long getCourseOfferingId();
+
+        AttendanceSessionStatus getStatus();
+
+        Long getTotal();
+    }
 }

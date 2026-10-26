@@ -103,6 +103,10 @@ The `campus` package holds the campus service catalog (`campus.services`), servi
 
 The `search` package answers `GET /api/search` (up to 5 results per kind, grouped) and `GET /api/search/results` (one kind, paged) for accounts with `GLOBAL_SEARCH_USE`. `GlobalSearchService` composes providers (LMS, calendar, campus, helpdesk, hostel, academic), each of which reuses its domain's access services and role and permission rules and runs bounded `LIKE` queries in that domain's repository, with the text bound as an escaped parameter. Search is MySQL only: no index table, no history, and no external engine. See `../docs/search.md`.
 
+## Reports
+
+The `report` package answers the faculty reports (`/api/reports/faculty/my-courses` and `/course-offerings/{courseOfferingId}`, with `FACULTY` and `FACULTY_REPORT_VIEW`, the latter only for an offering taught through an active teaching assignment) and the admin reports (`/api/reports/admin/overview`, `/enrollments`, and `/enrollments/export.csv`, with `ADMIN` and `ADMIN_REPORT_VIEW`). Every figure is a live grouped count in the owning module's repository; nothing is stored or cached, and there are no averages, percentages, ranks, or pass or fail. Operational sections of the admin overview appear only with their domain permission. See `../docs/reports-analytics.md`.
+
 ## Local test data
 
 The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.

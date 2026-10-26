@@ -114,4 +114,23 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             """)
     List<Long> findStudentAccountIdsInSession(@Param("academicSessionId") Long academicSessionId,
             @Param("semesterId") Long semesterId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
+
+    /** Reports: how many semester enrollments are in each status, in the semesters that match every given filter. */
+    @Query("""
+            select enrollment.status as status, count(enrollment) as total
+            from SemesterEnrollment enrollment
+            join enrollment.semester semester
+            where (:semesterId is null or semester.id = :semesterId)
+              and (:programId is null or semester.program.id = :programId)
+              and (:academicSessionId is null or semester.academicSession.id = :academicSessionId)
+            group by enrollment.status
+            """)
+    List<StatusCount> countByStatusWithin(@Param("semesterId") Long semesterId, @Param("programId") Long programId,
+            @Param("academicSessionId") Long academicSessionId);
+
+    interface StatusCount {
+        SemesterEnrollmentStatus getStatus();
+
+        Long getTotal();
+    }
 }

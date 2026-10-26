@@ -118,13 +118,13 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/approvals`.
 
 **Hostel (development only)**
-- Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active and free.
-- One pending application by `student2` for the current session (added in Phase 45 so search has something to find). Sign in as `student1` or `studentfaculty1` to apply at `/hostel` yourself, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
+- Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active.
+- One application by `student2` for the current session (added in Phase 45 so search has something to find). Since Phase 46 it is approved through the engine by `admin1`, allocated a bed, vacated, and allocated a second bed, so the reports show one active and one vacated allocation and two beds stay free. Sign in as `student1` or `studentfaculty1` to apply at `/hostel` yourself, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
 
 **Campus (development only)**
 - Services `ID_CARD` ("ID card replacement", students and faculty) and `TRANSPORT` ("Transport pass", students only), both approved through the `CAMPUS_SERVICE_REQUEST` workflow from migration `V57`, and `GENERAL_ADMIN` ("General administrative request", students and faculty, no approval).
 - The notice "Welcome to Campus services (development)", published for every role (so each test account has one Inbox notification for it), and the draft "Library hours during exams (development draft)".
-- Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
+- Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Phase 46 adds two for the reports: `student2`'s "Course transcript copy (development)", completed by `admin1`, and `studentfaculty1`'s "Library card renewal (development)", cancelled by its requester. Both use the General administrative request service. Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
 - Study materials are not seeded, because they need object storage; upload one at `/teaching/:lmsCourseId` to try material search (`docs/search.md`).
 
 ## Starting over

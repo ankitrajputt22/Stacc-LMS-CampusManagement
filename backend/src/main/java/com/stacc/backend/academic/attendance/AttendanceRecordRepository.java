@@ -65,4 +65,24 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
 
         Long getUnmarkedRecords();
     }
+
+    /**
+     * Reports: how many records of the finalized sessions of one offering are in each status. Open sessions are left
+     * out; a finalized session holds only PRESENT and ABSENT records, and any other status is returned as it is.
+     */
+    @Query("""
+            select record.status as status, count(record) as total
+            from AttendanceRecord record
+            join record.attendanceSession session
+            where session.courseOffering.id = :courseOfferingId
+              and session.status = com.stacc.backend.academic.attendance.AttendanceSessionStatus.FINALIZED
+            group by record.status
+            """)
+    List<RecordStatusCount> countFinalizedRecordsByStatus(@Param("courseOfferingId") Long courseOfferingId);
+
+    interface RecordStatusCount {
+        AttendanceStatus getStatus();
+
+        Long getTotal();
+    }
 }

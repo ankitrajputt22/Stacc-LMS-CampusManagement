@@ -57,4 +57,17 @@ public interface LmsAssignmentSubmissionRepository extends JpaRepository<LmsAssi
             where submission.id = :submissionId
             """)
     Optional<LmsAssignmentSubmission> findWithStudentById(@Param("submissionId") Long submissionId);
+
+    /**
+     * Reports: how many logical submissions the published assignments of one LMS course have received: one per student
+     * and assignment with at least one attempt, however many attempts it has.
+     */
+    @Query("""
+            select count(submission)
+            from LmsAssignmentSubmission submission
+            where submission.assignment.lmsCourse.id = :lmsCourseId
+              and submission.assignment.status = com.stacc.backend.lms.content.LmsContentStatus.PUBLISHED
+              and exists (select attempt.id from LmsSubmissionAttempt attempt where attempt.submission = submission)
+            """)
+    long countSubmittedForPublishedAssignments(@Param("lmsCourseId") Long lmsCourseId);
 }

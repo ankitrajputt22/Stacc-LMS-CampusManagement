@@ -15,10 +15,12 @@ import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
 import { CoursePage } from './pages/CoursePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { FacultyCourseReportPage } from './pages/FacultyCourseReportPage'
 import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmissionsPage'
 import { InboxPage } from './pages/InboxPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { ReportsPage } from './pages/ReportsPage'
 import { ResultsPage } from './pages/ResultsPage'
 import { SearchPage } from './pages/SearchPage'
 import { StudentAttendancePage } from './pages/StudentAttendancePage'
@@ -61,6 +63,9 @@ function App() {
           <Route path="calendar" element={<CalendarPage />} />
           {/* One search page for every role; the address holds the query, and View all the kind and page. */}
           <Route path="search" element={<SearchPage />} />
+          {/* Reports: one page with a part per role (faculty, admin), and one taught offering's report. */}
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="reports/faculty/course-offerings/:courseOfferingId" element={<FacultyCourseReportPage />} />
           <Route path="inbox" element={<InboxPage />} />
           {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
           <Route path="support" element={<SupportPage />} />

@@ -46,10 +46,13 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
+import com.stacc.backend.approval.ApprovalActor;
 import com.stacc.backend.approval.ApprovalApiRequests.ApprovalWorkflowStepRequest;
 import com.stacc.backend.approval.ApprovalApiRequests.CreateApprovalWorkflowRequest;
+import com.stacc.backend.approval.ApprovalCommands.CurrentApprovalStep;
 import com.stacc.backend.approval.ApprovalCommands.StartApprovalCommand;
 import com.stacc.backend.approval.ApprovalQueryService;
+import com.stacc.backend.approval.ApprovalRequestStatus;
 import com.stacc.backend.approval.ApprovalWorkflowDefinitionRepository;
 import com.stacc.backend.approval.ApprovalWorkflowDefinitionService;
 import com.stacc.backend.approval.ApprovalWorkflowService;
@@ -67,6 +70,9 @@ import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusService
 import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusServiceRequestInput;
 import com.stacc.backend.campus.services.CampusServiceRequestRepository;
 import com.stacc.backend.campus.services.CampusServiceRequestService;
+import com.stacc.backend.hostel.HostelAllocationRepository;
+import com.stacc.backend.hostel.HostelAllocationService;
+import com.stacc.backend.hostel.HostelApplication;
 import com.stacc.backend.hostel.HostelApplicationRepository;
 import com.stacc.backend.hostel.HostelApplicationService;
 import com.stacc.backend.hostel.HostelBedRepository;
@@ -76,6 +82,8 @@ import com.stacc.backend.hostel.HostelRequests.CreateBedRequest;
 import com.stacc.backend.hostel.HostelRequests.CreateHostelApplicationRequest;
 import com.stacc.backend.hostel.HostelRequests.CreateHostelRequest;
 import com.stacc.backend.hostel.HostelRequests.CreateRoomRequest;
+import com.stacc.backend.hostel.HostelResponses.AvailableHostelBed;
+import com.stacc.backend.hostel.HostelResponses.HostelAllocationResponse;
 import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
@@ -204,6 +212,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final CampusNoticeRepository campusNotices;
         final CampusServiceRequestRepository campusRequests;
         final HostelApplicationRepository hostelApplications;
+        final HostelAllocationRepository hostelAllocations;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -219,7 +228,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows,
                 HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds,
                 CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices,
-                CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications) {
+                CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications,
+                HostelAllocationRepository hostelAllocations) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -255,6 +265,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.campusNotices = campusNotices;
             this.campusRequests = campusRequests;
             this.hostelApplications = hostelApplications;
+            this.hostelAllocations = hostelAllocations;
         }
     }
 
@@ -281,6 +292,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final CampusNoticeService campusNotices;
         final CampusServiceRequestService campusRequests;
         final HostelApplicationService hostelApplications;
+        final HostelAllocationService hostelAllocations;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
@@ -291,7 +303,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries,
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
-                HostelApplicationService hostelApplications) {
+                HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -311,6 +323,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.campusNotices = campusNotices;
             this.campusRequests = campusRequests;
             this.hostelApplications = hostelApplications;
+            this.hostelAllocations = hostelAllocations;
         }
     }
 
@@ -566,6 +579,20 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         campusRequest(faculty1, "FACULTY", "ID_CARD", "Replacement staff ID card (development)",
                 "My staff ID card is cracked. Development test data.");
         hostelApplication(student2, student2Profile, current, "Development test application.");
+
+        // --- Report data (development only): campus requests in more statuses, and a hostel allocation history (one
+        // vacated, one active) for student2's application, approved through the approval engine like an admin would.
+        Long completed = campusRequest(student2, "STUDENT", "GENERAL_ADMIN", "Course transcript copy (development)",
+                "Please issue a copy of my course transcript. Development test data.");
+        if (completed != null) {
+            services.campusRequests.complete(adminActor(admin1), completed);
+        }
+        Long withdrawn = campusRequest(studentFaculty, "STUDENT", "GENERAL_ADMIN", "Library card renewal (development)",
+                "Please renew my library card. Development test data.");
+        if (withdrawn != null) {
+            services.campusRequests.cancel(studentFaculty.getId(), withdrawn);
+        }
+        hostelAllocationHistory(admin1, student2Profile);
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -895,14 +922,55 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    /** A campus service request found by its requester and subject, created as that requester would. */
-    private void campusRequest(UserAccount requester, String role, String serviceCode, String subject, String details) {
-        createUnless(repositories.campusRequests.existsByRequesterIdAndSubject(requester.getId(), subject), () -> {
-            Long serviceId = repositories.campusServices.findByCode(serviceCode)
-                    .orElseThrow(() -> new IllegalStateException("Campus service " + serviceCode + " is missing")).getId();
-            services.campusRequests.create(new CampusActor(requester.getId(), Set.of(role)),
-                    new CreateCampusServiceRequestInput(serviceId, subject, details));
+    /**
+     * A campus service request found by its requester and subject, created as that requester would. Returns the new
+     * request's ID, or null when it already existed.
+     */
+    private Long campusRequest(UserAccount requester, String role, String serviceCode, String subject, String details) {
+        if (repositories.campusRequests.existsByRequesterIdAndSubject(requester.getId(), subject)) {
+            existing++;
+            return null;
+        }
+        created++;
+        Long serviceId = repositories.campusServices.findByCode(serviceCode)
+                .orElseThrow(() -> new IllegalStateException("Campus service " + serviceCode + " is missing")).getId();
+        return services.campusRequests.create(new CampusActor(requester.getId(), Set.of(role)),
+                new CreateCampusServiceRequestInput(serviceId, subject, details)).requestId();
+    }
+
+    /**
+     * Approves the student's first hostel application through the approval engine when it is still pending, then
+     * allocates a bed, vacates it, and allocates another: one vacated and one active allocation. Nothing is done when
+     * the application already has an allocation.
+     */
+    private void hostelAllocationHistory(UserAccount admin, StudentProfile student) {
+        HostelApplication application = repositories.hostelApplications.findAllForStudent(student.getId()).stream()
+                .findFirst().orElse(null);
+        if (application == null) {
+            return;
+        }
+        boolean exists = !repositories.hostelAllocations.findAllForApplications(List.of(application.getId())).isEmpty();
+        createUnless(exists, () -> {
+            if (application.approvalStatus() == ApprovalRequestStatus.PENDING) {
+                CurrentApprovalStep step = services.approvalQueries.currentStep(application.getApprovalRequest().getId())
+                        .orElseThrow(() -> new IllegalStateException("The hostel application has no current step"));
+                services.approvals.approveStep(adminActor(admin), step.approvalRequestStepId(),
+                        "Development test approval.");
+            }
+            List<AvailableHostelBed> beds = services.hostelAllocations.availableBeds(null, null);
+            if (beds.size() < 2) {
+                return;
+            }
+            HostelAllocationResponse first = services.hostelAllocations.allocate(admin.getId(), application.getId(),
+                    beds.get(0).bedId());
+            services.hostelAllocations.vacate(admin.getId(), first.allocationId());
+            services.hostelAllocations.allocate(admin.getId(), application.getId(), beds.get(1).bedId());
         });
+    }
+
+    /** An admin deciding approval steps and completing requests with the permissions every ADMIN account receives. */
+    private static ApprovalActor adminActor(UserAccount admin) {
+        return new ApprovalActor(admin.getId(), Set.of("ADMIN"), true, true, true, true);
     }
 
     /** A hostel application for the session, unless the student already has a pending or approved one for it. */
