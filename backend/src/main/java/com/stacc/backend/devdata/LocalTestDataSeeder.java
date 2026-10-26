@@ -57,6 +57,12 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.role.RoleRepository;
+import com.stacc.backend.campus.notices.CampusNoticeInput;
+import com.stacc.backend.campus.notices.CampusNoticeRepository;
+import com.stacc.backend.campus.notices.CampusNoticeService;
+import com.stacc.backend.campus.services.CampusServiceDefinitionRepository;
+import com.stacc.backend.campus.services.CampusServiceDefinitionService;
+import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusServiceInput;
 import com.stacc.backend.hostel.HostelBedRepository;
 import com.stacc.backend.hostel.HostelManagementService;
 import com.stacc.backend.hostel.HostelRepository;
@@ -138,6 +144,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     private static final Set<String> PRODUCTION_PROFILES = Set.of("prod", "production");
     private static final Set<LmsContentStatus> ANY_CONTENT_STATUS = EnumSet.allOf(LmsContentStatus.class);
     static final String DEMO_APPROVAL_WORKFLOW = "DEMO_TWO_STEP_APPROVAL";
+    /** The campus workflow V57 creates; the seeded services that need approval use it. */
+    static final String CAMPUS_APPROVAL_WORKFLOW = "CAMPUS_SERVICE_REQUEST";
     static final String DEMO_APPROVAL_SOURCE = "DEV_DEMO";
 
     private final Environment environment;
@@ -185,6 +193,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelRepository hostels;
         final HostelRoomRepository hostelRooms;
         final HostelBedRepository hostelBeds;
+        final CampusServiceDefinitionRepository campusServices;
+        final CampusNoticeRepository campusNotices;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -198,7 +208,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 AttendanceRecordRepository attendanceRecords, CourseResultRepository results,
                 AcademicCalendarEventRepository calendarEvents, HelpdeskCategoryRepository helpdeskCategories,
                 HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows,
-                HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds) {
+                HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds,
+                CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -230,6 +241,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostels = hostels;
             this.hostelRooms = hostelRooms;
             this.hostelBeds = hostelBeds;
+            this.campusServices = campusServices;
+            this.campusNotices = campusNotices;
         }
     }
 
@@ -252,6 +265,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final ApprovalWorkflowService approvals;
         final ApprovalQueryService approvalQueries;
         final HostelManagementService hostels;
+        final CampusServiceDefinitionService campusServices;
+        final CampusNoticeService campusNotices;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
@@ -260,7 +275,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 AcademicCalendarManagementService calendar, HelpdeskCategoryService helpdeskCategories,
                 HelpdeskTicketCommandService helpdeskTickets, ApprovalWorkflowDefinitionService approvalWorkflows,
                 ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries,
-                HostelManagementService hostels) {
+                HostelManagementService hostels, CampusServiceDefinitionService campusServices,
+                CampusNoticeService campusNotices) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -276,6 +292,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.approvals = approvals;
             this.approvalQueries = approvalQueries;
             this.hostels = hostels;
+            this.campusServices = campusServices;
+            this.campusNotices = campusNotices;
         }
     }
 
@@ -508,6 +526,21 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             hostelBed(roomId, "B1");
             hostelBed(roomId, "B2");
         }
+
+        // --- Campus: a small service catalog and notices to try requests and the notice feed. Development data only;
+        // real services and notices are added by admins.
+        campusService("ID_CARD", "ID card replacement", "Replace a lost or damaged college ID card.", true, true,
+                CAMPUS_APPROVAL_WORKFLOW);
+        campusService("TRANSPORT", "Transport pass", "Apply for a college bus pass.", true, false,
+                CAMPUS_APPROVAL_WORKFLOW);
+        campusService("GENERAL_ADMIN", "General administrative request",
+                "Letters and other routine requests to the administrative office.", true, true, null);
+        campusNotice("Welcome to Campus services (development)",
+                "Request campus services and read college notices on the Campus page. This is development test data.",
+                true, true, true, true);
+        campusNotice("Library hours during exams (development draft)",
+                "The library stays open until 10 pm during the exam weeks. This draft is development test data.",
+                true, true, false, false);
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -816,6 +849,25 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     private void hostelBed(Long roomId, String bedNumber) {
         createUnless(repositories.hostelBeds.existsByRoomIdAndBedNumber(roomId, bedNumber),
                 () -> services.hostels.createBed(roomId, new CreateBedRequest(bedNumber)));
+    }
+
+    private void campusService(String code, String name, String description, boolean student, boolean faculty,
+            String workflowCode) {
+        createUnless(repositories.campusServices.existsByCode(code),
+                () -> services.campusServices.create(new CreateCampusServiceInput(code, name, description, true, student,
+                        faculty, workflowCode != null, workflowCode)));
+    }
+
+    /** A notice found by its title; a published one notifies its readers once, as an admin's would. */
+    private void campusNotice(String title, String message, boolean student, boolean faculty, boolean admin,
+            boolean publish) {
+        createUnless(repositories.campusNotices.existsByTitle(title), () -> {
+            Long noticeId = services.campusNotices.create(new CampusNoticeInput(title, message, student, faculty, admin))
+                    .noticeId();
+            if (publish) {
+                services.campusNotices.publish(noticeId);
+            }
+        });
     }
 
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */

@@ -227,6 +227,7 @@
 - Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
 - Category codes are read-only once created, categories are deactivated rather than deleted, and the admin list shows inactive ones. A 404 on a ticket shows "Ticket unavailable" with none of its data; a 409 shows the backend's message and reloads the ticket.
 - Students use `/hostel` (the Hostel item for `STUDENT`) and admins `/admin/hostel` (Hostel Management for `ADMIN`): applications with approval decisions through the approval task routes, Hostels & Rooms, and Allocations. Show approval status and occupancy only as the backend returns them, confirm cancelling and vacating, and offer no Delete and no student bed choice.
+- Campus is one page per `UserAccount` at `/campus` in the Common section for `STUDENT`, `FACULTY`, or `ADMIN`: services and own requests for accounts holding `STUDENT` or `FACULTY`, notices for all; requests open at `/campus/requests/:requestId`. Admins use `/admin/campus/:section` (Campus Management) with review at `/admin/campus/requests/:requestId`. Show the request status and the approval status as separate words, decide only through `approveTask` and `rejectTask`, choose workflows from the approval admin list, confirm cancelling, completing, publishing, and archiving, and offer no Delete or Restore. Shared approval UI lives in `src/approvals/`. See `docs/campus-services.md`.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
 
 ## Student Dashboard
@@ -294,6 +295,18 @@
 - Occupancy is derived from ACTIVE `HostelAllocation`s; never store an occupied flag or room capacity. A bed, an application, and a student each have at most one ACTIVE allocation, enforced under the fixed lock order student, application, hostel and room (shared), bed.
 - Vacating keeps history and allows reallocation. Never hard-delete hostels, rooms, beds, applications, or allocations. Do not deactivate what holds an active allocation, and fix room and bed numbers once they have allocation history.
 - Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, maintenance, or campus services without their own phase. Never use `roles[0]`.
+
+## Campus Services and Notices
+
+- Campus (`com.stacc.backend.campus`) has a service catalog, service requests, and notices. A campus service request is not a helpdesk ticket: never add messages, replies, or attachments to it; conversations belong to Support. See `docs/campus-services.md`.
+- `CampusServiceDefinition`s are configurable data, never an enum. Codes are uppercase, unique, and fixed after creation; services are made inactive, never deleted. A service is offered to `STUDENT`, `FACULTY`, or both and is matched against every role the account holds. No dynamic forms: requests are a subject and plain-text details.
+- A service that needs approval names an approval workflow by code, checked with `ApprovalQueryService.isStartableWorkflow` when the setting changes and again on every new request (409 otherwise). Approval settings affect future requests only.
+- Requests with approval start `SUBMITTED` and start the engine with source type `CAMPUS_SERVICE_REQUEST`; requests without approval start `APPROVED` (accepted for handling). The requester always comes from the token.
+- Never duplicate the approval state machine or write approval tables from Campus. While a request is `SUBMITTED`, show the status derived from its approval; store it only through `CampusServiceRequestService.synchronize` under the row lock. Cancel pending approvals with `cancelApprovalIfPending`, never by reading the status first. Decisions go only through the approval task routes; `CAMPUS_SERVICE_MANAGE` is no approval pass.
+- Only `SUBMITTED` or `APPROVED` requests can be cancelled, and only `APPROVED` ones completed (once, with `completedAt`). Never delete requests.
+- Notices are `DRAFT`, `PUBLISHED`, `ARCHIVED`, plain text, and visible to at least one role. `publishedAt` is set on the first publication only; archived notices are final and read-only. The feed matches any role the account holds and lists each notice once; never use `roles[0]`. No delete, restore, scheduling, expiry, comments, or attachments.
+- Only a notice's first publication (to active accounts of its roles, deduplicated) and a completed request (to its requester) notify, through `CampusNotifications`. Do not repeat the engine's approval notifications.
+- Do not build transport, library, ID-card inventory, or other domain subsystems inside the catalog without their own phase.
 
 ## Local Test Data
 

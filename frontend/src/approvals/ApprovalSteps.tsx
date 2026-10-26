@@ -1,6 +1,6 @@
 import { formatDateTime } from '../courses/dates'
 import type { ApprovalStep } from '../types/approvals'
-import { approvalTagClasses, stepStatusLabel } from './hostelText'
+import { approvalTagClasses, stepStatusLabel } from './approvalText'
 
 /**
  * The approval progress, step by step, as the approval engine reports it: the step's name, its status in words, who

@@ -38,9 +38,8 @@ const navigationSections: readonly NavigationSection[] = [
       // The student's academic records: one real link each, no separate menu.
       { label: 'Attendance', to: '/academic/attendance' },
       { label: 'Results', to: '/academic/results' },
-      // Hostel applications and allocation; other campus services come in their own phase.
+      // Hostel applications and allocation.
       { label: 'Hostel', to: '/hostel' },
-      { label: 'Campus' },
     ],
   },
   {
@@ -61,6 +60,7 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       { label: 'Academic Admin', to: '/admin/academic' },
       { label: 'Hostel Management', to: '/admin/hostel' },
+      { label: 'Campus Management', to: '/admin/campus' },
       { label: 'Users' },
       { label: 'Reports' },
     ],
@@ -75,6 +75,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications' },
       // One Support area per account: tickets belong to accounts, and admins manage the queue from the same place.
       { label: 'Support', to: '/support', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
+      // One Campus page per account: services and requests for students and faculty, notices for every role.
+      { label: 'Campus', to: '/campus', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
     ],
   },
 ]

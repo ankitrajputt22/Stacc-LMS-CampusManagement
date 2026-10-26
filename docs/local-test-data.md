@@ -121,6 +121,11 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active and free.
 - No applications: sign in as `student1`, `student2`, or `studentfaculty1` and apply at `/hostel` for the current session, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
 
+**Campus (development only)**
+- Services `ID_CARD` ("ID card replacement", students and faculty) and `TRANSPORT` ("Transport pass", students only), both approved through the `CAMPUS_SERVICE_REQUEST` workflow from migration `V57`, and `GENERAL_ADMIN` ("General administrative request", students and faculty, no approval).
+- The notice "Welcome to Campus services (development)", published for every role (so each test account has one Inbox notification for it), and the draft "Library hours during exams (development draft)".
+- No requests: sign in as a student or faculty account and request a service at `/campus`, then review, approve, and complete it as `admin1` at `/admin/campus`. Services are found by code and notices by title, so running again creates nothing new.
+
 ## Starting over
 
 The data lives in your local database. To start from an empty database with Docker, remove the stack's volumes with `docker compose down -v`. This deletes **all** local data, not only the demo data. Then start again with the profile.

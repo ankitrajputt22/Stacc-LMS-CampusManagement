@@ -123,6 +123,17 @@ public class ApprovalQueryService {
     }
 
     /**
+     * Whether a workflow with this code exists, is active, and has steps, so that {@code startApproval} can use it. A
+     * business module checks this when it is configured to start approvals with the workflow.
+     */
+    public boolean isStartableWorkflow(String workflowCode) {
+        String code = workflowCode == null ? "" : workflowCode.strip().toUpperCase(Locale.ROOT);
+        return !code.isEmpty() && workflows.findWithStepsByCode(code)
+                .filter(workflow -> workflow.isActive() && !workflow.getSteps().isEmpty())
+                .isPresent();
+    }
+
+    /**
      * Whether the record already has a PENDING request in this workflow. The engine allows several requests per record,
      * such as a second round after a rejection; the calling module decides whether to start another.
      */

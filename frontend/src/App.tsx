@@ -2,10 +2,13 @@ import { Navigate, Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
+import { AdminCampusPage } from './pages/AdminCampusPage'
 import { AdminHostelPage } from './pages/AdminHostelPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
 import { AttendancePage } from './pages/AttendancePage'
 import { CalendarPage } from './pages/CalendarPage'
+import { CampusPage } from './pages/CampusPage'
+import { CampusRequestPage } from './pages/CampusRequestPage'
 import { CourseAttendancePage } from './pages/CourseAttendancePage'
 import { CourseResultsPage } from './pages/CourseResultsPage'
 import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
@@ -70,6 +73,12 @@ function App() {
           <Route path="admin/hostel" element={<Navigate to="/admin/hostel/applications" replace />} />
           <Route path="admin/hostel/:section" element={<AdminHostelPage />} />
           <Route path="admin/hostel/applications/:applicationId" element={<AdminHostelPage review />} />
+          {/* Campus: one page for every role, a request page for its requester, and Campus Management for admins. */}
+          <Route path="campus" element={<CampusPage />} />
+          <Route path="campus/requests/:requestId" element={<CampusRequestPage />} />
+          <Route path="admin/campus" element={<Navigate to="/admin/campus/services" replace />} />
+          <Route path="admin/campus/:section" element={<AdminCampusPage />} />
+          <Route path="admin/campus/requests/:requestId" element={<AdminCampusPage review />} />
           <Route path="admin/academic/offerings/:courseOfferingId/enrollments" element={<AcademicAdminPage roster />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

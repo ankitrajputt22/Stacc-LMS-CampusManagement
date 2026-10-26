@@ -204,10 +204,19 @@ Hostel applications (`docs/hostel-management.md`) use the `HOSTEL_APPLICATION` w
 - **Deciding:** admins decide on the task routes above.
 - **Review page:** for that page, `ApprovalQueryService` also offers two internal reads to modules that have checked their own access, `requestDetail(approvalRequestId)` (steps and history) and `currentStep(approvalRequestId)` (the decidable step with its ID). They are Java calls, not routes.
 
+## Campus services: the second consumer
+
+Campus service requests (`docs/campus-services.md`) use the engine only when their service needs approval, with the workflow the service names by code. `V57` creates the reference workflow `CAMPUS_SERVICE_REQUEST` ("Campus Service Request Approval", one **Administrative Approval** step for `ADMIN`); a service may use it, another workflow, or none.
+- **Starting:** source type `CAMPUS_SERVICE_REQUEST`, the request ID as source ID, the requester from the access token.
+- **Configuration check:** `ApprovalQueryService.isStartableWorkflow(code)` tells the module whether a workflow exists, is active, and has steps, when an admin sets up a service and again when someone requests it.
+- **Status:** unlike hostel, a campus request keeps its own business status (`SUBMITTED`, `APPROVED`, `REJECTED`, `CANCELLED`, `COMPLETED`). While it is `SUBMITTED`, the status shown is derived from the approval request; one campus method stores the outcome when the request is next changed. Campus never writes approval tables.
+- **Cancelling:** `ApprovalWorkflowService.cancelApprovalIfPending(approvalRequestId, actorAccountId)` locks the approval row before reading its status and cancels it only while it is PENDING, returning whether it did. A module whose state follows the outcome uses it instead of reading the status first and then calling `cancelApproval`, so an approver deciding at the same moment is never overwritten.
+- **Deciding:** admins decide on the task routes above from Campus Management; there is no campus approval route.
+
 ## Local test data
 
 The `dev-seed` profile creates one clearly labelled demo workflow, `DEMO_TWO_STEP_APPROVAL` (Faculty review, then Administrative approval), and three demo requests by `student1`, `student2`, and `studentfaculty1`, each waiting at the faculty step. They are started through the engine with source type `DEV_DEMO`. It is development data only, never a migration or production data. See `local-test-data.md`.
 
 ## Not built yet
 
-Parallel approvals, conditional branches, quorum or voting, delegation, escalation, deadlines and reminders, attachments, a generic approval UI or task page, a workflow builder UI, and dynamic forms. Real approval workflows such as Hostel arrive with their own modules.
+Parallel approvals, conditional branches, quorum or voting, delegation, escalation, deadlines and reminders, attachments, a generic approval UI or task page, a workflow builder UI, and dynamic forms. Real approval workflows such as Hostel and Campus services arrive with their own modules.

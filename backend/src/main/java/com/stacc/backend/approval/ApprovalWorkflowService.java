@@ -111,6 +111,21 @@ public class ApprovalWorkflowService {
     }
 
     /**
+     * Cancels the request if it is still PENDING, and otherwise changes nothing. Returns whether it cancelled. The request
+     * row is locked before its status is read, so a decision made at the same moment is never overwritten; a business
+     * module whose own state follows the outcome calls this instead of reading the status first and then
+     * {@link #cancelApproval}.
+     */
+    public boolean cancelApprovalIfPending(Long approvalRequestId, Long actorAccountId) {
+        ApprovalRequest request = locked(approvalRequestId, REQUEST_NOT_FOUND);
+        if (request.getStatus().isTerminal()) {
+            return false;
+        }
+        cancelApproval(approvalRequestId, actorAccountId);
+        return true;
+    }
+
+    /**
      * Approves the current step as the signed-in approver. The next step becomes PENDING and its approvers are told, or,
      * after the last step, the request is APPROVED and the requester is told.
      */

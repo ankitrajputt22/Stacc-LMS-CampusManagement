@@ -33,5 +33,9 @@ public enum NotificationType {
     /** A student was allocated a hostel bed. */
     HOSTEL_ALLOCATED,
     /** A student's active hostel allocation was vacated. */
-    HOSTEL_VACATED
+    HOSTEL_VACATED,
+    /** A campus notice was published for the first time. */
+    CAMPUS_NOTICE_PUBLISHED,
+    /** A campus service request was completed. */
+    CAMPUS_SERVICE_COMPLETED
 }
