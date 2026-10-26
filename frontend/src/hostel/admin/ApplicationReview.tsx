@@ -1,7 +1,6 @@
 import { type FormEvent, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { getApiError, getHttpStatus } from '../../api/apiError'
-import { approveTask, rejectTask } from '../../api/approvalsApi'
 import { allocateBed, getAvailableBeds, getHostelApplication } from '../../api/hostelApi'
 import { useApiRequest } from '../../api/useApiRequest'
 import { Button } from '../../components/Button'
@@ -14,12 +13,12 @@ import { StatePanel } from '../../components/states/StatePanel'
 import { formatDateTime } from '../../courses/dates'
 import { border, fieldClasses } from '../../teaching/formStyles'
 import type { HostelAdminApplicationDetail } from '../../types/hostel'
-import { ApprovalSteps } from '../ApprovalSteps'
+import { ApprovalSteps } from '../../approvals/ApprovalSteps'
+import { DecisionForm } from '../../approvals/DecisionForm'
 import {
   allocationStatusLabel,
   approvalStatusLabel,
   approvalTagClasses,
-  COMMENT_MAX,
   plainTagClasses,
   refusalText,
   SIGN_IN_AGAIN,
@@ -30,87 +29,6 @@ const selectClasses = `h-11 ${fieldClasses} ${border(false)}`
 
 /** A page-level message after a change, or after a refusal that reloads the application. */
 type Notify = (message: string, tone?: 'success' | 'error') => void
-
-/**
- * Approve or Reject the current approval step through the approval engine's task routes. Approving takes an optional
- * comment; rejecting needs one. The backend checks the step's role and APPROVAL_TASK_DECIDE again.
- */
-function DecisionForm({ stepId, onDecided }: { stepId: number; onDecided: Notify }) {
-  const busyRef = useRef(false)
-  const [comment, setComment] = useState('')
-  const [busy, setBusy] = useState<'approve' | 'reject' | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  async function decide(kind: 'approve' | 'reject') {
-    if (busyRef.current) {
-      return
-    }
-    if (kind === 'reject' && comment.trim() === '') {
-      setError('A comment is required to reject.')
-      document.getElementById('hostel-decision-comment')?.focus()
-      return
-    }
-    busyRef.current = true
-    setBusy(kind)
-    setError(null)
-    try {
-      if (kind === 'approve') {
-        await approveTask(stepId, comment)
-      } else {
-        await rejectTask(stepId, comment)
-      }
-      onDecided(kind === 'approve' ? 'Application approved.' : 'Application rejected.')
-    } catch (failure) {
-      const status = getHttpStatus(failure)
-      if (status !== 401) {
-        const text = refusalText(status, getApiError(failure)?.message ?? null, 'record the decision')
-        if (status === 409 || status === 404) {
-          // Decided elsewhere meanwhile: the page says so and shows the application as it is now.
-          onDecided(text, 'error')
-        } else {
-          setError(text)
-        }
-      }
-    } finally {
-      busyRef.current = false
-      setBusy(null)
-    }
-  }
-
-  return (
-    <form onSubmit={(event: FormEvent) => event.preventDefault()} aria-label="Decision" className="mt-4 rounded-control border border-line-strong p-3">
-      <label htmlFor="hostel-decision-comment" className="block text-sm font-medium text-ink">
-        Comment
-      </label>
-      <p id="hostel-decision-comment-hint" className="mt-0.5 text-xs text-ink-muted">
-        Optional when approving, required when rejecting. The student sees it as plain text.
-      </p>
-      <textarea
-        id="hostel-decision-comment"
-        rows={3}
-        maxLength={COMMENT_MAX}
-        value={comment}
-        aria-describedby="hostel-decision-comment-hint"
-        onChange={(event) => {
-          setComment(event.target.value)
-          setError(null)
-        }}
-        className={`py-2 ${fieldClasses} ${border(Boolean(error))}`}
-      />
-      <div role="alert">
-        {error && <p className="mt-2 text-sm text-danger">{error}</p>}
-      </div>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <Button aria-disabled={busy !== null || undefined} onClick={() => decide('approve')}>
-          {busy === 'approve' ? 'Approving…' : 'Approve'}
-        </Button>
-        <Button variant="secondary" aria-disabled={busy !== null || undefined} onClick={() => decide('reject')}>
-          {busy === 'reject' ? 'Rejecting…' : 'Reject'}
-        </Button>
-      </div>
-    </form>
-  )
-}
 
 /** Hostel, then room, then bed: only beds the backend reports as available. A 409 reloads the choices. */
 function AllocationForm({ applicationId, onAllocated }: { applicationId: number; onAllocated: Notify }) {
@@ -226,7 +144,16 @@ function Review({ detail, onChanged }: { detail: HostelAdminApplicationDetail; o
         <div className="mt-2">
           <ApprovalSteps steps={detail.approvalSteps} />
         </div>
-        {current && detail.canDecideCurrentStep && <DecisionForm stepId={current.approvalRequestStepId} onDecided={onChanged} />}
+        {current && detail.canDecideCurrentStep && (
+          <DecisionForm
+            stepId={current.approvalRequestStepId}
+            onDecided={onChanged}
+            idPrefix="hostel"
+            approvedMessage="Application approved."
+            rejectedMessage="Application rejected."
+            audienceHint="The student sees it as plain text."
+          />
+        )}
         {current && !detail.canDecideCurrentStep && (
           <p className="mt-3 text-sm text-ink-muted">
             {current.stepName} needs an account holding the {current.requiredRoleCode} role with approval rights, other than the student.

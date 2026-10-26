@@ -30,3 +30,15 @@ export type ApprovalDecision = {
   requestStatus: ApprovalStatus
   currentStepOrder: number | null
 }
+
+/** A workflow in the approval admin list, for modules that let an admin choose one by its code. */
+export type ApprovalWorkflowSummary = {
+  workflowId: number
+  code: string
+  name: string
+  description: string | null
+  active: boolean
+  stepCount: number
+  createdAt: string
+  updatedAt: string
+}

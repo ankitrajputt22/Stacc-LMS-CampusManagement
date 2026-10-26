@@ -17,6 +17,8 @@ export type NotificationType =
   | 'APPROVAL_CANCELLED'
   | 'HOSTEL_ALLOCATED'
   | 'HOSTEL_VACATED'
+  | 'CAMPUS_NOTICE_PUBLISHED'
+  | 'CAMPUS_SERVICE_COMPLETED'
 
 export type NotificationSourceType =
   | 'ASSIGNMENT'
@@ -27,6 +29,8 @@ export type NotificationSourceType =
   | 'HELPDESK_TICKET'
   | 'APPROVAL_REQUEST'
   | 'HOSTEL_ALLOCATION'
+  | 'CAMPUS_NOTICE'
+  | 'CAMPUS_SERVICE_REQUEST'
 
 /** One notification in the signed-in account's own Inbox. */
 export type NotificationInboxItem = {

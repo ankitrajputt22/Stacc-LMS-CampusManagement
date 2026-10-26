@@ -52,6 +52,12 @@ A permission is added by a new migration only when the real feature it protects 
 | `HOSTEL_APPLICATION_VIEW_OWN` | `STUDENT` | Reading one's own hostel applications, their approval progress, and allocations. Added by `V52`. |
 | `HOSTEL_APPLICATION_CANCEL` | `STUDENT` | Cancelling one's own pending hostel application. Added by `V52`. |
 | `HOSTEL_MANAGE` | `ADMIN` | Managing hostels, rooms, and beds, reading every application, and allocating and vacating beds. It decides no approval. Added by `V52`. |
+| `CAMPUS_SERVICE_REQUEST_CREATE` | `STUDENT`, `FACULTY` | Seeing the campus services offered to one's roles and requesting one, as oneself. Added by `V56`. |
+| `CAMPUS_SERVICE_REQUEST_VIEW_OWN` | `STUDENT`, `FACULTY` | Reading one's own campus service requests and their approval progress. Added by `V56`. |
+| `CAMPUS_SERVICE_REQUEST_CANCEL` | `STUDENT`, `FACULTY` | Cancelling one's own campus service request before it is completed, rejected, or cancelled. Added by `V56`. |
+| `CAMPUS_SERVICE_MANAGE` | `ADMIN` | Managing the campus service catalog, reading every service request, and completing approved ones. It decides no approval. Added by `V56`. |
+| `CAMPUS_NOTICE_VIEW` | `STUDENT`, `FACULTY`, `ADMIN` | Reading the published campus notices visible to one's roles. Added by `V56`. |
+| `CAMPUS_NOTICE_MANAGE` | `ADMIN` | Creating, editing, publishing, and archiving campus notices. Nothing can delete them. Added by `V56`. |
 | `ACADEMIC_CALENDAR_MANAGE` | `ADMIN` | Creating, editing, publishing, and cancelling official academic calendar events. Nothing can delete them. Added by `V42`. |
 | `ACADEMIC_RESULT_MANAGE` | `FACULTY` | Recording, publishing, and correcting official course results for the course offerings taught, and seeing their enrollments. Added by `V34`. |
 | `ACADEMIC_RESULT_VIEW` | `STUDENT` | Reading one's own published course results. Added by `V34`. |
@@ -98,6 +104,8 @@ The helpdesk permissions come in two groups. `HELPDESK_TICKET_CREATE`, `HELPDESK
 The approval permissions open routes, not decisions. `APPROVAL_TASK_DECIDE` lets an account decide a step only when it also holds the step's required role, in its token and in the database, and is not the requester. There is no admin pass: an ADMIN-only account cannot decide a FACULTY step. The request routes need `STUDENT`, `FACULTY`, or `ADMIN` with `APPROVAL_REQUEST_VIEW_OWN`, the task routes one of those roles with `APPROVAL_TASK_VIEW` or `APPROVAL_TASK_DECIDE`, and workflow configuration `ADMIN` with `APPROVAL_WORKFLOW_MANAGE`. Workflow steps may only name a role that holds `APPROVAL_TASK_DECIDE`. Accounts signed in before `V49` must sign in again to get them. See `approval-workflow.md`.
 
 The hostel permissions keep students to their own applications (with the `STUDENT` role) and give the hostel office (with the `ADMIN` role) the inventory, applications, and allocations. FACULTY holds none of them. `HOSTEL_MANAGE` is no approval pass: approving or rejecting an application uses the approval task routes, which need `APPROVAL_TASK_DECIDE` and the workflow step's role (`ADMIN` for `HOSTEL_APPLICATION`). Accounts signed in before `V52` must sign in again. See `hostel-management.md`.
+
+The campus permissions let students and faculty request services and manage only their own requests (with the `STUDENT` or `FACULTY` role), let every role read the notices meant for it, and give admins the catalog, the request queue, and notices, each with its own permission. `CAMPUS_SERVICE_MANAGE` is no approval pass: approving or rejecting a request uses the approval task routes with `APPROVAL_TASK_DECIDE` and the step's role. Accounts signed in before `V56` must sign in again. See `campus-services.md`.
 
 Add a row to this table whenever a migration adds a real permission. It is a record of what exists, not a plan.
 

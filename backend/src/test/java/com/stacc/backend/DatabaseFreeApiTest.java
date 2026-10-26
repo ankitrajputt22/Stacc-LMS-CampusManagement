@@ -19,6 +19,9 @@ import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleRepository;
+import com.stacc.backend.campus.notices.CampusNoticeRepository;
+import com.stacc.backend.campus.services.CampusServiceDefinitionRepository;
+import com.stacc.backend.campus.services.CampusServiceRequestRepository;
 import com.stacc.backend.hostel.HostelAllocationRepository;
 import com.stacc.backend.hostel.HostelApplicationRepository;
 import com.stacc.backend.hostel.HostelBedRepository;
@@ -74,6 +77,9 @@ import org.springframework.web.context.WebApplicationContext;
     ApprovalWorkflowDefinitionRepository.class,
     AttendanceRecordRepository.class,
     AttendanceSessionRepository.class,
+    CampusNoticeRepository.class,
+    CampusServiceDefinitionRepository.class,
+    CampusServiceRequestRepository.class,
     CourseEnrollmentRepository.class,
     CourseOfferingRepository.class,
     CourseRepository.class,

@@ -282,7 +282,11 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 
 ### Hostel
 
-**Hostel** in the Student section opens `/hostel` for accounts holding `STUDENT`: applying for an eligible session, the student's applications with their approval progress, cancelling a pending one, and the allocation. **Hostel Management** in the Admin section opens `/admin/hostel` (Applications, Hostels & Rooms, Allocations, with review at `/admin/hostel/applications/:applicationId`) for accounts holding `ADMIN`. Requests go through `src/api/hostelApi.ts` and, for decisions, `src/api/approvalsApi.ts`; labels come from `src/hostel/hostelText.ts`. Students never choose a bed; approval and occupancy are shown exactly as the backend returns them. See `hostel-management.md`.
+**Hostel** in the Student section opens `/hostel` for accounts holding `STUDENT`: applying for an eligible session, the student's applications with their approval progress, cancelling a pending one, and the allocation. **Hostel Management** in the Admin section opens `/admin/hostel` (Applications, Hostels & Rooms, Allocations, with review at `/admin/hostel/applications/:applicationId`) for accounts holding `ADMIN`. Requests go through `src/api/hostelApi.ts` and, for decisions, `src/api/approvalsApi.ts`; labels come from `src/hostel/hostelText.ts` and the shared `src/approvals/` helpers (`approvalText.ts`, `ApprovalSteps.tsx`, `DecisionForm.tsx`). Students never choose a bed; approval and occupancy are shown exactly as the backend returns them. See `hostel-management.md`.
+
+### Campus
+
+**Campus** in the Common section opens `/campus` once for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. Accounts holding `STUDENT` or `FACULTY` see Campus Services (Request service opens a form with only Subject and Details) and My Service Requests; every account sees Campus Notices. A request opens at `/campus/requests/:requestId` with its approval progress and Cancel request. **Campus Management** in the Admin section opens `/admin/campus` (Service Catalog, Service Requests with review at `/admin/campus/requests/:requestId`, and Notices). Requests go through `src/api/campusApi.ts` and, for decisions, `src/api/approvalsApi.ts`; labels come from `src/campus/campusText.ts` and the shared `src/approvals/approvalText.ts`. The request status and the approval status are always shown as separate words, a missing or foreign request shows "Request unavailable", and nothing uses `roles[0]`. See `campus-services.md`.
 
 ### The Academic Admin page
 

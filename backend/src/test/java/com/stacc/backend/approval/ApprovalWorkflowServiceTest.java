@@ -347,6 +347,28 @@ class ApprovalWorkflowServiceTest {
     // Cancelling
 
     @Test
+    void cancellingIfPendingCancelsOnlyAPendingRequestAndSaysSo() {
+        ApprovalRequest pending = start("TWO_STEP", student);
+        ApprovalRequest approved = start("TWO_STEP", student);
+        service.approveStep(ApprovalFixtures.approver(80, RoleName.FACULTY), stepId(approved, 1), null);
+        service.approveStep(ApprovalFixtures.approver(1, RoleName.ADMIN), stepId(approved, 2), null);
+        trail.clear();
+
+        assertThat(service.cancelApprovalIfPending(pending.getId(), 70L)).isTrue();
+        assertThat(pending.getStatus()).isEqualTo(ApprovalRequestStatus.CANCELLED);
+        assertThat(actions()).containsExactly(REQUEST_CANCELLED);
+        trail.clear();
+
+        assertThat(service.cancelApprovalIfPending(pending.getId(), 70L)).isFalse();
+        assertThat(service.cancelApprovalIfPending(approved.getId(), 70L)).isFalse();
+        assertThat(approved.getStatus()).isEqualTo(ApprovalRequestStatus.APPROVED);
+        assertThat(trail).isEmpty();
+        verify(notifications, times(1)).cancelled(any(), anyLong());
+        assertRefused(() -> service.cancelApprovalIfPending(404L, 70L), HttpStatus.NOT_FOUND);
+    }
+
+
+    @Test
     void cancellingSkipsWhatIsLeftKeepsDecidedStepsAndRecordsWhoCancelled() {
         ApprovalRequest request = start("THREE_STEP", student);
         service.approveStep(ApprovalFixtures.approver(80, RoleName.FACULTY), stepId(request, 1), null);

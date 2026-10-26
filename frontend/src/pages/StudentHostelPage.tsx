@@ -20,7 +20,7 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime } from '../courses/dates'
-import { ApprovalSteps } from '../hostel/ApprovalSteps'
+import { ApprovalSteps } from '../approvals/ApprovalSteps'
 import {
   allocationStatusLabel,
   approvalStatusLabel,

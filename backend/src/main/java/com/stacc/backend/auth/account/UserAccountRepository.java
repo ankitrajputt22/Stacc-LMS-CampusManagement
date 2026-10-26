@@ -1,5 +1,6 @@
 package com.stacc.backend.auth.account;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     /** The IDs of the accounts in this status that hold the role. */
     @Query("select account.id from UserAccount account join account.roles role where role.name = :roleName and account.status = :status")
     List<Long> findIdsByRoleNameAndStatus(@Param("roleName") RoleName roleName, @Param("status") AccountStatus status);
+
+    /** The IDs of the accounts in this status that hold any of the roles, each once. */
+    @Query("select distinct account.id from UserAccount account join account.roles role where role.name in :roleNames and account.status = :status")
+    List<Long> findDistinctIdsByRoleNamesAndStatus(@Param("roleNames") Collection<RoleName> roleNames,
+            @Param("status") AccountStatus status);
 
     /** The login IDs of the accounts in this status that hold the role, in login ID order. */
     @Query("""

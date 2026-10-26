@@ -125,4 +125,20 @@ class ApprovalQueryServiceTest {
         assertThat(service.requestDetail(null)).isEmpty();
         assertThat(service.currentStep(404L)).isEmpty();
     }
+    @Test
+    void aWorkflowIsStartableOnlyWhenItExistsIsActiveAndHasSteps() {
+        ApprovalWorkflowDefinition active = ApprovalFixtures.workflow(4, "CAMPUS_SERVICE_REQUEST", RoleName.ADMIN);
+        ApprovalWorkflowDefinition inactive = ApprovalFixtures.workflow(5, "OLD_FLOW", RoleName.ADMIN);
+        inactive.update("Old", null, false, List.of(new ApprovalWorkflowDefinition.StepSpec("Admin",
+                ApprovalFixtures.role(RoleName.ADMIN))));
+        when(workflows.findWithStepsByCode("CAMPUS_SERVICE_REQUEST")).thenReturn(Optional.of(active));
+        when(workflows.findWithStepsByCode("OLD_FLOW")).thenReturn(Optional.of(inactive));
+        when(workflows.findWithStepsByCode("MISSING")).thenReturn(Optional.empty());
+
+        assertThat(service.isStartableWorkflow(" campus_service_request ")).isTrue();
+        assertThat(service.isStartableWorkflow("OLD_FLOW")).isFalse();
+        assertThat(service.isStartableWorkflow("MISSING")).isFalse();
+        assertThat(service.isStartableWorkflow(null)).isFalse();
+        assertThat(service.isStartableWorkflow(" ")).isFalse();
+    }
 }
