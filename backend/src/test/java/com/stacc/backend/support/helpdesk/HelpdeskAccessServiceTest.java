@@ -54,4 +54,21 @@ class HelpdeskAccessServiceTest {
         assertThat(access.canReply(notAdmin, ticket)).isFalse();
         assertThat(access.canManage(notAdmin)).isFalse();
     }
+
+    @Test
+    void listScopesAgreeWithThePerTicketRule() {
+        HelpdeskActor owner = HelpdeskFixtures.requester(70, "ROLE_STUDENT");
+        HelpdeskActor admin = HelpdeskFixtures.admin(1);
+        HelpdeskActor plainAdmin = HelpdeskFixtures.requester(1, "ROLE_ADMIN");
+        HelpdeskActor viewAllWithoutAdmin = HelpdeskFixtures.actor(71, "ROLE_STUDENT", HelpdeskActor.VIEW_ALL);
+
+        assertThat(access.canViewAll(admin)).isTrue();
+        assertThat(access.canViewAll(owner)).isFalse();
+        assertThat(access.canViewAll(plainAdmin)).isFalse();
+        assertThat(access.canViewAll(viewAllWithoutAdmin)).isFalse();
+        assertThat(access.canViewOwn(owner)).isTrue();
+        assertThat(access.canViewOwn(HelpdeskFixtures.actor(70, "ROLE_STUDENT"))).isFalse();
+        // Whoever may see every ticket sees this one; an own-only actor sees it only when it is theirs.
+        assertThat(access.canView(viewAllWithoutAdmin, ticket)).isFalse();
+    }
 }

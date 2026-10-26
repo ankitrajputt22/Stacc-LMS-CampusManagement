@@ -58,6 +58,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `CAMPUS_SERVICE_MANAGE` | `ADMIN` | Managing the campus service catalog, reading every service request, and completing approved ones. It decides no approval. Added by `V56`. |
 | `CAMPUS_NOTICE_VIEW` | `STUDENT`, `FACULTY`, `ADMIN` | Reading the published campus notices visible to one's roles. Added by `V56`. |
 | `CAMPUS_NOTICE_MANAGE` | `ADMIN` | Creating, editing, publishing, and archiving campus notices. Nothing can delete them. Added by `V56`. |
+| `GLOBAL_SEARCH_USE` | `STUDENT`, `FACULTY`, `ADMIN` | Using global search (`GET /api/search` and `/api/search/results`). It grants access to nothing it finds: every kind of result still needs its own domain's role and permissions. Added by `V59`. |
 | `ACADEMIC_CALENDAR_MANAGE` | `ADMIN` | Creating, editing, publishing, and cancelling official academic calendar events. Nothing can delete them. Added by `V42`. |
 | `ACADEMIC_RESULT_MANAGE` | `FACULTY` | Recording, publishing, and correcting official course results for the course offerings taught, and seeing their enrollments. Added by `V34`. |
 | `ACADEMIC_RESULT_VIEW` | `STUDENT` | Reading one's own published course results. Added by `V34`. |
@@ -106,6 +107,8 @@ The approval permissions open routes, not decisions. `APPROVAL_TASK_DECIDE` lets
 The hostel permissions keep students to their own applications (with the `STUDENT` role) and give the hostel office (with the `ADMIN` role) the inventory, applications, and allocations. FACULTY holds none of them. `HOSTEL_MANAGE` is no approval pass: approving or rejecting an application uses the approval task routes, which need `APPROVAL_TASK_DECIDE` and the workflow step's role (`ADMIN` for `HOSTEL_APPLICATION`). Accounts signed in before `V52` must sign in again. See `hostel-management.md`.
 
 The campus permissions let students and faculty request services and manage only their own requests (with the `STUDENT` or `FACULTY` role), let every role read the notices meant for it, and give admins the catalog, the request queue, and notices, each with its own permission. `CAMPUS_SERVICE_MANAGE` is no approval pass: approving or rejecting a request uses the approval task routes with `APPROVAL_TASK_DECIDE` and the step's role. Accounts signed in before `V56` must sign in again. See `campus-services.md`.
+
+`GLOBAL_SEARCH_USE` only lets an account use search. What it finds is decided by each domain's own rules: LMS results need `LMS_COURSE_VIEW` or `FACULTY_COURSE_VIEW`, tickets the helpdesk `_OWN` or `_ALL` permissions, academic data `ACADEMIC_MASTER_VIEW` or `ACADEMIC_OFFERING_VIEW` with `ADMIN`, and so on. A kind the account may not see is left out and never counted. Accounts signed in before `V59` must sign in again. See `search.md`.
 
 Add a row to this table whenever a migration adds a real permission. It is a record of what exists, not a plan.
 

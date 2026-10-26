@@ -58,4 +58,28 @@ public interface LmsAssignmentRepository extends JpaRepository<LmsAssignment, Lo
      */
     List<LmsAssignment> findAllByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqualAndDueAtLessThanOrderByDueAtAscIdAsc(
             Collection<Long> lmsCourseIds, Collection<LmsContentStatus> statuses, Instant dueFrom, Instant dueBefore);
+
+    /**
+     * Search: assignments of these courses in these statuses whose title contains the text ({@code contains} is an
+     * escaped, lower-case {@code LIKE} pattern). Exact titles first, then titles that start with the text, then the
+     * rest, each by title. The caller passes only courses the account may use, never an empty collection.
+     */
+    @Query(value = """
+            select assignment
+            from LmsAssignment assignment
+            where assignment.lmsCourse.id in :lmsCourseIds
+              and assignment.status in :statuses
+              and lower(assignment.title) like :contains escape '!'
+            order by case when lower(assignment.title) = :exact then 0 when lower(assignment.title) like :prefix escape '!' then 1 else 2 end, lower(assignment.title), assignment.id
+            """,
+            countQuery = """
+            select count(assignment)
+            from LmsAssignment assignment
+            where assignment.lmsCourse.id in :lmsCourseIds
+              and assignment.status in :statuses
+              and lower(assignment.title) like :contains escape '!'
+            """)
+    Page<LmsAssignment> search(@Param("lmsCourseIds") Collection<Long> lmsCourseIds,
+            @Param("statuses") Collection<LmsContentStatus> statuses, @Param("exact") String exact,
+            @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
 }

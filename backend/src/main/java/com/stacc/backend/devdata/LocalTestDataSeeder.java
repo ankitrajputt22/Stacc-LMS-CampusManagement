@@ -17,8 +17,8 @@ import java.util.function.Supplier;
 
 import com.stacc.backend.academic.admin.AcademicCalendarManagementService;
 import com.stacc.backend.academic.admin.AcademicCalendarRequests.AcademicCalendarEventCreate;
-import com.stacc.backend.academic.attendance.AttendanceManagementService;
 import com.stacc.backend.academic.attendance.AttendanceManagementService.RecordChange;
+import com.stacc.backend.academic.attendance.AttendanceManagementService;
 import com.stacc.backend.academic.attendance.AttendanceRecord;
 import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
 import com.stacc.backend.academic.attendance.AttendanceSessionRepository;
@@ -57,16 +57,23 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.role.RoleRepository;
+import com.stacc.backend.campus.CampusActor;
 import com.stacc.backend.campus.notices.CampusNoticeInput;
 import com.stacc.backend.campus.notices.CampusNoticeRepository;
 import com.stacc.backend.campus.notices.CampusNoticeService;
 import com.stacc.backend.campus.services.CampusServiceDefinitionRepository;
 import com.stacc.backend.campus.services.CampusServiceDefinitionService;
 import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusServiceInput;
+import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusServiceRequestInput;
+import com.stacc.backend.campus.services.CampusServiceRequestRepository;
+import com.stacc.backend.campus.services.CampusServiceRequestService;
+import com.stacc.backend.hostel.HostelApplicationRepository;
+import com.stacc.backend.hostel.HostelApplicationService;
 import com.stacc.backend.hostel.HostelBedRepository;
 import com.stacc.backend.hostel.HostelManagementService;
 import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelRequests.CreateBedRequest;
+import com.stacc.backend.hostel.HostelRequests.CreateHostelApplicationRequest;
 import com.stacc.backend.hostel.HostelRequests.CreateHostelRequest;
 import com.stacc.backend.hostel.HostelRequests.CreateRoomRequest;
 import com.stacc.backend.hostel.HostelRoomRepository;
@@ -195,6 +202,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelBedRepository hostelBeds;
         final CampusServiceDefinitionRepository campusServices;
         final CampusNoticeRepository campusNotices;
+        final CampusServiceRequestRepository campusRequests;
+        final HostelApplicationRepository hostelApplications;
 
         Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
@@ -209,7 +218,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 AcademicCalendarEventRepository calendarEvents, HelpdeskCategoryRepository helpdeskCategories,
                 HelpdeskTicketRepository helpdeskTickets, ApprovalWorkflowDefinitionRepository approvalWorkflows,
                 HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds,
-                CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices) {
+                CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices,
+                CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications) {
             this.accounts = accounts;
             this.roles = roles;
             this.departments = departments;
@@ -243,6 +253,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostelBeds = hostelBeds;
             this.campusServices = campusServices;
             this.campusNotices = campusNotices;
+            this.campusRequests = campusRequests;
+            this.hostelApplications = hostelApplications;
         }
     }
 
@@ -267,6 +279,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelManagementService hostels;
         final CampusServiceDefinitionService campusServices;
         final CampusNoticeService campusNotices;
+        final CampusServiceRequestService campusRequests;
+        final HostelApplicationService hostelApplications;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsAnnouncementManagementService announcements, LmsAssignmentManagementService assignments,
@@ -276,7 +290,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HelpdeskTicketCommandService helpdeskTickets, ApprovalWorkflowDefinitionService approvalWorkflows,
                 ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries,
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
-                CampusNoticeService campusNotices) {
+                CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
+                HostelApplicationService hostelApplications) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.announcements = announcements;
@@ -294,6 +309,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostels = hostels;
             this.campusServices = campusServices;
             this.campusNotices = campusNotices;
+            this.campusRequests = campusRequests;
+            this.hostelApplications = hostelApplications;
         }
     }
 
@@ -541,6 +558,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         campusNotice("Library hours during exams (development draft)",
                 "The library stays open until 10 pm during the exam weeks. This draft is development test data.",
                 true, true, false, false);
+
+        // --- Searchable requests (development only): one request each for a student and a faculty member, and one
+        // pending hostel application, so search has something to find. Each is created through its own service.
+        campusRequest(student1, "STUDENT", "GENERAL_ADMIN", "Bonafide letter for a scholarship (development)",
+                "Please issue a bonafide certificate for the state scholarship. Development test data.");
+        campusRequest(faculty1, "FACULTY", "ID_CARD", "Replacement staff ID card (development)",
+                "My staff ID card is cracked. Development test data.");
+        hostelApplication(student2, student2Profile, current, "Development test application.");
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -868,6 +893,23 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 services.campusNotices.publish(noticeId);
             }
         });
+    }
+
+    /** A campus service request found by its requester and subject, created as that requester would. */
+    private void campusRequest(UserAccount requester, String role, String serviceCode, String subject, String details) {
+        createUnless(repositories.campusRequests.existsByRequesterIdAndSubject(requester.getId(), subject), () -> {
+            Long serviceId = repositories.campusServices.findByCode(serviceCode)
+                    .orElseThrow(() -> new IllegalStateException("Campus service " + serviceCode + " is missing")).getId();
+            services.campusRequests.create(new CampusActor(requester.getId(), Set.of(role)),
+                    new CreateCampusServiceRequestInput(serviceId, subject, details));
+        });
+    }
+
+    /** A hostel application for the session, unless the student already has a pending or approved one for it. */
+    private void hostelApplication(UserAccount student, StudentProfile profile, AcademicSession session, String note) {
+        createUnless(repositories.hostelApplications.existsCurrent(profile.getId(), session.getId()),
+                () -> services.hostelApplications.apply(student.getId(),
+                        new CreateHostelApplicationRequest(session.getId(), note)));
     }
 
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */

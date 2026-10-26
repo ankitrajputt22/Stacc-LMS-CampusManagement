@@ -99,6 +99,10 @@ The `hostel` package manages hostels, rooms, and beds, students' applications fo
 
 The `campus` package holds the campus service catalog (`campus.services`), service requests, and campus notices (`campus.notices`). A request for a service that needs approval starts a request with the service's approval workflow (such as `CAMPUS_SERVICE_REQUEST`, created by `V57`) and keeps its own business status, which follows the engine's outcome; a service without approval accepts requests as approved. Admins complete approved requests and publish notices to roles; the Inbox is told on a notice's first publication and on completion. Requester and notice routes are under `/api/campus`, admin routes under `/api/campus/admin`. A service request is not a helpdesk ticket and has no messages. See `../docs/campus-services.md`.
 
+## Search
+
+The `search` package answers `GET /api/search` (up to 5 results per kind, grouped) and `GET /api/search/results` (one kind, paged) for accounts with `GLOBAL_SEARCH_USE`. `GlobalSearchService` composes providers (LMS, calendar, campus, helpdesk, hostel, academic), each of which reuses its domain's access services and role and permission rules and runs bounded `LIKE` queries in that domain's repository, with the text bound as an escaped parameter. Search is MySQL only: no index table, no history, and no external engine. See `../docs/search.md`.
+
 ## Local test data
 
 The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.

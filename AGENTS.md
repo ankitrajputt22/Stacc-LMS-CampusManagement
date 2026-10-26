@@ -227,6 +227,7 @@
 - Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
 - Category codes are read-only once created, categories are deactivated rather than deleted, and the admin list shows inactive ones. A 404 on a ticket shows "Ticket unavailable" with none of its data; a 409 shows the backend's message and reloads the ticket.
 - Students use `/hostel` (the Hostel item for `STUDENT`) and admins `/admin/hostel` (Hostel Management for `ADMIN`): applications with approval decisions through the approval task routes, Hostels & Rooms, and Allocations. Show approval status and occupancy only as the backend returns them, confirm cancelling and vacating, and offer no Delete and no student bed choice.
+- Search is one page at `/search`, reached from the top bar (a field from 768 px, an icon link below), with the query and View all state in the address (`q`, `type`, `page`). Send a search only on submit, never per keystroke, and never with fewer than 2 characters. Render results as plain text with router links, and never use `dangerouslySetInnerHTML`. A 403 shows access denied without signing out. See `docs/search.md`.
 - Campus is one page per `UserAccount` at `/campus` in the Common section for `STUDENT`, `FACULTY`, or `ADMIN`: services and own requests for accounts holding `STUDENT` or `FACULTY`, notices for all; requests open at `/campus/requests/:requestId`. Admins use `/admin/campus/:section` (Campus Management) with review at `/admin/campus/requests/:requestId`. Show the request status and the approval status as separate words, decide only through `approveTask` and `rejectTask`, choose workflows from the approval admin list, confirm cancelling, completing, publishing, and archiving, and offer no Delete or Restore. Shared approval UI lives in `src/approvals/`. See `docs/campus-services.md`.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
 
@@ -307,6 +308,15 @@
 - Notices are `DRAFT`, `PUBLISHED`, `ARCHIVED`, plain text, and visible to at least one role. `publishedAt` is set on the first publication only; archived notices are final and read-only. The feed matches any role the account holds and lists each notice once; never use `roles[0]`. No delete, restore, scheduling, expiry, comments, or attachments.
 - Only a notice's first publication (to active accounts of its roles, deduplicated) and a completed request (to its requester) notify, through `CampusNotifications`. Do not repeat the engine's approval notifications.
 - Do not build transport, library, ID-card inventory, or other domain subsystems inside the catalog without their own phase.
+
+## Search
+
+- Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.
+- `GLOBAL_SEARCH_USE` only allows using search and never replaces a feature permission. A kind the account may not see is left out (an empty page on `/api/search/results`), never 403 or 404, and is never counted. Counts use exactly the item query's conditions.
+- The searcher always comes from the access token. Never accept an account, student, faculty, profile, or enrollment ID in a search request, and never use `roles[0]`: check every role the account holds.
+- Search is MySQL only: bounded, paged, parameterized `LIKE` queries with the text lower-cased and escaped (`ESCAPE '!'`). No search tables, index stores, query or history persistence, OpenSearch or Elasticsearch, vector or AI search, autocomplete, or file-content indexing without their own phase.
+- Never search user accounts, people directories, security data, results, grades, submissions, or attendance. Results are plain text with internal action paths only (one leading `/`); the destination checks access again.
+- Student and teaching results are separate kinds with different pages; deduplicate by record within a kind (a notice or event appears once for a multi-role account), never across workflows.
 
 ## Local Test Data
 

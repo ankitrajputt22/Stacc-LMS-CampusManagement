@@ -18,6 +18,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface CampusServiceRequestRepository extends JpaRepository<CampusServiceRequest, Long> {
 
+    boolean existsByRequesterIdAndSubject(Long requesterId, String subject);
+
     /** Locks the request row. Its approval request is not loaded, so the engine can lock and read it fresh. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select request from CampusServiceRequest request where request.id = :requestId")
@@ -107,4 +109,58 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
     Page<CampusServiceRequest> findQueue(@Param("serviceId") Long serviceId,
             @Param("requesterLoginId") String requesterLoginId, @Param("status") CampusServiceRequestStatus status,
             @Param("approvalStatus") ApprovalRequestStatus approvalStatus, Pageable page);
+
+    /**
+     * Search: one account's own requests whose number, subject, or service code or name contains the text. Exact
+     * numbers or subjects first, then those that start with the text, then the rest; within each, the newest first.
+     */
+    @Query(value = """
+            select request
+            from CampusServiceRequest request
+            join fetch request.serviceDefinition service
+            left join fetch request.approvalRequest
+            where request.requester.id = :requesterId
+              and (lower(request.requestNumber) like :contains escape '!'
+                   or lower(request.subject) like :contains escape '!'
+                   or lower(service.code) like :contains escape '!'
+                   or lower(service.name) like :contains escape '!')
+            order by case when lower(request.requestNumber) = :exact or lower(request.subject) = :exact then 0 when lower(request.requestNumber) like :prefix escape '!' or lower(request.subject) like :prefix escape '!' then 1 else 2 end, request.submittedAt desc, request.id desc
+            """,
+            countQuery = """
+            select count(request)
+            from CampusServiceRequest request
+            join request.serviceDefinition service
+            where request.requester.id = :requesterId
+              and (lower(request.requestNumber) like :contains escape '!'
+                   or lower(request.subject) like :contains escape '!'
+                   or lower(service.code) like :contains escape '!'
+                   or lower(service.name) like :contains escape '!')
+            """)
+    Page<CampusServiceRequest> searchOwn(@Param("requesterId") Long requesterId, @Param("exact") String exact,
+            @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
+
+    /** Search: every request, as {@link #searchOwn} matches and orders them, for the campus office. */
+    @Query(value = """
+            select request
+            from CampusServiceRequest request
+            join fetch request.serviceDefinition service
+            join fetch request.requester
+            left join fetch request.approvalRequest
+            where (lower(request.requestNumber) like :contains escape '!'
+                   or lower(request.subject) like :contains escape '!'
+                   or lower(service.code) like :contains escape '!'
+                   or lower(service.name) like :contains escape '!')
+            order by case when lower(request.requestNumber) = :exact or lower(request.subject) = :exact then 0 when lower(request.requestNumber) like :prefix escape '!' or lower(request.subject) like :prefix escape '!' then 1 else 2 end, request.submittedAt desc, request.id desc
+            """,
+            countQuery = """
+            select count(request)
+            from CampusServiceRequest request
+            join request.serviceDefinition service
+            where (lower(request.requestNumber) like :contains escape '!'
+                   or lower(request.subject) like :contains escape '!'
+                   or lower(service.code) like :contains escape '!'
+                   or lower(service.name) like :contains escape '!')
+            """)
+    Page<CampusServiceRequest> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
+            @Param("contains") String contains, Pageable page);
 }

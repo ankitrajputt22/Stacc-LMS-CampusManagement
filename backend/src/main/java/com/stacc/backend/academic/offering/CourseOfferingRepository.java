@@ -3,6 +3,7 @@ package com.stacc.backend.academic.offering;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +50,36 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             where offering.id = :courseOfferingId
             """)
     Optional<CourseOffering> findWithContextById(@Param("courseOfferingId") Long courseOfferingId);
+
+    /**
+     * Search: course offerings, whatever their status, whose course code or name, program code, or academic session
+     * code contains the text, with the course, semester, program, and session loaded in the same query.
+     */
+    @Query(value = """
+            select offering
+            from CourseOffering offering
+            join fetch offering.course course
+            join fetch offering.semester semester
+            join fetch semester.program program
+            join fetch semester.academicSession academicSession
+            where lower(course.code) like :contains escape '!'
+               or lower(course.name) like :contains escape '!'
+               or lower(program.code) like :contains escape '!'
+               or lower(academicSession.code) like :contains escape '!'
+            order by case when lower(course.code) = :exact or lower(course.name) = :exact then 0 when lower(course.code) like :prefix escape '!' or lower(course.name) like :prefix escape '!' then 1 else 2 end, academicSession.startDate desc, course.code, offering.id
+            """,
+            countQuery = """
+            select count(offering)
+            from CourseOffering offering
+            join offering.course course
+            join offering.semester semester
+            join semester.program program
+            join semester.academicSession academicSession
+            where lower(course.code) like :contains escape '!'
+               or lower(course.name) like :contains escape '!'
+               or lower(program.code) like :contains escape '!'
+               or lower(academicSession.code) like :contains escape '!'
+            """)
+    Page<CourseOffering> search(@Param("exact") String exact, @Param("prefix") String prefix,
+            @Param("contains") String contains, Pageable page);
 }

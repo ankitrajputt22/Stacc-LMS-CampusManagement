@@ -36,7 +36,7 @@ An item stays marked on the pages below it, so Courses is also marked on a cours
 
 ## Top bar
 
-`components/navigation/TopBar.tsx` holds the mobile menu button, the Help placeholder, the bell that opens the Inbox with the same unread count as the navigation, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
+`components/navigation/TopBar.tsx` holds the mobile menu button, the search entry (`TopBarSearch.tsx`: a "Search Stacc" field with a Search button from 768 px that opens `/search?q=…` on Enter, and a search icon link to `/search` on narrower screens; it sends nothing while typing, see `search.md`), the Help placeholder, the bell that opens the Inbox with the same unread count as the navigation, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
 
 ## Mobile navigation
 
