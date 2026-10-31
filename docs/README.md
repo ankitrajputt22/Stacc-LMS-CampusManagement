@@ -1,12 +1,64 @@
 # Stacc Documentation
 
-This directory is reserved for future project documentation, including:
+Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it, and the progress.
 
-- Architecture documentation
-- Database diagrams
-- API documentation
-- Module documentation
-- Screenshots
-- Project-report material
+## Project
 
-These documents will be added during their relevant development phases.
+- [Roadmap](roadmap.md)
+- [Git workflow](git-workflow.md)
+- [Docker development stack](docker.md)
+- [Local test data](local-test-data.md)
+- [MySQL setup](mysql-setup.md)
+- [Database migrations](database-migrations.md)
+
+## Architecture and security
+
+- [Backend architecture](backend-architecture.md)
+- [Security foundation](security-foundation.md)
+- [API security](api-security.md)
+- [Authentication foundation](authentication-foundation.md)
+- [Authentication](authentication.md)
+- [Access tokens](access-tokens.md)
+- [Password security](password-security.md)
+- [Authorization](authorization.md)
+- [Permissions](permissions.md)
+- [User accounts](user-accounts.md)
+- [Account roles](account-roles.md)
+- [API error handling](api-error-handling.md)
+- [API documentation](api-documentation.md)
+
+## Frontend
+
+- [UI design system](ui-design.md)
+- [Frontend layout](frontend-layout.md)
+- [Frontend API](frontend-api.md)
+- [Frontend authentication](frontend-authentication.md)
+
+## Academic (ERP)
+
+- [Academic structure](academic-structure.md)
+- [Admin academic masters, offerings, and enrollment](admin-academic.md)
+- [Attendance](attendance.md)
+- [Results](results.md)
+- [Academic calendar](academic-calendar.md)
+
+## Learning (LMS) and AI
+
+- [LMS foundation](lms-foundation.md)
+- [AI learning](ai-learning.md)
+
+## Dashboards, reports, and search
+
+- [Student dashboard](student-dashboard.md)
+- [Faculty dashboard](faculty-dashboard.md)
+- [Admin dashboard](admin-dashboard.md)
+- [Reports and analytics](reports-analytics.md)
+- [Search](search.md)
+
+## Shared services and campus
+
+- [Notifications and Inbox](notifications-inbox.md)
+- [Helpdesk](helpdesk.md)
+- [Approval workflow](approval-workflow.md)
+- [Campus services and notices](campus-services.md)
+- [Hostel management](hostel-management.md)
