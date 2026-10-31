@@ -7,6 +7,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { AdminDashboard } from '../dashboard/AdminDashboard'
 import { FacultyDashboard } from '../dashboard/FacultyDashboard'
 import { StudentDashboard } from '../dashboard/StudentDashboard'
+import { PageHeader } from '../ui/PageHeader'
 
 type PreviewState = 'empty' | 'loading' | 'error'
 
@@ -58,24 +59,20 @@ export function DashboardPage() {
     return (
       <>
         <title>Dashboard · Stacc</title>
-        <h1 className="text-3xl font-bold tracking-tight text-portal-navy">{title}</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">{summary}</p>
-        <div className="mt-6">
-          <Part />
-        </div>
+        <PageHeader title={title} description={summary} />
+        <Part />
       </>
     )
   }
   return (
     <>
       <title>Dashboard · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Dashboard</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">An overview for each of your roles.</p>
+      <PageHeader title="Dashboard" description="An overview for each of your roles." />
       {parts.map(({ role, title, summary, Part }, index) => (
         <section
           key={role}
           aria-labelledby={`${role.toLowerCase()}-dashboard-heading`}
-          className={index === 0 ? 'mt-6' : 'mt-10 border-t border-line pt-6'}
+          className={index === 0 ? '' : 'mt-10 border-t border-line pt-6'}
         >
           <h2 id={`${role.toLowerCase()}-dashboard-heading`} className="text-xl font-semibold tracking-tight text-ink">
             {title}
