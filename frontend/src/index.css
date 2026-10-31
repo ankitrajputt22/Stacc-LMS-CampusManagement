@@ -19,6 +19,16 @@
   --color-warning: #b45309;
   --color-danger: #b91c1c;
 
+  /* The sign-in portal's own bold look: navy bands, a light-blue bar, a muted indigo hero, and warm buttons. */
+  --color-portal-navy: #0b2545;
+  --color-portal-navy-deep: #071a33;
+  --color-portal-bar: #8ecae6;
+  --color-portal-bar-strong: #b8e2f2;
+  --color-portal-hero: #3d4f7c;
+  --color-portal-cta: #c2410c;
+  --color-portal-cta-hover: #9a3412;
+  --color-portal-rail: #c9d6e8;
+
   --radius-control: 0.25rem;
   --radius-panel: 0.5rem;
 }
