@@ -77,7 +77,7 @@ export function CoursesPage() {
   return (
     <>
       <title>Courses · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Courses</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Courses</h1>
       {isStudent && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Your current LMS courses.

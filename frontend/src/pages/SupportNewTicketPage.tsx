@@ -251,7 +251,7 @@ export function SupportNewTicketPage() {
     <>
       <title>New ticket · Stacc</title>
       <Breadcrumb parent={{ to: '/support', label: 'Support' }} current="New ticket" />
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Create ticket</h1>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Create ticket</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         Describe the issue. You can follow the ticket and reply to the support team on its page.
       </p>

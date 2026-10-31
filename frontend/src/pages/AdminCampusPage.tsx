@@ -33,7 +33,7 @@ export function AdminCampusPage({ review = false }: { review?: boolean }) {
   return (
     <>
       <title>{`${current.label} · Campus Management · Stacc`}</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Campus Management</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Campus Management</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         Manage the campus service catalog, handle service requests, and publish campus notices.
       </p>

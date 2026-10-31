@@ -128,7 +128,7 @@ export function AssignmentsPage() {
   return (
     <>
       <title>Assignments · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Assignments</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Assignments</h1>
       {isFaculty && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Assignments across the courses you teach, earliest deadline first. Open one to manage it on its course page.

@@ -108,7 +108,7 @@ export function FacultyCourseReportPage() {
     <>
       <title>{code ? `${code} · Course Report · Stacc` : 'Course Report · Stacc'}</title>
       <Breadcrumb parent={{ to: '/reports', label: 'Reports' }} current={code} />
-      <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink">Course Report</h1>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight text-portal-navy">Course Report</h1>
       <div className="mt-2">{content}</div>
     </>
   )

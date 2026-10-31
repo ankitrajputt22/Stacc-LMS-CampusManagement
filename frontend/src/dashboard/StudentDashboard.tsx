@@ -7,9 +7,11 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime } from '../courses/dates'
-import { formatMarks, marksText } from '../courses/marks'
+import { formatMarks } from '../courses/marks'
 import type { StudentDashboard as Dashboard } from '../types/dashboard'
+import { courseColor } from './courseColors'
 import { DashboardSection, PreviewNote, SectionEmpty } from './DashboardSection'
+import { PlannerList } from './PlannerList'
 
 const itemLinkClasses =
   'font-medium break-words text-ink underline-offset-4 hover:text-stacc-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary'
@@ -22,15 +24,20 @@ function Courses({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
       {dashboard.courses.length === 0 ? (
         <SectionEmpty>No LMS courses available.</SectionEmpty>
       ) : (
-        <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {dashboard.courses.map((course) => (
-            <li key={course.lmsCourseId} className="min-w-0">
-              <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
+            <li key={course.lmsCourseId} className="min-w-0 overflow-hidden rounded-panel border border-line bg-surface shadow-sm">
+              <span aria-hidden="true" className="block h-20" style={{ backgroundColor: courseColor(course.lmsCourseId) }} />
+              <div className="px-4 py-3">
               {/* The course route uses the LMS course ID only. */}
-              <Link to={`/courses/${course.lmsCourseId}`} className={`text-sm ${itemLinkClasses}`}>
-                {course.courseName}
+              <Link
+                to={`/courses/${course.lmsCourseId}`}
+                className="block text-sm font-semibold break-words uppercase underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+                style={{ color: courseColor(course.lmsCourseId) }}
+              >
+                {course.courseCode}: {course.courseName}
               </Link>
-              <p className="text-xs leading-5 break-words text-ink-muted">
+              <p className="mt-1 text-xs leading-5 break-words text-ink-muted">
                 {course.programCode}
                 <span aria-hidden="true"> · </span>
                 <span className="sr-only">, </span>
@@ -39,6 +46,7 @@ function Courses({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
                 <span className="sr-only">, </span>
                 {course.academicSessionCode}
               </p>
+              </div>
             </li>
           ))}
         </ul>
@@ -54,28 +62,19 @@ function UpcomingAssignments({ dashboard, level }: { dashboard: Dashboard; level
       {dashboard.upcomingAssignments.length === 0 ? (
         <SectionEmpty>No upcoming assignments.</SectionEmpty>
       ) : (
-        <ul className="divide-y divide-line">
-          {dashboard.upcomingAssignments.map((assignment) => (
-            <li key={assignment.assignmentId} className="py-2.5 first:pt-0 last:pb-0">
-              <Link
-                to={`/courses/${assignment.lmsCourseId}/assignments/${assignment.assignmentId}`}
-                className={`text-sm ${itemLinkClasses}`}
-              >
-                {assignment.title}
-                <span className="sr-only">, {assignment.courseName}</span>
-              </Link>
-              <p className="text-xs leading-5 break-words text-ink-muted">
-                {assignment.courseCode}
-                <span aria-hidden="true"> · </span>
-                <span className="sr-only">, </span>
-                Due {formatDateTime(assignment.dueAt)}
-                <span aria-hidden="true"> · </span>
-                <span className="sr-only">, </span>
-                {marksText(assignment.maxMarks)}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <PlannerList
+          headingLevel={level === 2 ? 3 : 4}
+          items={dashboard.upcomingAssignments.map((assignment) => ({
+            key: String(assignment.assignmentId),
+            colorId: assignment.lmsCourseId,
+            courseCode: assignment.courseCode,
+            courseName: assignment.courseName,
+            title: assignment.title,
+            to: `/courses/${assignment.lmsCourseId}/assignments/${assignment.assignmentId}`,
+            dueAt: assignment.dueAt,
+            maxMarks: assignment.maxMarks,
+          }))}
+        />
       )}
       <PreviewNote shown={dashboard.upcomingAssignments.length} total={dashboard.upcomingAssignmentCount} />
     </DashboardSection>
@@ -224,8 +223,8 @@ export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {
         </div>
       </dl>
       <Courses dashboard={data} level={level} />
+      <UpcomingAssignments dashboard={data} level={level} />
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <UpcomingAssignments dashboard={data} level={level} />
         <RecentAnnouncements dashboard={data} level={level} />
         <Attendance dashboard={data} level={level} />
         <RecentResults dashboard={data} level={level} />

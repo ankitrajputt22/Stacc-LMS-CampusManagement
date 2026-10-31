@@ -127,7 +127,7 @@ The list is one query with the notification fetched alongside, plus a count; the
 
 ## Frontend
 
-- **Inbox** in the Common navigation section opens `/inbox` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`: one Inbox per account, however many roles it has. The bell in the top bar opens it too.
+- **Inbox** in the Common navigation section opens `/inbox` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`: one Inbox per account, however many roles it has. On small screens the bell in the top bar opens it too.
 - Both show the unread count from `GET /api/notifications/unread-count`: hidden at 0, "99+" from 100, and read out as "Inbox, 3 unread". The count is shared app-wide, so the badge and the Inbox never disagree. It is asked for when the app shell appears, whenever the Inbox loads a page, and after every read-state change. There is no polling and no live connection.
 - The Inbox page has **All** and **Unread**, newest first, 20 per page with Previous and Next. Each row shows the title, plain-text message, local time, and **Unread** or **Read** in words. It also has a link to the page concerned (View assignment, View calendar, View results, View attendance, View ticket, or View hostel) and **Mark as read** or **Mark as unread**.
 - Following a link marks the notification read without waiting, so navigation never blocks on it. **Mark all as read** appears while anything is unread.

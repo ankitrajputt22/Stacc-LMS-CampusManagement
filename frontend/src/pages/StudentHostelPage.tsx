@@ -380,7 +380,7 @@ export function StudentHostelPage() {
   return (
     <>
       <title>Hostel · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Hostel</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Hostel</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">View and manage your hostel application and allocation.</p>
       <div className="mt-6">{content}</div>
     </>

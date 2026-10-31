@@ -31,7 +31,7 @@ function ToolsState({ lmsCourseId, heading = 'AI Tools', srOnly = true, children
       <Breadcrumb
         parent={lmsCourseId === null ? TEACHING : [TEACHING, { to: `/teaching/${lmsCourseId}`, label: 'Course' }]}
       />
-      <h1 className={srOnly ? 'sr-only' : 'mt-4 text-2xl font-semibold tracking-tight text-ink'}>{heading}</h1>
+      <h1 className={srOnly ? 'sr-only' : 'mt-4 text-3xl font-bold tracking-tight text-portal-navy'}>{heading}</h1>
       <div className="mt-4">
         <StatePanel>{children}</StatePanel>
       </div>
@@ -84,7 +84,7 @@ function FacultyTools({ lmsCourseId }: { lmsCourseId: number | null }) {
               <span className="sr-only">, </span>
               {course.data.courseName}
             </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">AI Tools</h1>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-portal-navy">AI Tools</h1>
             <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
               Keep the course’s AI knowledge current and draft assessments to review. Students use the AI Study
               Assistant from the course page.

@@ -86,7 +86,7 @@ export function ResultsPage() {
   return (
     <>
       <title>Results · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Results</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Results</h1>
       {isFaculty && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Record and publish official course results for the course offerings you teach.

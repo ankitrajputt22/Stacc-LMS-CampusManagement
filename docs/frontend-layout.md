@@ -4,15 +4,17 @@ Every Stacc page is shown inside one shared app shell, so ERP, LMS, hostel, and 
 
 ## App layout
 
-`frontend/src/layouts/AppLayout.tsx` combines the sidebar, the top bar, and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. `/` is the Dashboard, and any unknown URL shows the not-found page.
+`frontend/src/layouts/AppLayout.tsx` combines the navigation rail (wide screens), the top bar and menu drawer (small screens), and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. `/` is the Dashboard, and any unknown URL shows the not-found page.
 
 The whole layout is for signed-in users. It sits inside the `RequireAuth` route guard, so a visitor who is not signed in sees the sign-in page instead. `/login` is the one page outside the layout, with its own simple design. See `frontend-authentication.md`.
 
 New pages go in `frontend/src/pages` and are added as routes inside the `AppLayout` route.
 
-## Sidebar
+## Navigation rail
 
-`components/navigation/Sidebar.tsx` shows the global navigation. The items themselves are one list in `components/navigation/navigation.ts`, used for the desktop sidebar and the mobile drawer alike. There is one sidebar for every role, not one per role.
+From the `lg` breakpoint, `components/navigation/GlobalNav.tsx` shows a narrow navy rail, Canvas style, with an icon above each label: the Stacc emblem (to the Dashboard), **Account**, **Dashboard**, one button per role section the account holds (**Student**, **Faculty**, **Admin**, in that order), then the Common items as direct links (**Calendar**, **Inbox** with the unread count, **Support**, **Campus**, **Search**). A role button and Account open a tray beside the rail: Account shows the initials, login ID, roles in plain words, **Sign out**, and the Common links; a role tray lists that section's pages, with "Soon" items as plain text. A tray takes focus and closes with its Close button, Escape, a click outside, or a link, returning focus to its rail button. A role button is shown as current on any page of its section. Only features Stacc has appear; there is no Files, History, or settings tray.
+
+The items themselves are one list in `components/navigation/navigation.ts`, used by the rail and the mobile drawer alike, each with its rail icon. There is one navigation for every role, not one per role.
 
 The list is in sections:
 
@@ -36,11 +38,15 @@ An item stays marked on the pages below it, so Courses is also marked on a cours
 
 ## Top bar
 
-`components/navigation/TopBar.tsx` holds the mobile menu button, the search entry (`TopBarSearch.tsx`: a "Search Stacc" field with a Search button from 768 px that opens `/search?q=…` on Enter, and a search icon link to `/search` on narrower screens; it sends nothing while typing, see `search.md`), the Help placeholder, the bell that opens the Inbox with the same unread count as the navigation, and the account area: the signed-in login ID, the account's roles in plain words (such as "Student · Faculty"), and the **Sign out** button. The placeholders are disabled until those features are built. A long login ID is shortened with an ellipsis and shown in full as a tooltip. On small screens the login ID and roles are hidden to save space, but screen readers still read them.
+Below the `lg` breakpoint, `components/navigation/TopBar.tsx` is a navy bar with the menu button, the Stacc name, a Search icon link to `/search`, and the bell that opens the Inbox with the same unread count as the navigation. On wide screens the rail replaces it.
 
 ## Mobile navigation
 
-Below the `lg` breakpoint the sidebar becomes a drawer opened from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link. The drawer shows the same sections as the desktop sidebar, and at its foot the login ID, the roles, and a **Sign out** button.
+Below the `lg` breakpoint the navigation is a navy drawer (`components/navigation/Sidebar.tsx`) opened from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link. It shows every section of the list with titles, and at its foot the login ID, the roles, and a **Sign out** button.
+
+## Page look
+
+Page titles (`h1`) are large, bold, and Stacc navy (`text-3xl font-bold text-portal-navy`). The dashboards show courses as cards with a colour bar per course and upcoming assignments planner style (`dashboard/PlannerList.tsx`): one heading per local day, then each item with its course's colour tag, the course, the title linking to its page, and the marks and local due time. Course colours come from `dashboard/courseColors.ts`, one steady colour per course.
 
 ## Page states
 

@@ -136,7 +136,7 @@ export function SupportCategoriesPage() {
     <div ref={pageRef}>
       <title>Helpdesk Categories · Stacc</title>
       <Breadcrumb parent={{ to: '/support', label: 'Support' }} current="Helpdesk Categories" />
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Helpdesk Categories</h1>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Helpdesk Categories</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         The kinds of issue people choose when they raise a ticket. Categories are made inactive instead of deleted.
       </p>

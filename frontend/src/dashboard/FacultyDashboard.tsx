@@ -8,15 +8,13 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { TimingTag } from '../courses/AttemptParts'
 import { formatDateTime } from '../courses/dates'
-import { marksText } from '../courses/marks'
 import { lmsStatusWord } from '../teaching/lmsCourseText'
 import type { FacultyDashboard as Dashboard, FacultyDashboardCourse, FacultyDashboardOpenSession } from '../types/dashboard'
 import { DashboardSection, PreviewNote, SectionEmpty } from './DashboardSection'
+import { PlannerList } from './PlannerList'
 
 type Level = 2 | 3
 
-const itemLinkClasses =
-  'font-medium break-words text-ink underline-offset-4 hover:text-stacc-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary'
 const tagClasses = 'inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink'
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
@@ -85,23 +83,21 @@ function UpcomingAssignments({ dashboard, level }: { dashboard: Dashboard; level
       {dashboard.upcomingAssignments.length === 0 ? (
         <SectionEmpty>No upcoming assignments.</SectionEmpty>
       ) : (
-        <ul className="divide-y divide-line">
-          {dashboard.upcomingAssignments.map((assignment) => (
-            <li key={assignment.assignmentId} className="py-2.5 first:pt-0 last:pb-0">
-              {/* The course page's Assignments section is where assignments are managed. */}
-              <Link to={`/teaching/${assignment.lmsCourseId}#assignments`} className={`text-sm ${itemLinkClasses}`}>
-                {assignment.title}
-                <span className="sr-only">, {assignment.courseName}</span>
-              </Link>
-              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-5 text-ink-muted">
-                <span>{assignment.courseCode}</span>
-                <span>Due {formatDateTime(assignment.dueAt)}</span>
-                <span>{marksText(assignment.maxMarks)}</span>
-                <span className={tagClasses}>{assignment.status === 'DRAFT' ? 'Draft' : 'Published'}</span>
-              </p>
-            </li>
-          ))}
-        </ul>
+        <PlannerList
+          headingLevel={level === 2 ? 3 : 4}
+          items={dashboard.upcomingAssignments.map((assignment) => ({
+            key: String(assignment.assignmentId),
+            colorId: assignment.lmsCourseId,
+            courseCode: assignment.courseCode,
+            courseName: assignment.courseName,
+            title: assignment.title,
+            // The course page's Assignments section is where assignments are managed.
+            to: `/teaching/${assignment.lmsCourseId}#assignments`,
+            dueAt: assignment.dueAt,
+            maxMarks: assignment.maxMarks,
+            tag: assignment.status === 'DRAFT' ? 'Draft' : undefined,
+          }))}
+        />
       )}
       <PreviewNote shown={dashboard.upcomingAssignments.length} total={dashboard.upcomingAssignmentCount} />
     </DashboardSection>
@@ -244,11 +240,11 @@ export function FacultyDashboard({ level = 2 }: { level?: Level }) {
         </div>
       </dl>
       <TeachingCourses dashboard={data} level={level} />
+      <UpcomingAssignments dashboard={data} level={level} />
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <UpcomingAssignments dashboard={data} level={level} />
         <NeedsGrading dashboard={data} level={level} />
+        <OpenAttendance dashboard={data} level={level} />
       </div>
-      <OpenAttendance dashboard={data} level={level} />
     </div>
   )
 }

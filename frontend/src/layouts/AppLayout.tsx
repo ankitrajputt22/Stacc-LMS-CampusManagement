@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router'
+import { GlobalNav } from '../components/navigation/GlobalNav'
 import { Sidebar } from '../components/navigation/Sidebar'
 import { TopBar } from '../components/navigation/TopBar'
 import { UnreadCountProvider } from '../notifications/UnreadCountProvider'
 
 const NAVIGATION_ID = 'app-navigation'
 
-// Matches the Tailwind `lg` breakpoint, where the sidebar becomes permanently visible.
+// Matches the Tailwind `lg` breakpoint, where the navigation rail replaces the menu drawer.
 const DESKTOP_QUERY = '(min-width: 64rem)'
 
 export function AppLayout() {
@@ -45,7 +46,7 @@ export function AppLayout() {
 
   return (
     <UnreadCountProvider>
-      <div className="min-h-screen bg-canvas lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[5.5rem_minmax(0,1fr)]">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-surface focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-stacc-primary focus:outline-2 focus:outline-stacc-primary"
@@ -53,6 +54,9 @@ export function AppLayout() {
           Skip to main content
         </a>
 
+        <div className="hidden lg:block">
+          <GlobalNav />
+        </div>
         <Sidebar id={NAVIGATION_ID} isOpen={isMenuOpen} onClose={closeMenu} />
 
         <div className="flex min-h-screen min-w-0 flex-col" inert={isMenuOpen}>
@@ -65,9 +69,9 @@ export function AppLayout() {
           <main
             id="main-content"
             tabIndex={-1}
-            className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 lg:py-8"
+            className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8"
           >
-            <div className="max-w-5xl">
+            <div className="max-w-6xl">
               <Outlet />
             </div>
           </main>

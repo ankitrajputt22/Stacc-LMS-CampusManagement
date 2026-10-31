@@ -17,7 +17,7 @@ export function CampusPage() {
   return (
     <>
       <title>Campus · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Campus</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Campus</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Campus services and important notices.</p>
       <div className="mt-6 space-y-8">
         {requester && <ServicesSection />}

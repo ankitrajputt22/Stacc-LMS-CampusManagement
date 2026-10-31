@@ -44,7 +44,7 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
     <>
       <title>Assignment unavailable · Stacc</title>
       <Breadcrumb parent={TEACHING} />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Assignment unavailable</h1>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Assignment unavailable</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         This assignment could not be found, is not published, or is not one you currently teach.
       </p>
@@ -145,7 +145,7 @@ function AssignmentSubmissions({ assignment, submissions, open, onGraded }: Load
           <span className="sr-only">, </span>
           {assignment.courseName}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink">{assignment.title}</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{assignment.title}</h1>
         <p className="mt-2 text-sm text-ink-muted">
           Due <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
           <span aria-hidden="true"> · </span>

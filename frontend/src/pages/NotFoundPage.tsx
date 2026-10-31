@@ -4,7 +4,7 @@ export function NotFoundPage() {
   return (
     <>
       <title>Page not found · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">
         Page not found
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">

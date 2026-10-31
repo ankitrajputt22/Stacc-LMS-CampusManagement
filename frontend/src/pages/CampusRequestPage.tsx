@@ -154,7 +154,7 @@ export function CampusRequestPage() {
       <title>{`${detail?.requestNumber ?? 'Service request'} · Campus · Stacc`}</title>
       <Breadcrumb parent={{ to: '/campus', label: 'Campus' }} current={detail?.requestNumber} />
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <h1 className="font-mono text-2xl font-semibold tracking-tight text-ink">{detail?.requestNumber ?? 'Service request'}</h1>
+        <h1 className="font-mono text-3xl font-bold tracking-tight text-portal-navy">{detail?.requestNumber ?? 'Service request'}</h1>
         {detail && <RequestTags status={detail.status} approvalStatus={detail.approvalStatus} />}
       </div>
       <p role="status" className="mt-3 text-sm text-success empty:hidden">

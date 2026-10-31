@@ -138,7 +138,7 @@ export function CalendarPage() {
       <title>Calendar · Stacc</title>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">Calendar</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Calendar</h1>
           <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
             {isStudent || isFaculty
               ? 'Official academic dates and your assignment deadlines, in your time zone.'

@@ -1,4 +1,5 @@
 import { hasAnyRole, type AccountRole } from '../../auth/roles'
+import type { RailIconName } from './icons'
 
 export type NavigationItem = {
   label: string
@@ -8,6 +9,8 @@ export type NavigationItem = {
   roles?: readonly AccountRole[]
   /** A count shown beside the label, such as the unread notifications of the Inbox. */
   badge?: 'unreadNotifications'
+  /** The icon beside the label in the navigation rail. */
+  icon?: RailIconName
 }
 
 export type NavigationSection = {
@@ -15,6 +18,8 @@ export type NavigationSection = {
   title?: string
   /** Shown to accounts with any of these roles. A section without roles is shown to everyone. */
   roles?: readonly AccountRole[]
+  /** The rail shows a titled section as one button with this icon, opening a panel of its items. */
+  icon?: RailIconName
   items: readonly NavigationItem[]
 }
 
@@ -27,12 +32,13 @@ export type NavigationSection = {
 const navigationSections: readonly NavigationSection[] = [
   {
     id: 'home',
-    items: [{ label: 'Dashboard', to: '/' }],
+    items: [{ label: 'Dashboard', to: '/', icon: 'dashboard' }],
   },
   {
     id: 'student',
     title: 'Student',
     roles: ['STUDENT'],
+    icon: 'student',
     items: [
       { label: 'Courses', to: '/courses' },
       // The student's academic records: one real link each, no separate menu.
@@ -46,6 +52,7 @@ const navigationSections: readonly NavigationSection[] = [
     id: 'faculty',
     title: 'Faculty',
     roles: ['FACULTY'],
+    icon: 'faculty',
     items: [
       { label: 'Teaching', to: '/teaching' },
       { label: 'Assignments', to: '/assignments' },
@@ -59,6 +66,7 @@ const navigationSections: readonly NavigationSection[] = [
     id: 'admin',
     title: 'Admin',
     roles: ['ADMIN'],
+    icon: 'admin',
     items: [
       { label: 'Academic Admin', to: '/admin/academic' },
       { label: 'Hostel Management', to: '/admin/hostel' },
@@ -72,13 +80,15 @@ const navigationSections: readonly NavigationSection[] = [
     title: 'Common',
     items: [
       // One calendar for every role: the backend decides which events and deadlines each account gets.
-      { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
+      { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'calendar' },
       // One Inbox per account, whatever roles it holds: notifications are sent to accounts, not to roles.
-      { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications' },
+      { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications', icon: 'inbox' },
       // One Support area per account: tickets belong to accounts, and admins manage the queue from the same place.
-      { label: 'Support', to: '/support', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
+      { label: 'Support', to: '/support', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'support' },
       // One Campus page per account: services and requests for students and faculty, notices for every role.
-      { label: 'Campus', to: '/campus', roles: ['STUDENT', 'FACULTY', 'ADMIN'] },
+      { label: 'Campus', to: '/campus', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'campus' },
+      // One search page for every account; the backend decides what each account may find.
+      { label: 'Search', to: '/search', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'search' },
     ],
   },
 ]
