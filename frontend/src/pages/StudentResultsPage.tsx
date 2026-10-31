@@ -144,7 +144,7 @@ export function StudentResultsPage() {
   return (
     <>
       <title>Results · Academic · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Results</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Results</h1>
       {isStudent && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Your official course results, as your teachers published them.

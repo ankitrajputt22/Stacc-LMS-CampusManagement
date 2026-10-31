@@ -54,7 +54,7 @@ function CourseUnavailable() {
     <>
       <title>Course unavailable · Stacc</title>
       <CourseBreadcrumb />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">
         Course unavailable
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
@@ -97,7 +97,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
         <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
           {course.courseCode}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink">
+        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">
           {course.courseName}
         </h1>
         <p className="mt-2 text-sm leading-6 break-words text-ink-muted">

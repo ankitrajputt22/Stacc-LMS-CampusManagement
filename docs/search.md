@@ -1,6 +1,6 @@
 # Search
 
-Phase 45 adds global search: one read-only API (`com.stacc.backend.search`) over the data each account may already open, and a `/search` page with a search field in the top bar. Search **never grants access**. A text match shows nothing the account could not reach through the feature's own pages, and every result opens a page that checks access again.
+Phase 45 adds global search: one read-only API (`com.stacc.backend.search`) over the data each account may already open, and a `/search` page with its own search field, reached from Search in the navigation. Search **never grants access**. A text match shows nothing the account could not reach through the feature's own pages, and every result opens a page that checks access again.
 
 ## Architecture
 

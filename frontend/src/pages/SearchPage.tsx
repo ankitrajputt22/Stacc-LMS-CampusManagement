@@ -242,7 +242,7 @@ export function SearchPage() {
   return (
     <>
       <title>{query ? `${query} · Search · Stacc` : 'Search · Stacc'}</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Search</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Search</h1>
       {/* Keyed by the address, so Back and Forward show the query they lead to. */}
       <SearchForm key={`${query}|${type ?? ''}`} initial={query} type={type} />
       <div className="mt-6">{content}</div>

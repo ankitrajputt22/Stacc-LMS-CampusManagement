@@ -92,7 +92,7 @@ export function TeachingPage() {
   return (
     <>
       <title>Teaching · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Teaching</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Teaching</h1>
       {isFaculty && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           The course offerings you are assigned to teach, with their LMS courses.

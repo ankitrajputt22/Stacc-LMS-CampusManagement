@@ -126,7 +126,7 @@ export function SupportQueuePage() {
     <>
       <title>Support Queue · Stacc</title>
       <Breadcrumb parent={{ to: '/support', label: 'Support' }} current="Support Queue" />
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Support Queue</h1>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Support Queue</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Every support ticket, newest first.</p>
 
       {isAdmin && (

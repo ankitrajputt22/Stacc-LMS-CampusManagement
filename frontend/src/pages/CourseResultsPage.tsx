@@ -36,7 +36,7 @@ function CourseUnavailable() {
     <>
       <title>Course results unavailable · Stacc</title>
       <Breadcrumb parent={RESULTS} />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Course results unavailable</h1>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Course results unavailable</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         This course offering could not be found, or it is not one you currently teach.
       </p>
@@ -54,7 +54,7 @@ function Roster({ roster }: { roster: CourseResultRoster }) {
       <Breadcrumb parent={RESULTS} current={roster.courseName} />
       <header className="mt-4">
         <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{roster.courseCode}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink">{roster.courseName}</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{roster.courseName}</h1>
         <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
           {creditsText(roster.credits)}
           <span aria-hidden="true"> · </span>

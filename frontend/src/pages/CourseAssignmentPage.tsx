@@ -52,7 +52,7 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
     <>
       <title>Assignment unavailable · Stacc</title>
       <Breadcrumb parent={COURSES} />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Assignment unavailable</h1>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Assignment unavailable</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         This assignment could not be found or is not available to your account.
       </p>
@@ -92,7 +92,7 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           <span className="sr-only">, </span>
           {assignment.courseName}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink">{assignment.title}</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{assignment.title}</h1>
       </header>
 
       <dl className="mt-6 max-w-2xl divide-y divide-line rounded-panel border border-line bg-surface">

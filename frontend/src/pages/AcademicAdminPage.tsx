@@ -76,7 +76,7 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
   return (
     <>
       <title>{`${roster ? 'Offering Roster' : current.label} · Academic Admin · Stacc`}</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Academic Admin</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Academic Admin</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         Manage academic masters, course offerings, official student enrollments, and the academic calendar.
       </p>

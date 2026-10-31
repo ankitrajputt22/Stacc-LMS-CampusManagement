@@ -61,7 +61,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
           <span className="sr-only">, </span>
           {course.courseName}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">AI Study Assistant</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-portal-navy">AI Study Assistant</h1>
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Ask questions based on your published course materials.
         </p>
@@ -90,7 +90,7 @@ function StudentAssistant({ lmsCourseId }: { lmsCourseId: number | null }) {
       <>
         <title>Course unavailable · Stacc</title>
         <Breadcrumb parent={COURSES} />
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Course unavailable</h1>
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Course unavailable</h1>
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           This course could not be found or is not available to your account.
         </p>

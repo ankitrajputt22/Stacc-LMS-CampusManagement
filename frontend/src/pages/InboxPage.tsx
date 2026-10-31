@@ -333,7 +333,7 @@ export function InboxPage() {
   return (
     <>
       <title>Inbox · Stacc</title>
-      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold tracking-tight text-ink outline-none">
+      <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight text-portal-navy outline-none">
         Inbox
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Updates from your courses and academic activity.</p>

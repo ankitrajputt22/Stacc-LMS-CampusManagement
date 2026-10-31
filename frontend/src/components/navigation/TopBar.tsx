@@ -2,11 +2,9 @@ import type { RefObject } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
 import { hasAnyRole } from '../../auth/roles'
+import { PortalEmblem } from '../../login/PortalEmblem'
 import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
-import { AccountRoles } from './AccountRoles'
-import { Brand } from './Brand'
-import { BellIcon, MenuIcon, UserIcon } from './icons'
-import { TopBarSearch } from './TopBarSearch'
+import { BellIcon, MenuIcon, SearchIcon } from './icons'
 
 type TopBarProps = {
   menuId: string
@@ -15,33 +13,23 @@ type TopBarProps = {
   menuButtonRef: RefObject<HTMLButtonElement | null>
 }
 
-// Help is a visual placeholder until that feature exists.
-const placeholderClasses =
-  'flex h-11 min-w-11 items-center justify-center rounded-control px-2 text-sm font-medium text-ink-muted disabled:cursor-default'
+const iconLinkClasses =
+  'relative flex size-11 items-center justify-center rounded-control text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-portal-bar'
 
 /**
  * The bell opens the Inbox, with the same shared unread count as the navigation, for accounts that have one. It asks
  * nothing itself: the count comes from the app shell.
  */
 function InboxLink() {
-  const { account } = useAuth()
   const { unreadCount } = useUnreadCount()
-  if (!hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])) {
-    return null
-  }
   const label = unreadCount ? `Inbox, ${unreadCount} unread` : 'Inbox'
   return (
-    <Link
-      to="/inbox"
-      aria-label={label}
-      title={label}
-      className="relative flex size-11 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
-    >
+    <Link to="/inbox" aria-label={label} title={label} className={iconLinkClasses}>
       <BellIcon />
       {!!unreadCount && (
         <span
           aria-hidden="true"
-          className="absolute top-1 right-0.5 min-w-5 rounded-full bg-stacc-primary px-1 text-center text-[11px] leading-4 font-semibold text-white"
+          className="absolute top-1 right-0.5 min-w-5 rounded-full bg-portal-cta px-1 text-center text-[11px] leading-4 font-semibold text-white"
         >
           {badgeText(unreadCount)}
         </span>
@@ -50,18 +38,17 @@ function InboxLink() {
   )
 }
 
-export function TopBar({
-  menuId,
-  isMenuOpen,
-  onOpenMenu,
-  menuButtonRef,
-}: TopBarProps) {
-  // There is no sign-out on the backend. The session is forgotten in this tab, and the
-  // route guard then shows the sign-in page.
-  const { account, logout } = useAuth()
+/**
+ * The top bar of small screens: the menu button for the navigation drawer, the Stacc name, and Search and the Inbox for
+ * accounts that have them. On wide screens the navigation rail takes its place. Who is signed in, and Sign out, are in
+ * the drawer.
+ */
+export function TopBar({ menuId, isMenuOpen, onOpenMenu, menuButtonRef }: TopBarProps) {
+  const { account } = useAuth()
+  const member = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-line bg-surface pr-2 pl-2 sm:pr-4 lg:px-6">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-portal-navy px-2 text-white sm:px-4 lg:hidden">
       <button
         ref={menuButtonRef}
         type="button"
@@ -69,58 +56,27 @@ export function TopBar({
         aria-label="Open navigation menu"
         aria-expanded={isMenuOpen}
         aria-controls={menuId}
-        className="flex size-11 items-center justify-center rounded-control text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-stacc-primary lg:hidden"
+        className="flex size-11 items-center justify-center rounded-control text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-portal-bar"
       >
         <MenuIcon />
       </button>
 
-      <div className="lg:hidden">
-        <Brand />
-      </div>
+      <Link
+        to="/"
+        className="flex items-center gap-2 rounded-control text-lg font-extrabold tracking-[0.12em] uppercase focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-portal-bar"
+      >
+        <PortalEmblem className="size-8" />
+        Stacc
+      </Link>
 
-      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-1 md:ml-4 lg:ml-0">
-        <TopBarSearch />
-        <button
-          type="button"
-          disabled
-          className={`${placeholderClasses} hidden sm:flex`}
-        >
-          Help
-        </button>
-        <InboxLink />
-
-        <div className="ml-1 flex items-center gap-2 border-l border-line pl-3">
-          <span
-            aria-hidden="true"
-            className="hidden size-8 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-muted text-ink-muted sm:flex"
-          >
-            <UserIcon />
-          </span>
-          {/* Who is signed in, and with which roles. The roles are shown, never chosen here. */}
-          {account && (
-            <span className="sr-only sm:not-sr-only sm:flex sm:max-w-48 sm:min-w-0 sm:flex-col sm:leading-tight">
-              <span
-                className="truncate text-sm text-ink"
-                title={account.loginId}
-              >
-                <span className="sr-only">Signed in as </span>
-                {account.loginId}
-              </span>
-              <AccountRoles
-                roles={account.roles}
-                className="truncate text-xs text-ink-muted"
-              />
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={logout}
-            className="flex h-11 items-center rounded-control px-2 text-sm font-medium whitespace-nowrap text-stacc-primary hover:bg-surface-muted hover:text-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-stacc-primary sm:h-9"
-          >
-            Sign out
-          </button>
+      {member && (
+        <div className="ml-auto flex items-center gap-1">
+          <Link to="/search" aria-label="Search" title="Search" className={iconLinkClasses}>
+            <SearchIcon />
+          </Link>
+          <InboxLink />
         </div>
-      </div>
+      )}
     </header>
   )
 }

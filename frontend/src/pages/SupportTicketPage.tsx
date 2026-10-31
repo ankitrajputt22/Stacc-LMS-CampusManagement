@@ -129,7 +129,7 @@ export function SupportTicketPage() {
     content = (
       <>
         <p className="font-mono text-sm text-ink-muted">{ticket.ticketNumber}</p>
-        <h1 ref={headingRef} tabIndex={-1} className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink outline-none">
+        <h1 ref={headingRef} tabIndex={-1} className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy outline-none">
           {ticket.subject}
         </h1>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -183,7 +183,7 @@ export function SupportTicketPage() {
     <>
       <title>{ticket ? `${ticket.ticketNumber} · Support · Stacc` : 'Ticket · Support · Stacc'}</title>
       <Breadcrumb parent={{ to: '/support', label: 'Support' }} current={ticket?.ticketNumber} />
-      {ticket === null && <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Support ticket</h1>}
+      {ticket === null && <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Support ticket</h1>}
       <div className={ticket === null ? 'mt-6' : 'mt-3'}>{content}</div>
     </>
   )

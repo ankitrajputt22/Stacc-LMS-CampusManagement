@@ -22,7 +22,7 @@ Not signed in
 - Every other address is inside the app and needs a signed-in user. Someone who is not signed in is sent to `/login`, and after signing in arrives at the page they asked for (whichever portal they chose), or otherwise where their portal leads.
 - Someone who is already signed in and opens `/login` is sent into the app.
 - An unknown address shows the not-found page to a signed-in user. It does not send them to `/login`.
-- The top bar shows the login ID and a **Sign out** button.
+- The Account tray of the navigation rail (or, on small screens, the menu drawer) shows the login ID and a **Sign out** button.
 
 ## Where the code is
 
@@ -86,7 +86,7 @@ The app shell shows each account the navigation for its roles. This is about wha
 - An account can hold several roles. None of them is the main one: the order the backend sends means nothing, and nothing looks at the first role.
 - An account with several roles sees each of its role sections, in the fixed order. The Dashboard and the shared items appear once.
 - An account with no known role sees only the Dashboard and the shared items, and can still sign out.
-- The top bar shows the login ID with the roles as plain words, such as "Student · Faculty". On small screens the navigation drawer shows them instead.
+- The Account tray shows the login ID with the roles as plain words, such as "Student · Faculty". On small screens the navigation drawer shows them instead.
 
 The navigation itself is one list in `src/components/navigation/navigation.ts`, used on every screen size. Most items there are upcoming features, shown as "Soon": they are not links and have no pages. Each will get its route when its feature is built.
 
@@ -263,7 +263,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 
 ### The Inbox
 
-**Inbox** in the Common section opens `/inbox` (`src/pages/InboxPage.tsx`) for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. There is one Inbox per account, never one per role. The bell in the top bar opens it too. See `notifications-inbox.md`.
+**Inbox** in the Common section opens `/inbox` (`src/pages/InboxPage.tsx`) for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. There is one Inbox per account, never one per role. On small screens the bell in the top bar opens it too. See `notifications-inbox.md`.
 
 - The page is "Inbox" ("Updates from your courses and academic activity.") with **All** and **Unread** (`aria-pressed`). Choosing one loads its first page; there are 20 per page, newest first, with **Previous**, "Page 1 of 2", and **Next**. Focus stays on the pager button while the next page loads.
 - Each notification shows **Unread** or **Read** in words (unread rows also have a slightly darker background), its title, its plain-text message, and its local time. It has a link (View assignment, View calendar, View results, or View attendance) to the page it is about, and **Mark as read** or **Mark as unread**.
@@ -287,7 +287,7 @@ The student's **Results** item opens `/academic/results`, from `GET /api/results
 
 ### Search
 
-`/search` is one page for every account holding `STUDENT`, `FACULTY`, or `ADMIN`, reached from the top bar's search field (or its search icon on phones); it is not a navigation item. The address holds the query (`q`) and, for View all, the kind (`type`) and page (`page`), so refresh, Back, and Forward keep the search. Nothing is sent without at least 2 characters, and nothing while typing. Results are grouped by kind in the backend's order, rendered as plain text with router links, and the backend decides every kind the account may see; a 403 shows access denied and never signs out. Requests go through `src/api/searchApi.ts`. See `search.md`.
+`/search` is one page for every account holding `STUDENT`, `FACULTY`, or `ADMIN`, reached from **Search** in the navigation rail (or the search icon in the small-screen top bar), where its own search field is. The address holds the query (`q`) and, for View all, the kind (`type`) and page (`page`), so refresh, Back, and Forward keep the search. Nothing is sent without at least 2 characters, and nothing while typing. Results are grouped by kind in the backend's order, rendered as plain text with router links, and the backend decides every kind the account may see; a 403 shows access denied and never signs out. Requests go through `src/api/searchApi.ts`. See `search.md`.
 
 ### Campus
 

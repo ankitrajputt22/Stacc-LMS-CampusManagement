@@ -58,7 +58,7 @@ export function DashboardPage() {
     return (
       <>
         <title>Dashboard · Stacc</title>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-portal-navy">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">{summary}</p>
         <div className="mt-6">
           <Part />
@@ -69,7 +69,7 @@ export function DashboardPage() {
   return (
     <>
       <title>Dashboard · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Dashboard</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">An overview for each of your roles.</p>
       {parts.map(({ role, title, summary, Part }, index) => (
         <section
@@ -98,7 +98,7 @@ function GeneralDashboard() {
   return (
     <>
       <title>Dashboard · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">
         Dashboard
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">

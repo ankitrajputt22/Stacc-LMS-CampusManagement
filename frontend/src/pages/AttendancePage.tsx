@@ -86,7 +86,7 @@ export function AttendancePage() {
   return (
     <>
       <title>Attendance · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Attendance</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Attendance</h1>
       {isFaculty && (
         <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
           Take attendance for the course offerings you teach.

@@ -23,7 +23,7 @@ export function ReportsPage() {
   return (
     <>
       <title>Reports · Stacc</title>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Reports</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Reports</h1>
       {faculty || admin ? (
         <>
           <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">{intro}</p>

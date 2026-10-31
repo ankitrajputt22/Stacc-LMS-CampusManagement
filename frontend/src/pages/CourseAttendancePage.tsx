@@ -40,7 +40,7 @@ function CourseUnavailable() {
     <>
       <title>Attendance course unavailable · Stacc</title>
       <Breadcrumb parent={ATTENDANCE} />
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Attendance course unavailable</h1>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Attendance course unavailable</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
         This course offering could not be found, or it is not one you currently teach.
       </p>
@@ -202,7 +202,7 @@ function CourseAttendance({ courseOfferingId }: { courseOfferingId: number }) {
       />
       <header className="mt-4">
         <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words text-ink">{course.courseName}</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{course.courseName}</h1>
         <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
           <span className="sr-only">Program </span>
           {course.programCode}
