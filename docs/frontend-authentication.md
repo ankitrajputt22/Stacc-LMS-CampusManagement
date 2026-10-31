@@ -18,7 +18,8 @@ Not signed in
 ## What the user sees
 
 - `/login` is the only public page. Users enter their college ID or employee ID and their password. There is no signup and no role to choose: the role comes from the account the college created.
-- Every other address is inside the app and needs a signed-in user. Someone who is not signed in is sent to `/login`, and after signing in arrives at the page they asked for, or at the Dashboard.
+- `/login` is also Stacc's front page: a header with the Stacc emblem and a Menu drawer, and two choices, **ERP Login** and **LMS Login** (`/login?portal=erp` and `/login?portal=lms`), each opening the same sign-in form. Both use the same account, form, and endpoint; the choice is not a role and grants nothing. It only decides where the visitor lands: ERP opens the Dashboard; LMS opens Courses for an account that only studies, Teaching for one that only teaches, and the Dashboard for an account holding both or neither, so no role is treated as the main one. The page lives in `src/pages/LoginPage.tsx` and `src/login/`, with its own colours (`--color-portal-*` in `index.css`); it uses Stacc's own name and emblem, never another institution's branding.
+- Every other address is inside the app and needs a signed-in user. Someone who is not signed in is sent to `/login`, and after signing in arrives at the page they asked for (whichever portal they chose), or otherwise where their portal leads.
 - Someone who is already signed in and opens `/login` is sent into the app.
 - An unknown address shows the not-found page to a signed-in user. It does not send them to `/login`.
 - The top bar shows the login ID and a **Sign out** button.

@@ -193,6 +193,7 @@
 ## Frontend Authentication
 
 - Sign-in is one form at `/login` with a college ID or employee ID and a password. There is no public signup and no role selector, and the frontend never chooses a role.
+- `/login` is the front page with two choices, ERP Login and LMS Login (`?portal=erp` or `?portal=lms`), both opening that same form. The portal only picks the landing page (ERP: Dashboard; LMS: Courses or Teaching for a single-role account, otherwise the Dashboard), never a role or permission. Use Stacc's own name, emblem, and `--color-portal-*` colours; never copy another institution's branding.
 - Frontend route guards and stored roles are for the interface only. They are not security: the backend checks every request.
 - The access token lives in `sessionStorage` for the current tab. Do not move it to `localStorage` or cookies, and do not add "remember me" or refresh tokens without their own phase.
 - Never store a password, a signing secret, or any other secret in frontend code or storage.
