@@ -1,0 +1,19 @@
+{
+  "name": "stacc-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "End-to-end tests: real browsers against the whole Stacc stack in Docker. See ../docs/testing.md.",
+  "scripts": {
+    "stack:up": "./stack.sh up",
+    "stack:down": "./stack.sh down",
+    "test": "playwright test",
+    "report": "playwright show-report",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.13.3",
+    "typescript": "^6.0.2"
+  }
+}

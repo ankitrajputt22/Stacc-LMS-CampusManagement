@@ -139,3 +139,55 @@ jobs:
 
       - name: Test
         run: python -m pytest -q
+
+  e2e:
+    name: End-to-end tests
+    # Only after the faster checks pass, since this one builds and starts the whole stack.
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Install the locked dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the stack with the demo data
+        run: ./stack.sh up
+
+      - name: Run the journeys
+        run: npm test
+
+      - name: Keep the backend log when something fails
+        if: failure()
+        run: ./stack.sh logs backend > backend.log 2>&1 || true
+
+      - name: Keep the report, traces, and log when something fails
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/backend.log
+          retention-days: 7
+
+      - name: Stop the stack
+        if: always()
+        run: ./stack.sh down
