@@ -97,9 +97,9 @@ services:
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     healthcheck:
-      # The API documentation is public and answers only after Spring Boot has fully started,
-      # which includes the Flyway migrations.
-      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/v3/api-docs"]
+      # Readiness answers UP only after Spring Boot has fully started, including the Flyway migrations, and while the
+      # database answers. File storage and AI are not part of it (see docs/operations.md).
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
       interval: 30s
       timeout: 5s
       retries: 3

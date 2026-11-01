@@ -12,4 +12,6 @@ export type ApiErrorResponse = {
   message: string
   path: string
   fieldErrors: FieldValidationError[]
+  /** The request's ID, also in the X-Request-ID header and the server's logs. Quoting it helps support find the problem. */
+  requestId?: string
 }

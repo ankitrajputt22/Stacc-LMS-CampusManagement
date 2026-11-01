@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.ai;
 
+import com.stacc.backend.common.web.RequestIdFilter;
 import com.stacc.backend.lms.ai.AiServiceException.Reason;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
@@ -20,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatusCode;
@@ -77,6 +79,14 @@ public class HttpAiServiceClient implements AiServiceClient {
                 .requestFactory(factory)
                 .baseUrl(properties.serviceUrl())
                 .defaultHeader(TOKEN_HEADER, properties.internalToken())
+                // The current request's ID, so the AI service's log line can be matched with the backend's.
+                .requestInterceptor((request, body, execution) -> {
+                    String requestId = MDC.get(RequestIdFilter.KEY);
+                    if (requestId != null) {
+                        request.getHeaders().set(RequestIdFilter.HEADER, requestId);
+                    }
+                    return execution.execute(request, body);
+                })
                 .build();
     }
 

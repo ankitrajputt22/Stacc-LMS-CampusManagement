@@ -8,6 +8,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Git workflow](git-workflow.md)
 - [Continuous integration](continuous-integration.md)
 - [Testing](testing.md)
+- [Operations: health checks and request IDs](operations.md)
 - [Docker development stack](docker.md)
 - [Local test data](local-test-data.md)
 - [MySQL setup](mysql-setup.md)

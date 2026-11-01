@@ -9,5 +9,7 @@ public record ApiErrorResponse(
         String error,
         String message,
         String path,
-        List<FieldValidationError> fieldErrors) {
+        List<FieldValidationError> fieldErrors,
+        /* The request's ID, also in the X-Request-ID header and the server's log lines; quoting it helps find them. */
+        String requestId) {
 }

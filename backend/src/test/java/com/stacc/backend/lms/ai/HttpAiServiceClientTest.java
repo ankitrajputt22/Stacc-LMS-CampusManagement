@@ -8,6 +8,7 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexSource;
 import com.stacc.backend.lms.ai.AiServiceMessages.ReplaceIndexRequest;
+import com.stacc.backend.common.web.RequestIdFilter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
+import org.slf4j.MDC;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -36,6 +38,7 @@ class HttpAiServiceClientTest {
     private final AtomicReference<String> lastToken = new AtomicReference<>();
     private final AtomicReference<String> lastPath = new AtomicReference<>();
     private final AtomicReference<String> lastAuthorization = new AtomicReference<>();
+    private final AtomicReference<String> lastRequestId = new AtomicReference<>();
 
     @AfterEach
     void stop() {
@@ -54,6 +57,7 @@ class HttpAiServiceClientTest {
             lastPath.set(exchange.getRequestURI().getPath());
             lastToken.set(exchange.getRequestHeaders().getFirst("X-Stacc-AI-Token"));
             lastAuthorization.set(exchange.getRequestHeaders().getFirst("Authorization"));
+            lastRequestId.set(exchange.getRequestHeaders().getFirst("X-Request-ID"));
             lastBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             reply.send(exchange);
             exchange.close();
@@ -117,6 +121,25 @@ class HttpAiServiceClientTest {
         // The personal-data boundary: the question and the fingerprint, nothing about the student.
         assertThat(lastBody.get()).isEqualTo(
                 "{\"indexFingerprint\":\"" + FINGERPRINT + "\",\"question\":\"What does third normal form remove?\"}");
+    }
+
+    @Test
+    void theCurrentRequestIdTravelsWithTheCallSoBothLogsMatch() throws IOException {
+        String url = start(exchange -> json(exchange, 200,
+                "{\"answer\": \"x\", \"insufficientContext\": true, \"citations\": []}"));
+        HttpAiServiceClient client = client(url);
+
+        MDC.put(RequestIdFilter.KEY, "a1b2c3d4e5f60718");
+        try {
+            client.ask(COURSE_KEY, question());
+        } finally {
+            MDC.remove(RequestIdFilter.KEY);
+        }
+        assertThat(lastRequestId.get()).isEqualTo("a1b2c3d4e5f60718");
+
+        // Outside a request (such as the start-up check) none is invented.
+        client.ask(COURSE_KEY, question());
+        assertThat(lastRequestId.get()).isNull();
     }
 
     @Test

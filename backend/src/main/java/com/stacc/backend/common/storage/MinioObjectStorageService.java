@@ -52,6 +52,17 @@ public class MinioObjectStorageService implements ObjectStorageService {
     }
 
     @Override
+    public boolean isReachable() {
+        try {
+            // Asks only whether the bucket exists: a missing bucket still means the store answers.
+            client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+            return true;
+        } catch (MinioException | RuntimeException failure) {
+            return false;
+        }
+    }
+
+    @Override
     public void delete(String key) {
         try {
             client.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(key).build());

@@ -16,9 +16,12 @@ For example:
       "field": "name",
       "message": "Name is required"
     }
-  ]
+  ],
+  "requestId": "a1b2c3d4e5f60718"
 }
 ```
+
+`requestId` is the request's ID, also sent in the `X-Request-ID` header and shown in the server's log lines for that request. A person reporting a problem can quote it, and support can find exactly what happened (see `operations.md`).
 
 Unknown URLs return HTTP 404 and unsupported HTTP methods return HTTP 405, both in the same format with an empty `fieldErrors` list.
 
