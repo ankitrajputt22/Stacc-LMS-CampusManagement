@@ -62,3 +62,16 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 A request that carries a valid access token is recognised as that account, and every `/api/` route other than the login requires one. See `access-tokens.md` and `api-security.md`. Login does not create a server session or set a cookie.
 
 Not built yet: refresh tokens, logout, and password change or reset.
+
+## Sessions, signing out, and CSRF
+
+| Route | Needs | Does |
+| --- | --- | --- |
+| `POST /api/v1/auth/login` | Nothing (public) | Checks the login ID and password, starts a session, and sets the `STACC_SESSION` cookie. Any old cookie is ignored here, so it never blocks signing in again. |
+| `GET /api/v1/auth/session` | A signed-in account | Who is signed in and when the session ends at the latest; 401 when nobody is. The frontend asks once per page load. |
+| `POST /api/v1/auth/logout` | A signed-in account | Ends this session and clears the cookie. |
+| `POST /api/v1/auth/logout-everywhere` | A signed-in account | Ends every open session of the account, on every device, and clears this browser's cookie. |
+
+Sessions live in `user_sessions` (`auth.session`) and are kept after they end, with the reason (`SIGNED_OUT`, `SIGNED_OUT_EVERYWHERE`, `IDLE`, `ENDED_BY_COLLEGE`) and a short device description such as "Chrome on Android". No IP address or full browser text is stored.
+
+**CSRF.** A browser sends the session cookie on its own, so a change signed in by that cookie must also prove it came from Stacc's own page: Stacc sets an `XSRF-TOKEN` cookie that only its own pages can read, and the page copies it into the `X-XSRF-TOKEN` header (Axios does this). Requests with an `Authorization` header, requests without the session cookie, sign-in itself, and `GET`/`HEAD`/`OPTIONS` have nothing to forge and are not checked. A failed check answers 403. The cookie is read by `SessionCookieAuthenticationFilter` *after* the CSRF check, and Spring's per-sign-in XSRF rotation is switched off, because without servlet sessions it would delete the token on every request.

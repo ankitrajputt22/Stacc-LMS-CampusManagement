@@ -1,38 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { isSessionExpired, sessionFromLogin } from './session'
-import type { LoginResponse } from './types'
+import { isSessionExpired, sessionFrom } from './session'
+import type { SessionResponse } from './types'
 
-const login: LoginResponse = {
+const answer: SessionResponse = {
   accountId: 7,
   loginId: 'student1',
   roles: ['STUDENT'],
-  accessToken: 'token-value',
-  tokenType: 'Bearer',
-  expiresIn: 900,
+  expiresAt: '2026-11-01T22:00:00Z',
 }
 
-describe('sessionFromLogin', () => {
-  it('works out when the token ends from how long it lasts', () => {
-    expect(sessionFromLogin(login, 1_000)).toEqual({
+describe('sessionFrom', () => {
+  it('keeps who is signed in and when the session ends, and nothing secret', () => {
+    expect(sessionFrom(answer)).toEqual({
       accountId: 7,
       loginId: 'student1',
       roles: ['STUDENT'],
-      accessToken: 'token-value',
-      expiresAt: 1_000 + 900_000,
+      expiresAt: Date.parse('2026-11-01T22:00:00Z'),
     })
   })
 
-  it('refuses an answer without a usable token', () => {
-    expect(() => sessionFromLogin({ ...login, accessToken: '' })).toThrow()
-    expect(() => sessionFromLogin({ ...login, expiresIn: 0 })).toThrow()
-    expect(() => sessionFromLogin({ ...login, expiresIn: Number.NaN })).toThrow()
+  it('refuses an answer that does not describe a session', () => {
+    expect(() => sessionFrom({ ...answer, loginId: '' })).toThrow()
+    expect(() => sessionFrom({ ...answer, expiresAt: 'not a time' })).toThrow()
   })
 })
 
 describe('isSessionExpired', () => {
   it('is expired from the end time on', () => {
-    const session = sessionFromLogin(login, 0)
-    expect(isSessionExpired(session, 899_999)).toBe(false)
-    expect(isSessionExpired(session, 900_000)).toBe(true)
+    const session = sessionFrom(answer)
+    expect(isSessionExpired(session, session.expiresAt - 1)).toBe(false)
+    expect(isSessionExpired(session, session.expiresAt)).toBe(true)
   })
 })

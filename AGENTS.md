@@ -36,9 +36,9 @@
 - Failed logins always return the same generic 401 message. Never reveal whether a login ID exists, and never log passwords or login requests.
 - For an expected failure with a specific status, throw `ApiException` with a client-safe message.
 - Every request has one ID (`RequestIdFilter`, header `X-Request-ID`): in every error body as `requestId`, in each log line, and passed on to the AI service. Never put personal data in it or log request bodies beside it. Only Actuator's health endpoint is exposed; readiness needs only the database, and health shows statuses, never details. See `docs/operations.md`.
-- Create access tokens only through the shared `AccessTokenService`. Keep them short-lived, and never put passwords, hashes, or private data in token claims.
-- Never hard-code, log, or expose the JWT signing secret, and never log access tokens. Do not add refresh tokens until their own phase.
-- Access tokens are accepted only in the `Authorization: Bearer` header. Never put tokens in URLs.
+- Every sign-in is a row in `user_sessions` (`auth.session.SessionService`), started only by the login. Tokens are created only by `AccessTokenService`, carry the session ID as `sid`, and last as long as the session can; every request is accepted only while its session is open and its account `ACTIVE` (checked once per request). Signing out, signing out everywhere, idleness, and disabling an account end sessions; never reopen one. Never put passwords, hashes, or private data in token claims.
+- Never hard-code, log, or expose the JWT signing secret, and never log tokens or put them in a response body. Do not add refresh tokens.
+- Browsers carry the token only in the `STACC_SESSION` cookie (HttpOnly, SameSite=Lax, path `/api`, Secure in production), read by `SessionCookieAuthenticationFilter` after the CSRF check; API clients and tests may send it as `Authorization: Bearer`. Never accept a token from a URL. A change signed in by the cookie must pass CSRF (the `XSRF-TOKEN` cookie copied into `X-XSRF-TOKEN`); keep CSRF on, and never let Spring rotate the XSRF token per request. See `docs/authentication.md`.
 - Token authorities are used unchanged, with no `SCOPE_` prefix. Do not query the database on every token request unless a later phase explicitly requires it.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
@@ -205,11 +205,11 @@
 - Sign-in is one form at `/login` with a college ID or employee ID and a password. There is no public signup and no role selector, and the frontend never chooses a role.
 - `/login` is the front page with two choices, ERP Login and LMS Login (`?portal=erp` or `?portal=lms`), both opening that same form. The portal only picks the landing page (ERP: Dashboard; LMS: Courses or Teaching for a single-role account, otherwise the Dashboard), never a role or permission. Use Stacc's own name, emblem, and `--color-portal-*` colours; never copy another institution's branding.
 - Frontend route guards and stored roles are for the interface only. They are not security: the backend checks every request.
-- The access token lives in `sessionStorage` for the current tab. Do not move it to `localStorage` or cookies, and do not add "remember me" or refresh tokens without their own phase.
+- The frontend never sees or stores the token: it lives in the HttpOnly session cookie. On load `AuthProvider` asks `GET /api/v1/auth/session` once and shows nothing protected while it checks; nothing about the session goes into `localStorage` or `sessionStorage`. Signing out calls the backend and forgets the session whatever the answer. Do not add "remember me" or refresh tokens.
 - Never store a password, a signing secret, or any other secret in frontend code or storage.
-- Only `apiClient` sets the `Authorization` header. A 401 on a request that carried the token ends the session; a 403 never signs the user out; a failed login is an ordinary form error.
-- Keep one auth path: one `AuthProvider`, one `authStorage`, one Axios client, one login page.
-- Browser calls from another origin are allowed only for the exact origins in `FRONTEND_ORIGIN`. Never use a wildcard. The Docker frontend uses same-origin `/api` through Nginx and needs no CORS.
+- `apiClient` sends the cookie (`withCredentials`) and copies the XSRF token; nothing sets an `Authorization` header in the frontend. A 401 on any request except the login and the session check ends the session; a 403 never signs the user out; a failed login is an ordinary form error.
+- Keep one auth path: one `AuthProvider`, one Axios client, one login page.
+- Browser calls from another origin are allowed only for the exact origins in `FRONTEND_ORIGIN`, which may send the session cookie. Never use a wildcard. The Docker frontend uses same-origin `/api` through Nginx and needs no CORS.
 - Users never select or switch roles. The roles come from the login answer and are read in one place, `src/auth/roles.ts`.
 - Support accounts with several roles. Never treat `roles[0]` or any other role as the main one; show every role's section in the fixed order Student, Faculty, Admin.
 - Role-aware navigation is for the interface only, never authorization. Every feature must be protected by the backend whether or not its item is visible.

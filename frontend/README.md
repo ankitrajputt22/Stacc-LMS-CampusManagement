@@ -40,7 +40,7 @@ cp .env.example .env
 
 ## Signing in
 
-`/login` is the only public page. Everything else needs a signed-in user and sends other visitors to the sign-in page. The session lives in `sessionStorage` for the current tab, and the shared API client adds the access token to every request. The code is in `src/auth`. See `../docs/frontend-authentication.md`.
+`/login` is the only public page. Everything else needs a signed-in user and sends other visitors to the sign-in page. The session lives on the server and its token in an HttpOnly cookie the page never sees; on load the app asks the backend who is signed in, and the shared API client sends the cookie and the XSRF token. The code is in `src/auth`. See `../docs/frontend-authentication.md`.
 
 With `npm run dev`, the backend must allow the dev server's origin. It allows `http://localhost:5173` by default (`FRONTEND_ORIGIN`), so open the dev server with `localhost`, not `127.0.0.1`.
 

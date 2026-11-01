@@ -212,8 +212,8 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(signedInEarlier, "id", 13L);
         signedInEarlier.assignRole(new Role(RoleName.STUDENT));
 
-        getMyCourses(accessTokenService.issue(StaccUserPrincipal.from(student)).value()).andExpect(status().isOk());
-        expectForbidden(accessTokenService.issue(StaccUserPrincipal.from(signedInEarlier)).value());
+        getMyCourses(TestTokens.issue(accessTokenService, StaccUserPrincipal.from(student))).andExpect(status().isOk());
+        expectForbidden(TestTokens.issue(accessTokenService, StaccUserPrincipal.from(signedInEarlier)));
 
         verify(courseQueryService).getAccessibleCourses(ACCOUNT_ID);
         verifyNoMoreInteractions(courseQueryService);
@@ -254,7 +254,7 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
         MvcResult result = getMyCourses(studentToken()).andExpect(status().isOk()).andReturn();
 
         assertNull(result.getRequest().getSession(false));
-        assertNull(result.getResponse().getHeader(HttpHeaders.SET_COOKIE));
+        assertNull(com.stacc.backend.auth.SessionCookieAssertions.sessionCookie(result));
     }
 
     @Test

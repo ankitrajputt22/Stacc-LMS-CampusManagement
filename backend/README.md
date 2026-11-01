@@ -42,14 +42,14 @@ Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig
 
 Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides the `AuthenticationManager`. See `../docs/authentication-foundation.md`.
 
-The college login is `POST /api/v1/auth/login` in `auth.api.AuthController`. It checks a login ID and password and returns a short-lived JWT access token. See `../docs/authentication.md` and `../docs/access-tokens.md`.
+The college login is `POST /api/v1/auth/login` in `auth.api.AuthController`. It checks a login ID and password, starts a session in `user_sessions`, and sets the session's token in an HttpOnly cookie. See `../docs/authentication.md` and `../docs/access-tokens.md`.
 
 The backend needs two more environment variables for tokens:
 
 - `JWT_SECRET` — required. Base64 text for at least 32 random bytes, for example from `openssl rand -base64 48`. The backend does not start without it.
-- `JWT_ACCESS_TOKEN_MINUTES` (defaults to `15`)
+- `STACC_SESSION_MAX_DURATION` (defaults to `12h`), `STACC_SESSION_IDLE_TIMEOUT` (`2h`), and `STACC_SESSION_SECURE_COOKIE` (`false`; `true` in production)
 
-Clients send the token on later requests as `Authorization: Bearer <access-token>`.
+Browsers send the token back in that cookie; API clients may send it as `Authorization: Bearer <token>`.
 
 ## Academic structure
 

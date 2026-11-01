@@ -35,6 +35,7 @@ What they check today:
 | `DatabaseSchemaMySqlIT` | Every migration applies in order with no gaps, the database uses `utf8mb4`, and seeding again creates nothing. |
 | `HostelLocksMySqlIT` | Two applications at once make one; two allocations at once never share a bed, an application, or a student. |
 | `ApprovalDecisionLocksMySqlIT` | Two decisions on the same step at once (approve and approve, or approve and reject) decide it once; the other gets 409. |
+| `SessionMySqlIT` | Sessions end by signing out, signing out everywhere, idleness, and a disabled account, and stay ended. |
 | `SubmissionAttemptLocksMySqlIT` | Several hand-ins at once each get their own attempt number, with no gaps or repeats. |
 
 Run them with Docker running:
@@ -67,13 +68,12 @@ What they check today:
 | --- | --- |
 | `login/portal.test.ts` | Only `erp` and `lms` are portals; LMS sign-ins land on Courses or Teaching only for single-role accounts, never by picking a main role. |
 | `auth/roles.test.ts` | Roles are kept in the fixed order Student, Faculty, Admin; repeats and unknown names are dropped. |
-| `auth/session.test.ts` | The session end time comes from the login answer; an answer without a usable token is refused. |
-| `auth/authStorage.test.ts` | The session lives in this tab's `sessionStorage` only, sign-out forgets it, and damaged data is thrown away. |
-| `api/apiClient.test.ts` | The token is sent only while signed in; a refused current token ends the session; a failed login, a 403, and a refused older token never do. |
+| `auth/session.test.ts` | The in-memory session comes from the backend's answer; an answer without a usable session is refused. |
+| `api/apiClient.test.ts` | Requests go to `/api/v1` with the session cookie and the XSRF setup and no `Authorization` header; a 401 ends the session, but a failed login, a session check, and a 403 never do. |
 | `components/navigation/navigation.test.ts` | Role sections appear in the fixed order, shared items once, upcoming items without links, and every link stays inside the app. |
 | `ui/Tabs.test.tsx` | The in-page tabs follow the ARIA tabs pattern and work by click and with the arrow keys, Home, and End. |
 | `api/useApiQuery.test.tsx` | Cached loading gives the same page states as before, shares one request between pages, never retries 401, 403, or 404, and `retry()` starts again showing loading. |
-| `auth/AuthProvider.test.tsx` | Signing out, or another person signing in, empties the query cache. |
+| `auth/AuthProvider.test.tsx` | The provider asks the backend who is signed in and shows nothing protected meanwhile, keeps nothing in browser storage, signs out on the server and forgets the session even if that fails, and empties the query cache on every change of session. |
 
 Test what a person sees and does: find elements by role and accessible name (`getByRole('tab', { name: 'Home' })`), act with `userEvent`, and avoid class names and internal state. Hooks that use the query cache are rendered with `testQueryClient()` from `src/test/queryTestUtils.tsx`, which turns retries off. Add tests with every phase that changes frontend rules or shared components.
 
@@ -98,7 +98,7 @@ What they check today:
 
 | Journey | Checks |
 | --- | --- |
-| `01-sign-in.spec.ts` | The front page offers ERP and LMS logins; LMS sign-ins land on Courses or Teaching for single-role accounts and on the dashboard for a student who also teaches; ERP opens the dashboard; a wrong password gets the one generic message; after signing out, pages need signing in again. |
+| `01-sign-in.spec.ts` | The front page offers ERP and LMS logins; the session token is in an HttpOnly cookie the page cannot read, nothing is in browser storage, and a reload keeps the person signed in; LMS sign-ins land on Courses or Teaching for single-role accounts and on the dashboard for a student who also teaches; ERP opens the dashboard; a wrong password gets the one generic message; after signing out, pages need signing in again. |
 | `02-student-submission.spec.ts` | A student opens a course and an assignment and hands in an attempt, which is accepted on time. |
 | `03-faculty-grading.spec.ts` | A faculty member opens the course's submissions, grades the student's latest attempt, and the student then sees the feedback. |
 

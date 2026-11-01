@@ -31,7 +31,7 @@ public class JwtConfig {
     /**
      * Checks incoming access tokens with the same secret and algorithm that signed them.
      * A token is accepted only if its signature is valid, it has not expired, it was issued
-     * by Stacc, and it names an account.
+     * by Stacc, and it names an account and a session. Whether that session is still open is checked afterwards.
      */
     @Bean
     JwtDecoder jwtDecoder(JwtProperties properties) {
@@ -42,7 +42,9 @@ public class JwtConfig {
                 JwtValidators.createDefaultWithIssuer(AccessTokenService.ISSUER),
                 new JwtClaimValidator<Object>(JwtClaimNames.EXP, Objects::nonNull),
                 new JwtClaimValidator<String>(JwtClaimNames.SUB, subject -> subject != null && !subject.isBlank()),
-                new JwtClaimValidator<Object>(AccessTokenService.ACCOUNT_ID_CLAIM, Objects::nonNull)));
+                new JwtClaimValidator<Object>(AccessTokenService.ACCOUNT_ID_CLAIM, Objects::nonNull),
+                new JwtClaimValidator<String>(AccessTokenService.SESSION_ID_CLAIM,
+                        session -> session != null && !session.isBlank())));
         return decoder;
     }
 

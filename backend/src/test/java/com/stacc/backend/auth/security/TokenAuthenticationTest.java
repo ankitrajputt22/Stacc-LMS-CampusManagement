@@ -1,5 +1,7 @@
 package com.stacc.backend.auth.security;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -32,6 +34,8 @@ import com.stacc.backend.auth.token.AccessTokenService;
 import com.stacc.backend.auth.token.JwtProperties;
 import com.stacc.backend.auth.token.TestTokens;
 import org.junit.jupiter.api.Test;
+import java.time.Duration;
+import com.stacc.backend.auth.session.UserSession;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +108,8 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
         UserAccount account = new UserAccount("EMP1024", "example-hash-value");
         ReflectionTestUtils.setField(account, "id", 7L);
         account.assignRole(new Role(RoleName.FACULTY));
-        String token = accessTokenService.issue(StaccUserPrincipal.from(account)).value();
+        String token = accessTokenService.issue(StaccUserPrincipal.from(account), TestTokens.SESSION_ID,
+                Instant.now().plus(Duration.ofHours(12))).value();
 
         getWithToken(WHO_AM_I, token)
                 .andExpect(status().isOk())
@@ -119,14 +124,15 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(account, "id", 12L);
         account.assignRole(new Role(RoleName.STUDENT));
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(anyString())).thenReturn(Optional.of(account));
+        when(sessionService.start(eq(12L), any())).thenReturn(
+                new UserSession(12L, "Unknown browser", Instant.now(), Instant.now().plus(Duration.ofHours(12))));
 
         MvcResult login = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"loginId\":\"2408400100011\",\"password\":\"TestPassword123!\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
-        String token = login.getResponse().getContentAsString()
-                .replaceAll(".*\"accessToken\":\"([^\"]*)\".*", "$1");
+        String token = com.stacc.backend.auth.SessionCookieAssertions.sessionToken(login);
 
         getWithToken(WHO_AM_I, token)
                 .andExpect(status().isOk())
@@ -168,13 +174,13 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
     @Test
     void expiredTokenIsRefused() throws Exception {
         Instant anHourAgo = Instant.now().minus(1, ChronoUnit.HOURS);
-        AccessTokenService pastService = new AccessTokenService(
-                jwtEncoder, new JwtProperties(TestSecrets.JWT_SECRET, 15), Clock.fixed(anHourAgo, ZoneOffset.UTC));
+        AccessTokenService pastService = new AccessTokenService(jwtEncoder, Clock.fixed(anHourAgo, ZoneOffset.UTC));
         UserAccount account = new UserAccount("EMP1024", "example-hash-value");
         ReflectionTestUtils.setField(account, "id", 7L);
         account.assignRole(new Role(RoleName.FACULTY));
 
-        expectRefused(getWithToken(WHO_AM_I, pastService.issue(StaccUserPrincipal.from(account)).value()), WHO_AM_I);
+        expectRefused(getWithToken(WHO_AM_I, pastService.issue(StaccUserPrincipal.from(account), TestTokens.SESSION_ID,
+                anHourAgo.plus(15, ChronoUnit.MINUTES)).value()), WHO_AM_I);
     }
 
     @Test

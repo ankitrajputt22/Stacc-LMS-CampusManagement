@@ -19,6 +19,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 /** Builds access tokens for tests, including deliberately broken ones. */
 public final class TestTokens {
 
+    /** The session every test token names. Database-free tests treat it as open unless a test says otherwise. */
+    public static final String SESSION_ID = "00000000-0000-4000-8000-000000000001";
+
     private TestTokens() {
     }
 
@@ -31,7 +34,13 @@ public final class TestTokens {
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .claim(AccessTokenService.ACCOUNT_ID_CLAIM, accountId)
+                .claim(AccessTokenService.SESSION_ID_CLAIM, SESSION_ID)
                 .claim(AccessTokenService.AUTHORITIES_CLAIM, List.of(authorities));
+    }
+
+    /** A token issued by the application's own service, for the test session, ending in twelve hours. */
+    public static String issue(AccessTokenService service, com.stacc.backend.auth.security.StaccUserPrincipal principal) {
+        return service.issue(principal, SESSION_ID, Instant.now().plus(12, ChronoUnit.HOURS)).value();
     }
 
     /** A token signed with the test secret, exactly as the application signs them. */

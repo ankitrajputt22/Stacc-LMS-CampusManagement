@@ -1,5 +1,8 @@
 package com.stacc.backend;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.stacc.backend.approval.ApprovalRequestHistoryRepository;
 import com.stacc.backend.approval.ApprovalRequestRepository;
 import com.stacc.backend.approval.ApprovalRequestStepRepository;
@@ -19,6 +22,8 @@ import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.role.RoleRepository;
+import com.stacc.backend.auth.session.SessionProperties;
+import com.stacc.backend.auth.session.SessionService;
 import com.stacc.backend.campus.notices.CampusNoticeRepository;
 import com.stacc.backend.campus.services.CampusServiceDefinitionRepository;
 import com.stacc.backend.campus.services.CampusServiceRequestRepository;
@@ -50,6 +55,7 @@ import com.stacc.backend.support.helpdesk.HelpdeskTicketHistoryRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketMessageRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketRepository;
 import jakarta.servlet.Filter;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -136,7 +142,18 @@ public abstract class DatabaseFreeApiTest {
     @MockitoBean
     protected UserAccountRepository userAccountRepository;
 
+    /** Sessions are open by default here, so tokens from TestTokens are accepted; a test can say otherwise. */
+    @MockitoBean
+    protected SessionService sessionService;
+
     protected MockMvc mockMvc;
+
+    @BeforeEach
+    void openTestSessions() {
+        when(sessionService.isActive(any(), any())).thenReturn(true);
+        when(sessionService.properties()).thenReturn(
+                new SessionProperties(Duration.ofHours(12), Duration.ofHours(2), false));
+    }
 
     @BeforeEach
     void setUpMockMvc() {

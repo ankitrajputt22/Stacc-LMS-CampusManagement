@@ -17,7 +17,7 @@ Keep this list small. Make a route public only for a clear reason.
 
 ## Protected routes
 
-Every other route under `/api/` requires a valid access token, sent as `Authorization: Bearer <access-token>` (see `access-tokens.md`).
+Every other route under `/api/` requires a signed-in session: the `STACC_SESSION` cookie from a browser, or the same token as `Authorization: Bearer <token>` from an API client (see `access-tokens.md`). Changes signed in by the cookie must also pass CSRF (see `authentication.md`).
 
 ```text
 login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  ->  reach protected /api routes
@@ -50,7 +50,7 @@ This is intended. It also means an anonymous caller cannot probe which API paths
 
 ## Calls from a browser on another origin
 
-A web page on another origin may call the API from a browser only if its origin is listed in `FRONTEND_ORIGIN`. The default is the frontend dev server, `http://localhost:5173`. Only exact origins are accepted: a wildcard is refused when the backend starts. The rule covers `/api/` only and does not allow cookies.
+A web page on another origin may call the API from a browser only if its origin is listed in `FRONTEND_ORIGIN`. The default is the frontend dev server, `http://localhost:5173`. Only exact origins are accepted: a wildcard is refused when the backend starts. The rule covers `/api/` only, and those origins may send the session cookie.
 
 This decides which pages may send requests. It never replaces the token: every request is still checked as described above. See `frontend-authentication.md`.
 
