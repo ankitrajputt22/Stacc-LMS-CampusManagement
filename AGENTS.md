@@ -13,6 +13,7 @@
 - Never store plaintext passwords. Store only password hashes, and never log or expose raw passwords or hashes.
 - Hash and check passwords only with the shared `PasswordEncoder`. Do not compare password strings yourself or write custom hashing code.
 - Keep `UserAccount` separate from student and faculty profile data.
+- Names, the preferred name, contact details, and the official photo live on `PersonProfile` (`identity.person`), at most one per account. The college sets the full name, email, and photo; the person may change only the preferred name and phone. Contact details are shown only to the person (and later to staff with a permission); never put names or contact details in tokens, URLs, or logs. See `docs/person-profiles.md`.
 - Do not expose JPA entities such as `UserAccount` directly through APIs.
 - Disable an account through its status. Do not delete accounts just to remove access.
 - Roles are assigned by the college through the backend. Users never choose their own role.

@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
 import { PortalEmblem } from '../../login/PortalEmblem'
 import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
+import { initialsOf, useDisplayName } from '../../person/useDisplayName'
 import { AccountRoles } from './AccountRoles'
 import { CloseIcon, RailIcon } from './icons'
 import { type NavigationItem, type NavigationSection, navigationFor } from './navigation'
@@ -11,12 +12,6 @@ const railItemClasses =
   'relative flex w-full flex-col items-center gap-1 px-1 py-2.5 text-center text-[0.72rem] leading-tight font-medium focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-portal-bar'
 const railIdle = 'text-white hover:bg-white/10'
 const railActive = 'bg-white text-portal-navy'
-
-/** The account's initials for the avatar, from its login ID: "student1" gives "ST". */
-function initials(loginId: string): string {
-  const letters = loginId.replace(/[^a-z]/gi, '')
-  return (letters.slice(0, 2) || loginId.slice(0, 2)).toUpperCase()
-}
 
 function RailBadge() {
   const { unreadCount } = useUnreadCount()
@@ -137,7 +132,8 @@ function TrayLinks({ items, onNavigate }: { items: readonly NavigationItem[]; on
 
 function AccountTray({ items, onClose }: { items: readonly NavigationItem[]; onClose: () => void }) {
   const { account, logout } = useAuth()
-  if (!account) {
+  const displayName = useDisplayName()
+  if (!account || !displayName) {
     return null
   }
   return (
@@ -147,12 +143,13 @@ function AccountTray({ items, onClose }: { items: readonly NavigationItem[]; onC
           aria-hidden="true"
           className="flex size-16 items-center justify-center rounded-full border-2 border-portal-navy text-2xl font-semibold text-portal-navy"
         >
-          {initials(account.loginId)}
+          {initialsOf(displayName)}
         </span>
-        <p className="mt-2 text-xl font-semibold break-all text-ink">
+        <p className="mt-2 text-xl font-semibold break-words text-ink">
           <span className="sr-only">Signed in as </span>
-          {account.loginId}
+          {displayName}
         </p>
+        {displayName !== account.loginId && <p className="text-sm break-all text-ink-muted">{account.loginId}</p>}
         <AccountRoles roles={account.roles} className="mt-0.5 text-sm text-ink-muted" />
         <button
           type="button"
@@ -190,6 +187,7 @@ function sectionIsCurrent(section: NavigationSection, pathname: string): boolean
  */
 export function GlobalNav() {
   const { account } = useAuth()
+  const displayName = useDisplayName()
   const { pathname } = useLocation()
   const sections = navigationFor(account?.roles ?? [])
   const [tray, setTray] = useState<string | null>(null)
@@ -243,9 +241,9 @@ export function GlobalNav() {
               'Account',
               'account',
               false,
-              account ? (
+              account && displayName ? (
                 <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-portal-bar-strong text-xs font-bold text-portal-navy">
-                  {initials(account.loginId)}
+                  {initialsOf(displayName)}
                 </span>
               ) : undefined,
             )}

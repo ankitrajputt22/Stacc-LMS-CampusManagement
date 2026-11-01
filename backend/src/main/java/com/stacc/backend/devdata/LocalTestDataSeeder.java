@@ -91,6 +91,8 @@ import com.stacc.backend.hostel.HostelResponses.HostelAllocationResponse;
 import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
+import com.stacc.backend.identity.person.PersonProfileRepository;
+import com.stacc.backend.identity.person.PersonProfileService;
 import com.stacc.backend.identity.student.StudentProfile;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncement;
@@ -198,6 +200,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     @Profile(PROFILE)
     static class Repositories {
         final UserAccountRepository accounts;
+        final PersonProfileRepository people;
         final RoleRepository roles;
         final DepartmentRepository departments;
         final ProgramRepository programs;
@@ -235,7 +238,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelApplicationRepository hostelApplications;
         final HostelAllocationRepository hostelAllocations;
 
-        Repositories(UserAccountRepository accounts, RoleRepository roles, DepartmentRepository departments,
+        Repositories(UserAccountRepository accounts, PersonProfileRepository people, RoleRepository roles,
+                DepartmentRepository departments,
                 ProgramRepository programs, AcademicSessionRepository sessions, SemesterRepository semesters,
                 CourseRepository courses, CourseOfferingRepository offerings, StudentProfileRepository studentProfiles,
                 FacultyProfileRepository facultyProfiles, TeachingAssignmentRepository teaching,
@@ -253,6 +257,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications,
                 HostelAllocationRepository hostelAllocations) {
             this.accounts = accounts;
+            this.people = people;
             this.roles = roles;
             this.departments = departments;
             this.programs = programs;
@@ -317,6 +322,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final CampusServiceRequestService campusRequests;
         final HostelApplicationService hostelApplications;
         final HostelAllocationService hostelAllocations;
+        final PersonProfileService personProfiles;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -328,7 +334,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 ApprovalWorkflowService approvals, ApprovalQueryService approvalQueries,
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
-                HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations) {
+                HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
+                PersonProfileService personProfiles) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -350,6 +357,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.campusRequests = campusRequests;
             this.hostelApplications = hostelApplications;
             this.hostelAllocations = hostelAllocations;
+            this.personProfiles = personProfiles;
         }
     }
 
@@ -412,6 +420,15 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         UserAccount admin1 = account("admin1", password, RoleName.ADMIN);
         UserAccount studentFaculty = account("studentfaculty1", password, RoleName.STUDENT, RoleName.FACULTY);
         UserAccount facultyAdmin = account("facultyadmin1", password, RoleName.FACULTY, RoleName.ADMIN);
+
+        // --- People: made-up names, and addresses on the reserved .example domain that can never receive mail.
+        person(student1, "Aarav Sharma");
+        person(student2, "Diya Patel");
+        person(faculty1, "Meera Iyer");
+        person(faculty2, "Rohan Gupta");
+        person(admin1, "Kavita Rao");
+        person(studentFaculty, "Arjun Nair");
+        person(facultyAdmin, "Sanjay Verma");
 
         // --- Academic masters.
         Department cse = findOrCreate(repositories.departments.findByCode("CSE"),
@@ -662,6 +679,11 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             }
         }
         return repositories.accounts.save(account);
+    }
+
+    private void person(UserAccount account, String fullName) {
+        createUnless(repositories.people.findByUserAccountId(account.getId()).isPresent(),
+                () -> services.personProfiles.record(account, fullName, account.getLoginId() + "@stacc.example"));
     }
 
     private AcademicSession session(int startYear, Consumer<AcademicSession> lifecycle) {

@@ -4,6 +4,9 @@
  * account: the cache is emptied whenever a session ends or starts.
  */
 export const queryKeys = {
+  me: {
+    profile: () => ['me', 'profile'] as const,
+  },
   lms: {
     all: ['lms'] as const,
     myCourses: () => ['lms', 'my-courses'] as const,

@@ -2,7 +2,7 @@ import type { AdminDashboard, FacultyDashboard, StudentDashboard } from '../type
 import { apiClient } from './apiClient'
 
 /**
- * The signed-in student's dashboard. The client's base URL already ends in /api, so this is
+ * The signed-in student's dashboard. The client's base URL already ends in /api/v1, so this is
  * GET /api/v1/dashboard/student. The student is the one in the access token; nothing about them is sent from here.
  */
 export async function getStudentDashboard(signal?: AbortSignal): Promise<StudentDashboard> {

@@ -29,6 +29,7 @@ import com.stacc.backend.hostel.HostelBedRepository;
 import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
+import com.stacc.backend.identity.person.PersonProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.ai.AiCourseKnowledgeIndexRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
@@ -113,6 +114,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsTopicRepository.class,
     NotificationRecipientRepository.class,
     NotificationRepository.class,
+    PersonProfileRepository.class,
     ProgramRepository.class,
     RoleRepository.class,
     SemesterEnrollmentRepository.class,
