@@ -150,7 +150,7 @@ public abstract class DatabaseFreeApiTest {
 
     @BeforeEach
     void openTestSessions() {
-        when(sessionService.isActive(any(), any())).thenReturn(true);
+        when(sessionService.check(any(), any())).thenReturn(new SessionService.SessionCheck(true, false));
         when(sessionService.properties()).thenReturn(
                 new SessionProperties(Duration.ofHours(12), Duration.ofHours(2), false));
     }

@@ -1,5 +1,6 @@
 package com.stacc.backend.auth.api;
 
+import com.stacc.backend.auth.password.PasswordService;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.auth.security.SessionCookies;
 import com.stacc.backend.auth.session.SessionEndReason;
@@ -39,10 +40,12 @@ public class AuthController {
 
     private final LoginService loginService;
     private final SessionService sessions;
+    private final PasswordService passwords;
 
-    public AuthController(LoginService loginService, SessionService sessions) {
+    public AuthController(LoginService loginService, SessionService sessions, PasswordService passwords) {
         this.loginService = loginService;
         this.sessions = sessions;
+        this.passwords = passwords;
     }
 
     @PostMapping("/login")
@@ -53,7 +56,8 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Signed in; the session cookie is set.")
     @ApiResponse(responseCode = "400", description = "The request is missing a field or is malformed.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(responseCode = "401", description = "The login ID or password is wrong.",
+    @ApiResponse(responseCode = "401", description = "The login ID or password is wrong, or a temporary password has "
+            + "run out. The message is the same in every case.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public ResponseEntity<SessionResponse> login(@Valid @RequestBody LoginRequest request,
             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent) {
@@ -73,7 +77,9 @@ public class AuthController {
                 .filter(authority -> authority.startsWith(ROLE_PREFIX))
                 .map(authority -> authority.substring(ROLE_PREFIX.length()))
                 .toList();
-        return new SessionResponse(AuthenticatedAccount.idFrom(token), token.getSubject(), roles, token.getExpiresAt());
+        Long accountId = AuthenticatedAccount.idFrom(token);
+        return new SessionResponse(accountId, token.getSubject(), roles, token.getExpiresAt(),
+                passwords.isChangeRequired(accountId));
     }
 
     @PostMapping("/logout")

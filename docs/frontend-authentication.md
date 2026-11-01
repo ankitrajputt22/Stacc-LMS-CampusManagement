@@ -54,6 +54,12 @@ The session lives on the server (see `access-tokens.md`). The browser holds only
 
 After a deliberate sign-out no page is remembered. The next person to sign in starts at the Dashboard.
 
+## Changing the password
+
+**Change password** (`/account/password`, `pages/ChangePasswordPage.tsx`) is linked from the Account tray and the small-screen drawer. It asks for the current password and the new one twice, checks the length and that the two match before sending, and shows the backend's refusal on the field it concerns. On success the form is cleared and the page says that other devices were signed out; this one stays signed in. See `password-security.md`.
+
+When the session says `passwordChangeRequired`, the route guard shows only this page, without the navigation, whatever address was asked for. Its first field is then called Temporary password, and Sign out is the only other button. Once the change is saved, `passwordChanged()` opens the app again at the address that was asked for. This is for the interface only: the backend refuses every feature until the password is changed.
+
 ## The sign-in form
 
 | Situation | What is shown |
@@ -363,5 +369,5 @@ Being an allowed origin never replaces signing in. It only decides which web pag
 
 ## Not built yet
 
-- Refresh tokens and "remember me" (not planned), password change or reset (roadmap 0.2.3), single sign-on, and multi-factor sign-in.
+- Refresh tokens and "remember me" (not planned), password reset by email, single sign-on, and multi-factor sign-in.
 - The pages the navigation still marks as coming.

@@ -7,6 +7,7 @@ const answer: SessionResponse = {
   loginId: 'student1',
   roles: ['STUDENT'],
   expiresAt: '2026-11-01T22:00:00Z',
+  passwordChangeRequired: false,
 }
 
 describe('sessionFrom', () => {
@@ -16,6 +17,7 @@ describe('sessionFrom', () => {
       loginId: 'student1',
       roles: ['STUDENT'],
       expiresAt: Date.parse('2026-11-01T22:00:00Z'),
+      passwordChangeRequired: false,
     })
   })
 

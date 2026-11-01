@@ -45,6 +45,17 @@ public class UserAccount {
     @Column(nullable = false, length = 20)
     private AccountStatus status = AccountStatus.ACTIVE;
 
+    // Set when the college issues a temporary password; the person must choose a new one before anything else.
+    @Column(name = "password_change_required", nullable = false)
+    private boolean passwordChangeRequired;
+
+    @Column(name = "password_changed_at")
+    private Instant passwordChangedAt;
+
+    // A temporary password stops working at this moment, even if it was never used.
+    @Column(name = "temporary_password_expires_at")
+    private Instant temporaryPasswordExpiresAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -83,6 +94,34 @@ public class UserAccount {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    /** The person chose a new password: it replaces the old hash, and any temporary-password state ends. */
+    public void changePassword(String newPasswordHash, Instant now) {
+        this.passwordHash = requireText(newPasswordHash, "passwordHash");
+        this.passwordChangeRequired = false;
+        this.temporaryPasswordExpiresAt = null;
+        this.passwordChangedAt = now;
+    }
+
+    /** The college issued a temporary password: it works until it expires, and only to choose a new one. */
+    public void issueTemporaryPassword(String temporaryPasswordHash, Instant expiresAt) {
+        this.passwordHash = requireText(temporaryPasswordHash, "passwordHash");
+        this.passwordChangeRequired = true;
+        this.temporaryPasswordExpiresAt = expiresAt;
+    }
+
+    public boolean isPasswordChangeRequired() {
+        return passwordChangeRequired;
+    }
+
+    /** Whether the password is a temporary one that has stopped working. */
+    public boolean temporaryPasswordExpiredAt(Instant now) {
+        return passwordChangeRequired && temporaryPasswordExpiresAt != null && !now.isBefore(temporaryPasswordExpiresAt);
+    }
+
+    public Instant getPasswordChangedAt() {
+        return passwordChangedAt;
     }
 
     public AccountStatus getStatus() {

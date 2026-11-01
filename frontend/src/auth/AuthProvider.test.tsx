@@ -40,10 +40,10 @@ describe('AuthProvider', () => {
   beforeEach(() => {
     auth = null
     vi.mocked(authApi.getCurrentSession).mockResolvedValue({
-      accountId: 1, loginId: 'student1', roles: ['STUDENT'], expiresAt: inAnHour(),
+      accountId: 1, loginId: 'student1', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
     })
     vi.mocked(authApi.login).mockResolvedValue({
-      accountId: 2, loginId: 'student2', roles: ['STUDENT'], expiresAt: inAnHour(),
+      accountId: 2, loginId: 'student2', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
     })
     vi.mocked(authApi.logout).mockResolvedValue()
     vi.mocked(authApi.logoutEverywhere).mockResolvedValue()
@@ -59,6 +59,19 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(auth?.isAuthenticated).toBe(true))
     expect(auth?.isChecking).toBe(false)
     expect(auth?.account).toEqual({ accountId: 1, loginId: 'student1', roles: ['STUDENT'] })
+  })
+
+  it('holds a required password change until the password is changed', async () => {
+    vi.mocked(authApi.getCurrentSession).mockResolvedValue({
+      accountId: 1, loginId: 'student1', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: true,
+    })
+    renderProvider()
+    await waitFor(() => expect(auth?.passwordChangeRequired).toBe(true))
+
+    act(() => auth?.passwordChanged())
+
+    expect(auth?.passwordChangeRequired).toBe(false)
+    expect(auth?.isAuthenticated).toBe(true)
   })
 
   it('treats no session as signed out', async () => {

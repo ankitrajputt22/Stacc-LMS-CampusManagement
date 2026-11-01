@@ -158,6 +158,13 @@ function AccountTray({ items, onClose }: { items: readonly NavigationItem[]; onC
         >
           Sign out
         </button>
+        <Link
+          to="/account/password"
+          onClick={onClose}
+          className="mt-3 text-sm font-medium text-stacc-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+        >
+          Change password
+        </Link>
       </div>
       <hr className="my-5 border-line" />
       <TrayLinks items={items} onNavigate={onClose} />

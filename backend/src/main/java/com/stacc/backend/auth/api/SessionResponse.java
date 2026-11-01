@@ -15,5 +15,8 @@ public record SessionResponse(
         List<String> roles,
         @Schema(description = "When this sign-in ends at the latest. It can end earlier: after the idle timeout, when "
                 + "the person signs out, or when the college disables the account.")
-        Instant expiresAt) {
+        Instant expiresAt,
+        @Schema(description = "True when the college requires a new password. Until it is changed, only changing the "
+                + "password and signing out work.")
+        boolean passwordChangeRequired) {
 }

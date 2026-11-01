@@ -9,6 +9,7 @@ import { AttendancePage } from './pages/AttendancePage'
 import { CalendarPage } from './pages/CalendarPage'
 import { CampusPage } from './pages/CampusPage'
 import { CampusRequestPage } from './pages/CampusRequestPage'
+import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { CourseAttendancePage } from './pages/CourseAttendancePage'
 import { CourseResultsPage } from './pages/CourseResultsPage'
 import { CourseAiPage } from './pages/CourseAiPage'
@@ -71,6 +72,7 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/faculty/course-offerings/:courseOfferingId" element={<FacultyCourseReportPage />} />
           <Route path="inbox" element={<InboxPage />} />
+          <Route path="account/password" element={<ChangePasswordPage />} />
           {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
           <Route path="support" element={<SupportPage />} />
           <Route path="support/new" element={<SupportNewTicketPage />} />

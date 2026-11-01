@@ -10,6 +10,13 @@ export type AuthContextValue = {
    * Its roles are the known ones in a fixed order, and an account may hold several.
    */
   account: AuthAccount | null
+  /**
+   * True when the college requires a new password. Only the Change password page is shown until it is changed; the
+   * backend refuses everything else meanwhile.
+   */
+  passwordChangeRequired: boolean
+  /** Records that the password was just changed, so the rest of the app opens again. */
+  passwordChanged: () => void
   /** True after the user chose "Sign out", until someone signs in again. */
   signedOutByUser: boolean
   /** Signs in with college credentials. It rejects with the request error when the login fails. */

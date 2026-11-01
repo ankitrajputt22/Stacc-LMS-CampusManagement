@@ -52,7 +52,7 @@ public class LoginService {
         AccessToken token = accessTokenService.issue(principal, session.getId(), session.getExpiresAt());
         return new SignIn(
                 new SessionResponse(principal.getAccountId(), principal.getLoginId(), principal.getRoleNames(),
-                        session.getExpiresAt()),
+                        session.getExpiresAt(), principal.isPasswordChangeRequired()),
                 token.value(),
                 Duration.ofSeconds(token.expiresInSeconds()));
     }
@@ -63,7 +63,8 @@ public class LoginService {
             return authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken.unauthenticated(request.loginId(), request.password()));
         } catch (BadCredentialsException | AccountStatusException exception) {
-            // Wrong password, unknown login ID, or a disabled account. Any other failure is a
+            // Wrong password, unknown login ID, a disabled account, or a temporary password that has run out (checked
+            // only after the password matched). Any other failure is a
             // real server problem and is deliberately not caught here.
             throw new ApiException(HttpStatus.UNAUTHORIZED, INVALID_LOGIN_MESSAGE);
         }
