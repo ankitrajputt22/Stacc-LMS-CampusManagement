@@ -49,7 +49,8 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
                 () -> approvals.approveStep(faculty("faculty1"), stepId, null),
                 () -> approvals.approveStep(faculty("faculty2"), stepId, null));
 
-        assertOneWonAndOneConflicted(outcomes);
+        // The request has a second step, so it is still pending: the slower approver finds the step decided.
+        assertOneWonAndOneConflicted(outcomes, ApprovalWorkflowService.STEP_DECIDED);
         assertThat(historyCount(requestId, ApprovalRequestHistoryAction.STEP_APPROVED)).isEqualTo(1);
     }
 
@@ -62,19 +63,23 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
                 () -> approvals.approveStep(faculty("faculty1"), stepId, null),
                 () -> approvals.rejectStep(faculty("faculty2"), stepId, "Not needed."));
 
-        assertOneWonAndOneConflicted(outcomes);
+        // Whichever is faster wins. A first approval leaves the request pending at its next step, so the rejection
+        // finds the step decided; a first rejection ends the whole request, so the approval finds it already rejected.
+        assertOneWonAndOneConflicted(outcomes, ApprovalWorkflowService.STEP_DECIDED,
+                "This approval request is already rejected and cannot change.");
         long decisions = historyCount(requestId, ApprovalRequestHistoryAction.STEP_APPROVED)
                 + historyCount(requestId, ApprovalRequestHistoryAction.STEP_REJECTED);
         assertThat(decisions).isEqualTo(1);
     }
 
-    private static void assertOneWonAndOneConflicted(List<Outcome<ApprovalDecisionResponse>> outcomes) {
+    private static void assertOneWonAndOneConflicted(List<Outcome<ApprovalDecisionResponse>> outcomes,
+            String... acceptableMessages) {
         assertThat(outcomes).filteredOn(Outcome::succeeded).hasSize(1);
         assertThat(outcomes).filteredOn(outcome -> !outcome.succeeded()).singleElement().satisfies(outcome -> {
             assertThat(outcome.failure()).isInstanceOf(ApiException.class);
             ApiException failure = (ApiException) outcome.failure();
             assertThat(failure.getStatus()).isEqualTo(HttpStatus.CONFLICT);
-            assertThat(failure.getMessage()).isEqualTo(ApprovalWorkflowService.STEP_DECIDED);
+            assertThat(failure.getMessage()).isIn((Object[]) acceptableMessages);
         });
     }
 
