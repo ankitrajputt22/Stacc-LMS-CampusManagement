@@ -8,6 +8,7 @@ Stacc has several kinds of tests. Each kind answers a different question, and CI
 | Backend MySQL tests | `backend/src/test`, classes named `*MySqlIT` | Do the migrations, constraints, and row locks work on a real MySQL server? | `mvn verify` (needs Docker) |
 | Frontend unit tests | `frontend/src`, files named `*.test.ts` or `*.test.tsx` next to the code | Do the frontend's rules (sign-in, roles, navigation, the API client) and shared components behave? | `npm test` |
 | AI service tests | `ai-service/tests` | Do extraction, indexing, retrieval, and the internal API work? | `pytest` |
+| End-to-end tests | `e2e/tests` | Do real journeys work in a real browser against the whole stack? | `npm test` in `e2e/` (needs Docker) |
 
 ## Backend unit and API tests
 
@@ -73,6 +74,33 @@ What they check today:
 | `ui/Tabs.test.tsx` | The in-page tabs follow the ARIA tabs pattern and work by click and with the arrow keys, Home, and End. |
 
 Test what a person sees and does: find elements by role and accessible name (`getByRole('tab', { name: 'Home' })`), act with `userEvent`, and avoid class names and internal state. Add tests with every phase that changes frontend rules or shared components.
+
+## End-to-end tests
+
+Playwright drives a real Chromium browser through whole journeys against the complete stack (frontend, Nginx, backend, MySQL, MinIO) running in Docker with the demo data. They are the only tests that see everything working together.
+
+```bash
+cd e2e
+npm ci
+npx playwright install chromium   # once
+./stack.sh up                     # build and start the stack, a few minutes the first time
+npm test
+./stack.sh down                   # stop it and delete its data
+```
+
+`./stack.sh` runs the stack as its own Compose project, **`stacc-e2e`**, on its own ports (frontend 3100, backend 8180, MySQL 3406, MinIO 9100 and 9101) with its own volumes, so it runs next to your normal `stacc` stack without touching it. On the first `up` it generates every password and secret into an env file outside the repository (`$TMPDIR/stacc-e2e.env`, or `E2E_ENV_FILE`), and `down` deletes the file with the stack. It starts Compose with a clean environment, so settings exported in your shell (such as `SPRING_PROFILES_ACTIVE` or `JWT_SECRET`) never leak in. `./stack.sh logs backend` shows a service's log.
+
+The tests read the demo password from that file and never print it. The journeys share one seeded database and some change it, so they run one at a time in file order, and they are written so they can be run again on the same stack. A failing journey keeps a screenshot and a trace (`npx playwright show-trace e2e/test-results/.../trace.zip`). Flaky journeys are fixed, never retried.
+
+What they check today:
+
+| Journey | Checks |
+| --- | --- |
+| `01-sign-in.spec.ts` | The front page offers ERP and LMS logins; LMS sign-ins land on Courses or Teaching for single-role accounts and on the dashboard for a student who also teaches; ERP opens the dashboard; a wrong password gets the one generic message; after signing out, pages need signing in again. |
+| `02-student-submission.spec.ts` | A student opens a course and an assignment and hands in an attempt, which is accepted on time. |
+| `03-faculty-grading.spec.ts` | A faculty member opens the course's submissions, grades the student's latest attempt, and the student then sees the feedback. |
+
+Find elements by role and accessible name, as a person would. Every phase that adds a user-facing flow adds or extends a journey.
 
 ## AI service tests
 

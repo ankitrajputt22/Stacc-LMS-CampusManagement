@@ -51,6 +51,7 @@
 - App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
 - Tests that need real MySQL (migrations, constraints, row locks, races) extend `MySqlIntegrationTest`, are named `*MySqlIT`, and run in `mvn verify` on a throwaway Testcontainers MySQL seeded with the demo data. Each works on demo records no other test changes. Every new row-lock or capacity rule gets one, using `Concurrently.run`. See `docs/testing.md`.
 - Frontend unit tests use Vitest and React Testing Library (`npm test`), sit next to the code as `*.test.ts(x)`, find elements by role and accessible name, and never call a real server. Add them with every phase that changes frontend rules or shared components. See `docs/testing.md`.
+- End-to-end tests use Playwright in `e2e/` against the whole Docker stack, started by `e2e/stack.sh` as the separate Compose project `stacc-e2e` with generated passwords outside the repository; never point them at the `stacc` project or a real database. Every new user-facing flow adds or extends a journey; journeys find elements by role and name and are never retried. See `docs/testing.md`.
 - Keep commit messages simple and human-readable.
 - GitHub Actions (`.github/workflows/ci.yml`) runs the backend tests, the frontend lint and build, and the AI service lint and tests. Merge a phase only after they pass on its branch, and never skip or disable a failing check. CI uses no secrets. See `docs/continuous-integration.md`.
 
