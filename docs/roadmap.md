@@ -90,7 +90,7 @@ Goal: make every later change safe to make. No new features.
 | ★ 0.3.2 | Curriculum | Which courses a program offers in which semester, core or elective, with credits. |
 | ★ 0.3.3 | Offering sections | Course offerings split into sections with capacity, and teaching assignments per section. |
 | 0.3.4 | Academic record | A student's semester-by-semester standing from official enrollment and published results. |
-| ★ 0.3.5 | Academic admin redesign | Every academic admin page rebuilt with `DataTable`, filters, paging, and the shared forms. |
+| ★ 0.3.5 | ERP redesign | Every academic admin page rebuilt with `DataTable`, filters, paging, and the shared forms; the attendance, results, and calendar pages moved onto the shared components and the query cache. Done first, at the project owner's request. |
 | ★ 0.3.6 | Navigation groups | The rail moves to Academics, Campus, Services, and Career trays, with Teaching and Manage trays for staff (decision 9). |
 
 ## v0.4 Course registration
@@ -286,4 +286,5 @@ Goal: make every later change safe to make. No new features.
 | --- | --- |
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
-| v0.3 – v1.0 | Not started |
+| v0.3 ERP core | In progress: 0.3.5 done (moved ahead at the project owner's request) |
+| v0.4 – v1.0 | Not started |

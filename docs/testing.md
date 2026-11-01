@@ -101,6 +101,8 @@ What they check today:
 | `01-sign-in.spec.ts` | The front page offers ERP and LMS logins; the session token is in an HttpOnly cookie the page cannot read, nothing is in browser storage, and a reload keeps the person signed in; LMS sign-ins land on Courses or Teaching for single-role accounts and on the dashboard for a student who also teaches; ERP opens the dashboard; a wrong password gets the one generic message; after signing out, pages need signing in again. |
 | `02-student-submission.spec.ts` | A student opens a course and an assignment and hands in an attempt, which is accepted on time. |
 | `03-faculty-grading.spec.ts` | A faculty member opens the course's submissions, grades the student's latest attempt, and the student then sees the feedback. |
+| `04-password-change.spec.ts` | A student changes their password: this device stays signed in, another device is signed out, the old password stops working, and the password is changed back. Only this journey uses `student2`. |
+| `05-erp-admin.spec.ts` | An admin searches the course catalog, which narrows the table, then opens a course offering's roster from the offerings list. |
 
 Find elements by role and accessible name, as a person would. Every phase that adds a user-facing flow adds or extends a journey.
 

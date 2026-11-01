@@ -1,18 +1,24 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
+import { queryKeys } from '../api/queryKeys'
 import type { ApiRequestState } from '../api/useApiRequest'
-import { Button } from '../components/Button'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
-import { StatePanel } from '../components/states/StatePanel'
-import { type Column, MasterList } from './MasterList'
+import { Button, Card, type Column, DataTable, Pagination, SelectField, TextField } from '../ui'
+import { statusWord } from './masterStatus'
 
 export const ADMIN_DENIED = 'You don’t have access to academic administration.'
 export const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
+/** How many records a page of the list shows. */
+export const PAGE_SIZE = 20
+
 type Request<T> = ApiRequestState<T[]> & { retry: () => void; refresh: () => void }
+
+export type MasterColumn<T> = Omit<Column<T>, 'key'> & { key?: string }
 
 type MasterSectionProps<T> = {
   /** Plural and singular words, such as "Departments" and "department". */
@@ -20,9 +26,13 @@ type MasterSectionProps<T> = {
   singular: string
   intro: string
   request: Request<T>
-  columns: Column<T>[]
+  columns: MasterColumn<T>[]
   rowKey: (row: T) => number
   rowName: (row: T) => string
+  /** The text the filter box searches, such as the code and the name. */
+  searchText: (row: T) => string
+  /** The record's status, which adds a status filter. */
+  rowStatus?: (row: T) => string
   /** When adding needs other masters first, such as departments for a program: why it cannot start yet. */
   blockedReason?: string | null
   /** The form for a new record. It calls `done` with an announcement once saved. */
@@ -32,17 +42,18 @@ type MasterSectionProps<T> = {
   emptyTitle?: string
   /** Instead of the academic-administration wording of a 403. */
   deniedTitle?: string
-  /** Shown above the list, such as filters. */
+  /** Filters the backend applies, shown before the search box, such as session and semester. */
   toolbar?: ReactNode
-  rowActions?: (row: T, mobile: boolean) => ReactNode
+  rowActions?: (row: T) => ReactNode
 }
 
 type Open = { type: 'create' } | { type: 'edit'; key: number } | null
 
 /**
- * One academic master: its heading, an Add button, one contained form at a time for adding or editing, and the list
- * with its loading, empty, error, and no-access states. After a save the list reloads quietly without reloading the
- * page, the form closes, and the change is announced. A 403 never signs the user out.
+ * One academic master as a card: its heading and Add button, one contained form at a time for adding or editing, a
+ * search box and status filter, and the list as a shared table, a page at a time, with its loading, empty, error, and
+ * no-access states. After a save every academic admin list is asked again quietly, since they feed each other's
+ * choices; the form closes and the change is announced. A 403 never signs the user out.
  */
 export function MasterSection<T>({
   title,
@@ -52,6 +63,8 @@ export function MasterSection<T>({
   columns,
   rowKey,
   rowName,
+  searchText,
+  rowStatus,
   blockedReason,
   renderCreate,
   renderEdit,
@@ -60,19 +73,35 @@ export function MasterSection<T>({
   toolbar,
   rowActions,
 }: MasterSectionProps<T>) {
-  const sectionRef = useRef<HTMLElement>(null)
+  const id = useId()
+  const queryClient = useQueryClient()
+  const sectionRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState<Open>(null)
   const [announcement, setAnnouncement] = useState('')
   const [pendingFocus, setPendingFocus] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [page, setPage] = useState(1)
   const rows = request.status === 'loaded' ? request.data : null
   const editing = open?.type === 'edit' && rows ? rows.find((row) => rowKey(row) === open.key) ?? null : null
+
+  const needle = search.trim().toLowerCase()
+  const shown = (rows ?? []).filter(
+    (row) =>
+      (needle === '' || searchText(row).toLowerCase().includes(needle)) &&
+      (status === '' || rowStatus?.(row) === status),
+  )
+  const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
+  const current = Math.min(page, pages)
+  const pageRows = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
+  const statuses = rowStatus ? [...new Set((rows ?? []).map(rowStatus))] : []
 
   // After a form closes, focus returns to the button that opened it, or to Add; whichever is visible on this screen.
   useEffect(() => {
     if (pendingFocus === null) {
       return
     }
-    const target = [...(sectionRef.current?.querySelectorAll<HTMLElement>(`[data-focus-key^="${pendingFocus}"]`) ?? [])].find(
+    const target = [...(sectionRef.current?.querySelectorAll<HTMLElement>(`[data-focus-key="${pendingFocus}"]`) ?? [])].find(
       (element) => element.offsetParent !== null,
     )
     if (target) {
@@ -88,7 +117,7 @@ export function MasterSection<T>({
 
   function done(message: string, focusKey: string) {
     setAnnouncement(message)
-    request.refresh()
+    void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
     close(focusKey)
   }
 
@@ -96,10 +125,10 @@ export function MasterSection<T>({
   // instead of landing on the empty state's button just before it disappears.
   const add = (focusKey: string) => (
     <Button
-      variant="secondary"
+      variant="primary"
       data-focus-key={focusKey}
       aria-disabled={blockedReason ? true : undefined}
-      aria-describedby={blockedReason ? 'master-blocked' : undefined}
+      aria-describedby={blockedReason ? `${id}-blocked` : undefined}
       onClick={() => {
         if (!blockedReason) {
           setAnnouncement('')
@@ -112,31 +141,41 @@ export function MasterSection<T>({
   )
   const emptyList = rows !== null && rows.length === 0
 
+  const tableColumns: Column<T>[] = [
+    ...columns.map((column, index) => ({ ...column, key: column.key ?? `${index}-${column.header}` })),
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right' as const,
+      cell: (row: T) => (
+        <div className="flex flex-wrap gap-2 md:justify-end">
+          <Button
+            variant="secondary"
+            size="sm"
+            data-focus-key={`edit-${rowKey(row)}`}
+            onClick={() => {
+              setAnnouncement('')
+              setOpen({ type: 'edit', key: rowKey(row) })
+            }}
+          >
+            Edit<span className="sr-only"> {rowName(row)}</span>
+          </Button>
+          {rowActions?.(row)}
+        </div>
+      ),
+    },
+  ]
+
   return (
-    <section ref={sectionRef} aria-labelledby="master-heading" className="mt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="master-heading" className="text-lg font-semibold text-ink">
-          {title}
-        </h2>
-        {rows !== null && rows.length > 0 && open?.type !== 'create' && <div className="w-full sm:w-auto">{add('add')}</div>}
-      </div>
-      <p className="mt-1 text-sm leading-6 text-ink-muted">{intro}</p>
-      {rows !== null && blockedReason && (
-        <p id="master-blocked" className="mt-1 text-sm text-ink-muted">
-          {blockedReason}
-        </p>
-      )}
+    <div ref={sectionRef}>
       <p role="status" className="sr-only">
         {announcement}
       </p>
-
       {open?.type === 'create' && (
-        <div className="mt-3">
-          {renderCreate((message) => done(message, 'add'), () => close(emptyList ? 'add-empty' : 'add'))}
-        </div>
+        <div className="mb-4">{renderCreate((message) => done(message, 'add'), () => close(emptyList ? 'add-empty' : 'add'))}</div>
       )}
       {editing !== null && (
-        <div className="mt-3">
+        <div className="mb-4">
           {renderEdit(
             editing,
             (message) => done(message, `edit-${rowKey(editing)}`),
@@ -145,48 +184,83 @@ export function MasterSection<T>({
         </div>
       )}
 
-      {toolbar && <div className="mt-4">{toolbar}</div>}
+      <Card
+        title={title}
+        description={
+          <>
+            {intro}
+            {rows !== null && blockedReason && (
+              <span id={`${id}-blocked`} className="mt-1 block">
+                {blockedReason}
+              </span>
+            )}
+          </>
+        }
+        action={rows !== null && rows.length > 0 && open?.type !== 'create' ? add('add') : undefined}
+        padding="none"
+      >
+        {(toolbar || (rows !== null && rows.length > 0)) && (
+          <div className="grid gap-4 border-b border-line px-4 py-4 sm:grid-cols-2 sm:px-5 lg:grid-cols-4">
+            {toolbar}
+            {rows !== null && rows.length > 0 && (
+              <>
+                <TextField
+                  label={`Search ${title.toLowerCase()}`}
+                  type="search"
+                  value={search}
+                  autoComplete="off"
+                  onChange={(event) => {
+                    setSearch(event.target.value)
+                    setPage(1)
+                  }}
+                />
+                {statuses.length > 1 && (
+                  <SelectField
+                    label="Status"
+                    value={status}
+                    onChange={(event) => {
+                      setStatus(event.target.value)
+                      setPage(1)
+                    }}
+                  >
+                    <option value="">All statuses</option>
+                    {statuses.map((value) => (
+                      <option key={value} value={value}>
+                        {statusWord(value)}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
-      <div className="mt-4">
-        {request.status === 'loading' && (
-          <StatePanel>
-            <LoadingState label={`Loading ${title.toLowerCase()}…`} />
-          </StatePanel>
-        )}
-        {request.status === 'denied' && (
-          <StatePanel>
-            <AccessDeniedState title={deniedTitle} message={SIGN_IN_AGAIN} />
-          </StatePanel>
-        )}
+        {request.status === 'loading' && <LoadingState label={`Loading ${title.toLowerCase()}…`} />}
+        {request.status === 'denied' && <AccessDeniedState title={deniedTitle} message={SIGN_IN_AGAIN} />}
         {(request.status === 'failed' || request.status === 'notFound') && (
-          <StatePanel>
-            <ErrorState
-              title={`Couldn’t load ${title.toLowerCase()}.`}
-              message="Check your connection and try again."
-              onRetry={request.retry}
-            />
-          </StatePanel>
-        )}
-        {rows !== null && rows.length === 0 && open?.type !== 'create' && (
-          <StatePanel>
-            <EmptyState title={emptyTitle ?? `No ${title.toLowerCase()} yet.`} action={add('add-empty')} />
-          </StatePanel>
-        )}
-        {rows !== null && rows.length > 0 && (
-          <MasterList
-            label={title}
-            rows={rows}
-            columns={columns}
-            rowKey={rowKey}
-            rowName={rowName}
-            onEdit={(row) => {
-              setAnnouncement('')
-              setOpen({ type: 'edit', key: rowKey(row) })
-            }}
-            rowActions={rowActions}
+          <ErrorState
+            title={`Couldn’t load ${title.toLowerCase()}.`}
+            message="Check your connection and try again."
+            onRetry={request.retry}
           />
         )}
-      </div>
-    </section>
+        {rows !== null && rows.length === 0 && open?.type !== 'create' && (
+          <EmptyState title={emptyTitle ?? `No ${title.toLowerCase()} yet.`} action={add('add-empty')} />
+        )}
+        {rows !== null && rows.length > 0 && (
+          <>
+            <DataTable
+              caption={title}
+              columns={tableColumns}
+              rows={pageRows}
+              rowKey={rowKey}
+              empty={<EmptyState title={`No ${title.toLowerCase()} match.`} description="Change the search or the filters." />}
+            />
+            <Pagination page={current} pageSize={PAGE_SIZE} total={shown.length} onPage={setPage} noun={title.toLowerCase()} />
+          </>
+        )}
+      </Card>
+    </div>
   )
 }

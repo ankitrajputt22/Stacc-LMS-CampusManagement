@@ -15,7 +15,8 @@ import {
   updateProgram,
   updateSemester,
 } from '../api/adminAcademicApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { creditsText } from '../courses/credits'
 import type {
   ActiveStatus,
@@ -27,7 +28,7 @@ import type {
   LifecycleStatus,
 } from '../types/admin'
 import { type FieldOption, type FieldSpec, MasterForm, type Values } from './MasterForm'
-import { CodeName, MasterStatus } from './MasterList'
+import { CodeName, MasterStatus } from './MasterParts'
 import { MasterSection } from './MasterSection'
 import { lifecycleOptions, statusOptions } from './masterStatus'
 
@@ -44,7 +45,7 @@ function departmentOptions(departments: AdminDepartment[]): FieldOption[] {
 
 
 export function DepartmentsSection() {
-  const request = useApiRequest(getDepartments)
+  const request = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const nameField: FieldSpec = { name: 'name', label: 'Name', kind: 'text', maxLength: 150, hint: 'Unique across the college.' }
 
   return (
@@ -55,6 +56,8 @@ export function DepartmentsSection() {
       request={request}
       rowKey={(row) => row.id}
       rowName={(row) => `department ${row.code}`}
+      searchText={(row) => `${row.code} ${row.name}`}
+      rowStatus={(row) => row.status}
       columns={[
         { header: 'Code', cell: (row) => <span className="font-medium">{row.code}</span> },
         { header: 'Name', cell: (row) => row.name },
@@ -92,8 +95,8 @@ export function DepartmentsSection() {
 }
 
 export function ProgramsSection() {
-  const request = useApiRequest(getPrograms)
-  const departments = useApiRequest(getDepartments)
+  const request = useApiQuery(queryKeys.admin.programs(), getPrograms)
+  const departments = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const departmentList = departments.status === 'loaded' ? departments.data : null
   const editFields: FieldSpec[] = [
     { name: 'name', label: 'Name', kind: 'text', maxLength: 150, hint: 'Unique within the department.' },
@@ -111,6 +114,8 @@ export function ProgramsSection() {
       blockedReason={departmentList === null ? 'Loading departments…' : departmentList.length === 0 ? 'Add a department first.' : null}
       rowKey={(row) => row.id}
       rowName={(row) => `program ${row.code}`}
+      searchText={(row) => `${row.code} ${row.name} ${row.departmentCode} ${row.departmentName}`}
+      rowStatus={(row) => row.status}
       columns={[
         { header: 'Program', cell: (row) => <CodeName code={row.code} name={row.name} /> },
         { header: 'Department', cell: (row) => <CodeName code={row.departmentCode} name={row.departmentName} /> },
@@ -169,7 +174,7 @@ function datesInOrder(values: Values) {
 }
 
 export function AcademicSessionsSection() {
-  const request = useApiRequest(getAcademicSessions)
+  const request = useApiQuery(queryKeys.admin.sessions(), getAcademicSessions)
   const dateFields: FieldSpec[] = [
     { name: 'startDate', label: 'Start date', kind: 'date' },
     { name: 'endDate', label: 'End date', kind: 'date', hint: 'After the start date.' },
@@ -183,6 +188,8 @@ export function AcademicSessionsSection() {
       request={request}
       rowKey={(row) => row.id}
       rowName={(row) => `academic session ${row.code}`}
+      searchText={(row) => row.code}
+      rowStatus={(row) => row.status}
       columns={[
         { header: 'Code', cell: (row) => <span className="font-medium">{row.code}</span> },
         { header: 'Dates', cell: (row) => `${row.startDate} to ${row.endDate}` },
@@ -234,9 +241,9 @@ export function AcademicSessionsSection() {
 }
 
 export function SemestersSection() {
-  const request = useApiRequest(getSemesters)
-  const programs = useApiRequest(getPrograms)
-  const sessions = useApiRequest(getAcademicSessions)
+  const request = useApiQuery(queryKeys.admin.semesters(), getSemesters)
+  const programs = useApiQuery(queryKeys.admin.programs(), getPrograms)
+  const sessions = useApiQuery(queryKeys.admin.sessions(), getAcademicSessions)
   const programList = programs.status === 'loaded' ? programs.data : null
   const sessionList = sessions.status === 'loaded' ? sessions.data : null
   const blocked =
@@ -255,6 +262,8 @@ export function SemestersSection() {
       blockedReason={blocked}
       rowKey={(row) => row.id}
       rowName={(row) => `semester ${row.semesterNumber} of ${row.programCode} in ${row.academicSessionCode}`}
+      searchText={(row) => `${row.academicSessionCode} ${row.programCode} ${row.programName} semester ${row.semesterNumber}`}
+      rowStatus={(row) => row.status}
       columns={[
         { header: 'Session', cell: (row) => <span className="font-medium">{row.academicSessionCode}</span> },
         { header: 'Program', cell: (row) => <CodeName code={row.programCode} name={row.programName} /> },
@@ -316,8 +325,8 @@ export function SemestersSection() {
 }
 
 export function CoursesSection() {
-  const request = useApiRequest(getCourses)
-  const departments = useApiRequest(getDepartments)
+  const request = useApiQuery(queryKeys.admin.courses(), getCourses)
+  const departments = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const departmentList = departments.status === 'loaded' ? departments.data : null
   const editFields: FieldSpec[] = [
     { name: 'name', label: 'Name', kind: 'text', maxLength: 200 },
@@ -333,6 +342,8 @@ export function CoursesSection() {
       blockedReason={departmentList === null ? 'Loading departments…' : departmentList.length === 0 ? 'Add a department first.' : null}
       rowKey={(row) => row.id}
       rowName={(row) => `course ${row.code}`}
+      searchText={(row) => `${row.code} ${row.name} ${row.departmentCode}`}
+      rowStatus={(row) => row.status}
       columns={[
         { header: 'Course', cell: (row) => <CodeName code={row.code} name={row.name} /> },
         { header: 'Department', cell: (row) => row.departmentCode },

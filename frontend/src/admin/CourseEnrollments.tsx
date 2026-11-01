@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import {
   createCourseEnrollment,
@@ -7,21 +8,20 @@ import {
   retryLmsProvisioning,
   updateCourseEnrollmentStatus,
 } from '../api/adminEnrollmentApi'
-import { useApiRequest } from '../api/useApiRequest'
-import { ActionButton } from '../components/ActionButton'
-import { Button } from '../components/Button'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
-import { StatePanel } from '../components/states/StatePanel'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { creditsText } from '../courses/credits'
 import type { AdminCourseEnrollment, AdminSemesterEnrollment, EnrollmentStatus } from '../types/admin'
+import { Alert, Button, Card } from '../ui'
 import { ENROLLMENT_DENIED, offeringLabel, refusalText, semesterContext } from './enrollmentText'
 import { MasterForm } from './MasterForm'
-import { CodeName, MasterStatus } from './MasterList'
+import { CodeName, MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 
 type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
@@ -42,19 +42,17 @@ const LMS_FAILED = 'Course enrollment was created, but LMS access could not be p
  * enrollment on the backend; this only reports what happened and offers a retry when it failed.
  */
 export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: AdminSemesterEnrollment }) {
-  const sectionRef = useRef<HTMLElement>(null)
+  const queryClient = useQueryClient()
+  const sectionRef = useRef<HTMLDivElement>(null)
   const semesterEnrollmentId = semesterEnrollment.semesterEnrollmentId
   const editable = semesterEnrollment.status === 'ENROLLED'
-  const load = useMemo(
-    () => (signal: AbortSignal) => getSemesterCourseEnrollments(semesterEnrollmentId, signal),
-    [semesterEnrollmentId],
+  const request = useApiQuery(queryKeys.admin.courseEnrollments(semesterEnrollmentId), (signal) =>
+    getSemesterCourseEnrollments(semesterEnrollmentId, signal),
   )
-  const request = useApiRequest(load)
-  const loadOfferings = useMemo(
-    () => (editable ? (signal: AbortSignal) => getCourseOfferings({ semesterId: semesterEnrollment.semesterId }, signal) : null),
-    [editable, semesterEnrollment.semesterId],
+  const offeringFilters = { semesterId: semesterEnrollment.semesterId }
+  const offerings = useApiQuery(editable ? queryKeys.admin.offerings(offeringFilters) : null, (signal) =>
+    getCourseOfferings(offeringFilters, signal),
   )
-  const offerings = useApiRequest(loadOfferings)
   const [adding, setAdding] = useState(false)
   const [ending, setEnding] = useState<Ending | null>(null)
   const [announcement, setAnnouncement] = useState('')
@@ -78,6 +76,11 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
               ? 'Every course offering of this semester is already added.'
               : null
 
+  function changed(message: string) {
+    setAnnouncement(message)
+    void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
+  }
+
   async function retry(note: Extract<LmsNote, { kind: 'failed' }>) {
     setLmsNote({ ...note, retrying: true, error: null })
     try {
@@ -100,7 +103,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
   // The empty state's button has its own key, so focus after the first course waits for the button above the list.
   const addButton = (focusKey: string) => (
     <Button
-      variant="secondary"
       data-focus-key={focusKey}
       aria-disabled={blocked ? true : undefined}
       aria-describedby={blocked ? 'add-course-blocked' : undefined}
@@ -117,51 +119,29 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
   )
 
   return (
-    <section ref={sectionRef} id="course-enrollments-panel" aria-labelledby="course-enrollments-heading" className="mt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 id="course-enrollments-heading" tabIndex={-1} data-focus-key="course-enrollments" className="text-base font-semibold text-ink">
-          Courses in {context}
-        </h3>
-        {editable && rows !== null && rows.length > 0 && !adding && <div className="w-full sm:w-auto">{addButton('add-course')}</div>}
-      </div>
-      {editable ? (
-        rows !== null &&
-        blocked && (
-          <p id="add-course-blocked" className="mt-1 text-sm text-ink-muted">
-            {blocked}
-          </p>
-        )
-      ) : (
-        <p className="mt-1 text-sm leading-6 text-ink-muted">This semester enrollment has ended, so its courses are read-only.</p>
-      )}
+    <div ref={sectionRef} id="course-enrollments-panel" className="space-y-4">
       <p role="status" className="sr-only">
         {announcement}
       </p>
-
       <div role="status">
-        {lmsNote?.kind === 'noLmsCourse' && (
-          <p className="mt-3 rounded-control border border-line-strong bg-surface-muted px-3 py-2.5 text-sm leading-5 text-ink">
-            {NO_LMS_COURSE}
-          </p>
-        )}
-        {lmsNote?.kind === 'provisioned' && (
-          <p className="mt-3 rounded-control border border-line-strong bg-surface-muted px-3 py-2.5 text-sm leading-5 text-ink">
-            LMS access provisioned for {lmsNote.courseCode}.
-          </p>
-        )}
+        {lmsNote?.kind === 'noLmsCourse' && <Alert tone="info">{NO_LMS_COURSE}</Alert>}
+        {lmsNote?.kind === 'provisioned' && <Alert tone="success">LMS access provisioned for {lmsNote.courseCode}.</Alert>}
       </div>
       {lmsNote?.kind === 'failed' && (
-        <div role="alert" className="mt-3 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
-          <p>{LMS_FAILED}</p>
-          {lmsNote.error && <p className="mt-1">{lmsNote.error}</p>}
-          <ActionButton className="mt-2" aria-disabled={lmsNote.retrying || undefined} onClick={() => !lmsNote.retrying && retry(lmsNote)}>
-            {lmsNote.retrying ? 'Retrying…' : 'Retry LMS provisioning'}
-          </ActionButton>
-        </div>
+        <Alert
+          tone="error"
+          title={LMS_FAILED}
+          action={
+            <Button variant="secondary" size="sm" aria-disabled={lmsNote.retrying || undefined} onClick={() => !lmsNote.retrying && retry(lmsNote)}>
+              {lmsNote.retrying ? 'Retrying…' : 'Retry LMS provisioning'}
+            </Button>
+          }
+        >
+          {lmsNote.error}
+        </Alert>
       )}
 
       {adding && choices !== null && (
-        <div className="mt-3">
           <MasterForm
             heading={`Add a course in ${context}`}
             note="Only this semester’s course offerings are listed. The course enrollment starts as enrolled."
@@ -176,7 +156,7 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
               const created = await createCourseEnrollment(semesterEnrollmentId, Number(values.courseOfferingId))
               const course = created.courseEnrollment
               setAdding(false)
-              setAnnouncement(`${course.courseCode} added to ${context}.`)
+              changed(`${course.courseCode} added to ${context}.`)
               setLmsNote(
                 created.lmsProvisioning === 'NO_LMS_COURSE'
                   ? { kind: 'noLmsCourse' }
@@ -184,7 +164,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
                     ? { kind: 'failed', courseEnrollmentId: course.courseEnrollmentId, courseCode: course.courseCode, retrying: false, error: null }
                     : null,
               )
-              request.refresh()
               focusLater('add-course')
             }}
             onCancel={() => {
@@ -192,61 +171,63 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
               focusLater(rows?.length === 0 ? 'add-course-empty' : 'add-course')
             }}
           />
-        </div>
       )}
 
-      <div className="mt-4">
-        {request.status === 'loading' && (
-          <StatePanel>
-            <LoadingState label="Loading course enrollments…" />
-          </StatePanel>
-        )}
-        {request.status === 'denied' && (
-          <StatePanel>
-            <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />
-          </StatePanel>
-        )}
+      <Card
+        title={<span tabIndex={-1} data-focus-key="course-enrollments" className="outline-none">Courses in {context}</span>}
+        description={
+          editable ? (
+            rows !== null && blocked ? <span id="add-course-blocked">{blocked}</span> : undefined
+          ) : (
+            'This semester enrollment has ended, so its courses are read-only.'
+          )
+        }
+        action={editable && rows !== null && rows.length > 0 && !adding ? addButton('add-course') : undefined}
+        padding="none"
+      >
+        {request.status === 'loading' && <LoadingState label="Loading course enrollments…" />}
+        {request.status === 'denied' && <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />}
         {(request.status === 'failed' || request.status === 'notFound') && (
-          <StatePanel>
-            <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
-          </StatePanel>
+          <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
         )}
         {rows !== null && rows.length === 0 && !adding && (
-          <StatePanel>
-            <EmptyState title="No course enrollments yet." action={editable && !blocked ? addButton('add-course-empty') : undefined} />
-          </StatePanel>
+          <EmptyState title="No course enrollments yet." action={editable && !blocked ? addButton('add-course-empty') : undefined} />
         )}
         {rows !== null && rows.length > 0 && (
-          <ul aria-label={`Course enrollments in ${context}`} className="divide-y divide-line rounded-panel border border-line bg-surface">
+          <ul aria-label={`Course enrollments in ${context}`} className="divide-y divide-line">
             {rows.map((row) => {
               const confirming = endingFor(row)
               const name = `${row.courseCode} in ${context}`
               return (
-                <li key={row.courseEnrollmentId} className="px-4 py-3">
+                <li key={row.courseEnrollmentId} className="px-4 py-3 sm:px-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p tabIndex={-1} data-focus-key={`course-${row.courseEnrollmentId}`} className="text-sm break-words text-ink">
                         <CodeName code={row.courseCode} name={row.courseName} />
                       </p>
-                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
                         <span>{creditsText(row.credits)}</span>
                         <MasterStatus status={row.status} />
                       </p>
                     </div>
                     {editable && row.status === 'ENROLLED' && confirming === null && (
                       <div className="flex flex-wrap gap-2">
-                        <ActionButton
-                          focusKey={`complete-course-${row.courseEnrollmentId}`}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          data-focus-key={`complete-course-${row.courseEnrollmentId}`}
                           onClick={() => setEnding({ courseEnrollmentId: row.courseEnrollmentId, status: 'COMPLETED' })}
                         >
                           Complete<span className="sr-only"> {name}</span>
-                        </ActionButton>
-                        <ActionButton
-                          focusKey={`withdraw-course-${row.courseEnrollmentId}`}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          data-focus-key={`withdraw-course-${row.courseEnrollmentId}`}
                           onClick={() => setEnding({ courseEnrollmentId: row.courseEnrollmentId, status: 'WITHDRAWN' })}
                         >
                           Withdraw<span className="sr-only"> from {name}</span>
-                        </ActionButton>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -260,8 +241,7 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
                       onConfirm={async () => {
                         await updateCourseEnrollmentStatus(row.courseEnrollmentId, confirming.status)
                         setEnding(null)
-                        setAnnouncement(`${name} marked ${confirming.status === 'COMPLETED' ? 'completed' : 'withdrawn'}.`)
-                        request.refresh()
+                        changed(`${name} marked ${confirming.status === 'COMPLETED' ? 'completed' : 'withdrawn'}.`)
                         focusLater(`course-${row.courseEnrollmentId}`)
                       }}
                       onCancel={() => {
@@ -276,7 +256,7 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
             })}
           </ul>
         )}
-      </div>
-    </section>
+      </Card>
+    </div>
   )
 }

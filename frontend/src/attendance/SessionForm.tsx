@@ -1,9 +1,8 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { Button } from '../components/Button'
 import { fromLocalInputValue, localTimeZoneName, toLocalInputValue } from '../courses/dates'
-import { border, fieldClasses } from '../teaching/formStyles'
 import type { AttendanceSessionInput } from '../types/attendance'
+import { Alert, Button, Card, TextField } from '../ui'
 
 type Field = 'heldAt' | 'topic'
 
@@ -32,14 +31,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
     default:
       return 'Couldn’t save the session. Check your connection and try again.'
   }
-}
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  return message ? (
-    <p id={id} className="mt-1.5 text-sm text-danger">
-      {message}
-    </p>
-  ) : null
 }
 
 /**
@@ -115,32 +106,16 @@ export function SessionForm({ heading, initial, submitLabel, onSubmit, onCancel 
     }
   }
 
-  function describedBy(field: Field, hint: string): string {
-    return errors[field] ? `${hint} ${id}-${field}-error` : hint
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      aria-labelledby={`${id}-heading`}
-      className="rounded-panel border border-line-strong bg-surface p-4"
-    >
-      <p id={`${id}-heading`} className="text-sm font-semibold text-ink">
-        {heading}
-      </p>
-
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor={`${id}-heldAt`} className="block text-sm font-medium text-ink">
-            Date and time
-          </label>
-          <p id={`${id}-heldAt-hint`} className="mt-0.5 text-xs text-ink-muted">
-            When the class was held, in your local time ({localTimeZoneName()}).
-          </p>
-          <input
+    <Card title={heading}>
+      <form onSubmit={handleSubmit} noValidate aria-label={heading}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
             ref={heldAtRef}
             id={`${id}-heldAt`}
+            label="Date and time"
+            hint={`When the class was held, in your local time (${localTimeZoneName()}).`}
+            error={errors.heldAt}
             type="datetime-local"
             value={heldAt}
             min="2000-01-01T00:00"
@@ -149,23 +124,13 @@ export function SessionForm({ heading, initial, submitLabel, onSubmit, onCancel 
               setHeldAt(event.target.value)
               setErrors((current) => ({ ...current, heldAt: undefined }))
             }}
-            aria-invalid={errors.heldAt ? true : undefined}
-            aria-describedby={describedBy('heldAt', `${id}-heldAt-hint`)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.heldAt))}`}
           />
-          <FieldError id={`${id}-heldAt-error`} message={errors.heldAt} />
-        </div>
-
-        <div>
-          <label htmlFor={`${id}-topic`} className="block text-sm font-medium text-ink">
-            Topic (optional)
-          </label>
-          <p id={`${id}-topic-hint`} className="mt-0.5 text-xs text-ink-muted">
-            Plain text, such as “Arrays introduction”.
-          </p>
-          <input
+          <TextField
             ref={topicRef}
             id={`${id}-topic`}
+            label="Topic (optional)"
+            hint="Plain text, such as “Arrays introduction”."
+            error={errors.topic}
             type="text"
             value={topic}
             maxLength={TOPIC_MAX}
@@ -173,30 +138,24 @@ export function SessionForm({ heading, initial, submitLabel, onSubmit, onCancel 
               setTopic(event.target.value)
               setErrors((current) => ({ ...current, topic: undefined }))
             }}
-            aria-invalid={errors.topic ? true : undefined}
-            aria-describedby={describedBy('topic', `${id}-topic-hint`)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.topic))}`}
           />
-          <FieldError id={`${id}-topic-error`} message={errors.topic} />
         </div>
-      </div>
 
-      <div role="alert">
         {formError && (
-          <p className="mt-4 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
+          <Alert tone="error" className="mt-4">
             {formError}
-          </p>
+          </Alert>
         )}
-      </div>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button type="submit" aria-disabled={submitting || undefined}>
-          {submitting ? 'Saving…' : submitLabel}
-        </Button>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Button type="submit" aria-disabled={submitting || undefined}>
+            {submitting ? 'Saving…' : submitLabel}
+          </Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

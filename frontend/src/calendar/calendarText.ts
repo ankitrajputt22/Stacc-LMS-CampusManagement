@@ -1,4 +1,5 @@
 import type { CalendarEventCategory, CalendarEventStatus } from '../types/calendar'
+import type { BadgeTone } from '../ui'
 
 const CATEGORY_LABELS: Record<CalendarEventCategory, string> = {
   ACADEMIC: 'Academic',
@@ -25,6 +26,17 @@ export function categoryLabel(category: CalendarEventCategory): string {
   return CATEGORY_LABELS[category] ?? category
 }
 
+const STATUS_TONES: Record<CalendarEventStatus, BadgeTone> = {
+  DRAFT: 'warning',
+  PUBLISHED: 'success',
+  CANCELLED: 'neutral',
+}
+
+/** The badge tone of an event status; the word always says it too. */
+export function eventStatusTone(status: CalendarEventStatus): BadgeTone {
+  return STATUS_TONES[status] ?? 'neutral'
+}
+
 export function eventStatusLabel(status: CalendarEventStatus): string {
   return STATUS_LABELS[status] ?? status
 }
@@ -35,7 +47,3 @@ export function scopeText(event: { academicSessionCode: string; semesterNumber: 
     ? `${event.academicSessionCode} · All semesters`
     : `${event.academicSessionCode} · Semester ${event.semesterNumber}${event.programCode ? ` · ${event.programCode}` : ''}`
 }
-
-/** The quiet tag of a category or status: a word, never colour alone. */
-export const tagClasses =
-  'inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink'

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ComponentProps, ReactNode, Ref } from 'react'
 import { Link } from 'react-router'
 import { type ButtonSize, type ButtonVariant, buttonClasses } from './styles'
 
@@ -8,6 +8,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: ButtonSize
   /** As wide as its container on every screen size, for forms. */
   fullWidth?: boolean
+  ref?: Ref<HTMLButtonElement>
 }
 
 /** A button. Primary for the main action of a view, secondary for the rest, danger for what cannot be undone. */

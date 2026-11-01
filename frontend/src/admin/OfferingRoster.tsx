@@ -1,15 +1,16 @@
-import { useMemo } from 'react'
-import { Link } from 'react-router'
 import { getCourseOfferingEnrollments } from '../api/adminEnrollmentApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
+import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
-import { StatePanel } from '../components/states/StatePanel'
 import { creditsText } from '../courses/credits'
+import type { RosterEntry } from '../types/admin'
+import { Card, DataTable } from '../ui'
 import { ENROLLMENT_DENIED, semesterContext } from './enrollmentText'
-import { MasterStatus } from './MasterList'
+import { MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 import { statusWord } from './masterStatus'
 
@@ -19,74 +20,53 @@ import { statusWord } from './masterStatus'
  * changed here.
  */
 export function OfferingRoster({ courseOfferingId }: { courseOfferingId: number | null }) {
-  const load = useMemo(
-    () => (courseOfferingId === null ? null : (signal: AbortSignal) => getCourseOfferingEnrollments(courseOfferingId, signal)),
-    [courseOfferingId],
+  const request = useApiQuery(
+    courseOfferingId === null ? null : queryKeys.admin.offeringRoster(courseOfferingId),
+    (signal) => getCourseOfferingEnrollments(courseOfferingId ?? 0, signal),
   )
-  const request = useApiRequest(load)
   const roster = request.status === 'loaded' ? request.data : null
   const offering = roster?.courseOffering
+  const count = roster?.enrollments.length ?? 0
 
   return (
-    <section aria-labelledby="roster-heading" className="mt-6">
-      <Link
-        to="/admin/academic/offerings"
-        className="inline-flex min-h-11 items-center text-sm font-medium text-stacc-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8"
+    <div>
+      <div className="mb-4">
+        <Breadcrumb
+          parent={{ to: '/admin/academic/offerings', label: 'Course offerings' }}
+          current={offering ? offering.courseCode : 'Roster'}
+        />
+      </div>
+      <Card
+        title={offering ? `${offering.courseCode} · ${offering.courseName}` : 'Offering roster'}
+        description={
+          offering
+            ? `${semesterContext(offering)} · ${offering.programCode} · ${creditsText(offering.credits)} · ${statusWord(offering.status)}`
+            : undefined
+        }
+        action={roster !== null && count > 0 ? <p className="text-sm text-ink-muted">{count === 1 ? '1 enrollment' : `${count} enrollments`}</p> : undefined}
+        padding="none"
       >
-        <span aria-hidden="true">←&nbsp;</span>Back to course offerings
-      </Link>
-      <h2 id="roster-heading" className="mt-2 text-lg font-semibold break-words text-ink">
-        {offering ? `${offering.courseCode} · ${offering.courseName}` : 'Offering roster'}
-      </h2>
-      {offering && (
-        <p className="mt-1 text-sm leading-6 text-ink-muted">
-          {semesterContext(offering)} · {offering.programCode} · {creditsText(offering.credits)} ·{' '}
-          {statusWord(offering.status)}
-        </p>
-      )}
-
-      <div className="mt-4">
-        {request.status === 'loading' && (
-          <StatePanel>
-            <LoadingState label="Loading enrolled students…" />
-          </StatePanel>
-        )}
-        {request.status === 'denied' && (
-          <StatePanel>
-            <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />
-          </StatePanel>
-        )}
+        {request.status === 'loading' && <LoadingState label="Loading enrolled students…" />}
+        {request.status === 'denied' && <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />}
         {request.status === 'notFound' && (
-          <StatePanel>
-            <EmptyState title="Course offering not found." description="It may not exist. Choose an offering from the list." />
-          </StatePanel>
+          <EmptyState title="Course offering not found." description="It may not exist. Choose an offering from the list." />
         )}
         {request.status === 'failed' && (
-          <StatePanel>
-            <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
-          </StatePanel>
+          <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
         )}
-        {roster !== null && roster.enrollments.length === 0 && (
-          <StatePanel>
-            <EmptyState title="No students enrolled in this offering." />
-          </StatePanel>
+        {roster !== null && (
+          <DataTable<RosterEntry>
+            caption="Enrolled students, by student ID"
+            columns={[
+              { key: 'student', header: 'Student ID', primary: true, cell: (entry) => <span className="break-all">{entry.studentLoginId}</span> },
+              { key: 'status', header: 'Status', cell: (entry) => <MasterStatus status={entry.status} /> },
+            ]}
+            rows={roster.enrollments}
+            rowKey={(entry) => entry.courseEnrollmentId}
+            empty={<EmptyState title="No students enrolled in this offering." />}
+          />
         )}
-        {roster !== null && roster.enrollments.length > 0 && (
-          <>
-            <p className="mb-2 text-sm text-ink-muted">
-              {roster.enrollments.length === 1 ? '1 enrollment' : `${roster.enrollments.length} enrollments`}, by student ID.
-            </p>
-            <ul aria-label="Enrolled students" className="divide-y divide-line rounded-panel border border-line bg-surface">
-              {roster.enrollments.map((entry) => (
-                <li key={entry.courseEnrollmentId} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                  <span className="text-sm font-medium break-all text-ink">{entry.studentLoginId}</span>
-                  <MasterStatus status={entry.status} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
-    </section>
+      </Card>
+    </div>
   )
 }

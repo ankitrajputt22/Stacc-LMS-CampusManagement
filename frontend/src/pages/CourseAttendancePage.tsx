@@ -1,14 +1,13 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { createAttendanceSession } from '../api/attendanceApi'
-import { ASK_THE_COLLEGE, ATTENDANCE_DENIED, SIGN_IN_AGAIN, backLinkClasses } from '../attendance/attendanceText'
+import { ASK_THE_COLLEGE, ATTENDANCE_DENIED, SIGN_IN_AGAIN } from '../attendance/attendanceText'
 import { SessionForm } from '../attendance/SessionForm'
 import { SessionStatusTag } from '../attendance/SessionStatusTag'
 import { SessionView } from '../attendance/SessionView'
 import { useAttendanceSessions, useMyAttendanceCourses } from '../attendance/useAttendance'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
-import { Button } from '../components/Button'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
@@ -18,6 +17,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseRouteId } from '../courses/courseRoute'
 import { formatDateTime } from '../courses/dates'
 import type { AttendanceCourseOffering, AttendanceSession } from '../types/attendance'
+import { Button, ButtonLink, Card, PageHeader } from '../ui'
 
 const ATTENDANCE = { to: '/attendance', label: 'Attendance' }
 
@@ -40,13 +40,15 @@ function CourseUnavailable() {
     <>
       <title>Attendance course unavailable · Stacc</title>
       <Breadcrumb parent={ATTENDANCE} />
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Attendance course unavailable</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        This course offering could not be found, or it is not one you currently teach.
-      </p>
-      <Link to={ATTENDANCE.to} className={`mt-6 ${backLinkClasses}`}>
+      <div className="mt-4">
+        <PageHeader
+          title="Attendance course unavailable"
+          description="This course offering could not be found, or it is not one you currently teach."
+        />
+      </div>
+      <ButtonLink to={ATTENDANCE.to} variant="secondary">
         Back to Attendance
-      </Link>
+      </ButtonLink>
     </>
   )
 }
@@ -64,14 +66,16 @@ function SessionRow({ session }: { session: AttendanceSession }) {
         </div>
         <p className="mt-0.5 text-sm break-words text-ink-muted">{session.topic ?? 'No topic'}</p>
       </div>
-      <Link
+      <ButtonLink
         to={{ search: `?session=${session.id}` }}
         data-session-id={session.id}
-        className="inline-flex min-h-11 shrink-0 items-center self-start rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8 sm:self-auto"
+        variant={session.status === 'OPEN' ? 'primary' : 'secondary'}
+        size="sm"
+        className="shrink-0 self-start sm:self-auto"
       >
         {session.status === 'OPEN' ? 'Continue marking' : 'View / Correct'}
         <span className="sr-only"> the session of {when}</span>
-      </Link>
+      </ButtonLink>
     </li>
   )
 }
@@ -96,54 +100,43 @@ function SessionList({ course, sessions, onCreated }: SessionListProps) {
   }, [fromSession])
 
   return (
-    <section aria-labelledby="attendance-sessions-heading" className="mt-8 max-w-3xl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="attendance-sessions-heading" className="text-base font-semibold text-ink">
-          Sessions
-        </h2>
-        {!adding && (
-          <div className="w-full sm:w-auto">
-            <Button variant="secondary" onClick={() => setAdding(true)}>
-              New session
-            </Button>
-          </div>
-        )}
-      </div>
-      <p className="mt-1 mb-3 text-sm leading-6 text-ink-muted">
-        Latest class first. A new session lists the students enrolled in {course.courseName} at that moment.
-      </p>
-
+    <div className="max-w-4xl space-y-4">
       {adding && (
-        <div className="mb-3">
-          <SessionForm
-            heading="New session"
-            submitLabel="Create session"
-            onSubmit={async (input) => {
-              onCreated(await createAttendanceSession(course.courseOfferingId, input))
-            }}
-            onCancel={() => setAdding(false)}
-          />
-        </div>
+        <SessionForm
+          heading="New session"
+          submitLabel="Create session"
+          onSubmit={async (input) => {
+            onCreated(await createAttendanceSession(course.courseOfferingId, input))
+          }}
+          onCancel={() => setAdding(false)}
+        />
       )}
 
-      {sessions.length === 0 ? (
-        !adding && (
-          <StatePanel>
-            <EmptyState title="No sessions yet." description="Create a session to take attendance for a class." />
-          </StatePanel>
-        )
-      ) : (
-        <ol ref={listRef} aria-label="Sessions" className="divide-y divide-line rounded-panel border border-line bg-surface">
-          {sessions.map((session) => (
-            <SessionRow key={session.id} session={session} />
-          ))}
-        </ol>
-      )}
+      <Card
+        title="Sessions"
+        description={`Latest class first. A new session lists the students enrolled in ${course.courseName} at that moment.`}
+        action={
+          adding ? undefined : (
+            <Button onClick={() => setAdding(true)}>New session</Button>
+          )
+        }
+        padding="none"
+      >
+        {sessions.length === 0 ? (
+          !adding && <EmptyState title="No sessions yet." description="Create a session to take attendance for a class." />
+        ) : (
+          <ol ref={listRef} aria-label="Sessions" className="divide-y divide-line">
+            {sessions.map((session) => (
+              <SessionRow key={session.id} session={session} />
+            ))}
+          </ol>
+        )}
+      </Card>
 
-      <Link to={ATTENDANCE.to} className={`mt-6 ${backLinkClasses}`}>
-        Back to Attendance
-      </Link>
-    </section>
+      <ButtonLink to={ATTENDANCE.to} variant="ghost">
+        <span aria-hidden="true">←</span> Back to Attendance
+      </ButtonLink>
+    </div>
   )
 }
 
@@ -200,20 +193,24 @@ function CourseAttendance({ courseOfferingId }: { courseOfferingId: number }) {
         parent={sessionParam === null ? ATTENDANCE : [ATTENDANCE, courseCrumb]}
         current={sessionParam === null ? course.courseName : 'Session'}
       />
-      <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{course.courseName}</h1>
-        <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
-          <span className="sr-only">Program </span>
-          {course.programCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          Semester {course.semesterNumber}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, Academic session </span>
-          {course.academicSessionCode}
-        </p>
-      </header>
+      <div className="mt-4">
+        <PageHeader
+          eyebrow={course.courseCode}
+          title={course.courseName}
+          description={
+            <>
+              <span className="sr-only">Program </span>
+              {course.programCode}
+              <span aria-hidden="true"> · </span>
+              <span className="sr-only">, </span>
+              Semester {course.semesterNumber}
+              <span aria-hidden="true"> · </span>
+              <span className="sr-only">, Academic session </span>
+              {course.academicSessionCode}
+            </>
+          }
+        />
+      </div>
 
       {sessionParam === null ? (
         <SessionList

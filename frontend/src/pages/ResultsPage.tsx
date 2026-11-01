@@ -10,6 +10,7 @@ import { CourseFacts } from '../courses/CourseFacts'
 import { ASK_THE_COLLEGE, RESULTS_DENIED, SIGN_IN_AGAIN } from '../results/resultText'
 import { useMyResultCourses } from '../results/useResults'
 import type { ResultCourseOffering } from '../types/results'
+import { PageHeader } from '../ui'
 
 function CourseOfferingCard({ course }: { course: ResultCourseOffering }) {
   return (
@@ -84,15 +85,14 @@ export function ResultsPage() {
   const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])
 
   return (
-    <>
+    <div className="max-w-6xl">
       <title>Results · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Results</h1>
-      {isFaculty && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Record and publish official course results for the course offerings you teach.
-        </p>
-      )}
-      <div className="mt-6">
+      <PageHeader
+        eyebrow="ERP · Teaching"
+        title="Results"
+        description={isFaculty ? 'Record and publish official course results for the course offerings you teach.' : undefined}
+      />
+      <div>
         {isFaculty ? (
           <MyResultCourses />
         ) : (
@@ -101,6 +101,6 @@ export function ResultsPage() {
           </StatePanel>
         )}
       </div>
-    </>
+    </div>
   )
 }

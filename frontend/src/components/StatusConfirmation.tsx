@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { ActionButton } from './ActionButton'
+import { Alert, Button } from '../ui'
 
 type StatusConfirmationProps = {
   /** Such as "Complete semester enrollment?" */
@@ -75,7 +75,7 @@ export function StatusConfirmation({
           onCancel()
         }
       }}
-      className="mt-3 rounded-control border border-line-strong bg-surface-muted p-3"
+      className="mt-3 rounded-panel border border-amber-300 bg-amber-50 p-3 sm:p-4"
     >
       <p id={`${id}-question`} className="text-sm font-semibold text-ink">
         {question}
@@ -83,22 +83,18 @@ export function StatusConfirmation({
       <p id={`${id}-detail`} className="mt-1 text-sm leading-6 text-ink">
         {detail}
       </p>
-      <div role="alert">
-        {error && (
-          <p className="mt-2 rounded-control border border-danger/40 bg-danger/5 px-3 py-2 text-sm leading-5 text-danger">{error}</p>
-        )}
-      </div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button
-          ref={confirmRef}
-          type="button"
-          aria-disabled={busy || undefined}
-          onClick={confirm}
-          className="inline-flex min-h-11 items-center rounded-control border border-transparent bg-stacc-primary px-3 text-sm font-medium text-white hover:bg-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8"
-        >
+      {error && (
+        <Alert tone="error" className="mt-2">
+          {error}
+        </Alert>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button ref={confirmRef} size="sm" aria-disabled={busy || undefined} onClick={confirm}>
           {busy ? busyLabel : confirmLabel}
-        </button>
-        <ActionButton onClick={onCancel}>{dismissLabel}</ActionButton>
+        </Button>
+        <Button variant="secondary" size="sm" onClick={onCancel}>
+          {dismissLabel}
+        </Button>
       </div>
     </div>
   )

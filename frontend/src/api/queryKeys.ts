@@ -7,6 +7,39 @@ export const queryKeys = {
   me: {
     profile: () => ['me', 'profile'] as const,
   },
+  admin: {
+    /** Everything the academic admin pages load. A change there makes all of it out of date, since the lists feed each
+     * other's choices (departments for programs, semesters for offerings, and so on). */
+    academic: ['admin', 'academic'] as const,
+    departments: () => ['admin', 'academic', 'departments'] as const,
+    programs: () => ['admin', 'academic', 'programs'] as const,
+    sessions: () => ['admin', 'academic', 'sessions'] as const,
+    semesters: () => ['admin', 'academic', 'semesters'] as const,
+    courses: () => ['admin', 'academic', 'courses'] as const,
+    offerings: (filters: { academicSessionId?: number; semesterId?: number }) =>
+      ['admin', 'academic', 'offerings', filters] as const,
+    offeringRoster: (courseOfferingId: number) => ['admin', 'academic', 'offerings', courseOfferingId, 'enrollments'] as const,
+    studentSearch: (query: string) => ['admin', 'academic', 'students', { query }] as const,
+    studentEnrollments: (studentProfileId: number) => ['admin', 'academic', 'students', studentProfileId] as const,
+    calendarEvents: (filters: Record<string, string | undefined>) =>
+      ['admin', 'academic', 'calendar-events', filters] as const,
+    courseEnrollments: (semesterEnrollmentId: number) =>
+      ['admin', 'academic', 'semester-enrollments', semesterEnrollmentId] as const,
+  },
+  attendance: {
+    myCourses: () => ['attendance', 'my-courses'] as const,
+    sessions: (courseOfferingId: number) => ['attendance', 'offerings', courseOfferingId, 'sessions'] as const,
+    session: (sessionId: number) => ['attendance', 'sessions', sessionId] as const,
+    mine: () => ['attendance', 'me'] as const,
+  },
+  results: {
+    myCourses: () => ['results', 'my-courses'] as const,
+    course: (courseOfferingId: number) => ['results', 'offerings', courseOfferingId] as const,
+    mine: () => ['results', 'me'] as const,
+  },
+  calendar: {
+    mine: (range: { from: string; to: string; timeZone: string }) => ['calendar', 'me', range] as const,
+  },
   lms: {
     all: ['lms'] as const,
     myCourses: () => ['lms', 'my-courses'] as const,

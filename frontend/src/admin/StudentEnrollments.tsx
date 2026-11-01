@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 import { getSemesters } from '../api/adminAcademicApi'
 import {
   createSemesterEnrollment,
   getStudentSemesterEnrollments,
   updateSemesterEnrollmentStatus,
 } from '../api/adminEnrollmentApi'
-import { useApiRequest } from '../api/useApiRequest'
-import { ActionButton } from '../components/ActionButton'
-import { Button } from '../components/Button'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -16,10 +16,11 @@ import { StatePanel } from '../components/states/StatePanel'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
 import type { AdminSemesterEnrollment, EnrollmentStatus } from '../types/admin'
+import { Button, Card } from '../ui'
 import { CourseEnrollments } from './CourseEnrollments'
 import { ENROLLMENT_DENIED, refusalText, semesterContext, semesterLabel } from './enrollmentText'
 import { MasterForm } from './MasterForm'
-import { MasterStatus } from './MasterList'
+import { MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 
 type Ending = { semesterEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
@@ -36,10 +37,12 @@ type StudentEnrollmentsProps = {
  * semester of their own program. Nothing about the student's account or profile can be changed here.
  */
 export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollmentsProps) {
+  const queryClient = useQueryClient()
   const sectionRef = useRef<HTMLDivElement>(null)
-  const load = useMemo(() => (signal: AbortSignal) => getStudentSemesterEnrollments(studentProfileId, signal), [studentProfileId])
-  const request = useApiRequest(load)
-  const semesters = useApiRequest(getSemesters)
+  const request = useApiQuery(queryKeys.admin.studentEnrollments(studentProfileId), (signal) =>
+    getStudentSemesterEnrollments(studentProfileId, signal),
+  )
+  const semesters = useApiQuery(queryKeys.admin.semesters(), getSemesters)
   const [adding, setAdding] = useState(false)
   const [ending, setEnding] = useState<Ending | null>(null)
   const [coursesFor, setCoursesFor] = useState<number | null>(null)
@@ -71,11 +74,15 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
     focusLater('student')
   }, [focusLater])
 
+  function changed(message: string) {
+    setAnnouncement(message)
+    void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
+  }
+
   // As with the masters, the empty state's button has its own key, so focus after the first enrollment waits for the
   // button above the list.
   const enrollButton = (focusKey: string) => (
     <Button
-      variant="secondary"
       data-focus-key={focusKey}
       aria-disabled={blocked ? true : undefined}
       aria-describedby={blocked ? 'enroll-semester-blocked' : undefined}
@@ -90,67 +97,55 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
     </Button>
   )
 
-  function endingLabel(status: Ending['status']) {
-    return status === 'COMPLETED' ? 'completed' : 'withdrawn'
-  }
-
   return (
-    <div ref={sectionRef}>
-      <ActionButton onClick={onBack} className="mt-4">
-        <span aria-hidden="true">←&nbsp;</span>Choose another student
-      </ActionButton>
+    <div ref={sectionRef} className="space-y-4">
+      <Button variant="ghost" size="sm" onClick={onBack}>
+        <span aria-hidden="true">←</span> Choose another student
+      </Button>
       <p role="status" className="sr-only">
         {announcement}
       </p>
 
       {request.status === 'loading' && (
-        <div className="mt-4">
-          <StatePanel>
-            <LoadingState label="Loading enrollments…" />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <LoadingState label="Loading enrollments…" />
+        </StatePanel>
       )}
       {request.status === 'denied' && (
-        <div className="mt-4">
-          <StatePanel>
-            <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <AccessDeniedState title={ENROLLMENT_DENIED} message={SIGN_IN_AGAIN} />
+        </StatePanel>
       )}
       {request.status === 'notFound' && (
-        <div className="mt-4">
-          <StatePanel>
-            <EmptyState title="Student not found." description="Search again and choose a student from the results." />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <EmptyState title="Student not found." description="Search again and choose a student from the results." />
+        </StatePanel>
       )}
       {request.status === 'failed' && (
-        <div className="mt-4">
-          <StatePanel>
-            <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <ErrorState title="Couldn’t load enrollments." message="Check your connection and try again." onRetry={request.retry} />
+        </StatePanel>
       )}
 
       {student !== null && rows !== null && (
         <>
-          <section aria-labelledby="student-heading" className="mt-4 rounded-panel border border-line bg-surface px-4 py-3">
-            <h3 id="student-heading" tabIndex={-1} data-focus-key="student" className="text-base font-semibold break-all text-ink">
+          <section aria-labelledby="student-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+            <h2 id="student-heading" tabIndex={-1} data-focus-key="student" className="text-base font-semibold break-all text-ink outline-none">
               Student {student.loginId}
-            </h3>
+            </h2>
             <dl className="mt-2 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-xs text-ink-muted">Program</dt>
+                <dt className="text-ink-muted">Program</dt>
                 <dd className="break-words text-ink">
                   {student.programCode} · {student.programName}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-ink-muted">Admission session</dt>
+                <dt className="text-ink-muted">Admission session</dt>
                 <dd className="text-ink">{student.admissionSessionCode}</dd>
               </div>
               <div>
-                <dt className="text-xs text-ink-muted">Student profile</dt>
+                <dt className="text-ink-muted">Student profile</dt>
                 <dd>
                   <MasterStatus status={student.studentProfileStatus} />
                 </dd>
@@ -158,82 +153,73 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
             </dl>
           </section>
 
-          <section aria-labelledby="semester-enrollments-heading" className="mt-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 id="semester-enrollments-heading" className="text-base font-semibold text-ink">
-                Semester enrollments
-              </h3>
-              {rows.length > 0 && !adding && <div className="w-full sm:w-auto">{enrollButton('enroll-semester')}</div>}
-            </div>
-            {blocked && (
-              <p id="enroll-semester-blocked" className="mt-1 text-sm text-ink-muted">
-                {blocked}
-              </p>
-            )}
+          {adding && choices !== null && (
+            <MasterForm
+              heading={`Enroll ${student.loginId} in a semester`}
+              note={`Only semesters of ${student.programCode} are listed. The enrollment starts as enrolled and gives no course access by itself.`}
+              deniedMessage={ENROLLMENT_DENIED}
+              fields={[
+                { name: 'semesterId', label: 'Semester', kind: 'select', choose: 'Choose a semester',
+                  options: choices.map((semester) => ({
+                    value: String(semester.id),
+                    label: `${semesterLabel(semester, false)}${semester.status === 'CLOSED' ? ' (closed)' : ''}`,
+                  })) },
+              ]}
+              initial={{ semesterId: '' }}
+              submitLabel="Enroll in semester"
+              onSubmit={async (values) => {
+                const created = await createSemesterEnrollment(studentProfileId, Number(values.semesterId))
+                setAdding(false)
+                changed(`${student.loginId} enrolled in ${semesterContext(created)}.`)
+                focusLater('enroll-semester')
+              }}
+              onCancel={() => {
+                setAdding(false)
+                focusLater(rows.length === 0 ? 'enroll-semester-empty' : 'enroll-semester')
+              }}
+            />
+          )}
 
-            {adding && choices !== null && (
-              <div className="mt-3">
-                <MasterForm
-                  heading={`Enroll ${student.loginId} in a semester`}
-                  note={`Only semesters of ${student.programCode} are listed. The enrollment starts as enrolled and gives no course access by itself.`}
-                  deniedMessage={ENROLLMENT_DENIED}
-                  fields={[
-                    { name: 'semesterId', label: 'Semester', kind: 'select', choose: 'Choose a semester',
-                      options: choices.map((semester) => ({
-                        value: String(semester.id),
-                        label: `${semesterLabel(semester, false)}${semester.status === 'CLOSED' ? ' (closed)' : ''}`,
-                      })) },
-                  ]}
-                  initial={{ semesterId: '' }}
-                  submitLabel="Enroll in semester"
-                  onSubmit={async (values) => {
-                    const created = await createSemesterEnrollment(studentProfileId, Number(values.semesterId))
-                    setAdding(false)
-                    setAnnouncement(`${student.loginId} enrolled in ${semesterContext(created)}.`)
-                    request.refresh()
-                    focusLater('enroll-semester')
-                  }}
-                  onCancel={() => {
-                    setAdding(false)
-                    focusLater(rows.length === 0 ? 'enroll-semester-empty' : 'enroll-semester')
-                  }}
-                />
-              </div>
+          <Card
+            title="Semester enrollments"
+            description={
+              blocked ? (
+                <span id="enroll-semester-blocked">{blocked}</span>
+              ) : (
+                'Newest first. Complete or withdraw a semester only after its courses have ended.'
+              )
+            }
+            action={rows.length > 0 && !adding ? enrollButton('enroll-semester') : undefined}
+            padding="none"
+          >
+            {rows.length === 0 && !adding && (
+              <EmptyState title="No semester enrollments yet." action={blocked ? undefined : enrollButton('enroll-semester-empty')} />
             )}
-
-            <div className="mt-4">
-              {rows.length === 0 && !adding && (
-                <StatePanel>
-                  <EmptyState title="No semester enrollments yet." action={blocked ? undefined : enrollButton('enroll-semester-empty')} />
-                </StatePanel>
-              )}
-              {rows.length > 0 && (
-                <ul aria-label="Semester enrollments" className="divide-y divide-line rounded-panel border border-line bg-surface">
-                  {rows.map((row) => (
-                    <SemesterEnrollmentRow
-                      key={row.semesterEnrollmentId}
-                      row={row}
-                      expanded={coursesFor === row.semesterEnrollmentId}
-                      ending={ending?.semesterEnrollmentId === row.semesterEnrollmentId ? ending.status : null}
-                      onToggleCourses={() => setCoursesFor((current) => (current === row.semesterEnrollmentId ? null : row.semesterEnrollmentId))}
-                      onEnd={(status) => setEnding({ semesterEnrollmentId: row.semesterEnrollmentId, status })}
-                      onCancelEnd={(status) => {
-                        setEnding(null)
-                        focusLater(`${status === 'COMPLETED' ? 'complete' : 'withdraw'}-semester-${row.semesterEnrollmentId}`)
-                      }}
-                      onConfirmEnd={async (status) => {
-                        await updateSemesterEnrollmentStatus(row.semesterEnrollmentId, status)
-                        setEnding(null)
-                        setAnnouncement(`${semesterContext(row)} marked ${endingLabel(status)}.`)
-                        request.refresh()
-                        focusLater(`semester-${row.semesterEnrollmentId}`)
-                      }}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
+            {rows.length > 0 && (
+              <ul aria-label="Semester enrollments" className="divide-y divide-line">
+                {rows.map((row) => (
+                  <SemesterEnrollmentRow
+                    key={row.semesterEnrollmentId}
+                    row={row}
+                    expanded={coursesFor === row.semesterEnrollmentId}
+                    ending={ending?.semesterEnrollmentId === row.semesterEnrollmentId ? ending.status : null}
+                    onToggleCourses={() => setCoursesFor((current) => (current === row.semesterEnrollmentId ? null : row.semesterEnrollmentId))}
+                    onEnd={(status) => setEnding({ semesterEnrollmentId: row.semesterEnrollmentId, status })}
+                    onCancelEnd={(status) => {
+                      setEnding(null)
+                      focusLater(`${status === 'COMPLETED' ? 'complete' : 'withdraw'}-semester-${row.semesterEnrollmentId}`)
+                    }}
+                    onConfirmEnd={async (status) => {
+                      await updateSemesterEnrollmentStatus(row.semesterEnrollmentId, status)
+                      setEnding(null)
+                      changed(`${semesterContext(row)} marked ${status === 'COMPLETED' ? 'completed' : 'withdrawn'}.`)
+                      focusLater(`semester-${row.semesterEnrollmentId}`)
+                    }}
+                  />
+                ))}
+              </ul>
+            )}
+          </Card>
 
           {managed !== null && <CourseEnrollments key={managed.semesterEnrollmentId} semesterEnrollment={managed} />}
         </>
@@ -256,33 +242,39 @@ function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, 
   const context = semesterContext(row)
   const enrolled = row.status === 'ENROLLED'
   return (
-    <li className="px-4 py-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    <li className="px-4 py-3 sm:px-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p tabIndex={-1} data-focus-key={`semester-${row.semesterEnrollmentId}`} className="text-sm font-medium text-ink">
-            Semester {row.semesterNumber}
+          <p className="flex flex-wrap items-center gap-2">
+            <span tabIndex={-1} data-focus-key={`semester-${row.semesterEnrollmentId}`} className="text-sm font-medium text-ink outline-none">
+              Semester {row.semesterNumber}
+            </span>
+            <MasterStatus status={row.status} />
           </p>
           <p className="mt-0.5 text-sm text-ink-muted">
             {row.academicSessionCode} · {row.programCode}
           </p>
-          <p className="mt-1">
-            <MasterStatus status={row.status} />
-          </p>
         </div>
         {ending === null && (
           <div className="flex flex-wrap gap-2">
-            <ActionButton aria-expanded={expanded} aria-controls={expanded ? 'course-enrollments-panel' : undefined} onClick={onToggleCourses}>
+            <Button
+              variant={expanded ? 'primary' : 'secondary'}
+              size="sm"
+              aria-expanded={expanded}
+              aria-controls={expanded ? 'course-enrollments-panel' : undefined}
+              onClick={onToggleCourses}
+            >
               {enrolled ? 'Manage courses' : 'View courses'}
               <span className="sr-only"> for {context}</span>
-            </ActionButton>
+            </Button>
             {enrolled && (
               <>
-                <ActionButton focusKey={`complete-semester-${row.semesterEnrollmentId}`} onClick={() => onEnd('COMPLETED')}>
+                <Button variant="secondary" size="sm" data-focus-key={`complete-semester-${row.semesterEnrollmentId}`} onClick={() => onEnd('COMPLETED')}>
                   Complete<span className="sr-only"> {context}</span>
-                </ActionButton>
-                <ActionButton focusKey={`withdraw-semester-${row.semesterEnrollmentId}`} onClick={() => onEnd('WITHDRAWN')}>
+                </Button>
+                <Button variant="secondary" size="sm" data-focus-key={`withdraw-semester-${row.semesterEnrollmentId}`} onClick={() => onEnd('WITHDRAWN')}>
                   Withdraw<span className="sr-only"> from {context}</span>
-                </ActionButton>
+                </Button>
               </>
             )}
           </div>

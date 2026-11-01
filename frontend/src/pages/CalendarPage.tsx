@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { getMyCalendar } from '../api/calendarApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { CalendarAgenda } from '../calendar/CalendarAgenda'
@@ -17,36 +17,31 @@ import {
   sameMonth,
 } from '../calendar/calendarDates'
 import { CALENDAR_DENIED, SIGN_IN_AGAIN } from '../calendar/calendarText'
-import { ActionButton } from '../components/ActionButton'
-import { actionLinkClasses } from '../components/actionStyles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { Button, ButtonLink, PageHeader } from '../ui'
 
 function MonthControls({ month, onChange }: { month: CalendarMonth; onChange: (month: CalendarMonth | null) => void }) {
   const previous = addMonths(month, -1)
   const next = addMonths(month, 1)
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
       <h2 id="calendar-month" className="mr-auto text-lg font-semibold text-ink">
         {monthLabel(month)}
       </h2>
       <div role="group" aria-label="Change month" className="flex flex-wrap gap-2">
-        <ActionButton
-          onClick={() => onChange(previous)}
-          aria-label={`Previous month, ${monthLabel(previous)}`}
-          className="gap-1.5"
-        >
+        <Button variant="secondary" size="sm" onClick={() => onChange(previous)} aria-label={`Previous month, ${monthLabel(previous)}`}>
           <span aria-hidden="true">‹</span>Previous month
-        </ActionButton>
-        <ActionButton onClick={() => onChange(null)} aria-label={`Today, ${monthLabel(currentMonth())}`}>
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onChange(null)} aria-label={`Today, ${monthLabel(currentMonth())}`}>
           Today
-        </ActionButton>
-        <ActionButton onClick={() => onChange(next)} aria-label={`Next month, ${monthLabel(next)}`} className="gap-1.5">
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onChange(next)} aria-label={`Next month, ${monthLabel(next)}`}>
           Next month<span aria-hidden="true">›</span>
-        </ActionButton>
+        </Button>
       </div>
     </div>
   )
@@ -55,12 +50,9 @@ function MonthControls({ month, onChange }: { month: CalendarMonth; onChange: (m
 function MonthAgenda({ month, alsoTeaches, adminOnly }: { month: CalendarMonth; alsoTeaches: boolean; adminOnly: boolean }) {
   const key = monthKey(month)
   // One month at a time, in the browser's own time zone: the zone only decides which deadlines fall on these days.
-  const load = useMemo(() => {
-    const { from, to } = monthRange(parseMonth(key) ?? currentMonth())
-    const timeZone = browserTimeZone()
-    return (signal: AbortSignal) => getMyCalendar({ from, to, timeZone }, signal)
-  }, [key])
-  const request = useApiRequest(load)
+  const { from, to } = monthRange(parseMonth(key) ?? currentMonth())
+  const range = { from, to, timeZone: browserTimeZone() }
+  const request = useApiQuery(queryKeys.calendar.mine(range), (signal) => getMyCalendar(range, signal))
 
   if (request.status === 'loading') {
     return (
@@ -134,23 +126,23 @@ export function CalendarPage() {
   }
 
   return (
-    <>
+    <div className="max-w-5xl">
       <title>Calendar · Stacc</title>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Calendar</h1>
-          <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-            {isStudent || isFaculty
-              ? 'Official academic dates and your assignment deadlines, in your time zone.'
-              : 'Official academic dates published for the college.'}
-          </p>
-        </div>
-        {isAdmin && (
-          <Link to="/admin/academic/calendar" className={`${actionLinkClasses} self-start`}>
-            Manage academic calendar
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Calendar"
+        description={
+          isStudent || isFaculty
+            ? 'Official academic dates and your assignment deadlines, in your time zone.'
+            : 'Official academic dates published for the college.'
+        }
+        actions={
+          isAdmin ? (
+            <ButtonLink to="/admin/academic/calendar" variant="secondary">
+              Manage academic calendar
+            </ButtonLink>
+          ) : undefined
+        }
+      />
 
       {isStudent || isFaculty || isAdmin ? (
         <>
@@ -160,15 +152,13 @@ export function CalendarPage() {
           </div>
         </>
       ) : (
-        <div className="mt-6">
-          <StatePanel>
-            <AccessDeniedState
-              title="The calendar is for student, faculty, and admin accounts."
-              message="If you think you should see it, contact the college administration."
-            />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <AccessDeniedState
+            title="The calendar is for student, faculty, and admin accounts."
+            message="If you think you should see it, contact the college administration."
+          />
+        </StatePanel>
       )}
-    </>
+    </div>
   )
 }

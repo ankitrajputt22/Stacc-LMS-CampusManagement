@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -11,9 +11,10 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseRouteId } from '../courses/courseRoute'
 import { creditsText } from '../courses/credits'
 import { ResultRow } from '../results/ResultRow'
-import { ASK_THE_COLLEGE, RESULTS_DENIED, SIGN_IN_AGAIN, backLinkClasses } from '../results/resultText'
+import { ASK_THE_COLLEGE, RESULTS_DENIED, SIGN_IN_AGAIN } from '../results/resultText'
 import { useCourseResults } from '../results/useResults'
 import type { CourseResultRoster } from '../types/results'
+import { ButtonLink, Card, PageHeader } from '../ui'
 
 const RESULTS = { to: '/results', label: 'Results' }
 
@@ -36,13 +37,15 @@ function CourseUnavailable() {
     <>
       <title>Course results unavailable · Stacc</title>
       <Breadcrumb parent={RESULTS} />
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Course results unavailable</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        This course offering could not be found, or it is not one you currently teach.
-      </p>
-      <Link to={RESULTS.to} className={`mt-6 ${backLinkClasses}`}>
+      <div className="mt-4">
+        <PageHeader
+          title="Course results unavailable"
+          description="This course offering could not be found, or it is not one you currently teach."
+        />
+      </div>
+      <ButtonLink to={RESULTS.to} variant="secondary">
         Back to Results
-      </Link>
+      </ButtonLink>
     </>
   )
 }
@@ -52,48 +55,50 @@ function Roster({ roster }: { roster: CourseResultRoster }) {
     <>
       <title>{`${roster.courseName} · Results · Stacc`}</title>
       <Breadcrumb parent={RESULTS} current={roster.courseName} />
-      <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{roster.courseCode}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{roster.courseName}</h1>
-        <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
-          {creditsText(roster.credits)}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, Program </span>
-          {roster.programCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          Semester {roster.semesterNumber}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, Academic session </span>
-          {roster.academicSessionCode}
-        </p>
-      </header>
+      <div className="mt-4">
+        <PageHeader
+          eyebrow={roster.courseCode}
+          title={roster.courseName}
+          description={
+            <>
+              {creditsText(roster.credits)}
+              <span aria-hidden="true"> · </span>
+              <span className="sr-only">, Program </span>
+              {roster.programCode}
+              <span aria-hidden="true"> · </span>
+              <span className="sr-only">, </span>
+              Semester {roster.semesterNumber}
+              <span aria-hidden="true"> · </span>
+              <span className="sr-only">, Academic session </span>
+              {roster.academicSessionCode}
+            </>
+          }
+        />
+      </div>
 
-      <section aria-labelledby="course-results-heading" className="mt-8 max-w-4xl">
-        <h2 id="course-results-heading" className="text-base font-semibold text-ink">
-          Students
-        </h2>
-        <p className="mt-1 mb-3 text-sm leading-6 text-ink-muted">
-          The official enrollments of this course offering, in student ID order. Saving keeps a result as a draft;
-          students see a result only once it is published.
-        </p>
-        {roster.students.length === 0 ? (
-          <StatePanel>
+      <div className="max-w-5xl space-y-4">
+        <Card
+          title="Students"
+          description="The official enrollments of this course offering, in student ID order. Saving keeps a result as a draft; students see a result only once it is published."
+          action={<p className="text-sm text-ink-muted">{roster.students.length === 1 ? '1 student' : `${roster.students.length} students`}</p>}
+          padding="none"
+        >
+          {roster.students.length === 0 ? (
             <EmptyState title="No students enrolled." description="Official enrollments of this course offering will appear here." />
-          </StatePanel>
-        ) : (
-          <ul aria-label="Students" className="divide-y divide-line rounded-panel border border-line bg-surface">
-            {roster.students.map((student) => (
-              <li key={student.courseEnrollmentId}>
-                <ResultRow courseOfferingId={roster.courseOfferingId} student={student} />
-              </li>
-            ))}
-          </ul>
-        )}
-        <Link to={RESULTS.to} className={`mt-6 ${backLinkClasses}`}>
-          Back to Results
-        </Link>
-      </section>
+          ) : (
+            <ul aria-label="Students" className="divide-y divide-line">
+              {roster.students.map((student) => (
+                <li key={student.courseEnrollmentId}>
+                  <ResultRow courseOfferingId={roster.courseOfferingId} student={student} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+        <ButtonLink to={RESULTS.to} variant="ghost">
+          <span aria-hidden="true">←</span> Back to Results
+        </ButtonLink>
+      </div>
     </>
   )
 }

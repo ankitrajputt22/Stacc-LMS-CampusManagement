@@ -1,12 +1,10 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { publishCourseResult, saveCourseResult } from '../api/resultsApi'
-import { ActionButton } from '../components/ActionButton'
-import { Button } from '../components/Button'
 import { formatDateTime } from '../courses/dates'
-import { border, fieldClasses } from '../teaching/formStyles'
 import type { CourseResultRosterStudent, FacultyResult } from '../types/results'
-import { ENROLLMENT_WORDS, tagClasses } from './resultText'
+import { Alert, Badge, Button, TextAreaField, TextField } from '../ui'
+import { ENROLLMENT_WORDS } from './resultText'
 
 type Field = 'marksObtained' | 'maxMarks' | 'gradeCode' | 'remarks'
 
@@ -71,23 +69,15 @@ function refusal(status: number | null, apiMessage: string | null, action: 'save
   }
 }
 
-function FieldError({ id, message }: { id: string; message?: string }) {
-  return message ? (
-    <p id={id} className="mt-1.5 text-sm text-danger">
-      {message}
-    </p>
-  ) : null
-}
-
 function ResultStatus({ result }: { result: FacultyResult | null }) {
   if (result === null) {
-    return <span className={`${tagClasses} border-dashed text-ink-muted`}>Not recorded</span>
+    return <Badge tone="neutral">Not recorded</Badge>
   }
   return (
-    <span className={tagClasses}>
+    <Badge tone={result.status === 'PUBLISHED' ? 'success' : 'warning'}>
       <span className="sr-only">Result status: </span>
       {result.status === 'PUBLISHED' ? 'Published' : 'Draft'}
-    </span>
+    </Badge>
   )
 }
 
@@ -216,11 +206,6 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
     }
   }
 
-  function describedBy(field: Field, hint?: string): string | undefined {
-    const ids = [hint, errors[field] ? `${id}-${field}-error` : undefined].filter(Boolean)
-    return ids.length > 0 ? ids.join(' ') : undefined
-  }
-
   const header = (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
       <h3
@@ -232,13 +217,13 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
         <span className="sr-only">Student ID </span>
         {student.studentLoginId}
       </h3>
-      <span className={tagClasses}>
+      <Badge tone={student.courseEnrollmentStatus === 'ENROLLED' ? 'info' : 'neutral'}>
         <span className="sr-only">Enrollment: </span>
         {ENROLLMENT_WORDS[student.courseEnrollmentStatus]}
-      </span>
+      </Badge>
       <ResultStatus result={result} />
       {result?.publishedAt && (
-        <span className="text-xs text-ink-muted">
+        <span className="text-sm text-ink-muted">
           Published <time dateTime={result.publishedAt}>{formatDateTime(result.publishedAt)}</time>
         </span>
       )}
@@ -265,101 +250,68 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
       </p>
       <form onSubmit={save} noValidate aria-labelledby={headingId} className="mt-3">
         <div className="grid gap-4 sm:grid-cols-3">
-          <div>
-            <label htmlFor={`${id}-marksObtained`} className="block text-sm font-medium text-ink">
-              Marks obtained
-            </label>
-            <input
-              ref={marksRef}
-              id={`${id}-marksObtained`}
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              maxLength={9}
-              value={values.marksObtained}
-              onChange={(event) => change('marksObtained', event.target.value)}
-              aria-invalid={errors.marksObtained ? true : undefined}
-              aria-describedby={describedBy('marksObtained', `${id}-out-of`)}
-              className={`h-11 ${fieldClasses} ${border(Boolean(errors.marksObtained))}`}
-            />
-            <p id={`${id}-out-of`} className="mt-1 text-xs text-ink-muted">
-              Out of the maximum marks.
-            </p>
-            <FieldError id={`${id}-marksObtained-error`} message={errors.marksObtained} />
-          </div>
-          <div>
-            <label htmlFor={`${id}-maxMarks`} className="block text-sm font-medium text-ink">
-              Maximum marks
-            </label>
-            <input
-              ref={maxRef}
-              id={`${id}-maxMarks`}
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              maxLength={9}
-              value={values.maxMarks}
-              onChange={(event) => change('maxMarks', event.target.value)}
-              aria-invalid={errors.maxMarks ? true : undefined}
-              aria-describedby={describedBy('maxMarks')}
-              className={`h-11 ${fieldClasses} ${border(Boolean(errors.maxMarks))}`}
-            />
-            <FieldError id={`${id}-maxMarks-error`} message={errors.maxMarks} />
-          </div>
-          <div>
-            <label htmlFor={`${id}-gradeCode`} className="block text-sm font-medium text-ink">
-              Grade (optional)
-            </label>
-            <input
-              ref={gradeRef}
-              id={`${id}-gradeCode`}
-              type="text"
-              autoComplete="off"
-              maxLength={GRADE_MAX}
-              value={values.gradeCode}
-              onChange={(event) => change('gradeCode', event.target.value)}
-              aria-invalid={errors.gradeCode ? true : undefined}
-              aria-describedby={describedBy('gradeCode', `${id}-grade-hint`)}
-              className={`h-11 ${fieldClasses} ${border(Boolean(errors.gradeCode))}`}
-            />
-            <p id={`${id}-grade-hint`} className="mt-1 text-xs text-ink-muted">
-              The official grade, kept exactly as entered.
-            </p>
-            <FieldError id={`${id}-gradeCode-error`} message={errors.gradeCode} />
-          </div>
-        </div>
-        <div className="mt-4">
-          <label htmlFor={`${id}-remarks`} className="block text-sm font-medium text-ink">
-            Remarks (optional)
-          </label>
-          <textarea
-            ref={remarksRef}
-            id={`${id}-remarks`}
-            rows={2}
-            maxLength={REMARKS_MAX}
-            value={values.remarks}
-            onChange={(event) => change('remarks', event.target.value)}
-            aria-invalid={errors.remarks ? true : undefined}
-            aria-describedby={describedBy('remarks')}
-            className={`resize-y py-2 leading-6 ${fieldClasses} ${border(Boolean(errors.remarks))}`}
+          <TextField
+            ref={marksRef}
+            id={`${id}-marksObtained`}
+            label="Marks obtained"
+            hint="Out of the maximum marks."
+            error={errors.marksObtained}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            maxLength={9}
+            value={values.marksObtained}
+            onChange={(event) => change('marksObtained', event.target.value)}
           />
-          <FieldError id={`${id}-remarks-error`} message={errors.remarks} />
+          <TextField
+            ref={maxRef}
+            id={`${id}-maxMarks`}
+            label="Maximum marks"
+            error={errors.maxMarks}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            maxLength={9}
+            value={values.maxMarks}
+            onChange={(event) => change('maxMarks', event.target.value)}
+          />
+          <TextField
+            ref={gradeRef}
+            id={`${id}-gradeCode`}
+            label="Grade (optional)"
+            hint="The official grade, kept exactly as entered."
+            error={errors.gradeCode}
+            type="text"
+            autoComplete="off"
+            maxLength={GRADE_MAX}
+            value={values.gradeCode}
+            onChange={(event) => change('gradeCode', event.target.value)}
+          />
         </div>
+        <TextAreaField
+          ref={remarksRef}
+          id={`${id}-remarks`}
+          className="mt-4"
+          label="Remarks (optional)"
+          error={errors.remarks}
+          rows={2}
+          maxLength={REMARKS_MAX}
+          value={values.remarks}
+          onChange={(event) => change('remarks', event.target.value)}
+        />
 
         {result?.status === 'PUBLISHED' && (
           <p className="mt-3 text-sm text-ink-muted">Corrections are visible to the student after saving.</p>
         )}
 
-        <div role="alert">
-          {formError && (
-            <p className="mt-3 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
-              {formError}
-            </p>
-          )}
-        </div>
+        {formError && (
+          <Alert tone="error" className="mt-3">
+            {formError}
+          </Alert>
+        )}
 
         {confirming ? (
-          <div role="group" aria-labelledby={`${id}-confirm`} className="mt-3 rounded-control border border-line-strong bg-surface-muted p-3">
+          <div role="group" aria-labelledby={`${id}-confirm`} className="mt-3 rounded-panel border border-amber-300 bg-amber-50 p-3 sm:p-4">
             <p id={`${id}-confirm`} className="text-sm font-semibold text-ink">
               Publish result?
             </p>
@@ -367,17 +319,14 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
               The student will be able to view this result after publication. It cannot be unpublished, but it can still
               be corrected.
             </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <button
-                ref={confirmRef}
-                type="button"
-                onClick={() => void publish()}
-                className="inline-flex min-h-11 items-center rounded-control border border-transparent bg-stacc-primary px-3 text-sm font-medium text-white hover:bg-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8"
-              >
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button ref={confirmRef} size="sm" onClick={() => void publish()}>
                 Publish
                 <span className="sr-only"> the result of {student.studentLoginId}</span>
-              </button>
-              <ActionButton onClick={() => setConfirming(false)}>Cancel</ActionButton>
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
+                Cancel
+              </Button>
             </div>
           </div>
         ) : (

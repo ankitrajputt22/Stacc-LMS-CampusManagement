@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
 import { updateAttendanceSession } from '../api/attendanceApi'
-import { ActionButton } from '../components/ActionButton'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
@@ -9,7 +7,8 @@ import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime } from '../courses/dates'
 import type { AttendanceSessionDetail } from '../types/attendance'
 import { AttendanceRoster } from './AttendanceRoster'
-import { ATTENDANCE_DENIED, SIGN_IN_AGAIN, backLinkClasses } from './attendanceText'
+import { ButtonLink, Button } from '../ui'
+import { ATTENDANCE_DENIED, SIGN_IN_AGAIN } from './attendanceText'
 import { SessionForm } from './SessionForm'
 import { SessionStatusTag } from './SessionStatusTag'
 import { useAttendanceSession } from './useAttendance'
@@ -48,15 +47,15 @@ export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }
   }, [loaded])
 
   const back = (
-    <Link to={listPath} state={{ fromSession: sessionId }} className={`mt-6 ${backLinkClasses}`}>
-      Back to sessions
-    </Link>
+    <ButtonLink to={listPath} state={{ fromSession: sessionId }} variant="ghost" className="mt-6">
+      <span aria-hidden="true">←</span> Back to sessions
+    </ButtonLink>
   )
 
   if (session === null) {
     return (
-      <section aria-labelledby="attendance-session-heading" className="mt-8 max-w-3xl">
-        <h2 id="attendance-session-heading" className="text-base font-semibold text-ink">
+      <section aria-labelledby="attendance-session-heading" className="max-w-4xl">
+        <h2 id="attendance-session-heading" className="text-lg font-semibold text-ink">
           Session
         </h2>
         <div className="mt-3">
@@ -87,20 +86,21 @@ export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }
   }
 
   return (
-    <section aria-labelledby="attendance-session-heading" className="mt-8 max-w-3xl">
+    <section aria-labelledby="attendance-session-heading" className="max-w-4xl space-y-4">
+      <div className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <h2
           ref={headingRef}
           id="attendance-session-heading"
           tabIndex={-1}
-          className="text-base font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+          className="text-lg font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
         >
           Session of <time dateTime={session.heldAt}>{formatDateTime(session.heldAt)}</time>
         </h2>
         <SessionStatusTag status={session.status} />
       </div>
       {session.topic && <p className="mt-1 text-sm leading-6 break-words text-ink">{session.topic}</p>}
-      <p className="mt-1 text-xs text-ink-muted">
+      <p className="mt-1 text-sm text-ink-muted">
         {session.finalizedAt ? (
           <>
             Finalized <time dateTime={session.finalizedAt}>{formatDateTime(session.finalizedAt)}</time>. Students can see
@@ -114,9 +114,16 @@ export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }
         {announcement}
       </p>
 
-      {session.status === 'OPEN' && (
-        <div className="mt-3">
-          {editing ? (
+      {session.status === 'OPEN' && !editing && (
+        <Button variant="secondary" size="sm" className="mt-3" onClick={() => setEditing(true)}>
+          Edit date and topic
+        </Button>
+      )}
+      </div>
+
+      {session.status === 'OPEN' && editing && (
+        <div>
+          {(
             <SessionForm
               heading="Edit the date and topic"
               initial={session}
@@ -130,8 +137,6 @@ export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }
               }}
               onCancel={() => setEditing(false)}
             />
-          ) : (
-            <ActionButton onClick={() => setEditing(true)}>Edit date and topic</ActionButton>
           )}
         </div>
       )}
