@@ -10,37 +10,44 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime } from '../courses/dates'
 import type { StudentCourseAttendance } from '../types/attendance'
+import { Badge, Card, DataTable, PageHeader } from '../ui'
+
+type StudentAttendanceSession = StudentCourseAttendance['sessions'][number]
 
 function Figure({ term, value }: { term: string; value: string }) {
   return (
     <div className="rounded-control border border-line bg-surface-muted px-3 py-2">
-      <dt className="text-xs text-ink-muted">{term}</dt>
-      <dd className="text-base font-semibold text-ink">{value}</dd>
+      <dt className="text-sm text-ink-muted">{term}</dt>
+      <dd className="text-lg font-semibold text-ink">{value}</dd>
     </div>
   )
 }
 
 function CourseAttendance({ course }: { course: StudentCourseAttendance }) {
-  const headingId = `attendance-course-${course.courseOfferingId}`
   return (
-    <section aria-labelledby={headingId} className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
-      <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-      <h2 id={headingId} className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
-        {course.courseName}
-      </h2>
-      <p className="mt-1 text-sm leading-6 break-words text-ink-muted">
-        <span className="sr-only">Program </span>
-        {course.programCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        Semester {course.semesterNumber}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, Academic session </span>
-        {course.academicSessionCode}
-      </p>
-
+    <Card
+      title={
+        <>
+          <span className="block text-sm font-semibold tracking-[0.04em] text-ink-muted">{course.courseCode}</span>
+          {course.courseName}
+        </>
+      }
+      description={
+        <>
+          <span className="sr-only">Program </span>
+          {course.programCode}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          Semester {course.semesterNumber}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, Academic session </span>
+          {course.academicSessionCode}
+        </>
+      }
+      padding="none"
+    >
       {/* Exactly the backend's counts and percentage. There is no threshold or warning. */}
-      <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-2 px-4 py-4 sm:grid-cols-4 sm:px-5">
         <Figure term="Present" value={String(course.presentCount)} />
         <Figure term="Absent" value={String(course.absentCount)} />
         <Figure term="Sessions" value={String(course.totalSessions)} />
@@ -49,24 +56,31 @@ function CourseAttendance({ course }: { course: StudentCourseAttendance }) {
           value={course.attendancePercentage === null ? 'Not available' : formatPercentage(course.attendancePercentage)}
         />
       </dl>
-
-      <h3 className="mt-4 text-sm font-semibold text-ink">Session history</h3>
-      <ol aria-label={`Sessions of ${course.courseName}`} className="mt-2 divide-y divide-line rounded-control border border-line">
-        {course.sessions.map((session) => (
-          <li key={session.attendanceSessionId} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2">
-            <div className="min-w-0">
-              <p className="text-sm text-ink">
-                <time dateTime={session.heldAt}>{formatDateTime(session.heldAt)}</time>
-              </p>
-              {session.topic && <p className="text-xs break-words text-ink-muted">{session.topic}</p>}
-            </div>
-            <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
-              {session.status === 'PRESENT' ? 'Present' : 'Absent'}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </section>
+      <h3 className="border-t border-line px-4 pt-3 text-sm font-semibold text-ink sm:px-5">Session history</h3>
+      <DataTable<StudentAttendanceSession>
+        caption={`Sessions of ${course.courseName}, latest first`}
+        columns={[
+          {
+            key: 'when',
+            header: 'Class',
+            primary: true,
+            cell: (session) => <time dateTime={session.heldAt}>{formatDateTime(session.heldAt)}</time>,
+          },
+          { key: 'topic', header: 'Topic', cell: (session) => session.topic ?? '—' },
+          {
+            key: 'status',
+            header: 'Attendance',
+            cell: (session) => (
+              <Badge tone={session.status === 'PRESENT' ? 'success' : 'danger'}>
+                {session.status === 'PRESENT' ? 'Present' : 'Absent'}
+              </Badge>
+            ),
+          },
+        ]}
+        rows={course.sessions}
+        rowKey={(session) => session.attendanceSessionId}
+      />
+    </Card>
   )
 }
 
@@ -124,15 +138,14 @@ export function StudentAttendancePage() {
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
 
   return (
-    <>
+    <div className="max-w-4xl">
       <title>Attendance · Academic · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Attendance</h1>
-      {isStudent && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Your attendance in each course, as your teachers finalized it, latest class first.
-        </p>
-      )}
-      <div className="mt-6 max-w-3xl">
+      <PageHeader
+        eyebrow="ERP · Academics"
+        title="Attendance"
+        description={isStudent ? 'Your attendance in each course, as your teachers finalized it, latest class first.' : undefined}
+      />
+      <div>
         {isStudent ? (
           <MyAttendance />
         ) : (
@@ -141,6 +154,6 @@ export function StudentAttendancePage() {
           </StatePanel>
         )}
       </div>
-    </>
+    </div>
   )
 }

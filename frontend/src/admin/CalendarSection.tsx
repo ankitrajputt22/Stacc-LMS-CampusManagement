@@ -1,4 +1,5 @@
-import { useId, useMemo, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useId, useRef, useState } from 'react'
 import { getAcademicSessions, getSemesters } from '../api/adminAcademicApi'
 import {
   cancelCalendarEvent,
@@ -7,30 +8,28 @@ import {
   publishCalendarEvent,
   updateCalendarEvent,
 } from '../api/calendarApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { dateRangeText } from '../calendar/calendarDates'
 import {
   CALENDAR_DENIED,
   categoryLabel,
   EVENT_STATUSES,
   eventStatusLabel,
+  eventStatusTone,
   scopeText,
   SIGN_IN_AGAIN,
-  tagClasses,
 } from '../calendar/calendarText'
-import { ActionButton } from '../components/ActionButton'
-import { Button } from '../components/Button'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
-import { StatePanel } from '../components/states/StatePanel'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { formatDateTime } from '../courses/dates'
-import { border, fieldClasses } from '../teaching/formStyles'
 import type { AdminCalendarEvent, CalendarEventStatus } from '../types/calendar'
 import { CalendarEventForm, type CalendarEventValues } from './CalendarEventForm'
+import { Badge, Button, Card, SelectField, TextField } from '../ui'
 import { semesterLabel } from './enrollmentText'
 
 type Open = { type: 'create' } | { type: 'edit'; eventId: number } | null
@@ -95,36 +94,29 @@ function lifecycleText(event: AdminCalendarEvent): string {
  */
 export function CalendarSection() {
   const id = useId()
-  const sectionRef = useRef<HTMLElement>(null)
+  const queryClient = useQueryClient()
+  const sectionRef = useRef<HTMLDivElement>(null)
   const focusLater = usePendingFocus(sectionRef)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [open, setOpen] = useState<Open>(null)
   const [confirming, setConfirming] = useState<Confirming>(null)
   const [announcement, setAnnouncement] = useState('')
-  const sessions = useApiRequest(getAcademicSessions)
-  const semesters = useApiRequest(getSemesters)
+  const sessions = useApiQuery(queryKeys.admin.sessions(), getAcademicSessions)
+  const semesters = useApiQuery(queryKeys.admin.semesters(), getSemesters)
   const sessionList = sessions.status === 'loaded' ? sessions.data : null
   const semesterList = semesters.status === 'loaded' ? semesters.data : null
   const rangeInvalid = filters.from !== '' && filters.to !== '' && filters.to < filters.from
 
-  const load = useMemo(
-    () =>
-      rangeInvalid
-        ? null
-        : (signal: AbortSignal) =>
-            getCalendarEvents(
-              {
-                academicSessionId: filters.session === '' ? undefined : Number(filters.session),
-                semesterId: filters.semester === '' ? undefined : Number(filters.semester),
-                status: filters.status === '' ? undefined : (filters.status as CalendarEventStatus),
-                from: filters.from === '' ? undefined : filters.from,
-                to: filters.to === '' ? undefined : filters.to,
-              },
-              signal,
-            ),
-    [filters, rangeInvalid],
+  const query = {
+    academicSessionId: filters.session === '' ? undefined : Number(filters.session),
+    semesterId: filters.semester === '' ? undefined : Number(filters.semester),
+    status: filters.status === '' ? undefined : (filters.status as CalendarEventStatus),
+    from: filters.from === '' ? undefined : filters.from,
+    to: filters.to === '' ? undefined : filters.to,
+  }
+  const request = useApiQuery(rangeInvalid ? null : queryKeys.admin.calendarEvents({ ...filters }), (signal) =>
+    getCalendarEvents(query, signal),
   )
-  const request = useApiRequest(load)
   const rows = request.status === 'loaded' ? request.data : null
   const filtered = Object.values(filters).some((value) => value !== '')
   const blocked =
@@ -144,13 +136,12 @@ export function CalendarSection() {
     setAnnouncement(message)
     setOpen(null)
     setConfirming(null)
-    request.refresh()
+    void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
     focusLater(focusKey)
   }
 
   const addButton = (focusKey: string) => (
     <Button
-      variant="secondary"
       data-focus-key={focusKey}
       aria-disabled={blocked ? true : undefined}
       aria-describedby={blocked ? `${id}-blocked` : undefined}
@@ -167,97 +158,50 @@ export function CalendarSection() {
   )
 
   const filterBar = (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <label htmlFor={`${id}-session`} className="block text-sm font-medium text-ink">
-          Academic session
-        </label>
-        <select
-          id={`${id}-session`}
-          value={filters.session}
-          onChange={(event) => filter({ session: event.target.value, semester: '' })}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        >
-          <option value="">All sessions</option>
-          {(sessionList ?? []).map((session) => (
-            <option key={session.id} value={String(session.id)}>
-              {session.code}
+    <div className="grid gap-4 border-b border-line px-4 py-4 sm:grid-cols-2 sm:px-5 lg:grid-cols-3">
+      <SelectField
+        label="Academic session"
+        value={filters.session}
+        onChange={(event) => filter({ session: event.target.value, semester: '' })}
+      >
+        <option value="">All sessions</option>
+        {(sessionList ?? []).map((session) => (
+          <option key={session.id} value={String(session.id)}>
+            {session.code}
+          </option>
+        ))}
+      </SelectField>
+      <SelectField label="Semester" value={filters.semester} onChange={(event) => filter({ semester: event.target.value })}>
+        <option value="">All semesters</option>
+        {(semesterList ?? [])
+          .filter((semester) => filters.session === '' || String(semester.academicSessionId) === filters.session)
+          .map((semester) => (
+            <option key={semester.id} value={String(semester.id)}>
+              {semesterLabel(semester)}
             </option>
           ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor={`${id}-semester`} className="block text-sm font-medium text-ink">
-          Semester
-        </label>
-        <select
-          id={`${id}-semester`}
-          value={filters.semester}
-          onChange={(event) => filter({ semester: event.target.value })}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        >
-          <option value="">All semesters</option>
-          {(semesterList ?? [])
-            .filter((semester) => filters.session === '' || String(semester.academicSessionId) === filters.session)
-            .map((semester) => (
-              <option key={semester.id} value={String(semester.id)}>
-                {semesterLabel(semester)}
-              </option>
-            ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor={`${id}-status`} className="block text-sm font-medium text-ink">
-          Status
-        </label>
-        <select
-          id={`${id}-status`}
-          value={filters.status}
-          onChange={(event) => filter({ status: event.target.value })}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        >
-          <option value="">All statuses</option>
-          {EVENT_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {eventStatusLabel(status)}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor={`${id}-from`} className="block text-sm font-medium text-ink">
-          From
-        </label>
-        <input
-          id={`${id}-from`}
-          type="date"
-          value={filters.from}
-          onChange={(event) => filter({ from: event.target.value })}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        />
-      </div>
-      <div>
-        <label htmlFor={`${id}-to`} className="block text-sm font-medium text-ink">
-          To
-        </label>
-        <input
-          id={`${id}-to`}
-          type="date"
-          value={filters.to}
-          aria-invalid={rangeInvalid || undefined}
-          aria-describedby={rangeInvalid ? `${id}-to-error` : undefined}
-          onChange={(event) => filter({ to: event.target.value })}
-          className={`h-11 ${fieldClasses} ${border(rangeInvalid)}`}
-        />
-        {rangeInvalid && (
-          <p id={`${id}-to-error`} className="mt-1.5 text-sm text-danger">
-            The to date must not be before the from date.
-          </p>
-        )}
-      </div>
+      </SelectField>
+      <SelectField label="Status" value={filters.status} onChange={(event) => filter({ status: event.target.value })}>
+        <option value="">All statuses</option>
+        {EVENT_STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {eventStatusLabel(status)}
+          </option>
+        ))}
+      </SelectField>
+      <TextField label="From" type="date" value={filters.from} onChange={(event) => filter({ from: event.target.value })} />
+      <TextField
+        label="To"
+        type="date"
+        value={filters.to}
+        error={rangeInvalid ? 'The to date must not be before the from date.' : null}
+        onChange={(event) => filter({ to: event.target.value })}
+      />
       {filtered && (
         <div className="flex items-end">
-          <ActionButton onClick={() => setFilters(NO_FILTERS)}>Clear filters</ActionButton>
+          <Button variant="ghost" onClick={() => setFilters(NO_FILTERS)}>
+            Clear filters
+          </Button>
         </div>
       )}
     </div>
@@ -266,13 +210,15 @@ export function CalendarSection() {
   // Plain render helpers, not components: the form inside a row must keep its state when the section re-renders.
   function actionsFor(event: AdminCalendarEvent) {
     if (event.status === 'CANCELLED') {
-      return <p className="mt-2 text-xs text-ink-muted">Cancelled events cannot be changed.</p>
+      return <p className="mt-2 text-sm text-ink-muted">Cancelled events cannot be changed.</p>
     }
     const name = <span className="sr-only"> {event.title}</span>
     return (
       <div className="mt-2 flex flex-wrap gap-2">
-        <ActionButton
-          focusKey={`edit-${event.eventId}`}
+        <Button
+          variant="secondary"
+          size="sm"
+          data-focus-key={`edit-${event.eventId}`}
           onClick={() => {
             setAnnouncement('')
             setConfirming(null)
@@ -280,27 +226,31 @@ export function CalendarSection() {
           }}
         >
           Edit{name}
-        </ActionButton>
+        </Button>
         {event.status === 'DRAFT' && (
-          <ActionButton
-            focusKey={`publish-${event.eventId}`}
+          <Button
+            variant="secondary"
+            size="sm"
+            data-focus-key={`publish-${event.eventId}`}
             onClick={() => {
               setOpen(null)
               setConfirming({ type: 'publish', eventId: event.eventId })
             }}
           >
             Publish{name}
-          </ActionButton>
+          </Button>
         )}
-        <ActionButton
-          focusKey={`cancel-${event.eventId}`}
+        <Button
+          variant="secondary"
+          size="sm"
+          data-focus-key={`cancel-${event.eventId}`}
           onClick={() => {
             setOpen(null)
             setConfirming({ type: 'cancel', eventId: event.eventId })
           }}
         >
           Cancel event{name}
-        </ActionButton>
+        </Button>
       </div>
     )
   }
@@ -320,16 +270,16 @@ export function CalendarSection() {
           >
             {event.title}
           </h3>
-          <span className={tagClasses}>
+          <Badge tone={eventStatusTone(event.status)}>
             <span className="sr-only">Status: </span>
             {eventStatusLabel(event.status)}
-          </span>
-          <span className={tagClasses}>
+          </Badge>
+          <Badge tone="info">
             <span className="sr-only">Category: </span>
             {categoryLabel(event.category)}
-          </span>
+          </Badge>
         </div>
-        <p className="mt-0.5 text-xs leading-5 break-words text-ink-muted">
+        <p className="mt-0.5 text-sm leading-5 break-words text-ink-muted">
           {dateRangeText(event.startDate, event.endDate)}
           <span aria-hidden="true"> · </span>
           <span className="sr-only">, </span>
@@ -338,7 +288,7 @@ export function CalendarSection() {
         {event.description && (
           <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{event.description}</p>
         )}
-        <p className="mt-1 text-xs text-ink-muted">{lifecycleText(event)}</p>
+        <p className="mt-1 text-sm text-ink-muted">{lifecycleText(event)}</p>
 
         {editing && sessionList !== null && semesterList !== null ? (
           <div className="mt-3">
@@ -403,84 +353,71 @@ export function CalendarSection() {
   }
 
   return (
-    <section ref={sectionRef} aria-labelledby={`${id}-heading`} className="mt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={`${id}-heading`} className="text-lg font-semibold text-ink">
-          Academic Calendar Events
-        </h2>
-        {rows !== null && rows.length > 0 && open?.type !== 'create' && (
-          <div className="w-full sm:w-auto">{addButton('add')}</div>
-        )}
-      </div>
-      <p className="mt-1 text-sm leading-6 text-ink-muted">
-        Official dates of an academic session, or of one semester in it. Drafts are seen only here; published events
-        appear on the calendars of the students and faculty they apply to. Events are cancelled, never deleted.
-        Assignment deadlines come from LMS assignments and are not managed here.
-      </p>
-      {blocked && (
-        <p id={`${id}-blocked`} className="mt-1 text-sm text-ink-muted">
-          {blocked}
-        </p>
-      )}
+    <div ref={sectionRef} className="space-y-4">
       <p role="status" className="sr-only">
         {announcement}
       </p>
 
       {open?.type === 'create' && sessionList !== null && semesterList !== null && (
-        <div className="mt-3">
-          <CalendarEventForm
-            heading="New academic calendar event"
-            initial={EMPTY_EVENT}
-            sessions={sessionList}
-            semesters={semesterList}
-            scopeLocked={false}
-            submitLabel="Save as draft"
-            onSubmit={async (body) => {
-              await createCalendarEvent(body)
-              finish(`${body.title} saved as a draft.`, 'add')
-            }}
-            onCancel={() => {
-              setOpen(null)
-              focusLater(rows !== null && rows.length === 0 ? 'add-empty' : 'add')
-            }}
-          />
-        </div>
+        <CalendarEventForm
+          heading="New academic calendar event"
+          initial={EMPTY_EVENT}
+          sessions={sessionList}
+          semesters={semesterList}
+          scopeLocked={false}
+          submitLabel="Save as draft"
+          onSubmit={async (body) => {
+            await createCalendarEvent(body)
+            finish(`${body.title} saved as a draft.`, 'add')
+          }}
+          onCancel={() => {
+            setOpen(null)
+            focusLater(rows !== null && rows.length === 0 ? 'add-empty' : 'add')
+          }}
+        />
       )}
 
-      <div className="mt-4">{filterBar}</div>
-
-      <div className="mt-4">
+      <Card
+        title="Academic calendar events"
+        description={
+          <>
+            Official dates of an academic session, or of one semester in it. Drafts are seen only here; published events
+            appear on the calendars of the students and faculty they apply to. Events are cancelled, never deleted.
+            Assignment deadlines come from LMS assignments and are not managed here.
+            {blocked && (
+              <span id={`${id}-blocked`} className="mt-1 block">
+                {blocked}
+              </span>
+            )}
+          </>
+        }
+        action={rows !== null && rows.length > 0 && open?.type !== 'create' ? addButton('add') : undefined}
+        padding="none"
+      >
+        {filterBar}
         {rangeInvalid ? null : request.status === 'loading' ? (
-          <StatePanel>
-            <LoadingState label="Loading academic calendar events…" />
-          </StatePanel>
+          <LoadingState label="Loading academic calendar events…" />
         ) : request.status === 'denied' ? (
-          <StatePanel>
-            <AccessDeniedState title={CALENDAR_DENIED} message={SIGN_IN_AGAIN} />
-          </StatePanel>
+          <AccessDeniedState title={CALENDAR_DENIED} message={SIGN_IN_AGAIN} />
         ) : rows === null ? (
-          <StatePanel>
-            <ErrorState
-              title="Couldn’t load academic calendar events."
-              message="Check your connection and try again."
-              onRetry={request.retry}
-            />
-          </StatePanel>
+          <ErrorState
+            title="Couldn’t load academic calendar events."
+            message="Check your connection and try again."
+            onRetry={request.retry}
+          />
         ) : rows.length === 0 ? (
           open?.type !== 'create' && (
-            <StatePanel>
-              <EmptyState
-                title={filtered ? 'No academic calendar events match these filters.' : 'No academic calendar events yet.'}
-                action={filtered ? undefined : addButton('add-empty')}
-              />
-            </StatePanel>
+            <EmptyState
+              title={filtered ? 'No academic calendar events match these filters.' : 'No academic calendar events yet.'}
+              action={filtered ? undefined : addButton('add-empty')}
+            />
           )
         ) : (
-          <ul aria-label="Academic calendar events" className="divide-y divide-line rounded-panel border border-line bg-surface">
+          <ul aria-label="Academic calendar events" className="divide-y divide-line">
             {rows.map((event) => rowFor(event))}
           </ul>
         )}
-      </div>
-    </section>
+      </Card>
+    </div>
   )
 }

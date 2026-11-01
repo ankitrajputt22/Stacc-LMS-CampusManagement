@@ -10,9 +10,3 @@ export const ENROLLMENT_WORDS = {
   COMPLETED: 'Completed',
   WITHDRAWN: 'Withdrawn',
 } as const
-
-export const backLinkClasses =
-  'inline-flex min-h-11 items-center rounded-control text-sm font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0'
-
-export const tagClasses =
-  'inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink'

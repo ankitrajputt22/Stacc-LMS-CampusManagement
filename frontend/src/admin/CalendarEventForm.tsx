@@ -1,10 +1,9 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { CALENDAR_DENIED, CATEGORIES, categoryLabel } from '../calendar/calendarText'
-import { Button } from '../components/Button'
-import { border, fieldClasses } from '../teaching/formStyles'
 import type { AdminAcademicSession, AdminSemester } from '../types/admin'
 import type { CalendarEventCategory, CalendarEventRequest } from '../types/calendar'
+import { Alert, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
 import { semesterLabel } from './enrollmentText'
 
 export type CalendarEventValues = {
@@ -23,6 +22,7 @@ type Errors = Partial<Record<Field, string>>
 
 const TITLE_MAX = 200
 const DESCRIPTION_MAX = 5000
+const SCOPE_LOCKED = 'A published event cannot move to another session or semester. To move it, cancel it and add a new event.'
 const FIELDS: Field[] = ['academicSessionId', 'semesterId', 'title', 'category', 'startDate', 'endDate', 'description']
 
 type CalendarEventFormProps = {
@@ -168,61 +168,24 @@ export function CalendarEventForm({
     }
   }
 
-  function describedBy(field: Field, hint?: boolean) {
-    return [hint ? `${id}-${field}-hint` : null, errors[field] ? `${id}-${field}-error` : null].filter(Boolean).join(' ') || undefined
-  }
-
-  function fieldError(field: Field) {
-    return (
-      errors[field] && (
-        <p id={`${id}-${field}-error`} className="mt-1.5 text-sm text-danger">
-          {errors[field]}
-        </p>
-      )
-    )
-  }
-
-  function common(field: Field, hint?: boolean) {
+  function common(field: Field) {
     return {
       id: `${id}-${field}`,
       value: values[field],
-      'aria-invalid': errors[field] ? true : undefined,
-      'aria-describedby': describedBy(field, hint),
+      error: errors[field],
     }
   }
 
-  const label = (field: Field, text: string) => (
-    <label htmlFor={`${id}-${field}`} className="block text-sm font-medium text-ink">
-      {text}
-    </label>
-  )
-
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      noValidate
-      aria-labelledby={`${id}-heading`}
-      className="rounded-panel border border-line-strong bg-surface p-4"
-    >
-      <p id={`${id}-heading`} className="text-sm font-semibold break-words text-ink">
-        {heading}
-      </p>
-      {scopeLocked && (
-        <p id={`${id}-scope-note`} className="mt-1 text-sm leading-6 text-ink-muted">
-          A published event cannot move to another session or semester. To move it, cancel it and add a new event.
-        </p>
-      )}
-
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
-        <div>
-          {label('academicSessionId', 'Academic session')}
-          <select
+    <Card title={heading} description={scopeLocked ? SCOPE_LOCKED : undefined}>
+      <form ref={formRef} onSubmit={handleSubmit} noValidate aria-label={heading}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField
             {...common('academicSessionId')}
+            label="Academic session"
+            hint={scopeLocked ? 'Fixed once the event has been published.' : undefined}
             disabled={scopeLocked}
-            aria-describedby={[describedBy('academicSessionId'), scopeLocked ? `${id}-scope-note` : null].filter(Boolean).join(' ') || undefined}
             onChange={(event) => change('academicSessionId', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.academicSessionId))} disabled:bg-surface-muted disabled:text-ink-muted`}
           >
             <option value="">Choose an academic session</option>
             {sessions.map((session) => (
@@ -231,19 +194,13 @@ export function CalendarEventForm({
                 {session.status === 'CLOSED' ? ' (closed)' : ''}
               </option>
             ))}
-          </select>
-          {fieldError('academicSessionId')}
-        </div>
-        <div>
-          {label('semesterId', 'Semester')}
-          <p id={`${id}-semesterId-hint`} className="mt-0.5 text-xs text-ink-muted">
-            Optional. Only semesters of the chosen session are listed.
-          </p>
-          <select
-            {...common('semesterId', true)}
+          </SelectField>
+          <SelectField
+            {...common('semesterId')}
+            label="Semester"
+            hint="Optional. Only semesters of the chosen session are listed."
             disabled={scopeLocked || values.academicSessionId === ''}
             onChange={(event) => change('semesterId', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.semesterId))} disabled:bg-surface-muted disabled:text-ink-muted`}
           >
             <option value="">All semesters</option>
             {sessionSemesters.map((semester) => (
@@ -251,97 +208,68 @@ export function CalendarEventForm({
                 {semesterLabel(semester)}
               </option>
             ))}
-          </select>
-          {fieldError('semesterId')}
-        </div>
-        <div className="sm:col-span-2">
-          {label('title', 'Title')}
-          <input
+          </SelectField>
+          <TextField
             {...common('title')}
+            className="sm:col-span-2"
+            label="Title"
             type="text"
             autoComplete="off"
             maxLength={TITLE_MAX}
             onChange={(event) => change('title', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.title))}`}
           />
-          {fieldError('title')}
-        </div>
-        <div>
-          {label('category', 'Category')}
-          <select
-            {...common('category')}
-            onChange={(event) => change('category', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.category))}`}
-          >
+          <SelectField {...common('category')} label="Category" onChange={(event) => change('category', event.target.value)}>
             <option value="">Choose a category</option>
             {CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {categoryLabel(category)}
               </option>
             ))}
-          </select>
-          {fieldError('category')}
-        </div>
-        <div className="hidden sm:block" aria-hidden="true" />
-        <div>
-          {label('startDate', 'Start date')}
-          <input
+          </SelectField>
+          <div className="hidden sm:block" aria-hidden="true" />
+          <TextField
             {...common('startDate')}
+            label="Start date"
             type="date"
             min="2000-01-01"
             max="9999-12-31"
             onChange={(event) => change('startDate', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.startDate))}`}
           />
-          {fieldError('startDate')}
-        </div>
-        <div>
-          {label('endDate', 'End date')}
-          <p id={`${id}-endDate-hint`} className="mt-0.5 text-xs text-ink-muted">
-            The last day, included. The same as the start date for a one-day event.
-          </p>
-          <input
-            {...common('endDate', true)}
+          <TextField
+            {...common('endDate')}
+            label="End date"
+            hint="The last day, included. The same as the start date for a one-day event."
             type="date"
             min={values.startDate || '2000-01-01'}
             max="9999-12-31"
             onChange={(event) => change('endDate', event.target.value)}
-            className={`h-11 ${fieldClasses} ${border(Boolean(errors.endDate))}`}
           />
-          {fieldError('endDate')}
-        </div>
-        <div className="sm:col-span-2">
-          {label('description', 'Description')}
-          <p id={`${id}-description-hint`} className="mt-0.5 text-xs text-ink-muted">
-            Optional plain text, up to {DESCRIPTION_MAX} characters.
-          </p>
-          <textarea
-            {...common('description', true)}
+          <TextAreaField
+            {...common('description')}
+            className="sm:col-span-2"
+            label="Description"
+            hint={`Optional plain text, up to ${DESCRIPTION_MAX} characters.`}
             rows={4}
             maxLength={DESCRIPTION_MAX}
             onChange={(event) => change('description', event.target.value)}
-            className={`py-2 ${fieldClasses} ${border(Boolean(errors.description))}`}
           />
-          {fieldError('description')}
         </div>
-      </div>
 
-      <div role="alert">
         {formError && (
-          <p className="mt-4 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
+          <Alert tone="error" className="mt-4">
             {formError}
-          </p>
+          </Alert>
         )}
-      </div>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button type="submit" aria-disabled={submitting || undefined}>
-          {submitting ? 'Saving…' : submitLabel}
-        </Button>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Button type="submit" aria-disabled={submitting || undefined}>
+            {submitting ? 'Saving…' : submitLabel}
+          </Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

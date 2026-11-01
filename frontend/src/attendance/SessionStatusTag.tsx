@@ -1,16 +1,17 @@
 import type { AttendanceSessionStatus } from '../types/attendance'
+import { Badge } from '../ui'
 
 const LABELS: Record<AttendanceSessionStatus, string> = {
   OPEN: 'Open',
   FINALIZED: 'Finalized',
 }
 
-/** A quiet session status label. The status is a word, never only a colour. */
+/** A session's status as a badge: amber while open, green once students can see it. The word always says it. */
 export function SessionStatusTag({ status }: { status: AttendanceSessionStatus }) {
   return (
-    <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
+    <Badge tone={status === 'OPEN' ? 'warning' : 'success'}>
       <span className="sr-only">Session status: </span>
       {LABELS[status] ?? status}
-    </span>
+    </Badge>
   )
 }

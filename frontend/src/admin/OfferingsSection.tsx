@@ -1,29 +1,27 @@
-import { useId, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { useState } from 'react'
 import { getAcademicSessions, getCourses, getSemesters } from '../api/adminAcademicApi'
 import { createCourseOffering, getCourseOfferings, updateCourseOffering } from '../api/adminEnrollmentApi'
-import { useApiRequest } from '../api/useApiRequest'
-import { actionLinkClasses } from '../components/actionStyles'
-import { border, fieldClasses } from '../teaching/formStyles'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import type { AdminCourseOffering, LifecycleStatus } from '../types/admin'
+import { ButtonLink, SelectField } from '../ui'
 import { ENROLLMENT_DENIED, semesterLabel } from './enrollmentText'
 import { MasterForm } from './MasterForm'
-import { CodeName, MasterStatus } from './MasterList'
+import { CodeName, MasterStatus } from './MasterParts'
 import { MasterSection } from './MasterSection'
 import { lifecycleOptions } from './masterStatus'
 
 /**
- * Course offerings: one catalog course taught in one semester. They can be listed by session and semester, added
- * from real courses and semesters, and moved forward through their status. The course and semester never change and
- * nothing is deleted. Each offering links to its roster.
+ * Course offerings: one catalog course taught in one semester. They can be listed by session and semester, searched,
+ * added from real courses and semesters, and moved forward through their status. The course and semester never
+ * change and nothing is deleted. Each offering links to its roster.
  */
 export function OfferingsSection() {
-  const id = useId()
   const [sessionFilter, setSessionFilter] = useState('')
   const [semesterFilter, setSemesterFilter] = useState('')
-  const sessions = useApiRequest(getAcademicSessions)
-  const semesters = useApiRequest(getSemesters)
-  const courses = useApiRequest(getCourses)
+  const sessions = useApiQuery(queryKeys.admin.sessions(), getAcademicSessions)
+  const semesters = useApiQuery(queryKeys.admin.semesters(), getSemesters)
+  const courses = useApiQuery(queryKeys.admin.courses(), getCourses)
   const sessionList = sessions.status === 'loaded' ? sessions.data : null
   const semesterList = semesters.status === 'loaded' ? semesters.data : null
   const courseList = courses.status === 'loaded' ? courses.data : null
@@ -31,18 +29,11 @@ export function OfferingsSection() {
     (semester) => sessionFilter === '' || String(semester.academicSessionId) === sessionFilter,
   )
 
-  const loadOfferings = useMemo(
-    () => (signal: AbortSignal) =>
-      getCourseOfferings(
-        {
-          academicSessionId: sessionFilter === '' ? undefined : Number(sessionFilter),
-          semesterId: semesterFilter === '' ? undefined : Number(semesterFilter),
-        },
-        signal,
-      ),
-    [sessionFilter, semesterFilter],
-  )
-  const request = useApiRequest(loadOfferings)
+  const filters = {
+    academicSessionId: sessionFilter === '' ? undefined : Number(sessionFilter),
+    semesterId: semesterFilter === '' ? undefined : Number(semesterFilter),
+  }
+  const request = useApiQuery(queryKeys.admin.offerings(filters), (signal) => getCourseOfferings(filters, signal))
   const blocked =
     courseList === null || semesterList === null
       ? 'Loading courses and semesters…'
@@ -50,48 +41,32 @@ export function OfferingsSection() {
         ? 'Add a course and a semester first.'
         : null
 
-  const filters = (
-    <div className="grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
-      <div>
-        <label htmlFor={`${id}-session`} className="block text-sm font-medium text-ink">
-          Academic session
-        </label>
-        <select
-          id={`${id}-session`}
-          value={sessionFilter}
-          onChange={(event) => {
-            setSessionFilter(event.target.value)
-            setSemesterFilter('')
-          }}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        >
-          <option value="">All sessions</option>
-          {(sessionList ?? []).map((session) => (
-            <option key={session.id} value={String(session.id)}>
-              {session.code}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor={`${id}-semester`} className="block text-sm font-medium text-ink">
-          Semester
-        </label>
-        <select
-          id={`${id}-semester`}
-          value={semesterFilter}
-          onChange={(event) => setSemesterFilter(event.target.value)}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
-        >
-          <option value="">All semesters</option>
-          {filteredSemesters.map((semester) => (
-            <option key={semester.id} value={String(semester.id)}>
-              {semesterLabel(semester)}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+  const toolbar = (
+    <>
+      <SelectField
+        label="Academic session"
+        value={sessionFilter}
+        onChange={(event) => {
+          setSessionFilter(event.target.value)
+          setSemesterFilter('')
+        }}
+      >
+        <option value="">All sessions</option>
+        {(sessionList ?? []).map((session) => (
+          <option key={session.id} value={String(session.id)}>
+            {session.code}
+          </option>
+        ))}
+      </SelectField>
+      <SelectField label="Semester" value={semesterFilter} onChange={(event) => setSemesterFilter(event.target.value)}>
+        <option value="">All semesters</option>
+        {filteredSemesters.map((semester) => (
+          <option key={semester.id} value={String(semester.id)}>
+            {semesterLabel(semester)}
+          </option>
+        ))}
+      </SelectField>
+    </>
   )
 
   return (
@@ -103,7 +78,9 @@ export function OfferingsSection() {
       blockedReason={blocked}
       emptyTitle="No course offerings available."
       deniedTitle={ENROLLMENT_DENIED}
-      toolbar={filters}
+      toolbar={toolbar}
+      searchText={(row) => `${row.courseCode} ${row.courseName} ${row.programCode} ${row.academicSessionCode}`}
+      rowStatus={(row) => row.status}
       rowKey={(row) => row.courseOfferingId}
       rowName={(row) => `${row.courseCode} in semester ${row.semesterNumber}, ${row.academicSessionCode}`}
       columns={[
@@ -114,13 +91,13 @@ export function OfferingsSection() {
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
       rowActions={(row) => (
-        <Link to={`/admin/academic/offerings/${row.courseOfferingId}/enrollments`} className={actionLinkClasses}>
+        <ButtonLink to={`/admin/academic/offerings/${row.courseOfferingId}/enrollments`} variant="secondary" size="sm">
           View roster
           <span className="sr-only">
             {' '}
             of {row.courseCode} in semester {row.semesterNumber}, {row.academicSessionCode}
           </span>
-        </Link>
+        </ButtonLink>
       )}
       renderCreate={(done, cancel) => (
         <MasterForm

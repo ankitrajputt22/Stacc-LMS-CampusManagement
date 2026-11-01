@@ -38,7 +38,7 @@ Backend answers are kept in one shared cache, TanStack Query, set up in `fronten
 - Answers stay fresh for 30 seconds. Nothing is asked again because the tab regains focus, and nothing polls. A failed request is tried once more, except after 401, 403, or 404.
 - `AuthProvider` empties the cache when a session ends or another one starts, so one person's data never shows for the next person in the same tab.
 
-`useMyCourses` and `useLmsCourse` already use it. Other pages move over when they are redesigned; new code uses `useApiQuery` from the start.
+`useMyCourses`, `useLmsCourse`, and every ERP page (academic admin, attendance, results, and the calendar) use it. Other pages move over when they are redesigned; new code uses `useApiQuery` from the start.
 
 ### useApiRequest (existing pages)
 

@@ -122,7 +122,14 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one sub-navigation for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
+`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+
+Every section is built from the shared components in `src/ui` (see `ui-design.md`):
+
+- Each master, and the course offerings, is a `Card` with its Add button, a search box and a status filter, and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column.
+- Add and Edit open one form at a time in its own card above the list, with `TextField` and `SelectField` and an error `Alert`. After a save, every academic admin list in the cache (`queryKeys.admin.academic`) is asked again, because the lists fill each other's choices.
+- Enrollments start with the student search; a student's semesters and courses are cards with their actions per row, and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
+- Statuses are `Badge`s: green for in use (`ACTIVE`, `ENROLLED`), blue for still to come (`PLANNED`), neutral for ended; the word always says it. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 
 ## Not built yet
 

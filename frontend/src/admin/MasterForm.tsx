@@ -1,7 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { Button } from '../components/Button'
-import { border, fieldClasses } from '../teaching/formStyles'
+import { Alert, Button, Card, SelectField, TextField } from '../ui'
 
 export type FieldOption = { value: string; label: string }
 
@@ -82,7 +81,7 @@ function refusal(status: number | null, apiMessage: string | null, deniedMessage
 }
 
 /**
- * A small contained form for one academic master. Every field has a real label; obvious mistakes are caught before
+ * A small contained form for one academic master, in its own card. Every field has a real label; obvious mistakes are caught before
  * sending, mirroring the backend's rules, and the backend checks everything again. While it sends, the button says
  * "Saving…" and a second press does nothing. A refusal is shown in safe words and keeps what was entered; a 403 never
  * signs the user out.
@@ -156,94 +155,60 @@ export function MasterForm({
   }
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      noValidate
-      aria-labelledby={`${id}-heading`}
-      className="rounded-panel border border-line-strong bg-surface p-4"
-    >
-      <p id={`${id}-heading`} className="text-sm font-semibold break-words text-ink">
-        {heading}
-      </p>
-      {note && <p className="mt-1 text-sm leading-6 text-ink-muted">{note}</p>}
+    <Card title={heading} description={note}>
+      <form ref={formRef} onSubmit={handleSubmit} noValidate aria-label={heading}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {fields.map((field) => {
+            const common = {
+              id: `${id}-${field.name}`,
+              label: field.label,
+              hint: field.hint,
+              error: errors[field.name],
+              value: values[field.name] ?? '',
+              className: field.kind === 'text' && (field.maxLength ?? 0) > 50 ? 'sm:col-span-2' : undefined,
+            }
+            function change(value: string) {
+              setValues((current) => ({ ...current, [field.name]: value }))
+              setErrors((current) => ({ ...current, [field.name]: undefined }))
+            }
+            return field.kind === 'select' ? (
+              <SelectField key={field.name} {...common} onChange={(event) => change(event.target.value)}>
+                {field.choose && <option value="">{field.choose}</option>}
+                {field.options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </SelectField>
+            ) : (
+              <TextField
+                key={field.name}
+                {...common}
+                type={field.kind === 'date' ? 'date' : 'text'}
+                inputMode={field.kind === 'integer' ? 'numeric' : field.kind === 'decimal' ? 'decimal' : undefined}
+                autoComplete="off"
+                maxLength={field.maxLength}
+                onChange={(event) => change(event.target.value)}
+              />
+            )
+          })}
+        </div>
 
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
-        {fields.map((field) => {
-          const fieldId = `${id}-${field.name}`
-          const hintId = field.hint ? `${fieldId}-hint` : undefined
-          const errorId = errors[field.name] ? `${fieldId}-error` : undefined
-          const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
-          const common = {
-            id: fieldId,
-            value: values[field.name] ?? '',
-            'aria-invalid': errors[field.name] ? true : undefined,
-            'aria-describedby': describedBy,
-          }
-          function change(value: string) {
-            setValues((current) => ({ ...current, [field.name]: value }))
-            setErrors((current) => ({ ...current, [field.name]: undefined }))
-          }
-          return (
-            <div key={field.name} className={field.kind === 'text' && (field.maxLength ?? 0) > 50 ? 'sm:col-span-2' : ''}>
-              <label htmlFor={fieldId} className="block text-sm font-medium text-ink">
-                {field.label}
-              </label>
-              {field.hint && (
-                <p id={hintId} className="mt-0.5 text-xs text-ink-muted">
-                  {field.hint}
-                </p>
-              )}
-              {field.kind === 'select' ? (
-                <select
-                  {...common}
-                  onChange={(event) => change(event.target.value)}
-                  className={`h-11 ${fieldClasses} ${border(Boolean(errors[field.name]))}`}
-                >
-                  {field.choose && <option value="">{field.choose}</option>}
-                  {field.options?.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  {...common}
-                  type={field.kind === 'date' ? 'date' : 'text'}
-                  inputMode={field.kind === 'integer' ? 'numeric' : field.kind === 'decimal' ? 'decimal' : undefined}
-                  autoComplete="off"
-                  maxLength={field.maxLength}
-                  onChange={(event) => change(event.target.value)}
-                  className={`h-11 ${fieldClasses} ${border(Boolean(errors[field.name]))}`}
-                />
-              )}
-              {errors[field.name] && (
-                <p id={errorId} className="mt-1.5 text-sm text-danger">
-                  {errors[field.name]}
-                </p>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      <div role="alert">
         {formError && (
-          <p className="mt-4 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
+          <Alert tone="error" className="mt-4">
             {formError}
-          </p>
+          </Alert>
         )}
-      </div>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button type="submit" aria-disabled={submitting || undefined}>
-          {submitting ? 'Saving…' : submitLabel}
-        </Button>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Button type="submit" aria-disabled={submitting || undefined}>
+            {submitting ? 'Saving…' : submitLabel}
+          </Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

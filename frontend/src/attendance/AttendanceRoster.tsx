@@ -1,9 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { finalizeAttendanceSession, saveAttendanceRecords } from '../api/attendanceApi'
-import { ActionButton } from '../components/ActionButton'
-import { Button } from '../components/Button'
 import type { AttendanceSessionDetail, AttendanceStatus } from '../types/attendance'
+import { Alert, Badge, Button, Card } from '../ui'
 
 const STATUS_WORDS: Record<AttendanceStatus, string> = {
   UNMARKED: 'Not marked',
@@ -140,31 +139,34 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
         : null
 
   return (
-    <section aria-labelledby={`${id}-heading`} aria-busy={busy !== null} className="mt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
-          Students
-        </h2>
-        {!finalized && session.records.length > 0 && (
-          <ActionButton onClick={markAllPresent}>Mark all present</ActionButton>
-        )}
-      </div>
-      <p className="mt-1 text-sm leading-6 text-ink-muted">
-        {finalized
+    <div aria-busy={busy !== null}>
+    <Card
+      title="Students"
+      description={
+        finalized
           ? 'Corrections are visible to students after saving.'
-          : 'The students enrolled when this session was created. Nothing is saved until you press Save attendance.'}
-      </p>
+          : 'The students enrolled when this session was created. Nothing is saved until you press Save attendance.'
+      }
+      action={
+        !finalized && session.records.length > 0 ? (
+          <Button variant="secondary" size="sm" onClick={markAllPresent}>
+            Mark all present
+          </Button>
+        ) : undefined
+      }
+      padding="none"
+    >
 
       <p role="status" className="sr-only">
         {announcement}
       </p>
 
       {session.records.length === 0 ? (
-        <p className="mt-3 rounded-panel border border-line bg-surface px-4 py-6 text-sm text-ink-muted">
+        <p className="px-4 py-6 text-sm text-ink-muted sm:px-5">
           No students were enrolled in this course offering when the session was created.
         </p>
       ) : (
-        <div className="mt-3 rounded-panel border border-line bg-surface">
+        <div>
           <div aria-hidden="true" className="hidden border-b border-line px-5 py-2 text-xs font-semibold text-ink-muted sm:grid sm:grid-cols-[minmax(0,1fr)_auto]">
             <span>Student ID</span>
             <span>Attendance</span>
@@ -181,12 +183,10 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
                     <p className="flex flex-wrap items-center gap-2 text-sm font-medium break-all text-ink">
                       {record.studentLoginId}
                       {value === 'UNMARKED' && (
-                        <span className="inline-block shrink-0 rounded-sm border border-dashed border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink-muted">
-                          Not marked
-                        </span>
+                        <Badge tone="warning">Not marked</Badge>
                       )}
                       {isChanged && (
-                        <span className="text-xs font-normal text-ink-muted">Not saved</span>
+                        <span className="text-sm font-normal text-ink-muted">Not saved</span>
                       )}
                     </p>
                   </div>
@@ -222,15 +222,14 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
         </div>
       )}
 
-      <div role="alert">
-        {error && (
-          <p className="mt-3 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger">
-            {error}
-          </p>
-        )}
-      </div>
+      <div className="border-t border-line px-4 py-4 sm:px-5">
+      {error && (
+        <Alert tone="error" className="mb-3">
+          {error}
+        </Alert>
+      )}
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {session.records.length > 0 && (
           <Button onClick={() => void save()} aria-disabled={busy !== null || undefined}>
             {busy === 'save' ? 'Saving…' : finalized ? 'Save corrections' : 'Save attendance'}
@@ -244,9 +243,9 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
       </div>
 
       {!finalized && (
-        <div className="mt-6 border-t border-line pt-4">
+        <div className="mt-4 border-t border-line pt-4">
           {confirming ? (
-            <div role="group" aria-labelledby={`${id}-confirm`} className="rounded-control border border-line-strong bg-surface-muted p-3">
+            <div role="group" aria-labelledby={`${id}-confirm`} className="rounded-panel border border-amber-300 bg-amber-50 p-3 sm:p-4">
               <p id={`${id}-confirm`} className="text-sm font-semibold text-ink">
                 Finalize attendance?
               </p>
@@ -254,16 +253,13 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
                 Students will be able to view this attendance once finalized. You can still correct Present and Absent
                 afterwards.
               </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <button
-                  ref={confirmRef}
-                  type="button"
-                  onClick={() => void finalize()}
-                  className="inline-flex min-h-11 items-center rounded-control border border-transparent bg-stacc-primary px-3 text-sm font-medium text-white hover:bg-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8"
-                >
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button ref={confirmRef} size="sm" onClick={() => void finalize()}>
                   Finalize
-                </button>
-                <ActionButton onClick={() => setConfirming(false)}>Cancel</ActionButton>
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
+                  Cancel
+                </Button>
               </div>
             </div>
           ) : (
@@ -290,6 +286,8 @@ export function AttendanceRoster({ session, onChanged, onFinalized }: Attendance
           )}
         </div>
       )}
-    </section>
+      </div>
+    </Card>
+    </div>
   )
 }

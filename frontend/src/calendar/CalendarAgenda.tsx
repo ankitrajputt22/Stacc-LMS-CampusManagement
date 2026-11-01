@@ -8,7 +8,8 @@ import type {
   StudentAssignmentDeadline,
 } from '../types/calendar'
 import { dateRangeText, dayHeading, localDayOf, timeText, todayIsoDate } from './calendarDates'
-import { categoryLabel, scopeText, tagClasses } from './calendarText'
+import { Badge } from '../ui'
+import { categoryLabel, scopeText } from './calendarText'
 
 type AgendaItem =
   | { kind: 'event'; key: string; event: AcademicCalendarEventSummary }
@@ -81,12 +82,12 @@ function EventItem({ event }: { event: AcademicCalendarEventSummary }) {
   return (
     <li className={`border-l-2 py-1 pl-3 ${cancelled ? 'border-line-strong' : 'border-stacc-primary'}`}>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className={tagClasses}>{categoryLabel(event.category)}</span>
+        <Badge tone="info">{categoryLabel(event.category)}</Badge>
         {/* Cancelled is said in words, not only by colour or a line through the title. */}
-        {cancelled && <span className={`${tagClasses} border-ink-muted`}>Cancelled</span>}
+        {cancelled && <Badge tone="neutral">Cancelled</Badge>}
         <span className={`text-sm font-semibold break-words ${cancelled ? 'text-ink-muted' : 'text-ink'}`}>{event.title}</span>
       </p>
-      <p className="mt-0.5 text-xs leading-5 break-words text-ink-muted">
+      <p className="mt-0.5 text-sm leading-5 break-words text-ink-muted">
         {dateRangeText(event.startDate, event.endDate)}
         <Separator />
         {scopeText(event)}
@@ -103,13 +104,13 @@ function StudentDeadlineItem({ deadline, label }: { deadline: StudentAssignmentD
   return (
     <li className="border-l-2 border-line-strong py-1 pl-3">
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className={tagClasses}>{label}</span>
+        <Badge tone="warning">{label}</Badge>
         <Link to={`/courses/${deadline.lmsCourseId}/assignments/${deadline.assignmentId}`} className={`text-sm ${itemLinkClasses}`}>
           {deadline.title}
           <span className="sr-only">, {deadline.courseName}</span>
         </Link>
       </p>
-      <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs leading-5 text-ink-muted">
+      <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm leading-5 text-ink-muted">
         <span>{deadline.courseCode}</span>
         <span>
           Due <time dateTime={deadline.dueAt}>{timeText(deadline.dueAt)}</time>
@@ -125,11 +126,11 @@ function FacultyDeadlineItem({ deadline }: { deadline: FacultyAssignmentDeadline
     <li className="flex flex-col gap-2 border-l-2 border-line-strong py-1 pl-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className={tagClasses}>Teaching deadline</span>
-          <span className={tagClasses}>{deadline.status === 'DRAFT' ? 'Draft' : 'Published'}</span>
+          <Badge tone="warning">Teaching deadline</Badge>
+          <Badge tone={deadline.status === 'DRAFT' ? 'neutral' : 'success'}>{deadline.status === 'DRAFT' ? 'Draft' : 'Published'}</Badge>
           <span className="text-sm font-semibold break-words text-ink">{deadline.title}</span>
         </p>
-        <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs leading-5 text-ink-muted">
+        <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm leading-5 text-ink-muted">
           <span>{deadline.courseCode}</span>
           <span>
             Due <time dateTime={deadline.dueAt}>{timeText(deadline.dueAt)}</time>
@@ -168,7 +169,7 @@ export function CalendarAgenda({ calendar, alsoTeaches }: CalendarAgendaProps) {
         >
           <h3 id={`day-${day.date}`} className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
             <time dateTime={day.date}>{dayHeading(day.date)}</time>
-            {day.date === today && <span className={tagClasses}>Today</span>}
+            {day.date === today && <Badge tone="brand">Today</Badge>}
           </h3>
           <ul className="mt-2 space-y-3">
             {day.items.map((item) =>

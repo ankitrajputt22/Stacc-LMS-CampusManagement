@@ -1,4 +1,4 @@
-import { NavLink, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { CalendarSection } from '../admin/CalendarSection'
 import { EnrollmentsSection } from '../admin/EnrollmentsSection'
 import { OfferingRoster } from '../admin/OfferingRoster'
@@ -14,6 +14,7 @@ import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { StatePanel } from '../components/states/StatePanel'
+import { LinkTabs, PageHeader } from '../ui'
 import { NotFoundPage } from './NotFoundPage'
 
 const SECTIONS = [
@@ -28,32 +29,6 @@ const SECTIONS = [
 ] as const
 
 const ID_PATTERN = /^[1-9]\d{0,17}$/
-
-/** The sections as route-aware text links. The current one is marked with a bar, bold text, and aria-current. */
-function SectionNavigation() {
-  return (
-    <nav aria-label="Academic admin sections" className="mt-6 border-b border-line">
-      <ul className="-mb-px flex flex-wrap gap-x-1">
-        {SECTIONS.map((section) => (
-          <li key={section.path}>
-            <NavLink
-              to={`/admin/academic/${section.path}`}
-              className={({ isActive }) =>
-                `inline-flex min-h-11 items-center border-b-2 px-3 text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary ${
-                  isActive
-                    ? 'border-stacc-primary font-semibold text-stacc-primary'
-                    : 'border-transparent text-ink hover:border-line-strong'
-                }`
-              }
-            >
-              {section.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
 
 /**
  * The admin workspace for academic data, at /admin/academic/:section; /admin/academic opens the departments. The
@@ -74,35 +49,35 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
   }
 
   return (
-    <>
+    <div className="max-w-6xl">
       <title>{`${roster ? 'Offering Roster' : current.label} · Academic Admin · Stacc`}</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Academic Admin</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        Manage academic masters, course offerings, official student enrollments, and the academic calendar.
-      </p>
+      <PageHeader
+        eyebrow="ERP"
+        title="Academic Admin"
+        description="Manage academic masters, course offerings, official student enrollments, and the academic calendar."
+      />
       {isAdmin ? (
         <>
-          <SectionNavigation />
-          <div className="max-w-5xl">
-            {roster ? (
-              <OfferingRoster
-                courseOfferingId={courseOfferingId && ID_PATTERN.test(courseOfferingId) ? Number(courseOfferingId) : null}
-              />
-            ) : (
-              <current.Section />
-            )}
-          </div>
+          <LinkTabs
+            label="Academic admin sections"
+            tabs={SECTIONS.map((candidate) => ({ to: `/admin/academic/${candidate.path}`, label: candidate.label }))}
+          />
+          {roster ? (
+            <OfferingRoster
+              courseOfferingId={courseOfferingId && ID_PATTERN.test(courseOfferingId) ? Number(courseOfferingId) : null}
+            />
+          ) : (
+            <current.Section />
+          )}
         </>
       ) : (
-        <div className="mt-6">
-          <StatePanel>
-            <AccessDeniedState
-              title="This page is for admin accounts."
-              message="If you think you should, contact the college administration."
-            />
-          </StatePanel>
-        </div>
+        <StatePanel>
+          <AccessDeniedState
+            title="This page is for admin accounts."
+            message="If you think you should, contact the college administration."
+          />
+        </StatePanel>
       )}
-    </>
+    </div>
   )
 }

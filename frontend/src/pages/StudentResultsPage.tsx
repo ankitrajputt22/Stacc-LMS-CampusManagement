@@ -11,6 +11,7 @@ import { formatMarks } from '../courses/marks'
 import { ASK_THE_COLLEGE, RESULTS_DENIED, SIGN_IN_AGAIN } from '../results/resultText'
 import { useMyResults } from '../results/useResults'
 import type { StudentResult } from '../types/results'
+import { Card, PageHeader } from '../ui'
 
 type Group = { key: string; heading: string; programCode: string; results: StudentResult[] }
 
@@ -34,41 +35,43 @@ function grouped(results: StudentResult[]): Group[] {
   return groups
 }
 
-function ResultCard({ result }: { result: StudentResult }) {
+function ResultItem({ result }: { result: StudentResult }) {
   return (
-    <article className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
-      <h3 className="text-base leading-6 font-semibold break-words text-ink">{result.courseName}</h3>
-      <p className="mt-0.5 text-sm text-ink-muted">
-        {result.courseCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        {creditsText(result.credits)}
-      </p>
+    <article className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
+      <div className="min-w-0">
+        <h3 className="text-base leading-6 font-semibold break-words text-ink">{result.courseName}</h3>
+        <p className="mt-0.5 text-sm text-ink-muted">
+          {result.courseCode}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          {creditsText(result.credits)}
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          Published <time dateTime={result.publishedAt}>{formatDateTime(result.publishedAt)}</time>
+        </p>
+        {result.remarks && (
+          <div className="mt-2">
+            <p className="text-sm text-ink-muted">Remarks</p>
+            {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
+            <p className="text-sm leading-6 break-words whitespace-pre-line text-ink">{result.remarks}</p>
+          </div>
+        )}
+      </div>
       {/* Exactly what was recorded and published. There is no percentage, grade point, rank, or pass or fail. */}
-      <dl className="mt-3 space-y-2">
-        <div>
-          <dt className="text-xs text-ink-muted">Marks</dt>
-          <dd className="text-base font-semibold text-ink">
+      <dl className="flex gap-3 sm:justify-end">
+        <div className="min-w-24 rounded-control border border-line bg-surface-muted px-3 py-2">
+          <dt className="text-sm text-ink-muted">Marks</dt>
+          <dd className="text-lg font-semibold text-ink">
             {formatMarks(result.marksObtained)} / {formatMarks(result.maxMarks)}
           </dd>
         </div>
         {result.gradeCode && (
-          <div>
-            <dt className="text-xs text-ink-muted">Grade</dt>
-            <dd className="text-base font-semibold break-words text-ink">{result.gradeCode}</dd>
-          </div>
-        )}
-        {result.remarks && (
-          <div>
-            <dt className="text-xs text-ink-muted">Remarks</dt>
-            {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
-            <dd className="text-sm leading-6 break-words whitespace-pre-line text-ink">{result.remarks}</dd>
+          <div className="min-w-20 rounded-control border border-line bg-surface-muted px-3 py-2">
+            <dt className="text-sm text-ink-muted">Grade</dt>
+            <dd className="text-lg font-semibold break-words text-ink">{result.gradeCode}</dd>
           </div>
         )}
       </dl>
-      <p className="mt-3 text-xs text-ink-muted">
-        Published <time dateTime={result.publishedAt}>{formatDateTime(result.publishedAt)}</time>
-      </p>
     </article>
   )
 }
@@ -108,24 +111,27 @@ function MyResults() {
         )
       }
       return (
-        <div className="space-y-8">
+        <div className="space-y-4">
           {grouped(results.data.results).map((group) => (
-            <section key={group.key} aria-labelledby={`results-${group.key}`}>
-              <h2 id={`results-${group.key}`} className="text-base font-semibold text-ink">
-                {group.heading}
-              </h2>
-              <p className="text-sm text-ink-muted">
-                <span className="sr-only">Program </span>
-                {group.programCode}
-              </p>
-              <ul aria-label={`Results of ${group.heading}`} className="mt-3 grid gap-3 lg:grid-cols-2">
+            <Card
+              key={group.key}
+              title={group.heading}
+              description={
+                <>
+                  <span className="sr-only">Program </span>
+                  {group.programCode}
+                </>
+              }
+              padding="none"
+            >
+              <ul aria-label={`Results of ${group.heading}`} className="divide-y divide-line">
                 {group.results.map((result) => (
                   <li key={`${group.key}|${result.courseCode}`}>
-                    <ResultCard result={result} />
+                    <ResultItem result={result} />
                   </li>
                 ))}
               </ul>
-            </section>
+            </Card>
           ))}
         </div>
       )
@@ -142,15 +148,14 @@ export function StudentResultsPage() {
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
 
   return (
-    <>
+    <div className="max-w-4xl">
       <title>Results · Academic · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Results</h1>
-      {isStudent && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Your official course results, as your teachers published them.
-        </p>
-      )}
-      <div className="mt-6 max-w-4xl">
+      <PageHeader
+        eyebrow="ERP · Academics"
+        title="Results"
+        description={isStudent ? 'Your official course results, as your teachers published them.' : undefined}
+      />
+      <div>
         {isStudent ? (
           <MyResults />
         ) : (
@@ -159,6 +164,6 @@ export function StudentResultsPage() {
           </StatePanel>
         )}
       </div>
-    </>
+    </div>
   )
 }

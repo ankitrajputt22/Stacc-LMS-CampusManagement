@@ -9,6 +9,7 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { CourseFacts } from '../courses/CourseFacts'
+import { PageHeader } from '../ui'
 import type { AttendanceCourseOffering } from '../types/attendance'
 
 function CourseOfferingCard({ course }: { course: AttendanceCourseOffering }) {
@@ -84,15 +85,14 @@ export function AttendancePage() {
   const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])
 
   return (
-    <>
+    <div className="max-w-6xl">
       <title>Attendance · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Attendance</h1>
-      {isFaculty && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Take attendance for the course offerings you teach.
-        </p>
-      )}
-      <div className="mt-6">
+      <PageHeader
+        eyebrow="ERP · Teaching"
+        title="Attendance"
+        description={isFaculty ? 'Take attendance for the course offerings you teach.' : undefined}
+      />
+      <div>
         {isFaculty ? (
           <MyAttendanceCourses />
         ) : (
@@ -101,6 +101,6 @@ export function AttendancePage() {
           </StatePanel>
         )}
       </div>
-    </>
+    </div>
   )
 }
