@@ -1,16 +1,21 @@
 package com.stacc.backend.academic.admin;
 
 import java.util.List;
+import java.util.Map;
 
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferingCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferingUpdate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseOfferingResponse;
+import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.OfferingFaculty;
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.course.CourseStatus;
 import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.offering.CourseOfferingStatus;
+import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.section.SectionRepository;
+import com.stacc.backend.academic.section.SectionStatus;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterStatus;
 import com.stacc.backend.academic.semester.SemesterRepository;
@@ -38,29 +43,45 @@ public class CourseOfferingManagementService {
             + "Create a new offering instead.";
     static final String BACK_TO_PLANNED = "An offering that has started or closed cannot go back to planned.";
     static final String REOPEN = "A closed offering cannot be made active again.";
+    static final String SECTION_MISSING = "The selected section does not exist.";
+    static final String SECTION_OTHER_SEMESTER = "This section belongs to a different semester.";
+    static final String SECTION_INACTIVE = "This section is inactive, so it cannot take new course offerings.";
+    static final String WHOLE_SEMESTER_EXISTS =
+            "This course is already offered to the whole semester, so it cannot also be offered per section.";
+    static final String PER_SECTION_EXISTS =
+            "This course is already offered per section in this semester, so it cannot also be offered to the whole semester.";
+    static final String SECTION_FIXED = "The section of an offering cannot be changed after it is created. "
+            + "Create a new offering instead.";
 
     private final CourseOfferingRepository offerings;
     private final CourseRepository courses;
     private final SemesterRepository semesters;
+    private final SectionRepository sections;
+    private final OfferingFacultyLoader faculty;
 
     public CourseOfferingManagementService(CourseOfferingRepository offerings, CourseRepository courses,
-            SemesterRepository semesters) {
+            SemesterRepository semesters, SectionRepository sections, OfferingFacultyLoader faculty) {
         this.offerings = offerings;
         this.courses = courses;
         this.semesters = semesters;
+        this.sections = sections;
+        this.faculty = faculty;
     }
 
     /** Offerings narrowed by any of the given IDs that are not null: the latest session first. */
     @Transactional(readOnly = true)
     public List<CourseOfferingResponse> list(Long semesterId, Long courseId, Long academicSessionId, Long programId) {
-        return offerings.findAllWithContext(semesterId, courseId, academicSessionId, programId, Pageable.unpaged()).stream()
-                .map(CourseOfferingResponse::of)
+        List<CourseOffering> found =
+                offerings.findAllWithContext(semesterId, courseId, academicSessionId, programId, Pageable.unpaged());
+        Map<Long, List<OfferingFaculty>> teaching = faculty.byOffering(found.stream().map(CourseOffering::getId).toList());
+        return found.stream()
+                .map(offering -> CourseOfferingResponse.of(offering, teaching.getOrDefault(offering.getId(), List.of())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public CourseOfferingResponse get(Long courseOfferingId) {
-        return CourseOfferingResponse.of(find(courseOfferingId));
+        return CourseOfferingResponse.of(find(courseOfferingId), faculty.forOffering(courseOfferingId));
     }
 
     public CourseOfferingResponse create(CourseOfferingCreate request) {
@@ -74,11 +95,37 @@ public class CourseOfferingManagementService {
         if (semester.getStatus() == SemesterStatus.CLOSED) {
             throw AcademicMasterErrors.conflict(SEMESTER_CLOSED);
         }
-        if (offerings.findByCourseIdAndSemesterId(course.getId(), semester.getId()).isPresent()) {
-            throw AcademicMasterErrors.conflict(TAKEN);
+        Section section = null;
+        if (request.sectionId() != null) {
+            section = sections.findWithContextById(request.sectionId())
+                    .orElseThrow(() -> AcademicMasterErrors.notFound(SECTION_MISSING));
+            if (!section.getSemester().getId().equals(semester.getId())) {
+                throw AcademicMasterErrors.conflict(SECTION_OTHER_SEMESTER);
+            }
+            if (section.getStatus() != SectionStatus.ACTIVE) {
+                throw AcademicMasterErrors.conflict(SECTION_INACTIVE);
+            }
+            if (offerings.findByCourseIdAndSemesterIdAndSectionId(course.getId(), semester.getId(), section.getId()).isPresent()) {
+                throw AcademicMasterErrors.conflict(TAKEN);
+            }
+            if (offerings.findByCourseIdAndSemesterIdAndSectionIsNull(course.getId(), semester.getId()).isPresent()) {
+                throw AcademicMasterErrors.conflict(WHOLE_SEMESTER_EXISTS);
+            }
+        } else {
+            if (offerings.findByCourseIdAndSemesterIdAndSectionIsNull(course.getId(), semester.getId()).isPresent()) {
+                throw AcademicMasterErrors.conflict(TAKEN);
+            }
+            if (offerings.existsByCourseIdAndSemesterIdAndSectionIsNotNull(course.getId(), semester.getId())) {
+                throw AcademicMasterErrors.conflict(PER_SECTION_EXISTS);
+            }
         }
-        return CourseOfferingResponse.of(AcademicMasterErrors.savedOrConflict(
-                () -> offerings.saveAndFlush(new CourseOffering(course, semester)), TAKEN));
+        CourseOffering offering = new CourseOffering(course, semester, section);
+        offering.changeCapacity(request.capacity());
+        if (request.registrationStatus() != null) {
+            offering.changeRegistrationStatus(request.registrationStatus());
+        }
+        return CourseOfferingResponse.of(AcademicMasterErrors.savedOrConflict(() -> offerings.saveAndFlush(offering), TAKEN),
+                List.of());
     }
 
     public CourseOfferingResponse update(Long courseOfferingId, CourseOfferingUpdate request) {
@@ -88,6 +135,14 @@ public class CourseOfferingManagementService {
         if (differs(request.courseId(), offering.getCourse().getId())
                 || differs(request.semesterId(), offering.getSemester().getId())) {
             throw AcademicMasterErrors.conflict(FIXED);
+        }
+        if (request.sectionId() != null && (offering.getSection() == null
+                || !request.sectionId().equals(offering.getSection().getId()))) {
+            throw AcademicMasterErrors.conflict(SECTION_FIXED);
+        }
+        offering.changeCapacity(request.capacity());
+        if (request.registrationStatus() != null) {
+            offering.changeRegistrationStatus(request.registrationStatus());
         }
         CourseOfferingStatus target = request.status();
         if (target != offering.getStatus()) {
@@ -103,7 +158,7 @@ public class CourseOfferingManagementService {
                 offering.close();
             }
         }
-        return CourseOfferingResponse.of(offerings.saveAndFlush(offering));
+        return CourseOfferingResponse.of(offerings.saveAndFlush(offering), faculty.forOffering(offering.getId()));
     }
 
     private static boolean differs(Long sent, Long stored) {

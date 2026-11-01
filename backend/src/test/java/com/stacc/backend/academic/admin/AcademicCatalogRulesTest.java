@@ -33,6 +33,7 @@ import com.stacc.backend.academic.program.DegreeType;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.semester.Semester;
+import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
@@ -141,15 +142,15 @@ class AcademicCatalogRulesTest {
         Semester fifth = MasterFixtures.semester(10, btech, current, 5);
         when(courses.findById(13L)).thenReturn(Optional.of(dbms));
         when(semesters.findWithContextById(10L)).thenReturn(Optional.of(fifth));
-        CourseOfferingManagementService service = new CourseOfferingManagementService(offerings, courses, semesters);
+        CourseOfferingManagementService service = new CourseOfferingManagementService(offerings, courses, semesters, mock(SectionRepository.class), mock(OfferingFacultyLoader.class));
 
         dbms.deactivate();
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.COURSE_INACTIVE,
-                () -> service.create(new CourseOfferingCreate(13L, 10L)));
+                () -> service.create(new CourseOfferingCreate(13L, 10L, null, null, null)));
         dbms.activate();
         fifth.close();
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.SEMESTER_CLOSED,
-                () -> service.create(new CourseOfferingCreate(13L, 10L)));
+                () -> service.create(new CourseOfferingCreate(13L, 10L, null, null, null)));
         verify(offerings, never()).saveAndFlush(any(CourseOffering.class));
     }
 

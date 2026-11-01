@@ -115,12 +115,52 @@ export type AdminCourseOffering = {
   programCode: string
   academicSessionId: number
   academicSessionCode: string
+  /** The section it is for, or null for the whole semester. */
+  sectionId: number | null
+  sectionCode: string | null
+  /** The most enrolled students, or null for no limit. Used by course registration from v0.4. */
+  capacity: number | null
+  registrationStatus: RegistrationStatus
   status: LifecycleStatus
+  /** Who teaches it, active first; null where the API does not load it. */
+  faculty: OfferingFaculty[] | null
+}
+
+export type RegistrationStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
+export type TeachingRole = 'PRIMARY' | 'CO_FACULTY'
+
+/** One faculty member's teaching assignment to an offering. */
+export type OfferingFaculty = {
+  teachingAssignmentId: number
+  courseOfferingId: number
+  facultyProfileId: number
+  /** The employee ID. */
+  loginId: string
+  /** The name from the person profile, or null. */
+  name: string | null
+  departmentCode: string
+  role: TeachingRole
+  status: ActiveStatus
+}
+
+/** A faculty member to choose from: never contact details. */
+export type FacultyLookup = {
+  facultyProfileId: number
+  loginId: string
+  name: string | null
+  departmentCode: string
+  status: ActiveStatus
 }
 
 export type CourseOfferingFilters = { semesterId?: number; academicSessionId?: number }
-export type CourseOfferingCreate = { courseId: number; semesterId: number }
-export type CourseOfferingUpdate = { status: LifecycleStatus }
+export type CourseOfferingCreate = {
+  courseId: number
+  semesterId: number
+  sectionId: number | null
+  capacity: number | null
+  registrationStatus: RegistrationStatus
+}
+export type CourseOfferingUpdate = { status: LifecycleStatus; capacity: number | null; registrationStatus: RegistrationStatus }
 
 export type EnrollmentStudent = {
   studentProfileId: number

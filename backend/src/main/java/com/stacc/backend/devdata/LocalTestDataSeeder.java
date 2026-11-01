@@ -51,6 +51,7 @@ import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignment;
+import com.stacc.backend.academic.teaching.TeachingRole;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.approval.ApprovalActor;
 import com.stacc.backend.approval.ApprovalApiRequests.ApprovalWorkflowStepRequest;
@@ -478,7 +479,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         teaching(faculty1Profile, cs303);
         teaching(faculty2Profile, cs302);
         teaching(faculty2Profile, cs304);
-        teaching(studentFacultyTeacher, cs302);
+        teaching(studentFacultyTeacher, cs302, TeachingRole.CO_FACULTY);
         teaching(facultyAdminProfile, cs401);
 
         // --- Official enrollment, before any LMS course, so creating one provisions its current students.
@@ -722,7 +723,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     private CourseOffering offering(Course course, Semester semester, Consumer<CourseOffering> lifecycle) {
-        return findOrCreate(repositories.offerings.findByCourseIdAndSemesterId(course.getId(), semester.getId()), () -> {
+        return findOrCreate(repositories.offerings.findByCourseIdAndSemesterIdAndSectionIsNull(course.getId(), semester.getId()), () -> {
             CourseOffering offering = new CourseOffering(course, semester);
             lifecycle.accept(offering);
             return repositories.offerings.save(offering);
@@ -740,8 +741,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     private void teaching(FacultyProfile faculty, CourseOffering offering) {
+        teaching(faculty, offering, TeachingRole.PRIMARY);
+    }
+
+    private void teaching(FacultyProfile faculty, CourseOffering offering, TeachingRole role) {
         findOrCreate(repositories.teaching.findByFacultyProfileIdAndCourseOfferingId(faculty.getId(), offering.getId()),
-                () -> repositories.teaching.save(new TeachingAssignment(faculty, offering)));
+                () -> {
+                    TeachingAssignment assignment = new TeachingAssignment(faculty, offering);
+                    assignment.changeRole(role);
+                    return repositories.teaching.save(assignment);
+                });
     }
 
     private Section section(Semester semester, String code, int capacity) {

@@ -1,4 +1,7 @@
 import type {
+  FacultyLookup,
+  OfferingFaculty,
+  TeachingRole,
   AdminCourseEnrollment,
   AdminCourseOffering,
   AdminSemesterEnrollment,
@@ -113,5 +116,34 @@ export async function retryLmsProvisioning(courseEnrollmentId: number) {
   const response = await apiClient.post<{ courseEnrollmentId: number; lmsProvisioning: 'PROVISIONED' }>(
     `${ENROLLMENTS}/course-enrollments/${courseEnrollmentId}/provision-lms`,
   )
+  return response.data
+}
+
+/** Who teaches an offering, active first. */
+export async function getOfferingFaculty(courseOfferingId: number, signal?: AbortSignal) {
+  const response = await apiClient.get<OfferingFaculty[]>(`${OFFERINGS}/${courseOfferingId}/faculty`, { signal })
+  return response.data
+}
+
+/** Faculty members whose employee ID contains the text, at most 50. */
+export async function searchFaculty(q: string, signal?: AbortSignal) {
+  const response = await apiClient.get<FacultyLookup[]>('/admin/academic/faculty', { params: { q }, signal })
+  return response.data
+}
+
+export async function assignFaculty(courseOfferingId: number, facultyProfileId: number, role: TeachingRole) {
+  const response = await apiClient.post<OfferingFaculty>('/admin/academic/faculty-assignments', {
+    courseOfferingId,
+    facultyProfileId,
+    role,
+  })
+  return response.data
+}
+
+export async function updateFacultyAssignment(teachingAssignmentId: number, role: TeachingRole, status: 'ACTIVE' | 'INACTIVE') {
+  const response = await apiClient.put<OfferingFaculty>(`/admin/academic/faculty-assignments/${teachingAssignmentId}`, {
+    role,
+    status,
+  })
   return response.data
 }

@@ -9,6 +9,7 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.teaching.TeachingAssignment;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -36,17 +37,59 @@ public final class OfferingEnrollmentResponses {
             @Schema(example = "BTECH-CSE") String programCode,
             @Schema(example = "2") Long academicSessionId,
             @Schema(example = "2026-27") String academicSessionCode,
-            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status) {
+            @Schema(description = "The section it is for, or null for the whole semester.", example = "21") Long sectionId,
+            @Schema(description = "That section's code, or null.", example = "A") String sectionCode,
+            @Schema(description = "The most enrolled students, or null for no limit.", example = "60") Integer capacity,
+            @Schema(allowableValues = {"DRAFT", "OPEN", "CLOSED"}, example = "DRAFT") String registrationStatus,
+            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status,
+            @Schema(description = "Who teaches it, active assignments first, in the admin offering list and the faculty "
+                    + "routes; null where it is not loaded.", nullable = true)
+            List<OfferingFaculty> faculty) {
 
         static CourseOfferingResponse of(CourseOffering offering) {
+            return of(offering, null);
+        }
+
+        static CourseOfferingResponse of(CourseOffering offering, List<OfferingFaculty> faculty) {
             Course course = offering.getCourse();
             Semester semester = offering.getSemester();
             Program program = semester.getProgram();
             AcademicSession session = semester.getAcademicSession();
+            Section section = offering.getSection();
             return new CourseOfferingResponse(offering.getId(), course.getId(), course.getCode(), course.getName(),
                     course.getCredits(), semester.getId(), semester.getSemesterNumber(), program.getId(), program.getCode(),
-                    session.getId(), session.getCode(), offering.getStatus().name());
+                    session.getId(), session.getCode(), section == null ? null : section.getId(),
+                    section == null ? null : section.getCode(), offering.getCapacity(),
+                    offering.getRegistrationStatus().name(), offering.getStatus().name(), faculty);
         }
+    }
+
+    /** One faculty member's teaching assignment to an offering, with the name from their person profile if any. */
+    public record OfferingFaculty(
+            @Schema(example = "7") Long teachingAssignmentId,
+            @Schema(example = "3") Long courseOfferingId,
+            @Schema(example = "11") Long facultyProfileId,
+            @Schema(description = "The employee ID, which is the account's login ID.", example = "faculty1") String loginId,
+            @Schema(description = "The name from the person profile, or null.", example = "Dr. Meera Iyer") String name,
+            @Schema(example = "CSE") String departmentCode,
+            @Schema(allowableValues = {"PRIMARY", "CO_FACULTY"}, example = "PRIMARY") String role,
+            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
+
+        static OfferingFaculty of(TeachingAssignment assignment, String name) {
+            var profile = assignment.getFacultyProfile();
+            return new OfferingFaculty(assignment.getId(), assignment.getCourseOffering().getId(), profile.getId(),
+                    profile.getUserAccount().getLoginId(), name, profile.getDepartment().getCode(),
+                    assignment.getRole().name(), assignment.getStatus().name());
+        }
+    }
+
+    /** A faculty member to choose from when assigning who teaches: never contact details. */
+    public record FacultyLookupResponse(
+            @Schema(example = "11") Long facultyProfileId,
+            @Schema(example = "faculty1") String loginId,
+            @Schema(description = "The name from the person profile, or null.") String name,
+            @Schema(example = "CSE") String departmentCode,
+            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
     }
 
     public record StudentLookupResponse(

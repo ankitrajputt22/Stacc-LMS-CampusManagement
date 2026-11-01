@@ -3,7 +3,10 @@ package com.stacc.backend.academic.admin;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOfferingStatus;
+import com.stacc.backend.academic.offering.OfferingRegistrationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -23,7 +26,21 @@ public final class OfferingEnrollmentRequests {
 
             @Schema(description = "The semester it is taught in. It is loaded on the server.", example = "9")
             @NotNull(message = "Semester is required")
-            Long semesterId) {
+            Long semesterId,
+
+            @Schema(description = "Optional. An active section of that semester; left out, the offering is for the whole "
+                    + "semester. Fixed after creation.", example = "21", nullable = true)
+            Long sectionId,
+
+            @Schema(description = "Optional. The most enrolled students, from 1 to 1000. Used by course registration "
+                    + "from v0.4; no limit when left out.", example = "60", nullable = true)
+            @Min(value = 1, message = "Capacity must be at least 1")
+            @Max(value = 1000, message = "Capacity must be at most 1000")
+            Integer capacity,
+
+            @Schema(description = "DRAFT, OPEN, or CLOSED for course registration. DRAFT when left out.",
+                    allowableValues = {"DRAFT", "OPEN", "CLOSED"}, example = "DRAFT", nullable = true)
+            OfferingRegistrationStatus registrationStatus) {
     }
 
     public record CourseOfferingUpdate(
@@ -38,7 +55,21 @@ public final class OfferingEnrollmentRequests {
 
             @Schema(description = "Optional. The semester is fixed when the offering is created: a different one is "
                     + "refused with 409.", example = "9", nullable = true)
-            Long semesterId) {
+            Long semesterId,
+
+            @Schema(description = "Optional. The section is fixed when the offering is created: a different one is "
+                    + "refused with 409.", example = "21", nullable = true)
+            Long sectionId,
+
+            @Schema(description = "The most enrolled students, from 1 to 1000, or null for no limit.", example = "60",
+                    nullable = true)
+            @Min(value = 1, message = "Capacity must be at least 1")
+            @Max(value = 1000, message = "Capacity must be at most 1000")
+            Integer capacity,
+
+            @Schema(description = "DRAFT, OPEN, or CLOSED for course registration. Unchanged when left out.",
+                    allowableValues = {"DRAFT", "OPEN", "CLOSED"}, example = "OPEN", nullable = true)
+            OfferingRegistrationStatus registrationStatus) {
     }
 
     public record SemesterEnrollmentCreate(

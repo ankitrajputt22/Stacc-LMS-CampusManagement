@@ -57,6 +57,8 @@ public class AcademicEnrollmentManagementService {
     static final String SECTION_MISSING = "The selected section does not exist.";
     static final String SECTION_OTHER_SEMESTER = "This section belongs to a different semester.";
     static final String SECTION_INACTIVE = "This section is inactive, so no students can be placed in it.";
+    static final String SECTION_COURSES =
+            "This student is still enrolled in course offerings of their current section. Withdraw or complete them first.";
 
     private final StudentProfileRepository students;
     private final SemesterRepository semesters;
@@ -133,12 +135,15 @@ public class AcademicEnrollmentManagementService {
             throw AcademicMasterErrors.conflict(SEMESTER_ENDED);
         }
         Section current = enrollment.getSection();
+        if (current != null && current.getId().equals(request.sectionId())) {
+            return SemesterEnrollmentResponse.of(enrollment);
+        }
+        if (courseEnrollments.existsEnrolledInOtherSectionOffering(enrollment.getId(), request.sectionId())) {
+            throw AcademicMasterErrors.conflict(SECTION_COURSES);
+        }
         if (request.sectionId() == null) {
             enrollment.placeIn(null);
             return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
-        }
-        if (current != null && current.getId().equals(request.sectionId())) {
-            return SemesterEnrollmentResponse.of(enrollment);
         }
         Section section = sections.findByIdForUpdate(request.sectionId())
                 .orElseThrow(() -> AcademicMasterErrors.notFound(SECTION_MISSING));
@@ -168,6 +173,12 @@ public class AcademicEnrollmentManagementService {
         }
         if (!offering.getSemester().getId().equals(semesterEnrollment.getSemester().getId())) {
             throw AcademicMasterErrors.conflict(OTHER_SEMESTER);
+        }
+        Section offeringSection = offering.getSection();
+        if (offeringSection != null && (semesterEnrollment.getSection() == null
+                || !semesterEnrollment.getSection().getId().equals(offeringSection.getId()))) {
+            throw AcademicMasterErrors.conflict("This course offering is for section " + offeringSection.getCode()
+                    + ". Place the student in section " + offeringSection.getCode() + " first.");
         }
         if (courseEnrollments.findBySemesterEnrollmentIdAndCourseOfferingId(semesterEnrollment.getId(), offering.getId())
                 .isPresent()) {

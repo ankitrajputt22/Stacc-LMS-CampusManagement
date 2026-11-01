@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 import { CalendarSection } from '../admin/CalendarSection'
 import { EnrollmentsSection } from '../admin/EnrollmentsSection'
+import { FacultyAssignmentsSection } from '../admin/FacultyAssignmentsSection'
 import { OfferingRoster } from '../admin/OfferingRoster'
 import { OfferingsSection } from '../admin/OfferingsSection'
 import { SectionsSection } from '../admin/SectionsSection'
@@ -26,6 +27,7 @@ const SECTIONS = [
   { path: 'sections', label: 'Sections', Section: SectionsSection },
   { path: 'courses', label: 'Courses', Section: CoursesSection },
   { path: 'offerings', label: 'Course Offerings', Section: OfferingsSection },
+  { path: 'faculty-assignments', label: 'Faculty Assignments', Section: FacultyAssignmentsSection },
   { path: 'enrollments', label: 'Enrollments', Section: EnrollmentsSection },
   { path: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
 ] as const

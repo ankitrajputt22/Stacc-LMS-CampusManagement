@@ -20,6 +20,7 @@ import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.offering.CourseOfferingStatus;
+import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.common.error.ApiException;
 import jakarta.persistence.JoinColumn;
@@ -35,7 +36,7 @@ class CourseOfferingManagementServiceTest {
     private final CourseOfferingRepository offerings = mock(CourseOfferingRepository.class);
     private final CourseRepository courses = mock(CourseRepository.class);
     private final SemesterRepository semesters = mock(SemesterRepository.class);
-    private final CourseOfferingManagementService service = new CourseOfferingManagementService(offerings, courses, semesters);
+    private final CourseOfferingManagementService service = new CourseOfferingManagementService(offerings, courses, semesters, mock(SectionRepository.class), mock(OfferingFacultyLoader.class));
     private final EnrollmentFixtures college = new EnrollmentFixtures();
 
     @BeforeEach
@@ -54,29 +55,29 @@ class CourseOfferingManagementServiceTest {
 
     @Test
     void anOfferingJoinsAnExistingCourseAndSemesterLoadedOnTheServer() {
-        CourseOfferingResponse created = service.create(new CourseOfferingCreate(13L, 10L));
+        CourseOfferingResponse created = service.create(new CourseOfferingCreate(13L, 10L, null, null, null));
 
         assertEquals(new CourseOfferingResponse(40L, 13L, "CS302", "Course CS302", new BigDecimal("3.00"), 10L, 4, 4L,
-                "BTECH-CSE", 2L, "2026-27", "PLANNED"), created);
+                "BTECH-CSE", 2L, "2026-27", null, null, null, "DRAFT", "PLANNED", java.util.List.of()), created);
     }
 
     @Test
     void aMissingCourseOrSemesterIsRefusedAndNothingIsCreated() {
         assertRefused(HttpStatus.NOT_FOUND, CourseOfferingManagementService.COURSE_MISSING,
-                () -> service.create(new CourseOfferingCreate(99L, 10L)));
+                () -> service.create(new CourseOfferingCreate(99L, 10L, null, null, null)));
         assertRefused(HttpStatus.NOT_FOUND, CourseOfferingManagementService.SEMESTER_MISSING,
-                () -> service.create(new CourseOfferingCreate(13L, 99L)));
+                () -> service.create(new CourseOfferingCreate(13L, 99L, null, null, null)));
         verify(offerings, never()).saveAndFlush(any());
     }
 
     @Test
     void aCourseIsOfferedAtMostOncePerSemesterEvenWhenTwoRequestsRace() {
-        when(offerings.findByCourseIdAndSemesterId(13L, 10L)).thenReturn(Optional.of(college.offeringB));
-        assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.TAKEN, () -> service.create(new CourseOfferingCreate(13L, 10L)));
+        when(offerings.findByCourseIdAndSemesterIdAndSectionIsNull(13L, 10L)).thenReturn(Optional.of(college.offeringB));
+        assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.TAKEN, () -> service.create(new CourseOfferingCreate(13L, 10L, null, null, null)));
 
-        when(offerings.findByCourseIdAndSemesterId(13L, 10L)).thenReturn(Optional.empty());
+        when(offerings.findByCourseIdAndSemesterIdAndSectionIsNull(13L, 10L)).thenReturn(Optional.empty());
         when(offerings.saveAndFlush(any(CourseOffering.class))).thenThrow(new DataIntegrityViolationException("uk_course_offerings_course_semester"));
-        assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.TAKEN, () -> service.create(new CourseOfferingCreate(13L, 10L)));
+        assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.TAKEN, () -> service.create(new CourseOfferingCreate(13L, 10L, null, null, null)));
     }
 
     @Test
@@ -92,16 +93,16 @@ class CourseOfferingManagementServiceTest {
 
     @Test
     void onlyTheStatusChangesAndItMovesForwardOnly() {
-        assertEquals("ACTIVE", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null)).status());
-        assertEquals("ACTIVE", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, 12L, 9L)).status());
+        assertEquals("ACTIVE", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null, null, null, null)).status());
+        assertEquals("ACTIVE", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, 12L, 9L, null, null, null)).status());
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.BACK_TO_PLANNED,
-                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.PLANNED, null, null)));
-        assertEquals("CLOSED", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.CLOSED, null, null)).status());
+                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.PLANNED, null, null, null, null, null)));
+        assertEquals("CLOSED", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.CLOSED, null, null, null, null, null)).status());
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.REOPEN,
-                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null)));
-        assertEquals("CLOSED", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.CLOSED, null, null)).status());
+                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null, null, null, null)));
+        assertEquals("CLOSED", service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.CLOSED, null, null, null, null, null)).status());
         assertRefused(HttpStatus.NOT_FOUND, CourseOfferingManagementService.NOT_FOUND,
-                () -> service.update(99L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null)));
+                () -> service.update(99L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, null, null, null, null)));
     }
 
     @Test
@@ -110,9 +111,9 @@ class CourseOfferingManagementServiceTest {
         college.courseEnrollment(college.semesterEnrollment(college.studentA, college.third, 88), college.offeringA, 140);
 
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.FIXED,
-                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, 13L, null)));
+                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, 13L, null, null, null, null)));
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.FIXED,
-                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, 10L)));
+                () -> service.update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, 10L, null, null, null)));
 
         assertEquals(CourseOfferingStatus.PLANNED, college.offeringA.getStatus());
         assertEquals(12L, college.offeringA.getCourse().getId());

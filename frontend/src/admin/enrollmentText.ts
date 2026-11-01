@@ -14,7 +14,9 @@ export function semesterContext(record: AdminCourseOffering | AdminSemesterEnrol
 
 /** "CS301 — Data Structures" for a select. */
 export function offeringLabel(offering: AdminCourseOffering): string {
-  return `${offering.courseCode} — ${offering.courseName}${offering.status === 'CLOSED' ? ' (closed)' : ''}`
+  return `${offering.courseCode} — ${offering.courseName}${offering.sectionCode ? ` (section ${offering.sectionCode})` : ''}${
+    offering.status === 'CLOSED' ? ' (closed)' : ''
+  }`
 }
 
 /** A refusal in safe words: the backend's own message for an expected refusal, never a raw error. */

@@ -183,8 +183,8 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(offeringManager(), get(OFFERINGS).param("semesterId", "9").param("academicSessionId", "2")))
                 .andExpect(status().isOk());
 
-        verify(offerings).create(new CourseOfferingCreate(12L, 9L));
-        verify(offerings).update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, 10L));
+        verify(offerings).create(new CourseOfferingCreate(12L, 9L, null, null, null));
+        verify(offerings).update(31L, new CourseOfferingUpdate(CourseOfferingStatus.ACTIVE, null, 10L, null, null, null));
         verify(offerings).list(9L, null, 2L, null);
     }
 
