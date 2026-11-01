@@ -53,6 +53,10 @@ public class TeachingAssignment {
     private CourseOffering courseOffering;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "assignment_role", nullable = false, length = 20)
+    private TeachingRole role = TeachingRole.PRIMARY;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TeachingAssignmentStatus status = TeachingAssignmentStatus.ACTIVE;
 
@@ -88,6 +92,14 @@ public class TeachingAssignment {
 
     public CourseOffering getCourseOffering() {
         return courseOffering;
+    }
+
+    public TeachingRole getRole() {
+        return role;
+    }
+
+    public void changeRole(TeachingRole role) {
+        this.role = Require.notNull(role, "role");
     }
 
     public TeachingAssignmentStatus getStatus() {

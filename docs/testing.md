@@ -102,7 +102,7 @@ What they check today:
 | `02-student-submission.spec.ts` | A student opens a course and an assignment and hands in an attempt, which is accepted on time. |
 | `03-faculty-grading.spec.ts` | A faculty member opens the course's submissions, grades the student's latest attempt, and the student then sees the feedback. |
 | `04-password-change.spec.ts` | A student changes their password: this device stays signed in, another device is signed out, the old password stops working, and the password is changed back. Only this journey uses `student2`. |
-| `05-erp-admin.spec.ts` | An admin filters and searches the course catalog, sees the demo sections with their students, and opens a course offering's roster from the offerings list. |
+| `05-erp-admin.spec.ts` | An admin filters and searches the course catalog, sees the demo sections with their students, opens a course offering's roster, and sees who teaches CS301 in the offerings list and on its Faculty Assignments page. |
 
 Find elements by role and accessible name, as a person would. Every phase that adds a user-facing flow adds or extends a journey.
 

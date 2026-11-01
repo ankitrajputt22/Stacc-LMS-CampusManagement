@@ -62,7 +62,15 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
   const context = semesterContext(semesterEnrollment)
 
   const taken = new Set((rows ?? []).map((row) => row.courseOfferingId))
-  const choices = offerings.status === 'loaded' ? offerings.data.filter((offering) => !taken.has(offering.courseOfferingId)) : null
+  // Whole-semester offerings, and those of the student's own section; another section's offerings are not theirs.
+  const choices =
+    offerings.status === 'loaded'
+      ? offerings.data.filter(
+          (offering) =>
+            !taken.has(offering.courseOfferingId) &&
+            (offering.sectionId === null || offering.sectionId === semesterEnrollment.sectionId),
+        )
+      : null
   const blocked =
     offerings.status === 'denied'
       ? ENROLLMENT_DENIED
@@ -73,7 +81,9 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
           : offerings.status === 'loaded' && offerings.data.length === 0
             ? 'No course offerings in this semester yet. Add one under Course Offerings.'
             : choices.length === 0
-              ? 'Every course offering of this semester is already added.'
+              ? semesterEnrollment.sectionId === null
+              ? 'Every course offering of this semester open to the student is added. Place the student in a section to see that section’s offerings.'
+              : 'Every course offering of this semester open to the student is already added.'
               : null
 
   function changed(message: string) {

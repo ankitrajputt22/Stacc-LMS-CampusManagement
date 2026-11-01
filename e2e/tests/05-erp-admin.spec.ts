@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
-test('an admin filters the course catalog, sees the sections, and opens an offering roster', async ({ page }) => {
+test('an admin filters the course catalog, sees the sections, opens a roster, and sees who teaches an offering', async ({ page }) => {
   await signIn(page, 'erp', 'admin1')
 
   await page.goto('/admin/academic/courses')
@@ -29,9 +29,19 @@ test('an admin filters the course catalog, sees the sections, and opens an offer
   await tabs.getByRole('link', { name: 'Course Offerings' }).click()
   const offerings = page.getByRole('table', { name: 'Course offerings' })
   const row = offerings.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /CS301/ }) })
-  await row.getByRole('link', { name: /View roster/ }).click()
+  await row.getByRole('link', { name: /Roster/ }).click()
 
   await expect(page.getByRole('heading', { level: 2, name: /CS301/ })).toBeVisible()
   await expect(page.getByRole('table', { name: /Enrolled students/ }).getByRole('rowheader', { name: 'student1' })).toBeVisible()
   await expect(tabs.getByRole('link', { name: 'Course Offerings' })).toHaveAttribute('aria-current', 'page')
+
+  // Who teaches CS301: the demo primary faculty member, by name, with their role.
+  await page.goto('/admin/academic/offerings')
+  const cs301 = page.getByRole('table', { name: 'Course offerings' }).getByRole('row')
+    .filter({ has: page.getByRole('rowheader', { name: /CS301/ }) })
+  await expect(cs301).toContainText('Meera Iyer (Primary)')
+  await cs301.getByRole('link', { name: /Faculty/ }).click()
+  const teaching = page.getByRole('table', { name: 'Faculty assignments of this offering' })
+  await expect(teaching.getByRole('rowheader', { name: /Meera Iyer/ })).toBeVisible()
+  await expect(teaching).toContainText('Primary')
 })

@@ -17,7 +17,7 @@ Department ------< Program ------< Semester >------ AcademicSession
 
 ## Masters and offerings
 
-The masters are reusable definitions. A `CourseOffering`, one course taught in one semester, is semester-specific delivery data with its own section below. A course stays a permanent catalog entry: it has an owning department and no semester, session, teacher, or LMS course. Student and faculty profiles, teaching assignments, LMS courses, and accounts are not managed here.
+The masters are reusable definitions. A `CourseOffering`, one course taught in one semester, is semester-specific delivery data with its own section below. A course stays a permanent catalog entry: it has an owning department and no semester, session, teacher, or LMS course. Student and faculty profiles, LMS courses, and accounts are not managed here; teaching assignments are, under Faculty Assignments.
 
 ## What can change
 
@@ -79,13 +79,27 @@ A section (`academic.section.Section`) is a group of students within one semeste
 
 ## Course offerings
 
-A course offering joins one course and one semester, at most once per pair (`uk_course_offerings_course_semester`). It has only those two and a status; no section, room, capacity, schedule, teacher, or LMS state.
+A course offering joins one course and one semester, for the whole semester or for one of its sections. A course is offered at most once per semester and section: the unique key `uk_course_offerings_course_semester_section` is on the course, the semester, and a generated `section_key` (the section's ID, or 0 for the whole semester). It has no room, schedule, or LMS state.
 
-- `POST /api/v1/admin/academic/offerings` takes `courseId` and `semesterId`, loads both on the server, and answers 201 with a `PLANNED` offering. A course or semester that does not exist answers 404, a pair that already exists 409 ("This course offering already exists."), also when two requests race.
+- `POST /api/v1/admin/academic/offerings` takes `courseId`, `semesterId`, an optional `sectionId` (an active section of that semester), an optional `capacity` (1 to 1000), and an optional `registrationStatus` (`DRAFT`, `OPEN`, or `CLOSED`; `DRAFT` when left out). It answers 201 with a `PLANNED` offering. A course or semester that does not exist answers 404; an inactive course, a closed semester, a section of another semester, an inactive section, or an offering that already exists answers 409, also when two requests race.
+- A course is offered either to the whole semester or per section, never both in one semester (409 with a plain message), so no student could take it twice.
 - The course and semester do not have to share a program or department: the model has no such rule, so none is invented.
-- `PUT /api/v1/admin/academic/offerings/{courseOfferingId}` changes the status only: `PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`, never back. The course and semester are structural identity: enrollments, teaching assignments, attendance, results, and an LMS course hang off the offering, and the columns are mapped `updatable = false`. A request may send `courseId` and `semesterId`, but a value different from the stored one answers 409 ("The course and semester of an offering cannot be changed after it is created. Create a new offering instead."), whether or not dependent records exist yet.
-- `GET /api/v1/admin/academic/offerings` lists offerings with course code, name, and credits, semester number, program code, and session code, by session start date (latest first), program code, semester number, course code, and ID. The optional filters `semesterId`, `courseId`, `academicSessionId`, and `programId` narrow it.
+- `PUT /api/v1/admin/academic/offerings/{courseOfferingId}` changes the status (`PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`, never back), the `capacity` (null means no limit, so the page always sends it), and the `registrationStatus` (left out, it stays). The course, semester, and section are structural identity: enrollments, teaching assignments, attendance, results, and an LMS course hang off the offering. A `courseId`, `semesterId`, or `sectionId` different from the stored one answers 409.
+- The capacity and registration status are recorded now and used by course registration in v0.4; nothing enforces them yet.
+- `GET /api/v1/admin/academic/offerings` lists offerings with course code, name, and credits, semester number, program code, session code, section, capacity, registration status, and `faculty`: every teaching assignment with login ID, name from the person profile, department, role, and status. `GET` of one offering carries the same. Other answers that include an offering leave `faculty` null. The list is ordered by session start date (latest first), program code, semester number, course code, section code, and ID; the optional filters `semesterId`, `courseId`, `academicSessionId`, and `programId` narrow it.
+- A course enrollment into a section's offering needs the student placed in that section (409 "This course offering is for section A. Place the student in section A first."), and a student enrolled in their section's offerings cannot move to another section, or out of it, until those course enrollments have ended.
 - There is no delete.
+
+## Faculty assignments
+
+Who teaches an offering is its `TeachingAssignment`s (`academic.teaching`), one row per faculty profile and offering. Each has a role, `PRIMARY` or `CO_FACULTY`, and a status. An active assignment is what gives the faculty member attendance, results, and LMS access for the offering through `FacultyTeachingAccessService`, so every change takes effect at once.
+
+- `GET /api/v1/admin/academic/offerings/{courseOfferingId}/faculty` lists an offering's assignments, active first. `GET /api/v1/admin/academic/faculty?q=` finds faculty profiles whose login ID contains the text, at most 50, with only the profile ID, login ID, name, department code, and profile status.
+- `POST /api/v1/admin/academic/faculty-assignments` takes `courseOfferingId`, `facultyProfileId`, and `role`. The faculty profile and its account must be active and the account must hold `FACULTY`; the offering must not be closed. An active assignment of the same pair answers 409; an inactive one is made active again with the new role, so its history stays in one row.
+- `PUT /api/v1/admin/academic/faculty-assignments/{teachingAssignmentId}` takes `role` and `status`. Making it inactive removes the access and keeps the row; making it active again checks the faculty member again. Nothing is deleted.
+- An offering has at most one active `PRIMARY` assignment (409 otherwise). Every change locks the offering row first (`findByIdForUpdate`), so two admins at once never leave two primaries (`PrimaryFacultyMySqlIT`). `V69` made the earliest active assignment of each existing offering primary and the others co-faculty.
+- The routes need `ADMIN` with `FACULTY_ASSIGNMENT_VIEW` and, to change, `FACULTY_ASSIGNMENT_MANAGE` (`V69`).
+- The admin page is the Faculty Assignments tab (`/admin/academic/faculty-assignments`, with `?offering=` for one offering, which the offerings list links to): choose a session, semester, and offering, see who teaches it, change roles, remove or assign again after a confirmation, and assign a faculty member found by employee ID. The offerings list shows the active faculty, or Unassigned.
 
 ## Student lookup
 
@@ -138,7 +152,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 

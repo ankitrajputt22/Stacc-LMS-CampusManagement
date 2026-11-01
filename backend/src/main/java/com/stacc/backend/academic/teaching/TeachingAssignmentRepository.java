@@ -1,5 +1,6 @@
 package com.stacc.backend.academic.teaching;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,34 @@ public interface TeachingAssignmentRepository extends JpaRepository<TeachingAssi
 
     Optional<TeachingAssignment> findByFacultyProfileIdAndCourseOfferingId(
             Long facultyProfileId, Long courseOfferingId);
+
+    /** Every assignment of these offerings, active or not, with the faculty profile and account, for admin lists. */
+    @Query("""
+            select assignment
+            from TeachingAssignment assignment
+            join fetch assignment.facultyProfile facultyProfile
+            join fetch facultyProfile.userAccount account
+            join fetch facultyProfile.department
+            where assignment.courseOffering.id in :courseOfferingIds
+            order by assignment.status asc, assignment.role asc, account.loginId asc
+            """)
+    List<TeachingAssignment> findAllWithFacultyByCourseOfferingIdIn(
+            @Param("courseOfferingIds") Collection<Long> courseOfferingIds);
+
+    @Query("""
+            select assignment
+            from TeachingAssignment assignment
+            join fetch assignment.facultyProfile facultyProfile
+            join fetch facultyProfile.userAccount
+            join fetch facultyProfile.department
+            join fetch assignment.courseOffering
+            where assignment.id = :teachingAssignmentId
+            """)
+    Optional<TeachingAssignment> findWithFacultyById(@Param("teachingAssignmentId") Long teachingAssignmentId);
+
+    /** Whether the offering has another active assignment with this role, such as a second primary faculty member. */
+    boolean existsByCourseOfferingIdAndRoleAndStatusAndIdNot(Long courseOfferingId, TeachingRole role,
+            TeachingAssignmentStatus status, Long teachingAssignmentId);
 
     /**
      * The teaching assignments that the faculty member behind one account has for one course

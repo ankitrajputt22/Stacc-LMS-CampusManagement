@@ -23,6 +23,10 @@ final class AdminAcademicAccess {
     static final String CALENDAR_MANAGE =
             "hasRole('ADMIN') and hasAuthority('ACADEMIC_CALENDAR_VIEW') and hasAuthority('ACADEMIC_CALENDAR_MANAGE')";
 
+    static final String FACULTY_ASSIGNMENT_VIEW = "hasRole('ADMIN') and hasAuthority('FACULTY_ASSIGNMENT_VIEW')";
+    static final String FACULTY_ASSIGNMENT_MANAGE =
+            "hasRole('ADMIN') and hasAuthority('FACULTY_ASSIGNMENT_VIEW') and hasAuthority('FACULTY_ASSIGNMENT_MANAGE')";
+
     private AdminAcademicAccess() {
     }
 }

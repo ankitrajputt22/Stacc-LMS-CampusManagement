@@ -118,4 +118,20 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
         Long getTotal();
     }
+
+    /**
+     * Whether a semester enrollment is still enrolled in a course offering of some section other than this one (any
+     * section when it is null), which would no longer match the student's section after a move.
+     */
+    @Query("""
+            select count(enrollment) > 0
+            from CourseEnrollment enrollment
+            join enrollment.courseOffering offering
+            where enrollment.semesterEnrollment.id = :semesterEnrollmentId
+              and enrollment.status = com.stacc.backend.academic.enrollment.CourseEnrollmentStatus.ENROLLED
+              and offering.section is not null
+              and (:sectionId is null or offering.section.id <> :sectionId)
+            """)
+    boolean existsEnrolledInOtherSectionOffering(@Param("semesterEnrollmentId") Long semesterEnrollmentId,
+            @Param("sectionId") Long sectionId);
 }

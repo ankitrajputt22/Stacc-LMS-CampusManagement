@@ -5,13 +5,30 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CourseOfferingRepository extends JpaRepository<CourseOffering, Long> {
 
-    Optional<CourseOffering> findByCourseIdAndSemesterId(Long courseId, Long semesterId);
+    /**
+     * One offering, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Changing who teaches it takes this
+     * lock, so the offering never ends up with two active primary faculty members.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select offering from CourseOffering offering where offering.id = :courseOfferingId")
+    Optional<CourseOffering> findByIdForUpdate(@Param("courseOfferingId") Long courseOfferingId);
+
+    /** The offering of a course for the whole semester, without a section, if there is one. */
+    Optional<CourseOffering> findByCourseIdAndSemesterIdAndSectionIsNull(Long courseId, Long semesterId);
+
+    /** The offering of a course for one section of a semester, if there is one. */
+    Optional<CourseOffering> findByCourseIdAndSemesterIdAndSectionId(Long courseId, Long semesterId, Long sectionId);
+
+    /** Whether a course has any offering for a section of this semester. */
+    boolean existsByCourseIdAndSemesterIdAndSectionIsNotNull(Long courseId, Long semesterId);
 
     /**
      * Course offerings with their course, semester, program, and academic session, in one query, narrowed by any of
@@ -26,12 +43,13 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             join fetch offering.semester semester
             join fetch semester.program program
             join fetch semester.academicSession academicSession
+            left join fetch offering.section section
             where (:semesterId is null or semester.id = :semesterId)
               and (:courseId is null or course.id = :courseId)
               and (:academicSessionId is null or academicSession.id = :academicSessionId)
               and (:programId is null or program.id = :programId)
             order by academicSession.startDate desc, program.code asc, semester.semesterNumber asc, course.code asc,
-                     offering.id asc
+                     section.code asc, offering.id asc
             """)
     List<CourseOffering> findAllWithContext(
             @Param("semesterId") Long semesterId,
@@ -47,6 +65,7 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             join fetch offering.semester semester
             join fetch semester.program
             join fetch semester.academicSession
+            left join fetch offering.section
             where offering.id = :courseOfferingId
             """)
     Optional<CourseOffering> findWithContextById(@Param("courseOfferingId") Long courseOfferingId);
