@@ -15,7 +15,7 @@ A newer push to the same branch cancels a check that is still running for an old
 | Check | What it runs | Needs |
 | --- | --- | --- |
 | Backend tests | `mvn -B -ntp verify` in `backend/`: compiles, runs the database-free tests, packages the application, and runs the MySQL tests | Java 21 (Temurin), and Docker for the throwaway MySQL container of the `*MySqlIT` tests (see `testing.md`). |
-| Frontend lint and build | `npm ci`, `npm run lint`, and `npm run build` (type check and production build) in `frontend/` | Node 24. A placeholder public `VITE_API_BASE_URL`, which is not a secret. |
+| Frontend lint, tests, and build | `npm ci`, `npm run lint`, `npm test` (Vitest unit tests), and `npm run build` (type check and production build) in `frontend/` | Node 24. A placeholder public `VITE_API_BASE_URL`, which is not a secret. |
 | AI service lint and tests | `ruff check .` and `pytest -q` in `ai-service/` | Python 3.12. No model, GPU, or network: the tests use the fake providers. |
 
 No check uses a secret, and the workflow only reads the repository. When backend tests fail, their reports (unit and MySQL) are kept for seven days as the `backend-test-reports` download on the run's page.
@@ -29,12 +29,14 @@ cd backend && mvn -B verify
 The MySQL tests need Docker running; without it they are skipped. `mvn test` runs only the database-free tests.
 
 ```bash
-cd frontend && npm ci && npm run lint && npm run build
+cd frontend && npm ci && npm run lint && npm test && npm run build
 ```
 
 ```bash
 cd ai-service && python -m pip install -r requirements-dev.txt && python -m ruff check . && python -m pytest -q
 ```
+
+When backend tests fail, a **List failed tests** step names each failed test and its message on the run's summary page.
 
 The frontend build needs `VITE_API_BASE_URL` set, for example from `frontend/.env` (see `frontend-api.md`).
 
@@ -42,4 +44,4 @@ The frontend build needs `VITE_API_BASE_URL` set, for example from `frontend/.en
 
 - A phase is merged into `development` only after all three checks pass on its branch.
 - A failing check is fixed, never skipped or switched off to get a merge through.
-- New kinds of checks (frontend unit tests, end-to-end tests) are added to this workflow in their own phases; see `roadmap.md` and `testing.md`.
+- New kinds of checks (end-to-end tests next) are added to this workflow in their own phases; see `roadmap.md` and `testing.md`.

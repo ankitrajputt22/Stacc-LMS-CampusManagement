@@ -18,6 +18,16 @@ Faculty take attendance for the course offerings they teach at `/attendance` and
 
 Reusable `LoadingState`, `EmptyState`, and `ErrorState` components live in `src/components/states`. See `../docs/frontend-layout.md` for details.
 
+## Tests
+
+Unit tests use Vitest and React Testing Library and sit next to the code as `*.test.ts` or `*.test.tsx`:
+
+```bash
+npm test
+```
+
+`npm run test:watch` reruns them while you edit. See `../docs/testing.md`.
+
 ## API configuration
 
 The frontend reaches the backend through the shared Axios client in `src/api/apiClient.ts`. The backend URL comes from `VITE_API_BASE_URL`. Copy `.env.example` to `.env` to set it for local development:
