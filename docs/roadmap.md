@@ -86,10 +86,10 @@ Goal: make every later change safe to make. No new features.
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.3.1 | Batches and sections | Admission batches and sections (student groups within a program and semester), with students placed in sections. |
-| ★ 0.3.2 | Curriculum | Which courses a program offers in which semester, core or elective, with credits. |
-| ★ 0.3.3 | Offering sections | Course offerings split into sections with capacity, and teaching assignments per section. |
-| 0.3.4 | Academic record | A student's semester-by-semester standing from official enrollment and published results. |
+| ★ 0.3.1 | Catalog details | Department descriptions, program degree types, course short names, descriptions, and types, one current academic session, and inactive or closed parents taking no new children; Activate and Deactivate in the admin lists. |
+| ★ 0.3.2 | Sections | Student sections (A, B, …) of each semester with capacity, and each student placed in a section through their semester enrollment. |
+| ★ 0.3.3 | Section offerings and faculty assignments | Course offerings per section with capacity and a registration status (no registration yet), and admins assigning primary and co-faculty to offerings with history kept. |
+| ★ 0.3.4 | Academic profiles | Roll numbers, the admin's student and faculty academic pages, and the student's own academic profile and semester-by-semester record. |
 | ★ 0.3.5 | ERP redesign | Every academic admin page rebuilt with `DataTable`, filters, paging, and the shared forms; the attendance, results, and calendar pages moved onto the shared components and the query cache. Done first, at the project owner's request. |
 | ★ 0.3.6 | Navigation groups | The rail moves to Academics, Campus, Services, and Career trays, with Teaching and Manage trays for staff (decision 9). |
 
@@ -98,7 +98,7 @@ Goal: make every later change safe to make. No new features.
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 0.4.1 | Registration windows | Open and close dates per session, program, and semester, with add/drop deadlines. |
-| ★ 0.4.2 | Registration rules | Prerequisites, credit limits, and elective groups, checked on the server with a clear reason when something is not allowed. |
+| ★ 0.4.2 | Registration rules | The curriculum (which courses a program offers in which semester, core or elective), prerequisites, credit limits, and elective groups, checked on the server with a clear reason when something is not allowed. |
 | ★ 0.4.3 | Self-registration | Students register for sections themselves; capacity is held under a row lock so the last seat is never taken twice. |
 | 0.4.4 | Add, drop, withdraw | Changes within the deadlines, with history kept. |
 | ★ 0.4.5 | Registration pages | The student registration flow and an admin registration monitor. |
@@ -286,5 +286,5 @@ Goal: make every later change safe to make. No new features.
 | --- | --- |
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
-| v0.3 ERP core | In progress: 0.3.5 done (moved ahead at the project owner's request) |
+| v0.3 ERP core | In progress: 0.3.1 and 0.3.5 done |
 | v0.4 – v1.0 | Not started |

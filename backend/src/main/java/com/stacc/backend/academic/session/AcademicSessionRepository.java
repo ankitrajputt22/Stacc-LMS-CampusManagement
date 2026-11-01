@@ -5,13 +5,22 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface AcademicSessionRepository extends JpaRepository<AcademicSession, Long> {
 
     Optional<AcademicSession> findByCode(String code);
+
+    /** The current session, if one is marked, locked so that changing it is done by one request at a time. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<AcademicSession> findFirstByCurrentTrue();
+
+    /** The current session, if one is marked, for reading. */
+    Optional<AcademicSession> findByCurrentTrue();
 
     /** Every academic session, the latest start first. */
     List<AcademicSession> findAllByOrderByStartDateDescIdDesc();

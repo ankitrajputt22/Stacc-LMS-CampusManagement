@@ -6,11 +6,13 @@ import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferin
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferingUpdate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseOfferingResponse;
 import com.stacc.backend.academic.course.Course;
+import com.stacc.backend.academic.course.CourseStatus;
 import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.offering.CourseOfferingStatus;
 import com.stacc.backend.academic.semester.Semester;
+import com.stacc.backend.academic.semester.SemesterStatus;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CourseOfferingManagementService {
 
+    static final String COURSE_INACTIVE = "This course is inactive, so it cannot be offered.";
+    static final String SEMESTER_CLOSED = "This semester is closed, so it cannot take new course offerings.";
     static final String NOT_FOUND = "Course offering not found.";
     static final String COURSE_MISSING = "The selected course does not exist.";
     static final String SEMESTER_MISSING = "The selected semester does not exist.";
@@ -64,6 +68,12 @@ public class CourseOfferingManagementService {
                 .orElseThrow(() -> AcademicMasterErrors.notFound(COURSE_MISSING));
         Semester semester = semesters.findWithContextById(request.semesterId())
                 .orElseThrow(() -> AcademicMasterErrors.notFound(SEMESTER_MISSING));
+        if (course.getStatus() != CourseStatus.ACTIVE) {
+            throw AcademicMasterErrors.conflict(COURSE_INACTIVE);
+        }
+        if (semester.getStatus() == SemesterStatus.CLOSED) {
+            throw AcademicMasterErrors.conflict(SEMESTER_CLOSED);
+        }
         if (offerings.findByCourseIdAndSemesterId(course.getId(), semester.getId()).isPresent()) {
             throw AcademicMasterErrors.conflict(TAKEN);
         }

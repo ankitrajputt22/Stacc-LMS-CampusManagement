@@ -23,11 +23,12 @@ public final class AcademicMasterResponses {
             @Schema(example = "3") Long id,
             @Schema(example = "CSE") String code,
             @Schema(example = "Computer Science and Engineering") String name,
+            @Schema(description = "Plain text, or null when none was entered.") String description,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
 
         static DepartmentResponse of(Department department) {
             return new DepartmentResponse(department.getId(), department.getCode(), department.getName(),
-                    department.getStatus().name());
+                    department.getDescription(), department.getStatus().name());
         }
     }
 
@@ -38,13 +39,16 @@ public final class AcademicMasterResponses {
             @Schema(example = "Computer Science and Engineering") String departmentName,
             @Schema(example = "BTECH-CSE") String code,
             @Schema(example = "Bachelor of Technology in CSE") String name,
+            @Schema(allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
+                    example = "UNDERGRADUATE") String degreeType,
             @Schema(example = "8") int durationSemesters,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
 
         static ProgramResponse of(Program program) {
             Department department = program.getDepartment();
             return new ProgramResponse(program.getId(), department.getId(), department.getCode(), department.getName(),
-                    program.getCode(), program.getName(), program.getDurationSemesters(), program.getStatus().name());
+                    program.getCode(), program.getName(), program.getDegreeType().name(), program.getDurationSemesters(),
+                    program.getStatus().name());
         }
     }
 
@@ -53,11 +57,12 @@ public final class AcademicMasterResponses {
             @Schema(example = "2026-27") String code,
             @Schema(example = "2026-07-01") LocalDate startDate,
             @Schema(example = "2027-06-30") LocalDate endDate,
-            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status) {
+            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status,
+            @Schema(description = "Whether this is the college's current session. At most one is.") boolean current) {
 
         static AcademicSessionResponse of(AcademicSession session) {
             return new AcademicSessionResponse(session.getId(), session.getCode(), session.getStartDate(),
-                    session.getEndDate(), session.getStatus().name());
+                    session.getEndDate(), session.getStatus().name(), session.isCurrent());
         }
     }
 
@@ -88,13 +93,17 @@ public final class AcademicMasterResponses {
             @Schema(example = "Computer Science and Engineering") String departmentName,
             @Schema(example = "CS301") String code,
             @Schema(example = "Data Structures") String name,
+            @Schema(description = "A short form such as DSA, or null.", example = "DSA") String shortName,
+            @Schema(description = "Plain text, or null when none was entered.") String description,
             @Schema(description = "An exact decimal with two places.", example = "4.00") BigDecimal credits,
+            @Schema(allowableValues = {"CORE", "ELECTIVE", "LAB", "PROJECT", "AUDIT"}, example = "CORE") String courseType,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
 
         static CourseResponse of(Course course) {
             Department department = course.getDepartment();
             return new CourseResponse(course.getId(), department.getId(), department.getCode(), department.getName(),
-                    course.getCode(), course.getName(), course.getCredits(), course.getStatus().name());
+                    course.getCode(), course.getName(), course.getShortName(), course.getDescription(), course.getCredits(),
+                    course.getCourseType().name(), course.getStatus().name());
         }
     }
 }

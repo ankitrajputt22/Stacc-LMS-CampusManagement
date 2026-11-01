@@ -118,9 +118,9 @@ class AdminAcademicControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void anAdminWithTheViewPermissionReadsEveryMaster() throws Exception {
-        when(departments.list()).thenReturn(List.of(new DepartmentResponse(3L, "CSE", "Computer Science and Engineering", "ACTIVE")));
+        when(departments.list()).thenReturn(List.of(new DepartmentResponse(3L, "CSE", "Computer Science and Engineering", null, "ACTIVE")));
         when(courses.get(12L)).thenReturn(new CourseResponse(12L, 3L, "CSE", "Computer Science and Engineering", "CS301",
-                "Data Structures", new BigDecimal("4.00"), "ACTIVE"));
+                "Data Structures", null, null, new BigDecimal("4.00"), "CORE", "ACTIVE"));
 
         mockMvc.perform(as(viewer(), get(ROOT + "departments")))
                 .andExpect(status().isOk())
@@ -197,10 +197,10 @@ class AdminAcademicControllerTest extends DatabaseFreeApiTest {
         for (String master : MASTERS) {
             mockMvc.perform(as(manager(), json(post(ROOT + master), createBody(master)))).andExpect(status().isCreated());
         }
-        verify(programs).create(new ProgramCreate(3L, "BTECH-CSE", "B.Tech. CSE", 8));
+        verify(programs).create(new ProgramCreate(3L, "BTECH-CSE", "B.Tech. CSE", 8, null));
         verify(sessions).create(new AcademicSessionCreate("2026-27", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30)));
         verify(semesters).create(new SemesterCreate(4L, 2L, 3));
-        verify(courses).create(new CourseCreate(3L, "CS301", "Data Structures", new BigDecimal("4")));
+        verify(courses).create(new CourseCreate(3L, "CS301", "Data Structures", new BigDecimal("4"), null, null, null));
     }
 
     @Test
@@ -209,7 +209,7 @@ class AdminAcademicControllerTest extends DatabaseFreeApiTest {
                         "{\"id\":9,\"code\":\"HACK\",\"name\":\"Computing\",\"status\":\"INACTIVE\"}")))
                 .andExpect(status().isOk());
 
-        verify(departments).update(5L, new DepartmentUpdate("Computing", DepartmentStatus.INACTIVE));
+        verify(departments).update(5L, new DepartmentUpdate("Computing", DepartmentStatus.INACTIVE, null));
     }
 
     @Test

@@ -1,12 +1,16 @@
 // The academic masters as the admin API sends them. Codes, and what a record belongs to, never change after creation.
 
 export type ActiveStatus = 'ACTIVE' | 'INACTIVE'
+export type DegreeType = 'UNDERGRADUATE' | 'POSTGRADUATE' | 'DIPLOMA' | 'DOCTORATE' | 'CERTIFICATE'
+export type CourseType = 'CORE' | 'ELECTIVE' | 'LAB' | 'PROJECT' | 'AUDIT'
 export type LifecycleStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED'
 
 export type AdminDepartment = {
   id: number
   code: string
   name: string
+  /** Plain text, or null when none was entered. */
+  description: string | null
   status: ActiveStatus
 }
 
@@ -17,6 +21,7 @@ export type AdminProgram = {
   departmentName: string
   code: string
   name: string
+  degreeType: DegreeType
   durationSemesters: number
   status: ActiveStatus
 }
@@ -28,6 +33,8 @@ export type AdminAcademicSession = {
   startDate: string
   endDate: string
   status: LifecycleStatus
+  /** The college's current session. At most one is. */
+  current: boolean
 }
 
 export type AdminSemester = {
@@ -49,21 +56,25 @@ export type AdminCourse = {
   departmentName: string
   code: string
   name: string
+  shortName: string | null
+  description: string | null
   /** An exact decimal with two places on the backend, such as 4.00 or 1.50. */
   credits: number
+  courseType: CourseType
   status: ActiveStatus
 }
 
-export type DepartmentCreate = { code: string; name: string }
-export type DepartmentUpdate = { name: string; status: ActiveStatus }
-export type ProgramCreate = { departmentId: number; code: string; name: string; durationSemesters: number }
-export type ProgramUpdate = { name: string; durationSemesters: number; status: ActiveStatus }
+export type DepartmentCreate = { code: string; name: string; description: string | null }
+export type DepartmentUpdate = { name: string; status: ActiveStatus; description: string | null }
+export type ProgramCreate = { departmentId: number; code: string; name: string; durationSemesters: number; degreeType: DegreeType }
+export type ProgramUpdate = { name: string; durationSemesters: number; status: ActiveStatus; degreeType: DegreeType }
 export type AcademicSessionCreate = { code: string; startDate: string; endDate: string }
 export type AcademicSessionUpdate = { startDate: string; endDate: string; status: LifecycleStatus }
 export type SemesterCreate = { programId: number; academicSessionId: number; semesterNumber: number }
 export type SemesterUpdate = { status: LifecycleStatus }
-export type CourseCreate = { departmentId: number; code: string; name: string; credits: number }
-export type CourseUpdate = { name: string; credits: number; status: ActiveStatus }
+type CourseDetails = { shortName: string | null; description: string | null; courseType: CourseType }
+export type CourseCreate = { departmentId: number; code: string; name: string; credits: number } & CourseDetails
+export type CourseUpdate = { name: string; credits: number; status: ActiveStatus } & CourseDetails
 
 // Course offerings and official enrollments as the admin API sends them. A course offering is one course taught in
 // one semester; its course and semester never change. Enrollments start ENROLLED and may end once, as COMPLETED or

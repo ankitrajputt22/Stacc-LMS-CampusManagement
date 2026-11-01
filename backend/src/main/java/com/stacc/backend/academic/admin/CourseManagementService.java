@@ -9,8 +9,10 @@ import com.stacc.backend.academic.admin.AcademicMasterResponses.CourseResponse;
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.course.CourseStatus;
+import com.stacc.backend.academic.course.CourseType;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
+import com.stacc.backend.academic.department.DepartmentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class CourseManagementService {
     static final String NOT_FOUND = "Course not found.";
     static final String DEPARTMENT_MISSING = "The selected department does not exist.";
     static final String CODE_TAKEN = "A course with this code already exists.";
+    static final String DEPARTMENT_INACTIVE = "This department is inactive, so it cannot take new courses.";
 
     private final CourseRepository courses;
     private final DepartmentRepository departments;
@@ -48,18 +51,25 @@ public class CourseManagementService {
     public CourseResponse create(CourseCreate request) {
         Department department = departments.findById(request.departmentId())
                 .orElseThrow(() -> AcademicMasterErrors.badRequest(DEPARTMENT_MISSING));
+        if (department.getStatus() != DepartmentStatus.ACTIVE) {
+            throw AcademicMasterErrors.conflict(DEPARTMENT_INACTIVE);
+        }
         String code = request.code().strip().toUpperCase(Locale.ROOT);
         if (courses.existsByCode(code)) {
             throw AcademicMasterErrors.conflict(CODE_TAKEN);
         }
-        return CourseResponse.of(AcademicMasterErrors.savedOrConflict(
-                () -> courses.saveAndFlush(new Course(department, code, request.name().strip(), request.credits())), CODE_TAKEN));
+        Course course = new Course(department, code, request.name().strip(), request.credits());
+        course.describe(request.shortName(), request.description(),
+                request.courseType() == null ? CourseType.CORE : request.courseType());
+        return CourseResponse.of(AcademicMasterErrors.savedOrConflict(() -> courses.saveAndFlush(course), CODE_TAKEN));
     }
 
     public CourseResponse update(Long courseId, CourseUpdate request) {
         Course course = find(courseId);
         course.rename(request.name().strip());
         course.changeCredits(request.credits());
+        course.describe(request.shortName(), request.description(),
+                request.courseType() == null ? course.getCourseType() : request.courseType());
         if (request.status() == CourseStatus.ACTIVE) {
             course.activate();
         } else {

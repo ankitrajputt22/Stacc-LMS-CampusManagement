@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { Alert, Button, Card, SelectField, TextField } from '../ui'
+import { Alert, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
 
 export type FieldOption = { value: string; label: string }
 
@@ -8,7 +8,9 @@ export type FieldOption = { value: string; label: string }
 export type FieldSpec = {
   name: string
   label: string
-  kind: 'text' | 'integer' | 'decimal' | 'date' | 'select'
+  kind: 'text' | 'textarea' | 'integer' | 'decimal' | 'date' | 'select'
+  /** May be left empty; the backend stores nothing for it. */
+  optional?: boolean
   hint?: string
   maxLength?: number
   /** Smallest allowed value, inclusive. */
@@ -46,6 +48,9 @@ function checked(fields: FieldSpec[], values: Values): Partial<Record<string, st
   const errors: Partial<Record<string, string>> = {}
   for (const field of fields) {
     const value = values[field.name]?.trim() ?? ''
+    if (value === '' && field.optional) {
+      continue
+    }
     if (value === '') {
       errors[field.name] = field.kind === 'select' ? `Choose ${field.label.toLowerCase()}.` : `Enter ${field.label.toLowerCase()}.`
       continue
@@ -165,11 +170,23 @@ export function MasterForm({
               hint: field.hint,
               error: errors[field.name],
               value: values[field.name] ?? '',
-              className: field.kind === 'text' && (field.maxLength ?? 0) > 50 ? 'sm:col-span-2' : undefined,
+              className:
+                field.kind === 'textarea' || (field.kind === 'text' && (field.maxLength ?? 0) > 50) ? 'sm:col-span-2' : undefined,
             }
             function change(value: string) {
               setValues((current) => ({ ...current, [field.name]: value }))
               setErrors((current) => ({ ...current, [field.name]: undefined }))
+            }
+            if (field.kind === 'textarea') {
+              return (
+                <TextAreaField
+                  key={field.name}
+                  {...common}
+                  rows={3}
+                  maxLength={field.maxLength}
+                  onChange={(event) => change(event.target.value)}
+                />
+              )
             }
             return field.kind === 'select' ? (
               <SelectField key={field.name} {...common} onChange={(event) => change(event.target.value)}>

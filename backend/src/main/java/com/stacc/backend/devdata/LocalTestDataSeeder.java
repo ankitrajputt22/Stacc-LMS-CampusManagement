@@ -437,7 +437,10 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 () -> repositories.programs.save(
                         new Program(cse, "BTECH-CSE", "Bachelor of Technology in Computer Science and Engineering", 8)));
         AcademicSession previous = session(startYear - 1, AcademicSession::close);
-        AcademicSession current = session(startYear, AcademicSession::markActive);
+        AcademicSession current = session(startYear, session -> {
+            session.markActive();
+            session.makeCurrent();
+        });
         Semester previousSecond = semester(btech, previous, 2, Semester::close);
         Semester third = semester(btech, current, 3, Semester::markActive);
         Semester fourth = semester(btech, current, 4, semester -> { });

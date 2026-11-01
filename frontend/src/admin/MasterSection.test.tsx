@@ -13,6 +13,8 @@ const rows: Row[] = Array.from({ length: 25 }, (_, index) => ({
   status: index % 5 === 0 ? 'INACTIVE' : 'ACTIVE',
 }))
 
+const deactivate = vi.fn<(id: number) => Promise<void>>()
+
 function renderSection(data: Row[] = rows, blockedReason: string | null = null) {
   const renderCreate = vi.fn(() => <p>New department form</p>)
   render(
@@ -30,6 +32,35 @@ function renderSection(data: Row[] = rows, blockedReason: string | null = null) 
         rowName={(row) => `department ${row.code}`}
         searchText={(row) => row.code}
         rowStatus={(row) => row.status}
+        filters={[
+          {
+            label: 'Tens',
+            all: 'All tens',
+            options: [{ value: '0', label: '0x' }, { value: '1', label: '1x' }, { value: '2', label: '2x' }],
+            value: (row) => String(Math.floor(row.id / 10)),
+          },
+        ]}
+        rowActions={(row, actions) => (
+          <button
+            type="button"
+            onClick={() =>
+              actions.confirm(
+                {
+                  question: `Deactivate ${row.code}?`,
+                  detail: 'It keeps its history.',
+                  confirmLabel: 'Deactivate',
+                  run: async () => {
+                    await deactivate(row.id)
+                    return `${row.code} deactivated.`
+                  },
+                },
+                `status-${row.id}`,
+              )
+            }
+          >
+            Deactivate {row.code}
+          </button>
+        )}
         blockedReason={blockedReason}
         renderCreate={renderCreate}
         renderEdit={() => <p>Edit form</p>}
@@ -111,5 +142,30 @@ describe('MasterSection', () => {
 
     expect(screen.getByText('No departments yet.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add department' })).toBeInTheDocument()
+  })
+
+  it('narrows the list with an extra filter', async () => {
+    const user = userEvent.setup()
+    renderSection()
+
+    await user.selectOptions(screen.getByLabelText('Tens'), '2')
+
+    expect(shownCodes()).toEqual(['DEP20', 'DEP21', 'DEP22', 'DEP23', 'DEP24', 'DEP25'])
+  })
+
+  it('asks before a row action, runs it on confirmation, and announces the result', async () => {
+    const user = userEvent.setup()
+    deactivate.mockResolvedValue()
+    renderSection(rows.slice(0, 3))
+
+    await user.click(screen.getAllByRole('button', { name: 'Deactivate DEP02' })[0])
+    expect(screen.getByText('Deactivate DEP02?')).toBeInTheDocument()
+    expect(deactivate).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Deactivate' }))
+
+    expect(deactivate).toHaveBeenCalledWith(2)
+    expect(await screen.findByText('DEP02 deactivated.')).toBeInTheDocument()
+    expect(screen.queryByText('Deactivate DEP02?')).not.toBeInTheDocument()
   })
 })

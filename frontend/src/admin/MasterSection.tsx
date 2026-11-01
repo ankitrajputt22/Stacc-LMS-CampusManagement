@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { queryKeys } from '../api/queryKeys'
 import type { ApiRequestState } from '../api/useApiRequest'
+import { StatusConfirmation } from '../components/StatusConfirmation'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -20,6 +21,31 @@ type Request<T> = ApiRequestState<T[]> & { retry: () => void; refresh: () => voi
 
 export type MasterColumn<T> = Omit<Column<T>, 'key'> & { key?: string }
 
+/** A choice that narrows the list on this page, such as Department or Course type. */
+export type ListFilter<T> = {
+  label: string
+  /** The first choice, which shows everything, such as "All departments". */
+  all: string
+  options: { value: string; label: string }[]
+  value: (row: T) => string
+}
+
+/** A change that asks for confirmation first, such as deactivating a course. */
+export type Confirmation = {
+  question: string
+  detail: string
+  confirmLabel: string
+  busyLabel?: string
+  /** Sends the change and says what happened, for the announcement. A refusal is thrown and shown in the box. */
+  run: () => Promise<string>
+}
+
+/** What a row's actions can do besides Edit. */
+export type RowActions = {
+  /** Shows the confirmation above the list; focus returns to the button with this key when it closes. */
+  confirm: (confirmation: Confirmation, focusKey: string) => void
+}
+
 type MasterSectionProps<T> = {
   /** Plural and singular words, such as "Departments" and "department". */
   title: string
@@ -33,6 +59,8 @@ type MasterSectionProps<T> = {
   searchText: (row: T) => string
   /** The record's status, which adds a status filter. */
   rowStatus?: (row: T) => string
+  /** More filters on the list the API sent, such as Department. */
+  filters?: ListFilter<T>[]
   /** When adding needs other masters first, such as departments for a program: why it cannot start yet. */
   blockedReason?: string | null
   /** The form for a new record. It calls `done` with an announcement once saved. */
@@ -44,10 +72,23 @@ type MasterSectionProps<T> = {
   deniedTitle?: string
   /** Filters the backend applies, shown before the search box, such as session and semester. */
   toolbar?: ReactNode
-  rowActions?: (row: T) => ReactNode
+  rowActions?: (row: T, actions: RowActions) => ReactNode
+  /** Says why a refused confirmation was refused. */
+  describeRefusal?: (status: number | null, apiMessage: string | null) => string
 }
 
-type Open = { type: 'create' } | { type: 'edit'; key: number } | null
+type Open =
+  | { type: 'create' }
+  | { type: 'edit'; key: number }
+  | { type: 'confirm'; confirmation: Confirmation; focusKey: string }
+  | null
+
+function defaultRefusal(status: number | null, apiMessage: string | null): string {
+  if (status === 403) {
+    return `${ADMIN_DENIED} If your access changed recently, sign out and sign in again.`
+  }
+  return apiMessage && status !== null && status < 500 ? apiMessage : 'Couldn’t save. Check your connection and try again.'
+}
 
 /**
  * One academic master as a card: its heading and Add button, one contained form at a time for adding or editing, a
@@ -65,6 +106,7 @@ export function MasterSection<T>({
   rowName,
   searchText,
   rowStatus,
+  filters = [],
   blockedReason,
   renderCreate,
   renderEdit,
@@ -72,6 +114,7 @@ export function MasterSection<T>({
   deniedTitle = ADMIN_DENIED,
   toolbar,
   rowActions,
+  describeRefusal = defaultRefusal,
 }: MasterSectionProps<T>) {
   const id = useId()
   const queryClient = useQueryClient()
@@ -81,6 +124,7 @@ export function MasterSection<T>({
   const [pendingFocus, setPendingFocus] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
+  const [chosen, setChosen] = useState<Record<number, string>>({})
   const [page, setPage] = useState(1)
   const rows = request.status === 'loaded' ? request.data : null
   const editing = open?.type === 'edit' && rows ? rows.find((row) => rowKey(row) === open.key) ?? null : null
@@ -89,7 +133,8 @@ export function MasterSection<T>({
   const shown = (rows ?? []).filter(
     (row) =>
       (needle === '' || searchText(row).toLowerCase().includes(needle)) &&
-      (status === '' || rowStatus?.(row) === status),
+      (status === '' || rowStatus?.(row) === status) &&
+      filters.every((filter, index) => (chosen[index] ?? '') === '' || filter.value(row) === chosen[index]),
   )
   const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
   const current = Math.min(page, pages)
@@ -160,7 +205,12 @@ export function MasterSection<T>({
           >
             Edit<span className="sr-only"> {rowName(row)}</span>
           </Button>
-          {rowActions?.(row)}
+          {rowActions?.(row, {
+            confirm: (confirmation, focusKey) => {
+              setAnnouncement('')
+              setOpen({ type: 'confirm', confirmation, focusKey })
+            },
+          })}
         </div>
       ),
     },
@@ -171,6 +221,19 @@ export function MasterSection<T>({
       <p role="status" className="sr-only">
         {announcement}
       </p>
+      {open?.type === 'confirm' && (
+        <div className="mb-4">
+          <StatusConfirmation
+            question={open.confirmation.question}
+            detail={open.confirmation.detail}
+            confirmLabel={open.confirmation.confirmLabel}
+            busyLabel={open.confirmation.busyLabel}
+            onConfirm={async () => done(await open.confirmation.run(), open.focusKey)}
+            onCancel={() => close(open.focusKey)}
+            describeRefusal={describeRefusal}
+          />
+        </div>
+      )}
       {open?.type === 'create' && (
         <div className="mb-4">{renderCreate((message) => done(message, 'add'), () => close(emptyList ? 'add-empty' : 'add'))}</div>
       )}
@@ -214,6 +277,24 @@ export function MasterSection<T>({
                     setPage(1)
                   }}
                 />
+                {filters.map((filter, index) => (
+                  <SelectField
+                    key={filter.label}
+                    label={filter.label}
+                    value={chosen[index] ?? ''}
+                    onChange={(event) => {
+                      setChosen((current) => ({ ...current, [index]: event.target.value }))
+                      setPage(1)
+                    }}
+                  >
+                    <option value="">{filter.all}</option>
+                    {filter.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </SelectField>
+                ))}
                 {statuses.length > 1 && (
                   <SelectField
                     label="Status"

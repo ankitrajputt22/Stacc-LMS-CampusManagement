@@ -8,6 +8,8 @@ import com.stacc.backend.academic.admin.AcademicMasterRequests.ProgramUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterResponses.ProgramResponse;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
+import com.stacc.backend.academic.department.DepartmentStatus;
+import com.stacc.backend.academic.program.DegreeType;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.program.ProgramStatus;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProgramManagementService {
 
     static final String NOT_FOUND = "Program not found.";
+    static final String DEPARTMENT_INACTIVE = "This department is inactive, so it cannot take new programs.";
     static final String DEPARTMENT_MISSING = "The selected department does not exist.";
     static final String CODE_TAKEN = "This department already has a program with this code.";
     static final String NAME_TAKEN = "This department already has a program with this name.";
@@ -52,6 +55,9 @@ public class ProgramManagementService {
     public ProgramResponse create(ProgramCreate request) {
         Department department = departments.findById(request.departmentId())
                 .orElseThrow(() -> AcademicMasterErrors.badRequest(DEPARTMENT_MISSING));
+        if (department.getStatus() != DepartmentStatus.ACTIVE) {
+            throw AcademicMasterErrors.conflict(DEPARTMENT_INACTIVE);
+        }
         String code = request.code().strip().toUpperCase(Locale.ROOT);
         String name = request.name().strip();
         if (programs.existsByDepartmentIdAndCode(department.getId(), code)) {
@@ -60,8 +66,9 @@ public class ProgramManagementService {
         if (programs.existsByDepartmentIdAndName(department.getId(), name)) {
             throw AcademicMasterErrors.conflict(NAME_TAKEN);
         }
-        return ProgramResponse.of(AcademicMasterErrors.savedOrConflict(
-                () -> programs.saveAndFlush(new Program(department, code, name, request.durationSemesters())), TAKEN));
+        Program program = new Program(department, code, name, request.durationSemesters());
+        program.changeDegreeType(request.degreeType() == null ? DegreeType.UNDERGRADUATE : request.degreeType());
+        return ProgramResponse.of(AcademicMasterErrors.savedOrConflict(() -> programs.saveAndFlush(program), TAKEN));
     }
 
     /**
@@ -81,6 +88,9 @@ public class ProgramManagementService {
         }
         program.rename(name);
         program.changeDuration(request.durationSemesters());
+        if (request.degreeType() != null) {
+            program.changeDegreeType(request.degreeType());
+        }
         if (request.status() == ProgramStatus.ACTIVE) {
             program.activate();
         } else {

@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -112,5 +113,25 @@ public class AdminAcademicSessionController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public AcademicSessionResponse update(@PathVariable Long academicSessionId, @Valid @RequestBody AcademicSessionUpdate request) {
         return service.update(academicSessionId, request);
+    }
+
+    @PatchMapping("/{academicSessionId}/current")
+    @PreAuthorize(AdminAcademicAccess.MANAGE)
+    @Operation(
+            summary = "Set the current academic session",
+            description = "Makes this the college's current session; the previous current session becomes an ordinary one. "
+                    + "Only one session is current at a time. A closed session cannot be current.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The session, now current.")
+    @ApiResponse(
+            responseCode = "404",
+            description = "The academic session does not exist.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "The session is closed, or another session was made current at the same moment.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AcademicSessionResponse makeCurrent(@PathVariable Long academicSessionId) {
+        return service.makeCurrent(academicSessionId);
     }
 }

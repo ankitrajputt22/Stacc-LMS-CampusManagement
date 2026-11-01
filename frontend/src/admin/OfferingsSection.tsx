@@ -106,15 +106,15 @@ export function OfferingsSection() {
           deniedMessage={ENROLLMENT_DENIED}
           fields={[
             { name: 'courseId', label: 'Course', kind: 'select', choose: 'Choose a course',
-              options: (courseList ?? []).map((course) => ({
-                value: String(course.id),
-                label: `${course.code} — ${course.name}${course.status === 'INACTIVE' ? ' (inactive)' : ''}`,
-              })) },
+              hint: 'Active courses only.',
+              options: (courseList ?? [])
+                .filter((course) => course.status === 'ACTIVE')
+                .map((course) => ({ value: String(course.id), label: `${course.code} — ${course.name}` })) },
             { name: 'semesterId', label: 'Semester', kind: 'select', choose: 'Choose a semester',
-              options: (semesterList ?? []).map((semester) => ({
-                value: String(semester.id),
-                label: `${semesterLabel(semester)}${semester.status === 'CLOSED' ? ' (closed)' : ''}`,
-              })) },
+              hint: 'Closed semesters are not listed.',
+              options: (semesterList ?? [])
+                .filter((semester) => semester.status !== 'CLOSED')
+                .map((semester) => ({ value: String(semester.id), label: semesterLabel(semester) })) },
           ]}
           initial={{ courseId: '', semesterId: '' }}
           submitLabel="Save course offering"

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import {
   createAcademicSession,
   createCourse,
@@ -9,6 +10,7 @@ import {
   getDepartments,
   getPrograms,
   getSemesters,
+  makeAcademicSessionCurrent,
   updateAcademicSession,
   updateCourse,
   updateDepartment,
@@ -25,28 +27,89 @@ import type {
   AdminDepartment,
   AdminProgram,
   AdminSemester,
+  CourseType,
+  DegreeType,
   LifecycleStatus,
 } from '../types/admin'
+import { Badge, Button } from '../ui'
+import { courseTypeOptions, courseTypeWord, degreeOptions, degreeWord, optional } from './catalogText'
 import { type FieldOption, type FieldSpec, MasterForm, type Values } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterParts'
-import { MasterSection } from './MasterSection'
-import { lifecycleOptions, statusOptions } from './masterStatus'
+import { MasterSection, type RowActions } from './MasterSection'
+import { lifecycleOptions } from './masterStatus'
 
 // The limits the backend enforces for each master, so the forms can say so before sending.
-const ACTIVE_STATUSES = statusOptions(['ACTIVE', 'INACTIVE'])
 const UPPERCASE = 'Stored in uppercase. It cannot be changed later.'
 
-function departmentOptions(departments: AdminDepartment[]): FieldOption[] {
-  return departments.map((department) => ({
-    value: String(department.id),
-    label: `${department.code} · ${department.name}${department.status === 'INACTIVE' ? ' (inactive)' : ''}`,
-  }))
+function departmentOptions(departments: AdminDepartment[], activeOnly = false): FieldOption[] {
+  return departments
+    .filter((department) => !activeOnly || department.status === 'ACTIVE')
+    .map((department) => ({
+      value: String(department.id),
+      label: `${department.code} · ${department.name}${department.status === 'INACTIVE' ? ' (inactive)' : ''}`,
+    }))
 }
 
+/** Department filter choices, by code. */
+function departmentFilter<T extends { departmentId: number }>(departments: AdminDepartment[] | null) {
+  return {
+    label: 'Department',
+    all: 'All departments',
+    options: (departments ?? []).map((department) => ({ value: String(department.id), label: department.code })),
+    value: (row: T) => String(row.departmentId),
+  }
+}
+
+type Toggle = {
+  /** Such as "department CSE". */
+  name: string
+  active: boolean
+  /** What deactivating stops, such as "takes no new programs or courses". */
+  stops: string
+  focusKey: string
+  save: (status: ActiveStatus) => Promise<void>
+}
+
+/** Activate or Deactivate, confirmed first. Nothing is deleted, and history stays either way. */
+function statusAction(actions: RowActions, toggle: Toggle): ReactNode {
+  const target: ActiveStatus = toggle.active ? 'INACTIVE' : 'ACTIVE'
+  const verb = toggle.active ? 'Deactivate' : 'Activate'
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      data-focus-key={toggle.focusKey}
+      onClick={() =>
+        actions.confirm(
+          {
+            question: `${verb} ${toggle.name}?`,
+            detail: toggle.active
+              ? `It stays in every list and keeps its history, but ${toggle.stops} until it is activated again.`
+              : `It can be used for new records again.`,
+            confirmLabel: verb,
+            busyLabel: toggle.active ? 'Deactivating…' : 'Activating…',
+            run: async () => {
+              await toggle.save(target)
+              return `${toggle.name.charAt(0).toUpperCase()}${toggle.name.slice(1)} ${toggle.active ? 'deactivated' : 'activated'}.`
+            },
+          },
+          toggle.focusKey,
+        )
+      }
+    >
+      {verb}
+      <span className="sr-only"> {toggle.name}</span>
+    </Button>
+  )
+}
 
 export function DepartmentsSection() {
   const request = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const nameField: FieldSpec = { name: 'name', label: 'Name', kind: 'text', maxLength: 150, hint: 'Unique across the college.' }
+  const descriptionField: FieldSpec = {
+    name: 'description', label: 'Description (optional)', kind: 'textarea', maxLength: 1000, optional: true,
+    hint: 'Plain text, up to 1000 characters.',
+  }
 
   return (
     <MasterSection<AdminDepartment>
@@ -59,18 +122,41 @@ export function DepartmentsSection() {
       searchText={(row) => `${row.code} ${row.name}`}
       rowStatus={(row) => row.status}
       columns={[
-        { header: 'Code', cell: (row) => <span className="font-medium">{row.code}</span> },
-        { header: 'Name', cell: (row) => row.name },
+        { header: 'Code', primary: true, cell: (row) => row.code },
+        {
+          header: 'Name',
+          cell: (row) => (
+            <>
+              {row.name}
+              {row.description && <span className="mt-0.5 block text-sm text-ink-muted">{row.description}</span>}
+            </>
+          ),
+        },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
+      rowActions={(row, actions) =>
+        statusAction(actions, {
+          name: `department ${row.code}`,
+          active: row.status === 'ACTIVE',
+          stops: 'it takes no new programs or courses',
+          focusKey: `status-${row.id}`,
+          save: async (status) => {
+            await updateDepartment(row.id, { name: row.name, description: row.description, status })
+          },
+        })
+      }
       renderCreate={(done, cancel) => (
         <MasterForm
           heading="New department"
-          fields={[{ name: 'code', label: 'Code', kind: 'text', maxLength: 20, hint: UPPERCASE }, nameField]}
-          initial={{ code: '', name: '' }}
+          fields={[{ name: 'code', label: 'Code', kind: 'text', maxLength: 20, hint: UPPERCASE }, nameField, descriptionField]}
+          initial={{ code: '', name: '', description: '' }}
           submitLabel="Save department"
           onSubmit={async (values) => {
-            const saved = await createDepartment({ code: values.code.trim(), name: values.name.trim() })
+            const saved = await createDepartment({
+              code: values.code.trim(),
+              name: values.name.trim(),
+              description: optional(values.description),
+            })
             done(`Department ${saved.code} added.`)
           }}
           onCancel={cancel}
@@ -79,12 +165,16 @@ export function DepartmentsSection() {
       renderEdit={(row, done, cancel) => (
         <MasterForm
           heading={`Edit department ${row.code}`}
-          note="The code cannot be changed."
-          fields={[nameField, { name: 'status', label: 'Status', kind: 'select', options: ACTIVE_STATUSES }]}
-          initial={{ name: row.name, status: row.status }}
+          note="The code cannot be changed. Use Activate or Deactivate in the list to change the status."
+          fields={[nameField, descriptionField]}
+          initial={{ name: row.name, description: row.description ?? '' }}
           submitLabel="Save department"
           onSubmit={async (values) => {
-            await updateDepartment(row.id, { name: values.name.trim(), status: values.status as ActiveStatus })
+            await updateDepartment(row.id, {
+              name: values.name.trim(),
+              description: optional(values.description),
+              status: row.status,
+            })
             done(`Department ${row.code} saved.`)
           }}
           onCancel={cancel}
@@ -98,46 +188,69 @@ export function ProgramsSection() {
   const request = useApiQuery(queryKeys.admin.programs(), getPrograms)
   const departments = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const departmentList = departments.status === 'loaded' ? departments.data : null
+  const activeDepartments = departmentList?.filter((department) => department.status === 'ACTIVE') ?? null
+  const degreeField: FieldSpec = { name: 'degreeType', label: 'Degree', kind: 'select', options: degreeOptions }
   const editFields: FieldSpec[] = [
     { name: 'name', label: 'Name', kind: 'text', maxLength: 150, hint: 'Unique within the department.' },
+    degreeField,
     { name: 'durationSemesters', label: 'Duration (semesters)', kind: 'integer', min: 1, max: 20,
       hint: 'From 1 to 20, and not below a semester the program already has.' },
-    { name: 'status', label: 'Status', kind: 'select', options: ACTIVE_STATUSES },
   ]
 
   return (
     <MasterSection<AdminProgram>
       title="Programs"
       singular="program"
-      intro="The programs each department offers, with their normal length in semesters."
+      intro="The programs each department offers, with their degree and normal length in semesters."
       request={request}
-      blockedReason={departmentList === null ? 'Loading departments…' : departmentList.length === 0 ? 'Add a department first.' : null}
+      blockedReason={
+        activeDepartments === null ? 'Loading departments…' : activeDepartments.length === 0 ? 'Add or activate a department first.' : null
+      }
       rowKey={(row) => row.id}
       rowName={(row) => `program ${row.code}`}
       searchText={(row) => `${row.code} ${row.name} ${row.departmentCode} ${row.departmentName}`}
       rowStatus={(row) => row.status}
+      filters={[
+        departmentFilter<AdminProgram>(departmentList),
+        { label: 'Degree', all: 'All degrees', options: degreeOptions, value: (row) => row.degreeType },
+      ]}
       columns={[
-        { header: 'Program', cell: (row) => <CodeName code={row.code} name={row.name} /> },
-        { header: 'Department', cell: (row) => <CodeName code={row.departmentCode} name={row.departmentName} /> },
+        { header: 'Program', primary: true, cell: (row) => <CodeName code={row.code} name={row.name} /> },
+        { header: 'Department', cell: (row) => row.departmentCode },
+        { header: 'Degree', cell: (row) => degreeWord(row.degreeType) },
         { header: 'Duration', cell: (row) => `${row.durationSemesters} ${row.durationSemesters === 1 ? 'semester' : 'semesters'}` },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
+      rowActions={(row, actions) =>
+        statusAction(actions, {
+          name: `program ${row.code}`,
+          active: row.status === 'ACTIVE',
+          stops: 'it takes no new semesters',
+          focusKey: `status-${row.id}`,
+          save: async (status) => {
+            await updateProgram(row.id, {
+              name: row.name, degreeType: row.degreeType, durationSemesters: row.durationSemesters, status,
+            })
+          },
+        })
+      }
       renderCreate={(done, cancel) => (
         <MasterForm
           heading="New program"
           fields={[
             { name: 'departmentId', label: 'Department', kind: 'select', choose: 'Choose a department',
-              options: departmentOptions(departmentList ?? []), hint: 'It cannot be changed later.' },
+              options: departmentOptions(departmentList ?? [], true), hint: 'Active departments only. It cannot be changed later.' },
             { name: 'code', label: 'Code', kind: 'text', maxLength: 30, hint: `${UPPERCASE} Unique within the department.` },
-            ...editFields.slice(0, 2),
+            ...editFields,
           ]}
-          initial={{ departmentId: '', code: '', name: '', durationSemesters: '' }}
+          initial={{ departmentId: '', code: '', name: '', degreeType: 'UNDERGRADUATE', durationSemesters: '' }}
           submitLabel="Save program"
           onSubmit={async (values) => {
             const saved = await createProgram({
               departmentId: Number(values.departmentId),
               code: values.code.trim(),
               name: values.name.trim(),
+              degreeType: values.degreeType as DegreeType,
               durationSemesters: Number(values.durationSemesters),
             })
             done(`Program ${saved.code} added.`)
@@ -150,13 +263,14 @@ export function ProgramsSection() {
           heading={`Edit program ${row.code}`}
           note={`Department ${row.departmentCode}. The department and code cannot be changed.`}
           fields={editFields}
-          initial={{ name: row.name, durationSemesters: String(row.durationSemesters), status: row.status }}
+          initial={{ name: row.name, degreeType: row.degreeType, durationSemesters: String(row.durationSemesters) }}
           submitLabel="Save program"
           onSubmit={async (values) => {
             await updateProgram(row.id, {
               name: values.name.trim(),
+              degreeType: values.degreeType as DegreeType,
               durationSemesters: Number(values.durationSemesters),
-              status: values.status as ActiveStatus,
+              status: row.status,
             })
             done(`Program ${row.code} saved.`)
           }}
@@ -175,6 +289,7 @@ function datesInOrder(values: Values) {
 
 export function AcademicSessionsSection() {
   const request = useApiQuery(queryKeys.admin.sessions(), getAcademicSessions)
+  const currentSession = request.status === 'loaded' ? request.data.find((session) => session.current) ?? null : null
   const dateFields: FieldSpec[] = [
     { name: 'startDate', label: 'Start date', kind: 'date' },
     { name: 'endDate', label: 'End date', kind: 'date', hint: 'After the start date.' },
@@ -184,17 +299,56 @@ export function AcademicSessionsSection() {
     <MasterSection<AdminAcademicSession>
       title="Academic sessions"
       singular="academic session"
-      intro="College-wide academic periods, the latest first. A session moves from planned to active to closed, never back."
+      intro="College-wide academic periods, the latest first. A session moves from planned to active to closed, never back. One session is the current one."
       request={request}
       rowKey={(row) => row.id}
       rowName={(row) => `academic session ${row.code}`}
       searchText={(row) => row.code}
       rowStatus={(row) => row.status}
       columns={[
-        { header: 'Code', cell: (row) => <span className="font-medium">{row.code}</span> },
-        { header: 'Dates', cell: (row) => `${row.startDate} to ${row.endDate}` },
+        {
+          header: 'Session',
+          primary: true,
+          cell: (row) => (
+            <span className="inline-flex flex-wrap items-center gap-2">
+              {row.code}
+              {row.current && <Badge tone="brand">Current</Badge>}
+            </span>
+          ),
+        },
+        { header: 'Start date', cell: (row) => row.startDate },
+        { header: 'End date', cell: (row) => row.endDate },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
+      rowActions={(row, actions) =>
+        !row.current &&
+        row.status !== 'CLOSED' && (
+          <Button
+            variant="secondary"
+            size="sm"
+            data-focus-key={`current-${row.id}`}
+            onClick={() =>
+              actions.confirm(
+                {
+                  question: `Make ${row.code} the current session?`,
+                  detail: currentSession
+                    ? `${currentSession.code} stops being the current session. Only one session is current at a time.`
+                    : 'Only one session is current at a time.',
+                  confirmLabel: 'Set as current',
+                  busyLabel: 'Saving…',
+                  run: async () => {
+                    await makeAcademicSessionCurrent(row.id)
+                    return `${row.code} is now the current session.`
+                  },
+                },
+                `current-${row.id}`,
+              )
+            }
+          >
+            Set as current<span className="sr-only"> {row.code}</span>
+          </Button>
+        )
+      }
       renderCreate={(done, cancel) => (
         <MasterForm
           heading="New academic session"
@@ -220,7 +374,7 @@ export function AcademicSessionsSection() {
       renderEdit={(row, done, cancel) => (
         <MasterForm
           heading={`Edit academic session ${row.code}`}
-          note="The code cannot be changed."
+          note={`The code cannot be changed.${row.current ? ' Closing the current session also stops it being current.' : ''}`}
           fields={[...dateFields, { name: 'status', label: 'Status', kind: 'select', options: lifecycleOptions(row.status) }]}
           initial={{ startDate: row.startDate, endDate: row.endDate, status: row.status }}
           submitLabel="Save academic session"
@@ -276,14 +430,18 @@ export function SemestersSection() {
           note="Program, session, and number cannot be changed later."
           fields={[
             { name: 'programId', label: 'Program', kind: 'select', choose: 'Choose a program',
-              options: (programList ?? []).map((program) => ({
-                value: String(program.id),
-                label: `${program.code} · ${program.name} (${program.departmentCode}, ${program.durationSemesters} semesters${
-                  program.status === 'INACTIVE' ? ', inactive' : ''
-                })`,
-              })) },
+              hint: 'Active programs only.',
+              options: (programList ?? [])
+                .filter((program) => program.status === 'ACTIVE')
+                .map((program) => ({
+                  value: String(program.id),
+                  label: `${program.code} · ${program.name} (${program.departmentCode}, ${program.durationSemesters} semesters)`,
+                })) },
             { name: 'academicSessionId', label: 'Academic session', kind: 'select', choose: 'Choose an academic session',
-              options: (sessionList ?? []).map((session) => ({ value: String(session.id), label: session.code })) },
+              hint: 'Closed sessions are not listed.',
+              options: (sessionList ?? [])
+                .filter((session) => session.status !== 'CLOSED')
+                .map((session) => ({ value: String(session.id), label: `${session.code}${session.current ? ' (current)' : ''}` })) },
             { name: 'semesterNumber', label: 'Semester number', kind: 'integer', min: 1, max: 20,
               hint: 'From 1 up to the program’s duration.' },
           ]}
@@ -328,44 +486,83 @@ export function CoursesSection() {
   const request = useApiQuery(queryKeys.admin.courses(), getCourses)
   const departments = useApiQuery(queryKeys.admin.departments(), getDepartments)
   const departmentList = departments.status === 'loaded' ? departments.data : null
+  const activeDepartments = departmentList?.filter((department) => department.status === 'ACTIVE') ?? null
   const editFields: FieldSpec[] = [
     { name: 'name', label: 'Name', kind: 'text', maxLength: 200 },
+    { name: 'shortName', label: 'Short name (optional)', kind: 'text', maxLength: 20, optional: true, hint: 'Such as DBMS.' },
+    { name: 'courseType', label: 'Type', kind: 'select', options: courseTypeOptions },
     { name: 'credits', label: 'Credits', kind: 'decimal', above: 0, max: 20, hint: 'Above 0 and at most 20, such as 4 or 1.5.' },
+    { name: 'description', label: 'Description (optional)', kind: 'textarea', maxLength: 2000, optional: true,
+      hint: 'Plain text, up to 2000 characters.' },
   ]
 
   return (
     <MasterSection<AdminCourse>
       title="Courses"
       singular="course"
-      intro="The permanent course catalog. A course has an owning department; when it is taught in a semester is managed separately."
+      intro="The permanent course catalog. A course has an owning department; when it is taught in a semester is managed under Course Offerings."
       request={request}
-      blockedReason={departmentList === null ? 'Loading departments…' : departmentList.length === 0 ? 'Add a department first.' : null}
+      blockedReason={
+        activeDepartments === null ? 'Loading departments…' : activeDepartments.length === 0 ? 'Add or activate a department first.' : null
+      }
       rowKey={(row) => row.id}
       rowName={(row) => `course ${row.code}`}
-      searchText={(row) => `${row.code} ${row.name} ${row.departmentCode}`}
+      searchText={(row) => `${row.code} ${row.name} ${row.shortName ?? ''} ${row.departmentCode}`}
       rowStatus={(row) => row.status}
+      filters={[
+        departmentFilter<AdminCourse>(departmentList),
+        { label: 'Type', all: 'All types', options: courseTypeOptions, value: (row) => row.courseType },
+      ]}
       columns={[
-        { header: 'Course', cell: (row) => <CodeName code={row.code} name={row.name} /> },
+        {
+          header: 'Course',
+          primary: true,
+          cell: (row) => (
+            <>
+              <CodeName code={row.code} name={row.name} />
+              {row.shortName && <span className="ml-1 text-ink-muted">({row.shortName})</span>}
+            </>
+          ),
+        },
         { header: 'Department', cell: (row) => row.departmentCode },
+        { header: 'Type', cell: (row) => courseTypeWord(row.courseType) },
         { header: 'Credits', cell: (row) => creditsText(row.credits) },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
+      rowActions={(row, actions) =>
+        statusAction(actions, {
+          name: `course ${row.code}`,
+          active: row.status === 'ACTIVE',
+          stops: 'it cannot be offered in a new semester',
+          focusKey: `status-${row.id}`,
+          save: async (status) => {
+            await updateCourse(row.id, {
+              name: row.name, credits: row.credits, status,
+              shortName: row.shortName, description: row.description, courseType: row.courseType,
+            })
+          },
+        })
+      }
       renderCreate={(done, cancel) => (
         <MasterForm
           heading="New course"
           fields={[
             { name: 'departmentId', label: 'Department', kind: 'select', choose: 'Choose a department',
-              options: departmentOptions(departmentList ?? []), hint: 'The owning department. It cannot be changed later.' },
+              options: departmentOptions(departmentList ?? [], true),
+              hint: 'The owning department, active ones only. It cannot be changed later.' },
             { name: 'code', label: 'Code', kind: 'text', maxLength: 30, hint: `${UPPERCASE} Unique across the college.` },
             ...editFields,
           ]}
-          initial={{ departmentId: '', code: '', name: '', credits: '' }}
+          initial={{ departmentId: '', code: '', name: '', shortName: '', courseType: 'CORE', credits: '', description: '' }}
           submitLabel="Save course"
           onSubmit={async (values) => {
             const saved = await createCourse({
               departmentId: Number(values.departmentId),
               code: values.code.trim(),
               name: values.name.trim(),
+              shortName: optional(values.shortName),
+              description: optional(values.description),
+              courseType: values.courseType as CourseType,
               credits: Number(values.credits.trim()),
             })
             done(`Course ${saved.code} added.`)
@@ -376,15 +573,24 @@ export function CoursesSection() {
       renderEdit={(row, done, cancel) => (
         <MasterForm
           heading={`Edit course ${row.code}`}
-          note={`Department ${row.departmentCode}. The department and code cannot be changed.`}
-          fields={[...editFields, { name: 'status', label: 'Status', kind: 'select', options: ACTIVE_STATUSES }]}
-          initial={{ name: row.name, credits: String(row.credits), status: row.status }}
+          note={`Department ${row.departmentCode}. The department and code cannot be changed. Use Activate or Deactivate in the list to change the status.`}
+          fields={editFields}
+          initial={{
+            name: row.name,
+            shortName: row.shortName ?? '',
+            courseType: row.courseType,
+            credits: String(row.credits),
+            description: row.description ?? '',
+          }}
           submitLabel="Save course"
           onSubmit={async (values) => {
             await updateCourse(row.id, {
               name: values.name.trim(),
+              shortName: optional(values.shortName),
+              description: optional(values.description),
+              courseType: values.courseType as CourseType,
               credits: Number(values.credits.trim()),
-              status: values.status as ActiveStatus,
+              status: row.status,
             })
             done(`Course ${row.code} saved.`)
           }}

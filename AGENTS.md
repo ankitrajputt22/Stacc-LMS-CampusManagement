@@ -92,7 +92,8 @@
 - Admins manage `Department`, `Program`, `AcademicSession`, `Semester`, and `Course` in `academic.admin` under `/api/v1/admin/academic`. See `docs/admin-academic.md`.
 - `Course` is permanent catalog data; `CourseOffering` is semester-specific. Offerings and enrollments have their own rules below. Do not manage profiles, teaching assignments, LMS courses, or accounts here.
 - Use explicit request and response records; never bind or return entities. Requests carry no own ID: the route names the record. Parents are loaded on the server by ID and never created.
-- Keep each master's existing fields and lifecycle. Codes and parents are fixed after creation. Do not add status, soft-delete, or version columns, and never add delete routes.
+- Codes and parents are fixed after creation. Do not add soft-delete or version columns, and never add delete routes. Inactive or closed parents take no new children (409): departments for programs and courses, programs and closed sessions for semesters, courses and closed semesters for offerings.
+- Exactly one academic session may be current, enforced by a unique generated column and changed only through `AcademicSessionManagementService.makeCurrent` under a lock; a closed session is never current. Course types and degree types describe records and decide nothing until a phase gives them rules.
 - Unique clashes answer 409 with a safe message, also when the database constraint catches a race. Never let SQL errors or constraint names reach a client.
 - Reading needs `ADMIN` and `ACADEMIC_MASTER_VIEW`; changing also needs `ACADEMIC_MASTER_MANAGE`. `SecurityConfig` keeps `/api/v1/admin/**` to `ADMIN`. There is no admin pass outside these explicit rules.
 

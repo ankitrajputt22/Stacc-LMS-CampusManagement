@@ -44,9 +44,9 @@ class DepartmentManagementServiceTest {
 
     @Test
     void aNewDepartmentIsActiveWithAnUppercaseCode() {
-        DepartmentResponse created = service.create(new DepartmentCreate("  ece ", " Electronics and Communication "));
+        DepartmentResponse created = service.create(new DepartmentCreate("  ece ", " Electronics and Communication ", null));
 
-        assertEquals(new DepartmentResponse(9L, "ECE", "Electronics and Communication", "ACTIVE"), created);
+        assertEquals(new DepartmentResponse(9L, "ECE", "Electronics and Communication", null, "ACTIVE"), created);
     }
 
     @Test
@@ -55,9 +55,9 @@ class DepartmentManagementServiceTest {
         when(departments.existsByName("Mathematics")).thenReturn(true);
 
         assertRefused(HttpStatus.CONFLICT, DepartmentManagementService.CODE_TAKEN,
-                () -> service.create(new DepartmentCreate("cse", "Another name")));
+                () -> service.create(new DepartmentCreate("cse", "Another name", null)));
         assertRefused(HttpStatus.CONFLICT, DepartmentManagementService.NAME_TAKEN,
-                () -> service.create(new DepartmentCreate("MAT", "Mathematics")));
+                () -> service.create(new DepartmentCreate("MAT", "Mathematics", null)));
         verify(departments, never()).saveAndFlush(any());
     }
 
@@ -67,15 +67,15 @@ class DepartmentManagementServiceTest {
                 .thenThrow(new DataIntegrityViolationException("Duplicate entry 'ECE' for key 'departments.uk_departments_code'"));
 
         assertRefused(HttpStatus.CONFLICT, DepartmentManagementService.TAKEN,
-                () -> service.create(new DepartmentCreate("ECE", "Electronics")));
+                () -> service.create(new DepartmentCreate("ECE", "Electronics", null)));
     }
 
     @Test
     void editingChangesTheNameAndStatusButNeverTheCode() {
-        DepartmentResponse updated = service.update(3L, new DepartmentUpdate("Computing", DepartmentStatus.INACTIVE));
+        DepartmentResponse updated = service.update(3L, new DepartmentUpdate("Computing", DepartmentStatus.INACTIVE, null));
 
-        assertEquals(new DepartmentResponse(3L, "CSE", "Computing", "INACTIVE"), updated);
-        assertEquals("ACTIVE", service.update(3L, new DepartmentUpdate("Computing", DepartmentStatus.ACTIVE)).status());
+        assertEquals(new DepartmentResponse(3L, "CSE", "Computing", null, "INACTIVE"), updated);
+        assertEquals("ACTIVE", service.update(3L, new DepartmentUpdate("Computing", DepartmentStatus.ACTIVE, null)).status());
     }
 
     @Test
@@ -83,7 +83,7 @@ class DepartmentManagementServiceTest {
         when(departments.existsByNameAndIdNot("Mathematics", 3L)).thenReturn(true);
 
         assertRefused(HttpStatus.CONFLICT, DepartmentManagementService.NAME_TAKEN,
-                () -> service.update(3L, new DepartmentUpdate("Mathematics", DepartmentStatus.ACTIVE)));
+                () -> service.update(3L, new DepartmentUpdate("Mathematics", DepartmentStatus.ACTIVE, null)));
         assertEquals("Computer Science and Engineering", cse.getName());
     }
 
@@ -91,7 +91,7 @@ class DepartmentManagementServiceTest {
     void anUnknownDepartmentAnswers404() {
         assertRefused(HttpStatus.NOT_FOUND, DepartmentManagementService.NOT_FOUND, () -> service.get(99L));
         assertRefused(HttpStatus.NOT_FOUND, DepartmentManagementService.NOT_FOUND,
-                () -> service.update(99L, new DepartmentUpdate("X", DepartmentStatus.ACTIVE)));
+                () -> service.update(99L, new DepartmentUpdate("X", DepartmentStatus.ACTIVE, null)));
     }
 
     @Test

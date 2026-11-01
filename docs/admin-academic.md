@@ -21,15 +21,20 @@ The masters are reusable definitions. A `CourseOffering`, one course taught in o
 
 ## What can change
 
-Each master keeps the fields and lifecycle it already had. What identifies a record, its code and what it belongs to, is set on creation and never changes, because other records are identified by it.
+What identifies a record, its code and what it belongs to, is set on creation and never changes, because other records are identified by it.
 
 | Master | Created with | Editable | Fixed after creation | Status |
 | --- | --- | --- | --- | --- |
-| Department | `code`, `name` | `name`, `status` | `code` | `ACTIVE` or `INACTIVE` |
-| Program | `departmentId`, `code`, `name`, `durationSemesters` | `name`, `durationSemesters`, `status` | department, `code` | `ACTIVE` or `INACTIVE` |
-| Academic session | `code`, `startDate`, `endDate` | `startDate`, `endDate`, `status` | `code` | `PLANNED`, `ACTIVE`, `CLOSED` |
+| Department | `code`, `name`, optional `description` | `name`, `description`, `status` | `code` | `ACTIVE` or `INACTIVE` |
+| Program | `departmentId`, `code`, `name`, `durationSemesters`, `degreeType` | `name`, `degreeType`, `durationSemesters`, `status` | department, `code` | `ACTIVE` or `INACTIVE` |
+| Academic session | `code`, `startDate`, `endDate` | `startDate`, `endDate`, `status`; "current" through its own route | `code` | `PLANNED`, `ACTIVE`, `CLOSED` |
 | Semester | `programId`, `academicSessionId`, `semesterNumber` | `status` | program, session, number | `PLANNED`, `ACTIVE`, `CLOSED` |
-| Course | `departmentId`, `code`, `name`, `credits` | `name`, `credits`, `status` | department, `code` | `ACTIVE` or `INACTIVE` |
+| Course | `departmentId`, `code`, `name`, `credits`, optional `shortName`, `description`, `courseType` | all but the fixed ones | department, `code` | `ACTIVE` or `INACTIVE` |
+
+- `description` (department up to 1000 characters, course up to 2000) and a course's `shortName` (up to 20, such as DBMS) are optional plain text; blank stores nothing.
+- `degreeType` is `UNDERGRADUATE`, `POSTGRADUATE`, `DIPLOMA`, `DOCTORATE`, or `CERTIFICATE`; `courseType` is `CORE`, `ELECTIVE`, `LAB`, `PROJECT`, or `AUDIT`. Left out on creation they are `UNDERGRADUATE` and `CORE`, and left out on an edit they stay as they were. They describe the record and decide nothing yet.
+- **Inactive or closed parents take no new children** (409 with a plain message): an inactive department takes no new programs or courses, an inactive program no new semesters, a closed session no new semesters, an inactive course no new offerings, and a closed semester no new offerings. What already exists stays as it is.
+- **One current session.** `PATCH /api/v1/admin/academic/sessions/{academicSessionId}/current` makes a session the college's current one, and the previous current session an ordinary one, in one step. A closed session cannot be current (409), and closing the current session also stops it being current. The current session is locked while it changes, and a unique generated column (`current_marker`) lets the database hold only one current session; a race answers 409 "Another session was just made current." The migration marks the active session that started last.
 
 - Codes are stored in uppercase without surrounding spaces. New departments, programs, and courses are `ACTIVE`; new sessions and semesters are `PLANNED`.
 - Sessions and semesters move forward only: `PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`. Going back to `PLANNED`, or making a closed one active again, answers 409.
@@ -59,6 +64,7 @@ Every route is under `/api/v1/admin/academic`, which `SecurityConfig` keeps to a
 | Courses | `GET`, `POST /api/v1/admin/academic/courses` | `GET`, `PUT /api/v1/admin/academic/courses/{courseId}` |
 
 - Lists: departments and courses by code; programs by department code, then code; sessions by start date, latest first; semesters by session start date (latest first), then program code, then number. Each list is read in one query.
+- Setting the current session is `PATCH /api/v1/admin/academic/sessions/{academicSessionId}/current`, with no body.
 - `POST` answers 201, `PUT` 200. Invalid fields answer 400 with field errors, a missing record 404, a clash 409. No token answers 401; a student, a faculty member, or an admin without the permission answers 403.
 
 ## Course offerings
@@ -126,7 +132,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 
-- Each master, and the course offerings, is a `Card` with its Add button, a search box and a status filter, and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column.
+- Each master, and the course offerings, is a `Card` with its Add button, a search box, a status filter and its own filters (programs by department and degree, courses by department and type), and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column. Departments, programs, and courses change status with Activate and Deactivate, each confirmed first; their Edit forms no longer carry the status. Sessions show a Current badge and a confirmed Set as current action. Create forms list only parents that can take new children.
 - Add and Edit open one form at a time in its own card above the list, with `TextField` and `SelectField` and an error `Alert`. After a save, every academic admin list in the cache (`queryKeys.admin.academic`) is asked again, because the lists fill each other's choices.
 - Enrollments start with the student search; a student's semesters and courses are cards with their actions per row, and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
 - Statuses are `Badge`s: green for in use (`ACTIVE`, `ENROLLED`), blue for still to come (`PLANNED`), neutral for ended; the word always says it. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
