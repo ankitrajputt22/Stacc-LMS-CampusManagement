@@ -1,4 +1,4 @@
-# Checks every change to Stacc: the backend tests, the frontend lint and build, and the AI service lint and tests.
+# Checks every change to Stacc: the backend tests, the frontend lint, unit tests, and build, and the AI service lint and tests.
 # None of them needs a model or any secret; the backend's MySQL tests start their own throwaway MySQL container with
 # Docker, which GitHub's runners provide. See docs/continuous-integration.md and docs/testing.md.
 name: CI
@@ -83,7 +83,7 @@ jobs:
           retention-days: 7
 
   frontend:
-    name: Frontend lint and build
+    name: Frontend lint, tests, and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -103,6 +103,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Unit tests
+        run: npm test
 
       - name: Type check and build
         run: npm run build
