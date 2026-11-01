@@ -22,6 +22,7 @@ import com.stacc.backend.auth.role.RoleRepository;
 import com.stacc.backend.campus.notices.CampusNoticeRepository;
 import com.stacc.backend.campus.services.CampusServiceDefinitionRepository;
 import com.stacc.backend.campus.services.CampusServiceRequestRepository;
+import com.stacc.backend.common.web.RequestIdFilter;
 import com.stacc.backend.hostel.HostelAllocationRepository;
 import com.stacc.backend.hostel.HostelApplicationRepository;
 import com.stacc.backend.hostel.HostelBedRepository;
@@ -67,7 +68,9 @@ import org.springframework.web.context.WebApplicationContext;
  */
 @SpringBootTest(properties = {
     "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
-    "stacc.jwt.secret=" + TestSecrets.JWT_SECRET
+    "stacc.jwt.secret=" + TestSecrets.JWT_SECRET,
+    // Without a database there is no "db" health check, which the readiness group names.
+    "management.endpoint.health.validate-group-membership=false"
 })
 @MockitoBean(types = {
     AcademicCalendarEventRepository.class,
@@ -125,6 +128,9 @@ public abstract class DatabaseFreeApiTest {
     @Autowired
     private Filter springSecurityFilterChain;
 
+    @Autowired
+    private RequestIdFilter requestIdFilter;
+
     @MockitoBean
     protected UserAccountRepository userAccountRepository;
 
@@ -133,7 +139,7 @@ public abstract class DatabaseFreeApiTest {
     @BeforeEach
     void setUpMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .addFilters(springSecurityFilterChain)
+                .addFilters(requestIdFilter, springSecurityFilterChain)
                 .build();
     }
 }

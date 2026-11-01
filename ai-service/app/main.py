@@ -7,6 +7,7 @@ Start it with ``uvicorn app.main:create_app --factory``. Settings come from the 
 from __future__ import annotations
 
 import logging
+import re
 import time
 
 from fastapi import FastAPI, Request
@@ -23,6 +24,25 @@ from app.providers.factory import create_providers
 from app.retrieval.service import LearningService
 
 log = logging.getLogger("stacc.ai")
+
+# The backend's request ID, so a log line here can be matched with the backend's. Anything else is logged as "-".
+_REQUEST_ID = re.compile(r"[A-Za-z0-9._-]{8,64}")
+
+
+def _request_id(request: Request) -> str:
+    value = request.headers.get("x-request-id", "")
+    return value if _REQUEST_ID.fullmatch(value) else "-"
+
+
+def _task_and_course(path: str) -> tuple[str, str]:
+    """The last path part as the task, and the opaque course key after "indexes" when there is one."""
+    parts = path.strip("/").split("/")
+    task = parts[-1] if parts else ""
+    if "indexes" in parts:
+        position = parts.index("indexes") + 1
+        if position < len(parts) - 1:
+            return task, parts[position]
+    return task, "-"
 
 
 def _error(error: ServiceError) -> JSONResponse:
@@ -80,12 +100,10 @@ def create_app(settings: Settings | None = None, models: ModelProvider | None = 
         # Operational metadata only: never the question, course text, prompt, or model output.
         started = time.perf_counter()
         response = await call_next(request)
-        parts = request.url.path.strip("/").split("/")
-        task = parts[-1] if parts else ""
-        course = parts[2] if len(parts) == 4 and parts[1] == "indexes" else "-"
+        task, course = _task_and_course(request.url.path)
         if task != "health":
-            log.info("task=%s course=%s status=%s ms=%d", task, course, response.status_code,
-                     (time.perf_counter() - started) * 1000)
+            log.info("request=%s task=%s course=%s status=%s ms=%d", _request_id(request), task, course,
+                     response.status_code, (time.perf_counter() - started) * 1000)
         return response
 
     @app.exception_handler(ServiceError)

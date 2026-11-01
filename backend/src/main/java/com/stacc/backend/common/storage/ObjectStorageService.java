@@ -20,4 +20,7 @@ public interface ObjectStorageService {
 
     /** Removes the content. Removing a key that does not exist is not an error. */
     void delete(String key);
+
+    /** Whether the store answers right now, for health checks. Never throws, and reads or changes no content. */
+    boolean isReachable();
 }

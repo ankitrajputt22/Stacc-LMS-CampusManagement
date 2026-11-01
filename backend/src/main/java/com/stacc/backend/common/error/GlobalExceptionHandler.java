@@ -1,5 +1,7 @@
 package com.stacc.backend.common.error;
 
+import com.stacc.backend.common.web.RequestIdFilter;
+
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -167,7 +169,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 status.getReasonPhrase(),
                 message,
                 request.getRequestURI(),
-                fieldErrors);
+                fieldErrors,
+                RequestIdFilter.of(request));
         return ResponseEntity.status(status).headers(headers).body(errorResponse);
     }
 }
