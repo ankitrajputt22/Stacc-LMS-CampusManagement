@@ -153,4 +153,21 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
 
         Long getTotal();
     }
+
+    /**
+     * The enrolled semester enrollments of these students with semester, session, and section, the latest session first:
+     * the first one of a student is where they study now.
+     */
+    @Query("""
+            select enrollment
+            from SemesterEnrollment enrollment
+            join fetch enrollment.semester semester
+            join fetch semester.academicSession academicSession
+            left join fetch enrollment.section
+            where enrollment.studentProfile.id in :studentProfileIds
+              and enrollment.status = com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus.ENROLLED
+            order by academicSession.startDate desc, semester.semesterNumber desc
+            """)
+    List<SemesterEnrollment> findEnrolledWithContextByStudentProfileIdIn(
+            @Param("studentProfileIds") Collection<Long> studentProfileIds);
 }

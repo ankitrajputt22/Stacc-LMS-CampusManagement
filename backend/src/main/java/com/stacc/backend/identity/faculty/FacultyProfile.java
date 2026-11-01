@@ -95,6 +95,11 @@ public class FacultyProfile {
         return updatedAt;
     }
 
+    /** Moves the faculty member to another primary department. Teaching still comes only from teaching assignments. */
+    public void moveToDepartment(Department department) {
+        this.department = Require.notNull(department, "department");
+    }
+
     public void activate() {
         this.status = FacultyProfileStatus.ACTIVE;
     }

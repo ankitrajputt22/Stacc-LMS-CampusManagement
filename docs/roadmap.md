@@ -286,5 +286,5 @@ Goal: make every later change safe to make. No new features.
 | --- | --- |
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
-| v0.3 ERP core | In progress: 0.3.1, 0.3.2, 0.3.3, and 0.3.5 done |
+| v0.3 ERP core | In progress: 0.3.1 to 0.3.5 done |
 | v0.4 – v1.0 | Not started |

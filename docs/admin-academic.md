@@ -17,7 +17,7 @@ Department ------< Program ------< Semester >------ AcademicSession
 
 ## Masters and offerings
 
-The masters are reusable definitions. A `CourseOffering`, one course taught in one semester, is semester-specific delivery data with its own section below. A course stays a permanent catalog entry: it has an owning department and no semester, session, teacher, or LMS course. Student and faculty profiles, LMS courses, and accounts are not managed here; teaching assignments are, under Faculty Assignments.
+The masters are reusable definitions. A `CourseOffering`, one course taught in one semester, is semester-specific delivery data with its own section below. A course stays a permanent catalog entry: it has an owning department and no semester, session, teacher, or LMS course. LMS courses and accounts are not managed here; teaching assignments are, under Faculty Assignments, and the academic mapping of student and faculty profiles under Students and Faculty.
 
 ## What can change
 
@@ -101,6 +101,16 @@ Who teaches an offering is its `TeachingAssignment`s (`academic.teaching`), one 
 - The routes need `ADMIN` with `FACULTY_ASSIGNMENT_VIEW` and, to change, `FACULTY_ASSIGNMENT_MANAGE` (`V69`).
 - The admin page is the Faculty Assignments tab (`/admin/academic/faculty-assignments`, with `?offering=` for one offering, which the offerings list links to): choose a session, semester, and offering, see who teaches it, change roles, remove or assign again after a confirmation, and assign a faculty member found by employee ID. The offerings list shows the active faculty, or Unassigned.
 
+## Academic profiles
+
+The official academic mapping of a student is their `StudentProfile` (program, which gives the department, the admission session, an optional roll number, and a status); of a faculty member, their `FacultyProfile` (primary department and status). Where a student studies now (session, semester, and section) is never stored: it is their `ENROLLED` semester enrollment of the latest session.
+
+- `GET /api/v1/admin/academic/profiles/students?q=` finds students whose login ID or roll number contains the text, at most 50, each with name, roll number, program, department, admission session, status, and `current`. `PUT /profiles/students/{studentProfileId}` takes `rollNumber` (up to 30, stored in uppercase, unique, blank clears it; a clash is 409) and `status`. An inactive profile takes no new enrollments and opens no LMS course.
+- `GET /api/v1/admin/academic/profiles/faculty?q=` finds faculty whose login ID contains the text, at most 50, with name, primary department, status, and `activeTeachingCount`. `PUT /profiles/faculty/{facultyProfileId}` takes `departmentId` (an active department; the primary department never limits what they teach) and `status`. An inactive profile cannot be assigned and loses teaching access.
+- These routes need `ADMIN` with `ACADEMIC_PROFILE_VIEW` and, to change, `ACADEMIC_PROFILE_MANAGE` (`V70`). They never return contact details and never change accounts, names, a student's program, or enrollments.
+- `GET /api/v1/academic/me` (`academic.profile`) gives the signed-in person their own profile: a `student` part for an account holding `STUDENT` with a student profile (identity, `current`, and every semester enrollment, latest first, with its course enrollments and only `PUBLISHED` results) and a `faculty` part for an account holding `FACULTY` with a faculty profile (department and the offerings they actively teach, with role). It needs `ACADEMIC_PROFILE_VIEW_OWN` with `STUDENT` or `FACULTY`, takes the account from the token, reads every role the account holds, and changes nothing. There is no GPA, percentage, rank, or pass or fail.
+- The admin pages are the Students and Faculty tabs; the person's own page is `/academic/profile`, linked from the Account menu for students and faculty. The demo students have roll numbers 25CSE001 to 25CSE003.
+
 ## Student lookup
 
 `GET /api/v1/admin/academic/enrollments/students?q=` finds existing student profiles for enrollment. It matches part of the account's login ID, ignoring case; `%` and `_` match themselves. It answers at most 50, by login ID, and an empty `q` lists the first 50. Text over 100 characters answers 400. Each entry has only `studentProfileId`, `loginId`, `programId`, `programCode`, `programName`, `admissionSessionCode`, and `studentProfileStatus`: never a password hash, role, permission, account ID, or account status. It is read-only and not a user directory; nothing here creates or edits accounts or profiles.
@@ -152,7 +162,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Students, Faculty, Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 

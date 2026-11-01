@@ -33,6 +33,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "student_profiles")
 public class StudentProfile {
 
+    public static final int MAX_ROLL_NUMBER_LENGTH = 30;
+
     // No cascade on any link: the account, programme, and session are never created or
     // deleted through a student profile.
     @Id
@@ -51,6 +53,10 @@ public class StudentProfile {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "admission_session_id", nullable = false, updatable = false)
     private AcademicSession admissionSession;
+
+    // The college's roll number, unique when set. The student ID stays the account's login ID.
+    @Column(name = "roll_number", length = MAX_ROLL_NUMBER_LENGTH, unique = true)
+    private String rollNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -92,6 +98,17 @@ public class StudentProfile {
 
     public AcademicSession getAdmissionSession() {
         return admissionSession;
+    }
+
+    /** The roll number, or null when none is set. */
+    public String getRollNumber() {
+        return rollNumber;
+    }
+
+    /** Sets or clears the roll number; it is stored in uppercase without surrounding spaces. */
+    public void assignRollNumber(String rollNumber) {
+        String value = Require.optionalText(rollNumber, "rollNumber", MAX_ROLL_NUMBER_LENGTH);
+        this.rollNumber = value == null ? null : value.toUpperCase(java.util.Locale.ROOT);
     }
 
     public StudentProfileStatus getStatus() {

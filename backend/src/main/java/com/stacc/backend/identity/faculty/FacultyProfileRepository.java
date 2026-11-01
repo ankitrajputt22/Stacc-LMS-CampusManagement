@@ -35,4 +35,13 @@ public interface FacultyProfileRepository extends JpaRepository<FacultyProfile, 
             where profile.id = :facultyProfileId
             """)
     Optional<FacultyProfile> findWithAccountById(@Param("facultyProfileId") Long facultyProfileId);
+
+    @Query("""
+            select profile
+            from FacultyProfile profile
+            join fetch profile.userAccount
+            join fetch profile.department
+            where profile.userAccount.id = :userAccountId
+            """)
+    Optional<FacultyProfile> findWithContextByUserAccountId(@Param("userAccountId") Long userAccountId);
 }

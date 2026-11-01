@@ -465,9 +465,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         CourseOffering cs401 = offering(networks, fourth, offering -> { });
 
         // --- Profiles. Students were admitted in the previous session; no profile grants LMS access by itself.
-        StudentProfile student1Profile = studentProfile(student1, btech, previous);
-        StudentProfile student2Profile = studentProfile(student2, btech, previous);
-        StudentProfile studentFacultyStudent = studentProfile(studentFaculty, btech, previous);
+        StudentProfile student1Profile = studentProfile(student1, btech, previous, "25CSE001");
+        StudentProfile student2Profile = studentProfile(student2, btech, previous, "25CSE002");
+        StudentProfile studentFacultyStudent = studentProfile(studentFaculty, btech, previous, "25CSE003");
         FacultyProfile faculty1Profile = facultyProfile(faculty1, cse);
         FacultyProfile faculty2Profile = facultyProfile(faculty2, cse);
         FacultyProfile studentFacultyTeacher = facultyProfile(studentFaculty, cse);
@@ -730,9 +730,12 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private StudentProfile studentProfile(UserAccount account, Program program, AcademicSession admission) {
-        return findOrCreate(repositories.studentProfiles.findByUserAccountId(account.getId()),
-                () -> repositories.studentProfiles.save(new StudentProfile(account, program, admission)));
+    private StudentProfile studentProfile(UserAccount account, Program program, AcademicSession admission, String rollNumber) {
+        return findOrCreate(repositories.studentProfiles.findByUserAccountId(account.getId()), () -> {
+            StudentProfile profile = new StudentProfile(account, program, admission);
+            profile.assignRollNumber(rollNumber);
+            return repositories.studentProfiles.save(profile);
+        });
     }
 
     private FacultyProfile facultyProfile(UserAccount account, Department department) {

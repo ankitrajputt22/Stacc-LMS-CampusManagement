@@ -53,4 +53,34 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
             where studentProfile.id = :studentProfileId
             """)
     Optional<StudentProfile> findWithContextById(@Param("studentProfileId") Long studentProfileId);
+
+    /**
+     * Student profiles whose login ID or roll number contains the text (lower-cased and escaped by the caller), with
+     * the account, program, department, and admission session, by login ID.
+     */
+    @Query("""
+            select profile
+            from StudentProfile profile
+            join fetch profile.userAccount account
+            join fetch profile.program program
+            join fetch program.department
+            join fetch profile.admissionSession
+            where lower(account.loginId) like :contains escape '!'
+               or lower(coalesce(profile.rollNumber, '')) like :contains escape '!'
+            order by account.loginId asc
+            """)
+    List<StudentProfile> searchByLoginIdOrRollNumber(@Param("contains") String contains, Pageable page);
+
+    @Query("""
+            select profile
+            from StudentProfile profile
+            join fetch profile.userAccount
+            join fetch profile.program program
+            join fetch program.department
+            join fetch profile.admissionSession
+            where profile.userAccount.id = :userAccountId
+            """)
+    Optional<StudentProfile> findWithContextByUserAccountId(@Param("userAccountId") Long userAccountId);
+
+    boolean existsByRollNumberAndIdNot(String rollNumber, Long id);
 }
