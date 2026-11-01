@@ -44,6 +44,18 @@ jobs:
       - name: Build and test
         run: mvn -B -ntp verify
 
+      # Without Docker the MySQL tests skip themselves. CI has Docker, so here they must really have run.
+      - name: Check that the MySQL tests ran
+        run: |
+          summary=target/failsafe-reports/failsafe-summary.xml
+          completed=$(sed -n 's:.*<completed>\([0-9]*\)</completed>.*:\1:p' "$summary")
+          skipped=$(sed -n 's:.*<skipped>\([0-9]*\)</skipped>.*:\1:p' "$summary")
+          echo "MySQL tests run: ${completed:-0}, skipped: ${skipped:-0}"
+          if [ "${completed:-0}" -eq 0 ] || [ "${skipped:-0}" -ne 0 ]; then
+            echo "::error::The MySQL tests did not all run."
+            exit 1
+          fi
+
       - name: Keep test reports when tests fail
         if: failure()
         uses: actions/upload-artifact@v7
