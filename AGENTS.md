@@ -50,6 +50,7 @@
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
 - Keep commit messages simple and human-readable.
+- GitHub Actions (`.github/workflows/ci.yml`) runs the backend tests, the frontend lint and build, and the AI service lint and tests. Merge a phase only after they pass on its branch, and never skip or disable a failing check. CI uses no secrets. See `docs/continuous-integration.md`.
 
 ## Academic Data
 
