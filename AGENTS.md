@@ -8,6 +8,7 @@
 - Inspect the repository before editing and preserve existing working functionality.
 - Do not refactor unrelated code without a clear phase-related reason.
 - Never hard-code credentials or secrets. Use environment configuration instead.
+- Settings come from environment variables listed in `docs/configuration.md`. Development has safe `localhost` defaults; the `prod` profile has none for hosts and names, logs JSON, closes the API description, and `ProductionSettingsCheck` refuses unsafe combinations (root database user, test password or `dev-seed`, empty storage keys, non-https origins, AI without a token). A new setting gets a checked `@ConfigurationProperties` record, an `.env.example` placeholder, and a line in that doc.
 - Enforce permissions on the backend; frontend visibility is not a security boundary.
 - Never store plaintext passwords. Store only password hashes, and never log or expose raw passwords or hashes.
 - Hash and check passwords only with the shared `PasswordEncoder`. Do not compare password strings yourself or write custom hashing code.
