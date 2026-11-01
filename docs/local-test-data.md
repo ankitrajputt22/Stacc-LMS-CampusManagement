@@ -127,6 +127,10 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Phase 46 adds two for the reports: `student2`'s "Course transcript copy (development)", completed by `admin1`, and `studentfaculty1`'s "Library card renewal (development)", cancelled by its requester. Both use the General administrative request service. Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
 - One study material is seeded since Phase 47, so AI knowledge has a file to index: the published plain-text "Linked list cheat sheet (development)" (`linked-list-cheat-sheet.txt`) under CS301's "Singly linked lists". It is uploaded through the normal material service, so it needs object storage; seeding it runs in its own transaction after the rest and is skipped, with a log line, when storage is not reachable. Upload more at `/teaching/:lmsCourseId`.
 
+## Used by the MySQL tests
+
+The backend's MySQL tests (`*MySqlIT`, see `testing.md`) start a throwaway MySQL container with this profile, so every CI run seeds this data from an empty database and checks that seeding a second time creates nothing. Some tests work on particular records (for example `student1`'s and `studentfaculty1`'s hostel applications, or the demo requests `demo-1` and `demo-2`); when a phase changes the seeded data, keep those tests passing. The tests use a random password for that run, never your `STACC_TEST_PASSWORD`.
+
 ## Starting over
 
 The data lives in your local database. To start from an empty database with Docker, remove the stack's volumes with `docker compose down -v`. This deletes **all** local data, not only the demo data. Then start again with the profile.
