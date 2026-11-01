@@ -33,7 +33,7 @@ These were settled while reviewing the specifications. Each takes effect in the 
 | # | Decision | Phase |
 | --- | --- | --- |
 | 1 | Sign-in moves from browser-stored tokens to **server sessions** in a secure HttpOnly cookie with CSRF protection, so logout, disabling an account, and forced password changes take effect at once. | 0.2.2 |
-| 2 | Every public route moves under **`/api/v1`**; the internal AI service uses `/internal/v1`. | 0.1.6 |
+| 2 | Every public route moves under **`/api/v1/v1`**; the internal AI service uses `/internal/v1/v1`. | 0.1.6 |
 | 3 | Names, photos, and contact details live on a **person profile** per account, separate from the login account and from the academic student and faculty profiles. | 0.2.1 |
 | 4 | One dashboard with a part per role the account holds. Staff roles (Security, Maintenance) get their own focused pages. | 0.2.10 |
 | 5 | LMS student access is **worked out live** from official enrollment and the course's state, with no synchronised membership copy that can drift. | 0.5.1 |
@@ -62,7 +62,7 @@ Goal: make every later change safe to make. No new features.
 | ★ 0.1.3 | Tests on real MySQL | Testcontainers MySQL for the backend: every migration from an empty database, constraints, and the row-lock rules (bed allocation, attempt numbers, approval decisions) under concurrent requests. |
 | ★ 0.1.4 | Frontend unit tests | Vitest and React Testing Library, with first tests for the sign-in portal choice, role reading, navigation, and the 401/403 handling in `apiClient`. |
 | ★ 0.1.5 | End-to-end tests | Playwright against the Docker stack with demo data: sign-in through both portals, a student opening a course and submitting, a faculty member grading. |
-| ★ 0.1.6 | API version | All public routes move to `/api/v1` (backend, `SecurityConfig`, Nginx, frontend API modules, docs); the AI service moves to `/internal/v1`. |
+| ★ 0.1.6 | API version | All public routes move to `/api/v1/v1` (backend, `SecurityConfig`, Nginx, frontend API modules, docs); the AI service moves to `/internal/v1/v1`. |
 | ★ 0.1.7 | Request IDs and health | An `X-Request-ID` on every request, in logs and in the error format; Actuator health with readiness and liveness (database, file storage, AI), reachable only internally. |
 | ★ 0.1.8 | Configuration profiles | Separate development, test, and production settings; production refuses to start with unsafe defaults or missing secrets; one reference of every environment variable. |
 | 0.1.9 | Frontend data layer | TanStack Query with shared query keys; a few pages converted as the pattern, the rest during their redesign. |
@@ -284,5 +284,5 @@ Goal: make every later change safe to make. No new features.
 
 | Version | Status |
 | --- | --- |
-| v0.1 Foundation | In progress: 0.1.1 to 0.1.5 done |
+| v0.1 Foundation | In progress: 0.1.1 to 0.1.6 done |
 | v0.2 – v1.0 | Not started |

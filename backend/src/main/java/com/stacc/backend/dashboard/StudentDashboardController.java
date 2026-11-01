@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * decided by the course, attendance, and result rules for the account in the access token. It takes no parameters.
  */
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")
 public class StudentDashboardController {
 

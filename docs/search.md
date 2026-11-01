@@ -29,7 +29,7 @@ Focused, parameterized, paged queries in each domain's repository
 
 Stacc is a college modular monolith with a small dataset. Search is a handful of bounded `LIKE` queries over existing tables, each paged in the database and counted with the same conditions. There is no OpenSearch, Elasticsearch, Solr, Redis Search, Meilisearch, Algolia, vector search, embedding, or indexing pipeline, and no search table.
 
-**Scaling path:** the frontend only knows `GET /api/search` and `GET /api/search/results` and the result shape below. If `LIKE '%text%'` scans become slow (tens of thousands of rows per searched table, long text columns, or many searches per second), a provider can be moved to an external engine such as OpenSearch behind the same `SearchProvider` interface, without changing the API. Access rules would still be applied by the provider, never by the index.
+**Scaling path:** the frontend only knows `GET /api/v1/search` and `GET /api/v1/search/results` and the result shape below. If `LIKE '%text%'` scans become slow (tens of thousands of rows per searched table, long text columns, or many searches per second), a provider can be moved to an external engine such as OpenSearch behind the same `SearchProvider` interface, without changing the API. Access rules would still be applied by the provider, never by the index.
 
 ## The search text
 
@@ -71,14 +71,14 @@ Student and teaching results are separate kinds because they lead to different p
 
 - **Student LMS.** The course list comes from `LmsStudentCourseQueryService`, the same rule as My Courses and every course page (`LmsStudentAccessPolicy`): only currently accessible `PUBLISHED` LMS courses. Assignments and announcements are `PUBLISHED` ones in those courses. Materials need the whole chain `PUBLISHED` (module, topic, and material, `LmsContentPolicy.PUBLISHED_ONLY`); the provider checks `LmsContentPolicy.isVisibleToStudents` again on each row. Draft or archived courses, other students' courses, and inaccessible content never match.
 - **Faculty.** Teaching courses come from `LmsFacultyManagedCourseQueryService`: an `ACTIVE` faculty profile with an `ACTIVE` teaching assignment. Offerings without an LMS course and archived ones are listed, and they open the Teaching list. Teaching content comes from the `DRAFT` or `PUBLISHED` LMS courses that `LmsFacultyCourseQueryService` lists, and includes everything not archived (`LmsContentPolicy.IN_USE`). Another faculty member's courses and content never appear.
-- **Calendar.** Uses the relevance of `GET /api/calendar/me`. Admins see every event users may see. Students see the events of their own `ENROLLED` or `COMPLETED` semesters, and faculty those of semesters they actively teach, each with the session-wide events of those sessions. Drafts never match. Cancelled events that were published first appear and say "Cancelled".
+- **Calendar.** Uses the relevance of `GET /api/v1/calendar/me`. Admins see every event users may see. Students see the events of their own `ENROLLED` or `COMPLETED` semesters, and faculty those of semesters they actively teach, each with the session-wide events of those sessions. Drafts never match. Cancelled events that were published first appear and say "Cancelled".
 - **Campus notices.** Uses the notice feed rule: `PUBLISHED` notices visible to any role the account holds. Drafts and archived notices never match.
 - **Helpdesk.** The scope comes from `HelpdeskAccessService.canViewAll` (`ADMIN` with `VIEW_ALL`) or `canViewOwn` (`VIEW_OWN`). The description is not searched.
 - **Campus requests and hostel applications.** Own records only, unless the account holds the office permission with `ADMIN`. Statuses are the effective ones from the approval engine.
 - **Academic data.** Admins only, each kind under its own view permission. Records of every status are found, as the admin lists show them.
 - **Not searchable:** user accounts, student or faculty directories, passwords or security data, results, grades, submissions, and attendance. Those have their own pages and rules. File contents are never read or indexed: no PDF or DOCX extraction and no OCR.
 
-When an account lacks a domain's role or permission, that kind is simply left out; the rest of the search still works. A kind the account may not search answers an empty page on `/api/search/results`, never 403 or 404.
+When an account lacks a domain's role or permission, that kind is simply left out; the rest of the search still works. A kind the account may not search answers an empty page on `/api/v1/search/results`, never 403 or 404.
 
 ## Multi-role accounts
 
@@ -103,8 +103,8 @@ Each result carries plain-text `title`, `subtitle`, and `snippet`. Snippets are 
 
 | Route | Purpose |
 | --- | --- |
-| `GET /api/search?q=` | The preview: `{ query, sections: [{ type, label, totalCount, items }] }`. At most 5 items per kind (`GlobalSearchService.PREVIEW_LIMIT`), only kinds with results, in the order above. |
-| `GET /api/search/results?q=&type=&page=&size=` | One kind, paged: `{ query, type, label, items, page, size, totalElements, totalPages }`. `page` defaults to 0 and `size` to 20 (1 to 100). It applies exactly the preview's rules. |
+| `GET /api/v1/search?q=` | The preview: `{ query, sections: [{ type, label, totalCount, items }] }`. At most 5 items per kind (`GlobalSearchService.PREVIEW_LIMIT`), only kinds with results, in the order above. |
+| `GET /api/v1/search/results?q=&type=&page=&size=` | One kind, paged: `{ query, type, label, items, page, size, totalElements, totalPages }`. `page` defaults to 0 and `size` to 20 (1 to 100). It applies exactly the preview's rules. |
 
 Both routes need `GLOBAL_SEARCH_USE` with `STUDENT`, `FACULTY`, or `ADMIN`, and take the account from the access token. They answer 200, 400 (invalid text, type, page, or size), 401, or 403. A result item is `{ type, title, subtitle, snippet, actionPath, occurredAt }`: no entity, no account ID, and no permission.
 

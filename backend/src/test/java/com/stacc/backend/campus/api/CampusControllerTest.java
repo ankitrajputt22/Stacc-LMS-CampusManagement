@@ -39,8 +39,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the campus routes through Spring Security, with the campus services as stand-ins. */
 class CampusControllerTest extends DatabaseFreeApiTest {
 
-    private static final String CAMPUS = "/api/campus";
-    private static final String ADMIN = "/api/campus/admin";
+    private static final String CAMPUS = "/api/v1/campus";
+    private static final String ADMIN = "/api/v1/campus/admin";
 
     @MockitoBean
     private CampusServiceDefinitionService services;

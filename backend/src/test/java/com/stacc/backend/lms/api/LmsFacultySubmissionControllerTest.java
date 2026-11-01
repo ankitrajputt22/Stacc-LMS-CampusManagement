@@ -68,14 +68,14 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
     }
 
     private static MockHttpServletRequestBuilder gradeRequest(String body) {
-        return put("/api/lms/faculty/submission-attempts/31/grade").contentType(MediaType.APPLICATION_JSON).content(body);
+        return put("/api/v1/lms/faculty/submission-attempts/31/grade").contentType(MediaType.APPLICATION_JSON).content(body);
     }
 
     private static List<MockHttpServletRequestBuilder> routes() {
         return List.of(
-                get("/api/lms/faculty/assignments/5/submissions"),
-                get("/api/lms/faculty/assignments/5/submissions/12"),
-                get("/api/lms/faculty/submission-attachments/40/download"),
+                get("/api/v1/lms/faculty/assignments/5/submissions"),
+                get("/api/v1/lms/faculty/assignments/5/submissions/12"),
+                get("/api/v1/lms/faculty/submission-attachments/40/download"),
                 gradeRequest("{\"marksAwarded\":18}"));
     }
 
@@ -91,7 +91,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
         when(queryService.listSubmissions(ACCOUNT_ID, 5L)).thenReturn(List.of(new LmsFacultySubmissionSummaryResponse(
                 12L, "2408400100011", 2, 2, Instant.parse("2026-10-20T17:04:00Z"), false, false, null, null)));
 
-        mockMvc.perform(as(graderToken(), get("/api/lms/faculty/assignments/5/submissions").param("facultyProfileId", "999")))
+        mockMvc.perform(as(graderToken(), get("/api/v1/lms/faculty/assignments/5/submissions").param("facultyProfileId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].*", hasSize(9)))
                 .andExpect(jsonPath("$[0].studentLoginId").value("2408400100011"))
@@ -110,7 +110,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
                         List.of(new LmsSubmissionAttachmentResponse(40L, "answer.pdf", "application/pdf", 9)),
                         LmsSubmissionGradeResponse.of(grade("18", "Good."))))));
 
-        mockMvc.perform(as(graderToken(), get("/api/lms/faculty/assignments/5/submissions/12")))
+        mockMvc.perform(as(graderToken(), get("/api/v1/lms/faculty/assignments/5/submissions/12")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.studentLoginId").value("2408400100011"))
                 .andExpect(jsonPath("$.attempts[0].late").value(true))
@@ -127,7 +127,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
         when(queryService.openAttachment(ACCOUNT_ID, 40L)).thenReturn(new LmsAssignmentSubmissionService.Download(
                 "answer.pdf", "application/pdf", PDF.length, new ByteArrayInputStream(PDF)));
 
-        mockMvc.perform(as(graderToken(), get("/api/lms/faculty/submission-attachments/40/download")))
+        mockMvc.perform(as(graderToken(), get("/api/v1/lms/faculty/submission-attachments/40/download")))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "application/pdf"))
                 .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, PDF.length))
@@ -176,7 +176,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(graderToken(), gradeRequest("{\"marksAwarded\":21}")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Marks cannot exceed 20."));
-        mockMvc.perform(as(graderToken(), get("/api/lms/faculty/assignments/5/submissions/99")))
+        mockMvc.perform(as(graderToken(), get("/api/v1/lms/faculty/assignments/5/submissions/99")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Submission not found or unavailable."));
     }
@@ -203,14 +203,14 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
     @Test
     void studentOwningAFileStillCannotUseTheFacultyDownload() throws Exception {
         mockMvc.perform(as(TestTokens.valid("TEST-STUDENT-1", 12L, "ROLE_STUDENT", "LMS_COURSE_VIEW", "LMS_ASSIGNMENT_SUBMIT"),
-                        get("/api/lms/faculty/submission-attachments/40/download")))
+                        get("/api/v1/lms/faculty/submission-attachments/40/download")))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(queryService);
     }
 
     @Test
     void gradesCannotBeDeleted() throws Exception {
-        mockMvc.perform(as(graderToken(), delete("/api/lms/faculty/submission-attempts/31/grade")))
+        mockMvc.perform(as(graderToken(), delete("/api/v1/lms/faculty/submission-attempts/31/grade")))
                 .andExpect(status().isMethodNotAllowed());
         verifyNoInteractions(gradingService);
     }
@@ -219,10 +219,10 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
     void reviewAndGradingRoutesAppearInTheApiDocumentation() throws Exception {
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
         for (String[] operation : new String[][] {
-                {"/api/lms/faculty/assignments/{assignmentId}/submissions", "get"},
-                {"/api/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}", "get"},
-                {"/api/lms/faculty/submission-attachments/{attachmentId}/download", "get"},
-                {"/api/lms/faculty/submission-attempts/{attemptId}/grade", "put"}}) {
+                {"/api/v1/lms/faculty/assignments/{assignmentId}/submissions", "get"},
+                {"/api/v1/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}", "get"},
+                {"/api/v1/lms/faculty/submission-attachments/{attachmentId}/download", "get"},
+                {"/api/v1/lms/faculty/submission-attempts/{attemptId}/grade", "put"}}) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())
                     .andExpect(jsonPath(path + ".responses['200']").exists())
@@ -230,7 +230,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath(path + ".responses['403']").exists())
                     .andExpect(jsonPath(path + ".responses['404']").exists());
         }
-        result.andExpect(jsonPath("$.paths['/api/lms/faculty/submission-attempts/{attemptId}/grade'].put.responses['400']").exists())
+        result.andExpect(jsonPath("$.paths['/api/v1/lms/faculty/submission-attempts/{attemptId}/grade'].put.responses['400']").exists())
                 .andExpect(jsonPath("$.components.schemas.LmsSubmissionAttemptResponse.properties.grade").exists())
                 .andExpect(jsonPath("$.components.schemas.LmsSubmissionGradeResponse.properties.gradedByFacultyProfileId").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsGradeSubmissionAttemptRequest.properties.maxMarksSnapshot").doesNotExist());

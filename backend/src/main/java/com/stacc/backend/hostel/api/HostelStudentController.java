@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * profile, or account ID. Students never choose a hostel, room, or bed, and never decide approvals.
  */
 @RestController
-@RequestMapping("/api/hostel/student")
+@RequestMapping("/api/v1/hostel/student")
 @Tag(name = "Hostel")
 @ApiResponse(
         responseCode = "401",

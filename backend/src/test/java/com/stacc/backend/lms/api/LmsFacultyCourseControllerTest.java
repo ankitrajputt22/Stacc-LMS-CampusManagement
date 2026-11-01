@@ -39,7 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
 
-    private static final String FACULTY_MY_COURSES = "/api/lms/faculty/my-courses";
+    private static final String FACULTY_MY_COURSES = "/api/v1/lms/faculty/my-courses";
 
     // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-FACULTY-1";
@@ -212,7 +212,7 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void facultyPermissionOpensNoStudentRoute() throws Exception {
-        for (String studentPath : List.of("/api/lms/my-courses", "/api/lms/courses/7")) {
+        for (String studentPath : List.of("/api/v1/lms/my-courses", "/api/v1/lms/courses/7")) {
             getAs(studentPath, facultyToken())
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.status").value(403));
@@ -253,7 +253,7 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void routeAppearsInTheApiDocumentationAsABearerTokenOperation() throws Exception {
-        String operation = "$.paths['/api/lms/faculty/my-courses'].get";
+        String operation = "$.paths['/api/v1/lms/faculty/my-courses'].get";
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(operation + ".summary")
@@ -263,7 +263,7 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath(operation + ".responses['200']").exists())
                 .andExpect(jsonPath(operation + ".responses['401']").exists())
                 .andExpect(jsonPath(operation + ".responses['403']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/faculty/my-courses'].post").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/faculty/my-courses'].post").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsFacultyCourseSummaryResponse.properties.*", hasSize(8)))
                 .andExpect(jsonPath("$.components.schemas.LmsFacultyCourseSummaryResponse.properties.lmsCourseStatus.enum",
                         hasSize(2)));

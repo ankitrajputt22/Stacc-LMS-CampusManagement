@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  * assignments, and LMS access, taken from the access token. No account, profile, or enrollment ID is accepted.
  */
 @RestController
-@RequestMapping("/api/calendar")
+@RequestMapping("/api/v1/calendar")
 @Tag(name = "Calendar")
 public class CalendarController {
 

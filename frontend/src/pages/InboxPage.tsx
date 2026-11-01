@@ -112,7 +112,7 @@ function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
 }
 
 /**
- * The signed-in account's Inbox at /inbox: one Inbox per account, whatever roles it holds, from GET /api/notifications,
+ * The signed-in account's Inbox at /inbox: one Inbox per account, whatever roles it holds, from GET /api/v1/notifications,
  * page by page and newest first, with All and Unread. Loading it marks nothing read; only the buttons, an action link,
  * and Mark all as read change read state, and each change updates the shared unread badge without a reload. Action
  * links only ever lead inside the app, where the page checks access as usual.

@@ -16,34 +16,34 @@ def test_health_is_open_and_reveals_nothing(client):
                                      {"Authorization": f"Bearer {TOKEN}"}])
 def test_internal_routes_need_the_internal_token(client, headers):
     for path, body in [
-        (f"/internal/indexes/{COURSE}/replace", {"contentFingerprint": FINGERPRINT, "sources": [topic(1, "T", "text")]}),
-        (f"/internal/indexes/{COURSE}/ask", {"indexFingerprint": FINGERPRINT, "question": "What is a key?"}),
-        (f"/internal/indexes/{COURSE}/summary", {"indexFingerprint": FINGERPRINT, "topicId": 1}),
-        (f"/internal/indexes/{COURSE}/practice", {"indexFingerprint": FINGERPRINT}),
-        (f"/internal/indexes/{COURSE}/assessment-draft",
+        (f"/internal/v1/indexes/{COURSE}/replace", {"contentFingerprint": FINGERPRINT, "sources": [topic(1, "T", "text")]}),
+        (f"/internal/v1/indexes/{COURSE}/ask", {"indexFingerprint": FINGERPRINT, "question": "What is a key?"}),
+        (f"/internal/v1/indexes/{COURSE}/summary", {"indexFingerprint": FINGERPRINT, "topicId": 1}),
+        (f"/internal/v1/indexes/{COURSE}/practice", {"indexFingerprint": FINGERPRINT}),
+        (f"/internal/v1/indexes/{COURSE}/assessment-draft",
          {"indexFingerprint": FINGERPRINT, "questionCount": 1, "difficulty": "EASY", "questionType": "MCQ"}),
     ]:
         response = client.post(path, headers=headers, json=body)
         assert response.status_code == 401, path
         assert response.json()["code"] == "UNAUTHORIZED"
-    assert client.get("/internal/health", headers=headers).status_code == 401
+    assert client.get("/internal/v1/health", headers=headers).status_code == 401
 
 
 def test_internal_health_with_token(client):
-    assert client.get("/internal/health", headers=HEADERS).json() == {"status": "ok", "provider": "fake"}
+    assert client.get("/internal/v1/health", headers=HEADERS).json() == {"status": "ok", "provider": "fake"}
 
 
 @pytest.mark.parametrize("key", ["..", "ABCDEF0123456789ABCDEF0123456789", "0123", "0123456789abcdef0123456789abcdeg",
                                  "..%2F..%2Fetc", "0123456789abcdef0123456789abcdef0", "%2e%2e"])
 def test_unsafe_course_keys_are_refused(client, key):
-    response = client.post(f"/internal/indexes/{key}/replace", headers=HEADERS,
+    response = client.post(f"/internal/v1/indexes/{key}/replace", headers=HEADERS,
                            json={"contentFingerprint": FINGERPRINT, "sources": [topic(1, "T", "Some text.")]})
     assert response.status_code in (400, 404)
     assert "traceback" not in response.text.lower()
 
 
 def test_validation_errors_do_not_echo_input(client):
-    response = client.post(f"/internal/indexes/{COURSE}/ask", headers=HEADERS,
+    response = client.post(f"/internal/v1/indexes/{COURSE}/ask", headers=HEADERS,
                            json={"indexFingerprint": FINGERPRINT, "question": "x", "secret": "do-not-echo"})
     assert response.status_code == 400
     assert response.json() == {"code": "INVALID_REQUEST", "message": "The request is not valid."}

@@ -10,7 +10,7 @@ For example:
   "status": 400,
   "error": "Bad Request",
   "message": "Validation failed",
-  "path": "/api/example",
+  "path": "/api/v1/example",
   "fieldErrors": [
     {
       "field": "name",

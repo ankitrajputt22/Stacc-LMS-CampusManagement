@@ -115,7 +115,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Three demo requests, started through the approval engine with source type `DEV_DEMO`, each waiting at the faculty step:
   - `student1` (`demo-1`) and `student2` (`demo-2`): in the queues of `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`;
   - `studentfaculty1` (`demo-3`): in the same queues except their own.
-- Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/approvals`.
+- Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/v1/approvals`.
 
 **Hostel (development only)**
 - Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active.

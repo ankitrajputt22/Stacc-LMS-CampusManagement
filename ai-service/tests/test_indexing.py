@@ -10,7 +10,7 @@ NORMALIZATION = "Database normalization organises tables to reduce redundancy. T
 
 
 def ask(client, question, fingerprint=FINGERPRINT):
-    return client.post(f"/internal/indexes/{COURSE}/ask", headers=HEADERS,
+    return client.post(f"/internal/v1/indexes/{COURSE}/ask", headers=HEADERS,
                        json={"indexFingerprint": fingerprint, "question": question})
 
 
@@ -104,6 +104,6 @@ def test_vectors_are_stored_outside_any_database_as_unit_vectors(client, setting
     {"sourceType": "TOPIC", "sourceId": 1, "topicId": 1, "title": "T", "text": "x", "objectKey": "lms/courses/1"},
 ])
 def test_malformed_sources_are_refused(client, bad):
-    response = client.post(f"/internal/indexes/{COURSE}/replace", headers=HEADERS,
+    response = client.post(f"/internal/v1/indexes/{COURSE}/replace", headers=HEADERS,
                            json={"contentFingerprint": FINGERPRINT, "sources": [bad]})
     assert response.status_code == 400

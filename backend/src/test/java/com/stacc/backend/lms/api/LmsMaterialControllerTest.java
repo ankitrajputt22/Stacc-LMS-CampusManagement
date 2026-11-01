@@ -78,7 +78,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
     }
 
     private static MockMultipartHttpServletRequestBuilder upload(String title, MockMultipartFile file) {
-        MockMultipartHttpServletRequestBuilder request = multipart("/api/lms/faculty/topics/31/materials");
+        MockMultipartHttpServletRequestBuilder request = multipart("/api/v1/lms/faculty/topics/31/materials");
         if (file != null) {
             request.file(file);
         }
@@ -99,10 +99,10 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
     private static List<AbstractMockHttpServletRequestBuilder<?>> changeRoutes() {
         return List.<AbstractMockHttpServletRequestBuilder<?>>of(
                 upload("Notes", pdf()),
-                json(put("/api/lms/faculty/topics/31/materials/reorder"), "{\"materialIds\":[7]}"),
-                json(put("/api/lms/faculty/materials/7"), "{\"title\":\"Notes\"}"),
-                post("/api/lms/faculty/materials/7/publish"),
-                post("/api/lms/faculty/materials/7/archive"));
+                json(put("/api/v1/lms/faculty/topics/31/materials/reorder"), "{\"materialIds\":[7]}"),
+                json(put("/api/v1/lms/faculty/materials/7"), "{\"title\":\"Notes\"}"),
+                post("/api/v1/lms/faculty/materials/7/publish"),
+                post("/api/v1/lms/faculty/materials/7/archive"));
     }
 
     // Upload and changes
@@ -144,7 +144,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath("$.message").value("Validation failed"))
                     .andExpect(jsonPath("$.fieldErrors").isNotEmpty());
         }
-        mockMvc.perform(as(managerToken(), json(post("/api/lms/faculty/topics/31/materials"), "{\"title\":\"Notes\"}")))
+        mockMvc.perform(as(managerToken(), json(post("/api/v1/lms/faculty/topics/31/materials"), "{\"title\":\"Notes\"}")))
                 .andExpect(status().isUnsupportedMediaType());
 
         verifyNoInteractions(materialService);
@@ -160,7 +160,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(managerToken(), upload("Notes", pdf())))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("The file's contents do not match its type."));
-        mockMvc.perform(as(managerToken(), post("/api/lms/faculty/materials/7/publish")))
+        mockMvc.perform(as(managerToken(), post("/api/v1/lms/faculty/materials/7/publish")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Study material not found or unavailable."));
     }
@@ -203,8 +203,8 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void materialsCannotBeDeletedOrHaveTheirFileReplaced() throws Exception {
-        mockMvc.perform(as(managerToken(), delete("/api/lms/faculty/materials/7"))).andExpect(status().isMethodNotAllowed());
-        mockMvc.perform(as(managerToken(), multipart("/api/lms/faculty/materials/7").file(pdf())))
+        mockMvc.perform(as(managerToken(), delete("/api/v1/lms/faculty/materials/7"))).andExpect(status().isMethodNotAllowed());
+        mockMvc.perform(as(managerToken(), multipart("/api/v1/lms/faculty/materials/7").file(pdf())))
                 .andExpect(status().isMethodNotAllowed());
 
         verifyNoInteractions(materialService);
@@ -217,7 +217,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         when(materialService.openForDownload(eq(ACCOUNT_ID), any(), eq(7L))).thenReturn(new LmsStudyMaterialService.Download(
                 "Week 1 – Notes.pdf", "application/pdf", PDF.length, new ByteArrayInputStream(PDF)));
 
-        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/lms/materials/7/download")))
+        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/v1/lms/materials/7/download")))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "application/pdf"))
                 .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, PDF.length))
@@ -232,12 +232,12 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         when(materialService.openForDownload(anyLong(), any(), anyLong())).thenAnswer(call -> new LmsStudyMaterialService.Download(
                 "Notes.pdf", "application/pdf", PDF.length, new ByteArrayInputStream(PDF)));
 
-        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/lms/materials/7/download"))).andExpect(status().isOk());
-        mockMvc.perform(as(tokenWith("ROLE_FACULTY", "FACULTY_COURSE_VIEW"), get("/api/lms/materials/7/download"))).andExpect(status().isOk());
+        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/v1/lms/materials/7/download"))).andExpect(status().isOk());
+        mockMvc.perform(as(tokenWith("ROLE_FACULTY", "FACULTY_COURSE_VIEW"), get("/api/v1/lms/materials/7/download"))).andExpect(status().isOk());
         mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW", "ROLE_FACULTY", "FACULTY_COURSE_VIEW"),
-                get("/api/lms/materials/7/download"))).andExpect(status().isOk());
+                get("/api/v1/lms/materials/7/download"))).andExpect(status().isOk());
         mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW", "ROLE_FACULTY"),
-                get("/api/lms/materials/7/download"))).andExpect(status().isOk());
+                get("/api/v1/lms/materials/7/download"))).andExpect(status().isOk());
 
         // The last token holds FACULTY without its view permission, so it opens the student rule only.
         verify(materialService, times(2)).openForDownload(ACCOUNT_ID, new LmsStudyMaterialService.Reader(true, false), 7L);
@@ -247,14 +247,14 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void downloadNeedsAStudentOrFacultyCourseViewer() throws Exception {
-        mockMvc.perform(get("/api/lms/materials/7/download")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/lms/materials/7/download")).andExpect(status().isUnauthorized());
         for (String token : List.of(
                 tokenWith("ROLE_STUDENT"),
                 tokenWith("ROLE_FACULTY"),
                 tokenWith("LMS_COURSE_VIEW", "FACULTY_COURSE_VIEW"),
                 tokenWith("ROLE_ADMIN", "LMS_CONTENT_MANAGE"),
                 tokenWith("ROLE_FACULTY", "LMS_COURSE_VIEW"))) {
-            mockMvc.perform(as(token, get("/api/lms/materials/7/download"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/materials/7/download"))).andExpect(status().isForbidden());
         }
 
         verifyNoInteractions(materialService);
@@ -265,31 +265,31 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         when(materialService.openForDownload(anyLong(), any(), eq(7L)))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "Study material not found or unavailable."));
 
-        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/lms/materials/7/download")))
+        mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW"), get("/api/v1/lms/materials/7/download")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Study material not found or unavailable."));
     }
 
     @Test
     void materialRoutesAppearInTheApiDocumentation() throws Exception {
-        String upload = "$.paths['/api/lms/faculty/topics/{topicId}/materials'].post";
+        String upload = "$.paths['/api/v1/lms/faculty/topics/{topicId}/materials'].post";
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
                 .andExpect(jsonPath(upload + ".requestBody.content['multipart/form-data'].schema").exists())
                 .andExpect(jsonPath(upload + ".responses['201']").exists())
                 .andExpect(jsonPath(upload + ".responses['400']").exists())
                 .andExpect(jsonPath(upload + ".responses['413']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/materials/{materialId}/download'].get.responses['200']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/materials/{materialId}/download'].get.responses['404']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/faculty/materials/{materialId}'].delete").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/materials/{materialId}/download'].get.responses['200']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/materials/{materialId}/download'].get.responses['404']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/faculty/materials/{materialId}'].delete").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsFacultyMaterialResponse.properties.objectKey").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsCourseMaterialResponse.properties.objectKey").doesNotExist());
         for (String[] operation : new String[][] {
-                {"/api/lms/faculty/topics/{topicId}/materials", "post"},
-                {"/api/lms/faculty/topics/{topicId}/materials/reorder", "put"},
-                {"/api/lms/faculty/materials/{materialId}", "put"},
-                {"/api/lms/faculty/materials/{materialId}/publish", "post"},
-                {"/api/lms/faculty/materials/{materialId}/archive", "post"},
-                {"/api/lms/materials/{materialId}/download", "get"}}) {
+                {"/api/v1/lms/faculty/topics/{topicId}/materials", "post"},
+                {"/api/v1/lms/faculty/topics/{topicId}/materials/reorder", "put"},
+                {"/api/v1/lms/faculty/materials/{materialId}", "put"},
+                {"/api/v1/lms/faculty/materials/{materialId}/publish", "post"},
+                {"/api/v1/lms/faculty/materials/{materialId}/archive", "post"},
+                {"/api/v1/lms/materials/{materialId}/download", "get"}}) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())
                     .andExpect(jsonPath(path + ".responses['401']").exists())

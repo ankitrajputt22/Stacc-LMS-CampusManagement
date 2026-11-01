@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Occupancy and capacity are counted from allocations and beds, never stored.
  */
 @RestController
-@RequestMapping("/api/hostel/admin")
+@RequestMapping("/api/v1/hostel/admin")
 @Tag(name = "Hostel admin")
 @ApiResponse(
         responseCode = "401",

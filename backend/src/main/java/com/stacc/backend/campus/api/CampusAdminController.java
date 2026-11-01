@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
  * APPROVAL_TASK_DECIDE.
  */
 @RestController
-@RequestMapping("/api/campus/admin")
+@RequestMapping("/api/v1/campus/admin")
 @Tag(name = "Campus admin")
 @ApiResponse(
         responseCode = "401",

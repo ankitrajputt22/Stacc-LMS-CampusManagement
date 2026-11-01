@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * on the server; no route takes an account, student, or enrollment ID. There is no faculty access here yet.
  */
 @RestController
-@RequestMapping("/api/lms")
+@RequestMapping("/api/v1/lms")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

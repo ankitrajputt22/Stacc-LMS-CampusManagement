@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  */
 class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ROOT = "/api/lms/faculty";
+    private static final String ROOT = "/api/v1/lms/faculty";
     private static final long ACCOUNT = 20L;
 
     @MockitoBean

@@ -23,13 +23,14 @@
 - Users never grant themselves roles or permissions.
 - Keep all Spring Security settings in the shared `SecurityConfig`. Do not add separate security filter chains for individual modules without a real need.
 - Every route under `/api/` requires authentication by default. Make a route public only deliberately, with a clear reason, by listing it in `SecurityConfig`. The login stays public.
+- Public routes are versioned under `/api/v1/`; the security and CORS rules cover all of `/api/`. The frontend's `apiClient` adds the version (`API_VERSION`), so `VITE_API_BASE_URL` and API modules never contain it. The internal AI service lives under `/internal/v1/`. A breaking change gets a new version beside the old one, never a silent change.
 - Check roles with `hasRole` or `hasAnyRole` and permissions with `hasAuthority` or `hasAnyAuthority`. Add a rule only when a real feature needs it.
 - A permission's code is its authority name. Never add `ROLE_`, `SCOPE_`, or any other prefix to it, and never start a permission code with `ROLE_`.
 - There is no role hierarchy and no automatic admin pass, for roles or for permissions. Do not add either without an explicit design decision.
 - Do not build a custom permission engine or guess permission constants. Use Spring Security's checks.
 - Do not use Spring's generated login page or HTTP Basic, and never add built-in, demo, or hard-coded users. Authentication must use `UserAccount`.
 - Sign-in goes through the shared `AuthenticationManager`, with `loginId` as the identifier. Roles map to `ROLE_*` authorities, and permission codes are used as authorities unchanged.
-- There is one central college login (`POST /api/auth/login`) and no public signup. The login request never carries a role.
+- There is one central college login (`POST /api/v1/auth/login`) and no public signup. The login request never carries a role.
 - Failed logins always return the same generic 401 message. Never reveal whether a login ID exists, and never log passwords or login requests.
 - For an expected failure with a specific status, throw `ApiException` with a client-safe message.
 - Create access tokens only through the shared `AccessTokenService`. Keep them short-lived, and never put passwords, hashes, or private data in token claims.
@@ -83,16 +84,16 @@
 
 ## Admin Academic Masters
 
-- Admins manage `Department`, `Program`, `AcademicSession`, `Semester`, and `Course` in `academic.admin` under `/api/admin/academic`. See `docs/admin-academic.md`.
+- Admins manage `Department`, `Program`, `AcademicSession`, `Semester`, and `Course` in `academic.admin` under `/api/v1/admin/academic`. See `docs/admin-academic.md`.
 - `Course` is permanent catalog data; `CourseOffering` is semester-specific. Offerings and enrollments have their own rules below. Do not manage profiles, teaching assignments, LMS courses, or accounts here.
 - Use explicit request and response records; never bind or return entities. Requests carry no own ID: the route names the record. Parents are loaded on the server by ID and never created.
 - Keep each master's existing fields and lifecycle. Codes and parents are fixed after creation. Do not add status, soft-delete, or version columns, and never add delete routes.
 - Unique clashes answer 409 with a safe message, also when the database constraint catches a race. Never let SQL errors or constraint names reach a client.
-- Reading needs `ADMIN` and `ACADEMIC_MASTER_VIEW`; changing also needs `ACADEMIC_MASTER_MANAGE`. `SecurityConfig` keeps `/api/admin/**` to `ADMIN`. There is no admin pass outside these explicit rules.
+- Reading needs `ADMIN` and `ACADEMIC_MASTER_VIEW`; changing also needs `ACADEMIC_MASTER_MANAGE`. `SecurityConfig` keeps `/api/v1/admin/**` to `ADMIN`. There is no admin pass outside these explicit rules.
 
 ## Admin Offerings and Enrollment
 
-- Admins manage `CourseOffering`, `SemesterEnrollment`, and `CourseEnrollment` in `academic.admin` under `/api/admin/academic/offerings` and `/api/admin/academic/enrollments`. See `docs/admin-academic.md`.
+- Admins manage `CourseOffering`, `SemesterEnrollment`, and `CourseEnrollment` in `academic.admin` under `/api/v1/admin/academic/offerings` and `/api/v1/admin/academic/enrollments`. See `docs/admin-academic.md`.
 - An offering is one course in one semester. Its course and semester never change after creation (409); only its status moves forward. Never add delete routes for offerings or enrollments.
 - A semester enrollment is a student profile in a semester of the student's own program; a course enrollment is a semester enrollment in an offering of that same semester. Never allow a cross-semester course enrollment.
 - New enrollments always start `ENROLLED`; never take the status, the student, or the enrollment from a request body. `ENROLLED` may become `COMPLETED` or `WITHDRAWN` once; the same status changes nothing, and nothing reopens.
@@ -109,7 +110,7 @@
 - Records start `UNMARKED`, never `ABSENT`. Saves name records by `attendanceRecordId` only, each once and from that session. The server sets `markedBy` and `markedAt`.
 - Finalizing needs every record `PRESENT` or `ABSENT`. Students see only `FINALIZED` sessions, which can still be corrected between `PRESENT` and `ABSENT`, never back to `UNMARKED`.
 - Never reopen or hard-delete sessions or records, and never store the attendance percentage. Do not add attendance thresholds, notifications, self check-in, QR, location, or biometrics without their own phase.
-- Faculty routes need `FACULTY` and `ATTENDANCE_MANAGE`; `GET /api/attendance/student/me` needs `STUDENT` and `ATTENDANCE_VIEW` and takes the student from the access token.
+- Faculty routes need `FACULTY` and `ATTENDANCE_MANAGE`; `GET /api/v1/attendance/student/me` needs `STUDENT` and `ATTENDANCE_VIEW` and takes the student from the access token.
 
 ## Results
 
@@ -118,7 +119,7 @@
 - Marks are `BigDecimal`/`DECIMAL(8,2)`: `0 <= marksObtained <= maxMarks`, `maxMarks > 0`, and the maximum is always given explicitly. The grade code is optional explicit data kept as entered; do not invent a grading scale.
 - New results start `DRAFT`. Students see only `PUBLISHED` results. Published corrections stay published and keep the first `publishedAt`. Never delete, unpublish, or archive a result.
 - New results need an `ENROLLED` or `COMPLETED` enrollment; existing results stay after any later enrollment change.
-- Faculty routes need `FACULTY` and `ACADEMIC_RESULT_MANAGE` plus `FacultyTeachingAccessService` for the offering in the route, and the enrollment must belong to that offering. `GET /api/results/student/me` needs `STUDENT` and `ACADEMIC_RESULT_VIEW` and takes the student from the access token. No admin pass.
+- Faculty routes need `FACULTY` and `ACADEMIC_RESULT_MANAGE` plus `FacultyTeachingAccessService` for the offering in the route, and the enrollment must belong to that offering. `GET /api/v1/results/student/me` needs `STUDENT` and `ACADEMIC_RESULT_VIEW` and takes the student from the access token. No admin pass.
 - Do not add GPA, SGPA, CGPA, ranks, pass or fail, approval workflows, or revision history without their own phase.
 
 ## Academic Calendar
@@ -128,8 +129,8 @@
 - New events start `DRAFT`. Publishing sets `publishedAt` once; cancelling sets `cancelledAt` and keeps `publishedAt`. Both are idempotent, a cancelled event cannot be published or edited, and there is no restore and no hard delete. After the first publication the session and semester never change (409).
 - Users see `PUBLISHED` events and `CANCELLED` ones that were published first, marked as cancelled; drafts never leak. Students get the events of their own `ENROLLED` or `COMPLETED` semester enrollments, faculty those of semesters they actively teach (no `LmsCourse` needed), each with the session-wide events of those sessions, and admins every visible event.
 - Assignment deadlines always come from `LmsAssignment.dueAt` at read time; never copy them into calendar tables. Students get published deadlines of courses `LmsStudentCourseQueryService` lists, faculty draft and published ones of courses `LmsFacultyCourseQueryService` lists. Do not repeat or loosen those rules.
-- `GET /api/calendar/me` (the read-only `calendar` module) needs `ACADEMIC_CALENDAR_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`, takes the caller from the access token, and gives every role the account holds its part; never use `roles[0]`. `from` and `to` are dates at most 366 days apart; `timeZone` is a validated IANA zone that only maps days to deadline moments and decides no access.
-- Admin event routes under `/api/admin/academic/calendar/events` need `ADMIN` with `ACADEMIC_CALENDAR_VIEW` and, to change, `ACADEMIC_CALENDAR_MANAGE`. Students and faculty never create events.
+- `GET /api/v1/calendar/me` (the read-only `calendar` module) needs `ACADEMIC_CALENDAR_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`, takes the caller from the access token, and gives every role the account holds its part; never use `roles[0]`. `from` and `to` are dates at most 366 days apart; `timeZone` is a validated IANA zone that only maps days to deadline moments and decides no access.
+- Admin event routes under `/api/v1/admin/academic/calendar/events` need `ADMIN` with `ACADEMIC_CALENDAR_VIEW` and, to change, `ACADEMIC_CALENDAR_MANAGE`. Students and faculty never create events.
 - Publishing an event, or cancelling a published one, notifies its viewers once through the Inbox; a draft or a repeat notifies nobody. Do not add recurring events, reminders, email or push, personal calendars, bookings, timetables, attachments, or calendar import or export without their own phase.
 
 ## LMS Data
@@ -151,9 +152,9 @@
 - An access check only reads. It must never provision, reactivate, repair, or change data.
 - The access rule is written once, in `LmsStudentAccessPolicy`. Every LMS check and list must use it instead of repeating or loosening the conditions.
 - Self-service endpoints take the caller from the access token with `AuthenticatedAccount.idFrom(...)`. Never accept an account, student, profile, or enrollment ID from the client to decide whose data is returned.
-- `GET /api/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment and membership policy still decides what is returned.
+- `GET /api/v1/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment and membership policy still decides what is returned.
 - LMS read endpoints must be side-effect free and must never provision a missing membership.
-- `GET /api/lms/courses/{lmsCourseId}` uses the same rule as `my-courses` and runs the access policy again on every request. A missing course and one the student may not use get the same 404, so the API never reveals which LMS course IDs exist.
+- `GET /api/v1/lms/courses/{lmsCourseId}` uses the same rule as `my-courses` and runs the access policy again on every request. A missing course and one the student may not use get the same 404, so the API never reveals which LMS course IDs exist.
 - `ADMIN` gets no implicit student LMS access. Design any admin or faculty LMS access explicitly, with its own permission.
 - A migration that adds a permission also lists it in `docs/permissions.md` and looks roles and permissions up by name, never by ID.
 - Do not add historical or read-only LMS access rules without an explicit feature phase.
@@ -187,7 +188,7 @@
 - Students see each attempt's own grade in their history as soon as it is saved, without the grader. A grade is an LMS assignment result, not an ERP result: do not add gradebooks, GPA, rubrics, grade history, release steps, late penalties, or grade notifications without their own phase.
 - Faculty LMS access derives directly from official `TeachingAssignment` records through `LmsFacultyAccessService` and the single rule in `LmsFacultyAccessPolicy`. Do not add an `LmsFacultyMembership` without a real need.
 - Faculty access needs an `ACTIVE` faculty profile, an `ACTIVE` teaching assignment for the LMS course's offering, and a `DRAFT` or `PUBLISHED` LMS course. Students stay `PUBLISHED`-only; faculty draft access must never reach the student policy.
-- `GET /api/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
+- `GET /api/v1/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
 - Faculty create and manage an `LmsCourse` only for an offering they teach through an `ACTIVE` teaching assignment, checked with `FacultyTeachingAccessService` on the offering found from the stored course. `LmsCourseManagementService` owns create, sync, publish, and archive; every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_COURSE_MANAGE`. See `docs/lms-foundation.md`.
 - `LmsCourse` stays one-to-one with `CourseOffering` and starts `DRAFT`. Publish only a draft, archive a draft or published course, and never restore, delete, or add course settings fields without their own phase.
 - The faculty management list starts from teaching assignments, so offerings without an `LmsCourse` and archived courses always appear. Do not loosen `LmsFacultyAccessPolicy` to show archived courses.
@@ -212,23 +213,23 @@
 - Page titles are large, bold, and Stacc navy (`text-3xl font-bold text-portal-navy`). Dashboards show course cards with one steady colour per course (`courseColors.ts`) and upcoming work planner style (`PlannerList`), with only what the API sends.
 - An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
 - Do not build role-specific dashboards or role route trees before their roadmap phases. The student, faculty, and admin dashboards render on `/`, one part per role the account holds, in the fixed order Student, Faculty, Admin; never pick a role with `roles[0]`, and add no role switcher.
-- The student Courses page (`/courses`) gets its data only from `GET /api/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
+- The student Courses page (`/courses`) gets its data only from `GET /api/v1/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never provision LMS memberships or change data.
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
-- The course home shows only what `GET /api/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return. Do not add placeholder tabs or content before their phases.
+- The course home shows only what `GET /api/v1/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return. Do not add placeholder tabs or content before their phases.
 - Deadlines are entered and shown in the browser's own time zone; "Past due" is display only. The faculty `/assignments` overview links to course pages and is not a second editor.
 - The assignment page's submission area shows on time or late exactly as the backend returns it for each attempt, renders submitted text as plain text, and downloads files only through the API.
 - Faculty grade at `/teaching/:lmsCourseId/assignments/:assignmentId/submissions`, which shows only what the grading API returns and says that saving makes the grade visible to the student. Grades and feedback are shown per attempt, as plain text.
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
-- The faculty Teaching page (`/teaching`) gets its data only from `GET /api/lms/faculty/managed-courses`, is shown to any account holding `FACULTY`, and shows every offering taught with its LMS state: Create for none, Open and Publish for a draft, Open for a published course, and nothing to open for an archived one. It links only to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
+- The faculty Teaching page (`/teaching`) gets its data only from `GET /api/v1/lms/faculty/managed-courses`, is shown to any account holding `FACULTY`, and shows every offering taught with its LMS state: Create for none, Open and Publish for a draft, Open for a published course, and nothing to open for an archived one. It links only to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
 - `/teaching/:lmsCourseId` has Course settings for syncing student access, publishing, and archiving, each confirmed when it cannot be undone; archiving returns to `/teaching`. Do not add student or enrollment editing to faculty pages.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.
 - Admins manage the academic masters at `/admin/academic/:section` (departments, programs, sessions, semesters, courses), with Edit but never Delete, and parent selects filled from the admin API.
 - Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Show LMS provisioning outcomes neutrally, and never offer to create an LMS course there.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
-- The Calendar item opens `/calendar` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. It loads one month at a time from `GET /api/calendar/me` with the browser's time zone, lists a multi-day event once with its range, shows Cancelled in words, and adds no data the API does not send. Student deadlines link to the assignment page and teaching deadlines to `/teaching/:lmsCourseId`; it is not an assignment editor.
+- The Calendar item opens `/calendar` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. It loads one month at a time from `GET /api/v1/calendar/me` with the browser's time zone, lists a multi-day event once with its range, shows Cancelled in words, and adds no data the API does not send. Student deadlines link to the assignment page and teaching deadlines to `/teaching/:lmsCourseId`; it is not an assignment editor.
 - Support is one area per `UserAccount` at `/support`, shown once to any account holding `STUDENT`, `FACULTY`, or `ADMIN`; never build a support area or ticket engine per role, and never use `roles[0]`. Requester pages are `/support` and `/support/new`; the ticket page `/support/tickets/:ticketId` is shared by requesters and admins; admins add `/support/admin` and `/support/admin/categories`. See `docs/helpdesk.md`.
 - The ticket form never offers Urgent and never sends a requester, status, or assignee; replies send only the text. Show statuses, priorities, transitions, and activity only through `src/support/helpdeskText.ts`.
 - Resolved tickets keep the reply form and say replying does not change the status. Closed tickets show no reply form and no controls, and there is no Reopen. Admin status choices are only the moves the lifecycle allows, and closing is confirmed first.
@@ -242,7 +243,7 @@
 
 ## Student Dashboard
 
-- `GET /api/dashboard/student` (`dashboard` module) is a read-only aggregation, not a source of truth. Never persist or cache dashboard data. See `docs/student-dashboard.md`.
+- `GET /api/v1/dashboard/student` (`dashboard` module) is a read-only aggregation, not a source of truth. Never persist or cache dashboard data. See `docs/student-dashboard.md`.
 - It needs `STUDENT` and `STUDENT_DASHBOARD_VIEW` and takes the student from the access token; never accept a student, profile, account, or enrollment ID from the client.
 - Courses come from `LmsStudentCourseQueryService`, the same rule as the course list. Assignment and announcement previews query only those course IDs, `PUBLISHED` only; upcoming means a `dueAt` now or later. Skip those queries when there is no course.
 - Attendance reuses `StudentAttendanceQueryService` (own, finalized) and results reuse `StudentResultQueryService` (own, published); they show even without current LMS courses.
@@ -250,7 +251,7 @@
 
 ## Faculty Dashboard
 
-- `GET /api/dashboard/faculty` is a read-only aggregation in the `dashboard` module; never persist or cache it. It needs `FACULTY` and `FACULTY_DASHBOARD_VIEW` and takes the faculty member from the access token. See `docs/faculty-dashboard.md`.
+- `GET /api/v1/dashboard/faculty` is a read-only aggregation in the `dashboard` module; never persist or cache it. It needs `FACULTY` and `FACULTY_DASHBOARD_VIEW` and takes the faculty member from the access token. See `docs/faculty-dashboard.md`.
 - Teaching courses come from `LmsFacultyManagedCourseQueryService` (active teaching assignments); offerings without an `LmsCourse` and archived ones stay listed.
 - Upcoming assignments are future `DRAFT` or `PUBLISHED` ones in LMS courses faculty can open. Needs grading means a submission's latest attempt (`latestAttemptNumber`) has no grade, for a `PUBLISHED` assignment; never count older ungraded attempts.
 - Open attendance is `OPEN` sessions of the offerings taught and needs no `LmsCourse`.
@@ -258,7 +259,7 @@
 
 ## Admin Dashboard
 
-- `GET /api/dashboard/admin` is a read-only aggregation in the `dashboard` module; never persist or cache its counts. It needs `ADMIN` and `ADMIN_DASHBOARD_VIEW` and grants no change rights. See `docs/admin-dashboard.md`.
+- `GET /api/v1/dashboard/admin` is a read-only aggregation in the `dashboard` module; never persist or cache its counts. It needs `ADMIN` and `ADMIN_DASHBOARD_VIEW` and grants no change rights. See `docs/admin-dashboard.md`.
 - Master counts are every row, whatever the status; the offering count counts `CourseOffering`, never `Course` or `LmsCourse`. Active enrollment means `ENROLLED` only.
 - The offering preview reuses the admin offering list's query and order (first page). Never call it recent.
 - Show no student, faculty, or account details, and no activity feeds, trends, rates, rankings, or performance analytics.
@@ -300,7 +301,7 @@
 - Stacc has one helpdesk ticket engine, `support.helpdesk`, for every kind of issue. Kinds are configurable `HelpdeskCategory` rows, never an enum; do not build a ticket engine per module. See `docs/helpdesk.md`.
 - Category codes are unique, uppercase, and fixed after creation. Make a category inactive instead of deleting it; an inactive category keeps its tickets but takes no new ones.
 - The requester, every author, and every actor come from the access token; never accept an account, requester, author, or actor ID from a client. Ticket numbers (`STC-%06d`), `resolvedAt`, and `closedAt` are set by the server.
-- Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only active accounts holding `ADMIN` can be assigned, and `GET /api/helpdesk/admin/assignees` lists exactly those, by login ID only.
+- Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only active accounts holding `ADMIN` can be assigned, and `GET /api/v1/helpdesk/admin/assignees` lists exactly those, by login ID only.
 - Statuses only move forward: `OPEN` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `RESOLVED` or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. A `CLOSED` ticket refuses every change, and nothing reopens a ticket. A reply never changes the status.
 - Messages and history are append-only. Write history only for real changes, through the command service's single recorder, and lock the ticket row before every change. Never add delete routes for tickets, messages, history, or categories.
 - Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
@@ -343,7 +344,7 @@
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.
-- `GLOBAL_SEARCH_USE` only allows using search and never replaces a feature permission. A kind the account may not see is left out (an empty page on `/api/search/results`), never 403 or 404, and is never counted. Counts use exactly the item query's conditions.
+- `GLOBAL_SEARCH_USE` only allows using search and never replaces a feature permission. A kind the account may not see is left out (an empty page on `/api/v1/search/results`), never 403 or 404, and is never counted. Counts use exactly the item query's conditions.
 - The searcher always comes from the access token. Never accept an account, student, faculty, profile, or enrollment ID in a search request, and never use `roles[0]`: check every role the account holds.
 - Search is MySQL only: bounded, paged, parameterized `LIKE` queries with the text lower-cased and escaped (`ESCAPE '!'`). No search tables, index stores, query or history persistence, OpenSearch or Elasticsearch, vector or AI search, autocomplete, or file-content indexing without their own phase.
 - Never search user accounts, people directories, security data, results, grades, submissions, or attendance. Results are plain text with internal action paths only (one leading `/`); the destination checks access again.

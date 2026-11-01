@@ -113,7 +113,7 @@ function MonthAgenda({ month, alsoTeaches, adminOnly }: { month: CalendarMonth; 
 
 /**
  * The shared calendar at /calendar, one month at a time: the official academic events that apply to the account and,
- * for each role it holds, its assignment deadlines, all from GET /api/calendar/me. Nothing is filtered or added here;
+ * for each role it holds, its assignment deadlines, all from GET /api/v1/calendar/me. Nothing is filtered or added here;
  * the backend decides what is shown. The month is kept in the address (?month=2026-10) so a refresh stays on it. The
  * role checks only choose wording and links; they are not security.
  */

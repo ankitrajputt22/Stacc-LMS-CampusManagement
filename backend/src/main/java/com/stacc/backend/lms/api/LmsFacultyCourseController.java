@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/lms/faculty")
+@RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
 public class LmsFacultyCourseController {
 

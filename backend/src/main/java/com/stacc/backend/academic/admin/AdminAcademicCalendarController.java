@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * or restored, and assignment deadlines are not managed here: they belong to LMS assignments.
  */
 @RestController
-@RequestMapping("/api/admin/academic/calendar/events")
+@RequestMapping("/api/v1/admin/academic/calendar/events")
 @Tag(name = "Admin academic calendar")
 @ApiResponse(
         responseCode = "401",

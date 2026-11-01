@@ -48,15 +48,15 @@ The database's unique constraints decide: department code and name, a program's 
 
 ## Routes and permissions
 
-Every route is under `/api/admin/academic`, which `SecurityConfig` keeps to accounts with the `ADMIN` role before a request body is even read. Reading also needs `ACADEMIC_MASTER_VIEW`; creating and editing need `ACADEMIC_MASTER_VIEW` and `ACADEMIC_MASTER_MANAGE`. Both permissions belong to `ADMIN` only (`V35`). There is no admin pass anywhere else.
+Every route is under `/api/v1/admin/academic`, which `SecurityConfig` keeps to accounts with the `ADMIN` role before a request body is even read. Reading also needs `ACADEMIC_MASTER_VIEW`; creating and editing need `ACADEMIC_MASTER_VIEW` and `ACADEMIC_MASTER_MANAGE`. Both permissions belong to `ADMIN` only (`V35`). There is no admin pass anywhere else.
 
 | Master | Collection | One record |
 | --- | --- | --- |
-| Departments | `GET`, `POST /api/admin/academic/departments` | `GET`, `PUT /api/admin/academic/departments/{departmentId}` |
-| Programs | `GET`, `POST /api/admin/academic/programs` | `GET`, `PUT /api/admin/academic/programs/{programId}` |
-| Academic sessions | `GET`, `POST /api/admin/academic/sessions` | `GET`, `PUT /api/admin/academic/sessions/{academicSessionId}` |
-| Semesters | `GET`, `POST /api/admin/academic/semesters` | `GET`, `PUT /api/admin/academic/semesters/{semesterId}` |
-| Courses | `GET`, `POST /api/admin/academic/courses` | `GET`, `PUT /api/admin/academic/courses/{courseId}` |
+| Departments | `GET`, `POST /api/v1/admin/academic/departments` | `GET`, `PUT /api/v1/admin/academic/departments/{departmentId}` |
+| Programs | `GET`, `POST /api/v1/admin/academic/programs` | `GET`, `PUT /api/v1/admin/academic/programs/{programId}` |
+| Academic sessions | `GET`, `POST /api/v1/admin/academic/sessions` | `GET`, `PUT /api/v1/admin/academic/sessions/{academicSessionId}` |
+| Semesters | `GET`, `POST /api/v1/admin/academic/semesters` | `GET`, `PUT /api/v1/admin/academic/semesters/{semesterId}` |
+| Courses | `GET`, `POST /api/v1/admin/academic/courses` | `GET`, `PUT /api/v1/admin/academic/courses/{courseId}` |
 
 - Lists: departments and courses by code; programs by department code, then code; sessions by start date, latest first; semesters by session start date (latest first), then program code, then number. Each list is read in one query.
 - `POST` answers 201, `PUT` 200. Invalid fields answer 400 with field errors, a missing record 404, a clash 409. No token answers 401; a student, a faculty member, or an admin without the permission answers 403.
@@ -65,27 +65,27 @@ Every route is under `/api/admin/academic`, which `SecurityConfig` keeps to acco
 
 A course offering joins one course and one semester, at most once per pair (`uk_course_offerings_course_semester`). It has only those two and a status; no section, room, capacity, schedule, teacher, or LMS state.
 
-- `POST /api/admin/academic/offerings` takes `courseId` and `semesterId`, loads both on the server, and answers 201 with a `PLANNED` offering. A course or semester that does not exist answers 404, a pair that already exists 409 ("This course offering already exists."), also when two requests race.
+- `POST /api/v1/admin/academic/offerings` takes `courseId` and `semesterId`, loads both on the server, and answers 201 with a `PLANNED` offering. A course or semester that does not exist answers 404, a pair that already exists 409 ("This course offering already exists."), also when two requests race.
 - The course and semester do not have to share a program or department: the model has no such rule, so none is invented.
-- `PUT /api/admin/academic/offerings/{courseOfferingId}` changes the status only: `PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`, never back. The course and semester are structural identity: enrollments, teaching assignments, attendance, results, and an LMS course hang off the offering, and the columns are mapped `updatable = false`. A request may send `courseId` and `semesterId`, but a value different from the stored one answers 409 ("The course and semester of an offering cannot be changed after it is created. Create a new offering instead."), whether or not dependent records exist yet.
-- `GET /api/admin/academic/offerings` lists offerings with course code, name, and credits, semester number, program code, and session code, by session start date (latest first), program code, semester number, course code, and ID. The optional filters `semesterId`, `courseId`, `academicSessionId`, and `programId` narrow it.
+- `PUT /api/v1/admin/academic/offerings/{courseOfferingId}` changes the status only: `PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`, never back. The course and semester are structural identity: enrollments, teaching assignments, attendance, results, and an LMS course hang off the offering, and the columns are mapped `updatable = false`. A request may send `courseId` and `semesterId`, but a value different from the stored one answers 409 ("The course and semester of an offering cannot be changed after it is created. Create a new offering instead."), whether or not dependent records exist yet.
+- `GET /api/v1/admin/academic/offerings` lists offerings with course code, name, and credits, semester number, program code, and session code, by session start date (latest first), program code, semester number, course code, and ID. The optional filters `semesterId`, `courseId`, `academicSessionId`, and `programId` narrow it.
 - There is no delete.
 
 ## Student lookup
 
-`GET /api/admin/academic/enrollments/students?q=` finds existing student profiles for enrollment. It matches part of the account's login ID, ignoring case; `%` and `_` match themselves. It answers at most 50, by login ID, and an empty `q` lists the first 50. Text over 100 characters answers 400. Each entry has only `studentProfileId`, `loginId`, `programId`, `programCode`, `programName`, `admissionSessionCode`, and `studentProfileStatus`: never a password hash, role, permission, account ID, or account status. It is read-only and not a user directory; nothing here creates or edits accounts or profiles.
+`GET /api/v1/admin/academic/enrollments/students?q=` finds existing student profiles for enrollment. It matches part of the account's login ID, ignoring case; `%` and `_` match themselves. It answers at most 50, by login ID, and an empty `q` lists the first 50. Text over 100 characters answers 400. Each entry has only `studentProfileId`, `loginId`, `programId`, `programCode`, `programName`, `admissionSessionCode`, and `studentProfileStatus`: never a password hash, role, permission, account ID, or account status. It is read-only and not a user directory; nothing here creates or edits accounts or profiles.
 
 ## Semester enrollments
 
-- `GET /api/admin/academic/enrollments/students/{studentProfileId}/semesters` answers the student and every semester enrollment they have had, latest session first, then the highest semester number.
+- `GET /api/v1/admin/academic/enrollments/students/{studentProfileId}/semesters` answers the student and every semester enrollment they have had, latest session first, then the highest semester number.
 - `POST` on the same route takes only `semesterId`; the route names the student. It answers 201 with an `ENROLLED` enrollment. A missing student or semester answers 404. An `INACTIVE` student profile, a semester of another program than the student's, and a second enrollment in the same semester answer 409 ("This student is already enrolled in this semester."). The status is never taken from the request.
-- `PUT /api/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/status` takes `status`. The row is locked while it changes.
+- `PUT /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/status` takes `status`. The row is locked while it changes.
 
 ## Course enrollments
 
-- `GET /api/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/courses` answers the student, the semester enrollment, and its course enrollments by course code, with course code, name, and credits.
+- `GET /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/courses` answers the student, the semester enrollment, and its course enrollments by course code, with course code, name, and credits.
 - `POST` on the same route takes only `courseOfferingId` and answers 201 with an `ENROLLED` course enrollment and an `lmsProvisioning` outcome. The semester enrollment must be `ENROLLED` (409 otherwise) and locked while the course is added; a missing semester enrollment or offering answers 404. The offering must belong to the semester enrollment's own semester: an offering of another semester answers 409 ("This course offering belongs to a different semester than the semester enrollment."). A second enrollment in the same offering answers 409 ("This student is already enrolled in this course offering."). No other program rule is applied, because the model has none.
-- `PUT /api/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/status` takes `status`. The row is locked while it changes.
+- `PUT /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/status` takes `status`. The row is locked while it changes.
 
 ## Status transitions
 
@@ -99,13 +99,13 @@ The official course enrollment is saved and committed first. Only then does `Cou
 
 - If the offering has an LMS course, the student gets an active membership (or an inactive one is reactivated): `lmsProvisioning` is `PROVISIONED`. The LMS course does not have to be published; student access still follows the access policy.
 - If the offering has no LMS course, the enrollment still succeeds: `NO_LMS_COURSE`. No LMS course is ever created here. The faculty who teach the offering create it later, and creating it gives the offering's current students their memberships (see `lms-foundation.md`).
-- If provisioning fails, the enrollment still stands, the failure is logged without personal data, and the answer says `FAILED`. `POST /api/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms` retries it: 200 when the membership exists, 409 when the enrollment is no longer `ENROLLED` or the offering has no LMS course, and 503 when it fails again. It is safe to repeat.
+- If provisioning fails, the enrollment still stands, the failure is logged without personal data, and the answer says `FAILED`. `POST /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms` retries it: 200 when the membership exists, 409 when the enrollment is no longer `ENROLLED` or the offering has no LMS course, and 503 when it fails again. It is safe to repeat.
 - When a course enrollment ends, its membership is made inactive through the same service, never deleted. The student access policy already refuses an enrollment that is not `ENROLLED`, so a failure there is only logged.
 - Academic enrollment stays an admin responsibility. Faculty LMS management only derives LMS memberships from it and never creates, changes, or ends an enrollment.
 
 ## Roster
 
-`GET /api/admin/academic/offerings/{courseOfferingId}/enrollments` answers the offering and every course enrollment of exactly that offering, whatever its status, by student login ID, then ID. Each entry has `courseEnrollmentId`, `semesterEnrollmentId`, `studentProfileId`, `studentLoginId`, and `status`, and nothing about the account. A missing offering answers 404. It needs the enrollment view permission, not the offering one.
+`GET /api/v1/admin/academic/offerings/{courseOfferingId}/enrollments` answers the offering and every course enrollment of exactly that offering, whatever its status, by student login ID, then ID. Each entry has `courseEnrollmentId`, `semesterEnrollmentId`, `studentProfileId`, `studentLoginId`, and `status`, and nothing about the account. A missing offering answers 404. It needs the enrollment view permission, not the offering one.
 
 ## Offering and enrollment permissions
 
@@ -113,8 +113,8 @@ The official course enrollment is saved and committed first. Only then does `Cou
 
 | Route | Needs |
 | --- | --- |
-| `GET /api/admin/academic/offerings`, `GET .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW` |
-| `POST /api/admin/academic/offerings`, `PUT .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW`, `ACADEMIC_OFFERING_MANAGE` |
+| `GET /api/v1/admin/academic/offerings`, `GET .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW` |
+| `POST /api/v1/admin/academic/offerings`, `PUT .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW`, `ACADEMIC_OFFERING_MANAGE` |
 | `GET .../offerings/{courseOfferingId}/enrollments` and the `GET` enrollment routes | `ADMIN`, `ACADEMIC_ENROLLMENT_VIEW` |
 | The `POST` and `PUT` enrollment routes and `provision-lms` | `ADMIN`, `ACADEMIC_ENROLLMENT_VIEW`, `ACADEMIC_ENROLLMENT_MANAGE` |
 

@@ -79,10 +79,10 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
 
     private static List<MockHttpServletRequestBuilder> changeRoutes() {
         return List.of(
-                json(post("/api/lms/faculty/courses/7/announcements"), VALID),
-                json(put("/api/lms/faculty/announcements/5"), VALID),
-                post("/api/lms/faculty/announcements/5/publish"),
-                post("/api/lms/faculty/announcements/5/archive"));
+                json(post("/api/v1/lms/faculty/courses/7/announcements"), VALID),
+                json(put("/api/v1/lms/faculty/announcements/5"), VALID),
+                post("/api/v1/lms/faculty/announcements/5/publish"),
+                post("/api/v1/lms/faculty/announcements/5/archive"));
     }
 
     @Test
@@ -90,7 +90,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
         when(queryService.getPublishedAnnouncements(ACCOUNT_ID, 7L)).thenReturn(List.of(new LmsCourseAnnouncementResponse(
                 5L, "Exam schedule", "Monday at 9.\nRoom 4.", Instant.parse("2026-10-14T09:30:00Z"))));
 
-        mockMvc.perform(as(studentToken(), get("/api/lms/courses/7/announcements").param("accountId", "999")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/announcements").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].*", hasSize(4)))
@@ -103,10 +103,10 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void studentRouteNeedsTheStudentRoleAndPermission() throws Exception {
-        mockMvc.perform(get("/api/lms/courses/7/announcements")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/lms/courses/7/announcements")).andExpect(status().isUnauthorized());
         for (String token : List.of(tokenWith("ROLE_STUDENT"), tokenWith("ROLE_FACULTY", "FACULTY_COURSE_VIEW"),
                 managerToken(), tokenWith("ROLE_ADMIN", "LMS_COURSE_VIEW"))) {
-            mockMvc.perform(as(token, get("/api/lms/courses/7/announcements"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/courses/7/announcements"))).andExpect(status().isForbidden());
         }
         verifyNoInteractions(queryService);
     }
@@ -116,7 +116,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
         when(queryService.getPublishedAnnouncements(ACCOUNT_ID, 7L))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "Course not found or unavailable."));
 
-        mockMvc.perform(as(studentToken(), get("/api/lms/courses/7/announcements")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/announcements")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Course not found or unavailable."));
     }
@@ -125,15 +125,15 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
     void facultyListNeedsTheFacultyRoleAndViewPermission() throws Exception {
         when(queryService.getManagedAnnouncements(ACCOUNT_ID, 7L)).thenReturn(List.of(LmsFacultyAnnouncementResponse.of(announcement)));
 
-        mockMvc.perform(as(tokenWith("ROLE_FACULTY", "FACULTY_COURSE_VIEW"), get("/api/lms/faculty/courses/7/announcements")))
+        mockMvc.perform(as(tokenWith("ROLE_FACULTY", "FACULTY_COURSE_VIEW"), get("/api/v1/lms/faculty/courses/7/announcements")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$[0].publishedAt").doesNotExist())
                 .andExpect(jsonPath("$[0].*", hasSize(7)));
-        mockMvc.perform(get("/api/lms/faculty/courses/7/announcements")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/lms/faculty/courses/7/announcements")).andExpect(status().isUnauthorized());
         for (String token : List.of(tokenWith("ROLE_FACULTY"), tokenWith("ROLE_FACULTY", "LMS_CONTENT_MANAGE"), studentToken(),
                 tokenWith("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_CONTENT_MANAGE"))) {
-            mockMvc.perform(as(token, get("/api/lms/faculty/courses/7/announcements"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/faculty/courses/7/announcements"))).andExpect(status().isForbidden());
         }
     }
 
@@ -141,7 +141,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
     void addingAnAnnouncementAnswersCreatedAndIgnoresStatusAndCourseInTheBody() throws Exception {
         when(managementService.create(ACCOUNT_ID, 7L, "Exam schedule", "Monday at 9.\nRoom 4.")).thenReturn(announcement);
 
-        mockMvc.perform(as(managerToken(), json(post("/api/lms/faculty/courses/7/announcements"),
+        mockMvc.perform(as(managerToken(), json(post("/api/v1/lms/faculty/courses/7/announcements"),
                         "{\"title\":\"Exam schedule\",\"message\":\"Monday at 9.\\nRoom 4.\",\"status\":\"PUBLISHED\","
                                 + "\"publishedAt\":\"2020-01-01T00:00:00Z\",\"lmsCourseId\":99,\"facultyProfileId\":3}")))
                 .andExpect(status().isCreated())
@@ -193,10 +193,10 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
                 "{\"title\":\"Title\",\"message\":\"  \"}",
                 "{\"title\":\"" + "x".repeat(201) + "\",\"message\":\"Text\"}",
                 "{\"title\":\"Title\",\"message\":\"" + "x".repeat(10_001) + "\"}")) {
-            mockMvc.perform(as(managerToken(), json(post("/api/lms/faculty/courses/7/announcements"), body)))
+            mockMvc.perform(as(managerToken(), json(post("/api/v1/lms/faculty/courses/7/announcements"), body)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.fieldErrors").isNotEmpty());
-            mockMvc.perform(as(managerToken(), json(put("/api/lms/faculty/announcements/5"), body)))
+            mockMvc.perform(as(managerToken(), json(put("/api/v1/lms/faculty/announcements/5"), body)))
                     .andExpect(status().isBadRequest());
         }
         verifyNoInteractions(managementService);
@@ -209,16 +209,16 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
         when(managementService.publish(anyLong(), eq(5L)))
                 .thenThrow(new ApiException(HttpStatus.CONFLICT, "This announcement is archived and can no longer be changed."));
 
-        mockMvc.perform(as(managerToken(), post("/api/lms/faculty/announcements/6/publish")))
+        mockMvc.perform(as(managerToken(), post("/api/v1/lms/faculty/announcements/6/publish")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Announcement not found or unavailable."));
-        mockMvc.perform(as(managerToken(), post("/api/lms/faculty/announcements/5/publish")))
+        mockMvc.perform(as(managerToken(), post("/api/v1/lms/faculty/announcements/5/publish")))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void announcementsCannotBeDeleted() throws Exception {
-        mockMvc.perform(as(managerToken(), delete("/api/lms/faculty/announcements/5"))).andExpect(status().isMethodNotAllowed());
+        mockMvc.perform(as(managerToken(), delete("/api/v1/lms/faculty/announcements/5"))).andExpect(status().isMethodNotAllowed());
         verifyNoInteractions(managementService);
     }
 
@@ -226,12 +226,12 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
     void announcementRoutesAppearInTheApiDocumentation() throws Exception {
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
         for (String[] operation : new String[][] {
-                {"/api/lms/courses/{lmsCourseId}/announcements", "get", "200"},
-                {"/api/lms/faculty/courses/{lmsCourseId}/announcements", "get", "200"},
-                {"/api/lms/faculty/courses/{lmsCourseId}/announcements", "post", "201"},
-                {"/api/lms/faculty/announcements/{announcementId}", "put", "200"},
-                {"/api/lms/faculty/announcements/{announcementId}/publish", "post", "200"},
-                {"/api/lms/faculty/announcements/{announcementId}/archive", "post", "200"}}) {
+                {"/api/v1/lms/courses/{lmsCourseId}/announcements", "get", "200"},
+                {"/api/v1/lms/faculty/courses/{lmsCourseId}/announcements", "get", "200"},
+                {"/api/v1/lms/faculty/courses/{lmsCourseId}/announcements", "post", "201"},
+                {"/api/v1/lms/faculty/announcements/{announcementId}", "put", "200"},
+                {"/api/v1/lms/faculty/announcements/{announcementId}/publish", "post", "200"},
+                {"/api/v1/lms/faculty/announcements/{announcementId}/archive", "post", "200"}}) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())
                     .andExpect(jsonPath(path + ".responses['" + operation[2] + "']").exists())
@@ -239,8 +239,8 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath(path + ".responses['403']").exists())
                     .andExpect(jsonPath(path + ".responses['404']").exists());
         }
-        result.andExpect(jsonPath("$.paths['/api/lms/faculty/courses/{lmsCourseId}/announcements'].post.responses['400']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/faculty/announcements/{announcementId}'].delete").doesNotExist())
+        result.andExpect(jsonPath("$.paths['/api/v1/lms/faculty/courses/{lmsCourseId}/announcements'].post.responses['400']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/faculty/announcements/{announcementId}'].delete").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsCourseAnnouncementResponse.properties.status").doesNotExist());
     }
 }

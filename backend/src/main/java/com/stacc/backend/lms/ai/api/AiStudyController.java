@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * content and cite it.
  */
 @RestController
-@RequestMapping("/api/lms/courses/{lmsCourseId}/ai")
+@RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai")
 @Tag(name = "LMS AI study assistant")
 public class AiStudyController {
 

@@ -58,7 +58,7 @@ import org.springframework.web.multipart.MultipartFile;
 class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 12;
-    private static final String SUBMISSIONS = "/api/lms/courses/7/assignments/5/submissions";
+    private static final String SUBMISSIONS = "/api/v1/lms/courses/7/assignments/5/submissions";
     private static final byte[] PDF = "%PDF-1.4 made-up test file".getBytes(StandardCharsets.US_ASCII);
 
     @MockitoBean
@@ -107,7 +107,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
     }
 
     private static List<AbstractMockHttpServletRequestBuilder<?>> routes() {
-        return List.of(submitWithText("Answer"), get(SUBMISSIONS + "/me"), get("/api/lms/submission-attachments/200/download"));
+        return List.of(submitWithText("Answer"), get(SUBMISSIONS + "/me"), get("/api/v1/lms/submission-attachments/200/download"));
     }
 
     @Test
@@ -172,7 +172,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(studentToken(), multipart(SUBMISSIONS)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Add a text response or at least one file."));
-        mockMvc.perform(as(studentToken(), get("/api/lms/courses/7/assignments/6/submissions/me")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/assignments/6/submissions/me")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Assignment not found or unavailable."));
     }
@@ -217,7 +217,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.attempts[1].attemptNumber").value(1))
                 .andExpect(jsonPath("$.attempts[1].late").value(false))
                 .andExpect(content().string(not(containsString("secret-key"))));
-        mockMvc.perform(as(studentToken(), get("/api/lms/courses/7/assignments/9/submissions/me")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/assignments/9/submissions/me")))
                 .andExpect(status().isOk())
                 .andExpect(content().json("{\"attempts\":[]}"));
 
@@ -247,7 +247,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
         when(submissionService.openOwnAttachment(ACCOUNT_ID, 200L)).thenReturn(new LmsAssignmentSubmissionService.Download(
                 "Week 1 – Answers.pdf", "application/pdf", PDF.length, new ByteArrayInputStream(PDF)));
 
-        mockMvc.perform(as(studentToken(), get("/api/lms/submission-attachments/200/download")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/submission-attachments/200/download")))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "application/pdf"))
                 .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, PDF.length))
@@ -263,7 +263,7 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
         when(submissionService.openOwnAttachment(ACCOUNT_ID, 300L))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "File not found or unavailable."));
 
-        mockMvc.perform(as(studentToken(), get("/api/lms/submission-attachments/300/download")))
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/submission-attachments/300/download")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("File not found or unavailable."));
     }
@@ -273,16 +273,16 @@ class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(studentToken(), delete(SUBMISSIONS + "/me"))).andExpect(status().isMethodNotAllowed());
         mockMvc.perform(as(studentToken(), put(SUBMISSIONS).contentType("application/json").content("{}")))
                 .andExpect(status().isMethodNotAllowed());
-        mockMvc.perform(as(studentToken(), delete("/api/lms/submission-attachments/200/download")))
+        mockMvc.perform(as(studentToken(), delete("/api/v1/lms/submission-attachments/200/download")))
                 .andExpect(status().isMethodNotAllowed());
         verifyNoInteractions(submissionService);
     }
 
     @Test
     void submissionRoutesAppearInTheApiDocumentation() throws Exception {
-        String submit = "$.paths['/api/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions'].post";
-        String history = "$.paths['/api/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me'].get";
-        String download = "$.paths['/api/lms/submission-attachments/{attachmentId}/download'].get";
+        String submit = "$.paths['/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions'].post";
+        String history = "$.paths['/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me'].get";
+        String download = "$.paths['/api/v1/lms/submission-attachments/{attachmentId}/download'].get";
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
                 .andExpect(jsonPath(submit + ".requestBody.content['multipart/form-data'].schema['$ref']")
                         .value("#/components/schemas/LmsSubmissionRequest"))

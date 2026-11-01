@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * content is archived instead.
  */
 @RestController
-@RequestMapping("/api/lms/faculty")
+@RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

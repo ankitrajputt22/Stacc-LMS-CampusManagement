@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@code ACADEMIC_MASTER_MANAGE}. There is no delete.
  */
 @RestController
-@RequestMapping("/api/admin/academic/sessions")
+@RequestMapping("/api/v1/admin/academic/sessions")
 @Tag(name = "Admin academic masters")
 @ApiResponse(
         responseCode = "401",

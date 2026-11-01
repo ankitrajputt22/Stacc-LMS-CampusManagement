@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * request. A course they may not use answers the same 404 as a missing one.
  */
 @RestController
-@RequestMapping("/api/lms/faculty/courses/{lmsCourseId}/ai")
+@RequestMapping("/api/v1/lms/faculty/courses/{lmsCourseId}/ai")
 @Tag(name = "LMS AI teaching tools")
 public class AiFacultyController {
 

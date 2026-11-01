@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  */
 class AdminAcademicCalendarControllerTest extends DatabaseFreeApiTest {
 
-    private static final String EVENTS = "/api/admin/academic/calendar/events";
+    private static final String EVENTS = "/api/v1/admin/academic/calendar/events";
     private static final String BODY = """
             {"academicSessionId":2,"semesterId":9,"title":"Mid-semester examination week","description":null,
              "category":"EXAM","startDate":"2026-10-20","endDate":"2026-10-25"}""";

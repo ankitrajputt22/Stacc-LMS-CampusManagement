@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  * the student or enrollment; no body carries it. There is no delete, and no account or profile is changed.
  */
 @RestController
-@RequestMapping("/api/admin/academic/enrollments")
+@RequestMapping("/api/v1/admin/academic/enrollments")
 @Tag(name = "Admin enrollments")
 @ApiResponse(
         responseCode = "401",

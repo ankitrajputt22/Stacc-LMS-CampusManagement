@@ -16,7 +16,7 @@ class StaccAccessDeniedHandlerTest {
 
     private final HandlerExceptionResolver resolver = mock(HandlerExceptionResolver.class);
     private final StaccAccessDeniedHandler handler = new StaccAccessDeniedHandler(resolver);
-    private final MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/anything");
+    private final MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/anything");
     private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final AccessDeniedException denied = new AccessDeniedException("Access Denied");
 

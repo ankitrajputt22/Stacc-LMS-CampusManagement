@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * future requests only.
  */
 @RestController
-@RequestMapping("/api/approvals/admin/workflows")
+@RequestMapping("/api/v1/approvals/admin/workflows")
 @Tag(name = "Approval workflows admin")
 @ApiResponse(
         responseCode = "401",

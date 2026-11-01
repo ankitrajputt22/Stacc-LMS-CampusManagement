@@ -20,7 +20,7 @@ import type { HelpdeskTicketStatus } from '../types/helpdesk'
 
 /**
  * Support at /support: one helpdesk for every account, whatever roles it holds. It offers Create ticket and lists the
- * account's own tickets from GET /api/helpdesk/tickets/me, page by page, with the backend's own filters. Admins also get
+ * account's own tickets from GET /api/v1/helpdesk/tickets/me, page by page, with the backend's own filters. Admins also get
  * the links to the support queue and the categories; those pages are checked by the backend like any other.
  */
 export function SupportPage() {

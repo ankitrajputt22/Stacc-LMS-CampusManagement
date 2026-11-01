@@ -182,7 +182,7 @@ One row per LMS course whose knowledge was ever refreshed. No row means `NOT_IND
 
 MySQL holds no vectors, extracted text, prompts, questions, answers, or conversations.
 
-### Refreshing (`POST /api/lms/faculty/courses/{lmsCourseId}/ai/sync`)
+### Refreshing (`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync`)
 
 1. Faculty access is checked.
 2. The published sources and their fingerprint are found.
@@ -216,9 +216,9 @@ Knowledge must be ready: a successful refresh of the current content, and no fai
 
 | Route | Request | Response |
 | --- | --- | --- |
-| `POST /api/lms/courses/{lmsCourseId}/ai/ask` | `question`: 2 to 1,000 characters after trimming. | `answer`, `insufficientContext`, `citations` |
-| `POST /api/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | No body. | `topicId`, `topicTitle`, `summary`, `keyPoints`, `insufficientContext`, `citations` |
-| `POST /api/lms/courses/{lmsCourseId}/ai/practice` | `questionCount` 1–10 (default 5); optional `topicId`. | `questions` (`question`, `suggestedAnswer`, `citations`), `insufficientContext` |
+| `POST /api/v1/lms/courses/{lmsCourseId}/ai/ask` | `question`: 2 to 1,000 characters after trimming. | `answer`, `insufficientContext`, `citations` |
+| `POST /api/v1/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | No body. | `topicId`, `topicTitle`, `summary`, `keyPoints`, `insufficientContext`, `citations` |
+| `POST /api/v1/lms/courses/{lmsCourseId}/ai/practice` | `questionCount` 1–10 (default 5); optional `topicId`. | `questions` (`question`, `suggestedAnswer`, `citations`), `insufficientContext` |
 
 - **Summary and practice topics:** must be published and visible in this course. Draft, archived, and other courses' topics answer 404 "Topic not found or unavailable."
 - **Practice:** for self-study only. Nothing is saved or graded, and no assignment, submission, or result is created.
@@ -263,9 +263,9 @@ This lowers the risk; it cannot remove it. The access rules and the published-on
 
 All need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE`, and access through `LmsFacultyAccessService` on every request. Another faculty member's course answers 404. There is no admin pass.
 
-- **`GET /api/lms/faculty/courses/{lmsCourseId}/ai/status`:** returns `enabled`, `status` (`NOT_INDEXED`, `BUILDING`, `READY`, `FAILED`), `stale`, `indexedAt`, `publishedSourceCount`, and a safe `failureMessage` when failed. It works with AI off.
-- **`POST /api/lms/faculty/courses/{lmsCourseId}/ai/sync`:** refreshes the knowledge (above).
-- **`POST /api/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft`:**
+- **`GET /api/v1/lms/faculty/courses/{lmsCourseId}/ai/status`:** returns `enabled`, `status` (`NOT_INDEXED`, `BUILDING`, `READY`, `FAILED`), `stale`, `indexedAt`, `publishedSourceCount`, and a safe `failureMessage` when failed. It works with AI off.
+- **`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync`:** refreshes the knowledge (above).
+- **`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft`:**
   - Request: `questionCount` 1–20, `difficulty` (`EASY`, `MEDIUM`, `HARD`, `MIXED`), `questionType` (`MCQ`, `SHORT_ANSWER`, `LONG_ANSWER`, `MIXED`), and an optional `additionalInstruction` up to 500 characters. Difficulty is generation guidance only, never stored.
   - Response: `titleSuggestion`, `instructionsSuggestion`, and `questions`. Each question has `questionType`, `prompt`, `options` (multiple choice only), `suggestedAnswer`, `suggestedMarks` (above 0, at most 100), and `citations`.
   - Malformed, uncited, or wrong-type questions are dropped.

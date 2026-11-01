@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * calling, without adding any such endpoint to the real application.
  */
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/v1/test")
 public class SecurityTestController {
 
     @GetMapping("/whoami")

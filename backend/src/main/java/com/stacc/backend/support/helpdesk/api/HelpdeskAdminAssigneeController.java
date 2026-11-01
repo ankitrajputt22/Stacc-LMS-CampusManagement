@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@code HELPDESK_TICKET_MANAGE}, and lists login IDs only.
  */
 @RestController
-@RequestMapping("/api/helpdesk/admin/assignees")
+@RequestMapping("/api/v1/helpdesk/admin/assignees")
 @Tag(name = "Helpdesk admin")
 @ApiResponse(
         responseCode = "401",

@@ -27,7 +27,7 @@ Both come from migration `V60`, which looks roles and permissions up by name. Ev
 
 Faculty routes need `FACULTY` and `FACULTY_REPORT_VIEW`. The faculty member always comes from the access token.
 
-### `GET /api/reports/faculty/my-courses`
+### `GET /api/v1/reports/faculty/my-courses`
 
 One row per offering the faculty member teaches through an `ACTIVE` teaching assignment, from `LmsFacultyManagedCourseQueryService`. Offerings without an LMS course and with an archived one stay listed. Each row has the course and its context, the LMS course and status (if any), and four counts:
 
@@ -36,7 +36,7 @@ One row per offering the faculty member teaches through an `ACTIVE` teaching ass
 - finalized attendance sessions;
 - published results.
 
-### `GET /api/reports/faculty/course-offerings/{courseOfferingId}`
+### `GET /api/v1/reports/faculty/course-offerings/{courseOfferingId}`
 
 The report for one offering. `FacultyTeachingAccessService` must find an `ACTIVE` faculty profile with an `ACTIVE` teaching assignment for it; anything else, including a missing offering, answers the same 404 "Course report not found."
 
@@ -56,7 +56,7 @@ Admin routes need `ADMIN` and `ADMIN_REPORT_VIEW`. They take three optional filt
 
 A filter that names no record, or a semester outside the chosen program or session, answers 400 with a plain message, such as "The semester does not belong to the selected program." Filters only narrow the offerings and enrollments counted.
 
-### `GET /api/reports/admin/overview`
+### `GET /api/v1/reports/admin/overview`
 
 - **Academic:** departments, programs, and courses (always college-wide), and course offerings (filtered).
 - **Enrollment:** semester enrollments and course enrollments by `ENROLLED`, `COMPLETED`, and `WITHDRAWN` (filtered).
@@ -67,11 +67,11 @@ A filter that names no record, or a semester outside the chosen program or sessi
 
 A section the caller may not see is `null` and left out of the page, never shown as zero.
 
-### `GET /api/reports/admin/enrollments`
+### `GET /api/v1/reports/admin/enrollments`
 
 One row per course offering, in the admin offering list's order (newest session first, then program, semester, and course code), with `ENROLLED`, `COMPLETED`, and `WITHDRAWN` course-enrollment counts. It is paged with `page` (from 0) and `size` (1 to 100, default 20).
 
-### `GET /api/reports/admin/enrollments/export.csv`
+### `GET /api/v1/reports/admin/enrollments/export.csv`
 
 The same rows, under the same filters, as a CSV file:
 

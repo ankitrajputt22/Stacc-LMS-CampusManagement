@@ -15,7 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * Official calendar events, with the relevance of {@code GET /api/calendar/me}: admins every event users may see;
+ * Official calendar events, with the relevance of {@code GET /api/v1/calendar/me}: admins every event users may see;
  * students the events of their own enrolled or completed semesters ({@link AcademicCalendarEventQueryService#studentScope})
  * and faculty those of the semesters they teach ({@link AcademicCalendarEventQueryService#facultyScope}), each with the
  * session-wide events of those sessions. Drafts never match. Like the calendar, it needs ACADEMIC_CALENDAR_VIEW with

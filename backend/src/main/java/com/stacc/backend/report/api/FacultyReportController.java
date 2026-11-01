@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * always comes from the access token; no route takes a faculty, profile, or account ID. Read-only.
  */
 @RestController
-@RequestMapping("/api/reports/faculty")
+@RequestMapping("/api/v1/reports/faculty")
 @Tag(name = "Reports")
 @ApiResponse(
         responseCode = "401",

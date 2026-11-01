@@ -53,11 +53,11 @@ There is no grading scale: the grade code is never derived from the marks, and n
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/results/faculty/my-courses` | The course offerings the faculty member teaches now: `courseOfferingId`, `courseCode`, `courseName`, `credits`, `semesterNumber`, `programCode`, `academicSessionCode`, in course code order. |
-| `GET /api/results/faculty/course-offerings/{courseOfferingId}` | The offering's details and every official enrollment, withdrawn ones included, in student ID order: `courseEnrollmentId`, `studentLoginId`, `courseEnrollmentStatus`, and `result` (or null). |
-| `PUT /api/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}` | Saves `{"marksObtained", "maxMarks", "gradeCode", "remarks"}` as described above. `200` with `resultId`, the four values, `status`, `publishedAt`, and `updatedAt`. |
-| `POST /api/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}/publish` | Publishes the saved result. |
-| `GET /api/results/student/me` | `{"results": [...]}`: the student's published results with the course code and name, credits, semester number, program, academic session, the marks, grade code, remarks, and `publishedAt`. No enrollment, offering, faculty, or account IDs. |
+| `GET /api/v1/results/faculty/my-courses` | The course offerings the faculty member teaches now: `courseOfferingId`, `courseCode`, `courseName`, `credits`, `semesterNumber`, `programCode`, `academicSessionCode`, in course code order. |
+| `GET /api/v1/results/faculty/course-offerings/{courseOfferingId}` | The offering's details and every official enrollment, withdrawn ones included, in student ID order: `courseEnrollmentId`, `studentLoginId`, `courseEnrollmentStatus`, and `result` (or null). |
+| `PUT /api/v1/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}` | Saves `{"marksObtained", "maxMarks", "gradeCode", "remarks"}` as described above. `200` with `resultId`, the four values, `status`, `publishedAt`, and `updatedAt`. |
+| `POST /api/v1/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}/publish` | Publishes the saved result. |
+| `GET /api/v1/results/student/me` | `{"results": [...]}`: the student's published results with the course code and name, credits, semester number, program, academic session, the marks, grade code, remarks, and `publishedAt`. No enrollment, offering, faculty, or account IDs. |
 
 - The student's results come newest academic session first (by its start date), then the highest semester number, then course code.
 - Invalid values answer 400: missing marks, negative marks, a maximum that is not above zero, more than two decimal places, marks above the maximum ("Marks obtained cannot exceed maximum marks."), or a grade or remarks that are too long. Nothing is saved.

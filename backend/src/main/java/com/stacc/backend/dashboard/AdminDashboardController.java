@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * parameters; it gives no right to change masters, offerings, or enrollments.
  */
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")
 public class AdminDashboardController {
 

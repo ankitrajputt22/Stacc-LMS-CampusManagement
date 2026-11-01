@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * the access token, and course access is decided again on every request from official enrollment.
  */
 @RestController
-@RequestMapping("/api/lms/courses/{lmsCourseId}/assignments")
+@RequestMapping("/api/v1/lms/courses/{lmsCourseId}/assignments")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

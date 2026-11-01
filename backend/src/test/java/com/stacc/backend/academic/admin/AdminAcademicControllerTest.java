@@ -40,7 +40,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  */
 class AdminAcademicControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ROOT = "/api/admin/academic/";
+    private static final String ROOT = "/api/v1/admin/academic/";
     private static final List<String> MASTERS = List.of("departments", "programs", "sessions", "semesters", "courses");
 
     private static final String DEPARTMENT = "{\"code\":\"CSE\",\"name\":\"Computer Science and Engineering\"}";

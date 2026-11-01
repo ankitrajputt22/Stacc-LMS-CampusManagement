@@ -91,7 +91,7 @@ public class HttpAiServiceClient implements AiServiceClient {
             return false;
         }
         try {
-            client.get().uri("/internal/health").retrieve().toBodilessEntity();
+            client.get().uri("/internal/v1/health").retrieve().toBodilessEntity();
             return true;
         } catch (RuntimeException exception) {
             return false;
@@ -146,7 +146,7 @@ public class HttpAiServiceClient implements AiServiceClient {
         }
         try {
             T result = restClient.post()
-                    .uri("/internal/indexes/{courseKey}/{action}", courseKey, action)
+                    .uri("/internal/v1/indexes/{courseKey}/{action}", courseKey, action)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .body(body)

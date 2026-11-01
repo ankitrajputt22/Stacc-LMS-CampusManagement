@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The categories a new ticket can be filed under. */
 @RestController
-@RequestMapping("/api/helpdesk/categories")
+@RequestMapping("/api/v1/helpdesk/categories")
 @Tag(name = "Helpdesk")
 @ApiResponse(
         responseCode = "401",

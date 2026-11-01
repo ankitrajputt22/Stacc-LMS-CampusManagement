@@ -3,17 +3,26 @@ import { clearSession, loadSession } from '../auth/authStorage'
 
 const REQUEST_TIMEOUT_MS = 15000
 
-const baseURL = import.meta.env.VITE_API_BASE_URL
+/** The API version this frontend speaks. It is part of the code, not of the deployment settings. */
+export const API_VERSION = 'v1'
 
-if (!baseURL) {
+const apiRoot = import.meta.env.VITE_API_BASE_URL
+
+if (!apiRoot) {
   throw new Error(
     'VITE_API_BASE_URL is not set. Copy frontend/.env.example to frontend/.env.',
   )
 }
 
+/**
+ * Where versioned requests go: the configured API root (such as `/api` or `http://localhost:8080/api`) plus the
+ * version, so `/lms/my-courses` becomes `/api/v1/lms/my-courses`.
+ */
+export const apiBaseUrl = `${apiRoot.replace(/\/+$/, '')}/${API_VERSION}`
+
 // Axios sends plain objects as JSON on its own, so no default Content-Type is set here.
 export const apiClient = axios.create({
-  baseURL,
+  baseURL: apiBaseUrl,
   timeout: REQUEST_TIMEOUT_MS,
   headers: {
     Accept: 'application/json',

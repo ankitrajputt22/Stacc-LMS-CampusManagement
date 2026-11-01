@@ -111,7 +111,7 @@ class HttpAiServiceClientTest {
         AskResult result = client(url).ask(COURSE_KEY, question());
         assertThat(result.answer()).isEqualTo("It removes transitive dependencies.");
         assertThat(result.citations()).hasSize(1);
-        assertThat(lastPath.get()).isEqualTo("/internal/indexes/" + COURSE_KEY + "/ask");
+        assertThat(lastPath.get()).isEqualTo("/internal/v1/indexes/" + COURSE_KEY + "/ask");
         assertThat(lastToken.get()).isEqualTo(TOKEN);
         assertThat(lastAuthorization.get()).isNull();
         // The personal-data boundary: the question and the fingerprint, nothing about the student.
@@ -194,7 +194,7 @@ class HttpAiServiceClientTest {
     void healthCheckUsesTheToken() throws IOException {
         String url = start(exchange -> json(exchange, 200, "{\"status\": \"ok\", \"provider\": \"fake\"}"));
         assertThat(client(url).isReachable()).isTrue();
-        assertThat(lastPath.get()).isEqualTo("/internal/health");
+        assertThat(lastPath.get()).isEqualTo("/internal/v1/health");
         assertThat(lastToken.get()).isEqualTo(TOKEN);
     }
 

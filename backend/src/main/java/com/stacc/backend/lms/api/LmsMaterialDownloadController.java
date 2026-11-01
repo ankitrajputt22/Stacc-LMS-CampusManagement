@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/lms")
+@RequestMapping("/api/v1/lms")
 @Tag(name = "LMS")
 public class LmsMaterialDownloadController {
 

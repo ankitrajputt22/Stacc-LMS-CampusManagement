@@ -39,10 +39,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the approval routes through Spring Security, with the approval services as stand-ins. */
 class ApprovalControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ME = "/api/approvals/me";
-    private static final String REQUEST = "/api/approvals/requests/12";
-    private static final String TASKS = "/api/approvals/tasks";
-    private static final String WORKFLOWS = "/api/approvals/admin/workflows";
+    private static final String ME = "/api/v1/approvals/me";
+    private static final String REQUEST = "/api/v1/approvals/requests/12";
+    private static final String TASKS = "/api/v1/approvals/tasks";
+    private static final String WORKFLOWS = "/api/v1/approvals/admin/workflows";
     private static final String WORKFLOW_BODY =
             "{\"code\":\"DEMO\",\"name\":\"Demo\",\"steps\":[{\"name\":\"Review\",\"approverRoleCode\":\"FACULTY\"}]}";
     private static final String UPDATE_BODY =
@@ -187,8 +187,8 @@ class ApprovalControllerTest extends DatabaseFreeApiTest {
     @Test
     void thereIsNoRouteToStartCancelOrDeleteAnything() throws Exception {
         for (MockHttpServletRequestBuilder request : List.of(
-                json(post("/api/approvals/requests"), "{\"workflowCode\":\"DEMO\",\"requesterId\":1}"),
-                json(post("/api/approvals"), "{}"),
+                json(post("/api/v1/approvals/requests"), "{\"workflowCode\":\"DEMO\",\"requesterId\":1}"),
+                json(post("/api/v1/approvals"), "{}"),
                 post(REQUEST + "/cancel"), delete(REQUEST), delete(WORKFLOWS + "/4"), delete(TASKS + "/121"))) {
             assertThat(statusOf(request, admin())).isIn(404, 405);
         }
@@ -200,9 +200,9 @@ class ApprovalControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.paths['" + ME + "'].get.security[0].bearerAuth").exists())
-                .andExpect(jsonPath("$.paths['/api/approvals/requests/{approvalRequestId}'].get.responses['404']").exists())
-                .andExpect(jsonPath("$.paths['/api/approvals/requests/{approvalRequestId}']", not(hasKey("delete"))))
-                .andExpect(jsonPath("$.paths['/api/approvals/requests']").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/approvals/requests/{approvalRequestId}'].get.responses['404']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/approvals/requests/{approvalRequestId}']", not(hasKey("delete"))))
+                .andExpect(jsonPath("$.paths['/api/v1/approvals/requests']").doesNotExist())
                 .andExpect(jsonPath("$.paths['" + TASKS + "'].get.responses['403']").exists())
                 .andExpect(jsonPath("$.paths['" + TASKS + "/{approvalRequestStepId}/approve'].post.responses['409']").exists())
                 .andExpect(jsonPath("$.paths['" + TASKS + "/{approvalRequestStepId}/reject'].post.responses['400']").exists())

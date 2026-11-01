@@ -66,7 +66,7 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     }
 
     private ResultActions login(String body) throws Exception {
-        return mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body));
+        return mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(body));
     }
 
     private static String credentials(String loginId, String password) {
@@ -146,7 +146,7 @@ class AuthControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.error").value("Unauthorized"))
                 .andExpect(jsonPath("$.message").value("Invalid login ID or password."))
-                .andExpect(jsonPath("$.path").value("/api/auth/login"))
+                .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
                 .andExpect(jsonPath("$.accountId").doesNotExist())
                 .andExpect(jsonPath("$.accessToken").doesNotExist())
@@ -222,11 +222,11 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     @Test
     void loginOnlyAcceptsPost() throws Exception {
         // Only POST is public. Any other method is an ordinary protected API request.
-        mockMvc.perform(get("/api/auth/login"))
+        mockMvc.perform(get("/api/v1/auth/login"))
                 .andExpect(status().isUnauthorized());
 
         String token = TestTokens.valid(LOGIN_ID, 12, "ROLE_STUDENT");
-        mockMvc.perform(get("/api/auth/login").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get("/api/v1/auth/login").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(header().string(HttpHeaders.ALLOW, "POST"))
                 .andExpect(jsonPath("$.status").value(405));
@@ -244,7 +244,7 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     void loginAppearsInTheApiDocumentation() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/api/auth/login'].post.summary").value("College login"))
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.summary").value("College login"))
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.loginId").exists())
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.password").exists())
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.role").doesNotExist())

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * and a kind the account may not see is simply absent.
  */
 @RestController
-@RequestMapping("/api/search")
+@RequestMapping("/api/v1/search")
 @Tag(name = "Search")
 @ApiResponse(
         responseCode = "400",

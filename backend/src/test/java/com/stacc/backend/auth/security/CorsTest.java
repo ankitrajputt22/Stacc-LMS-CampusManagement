@@ -28,8 +28,8 @@ class CorsTest extends DatabaseFreeApiTest {
 
     private static final String DEV_FRONTEND = "http://localhost:5173";
     private static final String OTHER_SITE = "http://some-other-site.example";
-    private static final String LOGIN = "/api/auth/login";
-    private static final String MY_COURSES = "/api/lms/my-courses";
+    private static final String LOGIN = "/api/v1/auth/login";
+    private static final String MY_COURSES = "/api/v1/lms/my-courses";
 
     // What a browser sends before the real request, to ask whether it may send it.
     private ResultActions preflight(String origin, String path, String method, String requestHeaders)

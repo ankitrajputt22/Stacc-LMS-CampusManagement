@@ -19,7 +19,7 @@ class CalendarRangeApiTest extends DatabaseFreeApiTest {
     private static final String STUDENT = "Bearer " + TestTokens.valid("STU-TEST-1", 70, "ROLE_STUDENT", "ACADEMIC_CALENDAR_VIEW");
 
     private static MockHttpServletRequestBuilder calendar(String from, String to, String timeZone) {
-        return get("/api/calendar/me").param("from", from).param("to", to).param("timeZone", timeZone)
+        return get("/api/v1/calendar/me").param("from", from).param("to", to).param("timeZone", timeZone)
                 .header(HttpHeaders.AUTHORIZATION, STUDENT);
     }
 

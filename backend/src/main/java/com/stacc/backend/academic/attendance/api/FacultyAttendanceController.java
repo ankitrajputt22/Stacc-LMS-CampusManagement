@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * and no reopen.
  */
 @RestController
-@RequestMapping("/api/attendance/faculty")
+@RequestMapping("/api/v1/attendance/faculty")
 @Tag(name = "Attendance")
 @ApiResponse(
         responseCode = "401",

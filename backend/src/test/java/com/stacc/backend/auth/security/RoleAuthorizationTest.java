@@ -16,15 +16,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Checks role rules through real requests. The "/api/test/roles/..." routes exist only in
+ * Checks role rules through real requests. The "/api/v1/test/roles/..." routes exist only in
  * test code and each one requires a role with @PreAuthorize.
  */
 class RoleAuthorizationTest extends DatabaseFreeApiTest {
 
-    private static final String STUDENT_ONLY = "/api/test/roles/student";
-    private static final String FACULTY_ONLY = "/api/test/roles/faculty";
-    private static final String ADMIN_ONLY = "/api/test/roles/admin";
-    private static final String STUDENT_OR_FACULTY = "/api/test/roles/student-or-faculty";
+    private static final String STUDENT_ONLY = "/api/v1/test/roles/student";
+    private static final String FACULTY_ONLY = "/api/v1/test/roles/faculty";
+    private static final String ADMIN_ONLY = "/api/v1/test/roles/admin";
+    private static final String STUDENT_OR_FACULTY = "/api/v1/test/roles/student-or-faculty";
 
     private static final String STUDENT = TestTokens.valid("2408400100011", 12, "ROLE_STUDENT");
     private static final String FACULTY = TestTokens.valid("EMP1024", 7, "ROLE_FACULTY");
@@ -102,7 +102,7 @@ class RoleAuthorizationTest extends DatabaseFreeApiTest {
         String noRoles = TestTokens.valid("EMP4000", 40);
 
         expectForbidden(noRoles, STUDENT_ONLY);
-        getAs(noRoles, "/api/test/whoami").andExpect(status().isOk());
+        getAs(noRoles, "/api/v1/test/whoami").andExpect(status().isOk());
     }
 
     @Test

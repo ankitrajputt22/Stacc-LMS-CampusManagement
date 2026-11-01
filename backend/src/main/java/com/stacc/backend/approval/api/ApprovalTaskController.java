@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * access token.
  */
 @RestController
-@RequestMapping("/api/approvals/tasks")
+@RequestMapping("/api/v1/approvals/tasks")
 @Tag(name = "Approval tasks")
 @ApiResponse(
         responseCode = "401",

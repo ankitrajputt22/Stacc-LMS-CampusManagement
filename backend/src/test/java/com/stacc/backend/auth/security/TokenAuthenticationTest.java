@@ -45,12 +45,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Sends requests with good and bad access tokens. "/api/test/whoami" exists only in test code
+ * Sends requests with good and bad access tokens. "/api/v1/test/whoami" exists only in test code
  * and reports who Spring Security thinks is calling.
  */
 class TokenAuthenticationTest extends DatabaseFreeApiTest {
 
-    private static final String WHO_AM_I = "/api/test/whoami";
+    private static final String WHO_AM_I = "/api/v1/test/whoami";
 
     @Autowired
     private AccessTokenService accessTokenService;
@@ -120,7 +120,7 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
         account.assignRole(new Role(RoleName.STUDENT));
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(anyString())).thenReturn(Optional.of(account));
 
-        MvcResult login = mockMvc.perform(post("/api/auth/login")
+        MvcResult login = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"loginId\":\"2408400100011\",\"password\":\"TestPassword123!\"}"))
                 .andExpect(status().isOk())
@@ -222,10 +222,10 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
 
     @Test
     void unknownApiRouteIsNotFoundWithAValidTokenButRefusedWithABadOne() throws Exception {
-        getWithToken("/api/does-not-exist", TestTokens.valid("2408400100011", 12, "ROLE_STUDENT"))
+        getWithToken("/api/v1/does-not-exist", TestTokens.valid("2408400100011", 12, "ROLE_STUDENT"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
-        expectRefused(getWithToken("/api/does-not-exist", "not-a-token"), "/api/does-not-exist");
+        expectRefused(getWithToken("/api/v1/does-not-exist", "not-a-token"), "/api/v1/does-not-exist");
     }
 
     @Test
@@ -236,6 +236,6 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"))
                 .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.bearerFormat").value("JWT"))
                 .andExpect(jsonPath("$.security").doesNotExist())
-                .andExpect(jsonPath("$.paths['/api/auth/login'].post.security").doesNotExist());
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.security").doesNotExist());
     }
 }

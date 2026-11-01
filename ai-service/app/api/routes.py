@@ -10,7 +10,7 @@ from app.models import schemas
 from app.security import checked_course_key, require_internal_token
 
 public = APIRouter()
-internal = APIRouter(prefix="/internal", dependencies=[Depends(require_internal_token)])
+internal = APIRouter(prefix="/internal/v1", dependencies=[Depends(require_internal_token)])
 
 
 @public.get("/health")

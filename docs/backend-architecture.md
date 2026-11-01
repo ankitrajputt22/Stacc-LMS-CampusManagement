@@ -21,7 +21,7 @@ The backend modules are:
 - `search` — global search: a read-only composition of per-domain providers that reuse each module's access services and ask its repositories bounded, parameterized queries. It owns no data, stores no queries, and grants no access (see `search.md`).
 - `report` — read-only faculty and admin reports: live `COUNT` and `GROUP BY` queries over other modules' repositories, under their access services. It owns no data and stores, caches, or schedules nothing (see `reports-analytics.md`).
 - `devdata` — local development data only: the demo accounts and records of the `dev-seed` profile, created through the other modules' services. It does nothing unless that profile is switched on (see `local-test-data.md`).
-- `calendar` — the shared, read-only calendar of the signed-in account (`GET /api/calendar/me`), composed from the academic calendar events and the LMS assignment deadlines under their own rules. It owns no data and stores nothing; the official events themselves belong to `academic.calendar` (see `academic-calendar.md`).
+- `calendar` — the shared, read-only calendar of the signed-in account (`GET /api/v1/calendar/me`), composed from the academic calendar events and the LMS assignment deadlines under their own rules. It owns no data and stores nothing; the official events themselves belong to `academic.calendar` (see `academic-calendar.md`).
 
 Each module should own its business logic and should not depend directly on another module's internal implementation without a clear reason. Shared technical code may live in `common`, but `common` should remain small rather than becoming a home for unrelated features.
 
