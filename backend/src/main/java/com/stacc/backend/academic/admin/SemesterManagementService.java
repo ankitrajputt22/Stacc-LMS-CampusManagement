@@ -7,11 +7,13 @@ import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterResponses.SemesterResponse;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramRepository;
+import com.stacc.backend.academic.program.ProgramStatus;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.semester.SemesterStatus;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
+import com.stacc.backend.academic.session.AcademicSessionStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,8 @@ public class SemesterManagementService {
     static final String PROGRAM_MISSING = "The selected program does not exist.";
     static final String SESSION_MISSING = "The selected academic session does not exist.";
     static final String TAKEN = "This program already has this semester in this academic session.";
+    static final String PROGRAM_INACTIVE = "This program is inactive, so it cannot take new semesters.";
+    static final String SESSION_CLOSED = "This academic session is closed, so it cannot take new semesters.";
     static final String BACK_TO_PLANNED = "A semester that has started or closed cannot go back to planned.";
     static final String REOPEN = "A closed semester cannot be made active again.";
 
@@ -56,6 +60,12 @@ public class SemesterManagementService {
                 .orElseThrow(() -> AcademicMasterErrors.badRequest(PROGRAM_MISSING));
         AcademicSession session = sessions.findById(request.academicSessionId())
                 .orElseThrow(() -> AcademicMasterErrors.badRequest(SESSION_MISSING));
+        if (program.getStatus() != ProgramStatus.ACTIVE) {
+            throw AcademicMasterErrors.conflict(PROGRAM_INACTIVE);
+        }
+        if (session.getStatus() == AcademicSessionStatus.CLOSED) {
+            throw AcademicMasterErrors.conflict(SESSION_CLOSED);
+        }
         int number = request.semesterNumber();
         if (number > program.getDurationSemesters()) {
             throw AcademicMasterErrors.badRequest("Semester number must not be greater than the program's "

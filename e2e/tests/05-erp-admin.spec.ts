@@ -1,12 +1,18 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
-test('an admin searches the course catalog and opens an offering roster', async ({ page }) => {
+test('an admin filters and searches the course catalog and opens an offering roster', async ({ page }) => {
   await signIn(page, 'erp', 'admin1')
 
   await page.goto('/admin/academic/courses')
   await expect(page.getByRole('heading', { level: 1, name: 'Academic Admin' })).toBeVisible()
   const courses = page.getByRole('table', { name: 'Courses' })
+  await expect(courses.getByRole('rowheader', { name: /CS201/ })).toBeVisible()
+
+  // Every demo course is a core course, so filtering by Lab leaves none.
+  await page.getByLabel('Type').selectOption('LAB')
+  await expect(page.getByText('No courses match.')).toBeVisible()
+  await page.getByLabel('Type').selectOption('CORE')
   await expect(courses.getByRole('rowheader', { name: /CS201/ })).toBeVisible()
 
   await page.getByRole('searchbox', { name: 'Search courses' }).fill('cs30')

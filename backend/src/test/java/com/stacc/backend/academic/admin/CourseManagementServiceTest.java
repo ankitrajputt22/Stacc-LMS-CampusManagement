@@ -50,16 +50,16 @@ class CourseManagementServiceTest {
 
     @Test
     void aCourseIsCreatedWithItsDepartmentAndExactCredits() {
-        CourseResponse created = service.create(new CourseCreate(3L, " cs105 ", " Lab Practice ", new BigDecimal("1.5")));
+        CourseResponse created = service.create(new CourseCreate(3L, " cs105 ", " Lab Practice ", new BigDecimal("1.5"), null, null, null));
 
-        assertEquals(new CourseResponse(20L, 3L, "CSE", "Computer Science and Engineering", "CS105", "Lab Practice",
-                new BigDecimal("1.50"), "ACTIVE"), created);
+        assertEquals(new CourseResponse(20L, 3L, "CSE", "Computer Science and Engineering", "CS105", "Lab Practice", null, null,
+                new BigDecimal("1.50"), "CORE", "ACTIVE"), created);
     }
 
     @Test
     void aMissingDepartmentIsRefusedAndNothingIsCreated() {
         assertRefused(HttpStatus.BAD_REQUEST, CourseManagementService.DEPARTMENT_MISSING,
-                () -> service.create(new CourseCreate(99L, "CS999", "X", BigDecimal.ONE)));
+                () -> service.create(new CourseCreate(99L, "CS999", "X", BigDecimal.ONE, null, null, null)));
         verify(courses, never()).saveAndFlush(any());
     }
 
@@ -67,25 +67,25 @@ class CourseManagementServiceTest {
     void aTakenCodeAnswers409EvenWhenTheDatabaseCatchesIt() {
         when(courses.existsByCode("CS301")).thenReturn(true);
         assertRefused(HttpStatus.CONFLICT, CourseManagementService.CODE_TAKEN,
-                () -> service.create(new CourseCreate(3L, "cs301", "Again", BigDecimal.ONE)));
+                () -> service.create(new CourseCreate(3L, "cs301", "Again", BigDecimal.ONE, null, null, null)));
 
         when(courses.saveAndFlush(any(Course.class))).thenThrow(new DataIntegrityViolationException("Duplicate entry"));
         assertRefused(HttpStatus.CONFLICT, CourseManagementService.CODE_TAKEN,
-                () -> service.create(new CourseCreate(3L, "CS302", "Race", BigDecimal.ONE)));
+                () -> service.create(new CourseCreate(3L, "CS302", "Race", BigDecimal.ONE, null, null, null)));
     }
 
     @Test
     void editingChangesNameCreditsAndStatusButNeverTheDepartmentOrCode() {
-        CourseResponse updated = service.update(12L, new CourseUpdate("Data Structures II", new BigDecimal("3.75"), CourseStatus.INACTIVE));
+        CourseResponse updated = service.update(12L, new CourseUpdate("Data Structures II", new BigDecimal("3.75"), CourseStatus.INACTIVE, null, null, null));
 
-        assertEquals(new CourseResponse(12L, 3L, "CSE", "Computer Science and Engineering", "CS301", "Data Structures II",
-                new BigDecimal("3.75"), "INACTIVE"), updated);
+        assertEquals(new CourseResponse(12L, 3L, "CSE", "Computer Science and Engineering", "CS301", "Data Structures II", null, null,
+                new BigDecimal("3.75"), "CORE", "INACTIVE"), updated);
     }
 
     @Test
     void anUnknownCourseAnswers404() {
         assertRefused(HttpStatus.NOT_FOUND, CourseManagementService.NOT_FOUND, () -> service.get(99L));
         assertRefused(HttpStatus.NOT_FOUND, CourseManagementService.NOT_FOUND,
-                () -> service.update(99L, new CourseUpdate("X", BigDecimal.ONE, CourseStatus.ACTIVE)));
+                () -> service.update(99L, new CourseUpdate("X", BigDecimal.ONE, CourseStatus.ACTIVE, null, null, null)));
     }
 }

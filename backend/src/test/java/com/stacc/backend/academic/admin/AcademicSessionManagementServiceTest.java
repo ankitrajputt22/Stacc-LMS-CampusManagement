@@ -53,7 +53,7 @@ class AcademicSessionManagementServiceTest {
         AcademicSessionResponse created = service.create(new AcademicSessionCreate(" 2027-28 ", LocalDate.of(2027, 7, 1),
                 LocalDate.of(2028, 5, 31)));
 
-        assertEquals(new AcademicSessionResponse(9L, "2027-28", LocalDate.of(2027, 7, 1), LocalDate.of(2028, 5, 31), "PLANNED"),
+        assertEquals(new AcademicSessionResponse(9L, "2027-28", LocalDate.of(2027, 7, 1), LocalDate.of(2028, 5, 31), "PLANNED", false),
                 created);
     }
 

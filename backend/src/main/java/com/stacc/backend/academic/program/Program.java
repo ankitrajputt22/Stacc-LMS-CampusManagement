@@ -52,6 +52,10 @@ public class Program {
     @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "degree_type", nullable = false, length = 20)
+    private DegreeType degreeType = DegreeType.UNDERGRADUATE;
+
     @Column(name = "duration_semesters", nullable = false)
     private int durationSemesters;
 
@@ -98,6 +102,14 @@ public class Program {
     /** The normal length of the programme, counted in semesters. */
     public int getDurationSemesters() {
         return durationSemesters;
+    }
+
+    public DegreeType getDegreeType() {
+        return degreeType;
+    }
+
+    public void changeDegreeType(DegreeType degreeType) {
+        this.degreeType = Require.notNull(degreeType, "degreeType");
     }
 
     public ProgramStatus getStatus() {

@@ -27,6 +27,8 @@ public class AcademicSessionManagementService {
     static final String DATES = "The end date must be after the start date.";
     static final String BACK_TO_PLANNED = "A session that has started or closed cannot go back to planned.";
     static final String REOPEN = "A closed academic session cannot be made active again.";
+    static final String CLOSED_CANNOT_BE_CURRENT = "A closed academic session cannot be the current session.";
+    static final String CURRENT_CHANGED = "Another session was just made current. Reload and try again.";
 
     private final AcademicSessionRepository sessions;
 
@@ -75,6 +77,28 @@ public class AcademicSessionManagementService {
             }
         }
         return AcademicSessionResponse.of(sessions.saveAndFlush(session));
+    }
+
+    /**
+     * Makes this the college's current session, and the previous current session an ordinary one, in one step. The
+     * current session is locked first, so two admins doing this at once are handled one after the other; the database
+     * still allows only one current session. Doing it again for the current session changes nothing.
+     */
+    public AcademicSessionResponse makeCurrent(Long academicSessionId) {
+        AcademicSession session = find(academicSessionId);
+        if (session.getStatus() == AcademicSessionStatus.CLOSED) {
+            throw AcademicMasterErrors.conflict(CLOSED_CANNOT_BE_CURRENT);
+        }
+        AcademicSession previous = sessions.findFirstByCurrentTrue().orElse(null);
+        if (previous != null && previous.getId().equals(session.getId())) {
+            return AcademicSessionResponse.of(session);
+        }
+        if (previous != null) {
+            previous.clearCurrent();
+            sessions.saveAndFlush(previous);
+        }
+        session.makeCurrent();
+        return AcademicSessionResponse.of(AcademicMasterErrors.savedOrConflict(() -> sessions.saveAndFlush(session), CURRENT_CHANGED));
     }
 
     private static void requireOrdered(LocalDate startDate, LocalDate endDate) {

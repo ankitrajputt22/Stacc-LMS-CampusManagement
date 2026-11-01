@@ -50,6 +50,12 @@ export const createAcademicSession = (body: AcademicSessionCreate) => create<Adm
 export const updateAcademicSession = (id: number, body: AcademicSessionUpdate) =>
   update<AdminAcademicSession>('sessions', id, body)
 
+/** Makes this the college's current session; the previous one stops being current. */
+export async function makeAcademicSessionCurrent(id: number): Promise<AdminAcademicSession> {
+  const response = await apiClient.patch<AdminAcademicSession>(`${ROOT}/sessions/${id}/current`)
+  return response.data
+}
+
 export const getSemesters = (signal?: AbortSignal) => list<AdminSemester>('semesters', signal)
 export const createSemester = (body: SemesterCreate) => create<AdminSemester>('semesters', body)
 export const updateSemester = (id: number, body: SemesterUpdate) => update<AdminSemester>('semesters', id, body)

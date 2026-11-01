@@ -5,8 +5,10 @@ import java.time.LocalDate;
 
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.course.CourseStatus;
+import com.stacc.backend.academic.course.CourseType;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentStatus;
+import com.stacc.backend.academic.program.DegreeType;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramStatus;
 import com.stacc.backend.academic.semester.SemesterStatus;
@@ -41,7 +43,11 @@ public final class AcademicMasterRequests {
             @Schema(description = "Unique across the college.", example = "Computer Science and Engineering")
             @NotBlank(message = "Name is required")
             @Size(max = Department.MAX_NAME_LENGTH, message = "Name must be at most 150 characters")
-            String name) {
+            String name,
+            @Schema(description = "Optional plain text about the department, up to 1000 characters.",
+                    example = "Teaches computing from first year to research.")
+            @Size(max = Department.MAX_DESCRIPTION_LENGTH, message = "Description must be at most 1000 characters")
+            String description) {
     }
 
     public record DepartmentUpdate(
@@ -52,7 +58,11 @@ public final class AcademicMasterRequests {
 
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE")
             @NotNull(message = "Status is required")
-            DepartmentStatus status) {
+            DepartmentStatus status,
+            @Schema(description = "Optional plain text about the department, up to 1000 characters.",
+                    example = "Teaches computing from first year to research.")
+            @Size(max = Department.MAX_DESCRIPTION_LENGTH, message = "Description must be at most 1000 characters")
+            String description) {
     }
 
     public record ProgramCreate(
@@ -75,7 +85,11 @@ public final class AcademicMasterRequests {
             @NotNull(message = "Duration is required")
             @Min(value = 1, message = "Duration must be at least 1 semester")
             @Max(value = Program.MAX_DURATION_SEMESTERS, message = "Duration must be at most 20 semesters")
-            Integer durationSemesters) {
+            Integer durationSemesters,
+            @Schema(description = "What kind of degree the program leads to. UNDERGRADUATE when left out.",
+                    allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
+                    example = "UNDERGRADUATE")
+            DegreeType degreeType) {
     }
 
     public record ProgramUpdate(
@@ -92,7 +106,11 @@ public final class AcademicMasterRequests {
 
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE")
             @NotNull(message = "Status is required")
-            ProgramStatus status) {
+            ProgramStatus status,
+            @Schema(description = "What kind of degree the program leads to. Unchanged when left out.",
+                    allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
+                    example = "UNDERGRADUATE")
+            DegreeType degreeType) {
     }
 
     public record AcademicSessionCreate(
@@ -171,7 +189,16 @@ public final class AcademicMasterRequests {
             @DecimalMin(value = "0", inclusive = false, message = "Credits must be greater than zero")
             @DecimalMax(value = "20.00", message = "Credits must be at most 20")
             @Digits(integer = 2, fraction = 2, message = "Credits can have at most 2 decimal places")
-            BigDecimal credits) {
+            BigDecimal credits,
+            @Schema(description = "An optional short form, such as DBMS, up to 20 characters.", example = "DSA")
+            @Size(max = Course.MAX_SHORT_NAME_LENGTH, message = "Short name must be at most 20 characters")
+            String shortName,
+            @Schema(description = "Optional plain text about the course, up to 2000 characters.")
+            @Size(max = Course.MAX_DESCRIPTION_LENGTH, message = "Description must be at most 2000 characters")
+            String description,
+            @Schema(description = "The kind of course. CORE when left out.",
+                    allowableValues = {"CORE", "ELECTIVE", "LAB", "PROJECT", "AUDIT"}, example = "CORE")
+            CourseType courseType) {
     }
 
     public record CourseUpdate(
@@ -189,6 +216,15 @@ public final class AcademicMasterRequests {
 
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE")
             @NotNull(message = "Status is required")
-            CourseStatus status) {
+            CourseStatus status,
+            @Schema(description = "An optional short form, such as DBMS, up to 20 characters.", example = "DSA")
+            @Size(max = Course.MAX_SHORT_NAME_LENGTH, message = "Short name must be at most 20 characters")
+            String shortName,
+            @Schema(description = "Optional plain text about the course, up to 2000 characters.")
+            @Size(max = Course.MAX_DESCRIPTION_LENGTH, message = "Description must be at most 2000 characters")
+            String description,
+            @Schema(description = "The kind of course. Unchanged when left out.",
+                    allowableValues = {"CORE", "ELECTIVE", "LAB", "PROJECT", "AUDIT"}, example = "CORE")
+            CourseType courseType) {
     }
 }

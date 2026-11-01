@@ -43,6 +43,10 @@ public class AcademicSession {
     @Column(nullable = false, length = 20)
     private AcademicSessionStatus status = AcademicSessionStatus.PLANNED;
 
+    // At most one session is current: a unique generated column in the database enforces it.
+    @Column(name = "is_current", nullable = false)
+    private boolean current;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -84,6 +88,23 @@ public class AcademicSession {
         return status;
     }
 
+    /** Whether this is the college's current session. At most one session is. */
+    public boolean isCurrent() {
+        return current;
+    }
+
+    /** Makes this the current session. The caller clears the previous one first. A closed session cannot be current. */
+    public void makeCurrent() {
+        if (status == AcademicSessionStatus.CLOSED) {
+            throw new IllegalStateException("A closed academic session cannot be the current one");
+        }
+        this.current = true;
+    }
+
+    public void clearCurrent() {
+        this.current = false;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -103,8 +124,10 @@ public class AcademicSession {
         this.status = AcademicSessionStatus.ACTIVE;
     }
 
+    /** Closing a session also stops it being the current one. */
     public void close() {
         this.status = AcademicSessionStatus.CLOSED;
+        this.current = false;
     }
 
     // A session may be any length, but it must end after it starts.

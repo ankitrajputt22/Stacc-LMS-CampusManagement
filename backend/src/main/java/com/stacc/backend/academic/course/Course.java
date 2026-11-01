@@ -32,6 +32,8 @@ public class Course {
 
     public static final int MAX_CODE_LENGTH = 30;
     public static final int MAX_NAME_LENGTH = 200;
+    public static final int MAX_SHORT_NAME_LENGTH = 20;
+    public static final int MAX_DESCRIPTION_LENGTH = 2000;
     public static final BigDecimal MAX_CREDITS = new BigDecimal("20.00");
 
     private static final int CREDIT_DECIMAL_PLACES = 2;
@@ -51,8 +53,19 @@ public class Course {
     @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
+    // An optional short form, such as DBMS, kept as entered.
+    @Column(name = "short_name", length = MAX_SHORT_NAME_LENGTH)
+    private String shortName;
+
+    @Column(length = MAX_DESCRIPTION_LENGTH)
+    private String description;
+
     @Column(nullable = false, precision = 4, scale = CREDIT_DECIMAL_PLACES)
     private BigDecimal credits;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "course_type", nullable = false, length = 20)
+    private CourseType courseType = CourseType.CORE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -100,6 +113,25 @@ public class Course {
     /** The official credit value, always with two decimal places. */
     public BigDecimal getCredits() {
         return credits;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public CourseType getCourseType() {
+        return courseType;
+    }
+
+    /** Sets the short name, description, and type. Blank text clears the short name or description. */
+    public void describe(String shortName, String description, CourseType courseType) {
+        this.shortName = Require.optionalText(shortName, "shortName", MAX_SHORT_NAME_LENGTH);
+        this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
+        this.courseType = Require.notNull(courseType, "courseType");
     }
 
     public CourseStatus getStatus() {

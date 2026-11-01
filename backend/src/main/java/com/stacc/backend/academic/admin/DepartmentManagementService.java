@@ -50,8 +50,9 @@ public class DepartmentManagementService {
         if (departments.existsByName(name)) {
             throw AcademicMasterErrors.conflict(NAME_TAKEN);
         }
-        return DepartmentResponse.of(AcademicMasterErrors.savedOrConflict(
-                () -> departments.saveAndFlush(new Department(code, name)), TAKEN));
+        Department department = new Department(code, name);
+        department.describe(request.description());
+        return DepartmentResponse.of(AcademicMasterErrors.savedOrConflict(() -> departments.saveAndFlush(department), TAKEN));
     }
 
     public DepartmentResponse update(Long departmentId, DepartmentUpdate request) {
@@ -61,6 +62,7 @@ public class DepartmentManagementService {
             throw AcademicMasterErrors.conflict(NAME_TAKEN);
         }
         department.rename(name);
+        department.describe(request.description());
         if (request.status() == DepartmentStatus.ACTIVE) {
             department.activate();
         } else {

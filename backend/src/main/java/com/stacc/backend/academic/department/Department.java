@@ -25,6 +25,7 @@ public class Department {
 
     public static final int MAX_CODE_LENGTH = 20;
     public static final int MAX_NAME_LENGTH = 150;
+    public static final int MAX_DESCRIPTION_LENGTH = 1000;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +36,10 @@ public class Department {
 
     @Column(nullable = false, unique = true, length = MAX_NAME_LENGTH)
     private String name;
+
+    // Optional plain text about the department.
+    @Column(length = MAX_DESCRIPTION_LENGTH)
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -68,6 +73,15 @@ public class Department {
 
     public String getName() {
         return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    /** Sets or clears the description; blank text clears it. */
+    public void describe(String description) {
+        this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
     }
 
     public DepartmentStatus getStatus() {
