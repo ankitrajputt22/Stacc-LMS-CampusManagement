@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.program.Program;
+import com.stacc.backend.academic.section.Section;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -104,6 +105,30 @@ public final class AcademicMasterResponses {
             return new CourseResponse(course.getId(), department.getId(), department.getCode(), department.getName(),
                     course.getCode(), course.getName(), course.getShortName(), course.getDescription(), course.getCredits(),
                     course.getCourseType().name(), course.getStatus().name());
+        }
+    }
+
+    public record SectionResponse(
+            @Schema(example = "21") Long id,
+            @Schema(example = "9") Long semesterId,
+            @Schema(example = "3") int semesterNumber,
+            @Schema(example = "4") Long programId,
+            @Schema(example = "BTECH-CSE") String programCode,
+            @Schema(example = "2") Long academicSessionId,
+            @Schema(example = "2026-27") String academicSessionCode,
+            @Schema(example = "A") String code,
+            @Schema(description = "An optional longer name, or null.", example = "Section A") String name,
+            @Schema(description = "The most enrolled students it holds, or null for no limit.", example = "60") Integer capacity,
+            @Schema(description = "How many students are enrolled in it now.", example = "42") long enrolledCount,
+            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
+
+        static SectionResponse of(Section section, long enrolledCount) {
+            Semester semester = section.getSemester();
+            Program program = semester.getProgram();
+            AcademicSession session = semester.getAcademicSession();
+            return new SectionResponse(section.getId(), semester.getId(), semester.getSemesterNumber(), program.getId(),
+                    program.getCode(), session.getId(), session.getCode(), section.getCode(), section.getName(),
+                    section.getCapacity(), enrolledCount, section.getStatus().name());
         }
     }
 }

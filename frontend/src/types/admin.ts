@@ -64,6 +64,27 @@ export type AdminCourse = {
   status: ActiveStatus
 }
 
+/** A student section (A, B, …) of one semester. */
+export type AdminSection = {
+  id: number
+  semesterId: number
+  semesterNumber: number
+  programId: number
+  programCode: string
+  academicSessionId: number
+  academicSessionCode: string
+  code: string
+  name: string | null
+  /** The most enrolled students it holds, or null for no limit. */
+  capacity: number | null
+  /** How many students are enrolled in it now. */
+  enrolledCount: number
+  status: ActiveStatus
+}
+
+export type SectionCreate = { semesterId: number; code: string; name: string | null; capacity: number | null }
+export type SectionUpdate = { name: string | null; capacity: number | null; status: ActiveStatus }
+
 export type DepartmentCreate = { code: string; name: string; description: string | null }
 export type DepartmentUpdate = { name: string; status: ActiveStatus; description: string | null }
 export type ProgramCreate = { departmentId: number; code: string; name: string; durationSemesters: number; degreeType: DegreeType }
@@ -121,6 +142,9 @@ export type AdminSemesterEnrollment = {
   programCode: string
   academicSessionId: number
   academicSessionCode: string
+  /** The section the student is placed in, or null. */
+  sectionId: number | null
+  sectionCode: string | null
   status: EnrollmentStatus
 }
 

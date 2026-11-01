@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import {
   createAcademicSession,
   createCourse,
@@ -21,7 +20,6 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { creditsText } from '../courses/credits'
 import type {
-  ActiveStatus,
   AdminAcademicSession,
   AdminCourse,
   AdminDepartment,
@@ -35,7 +33,8 @@ import { Badge, Button } from '../ui'
 import { courseTypeOptions, courseTypeWord, degreeOptions, degreeWord, optional } from './catalogText'
 import { type FieldOption, type FieldSpec, MasterForm, type Values } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterParts'
-import { MasterSection, type RowActions } from './MasterSection'
+import { MasterSection } from './MasterSection'
+import { statusAction } from './statusAction'
 import { lifecycleOptions } from './masterStatus'
 
 // The limits the backend enforces for each master, so the forms can say so before sending.
@@ -58,49 +57,6 @@ function departmentFilter<T extends { departmentId: number }>(departments: Admin
     options: (departments ?? []).map((department) => ({ value: String(department.id), label: department.code })),
     value: (row: T) => String(row.departmentId),
   }
-}
-
-type Toggle = {
-  /** Such as "department CSE". */
-  name: string
-  active: boolean
-  /** What deactivating stops, such as "takes no new programs or courses". */
-  stops: string
-  focusKey: string
-  save: (status: ActiveStatus) => Promise<void>
-}
-
-/** Activate or Deactivate, confirmed first. Nothing is deleted, and history stays either way. */
-function statusAction(actions: RowActions, toggle: Toggle): ReactNode {
-  const target: ActiveStatus = toggle.active ? 'INACTIVE' : 'ACTIVE'
-  const verb = toggle.active ? 'Deactivate' : 'Activate'
-  return (
-    <Button
-      variant="secondary"
-      size="sm"
-      data-focus-key={toggle.focusKey}
-      onClick={() =>
-        actions.confirm(
-          {
-            question: `${verb} ${toggle.name}?`,
-            detail: toggle.active
-              ? `It stays in every list and keeps its history, but ${toggle.stops} until it is activated again.`
-              : `It can be used for new records again.`,
-            confirmLabel: verb,
-            busyLabel: toggle.active ? 'Deactivating…' : 'Activating…',
-            run: async () => {
-              await toggle.save(target)
-              return `${toggle.name.charAt(0).toUpperCase()}${toggle.name.slice(1)} ${toggle.active ? 'deactivated' : 'activated'}.`
-            },
-          },
-          toggle.focusKey,
-        )
-      }
-    >
-      {verb}
-      <span className="sr-only"> {toggle.name}</span>
-    </Button>
-  )
 }
 
 export function DepartmentsSection() {

@@ -8,6 +8,7 @@ import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.program.Program;
+import com.stacc.backend.academic.section.Section;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -76,15 +77,19 @@ public final class OfferingEnrollmentResponses {
             @Schema(example = "BTECH-CSE") String programCode,
             @Schema(example = "2") Long academicSessionId,
             @Schema(example = "2026-27") String academicSessionCode,
+            @Schema(description = "The section the student is placed in, or null.", example = "21") Long sectionId,
+            @Schema(description = "That section's code, or null.", example = "A") String sectionCode,
             @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN"}, example = "ENROLLED") String status) {
 
         static SemesterEnrollmentResponse of(SemesterEnrollment enrollment) {
             Semester semester = enrollment.getSemester();
             Program program = semester.getProgram();
             AcademicSession session = semester.getAcademicSession();
+            Section section = enrollment.getSection();
             return new SemesterEnrollmentResponse(enrollment.getId(), enrollment.getStudentProfile().getId(),
                     semester.getId(), semester.getSemesterNumber(), program.getId(), program.getCode(), session.getId(),
-                    session.getCode(), enrollment.getStatus().name());
+                    session.getCode(), section == null ? null : section.getId(), section == null ? null : section.getCode(),
+                    enrollment.getStatus().name());
         }
     }
 

@@ -11,6 +11,8 @@ import com.stacc.backend.academic.department.DepartmentStatus;
 import com.stacc.backend.academic.program.DegreeType;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramStatus;
+import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.section.SectionStatus;
 import com.stacc.backend.academic.semester.SemesterStatus;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionStatus;
@@ -226,5 +228,41 @@ public final class AcademicMasterRequests {
             @Schema(description = "The kind of course. Unchanged when left out.",
                     allowableValues = {"CORE", "ELECTIVE", "LAB", "PROJECT", "AUDIT"}, example = "CORE")
             CourseType courseType) {
+    }
+
+    public record SectionCreate(
+            @Schema(description = "The semester the section belongs to. It is loaded on the server.", example = "9")
+            @NotNull(message = "Semester is required")
+            Long semesterId,
+
+            @Schema(description = "Stored in uppercase. Unique within the semester, and never changed afterwards.", example = "A")
+            @NotBlank(message = "Code is required")
+            @Size(max = Section.MAX_CODE_LENGTH, message = "Code must be at most 10 characters")
+            String code,
+
+            @Schema(description = "An optional longer name, up to 60 characters.", example = "Section A")
+            @Size(max = Section.MAX_NAME_LENGTH, message = "Name must be at most 60 characters")
+            String name,
+
+            @Schema(description = "The most enrolled students it holds, from 1 to 1000. No limit when left out.", example = "60")
+            @Min(value = 1, message = "Capacity must be at least 1")
+            @Max(value = Section.MAX_CAPACITY, message = "Capacity must be at most 1000")
+            Integer capacity) {
+    }
+
+    public record SectionUpdate(
+            @Schema(example = "Section A")
+            @Size(max = Section.MAX_NAME_LENGTH, message = "Name must be at most 60 characters")
+            String name,
+
+            @Schema(description = "From 1 to 1000, and not below the students it already holds. No limit when left out.",
+                    example = "60")
+            @Min(value = 1, message = "Capacity must be at least 1")
+            @Max(value = Section.MAX_CAPACITY, message = "Capacity must be at most 1000")
+            Integer capacity,
+
+            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE")
+            @NotNull(message = "Status is required")
+            SectionStatus status) {
     }
 }

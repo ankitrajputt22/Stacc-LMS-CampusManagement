@@ -75,6 +75,15 @@ export async function updateSemesterEnrollmentStatus(semesterEnrollmentId: numbe
   return response.data
 }
 
+/** Places the student in a section of their semester, or takes them out of their section with null. */
+export async function changeSemesterEnrollmentSection(semesterEnrollmentId: number, sectionId: number | null) {
+  const response = await apiClient.put<AdminSemesterEnrollment>(
+    `${ENROLLMENTS}/semester-enrollments/${semesterEnrollmentId}/section`,
+    { sectionId },
+  )
+  return response.data
+}
+
 export async function getSemesterCourseEnrollments(semesterEnrollmentId: number, signal?: AbortSignal) {
   const response = await apiClient.get<SemesterCourseEnrollments>(
     `${ENROLLMENTS}/semester-enrollments/${semesterEnrollmentId}/courses`,

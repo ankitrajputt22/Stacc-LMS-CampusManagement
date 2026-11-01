@@ -55,6 +55,12 @@ public final class OfferingEnrollmentRequests {
             SemesterEnrollmentStatus status) {
     }
 
+    public record SemesterEnrollmentSectionChange(
+            @Schema(description = "A section of the same semester, or null to take the student out of their section.",
+                    example = "21")
+            Long sectionId) {
+    }
+
     public record CourseEnrollmentCreate(
             @Schema(description = "An offering of the same semester as the semester enrollment. It is loaded on the "
                     + "server.", example = "31")

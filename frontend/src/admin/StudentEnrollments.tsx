@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
-import { getSemesters } from '../api/adminAcademicApi'
+import { getSections, getSemesters } from '../api/adminAcademicApi'
 import {
+  changeSemesterEnrollmentSection,
   createSemesterEnrollment,
   getStudentSemesterEnrollments,
   updateSemesterEnrollmentStatus,
@@ -46,6 +47,7 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
   const [adding, setAdding] = useState(false)
   const [ending, setEnding] = useState<Ending | null>(null)
   const [coursesFor, setCoursesFor] = useState<number | null>(null)
+  const [placing, setPlacing] = useState<AdminSemesterEnrollment | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const data = request.status === 'loaded' ? request.data : null
   const focusLater = usePendingFocus(sectionRef)
@@ -153,6 +155,24 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
             </dl>
           </section>
 
+          {placing !== null && (
+            <SectionPlacementForm
+              enrollment={placing}
+              studentLoginId={student.loginId}
+              onDone={(message) => {
+                const id = placing.semesterEnrollmentId
+                setPlacing(null)
+                changed(message)
+                focusLater(`section-${id}`)
+              }}
+              onCancel={() => {
+                const id = placing.semesterEnrollmentId
+                setPlacing(null)
+                focusLater(`section-${id}`)
+              }}
+            />
+          )}
+
           {adding && choices !== null && (
             <MasterForm
               heading={`Enroll ${student.loginId} in a semester`}
@@ -204,6 +224,11 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
                     expanded={coursesFor === row.semesterEnrollmentId}
                     ending={ending?.semesterEnrollmentId === row.semesterEnrollmentId ? ending.status : null}
                     onToggleCourses={() => setCoursesFor((current) => (current === row.semesterEnrollmentId ? null : row.semesterEnrollmentId))}
+                    onChangeSection={() => {
+                      setAnnouncement('')
+                      setEnding(null)
+                      setPlacing(row)
+                    }}
                     onEnd={(status) => setEnding({ semesterEnrollmentId: row.semesterEnrollmentId, status })}
                     onCancelEnd={(status) => {
                       setEnding(null)
@@ -233,12 +258,22 @@ type SemesterEnrollmentRowProps = {
   expanded: boolean
   ending: Ending['status'] | null
   onToggleCourses: () => void
+  onChangeSection: () => void
   onEnd: (status: Ending['status']) => void
   onCancelEnd: (status: Ending['status']) => void
   onConfirmEnd: (status: Ending['status']) => Promise<void>
 }
 
-function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, onCancelEnd, onConfirmEnd }: SemesterEnrollmentRowProps) {
+function SemesterEnrollmentRow({
+  row,
+  expanded,
+  ending,
+  onToggleCourses,
+  onChangeSection,
+  onEnd,
+  onCancelEnd,
+  onConfirmEnd,
+}: SemesterEnrollmentRowProps) {
   const context = semesterContext(row)
   const enrolled = row.status === 'ENROLLED'
   return (
@@ -252,7 +287,7 @@ function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, 
             <MasterStatus status={row.status} />
           </p>
           <p className="mt-0.5 text-sm text-ink-muted">
-            {row.academicSessionCode} · {row.programCode}
+            {row.academicSessionCode} · {row.programCode} · {row.sectionCode ? `Section ${row.sectionCode}` : 'No section'}
           </p>
         </div>
         {ending === null && (
@@ -269,6 +304,10 @@ function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, 
             </Button>
             {enrolled && (
               <>
+                <Button variant="secondary" size="sm" data-focus-key={`section-${row.semesterEnrollmentId}`} onClick={onChangeSection}>
+                  {row.sectionCode ? 'Change section' : 'Place in section'}
+                  <span className="sr-only"> for {context}</span>
+                </Button>
                 <Button variant="secondary" size="sm" data-focus-key={`complete-semester-${row.semesterEnrollmentId}`} onClick={() => onEnd('COMPLETED')}>
                   Complete<span className="sr-only"> {context}</span>
                 </Button>
@@ -291,5 +330,74 @@ function SemesterEnrollmentRow({ row, expanded, ending, onToggleCourses, onEnd, 
         />
       )}
     </li>
+  )
+}
+
+type SectionPlacementFormProps = {
+  enrollment: AdminSemesterEnrollment
+  studentLoginId: string
+  onDone: (announcement: string) => void
+  onCancel: () => void
+}
+
+/**
+ * Chooses the student's section among the active sections of their semester, or none. A full section is marked as such;
+ * the backend refuses it anyway, under the section's lock, so the last place is never taken twice.
+ */
+function SectionPlacementForm({ enrollment, studentLoginId, onDone, onCancel }: SectionPlacementFormProps) {
+  const sections = useApiQuery(queryKeys.admin.sections(enrollment.semesterId), (signal) =>
+    getSections(enrollment.semesterId, signal),
+  )
+  const context = semesterContext(enrollment)
+  if (sections.status !== 'loaded') {
+    return (
+      <StatePanel>
+        {sections.status === 'loading' ? (
+          <LoadingState label="Loading sections…" />
+        ) : (
+          <ErrorState title="Couldn’t load sections." message="Check your connection and try again." onRetry={sections.retry} />
+        )}
+      </StatePanel>
+    )
+  }
+  const choices = sections.data.filter((section) => section.status === 'ACTIVE' || section.id === enrollment.sectionId)
+  return (
+    <MasterForm
+      heading={`Section of ${studentLoginId} in ${context}`}
+      note={
+        choices.length === 0
+          ? 'This semester has no active sections yet. Add them under Sections.'
+          : 'Only this semester’s active sections are listed.'
+      }
+      deniedMessage={ENROLLMENT_DENIED}
+      fields={[
+        {
+          name: 'sectionId',
+          label: 'Section',
+          kind: 'select',
+          optional: true,
+          choose: 'No section',
+          options: choices.map((section) => {
+            const full = section.capacity !== null && section.enrolledCount >= section.capacity && section.id !== enrollment.sectionId
+            return {
+              value: String(section.id),
+              label: `${section.code}${section.name ? ` · ${section.name}` : ''} (${
+                section.capacity === null ? `${section.enrolledCount} enrolled` : `${section.enrolledCount} of ${section.capacity}`
+              }${full ? ', full' : ''})`,
+            }
+          }),
+        },
+      ]}
+      initial={{ sectionId: enrollment.sectionId === null ? '' : String(enrollment.sectionId) }}
+      submitLabel="Save section"
+      onSubmit={async (values) => {
+        const saved = await changeSemesterEnrollmentSection(
+          enrollment.semesterEnrollmentId,
+          values.sectionId === '' ? null : Number(values.sectionId),
+        )
+        onDone(saved.sectionCode ? `${studentLoginId} placed in section ${saved.sectionCode}.` : `${studentLoginId} has no section now.`)
+      }}
+      onCancel={onCancel}
+    />
   )
 }

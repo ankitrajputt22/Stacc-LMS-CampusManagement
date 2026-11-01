@@ -3,6 +3,7 @@ package com.stacc.backend.academic.admin;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentCreate;
+import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentSectionChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.SemesterEnrollmentResponse;
@@ -14,6 +15,9 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
+import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.section.SectionRepository;
+import com.stacc.backend.academic.section.SectionStatus;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -50,21 +54,26 @@ public class AcademicEnrollmentManagementService {
     static final String COURSE_TAKEN = "This student is already enrolled in this course offering.";
     static final String COURSE_ENROLLMENT_NOT_FOUND = "Course enrollment not found.";
     static final String COURSE_ENDED = "A completed or withdrawn course enrollment cannot be changed.";
+    static final String SECTION_MISSING = "The selected section does not exist.";
+    static final String SECTION_OTHER_SEMESTER = "This section belongs to a different semester.";
+    static final String SECTION_INACTIVE = "This section is inactive, so no students can be placed in it.";
 
     private final StudentProfileRepository students;
     private final SemesterRepository semesters;
     private final CourseOfferingRepository offerings;
     private final SemesterEnrollmentRepository semesterEnrollments;
     private final CourseEnrollmentRepository courseEnrollments;
+    private final SectionRepository sections;
 
     public AcademicEnrollmentManagementService(StudentProfileRepository students, SemesterRepository semesters,
             CourseOfferingRepository offerings, SemesterEnrollmentRepository semesterEnrollments,
-            CourseEnrollmentRepository courseEnrollments) {
+            CourseEnrollmentRepository courseEnrollments, SectionRepository sections) {
         this.students = students;
         this.semesters = semesters;
         this.offerings = offerings;
         this.semesterEnrollments = semesterEnrollments;
         this.courseEnrollments = courseEnrollments;
+        this.sections = sections;
     }
 
     public SemesterEnrollmentResponse createSemesterEnrollment(Long studentProfileId, SemesterEnrollmentCreate request) {
@@ -108,6 +117,43 @@ public class AcademicEnrollmentManagementService {
         } else {
             enrollment.withdraw();
         }
+        return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
+    }
+
+    /**
+     * Places an enrolled student in a section of their semester, moves them to another, or takes them out with no
+     * section. The semester enrollment is locked first and then the section, always in that order, and the section's
+     * enrolled students are counted only under its lock, so two placements can never take its last place twice.
+     * Placing a student in the section they are already in changes nothing.
+     */
+    public SemesterEnrollmentResponse changeSection(Long semesterEnrollmentId, SemesterEnrollmentSectionChange request) {
+        SemesterEnrollment enrollment = semesterEnrollments.findByIdForUpdate(semesterEnrollmentId)
+                .orElseThrow(() -> AcademicMasterErrors.notFound(SEMESTER_ENROLLMENT_NOT_FOUND));
+        if (enrollment.getStatus() != SemesterEnrollmentStatus.ENROLLED) {
+            throw AcademicMasterErrors.conflict(SEMESTER_ENDED);
+        }
+        Section current = enrollment.getSection();
+        if (request.sectionId() == null) {
+            enrollment.placeIn(null);
+            return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
+        }
+        if (current != null && current.getId().equals(request.sectionId())) {
+            return SemesterEnrollmentResponse.of(enrollment);
+        }
+        Section section = sections.findByIdForUpdate(request.sectionId())
+                .orElseThrow(() -> AcademicMasterErrors.notFound(SECTION_MISSING));
+        if (!section.getSemester().getId().equals(enrollment.getSemester().getId())) {
+            throw AcademicMasterErrors.conflict(SECTION_OTHER_SEMESTER);
+        }
+        if (section.getStatus() != SectionStatus.ACTIVE) {
+            throw AcademicMasterErrors.conflict(SECTION_INACTIVE);
+        }
+        Integer capacity = section.getCapacity();
+        if (capacity != null && semesterEnrollments.countEnrolledInSectionForShare(section.getId()) >= capacity) {
+            throw AcademicMasterErrors.conflict("Section " + section.getCode() + " is full: "
+                    + (capacity == 1 ? "its one place is taken." : "all " + capacity + " places are taken."));
+        }
+        enrollment.placeIn(section);
         return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
     }
 

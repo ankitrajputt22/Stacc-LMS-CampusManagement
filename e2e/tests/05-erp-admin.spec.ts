@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
-test('an admin filters and searches the course catalog and opens an offering roster', async ({ page }) => {
+test('an admin filters the course catalog, sees the sections, and opens an offering roster', async ({ page }) => {
   await signIn(page, 'erp', 'admin1')
 
   await page.goto('/admin/academic/courses')
@@ -20,6 +20,12 @@ test('an admin filters and searches the course catalog and opens an offering ros
   await expect(courses.getByRole('rowheader', { name: /CS201/ })).toHaveCount(0)
 
   const tabs = page.getByRole('navigation', { name: 'Academic admin sections' })
+
+  // The demo semester has sections A and B, with two students placed in A.
+  await tabs.getByRole('link', { name: 'Sections' }).click()
+  const sections = page.getByRole('table', { name: 'Sections' })
+  await expect(sections.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /^A/ }) })).toContainText('2 of 60')
+
   await tabs.getByRole('link', { name: 'Course Offerings' }).click()
   const offerings = page.getByRole('table', { name: 'Course offerings' })
   const row = offerings.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /CS301/ }) })
