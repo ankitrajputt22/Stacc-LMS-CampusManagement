@@ -41,6 +41,7 @@
 - Token authorities are used unchanged, with no `SCOPE_` prefix. Do not query the database on every token request unless a later phase explicitly requires it.
 - Keep frontend and backend API contracts consistent.
 - Frontend API calls use the shared `apiClient` in `frontend/src/api/apiClient.ts`. Do not hard-code backend URLs in components or pages.
+- Pages load data with `useApiQuery` and keys from `src/api/queryKeys.ts` (TanStack Query, one shared cache). Do not add polling or refetch on focus, and keep the cache cleared when a session ends or starts. Existing `useApiRequest` pages move over when they are redesigned.
 - Do not put secrets in `VITE_` variables; they are public in the built frontend.
 - Add feature API logic only when that feature is implemented.
 - Use the shared API error format and Jakarta Validation for request DTOs. Do not expose stack traces or internal database errors, and do not create module-specific error formats.
