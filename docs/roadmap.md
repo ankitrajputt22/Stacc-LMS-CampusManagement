@@ -284,5 +284,5 @@ Goal: make every later change safe to make. No new features.
 
 | Version | Status |
 | --- | --- |
-| v0.1 Foundation | In progress (0.1.1) |
+| v0.1 Foundation | In progress: 0.1.1 and 0.1.2 done |
 | v0.2 – v1.0 | Not started |

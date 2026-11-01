@@ -1,0 +1,43 @@
+# Continuous Integration
+
+GitHub Actions checks every change to Stacc automatically, so a broken build or a failing test is noticed before it reaches `development`. The workflow is `.github/workflows/ci.yml`.
+
+## When it runs
+
+- On every push to `development`, `main`, and phase branches (`v0.1-phase-02-ci` and so on).
+- On every pull request into `development` or `main`.
+- By hand, from the repository's **Actions** tab (**Run workflow**).
+
+A newer push to the same branch cancels a check that is still running for an older one.
+
+## What it checks
+
+| Check | What it runs | Needs |
+| --- | --- | --- |
+| Backend tests | `mvn -B -ntp verify` in `backend/`: compiles, runs every test, and packages the application | Java 21 (Temurin). No database: the app-wide tests extend `DatabaseFreeApiTest`. |
+| Frontend lint and build | `npm ci`, `npm run lint`, and `npm run build` (type check and production build) in `frontend/` | Node 24. A placeholder public `VITE_API_BASE_URL`, which is not a secret. |
+| AI service lint and tests | `ruff check .` and `pytest -q` in `ai-service/` | Python 3.12. No model, GPU, or network: the tests use the fake providers. |
+
+No check uses a secret, and the workflow only reads the repository. When backend tests fail, their reports are kept for seven days as the `backend-test-reports` download on the run's page.
+
+## Running the same checks locally
+
+```bash
+cd backend && mvn -B verify
+```
+
+```bash
+cd frontend && npm ci && npm run lint && npm run build
+```
+
+```bash
+cd ai-service && python -m pip install -r requirements-dev.txt && python -m ruff check . && python -m pytest -q
+```
+
+The frontend build needs `VITE_API_BASE_URL` set, for example from `frontend/.env` (see `frontend-api.md`).
+
+## Rules
+
+- A phase is merged into `development` only after all three checks pass on its branch.
+- A failing check is fixed, never skipped or switched off to get a merge through.
+- New kinds of checks (tests on real MySQL, frontend unit tests, end-to-end tests) are added to this workflow in their own phases; see `roadmap.md`.

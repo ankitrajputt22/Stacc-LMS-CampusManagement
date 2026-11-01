@@ -27,6 +27,7 @@ development
 → test the changes
 → commit
 → push the phase branch
+→ wait for the CI checks to pass
 → merge it into development
 → delete the completed phase branch
 ```
@@ -62,5 +63,5 @@ Avoid unnecessarily technical messages such as:
 - Do not merge directly into `main` after every small phase.
 - Check `git status` before starting a phase.
 - Review `git diff` before committing.
-- Run the relevant tests before merging code phases.
+- Run the relevant tests before merging code phases, and merge only after the CI checks pass on the phase branch (see `continuous-integration.md`).
 - Stop and report a merge conflict that cannot be safely resolved.
