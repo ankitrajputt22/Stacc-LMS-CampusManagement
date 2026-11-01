@@ -1101,8 +1101,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         if (exists) {
             existing++;
         } else {
-            created++;
+            // Counted only once it worked, so a skipped study material is not reported as created.
             create.run();
+            created++;
         }
     }
 

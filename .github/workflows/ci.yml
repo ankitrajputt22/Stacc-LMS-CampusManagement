@@ -1,5 +1,6 @@
 # Checks every change to Stacc: the backend tests, the frontend lint and build, and the AI service lint and tests.
-# None of them needs a database, a model, or any secret. See docs/continuous-integration.md.
+# None of them needs a model or any secret; the backend's MySQL tests start their own throwaway MySQL container with
+# Docker, which GitHub's runners provide. See docs/continuous-integration.md and docs/testing.md.
 name: CI
 
 on:
@@ -48,7 +49,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: backend-test-reports
-          path: backend/target/surefire-reports/
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
           retention-days: 7
 
   frontend:
