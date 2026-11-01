@@ -41,7 +41,7 @@ class AccountAuthenticationTest {
     private final PasswordEncoder passwordEncoder = securityConfig.passwordEncoder();
     private final UserAccountRepository repository = mock(UserAccountRepository.class);
     private final AuthenticationManager authenticationManager = securityConfig.authenticationManager(
-            new StaccUserDetailsService(repository), passwordEncoder);
+            new StaccUserDetailsService(repository, java.time.Clock.systemUTC()), passwordEncoder);
 
     private UserAccount account;
 

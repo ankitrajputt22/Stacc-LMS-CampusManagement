@@ -85,6 +85,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [endSession])
 
+  const passwordChanged = useCallback(() => {
+    setState((current) =>
+      current.status === 'known' && current.session !== null
+        ? { status: 'known', session: { ...current.session, passwordChangeRequired: false } }
+        : current,
+    )
+  }, [])
+
   // The backend says the session has ended: signed out elsewhere, idle, or disabled.
   useEffect(() => onUnauthorized(endSession), [endSession])
 
@@ -130,12 +138,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
               // The one place where the backend's role names become roles the app works with.
               roles: toAccountRoles(session.roles),
             },
+      passwordChangeRequired: session?.passwordChangeRequired === true,
+      passwordChanged,
       signedOutByUser,
       login,
       logout,
       logoutEverywhere,
     }),
-    [state.status, session, signedOutByUser, login, logout, logoutEverywhere],
+    [state.status, session, passwordChanged, signedOutByUser, login, logout, logoutEverywhere],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

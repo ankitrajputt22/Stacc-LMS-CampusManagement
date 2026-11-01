@@ -11,6 +11,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import com.stacc.backend.auth.account.UserAccount;
@@ -27,7 +31,26 @@ class StaccUserDetailsServiceTest {
     private static final String PASSWORD_HASH = "example-hash-value";
 
     private final UserAccountRepository repository = mock(UserAccountRepository.class);
-    private final StaccUserDetailsService service = new StaccUserDetailsService(repository);
+    private static final Instant NOW = Instant.parse("2026-11-01T10:00:00Z");
+    private final StaccUserDetailsService service =
+            new StaccUserDetailsService(repository, Clock.fixed(NOW, ZoneOffset.UTC));
+
+    @Test
+    void temporaryPasswordWorksUntilItExpiresAndThenCountsAsExpiredCredentials() {
+        UserAccount fresh = new UserAccount("EMP1024", PASSWORD_HASH);
+        fresh.issueTemporaryPassword(PASSWORD_HASH, NOW.plus(Duration.ofMinutes(1)));
+        UserAccount stale = new UserAccount("EMP2048", PASSWORD_HASH);
+        stale.issueTemporaryPassword(PASSWORD_HASH, NOW);
+        when(repository.findWithRolesAndPermissionsByLoginId("EMP1024")).thenReturn(Optional.of(fresh));
+        when(repository.findWithRolesAndPermissionsByLoginId("EMP2048")).thenReturn(Optional.of(stale));
+
+        StaccUserPrincipal usable = (StaccUserPrincipal) service.loadUserByUsername("EMP1024");
+        StaccUserPrincipal expired = (StaccUserPrincipal) service.loadUserByUsername("EMP2048");
+
+        assertTrue(usable.isCredentialsNonExpired());
+        assertTrue(usable.isPasswordChangeRequired());
+        assertFalse(expired.isCredentialsNonExpired());
+    }
 
     @Test
     void existingAccountIsLoadedByLoginId() {

@@ -93,7 +93,7 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
 
     @Test
     void anEndedSessionIsRefusedWhicheverWayItsTokenArrives() throws Exception {
-        when(sessionService.isActive(TestTokens.SESSION_ID, 7L)).thenReturn(false);
+        when(sessionService.check(TestTokens.SESSION_ID, 7L)).thenReturn(com.stacc.backend.auth.session.SessionService.SessionCheck.REFUSED);
 
         mockMvc.perform(get("/api/v1/auth/session").cookie(session())).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/v1/auth/session").header(HttpHeaders.AUTHORIZATION, "Bearer " + TOKEN))
@@ -110,7 +110,7 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
                 // The ordinary failed-login answer: the cookie was not even looked at.
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid login ID or password."));
-        verify(sessionService, never()).isActive(eq("expired.or.garbage"), any());
+        verify(sessionService, never()).check(eq("expired.or.garbage"), any());
     }
 
     @Test

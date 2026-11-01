@@ -10,6 +10,8 @@ export type SessionResponse = {
   roles: string[]
   /** When the sign-in ends at the latest (ISO 8601). It can end earlier, after the idle timeout or a sign-out. */
   expiresAt: string
+  /** True when the college requires a new password. Until it is changed, only changing it and signing out work. */
+  passwordChangeRequired: boolean
 }
 
 /** Who is signed in. It is shown in the interface and grants nothing by itself. */
@@ -28,4 +30,6 @@ export type AuthSession = {
   roles: string[]
   /** When the session ends at the latest, in milliseconds since 1970. */
   expiresAt: number
+  /** The college requires a new password before anything else. */
+  passwordChangeRequired: boolean
 }

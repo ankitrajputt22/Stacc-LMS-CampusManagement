@@ -22,6 +22,14 @@ export async function logout(): Promise<void> {
   await apiClient.post('/auth/logout')
 }
 
+/**
+ * Changes the signed-in person's password. Both values are sent exactly as typed. Every other device is signed out;
+ * this one stays signed in. POST /api/v1/me/password.
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.post('/me/password', { currentPassword, newPassword })
+}
+
 /** Ends every session of this account, on every device. POST /api/v1/auth/logout-everywhere. */
 export async function logoutEverywhere(): Promise<void> {
   await apiClient.post('/auth/logout-everywhere')

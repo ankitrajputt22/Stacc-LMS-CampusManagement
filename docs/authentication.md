@@ -43,9 +43,10 @@ Successful response, HTTP 200:
 | Wrong password | 401, `Invalid login ID or password.` |
 | Unknown login ID | 401, the same message |
 | Disabled account | 401, the same message |
+| Temporary password that has expired | 401, the same message |
 | Missing, blank, or over-long field | 400, with `fieldErrors` |
 
-The three 401 cases look identical on purpose, so nobody can use the login to find out which login IDs exist. A failed login never receives a token. All errors use the common format described in `api-error-handling.md`.
+The 401 cases look identical on purpose, so nobody can use the login to find out which login IDs exist. A failed login never receives a token. All errors use the common format described in `api-error-handling.md`.
 
 ## How the check works
 
@@ -61,7 +62,7 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 
 A request that carries a valid access token is recognised as that account, and every `/api/` route other than the login requires one. See `access-tokens.md` and `api-security.md`. Login does not create a server session or set a cookie.
 
-Not built yet: refresh tokens, logout, and password change or reset.
+Refresh tokens are not planned. Signing out is described below; changing a password and temporary passwords are in `password-security.md`.
 
 ## Sessions, signing out, and CSRF
 

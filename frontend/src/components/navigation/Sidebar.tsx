@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { NavLink, useLocation } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
 import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { Button } from '../Button'
@@ -165,6 +165,13 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
             >
               Sign out
             </Button>
+            <Link
+              to="/account/password"
+              onClick={onClose}
+              className="mt-3 block text-sm font-medium text-white underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Change password
+            </Link>
           </div>
         )}
       </div>

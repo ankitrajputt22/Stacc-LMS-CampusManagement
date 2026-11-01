@@ -12,6 +12,7 @@ export function sessionFrom(response: SessionResponse): AuthSession {
     loginId: response.loginId,
     roles: response.roles,
     expiresAt,
+    passwordChangeRequired: response.passwordChangeRequired === true,
   }
 }
 

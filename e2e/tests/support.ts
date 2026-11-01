@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test'
 
 /** The demo accounts' password for this run, from the stack's generated settings. Never printed. */
-function password(): string {
+export function password(): string {
   const value = process.env.STACC_TEST_PASSWORD
   if (!value) {
     throw new Error('STACC_TEST_PASSWORD is not set. Start the stack with ./e2e/stack.sh up first.')
@@ -10,10 +10,10 @@ function password(): string {
 }
 
 /** Signs in through the ERP or LMS entry point, the way a person does. */
-export async function signIn(page: Page, portal: 'erp' | 'lms', loginId: string): Promise<void> {
+export async function signIn(page: Page, portal: 'erp' | 'lms', loginId: string, withPassword = password()): Promise<void> {
   await page.goto(`/login?portal=${portal}`)
   await page.getByLabel('College ID / Employee ID').fill(loginId)
-  await page.getByLabel('Password', { exact: true }).fill(password())
+  await page.getByLabel('Password', { exact: true }).fill(withPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).not.toHaveURL(/\/login/)
 }

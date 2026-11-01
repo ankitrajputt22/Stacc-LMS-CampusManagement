@@ -39,30 +39,42 @@ public class SessionService {
                 now.plus(properties.maxDuration())));
     }
 
+    /** The outcome of checking a request's session: whether it may go through, and whether only a password change may. */
+    public record SessionCheck(boolean active, boolean passwordChangeRequired) {
+
+        public static final SessionCheck REFUSED = new SessionCheck(false, false);
+    }
+
     /**
-     * Whether a request naming this session for this account may go through. An idle session is ended on the way, so
-     * it never comes back; anything unknown, ended, expired, foreign, or of an inactive account is refused.
+     * Checks a request naming this session for this account. An idle session is ended on the way, so it never comes
+     * back; anything unknown, ended, expired, foreign, or of an inactive account is refused.
      */
     @Transactional
-    public boolean isActive(String sessionId, Long accountId) {
+    public SessionCheck check(String sessionId, Long accountId) {
         if (sessionId == null || accountId == null) {
-            return false;
+            return SessionCheck.REFUSED;
         }
         Instant now = clock.instant();
         UserSessionRepository.SessionWithStatus found = sessions.findWithAccountStatus(sessionId).orElse(null);
         if (found == null || !found.session().getUserAccountId().equals(accountId)
                 || found.accountStatus() != AccountStatus.ACTIVE) {
-            return false;
+            return SessionCheck.REFUSED;
         }
         UserSession session = found.session();
         if (!session.isOpenAt(now, properties.idleTimeout())) {
             if (session.getEndedAt() == null && now.isBefore(session.getExpiresAt())) {
                 session.end(now, SessionEndReason.IDLE);
             }
-            return false;
+            return SessionCheck.REFUSED;
         }
         sessions.touch(sessionId, now, now.minus(TOUCH_INTERVAL));
-        return true;
+        return new SessionCheck(true, found.passwordChangeRequired());
+    }
+
+    /** Ends every open session of an account except the given one; returns how many ended. */
+    @Transactional
+    public int endAllExcept(Long accountId, String keepSessionId, SessionEndReason reason) {
+        return sessions.endAllOf(accountId, keepSessionId, clock.instant(), reason);
     }
 
     /** Ends one session of an account. Ending it again, or a session of another account, changes nothing. */

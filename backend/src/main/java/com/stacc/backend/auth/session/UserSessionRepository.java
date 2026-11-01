@@ -11,9 +11,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserSessionRepository extends JpaRepository<UserSession, String> {
 
-    /** The session and its account's status, in one query, for the check made on every request. */
+    /** The session, its account's status, and whether a password change is due, in one query, on every request. */
     @Query("""
-            select new com.stacc.backend.auth.session.UserSessionRepository$SessionWithStatus(session, account.status)
+            select new com.stacc.backend.auth.session.UserSessionRepository$SessionWithStatus(session, account.status,
+                account.passwordChangeRequired)
             from UserSession session, UserAccount account
             where session.id = :sessionId and account.id = session.userAccountId
             """)
@@ -39,6 +40,6 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
 
     List<UserSession> findByUserAccountIdAndEndedAtIsNullOrderByCreatedAtDesc(Long userAccountId);
 
-    record SessionWithStatus(UserSession session, AccountStatus accountStatus) {
+    record SessionWithStatus(UserSession session, AccountStatus accountStatus, boolean passwordChangeRequired) {
     }
 }
