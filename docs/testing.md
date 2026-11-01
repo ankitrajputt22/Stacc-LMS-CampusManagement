@@ -72,8 +72,10 @@ What they check today:
 | `api/apiClient.test.ts` | The token is sent only while signed in; a refused current token ends the session; a failed login, a 403, and a refused older token never do. |
 | `components/navigation/navigation.test.ts` | Role sections appear in the fixed order, shared items once, upcoming items without links, and every link stays inside the app. |
 | `ui/Tabs.test.tsx` | The in-page tabs follow the ARIA tabs pattern and work by click and with the arrow keys, Home, and End. |
+| `api/useApiQuery.test.tsx` | Cached loading gives the same page states as before, shares one request between pages, never retries 401, 403, or 404, and `retry()` starts again showing loading. |
+| `auth/AuthProvider.test.tsx` | Signing out, or another person signing in, empties the query cache. |
 
-Test what a person sees and does: find elements by role and accessible name (`getByRole('tab', { name: 'Home' })`), act with `userEvent`, and avoid class names and internal state. Add tests with every phase that changes frontend rules or shared components.
+Test what a person sees and does: find elements by role and accessible name (`getByRole('tab', { name: 'Home' })`), act with `userEvent`, and avoid class names and internal state. Hooks that use the query cache are rendered with `testQueryClient()` from `src/test/queryTestUtils.tsx`, which turns retries off. Add tests with every phase that changes frontend rules or shared components.
 
 ## End-to-end tests
 

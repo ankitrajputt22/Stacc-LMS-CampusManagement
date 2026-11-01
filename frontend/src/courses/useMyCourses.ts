@@ -1,7 +1,8 @@
 import { getMyLmsCourses } from '../api/lmsCoursesApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 
-/** The signed-in student's LMS courses, loaded once and again on retry(). */
+/** The signed-in student's LMS courses, from the shared query cache. */
 export function useMyCourses() {
-  return useApiRequest(getMyLmsCourses)
+  return useApiQuery(queryKeys.lms.myCourses(), getMyLmsCourses)
 }

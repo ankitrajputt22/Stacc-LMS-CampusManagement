@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { onUnauthorized } from '../api/apiClient'
 import { login as requestLogin } from '../api/authApi'
@@ -34,11 +35,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // A session can end because the user chose to sign out or because its token ran out.
   // Only the first is remembered: the sign-in page treats the two differently.
   const [signedOutByUser, setSignedOutByUser] = useState(false)
+  // Cached backend answers belong to the session that asked for them: they go when it ends or another one starts.
+  const queryClient = useQueryClient()
 
   const endSession = useCallback(() => {
     clearSession()
+    queryClient.clear()
     setSession(null)
-  }, [])
+  }, [queryClient])
 
   const logout = useCallback(() => {
     setSignedOutByUser(true)
@@ -48,12 +52,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(async (loginId: string, password: string) => {
     const nextSession = sessionFromLogin(await requestLogin(loginId, password))
     saveSession(nextSession)
+    queryClient.clear()
     setSignedOutByUser(false)
     setSession(nextSession)
-  }, [])
+  }, [queryClient])
 
   // The backend refused the token. The saved session is already gone by the time this runs.
-  useEffect(() => onUnauthorized(() => setSession(null)), [])
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        queryClient.clear()
+        setSession(null)
+      }),
+    [queryClient],
+  )
 
   // Sign out when the token runs out, instead of waiting for a request to fail.
   useEffect(() => {
