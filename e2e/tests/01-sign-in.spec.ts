@@ -17,6 +17,16 @@ test.describe('Signing in', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Courses' })).toBeVisible()
   })
 
+  test('the Account tray shows the person by name, with the login ID beneath', async ({ page }) => {
+    await signIn(page, 'lms', 'student1')
+
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Account' }).click()
+
+    const tray = page.getByRole('dialog', { name: 'Account' })
+    await expect(tray.getByText('Aarav Sharma')).toBeVisible()
+    await expect(tray.getByText('student1', { exact: true })).toBeVisible()
+  })
+
   test('a faculty member signing in through the LMS lands on Teaching', async ({ page }) => {
     await signIn(page, 'lms', 'faculty1')
 

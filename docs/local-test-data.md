@@ -64,6 +64,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - CS401 in semester 4 (planned).
 
 **People and enrollment**
+- Person profiles with made-up names and addresses on the reserved `.example` domain (such as `student1@stacc.example`): `student1` Aarav Sharma, `student2` Diya Patel, `faculty1` Meera Iyer, `faculty2` Rohan Gupta, `admin1` Kavita Rao, `studentfaculty1` Arjun Nair, `facultyadmin1` Sanjay Verma.
 - Student profiles for `student1`, `student2`, and `studentfaculty1`, admitted in the previous session.
 - Faculty profiles for `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`, in `CSE`.
 - Teaching assignments:

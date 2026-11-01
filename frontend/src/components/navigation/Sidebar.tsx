@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
 import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { Button } from '../Button'
+import { useDisplayName } from '../../person/useDisplayName'
 import { AccountRoles } from './AccountRoles'
 import { PortalEmblem } from '../../login/PortalEmblem'
 import { CloseIcon } from './icons'
@@ -39,6 +40,7 @@ function UnreadBadge() {
 export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const { account, logout } = useAuth()
+  const displayName = useDisplayName()
   const { pathname } = useLocation()
   const sections = navigationFor(account?.roles ?? [])
 
@@ -146,10 +148,10 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
           <div className="border-t border-white/10 px-4 py-4">
             <p
               className="truncate text-sm font-medium text-white"
-              title={account.loginId}
+              title={displayName ?? account.loginId}
             >
               <span className="sr-only">Signed in as </span>
-              {account.loginId}
+              {displayName ?? account.loginId}
             </p>
             <AccountRoles
               roles={account.roles}

@@ -27,6 +27,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Authorization](authorization.md)
 - [Permissions](permissions.md)
 - [User accounts](user-accounts.md)
+- [Person profiles](person-profiles.md)
 - [Account roles](account-roles.md)
 - [API error handling](api-error-handling.md)
 - [API documentation](api-documentation.md)

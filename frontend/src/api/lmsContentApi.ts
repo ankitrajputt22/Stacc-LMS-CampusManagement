@@ -11,7 +11,7 @@ import type {
 } from '../types/lms'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api, so every path here starts below it. The signed-in
+// The client's base URL already ends in /api/v1, so every path here starts below it. The signed-in
 // account is the one in the access token; no account, faculty, or student ID is ever sent from here.
 
 /** The published content of a course the signed-in student may use. Access is checked again by the backend. */

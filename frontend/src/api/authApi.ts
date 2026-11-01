@@ -9,7 +9,7 @@ export async function login(
   loginId: string,
   password: string,
 ): Promise<LoginResponse> {
-  // The client's base URL already ends in /api, so this is POST /api/v1/auth/login.
+  // The client's base URL already ends in /api/v1, so this is POST /api/v1/auth/login.
   const response = await apiClient.post<LoginResponse>('/auth/login', {
     loginId,
     password,
