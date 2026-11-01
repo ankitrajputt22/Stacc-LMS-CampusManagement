@@ -15,7 +15,8 @@ class ProductionSettingsCheckTest {
                 .withProperty("stacc.storage.access-key", "storage-user")
                 .withProperty("stacc.storage.secret-key", "storage-secret-value")
                 .withProperty("stacc.cors.allowed-origins", "")
-                .withProperty("stacc.ai.enabled", "false");
+                .withProperty("stacc.ai.enabled", "false")
+                .withProperty("stacc.session.secure-cookie", "true");
         environment.setActiveProfiles("prod");
         return environment;
     }
@@ -37,10 +38,11 @@ class ProductionSettingsCheckTest {
                 .withProperty("STACC_TEST_PASSWORD", "demo-password")
                 .withProperty("stacc.cors.allowed-origins", "http://localhost:5173")
                 .withProperty("stacc.ai.enabled", "true")
-                .withProperty("stacc.ai.internal-token", "short");
+                .withProperty("stacc.ai.internal-token", "short")
+                .withProperty("stacc.session.secure-cookie", "false");
         environment.setActiveProfiles("prod", "dev-seed");
 
-        assertThat(ProductionSettingsCheck.problems(environment)).hasSize(6);
+        assertThat(ProductionSettingsCheck.problems(environment)).hasSize(7);
     }
 
     @Test

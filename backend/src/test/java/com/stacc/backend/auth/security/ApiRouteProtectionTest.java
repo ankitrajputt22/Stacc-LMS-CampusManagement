@@ -104,12 +104,12 @@ class ApiRouteProtectionTest extends DatabaseFreeApiTest {
     @Test
     void protectedRouteWithAnExpiredTokenIsRefused() throws Exception {
         Instant anHourAgo = Instant.now().minus(1, ChronoUnit.HOURS);
-        AccessTokenService pastService = new AccessTokenService(
-                jwtEncoder, new JwtProperties(TestSecrets.JWT_SECRET, 15), Clock.fixed(anHourAgo, ZoneOffset.UTC));
+        AccessTokenService pastService = new AccessTokenService(jwtEncoder, Clock.fixed(anHourAgo, ZoneOffset.UTC));
         UserAccount account = new UserAccount("EMP1024", "example-hash-value");
         ReflectionTestUtils.setField(account, "id", 7L);
         account.assignRole(new Role(RoleName.FACULTY));
-        String expired = pastService.issue(StaccUserPrincipal.from(account)).value();
+        String expired = pastService.issue(StaccUserPrincipal.from(account), TestTokens.SESSION_ID,
+                anHourAgo.plus(15, ChronoUnit.MINUTES)).value();
 
         expectUnauthorized(getWithToken(PROTECTED_ROUTE, expired), PROTECTED_ROUTE, "Invalid or expired access token.");
     }

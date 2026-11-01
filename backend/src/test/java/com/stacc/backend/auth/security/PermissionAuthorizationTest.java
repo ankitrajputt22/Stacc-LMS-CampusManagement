@@ -158,8 +158,8 @@ class PermissionAuthorizationTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(withoutPermission, "id", 20L);
         withoutPermission.assignRole(new Role(RoleName.FACULTY));
 
-        String granted = accessTokenService.issue(StaccUserPrincipal.from(withPermission)).value();
-        String notGranted = accessTokenService.issue(StaccUserPrincipal.from(withoutPermission)).value();
+        String granted = TestTokens.issue(accessTokenService, StaccUserPrincipal.from(withPermission));
+        String notGranted = TestTokens.issue(accessTokenService, StaccUserPrincipal.from(withoutPermission));
 
         expectAllowed(granted, READ);
         expectForbidden(granted, WRITE);

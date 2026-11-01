@@ -234,8 +234,8 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(signedInEarlier, "id", 22L);
         signedInEarlier.assignRole(new Role(RoleName.FACULTY));
 
-        getMyCourses(accessTokenService.issue(StaccUserPrincipal.from(facultyMember)).value()).andExpect(status().isOk());
-        expectForbidden(accessTokenService.issue(StaccUserPrincipal.from(signedInEarlier)).value());
+        getMyCourses(TestTokens.issue(accessTokenService, StaccUserPrincipal.from(facultyMember))).andExpect(status().isOk());
+        expectForbidden(TestTokens.issue(accessTokenService, StaccUserPrincipal.from(signedInEarlier)));
 
         verify(facultyCourseQueryService).getAccessibleCourses(ACCOUNT_ID);
         verifyNoMoreInteractions(facultyCourseQueryService);

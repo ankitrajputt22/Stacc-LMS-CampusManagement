@@ -56,6 +56,31 @@ test.describe('Signing in', () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
+  test('the sign-in token is never readable by the page, and nothing is kept in browser storage', async ({ page }) => {
+    await signIn(page, 'lms', 'student1')
+
+    const seen = await page.evaluate(() => ({
+      cookies: document.cookie,
+      session: window.sessionStorage.length,
+      local: window.localStorage.length,
+    }))
+    expect(seen.cookies).not.toContain('STACC_SESSION')
+    expect(seen.session).toBe(0)
+    expect(seen.local).toBe(0)
+    // The HttpOnly cookie is there for the browser to send; the page simply cannot read it.
+    const cookies = await page.context().cookies()
+    expect(cookies.find((cookie) => cookie.name === 'STACC_SESSION')).toMatchObject({ httpOnly: true, sameSite: 'Lax' })
+  })
+
+  test('a reload keeps the person signed in, because the session lives on the server', async ({ page }) => {
+    await signIn(page, 'lms', 'student1')
+
+    await page.reload()
+
+    await expect(page).toHaveURL(/\/courses$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Courses' })).toBeVisible()
+  })
+
   test('after signing out, pages need signing in again', async ({ page }) => {
     await signIn(page, 'lms', 'student1')
     await signOut(page)

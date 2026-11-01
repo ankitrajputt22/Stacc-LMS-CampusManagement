@@ -20,9 +20,10 @@ Start-up stops, listing every problem at once and never printing a value, when:
 - `MYSQL_USER` is `root`;
 - `STACC_STORAGE_ACCESS_KEY` or `STACC_STORAGE_SECRET_KEY` is empty;
 - `FRONTEND_ORIGIN` lists anything but `https` origins of real hosts (no `http`, no `localhost`);
+- `STACC_SESSION_SECURE_COOKIE` is not `true`;
 - `AI_ENABLED=true` without a `STACC_AI_INTERNAL_TOKEN` of at least 32 characters.
 
-These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, a token lifetime outside 1 to 60 minutes, a wildcard or path in `FRONTEND_ORIGIN`, and a missing storage endpoint or bucket.
+These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, session lengths outside their ranges, a wildcard or path in `FRONTEND_ORIGIN`, and a missing storage endpoint or bucket.
 
 ## Backend
 
@@ -35,7 +36,9 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, a
 | `MYSQL_USER` | none | yes, not `root` | | The application's database account. |
 | `MYSQL_PASSWORD` | none | yes | **yes** | Its password. |
 | `JWT_SECRET` | none | yes | **yes** | Base64 of at least 32 random bytes (`openssl rand -base64 48`). |
-| `JWT_ACCESS_TOKEN_MINUTES` | `15` | | | Access-token lifetime, 1 to 60. |
+| `STACC_SESSION_MAX_DURATION` | `12h` | | | The longest a sign-in lasts, 15m to 24h. |
+| `STACC_SESSION_IDLE_TIMEOUT` | `2h` | | | A sign-in ends after this long without a request; at least 5m. |
+| `STACC_SESSION_SECURE_COOKIE` | `false` (`prod`: `true`) | must be `true` | | Sends the session cookie over HTTPS only. |
 | `FRONTEND_ORIGIN` | `http://localhost:5173` (`prod`: none) | | | Exact origins allowed to call the API from another address, comma-separated. Same-origin setups need none. |
 | `STACC_STORAGE_ENDPOINT` | `http://localhost:9000` | yes | | The private S3-compatible store. Docker sets `http://minio:9000`. |
 | `STACC_STORAGE_ACCESS_KEY` | empty | yes | | Its access key. |

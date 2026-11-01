@@ -36,18 +36,25 @@ class AccessTokenServiceTest {
     // A made-up value that must never end up in a token.
     private static final String PASSWORD_HASH = "example-hash-value";
 
-    private static final JwtProperties PROPERTIES = new JwtProperties(TestSecrets.JWT_SECRET, 15);
+    private static final JwtProperties PROPERTIES = new JwtProperties(TestSecrets.JWT_SECRET);
     private static final Instant NOW = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 
     private static AccessTokenService serviceAt(Instant time) {
         return new AccessTokenService(
-                new JwtConfig().jwtEncoder(PROPERTIES), PROPERTIES, Clock.fixed(time, ZoneOffset.UTC));
+                new JwtConfig().jwtEncoder(PROPERTIES), Clock.fixed(time, ZoneOffset.UTC));
     }
 
     private static JwtDecoder decoderFor(String secret) {
-        return NimbusJwtDecoder.withSecretKey(new JwtProperties(secret, 15).signingKey())
+        return NimbusJwtDecoder.withSecretKey(new JwtProperties(secret).signingKey())
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+    }
+
+    private static final String SESSION = "11111111-2222-4333-8444-555555555555";
+
+    /** A token for a session that ends twelve hours after the given time, as sessions do by default. */
+    private static AccessToken issuedAt(Instant time) {
+        return serviceAt(time).issue(facultyPrincipal(), SESSION, time.plus(12, ChronoUnit.HOURS));
     }
 
     private static StaccUserPrincipal facultyPrincipal() {
@@ -61,7 +68,7 @@ class AccessTokenServiceTest {
 
     @Test
     void tokenIsSignedAndVerifiesWithTheConfiguredKey() {
-        AccessToken token = serviceAt(NOW).issue(facultyPrincipal());
+        AccessToken token = issuedAt(NOW);
 
         assertFalse(token.value().isBlank());
         Jwt jwt = decoderFor(TestSecrets.JWT_SECRET).decode(token.value());
@@ -70,14 +77,14 @@ class AccessTokenServiceTest {
 
     @Test
     void tokenSignedWithOneKeyDoesNotVerifyWithAnother() {
-        AccessToken token = serviceAt(NOW).issue(facultyPrincipal());
+        AccessToken token = issuedAt(NOW);
 
         assertThrows(JwtException.class, () -> decoderFor(TestSecrets.OTHER_JWT_SECRET).decode(token.value()));
     }
 
     @Test
     void tokenIdentifiesTheAccountAndItsAuthorities() {
-        Jwt jwt = decoderFor(TestSecrets.JWT_SECRET).decode(serviceAt(NOW).issue(facultyPrincipal()).value());
+        Jwt jwt = decoderFor(TestSecrets.JWT_SECRET).decode(issuedAt(NOW).value());
 
         assertEquals("stacc", jwt.getClaimAsString("iss"));
         assertEquals("EMP1024", jwt.getSubject());
@@ -87,33 +94,35 @@ class AccessTokenServiceTest {
     }
 
     @Test
-    void tokenExpiresFifteenMinutesAfterItIsIssued() {
-        AccessToken token = serviceAt(NOW).issue(facultyPrincipal());
+    void tokenExpiresWithItsSession() {
+        AccessToken token = issuedAt(NOW);
         Jwt jwt = decoderFor(TestSecrets.JWT_SECRET).decode(token.value());
 
         assertNotNull(jwt.getIssuedAt());
         assertNotNull(jwt.getExpiresAt());
         assertEquals(NOW, jwt.getIssuedAt());
         assertTrue(jwt.getExpiresAt().isAfter(jwt.getIssuedAt()));
-        assertEquals(Duration.ofMinutes(15), Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt()));
-        assertEquals(900, token.expiresInSeconds());
+        assertEquals(Duration.ofHours(12), Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt()));
+        assertEquals(12 * 3600, token.expiresInSeconds());
+        assertEquals(SESSION, jwt.getClaimAsString(AccessTokenService.SESSION_ID_CLAIM));
     }
 
     @Test
     void oldTokenIsNoLongerAccepted() {
-        AccessToken issuedAnHourAgo = serviceAt(NOW.minus(1, ChronoUnit.HOURS)).issue(facultyPrincipal());
+        AccessToken issuedAnHourAgo = serviceAt(NOW.minus(13, ChronoUnit.HOURS))
+                .issue(facultyPrincipal(), SESSION, NOW.minus(1, ChronoUnit.HOURS));
 
         assertThrows(JwtException.class, () -> decoderFor(TestSecrets.JWT_SECRET).decode(issuedAnHourAgo.value()));
     }
 
     @Test
     void tokenCarriesOnlyTheExpectedClaimsAndNoPasswordData() {
-        AccessToken token = serviceAt(NOW).issue(facultyPrincipal());
+        AccessToken token = issuedAt(NOW);
         Jwt jwt = decoderFor(TestSecrets.JWT_SECRET).decode(token.value());
         String payload = new String(
                 Base64.getUrlDecoder().decode(token.value().split("\\.")[1]), StandardCharsets.UTF_8);
 
-        assertEquals(Set.of("iss", "sub", "iat", "exp", "accountId", "authorities"), jwt.getClaims().keySet());
+        assertEquals(Set.of("iss", "sub", "iat", "exp", "accountId", "sid", "authorities"), jwt.getClaims().keySet());
         assertFalse(payload.toLowerCase().contains("password"));
         assertFalse(payload.contains(PASSWORD_HASH));
         assertFalse(token.toString().contains(token.value()));

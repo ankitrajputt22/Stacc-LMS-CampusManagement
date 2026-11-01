@@ -70,7 +70,8 @@ services:
       MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env, for example with - openssl rand -base64 48}
-      JWT_ACCESS_TOKEN_MINUTES: ${JWT_ACCESS_TOKEN_MINUTES:-15}
+      STACC_SESSION_MAX_DURATION: ${STACC_SESSION_MAX_DURATION:-12h}
+      STACC_SESSION_IDLE_TIMEOUT: ${STACC_SESSION_IDLE_TIMEOUT:-2h}
       # Only for a frontend dev server on this machine that calls this backend directly. The
       # Docker frontend needs no such permission: its page and the API share one address.
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}

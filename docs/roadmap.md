@@ -32,7 +32,7 @@ These were settled while reviewing the specifications. Each takes effect in the 
 
 | # | Decision | Phase |
 | --- | --- | --- |
-| 1 | Sign-in moves from browser-stored tokens to **server sessions** in a secure HttpOnly cookie with CSRF protection, so logout, disabling an account, and forced password changes take effect at once. | 0.2.2 |
+| 1 | Sign-in moves from browser-stored tokens to **server sessions**: every sign-in is a `user_sessions` row checked on each request, and browsers carry its signed token in a secure HttpOnly cookie with CSRF protection, so logout, disabling an account, and forced password changes take effect at once. | 0.2.2 |
 | 2 | Every public route moves under **`/api/v1/v1`**; the internal AI service uses `/internal/v1/v1`. | 0.1.6 |
 | 3 | Names, photos, and contact details live on a **person profile** per account, separate from the login account and from the academic student and faculty profiles. | 0.2.1 |
 | 4 | One dashboard with a part per role the account holds. Staff roles (Security, Maintenance) get their own focused pages. | 0.2.10 |
@@ -285,5 +285,5 @@ Goal: make every later change safe to make. No new features.
 | Version | Status |
 | --- | --- |
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
-| v0.2 Accounts, roles, and audit | In progress: 0.2.1 done |
+| v0.2 Accounts, roles, and audit | In progress: 0.2.1 and 0.2.2 done |
 | v0.3 – v1.0 | Not started |

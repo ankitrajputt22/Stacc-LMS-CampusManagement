@@ -1,30 +1,21 @@
-import type { AuthSession, LoginResponse } from './types'
+import type { AuthSession, SessionResponse } from './types'
 
-/**
- * Turns a successful login into the session kept for this tab. The backend says how long
- * the token lasts, so the end time is worked out from that. The token itself is not read.
- */
-export function sessionFromLogin(
-  response: LoginResponse,
-  now: number = Date.now(),
-): AuthSession {
-  if (!response.accessToken || !(response.expiresIn > 0)) {
-    throw new Error('The login response did not contain a usable access token.')
+/** Turns the backend's answer into the session the page keeps in memory. */
+export function sessionFrom(response: SessionResponse): AuthSession {
+  const expiresAt = Date.parse(response.expiresAt)
+  if (!response.loginId || !Number.isFinite(expiresAt)) {
+    throw new Error('The sign-in answer did not describe a usable session.')
   }
 
   return {
     accountId: response.accountId,
     loginId: response.loginId,
     roles: response.roles,
-    accessToken: response.accessToken,
-    expiresAt: now + response.expiresIn * 1000,
+    expiresAt,
   }
 }
 
-/** The backend has the final word on a token. This only spares it requests that cannot succeed. */
-export function isSessionExpired(
-  session: AuthSession,
-  now: number = Date.now(),
-): boolean {
+/** The backend has the final word on a session. This only spares it requests that cannot succeed. */
+export function isSessionExpired(session: AuthSession, now: number = Date.now()): boolean {
   return session.expiresAt <= now
 }

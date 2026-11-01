@@ -1,14 +1,15 @@
 import type { AccountRole } from './roles'
 
-/** The backend's answer to a successful login. Mirrors LoginResponse in com.stacc.backend.auth.api. */
-export type LoginResponse = {
+/**
+ * Who is signed in, as the backend says on sign-in and on GET /api/v1/auth/session. Mirrors SessionResponse in
+ * com.stacc.backend.auth.api. The token itself never reaches the page: it lives in an HttpOnly cookie.
+ */
+export type SessionResponse = {
   accountId: number
   loginId: string
   roles: string[]
-  accessToken: string
-  tokenType: string
-  /** How long the access token stays valid, in seconds. */
-  expiresIn: number
+  /** When the sign-in ends at the latest (ISO 8601). It can end earlier, after the idle timeout or a sign-out. */
+  expiresAt: string
 }
 
 /** Who is signed in. It is shown in the interface and grants nothing by itself. */
@@ -19,13 +20,12 @@ export type AuthAccount = {
   roles: AccountRole[]
 }
 
-/** Everything kept for a signed-in browser tab. It never holds a password. */
+/** The signed-in session as the page keeps it in memory. Nothing of it is ever written to browser storage. */
 export type AuthSession = {
   accountId: number
   loginId: string
   /** The role names exactly as the backend sent them. */
   roles: string[]
-  accessToken: string
-  /** When the access token stops being valid, in milliseconds since 1970. */
+  /** When the session ends at the latest, in milliseconds since 1970. */
   expiresAt: number
 }

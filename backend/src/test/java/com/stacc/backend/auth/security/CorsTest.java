@@ -117,12 +117,13 @@ class CorsTest extends DatabaseFreeApiTest {
     }
 
     @Test
-    void noOriginIsEverAnsweredWithAWildcardOrWithCredentials() throws Exception {
-        for (String origin : new String[] {DEV_FRONTEND, OTHER_SITE}) {
-            preflight(origin, LOGIN, "POST", "content-type")
-                    .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, not("*")))
-                    .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
-        }
+    void onlyAListedOriginMaySendTheSessionCookieAndNeverAsAWildcard() throws Exception {
+        preflight(DEV_FRONTEND, LOGIN, "POST", "content-type")
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, DEV_FRONTEND))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+        preflight(OTHER_SITE, LOGIN, "POST", "content-type")
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
     }
 
     // The answer lists only the headers that are allowed. A browser then refuses to send the

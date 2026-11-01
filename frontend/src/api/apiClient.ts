@@ -1,5 +1,4 @@
 import axios, { isAxiosError } from 'axios'
-import { clearSession, loadSession } from '../auth/authStorage'
 
 const REQUEST_TIMEOUT_MS = 15000
 
@@ -21,9 +20,18 @@ if (!apiRoot) {
 export const apiBaseUrl = `${apiRoot.replace(/\/+$/, '')}/${API_VERSION}`
 
 // Axios sends plain objects as JSON on its own, so no default Content-Type is set here.
+//
+// Signing in is a cookie the page never sees: the backend sets an HttpOnly session cookie, and the browser sends it
+// with every API request (withCredentials covers a dev server on another port). A change must also carry the
+// XSRF-TOKEN cookie's value in the X-XSRF-TOKEN header, which Axios copies itself; only Stacc's own pages can read that
+// cookie, so another website cannot forge the request. Nothing here sets an Authorization header.
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
   timeout: REQUEST_TIMEOUT_MS,
+  withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     Accept: 'application/json',
   },
@@ -33,9 +41,12 @@ type UnauthorizedListener = () => void
 
 const unauthorizedListeners = new Set<UnauthorizedListener>()
 
+// Answers from these say only "not signed in" or "wrong password"; they never mean a session has just ended.
+const SIGN_IN_PATHS = new Set(['/auth/login', '/auth/session'])
+
 /**
- * Calls the listener when the backend refuses the saved access token.
- * Returns a function that stops listening.
+ * Calls the listener when the backend says the session has ended (a 401 on any other request): it was signed out
+ * elsewhere, went idle, or the account was disabled. Returns a function that stops listening.
  */
 export function onUnauthorized(listener: UnauthorizedListener): () => void {
   unauthorizedListeners.add(listener)
@@ -45,35 +56,11 @@ export function onUnauthorized(listener: UnauthorizedListener): () => void {
   }
 }
 
-function bearer(accessToken: string): string {
-  return `Bearer ${accessToken}`
-}
-
-// Every request made while signed in carries the access token. Nothing is added when signed
-// out, so API functions never set this header themselves.
-apiClient.interceptors.request.use((config) => {
-  const session = loadSession()
-
-  if (session !== null) {
-    config.headers.set('Authorization', bearer(session.accessToken))
-  }
-
-  return config
-})
-
-// A 401 answer to a request that carried the current token means the backend no longer
-// accepts it, so the session is dropped and the app is told. Two cases are left alone on
-// purpose: a failed login, which carries no token and is an ordinary form error, and a 403,
-// which means "signed in but not allowed" and must not sign anyone out.
+// A 401 ends the session in the page. Two cases are left alone on purpose: a failed login or session check, which is
+// an ordinary answer, and a 403, which means "signed in but not allowed" and must not sign anyone out.
 apiClient.interceptors.response.use(undefined, (error: unknown) => {
-  if (isAxiosError(error) && error.response?.status === 401) {
-    const session = loadSession()
-    const sentToken = error.config?.headers.get('Authorization')
-
-    if (session !== null && sentToken === bearer(session.accessToken)) {
-      clearSession()
-      unauthorizedListeners.forEach((listener) => listener())
-    }
+  if (isAxiosError(error) && error.response?.status === 401 && !SIGN_IN_PATHS.has(error.config?.url ?? '')) {
+    unauthorizedListeners.forEach((listener) => listener())
   }
 
   return Promise.reject(error)

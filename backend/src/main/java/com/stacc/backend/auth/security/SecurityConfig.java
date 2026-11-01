@@ -2,8 +2,11 @@ package com.stacc.backend.auth.security;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
-import com.stacc.backend.auth.token.AccessTokenService;
+import com.stacc.backend.auth.session.SessionService;
+import com.stacc.backend.common.web.RequestIdFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,9 +22,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -44,8 +51,13 @@ public class SecurityConfig {
             HttpSecurity http,
             StaccAuthenticationEntryPoint authenticationEntryPoint,
             StaccAccessDeniedHandler accessDeniedHandler,
-            CorsConfigurationSource corsConfigurationSource)
+            CorsConfigurationSource corsConfigurationSource,
+            SessionService sessionService,
+            JwtDecoder jwtDecoder)
             throws Exception {
+        SessionCheckingJwtConverter sessionCheck = new SessionCheckingJwtConverter(sessionService);
+        JwtAuthenticationProvider cookieTokens = new JwtAuthenticationProvider(jwtDecoder);
+        cookieTokens.setJwtAuthenticationConverter(sessionCheck);
         http
                 // Lets the listed frontend addresses, and only those, call the API from a browser.
                 // It decides who may ask. Every request still needs its token and its permissions.
@@ -69,34 +81,64 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // A request that carries "Authorization: Bearer <access token>" is signed in for that
-                // request only. A missing or unacceptable token on a protected route is answered with 401.
+                // An API client signs in with an "Authorization: Bearer" header; a browser with the HttpOnly session
+                // cookie, read by SessionCookieAuthenticationFilter after the CSRF check. Either way the token's session
+                // must still be open and its account active. A missing or unacceptable token gets 401.
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .bearerTokenResolver(new SessionTokenResolver())
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(sessionCheck))
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 // Not signed in is answered with 401. Signed in but not allowed is answered with 403.
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
-                // CSRF protection guards cookie-based sessions. The API is stateless and will
-                // use tokens, so it is off. Review this if authentication ever moves to cookies.
-                .csrf(AbstractHttpConfigurer::disable);
+                // A cookie is sent by the browser on its own, so a request signed in by the session cookie must also
+                // prove it came from Stacc's own page: the XSRF-TOKEN cookie, which only Stacc's pages can read, copied
+                // into the X-XSRF-TOKEN header (Axios does this). Requests with a Bearer header, requests without the
+                // cookie, sign-in itself, and safe methods have nothing to forge and are not checked.
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(xsrfCookies())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .requireCsrfProtectionMatcher(SecurityConfig::needsCsrfCheck)
+                        // Spring would replace the XSRF token whenever it sees a signed-in request it has not stored,
+                        // which without servlet sessions is every request, so the browser would never keep one. A new
+                        // sign-in already gets a new session of its own; the XSRF token simply stays.
+                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
+                .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
+                .addFilterAfter(new SessionCookieAuthenticationFilter(new ProviderManager(cookieTokens),
+                        authenticationEntryPoint), CsrfCookieFilter.class);
         return http.build();
+    }
+
+    /** The XSRF-TOKEN cookie, readable by Stacc's own pages only (same origin), for the whole site. */
+    private static CookieCsrfTokenRepository xsrfCookies() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookieCustomizer(cookie -> cookie.path("/").sameSite("Lax"));
+        return repository;
+    }
+
+    private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS", "TRACE");
+
+    static boolean needsCsrfCheck(HttpServletRequest request) {
+        return !SAFE_METHODS.contains(request.getMethod()) && SessionTokenResolver.usesSessionCookie(request)
+                && !SessionTokenResolver.isLogin(request);
     }
 
     /**
      * The browser rule for calls from another web address, used by the frontend dev server.
-     * Only the origins in {@link CorsProperties} are accepted, and only for the API. Sign-in
-     * uses a Bearer token in a header, so cookies and other browser credentials are not allowed.
+     * Only the origins in {@link CorsProperties} are accepted, and only for the API. They may send the
+     * session cookie, so the list is exact origins only; a wildcard is refused when the backend starts.
      */
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(properties.allowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-        configuration.setAllowCredentials(false);
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-XSRF-TOKEN",
+                RequestIdFilter.HEADER));
+        configuration.setExposedHeaders(List.of(RequestIdFilter.HEADER));
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(Duration.ofMinutes(30));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -104,16 +146,6 @@ public class SecurityConfig {
         return source;
     }
 
-    // The token's "authorities" claim already holds the final names, such as ROLE_STUDENT or a
-    // permission code, so they are used as they are. Spring's default "SCOPE_" prefix is not added.
-    private static JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName(AccessTokenService.AUTHORITIES_CLAIM);
-        authorities.setAuthorityPrefix("");
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authorities);
-        return converter;
-    }
 
     /**
      * The one password encoder for Stacc. New passwords are hashed with BCrypt, and each

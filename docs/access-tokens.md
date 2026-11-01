@@ -1,21 +1,21 @@
-# Access Tokens
+# Access Tokens and Sessions
 
-A successful college login returns a JWT access token. It is the proof of sign-in that a client will send with later requests.
+Signing in starts a **session**: a row in `user_sessions` that lasts at most `STACC_SESSION_MAX_DURATION` (12 hours by default) and ends sooner after `STACC_SESSION_IDLE_TIMEOUT` (2 hours) without a request. The session's **token** is a signed JWT that names it. The session decides whether the token is still accepted, so signing out, signing out everywhere, going idle, or the college disabling the account all take effect on the very next request.
+
+## The login answer
+
+`POST /api/v1/auth/login` answers with who signed in and when the session ends at the latest:
 
 ```json
 {
   "accountId": 12,
   "loginId": "2408400100011",
   "roles": ["STUDENT"],
-  "accessToken": "<signed JWT>",
-  "tokenType": "Bearer",
-  "expiresIn": 900
+  "expiresAt": "2026-11-01T22:00:00Z"
 }
 ```
 
-- `tokenType` is always `Bearer`.
-- `expiresIn` is the token's lifetime in seconds. The default is 15 minutes (900 seconds).
-- A failed login never receives a token.
+The token is never in a response body. It comes in the `Set-Cookie` header as the `STACC_SESSION` cookie: **HttpOnly** (page scripts cannot read it), **SameSite=Lax** (other sites cannot send it with their requests), **Path=/api** (only API requests carry it), and **Secure** wherever `STACC_SESSION_SECURE_COOKIE=true` (required in production). A failed login gets no session and no cookie.
 
 ## What a token contains
 
@@ -24,57 +24,24 @@ A successful college login returns a JWT access token. It is the proof of sign-i
 | `iss` | Always `stacc`. |
 | `sub` | The account's `loginId`. |
 | `accountId` | The account's ID. |
+| `sid` | The session's ID. |
 | `authorities` | The account's roles as `ROLE_*` names, plus the permission codes of those roles. |
-| `iat`, `exp` | When the token was issued and when it expires. |
+| `iat`, `exp` | When the token was issued and when its session ends at the latest. |
 
-The authorities are included so that later requests can be checked without asking the database every time. The trade-off is that a change to an account's roles or permissions only takes effect in tokens issued after the change. Keeping tokens short-lived limits how long an old token can be used.
+The authorities travel in the token, so a request is checked without loading the account's roles. Roles that change take effect at the next sign-in; the college's account tools end the account's sessions when its access changes, so that is at once.
 
-A token is signed, not encrypted. Anyone holding it can read what is inside, so it never contains a password, a password hash, or profile details such as email or phone number.
+## How a request is accepted
 
-## Signing and configuration
+1. The token is taken from the `Authorization: Bearer` header (API clients and tests) or, failing that, from the `STACC_SESSION` cookie (browsers). Never from a URL.
+2. Its signature (HS256 with `JWT_SECRET`), issuer, expiry, account, and session claims are checked.
+3. Its session must be open: not signed out, not idle, not past its end, belonging to the token's account, and the account `ACTIVE`. Each check moves "last seen" forward at most once a minute.
+4. A request signed in by the cookie that changes something must also pass CSRF (see `authentication.md`).
 
-Tokens are signed with HMAC SHA-256 through Spring Security's JWT support. `AccessTokenService` in `com.stacc.backend.auth.token` is the only place that creates them.
+Anything that fails answers 401 with `Invalid or expired access token.`
 
-| Environment variable | Meaning |
-| --- | --- |
-| `JWT_SECRET` | The signing secret, as Base64 text for at least 32 random bytes. Required. |
-| `JWT_ACCESS_TOKEN_MINUTES` | Token lifetime in minutes, from 1 to 60. Defaults to 15. |
+## Rules
 
-Create a secret with:
-
-```bash
-openssl rand -base64 48
-```
-
-There is no default secret. The backend refuses to start if `JWT_SECRET` is missing, is not Base64, or is too short. Never commit a real secret, never log it, and never give it to the frontend (there must be no `VITE_JWT_SECRET`). Tests use their own made-up secret that exists only in test code.
-
-Access tokens must not be logged either.
-
-## Using a token
-
-A client sends the token in the standard header:
-
-```text
-Authorization: Bearer <access-token>
-```
-
-The header is the only place a token is accepted. Tokens in a URL or query parameter are ignored, and tokens must never be put in URLs.
-
-Spring Security checks every token it receives:
-
-- the signature, using the same secret and algorithm (HS256 only) that signed it;
-- that it has not expired;
-- that the issuer is `stacc`;
-- that it names an account (`sub` and `accountId`).
-
-A valid token signs the request in for that one request. The caller's name is the `loginId` from `sub`, the `accountId` claim stays available, and the authorities come straight from the `authorities` claim. Stacc adds no prefix to them: `ROLE_STUDENT` stays `ROLE_STUDENT` and a permission code stays as it is, with no `SCOPE_` in front. Spring Security also adds its own marker, `FACTOR_BEARER`, which only says the request was signed in with a token. It is not a Stacc role or permission.
-
-A token that cannot be accepted (malformed, wrong signature, changed, expired, or from another issuer) is answered with HTTP 401, a `WWW-Authenticate: Bearer` header, and the message `Invalid or expired access token.` in the common error format. The reason is never revealed, and a bad token is never treated as if no token had been sent.
-
-An endpoint that acts for the caller reads the account from the token with `AuthenticatedAccount.idFrom(...)`. It never takes the account from an ID in the request.
-
-The database is not asked on each request. Everything comes from the token, so if an account is disabled or its roles change, a token issued before that keeps working until it expires. The short lifetime limits this.
-
-## Not built yet
-
-- There are no refresh tokens, no logout, and no way to cancel a token before it expires.
+- Tokens are created only by `AccessTokenService`, only for a session `SessionService` has just started.
+- Never log a token, put it in a response body, a URL, or browser storage, and never put a password, a hash, or private data in its claims.
+- `JWT_SECRET` must be Base64 for at least 32 random bytes; the backend refuses to start otherwise. Changing it signs everyone out.
+- There are no refresh tokens: a session simply ends.

@@ -51,6 +51,9 @@ public class ProductionSettingsCheck {
                 break;
             }
         }
+        if (!Boolean.parseBoolean(trimmed(environment.getProperty("stacc.session.secure-cookie")))) {
+            problems.add("STACC_SESSION_SECURE_COOKIE must be true: production is served over HTTPS.");
+        }
         if (Boolean.parseBoolean(trimmed(environment.getProperty("stacc.ai.enabled")))
                 && trimmed(environment.getProperty("stacc.ai.internal-token")).length() < MIN_AI_TOKEN_LENGTH) {
             problems.add("AI_ENABLED is true, so STACC_AI_INTERNAL_TOKEN must be at least "

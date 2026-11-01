@@ -1,5 +1,10 @@
 package com.stacc.backend.auth.api;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.matchesPattern;
@@ -38,6 +43,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import com.stacc.backend.auth.SessionCookieAssertions;
+import java.time.Instant;
+import java.time.Duration;
+import com.stacc.backend.auth.session.UserSession;
+import com.stacc.backend.auth.session.SessionProperties;
 
 class AuthControllerTest extends DatabaseFreeApiTest {
 
@@ -63,6 +73,9 @@ class AuthControllerTest extends DatabaseFreeApiTest {
         account.assignRole(new Role(RoleName.STUDENT));
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(anyString())).thenReturn(Optional.empty());
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(LOGIN_ID)).thenReturn(Optional.of(account));
+        Instant now = Instant.now();
+        when(sessionService.start(eq(12L), any())).thenReturn(
+                new UserSession(12L, "Unknown browser", now, now.plus(Duration.ofHours(12))));
     }
 
     private ResultActions login(String body) throws Exception {
@@ -97,24 +110,29 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
-    void successfulLoginReturnsASignedBearerAccessToken() throws Exception {
+    void successfulLoginSetsTheTokenInAnHttpOnlyCookieAndNeverInTheBody() throws Exception {
         MvcResult result = login(credentials(LOGIN_ID, PASSWORD))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken", matchesPattern("[\\w-]+\\.[\\w-]+\\.[\\w-]+")))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.expiresIn").value(900))
+                .andExpect(jsonPath("$.expiresAt").exists())
                 .andReturn();
 
-        String token = result.getResponse().getContentAsString()
-                .replaceAll(".*\"accessToken\":\"([^\"]*)\".*", "$1");
-        Jwt jwt = NimbusJwtDecoder.withSecretKey(new JwtProperties(TestSecrets.JWT_SECRET, 15).signingKey())
+        String cookie = SessionCookieAssertions.sessionCookie(result);
+        assertNotNull(cookie);
+        assertTrue(cookie.contains("HttpOnly"));
+        assertTrue(cookie.contains("SameSite=Lax"));
+        assertTrue(cookie.contains("Path=/api"));
+        assertTrue(cookie.matches(".*Max-Age=43(19\\d|200).*"), cookie);
+        String token = cookie.substring(cookie.indexOf('=') + 1, cookie.indexOf(';'));
+        assertFalse(result.getResponse().getContentAsString().contains(token));
+
+        Jwt jwt = NimbusJwtDecoder.withSecretKey(new JwtProperties(TestSecrets.JWT_SECRET).signingKey())
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build()
                 .decode(token);
-
         assertEquals(LOGIN_ID, jwt.getSubject());
         assertEquals(12L, jwt.<Long>getClaim("accountId"));
         assertEquals(List.of("ROLE_STUDENT"), jwt.getClaimAsStringList("authorities"));
+        assertNotNull(jwt.getClaimAsString("sid"));
     }
 
     @Test
@@ -149,7 +167,7 @@ class AuthControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
                 .andExpect(jsonPath("$.fieldErrors", hasSize(0)))
                 .andExpect(jsonPath("$.accountId").doesNotExist())
-                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(SessionCookieAssertions.noSessionCookie())
                 .andExpect(content().string(not(containsString("Exception"))));
     }
 
@@ -157,12 +175,12 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     void failedLoginsNeverReceiveAToken() throws Exception {
         login(credentials("EMP9999", PASSWORD))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
+                .andExpect(SessionCookieAssertions.noSessionCookie());
 
         account.setStatus(AccountStatus.DISABLED);
         login(credentials(LOGIN_ID, PASSWORD))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
+                .andExpect(SessionCookieAssertions.noSessionCookie());
     }
 
     @Test
@@ -233,11 +251,12 @@ class AuthControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
-    void loginDoesNotCreateASessionOrSetACookie() throws Exception {
+    void loginKeepsItsSessionInTheDatabaseNotInTheServletContainer() throws Exception {
         MvcResult result = login(credentials(LOGIN_ID, PASSWORD)).andExpect(status().isOk()).andReturn();
 
         assertNull(result.getRequest().getSession(false));
-        assertNull(result.getResponse().getHeader(HttpHeaders.SET_COOKIE));
+        assertTrue(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
+                .noneMatch(cookie -> cookie.startsWith("JSESSIONID")));
     }
 
     @Test
@@ -248,9 +267,7 @@ class AuthControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.loginId").exists())
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.password").exists())
                 .andExpect(jsonPath("$.components.schemas.LoginRequest.properties.role").doesNotExist())
-                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.accessToken").exists())
-                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.tokenType").exists())
-                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.expiresIn").exists())
-                .andExpect(jsonPath("$.components.schemas.LoginResponse.properties.refreshToken").doesNotExist());
+                .andExpect(jsonPath("$.components.schemas.SessionResponse.properties.expiresAt").exists())
+                .andExpect(jsonPath("$.components.schemas.SessionResponse.properties.accessToken").doesNotExist());
     }
 }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.stacc.backend.auth.account.UserAccount;
@@ -18,6 +19,8 @@ import com.stacc.backend.auth.role.Role;
 import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.auth.security.StaccUserPrincipal;
 import com.stacc.backend.auth.token.AccessToken;
+import com.stacc.backend.auth.session.SessionService;
+import com.stacc.backend.auth.session.UserSession;
 import com.stacc.backend.auth.token.AccessTokenService;
 import com.stacc.backend.common.error.ApiException;
 import org.junit.jupiter.api.Test;
@@ -39,7 +42,11 @@ class LoginServiceTest {
 
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AccessTokenService accessTokenService = mock(AccessTokenService.class);
-    private final LoginService loginService = new LoginService(authenticationManager, accessTokenService);
+    private final SessionService sessions = mock(SessionService.class);
+    private final LoginService loginService = new LoginService(authenticationManager, accessTokenService, sessions);
+    private static final Instant SESSION_END = Instant.parse("2026-11-01T22:00:00Z");
+    private static final UserSession SESSION = new UserSession(12L, "Chrome on Android",
+            SESSION_END.minusSeconds(12 * 3600), SESSION_END);
 
     private static StaccUserPrincipal principalWithRoles(RoleName... roleNames) {
         UserAccount account = new UserAccount(LOGIN_ID, "example-hash-value");
@@ -55,14 +62,16 @@ class LoginServiceTest {
     private void authenticationSucceedsWith(StaccUserPrincipal principal) {
         when(authenticationManager.authenticate(any())).thenReturn(
                 UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));
-        when(accessTokenService.issue(principal)).thenReturn(new AccessToken("signed-token-value", 900));
+        when(sessions.start(12L, "Mozilla/5.0")).thenReturn(SESSION);
+        when(accessTokenService.issue(principal, SESSION.getId(), SESSION_END))
+                .thenReturn(new AccessToken("signed-token-value", 12 * 3600));
     }
 
     @Test
     void loginIdAndPasswordAreCheckedByTheAuthenticationManagerExactlyAsSent() {
         authenticationSucceedsWith(principalWithRoles(RoleName.FACULTY));
 
-        loginService.login(new LoginRequest(LOGIN_ID, PASSWORD));
+        loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0");
 
         ArgumentCaptor<Authentication> attempt = ArgumentCaptor.forClass(Authentication.class);
         verify(authenticationManager).authenticate(attempt.capture());
@@ -76,39 +85,41 @@ class LoginServiceTest {
     void successfulLoginReturnsTheAccountAndItsSortedRoleNames() {
         authenticationSucceedsWith(principalWithRoles(RoleName.FACULTY, RoleName.ADMIN));
 
-        LoginResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD));
+        SessionResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0").session();
 
         assertEquals(12L, response.accountId());
+        assertEquals(SESSION_END, response.expiresAt());
         assertEquals(LOGIN_ID, response.loginId());
         assertEquals(List.of("ADMIN", "FACULTY"), response.roles());
     }
 
     @Test
-    void successfulLoginReturnsABearerAccessTokenForTheAuthenticatedAccount() {
+    void successfulLoginStartsASessionAndIssuesItsToken() {
         StaccUserPrincipal principal = principalWithRoles(RoleName.STUDENT);
         authenticationSucceedsWith(principal);
 
-        LoginResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD));
+        LoginService.SignIn signIn = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0");
 
-        verify(accessTokenService).issue(principal);
-        assertEquals("signed-token-value", response.accessToken());
-        assertEquals("Bearer", response.tokenType());
-        assertEquals(900, response.expiresIn());
-        assertFalse(response.toString().contains("signed-token-value"));
+        verify(sessions).start(12L, "Mozilla/5.0");
+        verify(accessTokenService).issue(principal, SESSION.getId(), SESSION_END);
+        assertEquals("signed-token-value", signIn.token());
+        assertEquals(java.time.Duration.ofHours(12), signIn.lifetime());
+        assertFalse(signIn.toString().contains("signed-token-value"));
+        assertFalse(signIn.session().toString().contains("signed-token-value"));
     }
 
     @Test
     void wrongCredentialsAndDisabledAccountsFailWithTheSameSafeMessage() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
         ApiException wrongCredentials =
-                assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD)));
+                assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
 
         AuthenticationManager disabledManager = mock(AuthenticationManager.class);
         when(disabledManager.authenticate(any())).thenThrow(new DisabledException("User is disabled"));
         ApiException disabled = assertThrows(
                 ApiException.class,
-                () -> new LoginService(disabledManager, accessTokenService)
-                        .login(new LoginRequest(LOGIN_ID, PASSWORD)));
+                () -> new LoginService(disabledManager, accessTokenService, sessions)
+                        .login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
 
         assertEquals(HttpStatus.UNAUTHORIZED, wrongCredentials.getStatus());
         assertEquals("Invalid login ID or password.", wrongCredentials.getMessage());
@@ -120,9 +131,9 @@ class LoginServiceTest {
     void failedLoginNeverGetsAToken() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
 
-        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD)));
+        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
 
-        verifyNoInteractions(accessTokenService);
+        verifyNoInteractions(accessTokenService, sessions);
     }
 
     @Test
@@ -133,7 +144,7 @@ class LoginServiceTest {
 
         InternalAuthenticationServiceException thrown = assertThrows(
                 InternalAuthenticationServiceException.class,
-                () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD)));
+                () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
 
         assertSame(databaseDown, thrown);
     }
