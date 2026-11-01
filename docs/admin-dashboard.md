@@ -3,7 +3,7 @@
 The admin dashboard is a read-only overview of academic setup and enrollment. It owns no data and stores nothing: every count is read at request time, and no table, cache, snapshot, or metric is kept for it. The code is in `com.stacc.backend.dashboard` (`AdminDashboardController`, `AdminDashboardQueryService`, `AdminDashboardResponse`), next to the student and faculty dashboards.
 
 ```text
-GET /api/dashboard/admin
+GET /api/v1/dashboard/admin
         |
         +-- academicMasters     <- row counts of departments, programs, academic sessions, semesters, courses
         +-- academicOperations  <- row count of course offerings; ENROLLED semester and course enrollments
@@ -12,7 +12,7 @@ GET /api/dashboard/admin
 
 ## Access
 
-`GET /api/dashboard/admin` needs the `ADMIN` role and `ADMIN_DASHBOARD_VIEW` (`V40`, `ADMIN` only). It takes no parameters and only reads: there is no other method on it, and it gives no right to change masters, offerings, or enrollments, whose own permissions are unchanged. `STUDENT` and `FACULTY` get no pass; an account that also holds `ADMIN` gets this dashboard beside its others.
+`GET /api/v1/dashboard/admin` needs the `ADMIN` role and `ADMIN_DASHBOARD_VIEW` (`V40`, `ADMIN` only). It takes no parameters and only reads: there is no other method on it, and it gives no right to change masters, offerings, or enrollments, whose own permissions are unchanged. `STUDENT` and `FACULTY` get no pass; an account that also holds `ADMIN` gets this dashboard beside its others.
 
 ## What each value means
 

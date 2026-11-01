@@ -16,7 +16,7 @@ LmsCourse
       |
       +-- LmsAssignment.dueAt    (absolute moment, faculty-managed)
 
-GET /api/calendar/me  ->  official events that apply to the account
+GET /api/v1/calendar/me  ->  official events that apply to the account
                           + each role's assignment deadlines, read at request time
 ```
 
@@ -87,7 +87,7 @@ Both lists are ordered by `dueAt`, then assignment ID. A student deadline has th
 
 ## Common calendar API
 
-`GET /api/calendar/me?from=2026-10-01&to=2026-10-31&timeZone=Asia/Kolkata` needs `ACADEMIC_CALENDAR_VIEW` and one of `STUDENT`, `FACULTY`, or `ADMIN`. No account, profile, or enrollment ID is accepted.
+`GET /api/v1/calendar/me?from=2026-10-01&to=2026-10-31&timeZone=Asia/Kolkata` needs `ACADEMIC_CALENDAR_VIEW` and one of `STUDENT`, `FACULTY`, or `ADMIN`. No account, profile, or enrollment ID is accepted.
 
 | Parameter | Rules |
 | --- | --- |
@@ -113,16 +113,16 @@ The answer comes from a fixed number of queries whatever the data: the role's se
 
 ## Admin management API
 
-All routes are under `/api/admin/academic/calendar/events`. Reading needs `ADMIN` and `ACADEMIC_CALENDAR_VIEW`; changing also needs `ACADEMIC_CALENDAR_MANAGE`. There is no admin pass outside these rules.
+All routes are under `/api/v1/admin/academic/calendar/events`. Reading needs `ADMIN` and `ACADEMIC_CALENDAR_VIEW`; changing also needs `ACADEMIC_CALENDAR_MANAGE`. There is no admin pass outside these rules.
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/admin/academic/calendar/events` | Events in every status, the earliest start first, then by ID. Optional filters: `from`, `to` (events overlapping them; `from` after `to` is 400), `academicSessionId`, `semesterId` (events of exactly that semester), and `status`. |
-| `GET /api/admin/academic/calendar/events/{eventId}` | One event with its session, semester, status, and times. 404 if it does not exist. |
-| `POST /api/admin/academic/calendar/events` | Creates a draft (201). The session and semester are loaded on the server: a missing one is 404, a semester of another session is 400, and an end date before the start date is 400. |
-| `PUT /api/admin/academic/calendar/events/{eventId}` | Replaces the details, as described under "Editing". Moving a published event or editing a cancelled one is 409. |
-| `POST /api/admin/academic/calendar/events/{eventId}/publish` | Publishes a draft; already published changes nothing; cancelled is 409. |
-| `POST /api/admin/academic/calendar/events/{eventId}/cancel` | Cancels a draft or a published event; already cancelled changes nothing. |
+| `GET /api/v1/admin/academic/calendar/events` | Events in every status, the earliest start first, then by ID. Optional filters: `from`, `to` (events overlapping them; `from` after `to` is 400), `academicSessionId`, `semesterId` (events of exactly that semester), and `status`. |
+| `GET /api/v1/admin/academic/calendar/events/{eventId}` | One event with its session, semester, status, and times. 404 if it does not exist. |
+| `POST /api/v1/admin/academic/calendar/events` | Creates a draft (201). The session and semester are loaded on the server: a missing one is 404, a semester of another session is 400, and an end date before the start date is 400. |
+| `PUT /api/v1/admin/academic/calendar/events/{eventId}` | Replaces the details, as described under "Editing". Moving a published event or editing a cancelled one is 409. |
+| `POST /api/v1/admin/academic/calendar/events/{eventId}/publish` | Publishes a draft; already published changes nothing; cancelled is 409. |
+| `POST /api/v1/admin/academic/calendar/events/{eventId}/cancel` | Cancels a draft or a published event; already cancelled changes nothing. |
 
 Every change locks the event's own row first, so an edit and a cancellation of the same event never overwrite each other. Assignment deadlines are never listed or edited here.
 

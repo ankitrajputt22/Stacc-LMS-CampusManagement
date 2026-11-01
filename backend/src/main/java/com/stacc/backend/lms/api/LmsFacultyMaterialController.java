@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * a wrong file is archived and a new one uploaded.
  */
 @RestController
-@RequestMapping("/api/lms/faculty")
+@RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

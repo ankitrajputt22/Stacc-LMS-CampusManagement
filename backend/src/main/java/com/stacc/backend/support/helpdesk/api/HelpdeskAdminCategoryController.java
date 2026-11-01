@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * category's code is fixed once created, and categories are made inactive instead of deleted.
  */
 @RestController
-@RequestMapping("/api/helpdesk/admin/categories")
+@RequestMapping("/api/v1/helpdesk/admin/categories")
 @Tag(name = "Helpdesk admin")
 @ApiResponse(
         responseCode = "401",

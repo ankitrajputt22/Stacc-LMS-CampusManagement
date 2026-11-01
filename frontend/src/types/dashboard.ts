@@ -1,6 +1,6 @@
 import type { LmsCourseLifecycleStatus } from './lms'
 
-// The student dashboard as GET /api/dashboard/student sends it: short previews with their full counts. Every value
+// The student dashboard as GET /api/v1/dashboard/student sends it: short previews with their full counts. Every value
 // comes from the feature that owns it; nothing is derived here.
 
 export type DashboardCourse = {
@@ -73,7 +73,7 @@ export type StudentDashboard = {
   recentResults: DashboardResult[]
 }
 
-// The faculty dashboard as GET /api/dashboard/faculty sends it.
+// The faculty dashboard as GET /api/v1/dashboard/faculty sends it.
 
 export type FacultyDashboardCourse = {
   courseOfferingId: number
@@ -136,7 +136,7 @@ export type FacultyDashboard = {
   openAttendanceSessions: FacultyDashboardOpenSession[]
 }
 
-// The admin dashboard as GET /api/dashboard/admin sends it: exact counts and a short offering preview.
+// The admin dashboard as GET /api/v1/dashboard/admin sends it: exact counts and a short offering preview.
 
 /** Every record of each master, whatever its status. */
 export type AdminAcademicMasterSummary = {

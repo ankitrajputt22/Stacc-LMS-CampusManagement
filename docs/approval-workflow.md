@@ -147,15 +147,15 @@ boolean busy = approvalQueryService.hasPendingApproval("HOSTEL_APPLICATION", "57
 
 | Route | What it does | Needs |
 | --- | --- | --- |
-| `GET /api/approvals/me` | One page of the account's own requests, newest first (created time, then ID). Optional `status`; `page` from 0, `size` 1–100, default 20. | `APPROVAL_REQUEST_VIEW_OWN` |
-| `GET /api/approvals/requests/{approvalRequestId}` | One own request with its steps and history. Anyone else's answers the same 404 as a missing one. | `APPROVAL_REQUEST_VIEW_OWN` |
-| `GET /api/approvals/tasks` | One page of steps waiting for the account: PENDING steps of PENDING requests that require one of its roles, never its own requests. Oldest first (created time, then step ID); paging as above. | `APPROVAL_TASK_VIEW` |
-| `POST /api/approvals/tasks/{approvalRequestStepId}/approve` | Approves, with an optional `comment`. | `APPROVAL_TASK_DECIDE` and the step's role |
-| `POST /api/approvals/tasks/{approvalRequestStepId}/reject` | Rejects, with a required `comment`. | `APPROVAL_TASK_DECIDE` and the step's role |
-| `GET /api/approvals/admin/workflows` | Every workflow, by code. | `ADMIN` + `APPROVAL_WORKFLOW_MANAGE` |
-| `GET /api/approvals/admin/workflows/{workflowId}` | One workflow with its steps. | same |
-| `POST /api/approvals/admin/workflows` | Creates one (201): `code`, `name`, optional `description`, `steps` as `[{ name, approverRoleCode }]`. | same |
-| `PUT /api/approvals/admin/workflows/{workflowId}` | Replaces `name`, `description`, `active`, and `steps`. | same |
+| `GET /api/v1/approvals/me` | One page of the account's own requests, newest first (created time, then ID). Optional `status`; `page` from 0, `size` 1–100, default 20. | `APPROVAL_REQUEST_VIEW_OWN` |
+| `GET /api/v1/approvals/requests/{approvalRequestId}` | One own request with its steps and history. Anyone else's answers the same 404 as a missing one. | `APPROVAL_REQUEST_VIEW_OWN` |
+| `GET /api/v1/approvals/tasks` | One page of steps waiting for the account: PENDING steps of PENDING requests that require one of its roles, never its own requests. Oldest first (created time, then step ID); paging as above. | `APPROVAL_TASK_VIEW` |
+| `POST /api/v1/approvals/tasks/{approvalRequestStepId}/approve` | Approves, with an optional `comment`. | `APPROVAL_TASK_DECIDE` and the step's role |
+| `POST /api/v1/approvals/tasks/{approvalRequestStepId}/reject` | Rejects, with a required `comment`. | `APPROVAL_TASK_DECIDE` and the step's role |
+| `GET /api/v1/approvals/admin/workflows` | Every workflow, by code. | `ADMIN` + `APPROVAL_WORKFLOW_MANAGE` |
+| `GET /api/v1/approvals/admin/workflows/{workflowId}` | One workflow with its steps. | same |
+| `POST /api/v1/approvals/admin/workflows` | Creates one (201): `code`, `name`, optional `description`, `steps` as `[{ name, approverRoleCode }]`. | same |
+| `PUT /api/v1/approvals/admin/workflows/{workflowId}` | Replaces `name`, `description`, `active`, and `steps`. | same |
 
 Each request and task route also needs `STUDENT`, `FACULTY`, or `ADMIN`.
 

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/results/student")
+@RequestMapping("/api/v1/results/student")
 @Tag(name = "Results")
 public class StudentResultController {
 

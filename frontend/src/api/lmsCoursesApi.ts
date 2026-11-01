@@ -9,7 +9,7 @@ import { apiClient } from './apiClient'
 export async function getMyLmsCourses(
   signal?: AbortSignal,
 ): Promise<LmsCourseSummary[]> {
-  // The client's base URL already ends in /api, so this is GET /api/lms/my-courses.
+  // The client's base URL already ends in /api, so this is GET /api/v1/lms/my-courses.
   const response = await apiClient.get<LmsCourseSummary[]>('/lms/my-courses', {
     signal,
   })
@@ -25,7 +25,7 @@ export async function getLmsCourse(
   lmsCourseId: number,
   signal?: AbortSignal,
 ): Promise<LmsCourseDetail> {
-  // The client's base URL already ends in /api, so this is GET /api/lms/courses/{lmsCourseId}.
+  // The client's base URL already ends in /api, so this is GET /api/v1/lms/courses/{lmsCourseId}.
   const response = await apiClient.get<LmsCourseDetail>(
     `/lms/courses/${lmsCourseId}`,
     { signal },

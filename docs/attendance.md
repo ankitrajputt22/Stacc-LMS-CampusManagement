@@ -58,18 +58,18 @@ A permanent `Course` does not say which semester's class it is, and an `LmsCours
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/attendance/faculty/my-courses` | The course offerings the faculty member teaches now: `courseOfferingId`, `courseCode`, `courseName`, `credits`, `semesterNumber`, `programCode`, `academicSessionCode`, in course code order. |
-| `GET /api/attendance/faculty/course-offerings/{courseOfferingId}/sessions` | The sessions, latest class first: `id`, `heldAt`, `topic`, `status`, `finalizedAt`. |
-| `POST /api/attendance/faculty/course-offerings/{courseOfferingId}/sessions` | Creates an open session from `{"heldAt", "topic"}` and snapshots the roster. `201`. |
-| `GET /api/attendance/faculty/sessions/{sessionId}` | The session with its roster in student ID order: `attendanceRecordId`, `studentLoginId`, `status`, `markedAt`. |
-| `PUT /api/attendance/faculty/sessions/{sessionId}` | Changes an open session's `heldAt` and `topic`. |
-| `PUT /api/attendance/faculty/sessions/{sessionId}/records` | Saves `{"records": [{"attendanceRecordId", "status"}]}` and answers with the whole session. |
-| `POST /api/attendance/faculty/sessions/{sessionId}/finalize` | Finalizes the session. |
-| `GET /api/attendance/student/me` | The student's own finalized attendance by course offering. |
+| `GET /api/v1/attendance/faculty/my-courses` | The course offerings the faculty member teaches now: `courseOfferingId`, `courseCode`, `courseName`, `credits`, `semesterNumber`, `programCode`, `academicSessionCode`, in course code order. |
+| `GET /api/v1/attendance/faculty/course-offerings/{courseOfferingId}/sessions` | The sessions, latest class first: `id`, `heldAt`, `topic`, `status`, `finalizedAt`. |
+| `POST /api/v1/attendance/faculty/course-offerings/{courseOfferingId}/sessions` | Creates an open session from `{"heldAt", "topic"}` and snapshots the roster. `201`. |
+| `GET /api/v1/attendance/faculty/sessions/{sessionId}` | The session with its roster in student ID order: `attendanceRecordId`, `studentLoginId`, `status`, `markedAt`. |
+| `PUT /api/v1/attendance/faculty/sessions/{sessionId}` | Changes an open session's `heldAt` and `topic`. |
+| `PUT /api/v1/attendance/faculty/sessions/{sessionId}/records` | Saves `{"records": [{"attendanceRecordId", "status"}]}` and answers with the whole session. |
+| `POST /api/v1/attendance/faculty/sessions/{sessionId}/finalize` | Finalizes the session. |
+| `GET /api/v1/attendance/student/me` | The student's own finalized attendance by course offering. |
 
 ## Student summaries
 
-`GET /api/attendance/student/me` answers `{"courses": [...]}` with one entry per course offering that has at least one finalized session the student was on the roster of, in course code order. Each has the course code and name, semester number, program, and academic session, `totalSessions`, `presentCount`, `absentCount`, `attendancePercentage`, and `sessions` (latest class first, each with `attendanceSessionId`, `heldAt`, `topic`, and `PRESENT` or `ABSENT`).
+`GET /api/v1/attendance/student/me` answers `{"courses": [...]}` with one entry per course offering that has at least one finalized session the student was on the roster of, in course code order. Each has the course code and name, semester number, program, and academic session, `totalSessions`, `presentCount`, `absentCount`, `attendancePercentage`, and `sessions` (latest class first, each with `attendanceSessionId`, `heldAt`, `topic`, and `PRESENT` or `ABSENT`).
 
 - `attendancePercentage` is `presentCount / totalSessions * 100`, calculated with `BigDecimal` and rounded half up to two decimal places on every request, such as `80.00` or `83.33`. It is never stored.
 - A course without finalized attendance is simply not listed, so no percentage is ever shown for attendance that was never taken. With no courses the answer is `{"courses": []}`.

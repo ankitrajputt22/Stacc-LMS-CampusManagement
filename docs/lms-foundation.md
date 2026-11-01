@@ -121,7 +121,7 @@ The expected failures in the table use the shared `ApiException`, so an API can 
 Admin course enrollment (see `admin-academic.md`) calls this service through `AcademicEnrollmentLmsAdapter`, which implements the academic module's `CourseEnrollmentLmsPort`; academic code never refers to LMS models.
 
 - Right after an official course enrollment is saved and committed, the adapter looks for the offering's existing LMS course. If there is one, it calls `provision`; if there is none, the academic enrollment still succeeds and no LMS course is created.
-- A provisioning failure never undoes the academic enrollment. The admin is told that LMS access could not be provisioned and can retry with `POST /api/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms`.
+- A provisioning failure never undoes the academic enrollment. The admin is told that LMS access could not be provisioned and can retry with `POST /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms`.
 - When the admin completes or withdraws a course enrollment, the adapter calls `deactivate`. The membership is kept as `INACTIVE` and never deleted; the access policy already refuses the ended enrollment either way.
 
 ## Student access
@@ -186,7 +186,7 @@ The rule itself is written once, in `LmsStudentAccessPolicy`. The single-course 
 ## Student API: my courses
 
 ```text
-GET /api/lms/my-courses
+GET /api/v1/lms/my-courses
         |
         v
 account ID from the access token
@@ -241,7 +241,7 @@ The frontend's **Courses** page (`/courses`) is the first screen that uses this 
 ## Student API: one course
 
 ```text
-GET /api/lms/courses/{lmsCourseId}
+GET /api/v1/lms/courses/{lmsCourseId}
         |
         v
 account ID from the access token
@@ -334,7 +334,7 @@ Faculty LMS access comes straight from official ERP teaching assignments. There 
 ## Faculty API: my courses
 
 ```text
-GET /api/lms/faculty/my-courses
+GET /api/v1/lms/faculty/my-courses
 ```
 
 This endpoint returns the LMS courses the signed-in faculty member is actively assigned to teach and may currently use.
@@ -385,11 +385,11 @@ Faculty manage the LMS courses of the course offerings they officially teach, th
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/lms/faculty/managed-courses` | Every offering the faculty member teaches now, in course code order: `courseOfferingId`, course code, name, credits, semester number, program code, session code, and `lmsCourseId` and `lmsCourseStatus`, both null when there is no LMS course yet. Archived courses are listed as `ARCHIVED`, never as missing. Two queries, whatever the number of offerings. |
-| `POST /api/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | Creates the offering's LMS course as `DRAFT` and synchronizes its students (201). A second LMS course answers 409 ("An LMS course already exists for this course offering."), also when the unique constraint catches two requests at once. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/sync-student-memberships` | Synchronizes the students of a `DRAFT` or `PUBLISHED` course again. An archived one answers 409. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/publish` | Synchronizes, then moves `DRAFT` to `PUBLISHED`; a published course stays published and is synchronized again. An archived one answers 409. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/archive` | Moves `DRAFT` or `PUBLISHED` to `ARCHIVED`; an archived course stays archived. |
+| `GET /api/v1/lms/faculty/managed-courses` | Every offering the faculty member teaches now, in course code order: `courseOfferingId`, course code, name, credits, semester number, program code, session code, and `lmsCourseId` and `lmsCourseStatus`, both null when there is no LMS course yet. Archived courses are listed as `ARCHIVED`, never as missing. Two queries, whatever the number of offerings. |
+| `POST /api/v1/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | Creates the offering's LMS course as `DRAFT` and synchronizes its students (201). A second LMS course answers 409 ("An LMS course already exists for this course offering."), also when the unique constraint catches two requests at once. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/sync-student-memberships` | Synchronizes the students of a `DRAFT` or `PUBLISHED` course again. An archived one answers 409. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/publish` | Synchronizes, then moves `DRAFT` to `PUBLISHED`; a published course stays published and is synchronized again. An archived one answers 409. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/archive` | Moves `DRAFT` or `PUBLISHED` to `ARCHIVED`; an archived course stays archived. |
 
 - **Synchronizing** gives every current student of the offering an active membership through `LmsStudentMembershipProvisioningService.provisionCurrentEnrollments`, the same membership step as `provision`: the course enrollment and its semester enrollment are `ENROLLED` and the student profile is `ACTIVE`. A missing membership is created, an inactive one is reactivated, an active one stays as it is, and one linked to another LMS course is an error that rolls the change back. It answers `synchronizedCount`, the number of current students who now have an active membership. It never creates, changes, or ends an enrollment, and it leaves other memberships alone: a completed or withdrawn student keeps their membership row but gets no access, because the student access policy requires the official enrollment.
 - **Creating** runs the course and its memberships in one transaction, so an LMS course is never left half provisioned. That differs on purpose from admin course enrollment, where the official enrollment must survive an LMS failure: here the LMS data itself is being created.
@@ -449,7 +449,7 @@ Faculty manage the content of a course only when `LmsFacultyAccessService` allow
 ## Student API: course content
 
 ```text
-GET /api/lms/courses/{lmsCourseId}/content
+GET /api/v1/lms/courses/{lmsCourseId}/content
 ```
 
 ```json
@@ -478,17 +478,17 @@ All faculty content routes take the faculty member from the access token. A cour
 
 | Route | Rule | What it does |
 | --- | --- | --- |
-| `GET /api/lms/faculty/courses/{lmsCourseId}/content` | `FACULTY` + `FACULTY_COURSE_VIEW` | The course details, its LMS status, and every module and topic that is not archived, with their status and position. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/modules` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft module at the end. `201`. |
-| `PUT /api/lms/faculty/courses/{lmsCourseId}/modules/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"moduleIds": [...]}`. |
-| `PUT /api/lms/faculty/modules/{moduleId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and description. |
-| `POST /api/lms/faculty/modules/{moduleId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the module. |
-| `POST /api/lms/faculty/modules/{moduleId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the module. |
-| `POST /api/lms/faculty/modules/{moduleId}/topics` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft topic at the end of the module. `201`. |
-| `PUT /api/lms/faculty/modules/{moduleId}/topics/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"topicIds": [...]}`. |
-| `PUT /api/lms/faculty/topics/{topicId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and content. |
-| `POST /api/lms/faculty/topics/{topicId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the topic. |
-| `POST /api/lms/faculty/topics/{topicId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the topic. |
+| `GET /api/v1/lms/faculty/courses/{lmsCourseId}/content` | `FACULTY` + `FACULTY_COURSE_VIEW` | The course details, its LMS status, and every module and topic that is not archived, with their status and position. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/modules` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft module at the end. `201`. |
+| `PUT /api/v1/lms/faculty/courses/{lmsCourseId}/modules/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"moduleIds": [...]}`. |
+| `PUT /api/v1/lms/faculty/modules/{moduleId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and description. |
+| `POST /api/v1/lms/faculty/modules/{moduleId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the module. |
+| `POST /api/v1/lms/faculty/modules/{moduleId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the module. |
+| `POST /api/v1/lms/faculty/modules/{moduleId}/topics` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft topic at the end of the module. `201`. |
+| `PUT /api/v1/lms/faculty/modules/{moduleId}/topics/reorder` | `FACULTY` + `LMS_CONTENT_MANAGE` | Takes `{"topicIds": [...]}`. |
+| `PUT /api/v1/lms/faculty/topics/{topicId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and content. |
+| `POST /api/v1/lms/faculty/topics/{topicId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes the topic. |
+| `POST /api/v1/lms/faculty/topics/{topicId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives the topic. |
 
 - Edit requests take only a title and text. The course, module, status, and position cannot be changed through them: those have their own routes, and anything else in the body is ignored.
 - A reorder list must hold every module (or topic) that is not archived, each exactly once, and nothing else. A repeated, missing, archived, or foreign ID answers 400 and changes nothing.
@@ -532,7 +532,7 @@ lms_study_materials (MySQL)                  private bucket (MinIO)
 
 ### Upload
 
-`POST /api/lms/faculty/topics/{topicId}/materials`, as `multipart/form-data` with `title`, an optional `description`, and `file`. The same rule as the other content changes: `FACULTY` and `LMS_CONTENT_MANAGE`. There is no separate material permission.
+`POST /api/v1/lms/faculty/topics/{topicId}/materials`, as `multipart/form-data` with `title`, an optional `description`, and `file`. The same rule as the other content changes: `FACULTY` and `LMS_CONTENT_MANAGE`. There is no separate material permission.
 
 1. The topic is found, and faculty access is checked for its course. Another faculty member's topic answers 404; an archived topic or module answers 409.
 2. The file is checked: not empty, at most 25 MB (`STACC_MATERIAL_MAX_FILE_SIZE`), an allowed type (PDF, TXT, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPEG), a declared type that does not contradict it, and first bytes that match it. A refused file answers 400 with the reason, and nothing is stored.
@@ -545,10 +545,10 @@ The database and the storage cannot share one transaction. If storing fails, not
 
 | Route | What it does |
 | --- | --- |
-| `PUT /api/lms/faculty/materials/{materialId}` | Edits the title and description only. |
-| `POST /api/lms/faculty/materials/{materialId}/publish` | Publishes the material. |
-| `POST /api/lms/faculty/materials/{materialId}/archive` | Archives it. The stored file is kept. |
-| `PUT /api/lms/faculty/topics/{topicId}/materials/reorder` | Takes `{"materialIds": [...]}`: every material of the topic that is not archived, once each. |
+| `PUT /api/v1/lms/faculty/materials/{materialId}` | Edits the title and description only. |
+| `POST /api/v1/lms/faculty/materials/{materialId}/publish` | Publishes the material. |
+| `POST /api/v1/lms/faculty/materials/{materialId}/archive` | Archives it. The stored file is kept. |
+| `PUT /api/v1/lms/faculty/topics/{topicId}/materials/reorder` | Takes `{"materialIds": [...]}`: every material of the topic that is not archived, once each. |
 
 All need `FACULTY` and `LMS_CONTENT_MANAGE`, and answer 404 for materials in courses the caller does not teach, 409 for archived content, and 400 for an invalid body or reorder list, like the module and topic routes.
 
@@ -556,7 +556,7 @@ The content routes list the materials inside each topic. The faculty content sho
 
 ### Download
 
-`GET /api/lms/materials/{materialId}/download` lets in a student with `LMS_COURSE_VIEW` or a faculty member with `FACULTY_COURSE_VIEW`. The service then allows the download through the student rule or the faculty rule, whichever the token holds. An account that is both may use either. A material the caller may not have, an archived one, and one that does not exist all answer the same 404.
+`GET /api/v1/lms/materials/{materialId}/download` lets in a student with `LMS_COURSE_VIEW` or a faculty member with `FACULTY_COURSE_VIEW`. The service then allows the download through the student rule or the faculty rule, whichever the token holds. An account that is both may use either. A material the caller may not have, an archived one, and one that does not exist all answer the same 404.
 
 The file comes through the backend, streamed from storage, with its stored content type, its size as `Content-Length`, and `Content-Disposition: attachment` with the original file name, so it is always saved and never shown inline. Range requests are not supported.
 
@@ -598,12 +598,12 @@ Announcements use the same `LmsContentStatus` as course content:
 
 | Route | Rule | What it does |
 | --- | --- | --- |
-| `GET /api/lms/courses/{lmsCourseId}/announcements` | `STUDENT` + `LMS_COURSE_VIEW` | The published announcements: `id`, `title`, `message`, `publishedAt`. No statuses are sent. |
-| `GET /api/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published announcements, with their status and dates. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft from `{"title", "message"}`. `201`. |
-| `PUT /api/lms/faculty/announcements/{announcementId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and message of a draft or published announcement. |
-| `POST /api/lms/faculty/announcements/{announcementId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes it and sets `publishedAt` the first time. |
-| `POST /api/lms/faculty/announcements/{announcementId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives it. Archiving again is accepted. |
+| `GET /api/v1/lms/courses/{lmsCourseId}/announcements` | `STUDENT` + `LMS_COURSE_VIEW` | The published announcements: `id`, `title`, `message`, `publishedAt`. No statuses are sent. |
+| `GET /api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published announcements, with their status and dates. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | `FACULTY` + `LMS_CONTENT_MANAGE` | Adds a draft from `{"title", "message"}`. `201`. |
+| `PUT /api/v1/lms/faculty/announcements/{announcementId}` | `FACULTY` + `LMS_CONTENT_MANAGE` | Edits the title and message of a draft or published announcement. |
+| `POST /api/v1/lms/faculty/announcements/{announcementId}/publish` | `FACULTY` + `LMS_CONTENT_MANAGE` | Publishes it and sets `publishedAt` the first time. |
+| `POST /api/v1/lms/faculty/announcements/{announcementId}/archive` | `FACULTY` + `LMS_CONTENT_MANAGE` | Archives it. Archiving again is accepted. |
 
 - Every route takes the caller from the access token and runs the access check again. The request body can only carry a title and a message: the course, status, and dates are never taken from the client.
 - A course or announcement the caller may not use answers 404, the same as one that does not exist. Editing or publishing an archived announcement answers 409. A missing or too-long title or message answers 400 with field errors. No token answers 401, and a token without the route's role and permission, an admin's included, answers 403.
@@ -648,14 +648,14 @@ Assignments use the same `LmsContentStatus` as course content:
 
 | Route | Rule | What it does |
 | --- | --- | --- |
-| `GET /api/lms/courses/{lmsCourseId}/assignments` | `STUDENT` + `LMS_COURSE_VIEW` | The published assignments: `id`, `title`, `dueAt`, `maxMarks`. Past-due ones are included. No statuses are sent. |
-| `GET /api/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | `STUDENT` + `LMS_COURSE_VIEW` | One published assignment of that course, with the course code and name, the instructions, and `publishedAt`. |
-| `GET /api/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of one course, with status and dates. |
-| `GET /api/lms/faculty/my-assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of every course the faculty member may use now, with the course code and name, earliest deadline first. |
-| `POST /api/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` + `LMS_ASSIGNMENT_MANAGE` | Adds a draft from `{"title", "instructions", "dueAt", "maxMarks"}`. `201`. |
-| `PUT /api/lms/faculty/assignments/{assignmentId}` | same | Edits the four fields of a draft or published assignment. |
-| `POST /api/lms/faculty/assignments/{assignmentId}/publish` | same | Publishes it and sets `publishedAt` the first time. |
-| `POST /api/lms/faculty/assignments/{assignmentId}/archive` | same | Archives it. Archiving again is accepted. |
+| `GET /api/v1/lms/courses/{lmsCourseId}/assignments` | `STUDENT` + `LMS_COURSE_VIEW` | The published assignments: `id`, `title`, `dueAt`, `maxMarks`. Past-due ones are included. No statuses are sent. |
+| `GET /api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | `STUDENT` + `LMS_COURSE_VIEW` | One published assignment of that course, with the course code and name, the instructions, and `publishedAt`. |
+| `GET /api/v1/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of one course, with status and dates. |
+| `GET /api/v1/lms/faculty/my-assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` | Drafts and published assignments of every course the faculty member may use now, with the course code and name, earliest deadline first. |
+| `POST /api/v1/lms/faculty/courses/{lmsCourseId}/assignments` | `FACULTY` + `FACULTY_COURSE_VIEW` + `LMS_ASSIGNMENT_MANAGE` | Adds a draft from `{"title", "instructions", "dueAt", "maxMarks"}`. `201`. |
+| `PUT /api/v1/lms/faculty/assignments/{assignmentId}` | same | Edits the four fields of a draft or published assignment. |
+| `POST /api/v1/lms/faculty/assignments/{assignmentId}/publish` | same | Publishes it and sets `publishedAt` the first time. |
+| `POST /api/v1/lms/faculty/assignments/{assignmentId}/archive` | same | Archives it. Archiving again is accepted. |
 
 - `my-assignments` lists only courses that pass the faculty access policy, the same rule as the faculty course list: an active faculty profile, an active teaching assignment, and a draft or published LMS course. It reuses `LmsFacultyCourseQueryService` for that, then reads the assignments of those courses in one query. There is no pagination yet.
 - Every route takes the caller from the access token and runs the access check again. The request body can only carry the four fields: the course, status, dates, and any faculty, student, or offering ID are never taken from the client.
@@ -665,7 +665,7 @@ Assignments use the same `LmsContentStatus` as course content:
 
 ### Deadlines on the calendar
 
-The shared calendar (`GET /api/calendar/me`, see `academic-calendar.md`) reads `dueAt` straight from the assignments every time it is loaded. Deadlines are never copied into calendar tables, so a changed deadline shows on the next load. Students get the published assignments of the courses `LmsStudentCourseQueryService` lists for them; faculty get the draft and published assignments of the courses `LmsFacultyCourseQueryService` lists for them. Archived assignments and archived LMS courses never appear. The calendar's time zone only decides which days a deadline falls on.
+The shared calendar (`GET /api/v1/calendar/me`, see `academic-calendar.md`) reads `dueAt` straight from the assignments every time it is loaded. Deadlines are never copied into calendar tables, so a changed deadline shows on the next load. Students get the published assignments of the courses `LmsStudentCourseQueryService` lists for them; faculty get the draft and published assignments of the courses `LmsFacultyCourseQueryService` lists for them. Archived assignments and archived LMS courses never appear. The calendar's time zone only decides which days a deadline falls on.
 
 ## Assignment submissions
 
@@ -695,9 +695,9 @@ Every route needs `STUDENT`, `LMS_COURSE_VIEW`, and `LMS_ASSIGNMENT_SUBMIT` toge
 
 | Route | What it does |
 | --- | --- |
-| `POST /api/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions` | Adds an attempt from `multipart/form-data` with `textContent`, `files` (each as its own part), or both. `201` with the attempt. |
-| `GET /api/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me` | The student's own attempts, newest first (by attempt number), each with `attemptId`, `attemptNumber`, `textContent`, `submittedAt`, `late`, `attachments`, and `grade` (that attempt's own grade, or `null`). `{"attempts": []}` before the first one. |
-| `GET /api/lms/submission-attachments/{attachmentId}/download` | One of the student's own files, streamed from storage as an attachment with its stored name, type, and size. |
+| `POST /api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions` | Adds an attempt from `multipart/form-data` with `textContent`, `files` (each as its own part), or both. `201` with the attempt. |
+| `GET /api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me` | The student's own attempts, newest first (by attempt number), each with `attemptId`, `attemptNumber`, `textContent`, `submittedAt`, `late`, `attachments`, and `grade` (that attempt's own grade, or `null`). `{"attempts": []}` before the first one. |
+| `GET /api/v1/lms/submission-attachments/{attachmentId}/download` | One of the student's own files, streamed from storage as an attachment with its stored name, type, and size. |
 
 - A download is allowed only when the file belongs to an attempt made through the course enrollment that gives this account access to the course now, for an assignment that is still published. Another student's file, a guessed ID, and a missing file all answer the same 404 "File not found or unavailable.", which reveals nothing about the file or its owner.
 - Attachment answers carry `attachmentId`, `originalFileName`, `contentType`, and `sizeBytes`. Keys, buckets, storage addresses, and enrollment, profile, or account IDs are never included.
@@ -737,10 +737,10 @@ Every faculty grading route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASS
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/lms/faculty/assignments/{assignmentId}/submissions` | One row per student who has submitted, newest latest attempt first: `submissionId`, the student's `studentLoginId`, `latestAttemptNumber`, `attemptCount`, `latestSubmittedAt`, `latestLate`, and the latest attempt's grade as `latestGraded`, `latestMarksAwarded`, and `latestMaxMarksSnapshot`. An older attempt's grade does not count as graded. `[]` before anyone submits. |
-| `GET /api/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}` | One student's submission: the assignment's `title`, `maxMarks`, and `dueAt`, the `studentLoginId`, and every attempt newest first with `textContent`, `submittedAt`, `dueAtSnapshot`, `late`, `attachments`, and `grade`. A submission of another assignment answers 404. |
-| `GET /api/lms/faculty/submission-attachments/{attachmentId}/download` | A submitted file, streamed from storage as an attachment with its stored name, type, and size. Storage that cannot be reached answers 503. |
-| `PUT /api/lms/faculty/submission-attempts/{attemptId}/grade` | Saves `{"marksAwarded", "feedback"}` as the attempt's grade, or replaces it. `200` with `marksAwarded`, `maxMarksSnapshot`, `feedback`, and `gradedAt`. |
+| `GET /api/v1/lms/faculty/assignments/{assignmentId}/submissions` | One row per student who has submitted, newest latest attempt first: `submissionId`, the student's `studentLoginId`, `latestAttemptNumber`, `attemptCount`, `latestSubmittedAt`, `latestLate`, and the latest attempt's grade as `latestGraded`, `latestMarksAwarded`, and `latestMaxMarksSnapshot`. An older attempt's grade does not count as graded. `[]` before anyone submits. |
+| `GET /api/v1/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}` | One student's submission: the assignment's `title`, `maxMarks`, and `dueAt`, the `studentLoginId`, and every attempt newest first with `textContent`, `submittedAt`, `dueAtSnapshot`, `late`, `attachments`, and `grade`. A submission of another assignment answers 404. |
+| `GET /api/v1/lms/faculty/submission-attachments/{attachmentId}/download` | A submitted file, streamed from storage as an attachment with its stored name, type, and size. Storage that cannot be reached answers 503. |
+| `PUT /api/v1/lms/faculty/submission-attempts/{attemptId}/grade` | Saves `{"marksAwarded", "feedback"}` as the attempt's grade, or replaces it. `200` with `marksAwarded`, `maxMarksSnapshot`, `feedback`, and `gradedAt`. |
 
 - The student is shown by college ID only, read through the official enrollment. Answers carry no account, profile, or enrollment IDs, no storage keys, and no grader.
 - The list uses a fixed number of queries whatever the number of students: the submissions with their students, the latest attempts, the attempt counts, and their grades. There is no pagination yet.

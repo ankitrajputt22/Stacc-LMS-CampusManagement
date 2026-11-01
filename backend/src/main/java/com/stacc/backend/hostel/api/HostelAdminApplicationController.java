@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
  * which check the step's role and APPROVAL_TASK_DECIDE. The acting admin always comes from the access token.
  */
 @RestController
-@RequestMapping("/api/hostel/admin")
+@RequestMapping("/api/v1/hostel/admin")
 @Tag(name = "Hostel admin")
 @ApiResponse(
         responseCode = "401",

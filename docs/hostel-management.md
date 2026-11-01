@@ -58,11 +58,11 @@ A student may apply for a session when:
 - their student profile (found from the access token) is ACTIVE;
 - they have at least one ENROLLED semester enrollment in a semester of that session.
 
-No LMS course, course enrollment, attendance, or result is needed. `GET /api/hostel/student/eligible-sessions` lists exactly those sessions, the latest first, each marked when a pending or approved application already exists. Without an active profile the list is empty and applying is refused.
+No LMS course, course enrollment, attendance, or result is needed. `GET /api/v1/hostel/student/eligible-sessions` lists exactly those sessions, the latest first, each marked when a pending or approved application already exists. Without an active profile the list is empty and applying is refused.
 
 ### Applying
 
-`POST /api/hostel/student/applications` takes `academicSessionId` and an optional `note`, nothing else. In one transaction it:
+`POST /api/v1/hostel/student/applications` takes `academicSessionId` and an optional `note`, nothing else. In one transaction it:
 1. locks the student's profile row, so two applications of the same student take turns;
 2. checks the profile, the session (404 if unknown), and eligibility (409);
 3. refuses a second application while one for the same session is PENDING or APPROVED (409);
@@ -79,7 +79,7 @@ If the workflow is missing or inactive, nothing is saved and the student is told
 
 **Reapplying.** An earlier REJECTED or CANCELLED application does not block a new one. An APPROVED one stays the basis for allocation, also after a vacated stay, so it blocks a second application for the same session.
 
-**Cancelling.** `POST /api/hostel/student/applications/{applicationId}/cancel` cancels the student's own PENDING application, which can have no active allocation, through `ApprovalWorkflowService.cancelApproval`. An approved or rejected application gives 409. An already cancelled one is returned as it is. Hostel never writes approval tables itself.
+**Cancelling.** `POST /api/v1/hostel/student/applications/{applicationId}/cancel` cancels the student's own PENDING application, which can have no active allocation, through `ApprovalWorkflowService.cancelApproval`. An approved or rejected application gives 409. An already cancelled one is returned as it is. Hostel never writes approval tables itself.
 
 ## The HOSTEL_APPLICATION workflow
 
@@ -93,7 +93,7 @@ The workflow is not edited from the Hostel pages. If an admin changes it through
 
 ### Deciding
 
-The hostel office decides on the approval engine's own task routes: `POST /api/approvals/tasks/{approvalRequestStepId}/approve` (optional comment) and `/reject` (required comment).
+The hostel office decides on the approval engine's own task routes: `POST /api/v1/approvals/tasks/{approvalRequestStepId}/approve` (optional comment) and `/reject` (required comment).
 - Those routes need `APPROVAL_TASK_DECIDE` and the step's role.
 - Nobody decides their own request, and `HOSTEL_MANAGE` is no approval pass.
 - The admin application detail tells the page which step is current and whether the signed-in admin may decide it.
@@ -108,7 +108,7 @@ The hostel office decides on the approval engine's own task routes: `POST /api/a
 
 The database checks that the vacating fields are set exactly for vacated allocations.
 
-`POST /api/hostel/admin/applications/{applicationId}/allocations` with `{ "bedId": … }` allocates when:
+`POST /api/v1/hostel/admin/applications/{applicationId}/allocations` with `{ "bedId": … }` allocates when:
 - the approval is **APPROVED** (otherwise 409: pending, rejected, and cancelled applications cannot be allocated);
 - neither the application nor its student has an ACTIVE allocation;
 - the bed, its room, and its hostel are active;
@@ -124,7 +124,7 @@ The admin comes from the access token, and the student is told in their Inbox.
 
 Deactivations take a write lock on their own row, so an allocation and a deactivation never both succeed. Of two allocations racing for the same bed, exactly one wins and the other gets 409 "This bed is no longer available."; this was checked with two simultaneous requests against MySQL.
 
-**Vacating.** `POST /api/hostel/admin/allocations/{allocationId}/vacate` turns ACTIVE into VACATED, records the admin and the time, and tells the student. Vacating again changes nothing and sends nothing. The bed is available again.
+**Vacating.** `POST /api/v1/hostel/admin/allocations/{allocationId}/vacate` turns ACTIVE into VACATED, records the admin and the time, and tells the student. Vacating again changes nothing and sends nothing. The bed is available again.
 
 **Reallocating.** An APPROVED application whose allocation was vacated can get a new bed by the same rules. The old allocation stays as VACATED history.
 
@@ -136,11 +136,11 @@ Student routes need the `STUDENT` role and the named permission. The student alw
 
 | Route | Permission |
 | --- | --- |
-| `GET /api/hostel/student/eligible-sessions` | `HOSTEL_APPLICATION_CREATE` |
-| `POST /api/hostel/student/applications` (201) | `HOSTEL_APPLICATION_CREATE` |
-| `GET /api/hostel/student/applications` (newest first) | `HOSTEL_APPLICATION_VIEW_OWN` |
-| `GET /api/hostel/student/applications/{applicationId}` | `HOSTEL_APPLICATION_VIEW_OWN` |
-| `POST /api/hostel/student/applications/{applicationId}/cancel` | `HOSTEL_APPLICATION_CANCEL` |
+| `GET /api/v1/hostel/student/eligible-sessions` | `HOSTEL_APPLICATION_CREATE` |
+| `POST /api/v1/hostel/student/applications` (201) | `HOSTEL_APPLICATION_CREATE` |
+| `GET /api/v1/hostel/student/applications` (newest first) | `HOSTEL_APPLICATION_VIEW_OWN` |
+| `GET /api/v1/hostel/student/applications/{applicationId}` | `HOSTEL_APPLICATION_VIEW_OWN` |
+| `POST /api/v1/hostel/student/applications/{applicationId}/cancel` | `HOSTEL_APPLICATION_CANCEL` |
 
 The student's detail has:
 - the number, session, note, submitted time, and approval status;
@@ -152,15 +152,15 @@ Admin routes need the `ADMIN` role and `HOSTEL_MANAGE`.
 
 | Route | What it does |
 | --- | --- |
-| `GET`, `POST /api/hostel/admin/hostels`; `GET`, `PUT /api/hostel/admin/hostels/{hostelId}` | Hostels, with room, active-bed, and occupied-bed counts. |
-| `GET`, `POST /api/hostel/admin/hostels/{hostelId}/rooms`; `PUT /api/hostel/admin/rooms/{roomId}` | Rooms, with capacity and occupancy. |
-| `GET`, `POST /api/hostel/admin/rooms/{roomId}/beds`; `PUT /api/hostel/admin/beds/{bedId}` | Beds, with derived occupancy and whether the number is fixed. |
-| `GET /api/hostel/admin/applications` | One page of applications, newest first (submitted time, then ID). Filters `academicSessionId`, `approvalStatus`, `studentLoginId`, `hasActiveAllocation`; `page` from 0, `size` 1–100, default 20. |
-| `GET /api/hostel/admin/applications/{applicationId}` | Detail: student login ID, session, note, approval steps and history, `currentApprovalStep` with `canDecideCurrentStep`, `canAllocate`, and every allocation. |
-| `GET /api/hostel/admin/available-beds` | Allocatable beds, optionally for one `hostelId` or `roomId`. |
-| `POST /api/hostel/admin/applications/{applicationId}/allocations` | Allocates a bed (201). |
-| `GET /api/hostel/admin/allocations` | One page of allocations, newest first. Filters `status`, `hostelId`, `academicSessionId`, `studentLoginId`. |
-| `POST /api/hostel/admin/allocations/{allocationId}/vacate` | Vacates. |
+| `GET`, `POST /api/v1/hostel/admin/hostels`; `GET`, `PUT /api/v1/hostel/admin/hostels/{hostelId}` | Hostels, with room, active-bed, and occupied-bed counts. |
+| `GET`, `POST /api/v1/hostel/admin/hostels/{hostelId}/rooms`; `PUT /api/v1/hostel/admin/rooms/{roomId}` | Rooms, with capacity and occupancy. |
+| `GET`, `POST /api/v1/hostel/admin/rooms/{roomId}/beds`; `PUT /api/v1/hostel/admin/beds/{bedId}` | Beds, with derived occupancy and whether the number is fixed. |
+| `GET /api/v1/hostel/admin/applications` | One page of applications, newest first (submitted time, then ID). Filters `academicSessionId`, `approvalStatus`, `studentLoginId`, `hasActiveAllocation`; `page` from 0, `size` 1–100, default 20. |
+| `GET /api/v1/hostel/admin/applications/{applicationId}` | Detail: student login ID, session, note, approval steps and history, `currentApprovalStep` with `canDecideCurrentStep`, `canAllocate`, and every allocation. |
+| `GET /api/v1/hostel/admin/available-beds` | Allocatable beds, optionally for one `hostelId` or `roomId`. |
+| `POST /api/v1/hostel/admin/applications/{applicationId}/allocations` | Allocates a bed (201). |
+| `GET /api/v1/hostel/admin/allocations` | One page of allocations, newest first. Filters `status`, `hostelId`, `academicSessionId`, `studentLoginId`. |
+| `POST /api/v1/hostel/admin/allocations/{allocationId}/vacate` | Vacates. |
 
 Errors use the shared format:
 

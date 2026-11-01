@@ -40,7 +40,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
 
-    private static final String MY_COURSES = "/api/lms/my-courses";
+    private static final String MY_COURSES = "/api/v1/lms/my-courses";
 
     // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-STUDENT-1";
@@ -261,16 +261,16 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
     void routeAppearsInTheApiDocumentationAsABearerTokenOperation() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.summary")
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.summary")
                         .value("Get the authenticated student's accessible LMS courses"))
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.security[0].bearerAuth").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.parameters").doesNotExist())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.responses['200']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.responses['401']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].get.responses['403']").exists())
-                .andExpect(jsonPath("$.paths['/api/lms/my-courses'].post").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.security[0].bearerAuth").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.parameters").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.responses['200']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.responses['401']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.responses['403']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].post").doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.LmsCourseSummaryResponse.properties.*", hasSize(7)))
                 .andExpect(jsonPath("$.security").doesNotExist())
-                .andExpect(jsonPath("$.paths['/api/auth/login'].post.security").doesNotExist());
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.security").doesNotExist());
     }
 }

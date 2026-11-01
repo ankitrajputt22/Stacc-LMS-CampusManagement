@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
  * ID. A service request has no conversation: support questions belong to the helpdesk.
  */
 @RestController
-@RequestMapping("/api/campus")
+@RequestMapping("/api/v1/campus")
 @Tag(name = "Campus")
 @ApiResponse(
         responseCode = "401",

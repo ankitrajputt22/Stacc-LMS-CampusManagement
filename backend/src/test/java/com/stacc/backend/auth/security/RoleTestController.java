@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * without adding role-protected demo endpoints to the real application.
  */
 @RestController
-@RequestMapping("/api/test/roles")
+@RequestMapping("/api/v1/test/roles")
 public class RoleTestController {
 
     @GetMapping("/student")

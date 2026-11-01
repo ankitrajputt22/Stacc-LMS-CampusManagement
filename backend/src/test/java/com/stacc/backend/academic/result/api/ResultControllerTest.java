@@ -39,7 +39,7 @@ class ResultControllerTest extends DatabaseFreeApiTest {
 
     private static final long FACULTY_ACCOUNT = 21;
     private static final long STUDENT_ACCOUNT = 11;
-    private static final String SAVE_PATH = "/api/results/faculty/course-offerings/17/enrollments/40";
+    private static final String SAVE_PATH = "/api/v1/results/faculty/course-offerings/17/enrollments/40";
     private static final String RESULT_BODY = "{\"marksObtained\":82,\"maxMarks\":100,\"gradeCode\":\"A\",\"remarks\":\"Good performance\"}";
 
     @MockitoBean
@@ -73,8 +73,8 @@ class ResultControllerTest extends DatabaseFreeApiTest {
 
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
         return List.of(
-                get("/api/results/faculty/my-courses"),
-                get("/api/results/faculty/course-offerings/17"),
+                get("/api/v1/results/faculty/my-courses"),
+                get("/api/v1/results/faculty/course-offerings/17"),
                 json(put(SAVE_PATH), RESULT_BODY),
                 post(SAVE_PATH + "/publish"));
     }
@@ -92,7 +92,7 @@ class ResultControllerTest extends DatabaseFreeApiTest {
         when(facultyQueries.getMyCourseOfferings(FACULTY_ACCOUNT)).thenReturn(List.of(
                 new ResultCourseOfferingResponse(17L, "BCS301", "Data Structures", new BigDecimal("4.00"), 3, "BTECH", "2026-27")));
 
-        mockMvc.perform(as(manager(), get("/api/results/faculty/my-courses")))
+        mockMvc.perform(as(manager(), get("/api/v1/results/faculty/my-courses")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].courseOfferingId").value(17))
                 .andExpect(jsonPath("$[0].lmsCourseId").doesNotExist());
@@ -160,7 +160,7 @@ class ResultControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(manager(), post(SAVE_PATH + "/publish")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No result has been saved for this student yet. Save it before publishing."));
-        mockMvc.perform(as(manager(), json(put("/api/results/faculty/course-offerings/17/enrollments/41"),
+        mockMvc.perform(as(manager(), json(put("/api/v1/results/faculty/course-offerings/17/enrollments/41"),
                         "{\"marksObtained\":101,\"maxMarks\":100}")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Marks obtained cannot exceed maximum marks."));
@@ -191,7 +191,7 @@ class ResultControllerTest extends DatabaseFreeApiTest {
                 new StudentResultsResponse.Result("BCS301", "Data Structures", new BigDecimal("4.00"), 3, "BTECH", "2026-27",
                         new BigDecimal("82.00"), new BigDecimal("100.00"), "A", null, Instant.parse("2026-11-20T10:00:00Z")))));
 
-        mockMvc.perform(as(student("ROLE_STUDENT", "ACADEMIC_RESULT_VIEW"), get("/api/results/student/me?studentProfileId=12&courseEnrollmentId=5")))
+        mockMvc.perform(as(student("ROLE_STUDENT", "ACADEMIC_RESULT_VIEW"), get("/api/v1/results/student/me?studentProfileId=12&courseEnrollmentId=5")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.results[0].courseCode").value("BCS301"))
                 .andExpect(jsonPath("$.results[0].marksObtained").value(82.0))
@@ -208,9 +208,9 @@ class ResultControllerTest extends DatabaseFreeApiTest {
                 student("ACADEMIC_RESULT_VIEW"),
                 faculty("ROLE_FACULTY", "ACADEMIC_RESULT_MANAGE", "ACADEMIC_RESULT_VIEW"),
                 faculty("ROLE_ADMIN", "ACADEMIC_RESULT_MANAGE", "ACADEMIC_RESULT_VIEW")}) {
-            mockMvc.perform(as(token, get("/api/results/student/me"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/results/student/me"))).andExpect(status().isForbidden());
         }
-        mockMvc.perform(get("/api/results/student/me")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/results/student/me")).andExpect(status().isUnauthorized());
         verifyNoInteractions(studentQueries);
     }
 
@@ -219,8 +219,8 @@ class ResultControllerTest extends DatabaseFreeApiTest {
         String both = TestTokens.valid("2408400100015", 15, "ROLE_STUDENT", "ROLE_FACULTY", "ACADEMIC_RESULT_VIEW", "ACADEMIC_RESULT_MANAGE");
         when(studentQueries.getMyResults(anyLong())).thenReturn(new StudentResultsResponse(List.of()));
 
-        mockMvc.perform(as(both, get("/api/results/student/me"))).andExpect(status().isOk());
-        mockMvc.perform(as(both, get("/api/results/faculty/my-courses"))).andExpect(status().isOk());
+        mockMvc.perform(as(both, get("/api/v1/results/student/me"))).andExpect(status().isOk());
+        mockMvc.perform(as(both, get("/api/v1/results/faculty/my-courses"))).andExpect(status().isOk());
 
         verify(studentQueries).getMyResults(15L);
         verify(facultyQueries).getMyCourseOfferings(15L);
@@ -230,18 +230,18 @@ class ResultControllerTest extends DatabaseFreeApiTest {
     void theRoutesAreDocumentedWithTheBearerScheme() throws Exception {
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
         for (String[] operation : new String[][] {
-                {"/api/results/faculty/my-courses", "get"},
-                {"/api/results/faculty/course-offerings/{courseOfferingId}", "get"},
-                {"/api/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}", "put"},
-                {"/api/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}/publish", "post"},
-                {"/api/results/student/me", "get"}}) {
+                {"/api/v1/results/faculty/my-courses", "get"},
+                {"/api/v1/results/faculty/course-offerings/{courseOfferingId}", "get"},
+                {"/api/v1/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}", "put"},
+                {"/api/v1/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}/publish", "post"},
+                {"/api/v1/results/student/me", "get"}}) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())
                     .andExpect(jsonPath(path + ".responses['200']").exists())
                     .andExpect(jsonPath(path + ".responses['401']").exists())
                     .andExpect(jsonPath(path + ".responses['403']").exists());
         }
-        String save = "$.paths['/api/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}']";
+        String save = "$.paths['/api/v1/results/faculty/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}']";
         result.andExpect(jsonPath(save + ".put.responses['400']").exists())
                 .andExpect(jsonPath(save + ".put.responses['404']").exists())
                 .andExpect(jsonPath(save + ".delete").doesNotExist())

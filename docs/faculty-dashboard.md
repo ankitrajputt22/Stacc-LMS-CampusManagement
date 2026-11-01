@@ -3,7 +3,7 @@
 The faculty dashboard is a read-only overview of the signed-in faculty member's teaching work. It owns no data and stores nothing: no table, cache, snapshot, or metric is kept for it. Every value comes from the feature that owns it, under that feature's own rules. The code is in `com.stacc.backend.dashboard` (`FacultyDashboardController`, `FacultyDashboardQueryService`, `FacultyDashboardResponse`), next to the student dashboard.
 
 ```text
-GET /api/dashboard/faculty
+GET /api/v1/dashboard/faculty
         |
         +-- teaching courses    <- LmsFacultyManagedCourseQueryService (the Teaching page's list)
         +-- upcoming work        <- LmsAssignment, for the LMS courses faculty can still open
@@ -13,7 +13,7 @@ GET /api/dashboard/faculty
 
 ## Access
 
-`GET /api/dashboard/faculty` needs the `FACULTY` role and `FACULTY_DASHBOARD_VIEW` (`V39`, `FACULTY` only). It takes no parameters: the faculty member is the account in the access token, and no faculty, profile, account, or teaching-assignment ID from the client is read. The permission does not replace `FACULTY_COURSE_VIEW`, `LMS_ASSIGNMENT_GRADE`, or `ATTENDANCE_MANAGE` on the full pages. `STUDENT` and `ADMIN` get no pass; an account with both `STUDENT` and `FACULTY` gets this dashboard and the student one.
+`GET /api/v1/dashboard/faculty` needs the `FACULTY` role and `FACULTY_DASHBOARD_VIEW` (`V39`, `FACULTY` only). It takes no parameters: the faculty member is the account in the access token, and no faculty, profile, account, or teaching-assignment ID from the client is read. The permission does not replace `FACULTY_COURSE_VIEW`, `LMS_ASSIGNMENT_GRADE`, or `ATTENDANCE_MANAGE` on the full pages. `STUDENT` and `ADMIN` get no pass; an account with both `STUDENT` and `FACULTY` gets this dashboard and the student one.
 
 ## Sections
 

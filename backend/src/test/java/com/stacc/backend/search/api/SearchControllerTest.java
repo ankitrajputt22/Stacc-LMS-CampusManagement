@@ -44,8 +44,8 @@ class SearchControllerTest extends DatabaseFreeApiTest {
 
     // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> routes() {
-        return List.of(get("/api/search").param("q", "data"),
-                get("/api/search/results").param("q", "data").param("type", "COURSE"));
+        return List.of(get("/api/v1/search").param("q", "data"),
+                get("/api/v1/search/results").param("q", "data").param("type", "COURSE"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -76,7 +76,7 @@ class SearchControllerTest extends DatabaseFreeApiTest {
     void theActorAlwaysComesFromTheTokenNeverTheRequest() throws Exception {
         when(search.preview(any(), any())).thenReturn(new GlobalSearchResponse("data", List.of()));
 
-        mockMvc.perform(get("/api/search").param("q", "data").param("accountId", "1").param("userAccountId", "1")
+        mockMvc.perform(get("/api/v1/search").param("q", "data").param("accountId", "1").param("userAccountId", "1")
                         .header(HttpHeaders.AUTHORIZATION, token(70, "ROLE_STUDENT", "ROLE_FACULTY", "GLOBAL_SEARCH_USE",
                                 "LMS_COURSE_VIEW")))
                 .andExpect(status().isOk());
@@ -95,12 +95,12 @@ class SearchControllerTest extends DatabaseFreeApiTest {
         when(search.results(any(), any(), any(), anyInt(), anyInt()))
                 .thenReturn(new SearchResultPage("data", SearchResultType.ASSIGNMENT, "Assignments", List.of(), 2, 50, 0, 0));
 
-        mockMvc.perform(get("/api/search/results").param("q", "data").param("type", "ASSIGNMENT").param("page", "2")
+        mockMvc.perform(get("/api/v1/search/results").param("q", "data").param("type", "ASSIGNMENT").param("page", "2")
                 .param("size", "50").header(HttpHeaders.AUTHORIZATION, student)).andExpect(status().isOk());
         verify(search).results(any(), eq("data"), eq(SearchResultType.ASSIGNMENT), eq(2), eq(50));
 
-        assertThat(statusOf(get("/api/search/results").param("q", "data").param("type", "USER"), student)).isEqualTo(400);
-        assertThat(statusOf(get("/api/search/results").param("q", "data").param("type", "COURSE").param("page", "x"),
+        assertThat(statusOf(get("/api/v1/search/results").param("q", "data").param("type", "USER"), student)).isEqualTo(400);
+        assertThat(statusOf(get("/api/v1/search/results").param("q", "data").param("type", "COURSE").param("page", "x"),
                 student)).isEqualTo(400);
     }
 
@@ -108,7 +108,7 @@ class SearchControllerTest extends DatabaseFreeApiTest {
     void validationRefusalsUseTheSharedErrorFormat() throws Exception {
         when(search.preview(any(), anyString())).thenThrow(new ApiException(HttpStatus.BAD_REQUEST,
                 "Enter at least 2 characters to search."));
-        mockMvc.perform(get("/api/search").param("q", "a")
+        mockMvc.perform(get("/api/v1/search").param("q", "a")
                         .header(HttpHeaders.AUTHORIZATION, token(70, "ROLE_STUDENT", "GLOBAL_SEARCH_USE")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Enter at least 2 characters to search."));
@@ -117,8 +117,8 @@ class SearchControllerTest extends DatabaseFreeApiTest {
     @Test
     void thereIsNoSuggestionHistoryOrWriteRoute() throws Exception {
         String student = token(70, "ROLE_STUDENT", "GLOBAL_SEARCH_USE");
-        for (MockHttpServletRequestBuilder request : List.of(get("/api/search/suggestions").param("q", "da"),
-                get("/api/search/history"), post("/api/search").param("q", "data"), get("/api/search/users").param("q", "st"))) {
+        for (MockHttpServletRequestBuilder request : List.of(get("/api/v1/search/suggestions").param("q", "da"),
+                get("/api/v1/search/history"), post("/api/v1/search").param("q", "data"), get("/api/v1/search/users").param("q", "st"))) {
             assertThat(statusOf(request, student)).isIn(400, 404, 405);
         }
         verifyNoInteractions(search);
@@ -128,12 +128,12 @@ class SearchControllerTest extends DatabaseFreeApiTest {
     void theRoutesAreDocumentedWithBearerSecurity() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/api/search'].get.security[0].bearerAuth").exists())
-                .andExpect(jsonPath("$.paths['/api/search'].get.responses['400']").exists())
-                .andExpect(jsonPath("$.paths['/api/search'].get.responses['403']").exists())
-                .andExpect(jsonPath("$.paths['/api/search/results'].get.responses['200']").exists())
-                .andExpect(jsonPath("$.paths['/api/search/results'].get.responses['401']").exists())
-                .andExpect(jsonPath("$.paths['/api/search/results'].get.parameters[?(@.name == 'type')]").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search'].get.security[0].bearerAuth").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search'].get.responses['400']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search'].get.responses['403']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search/results'].get.responses['200']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search/results'].get.responses['401']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/search/results'].get.parameters[?(@.name == 'type')]").exists())
                 .andExpect(jsonPath("$.components.schemas.SearchResult.properties", not(hasKey("id"))))
                 .andExpect(jsonPath("$.components.schemas.SearchResult.properties", not(hasKey("accountId"))));
     }

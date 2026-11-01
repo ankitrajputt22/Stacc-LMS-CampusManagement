@@ -180,7 +180,7 @@ function RecentResults({ dashboard, level }: { dashboard: Dashboard; level: 2 | 
 }
 
 /**
- * The student dashboard: what GET /api/dashboard/student sends, as short previews that link to the full pages.
+ * The student dashboard: what GET /api/v1/dashboard/student sends, as short previews that link to the full pages.
  * The backend already decided what is visible; nothing is filtered, calculated, or invented here.
  */
 export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {

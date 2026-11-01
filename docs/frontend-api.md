@@ -10,7 +10,7 @@ The backend URL comes from the `VITE_API_BASE_URL` environment variable. For loc
 cp frontend/.env.example frontend/.env
 ```
 
-The example value is `http://localhost:8080/api`. Port `8080` is the backend's default local port, and every backend endpoint lives under `/api`.
+The example value is `http://localhost:8080/api`: the API root, without a version. Port `8080` is the backend's default local port. `apiClient` adds the API version itself (`API_VERSION`, today `v1`), so a call to `/lms/my-courses` goes to `http://localhost:8080/api/v1/lms/my-courses`. The version belongs to the code, not to the deployment settings, so existing `.env` files keep working when it changes.
 
 In the Docker stack the value is `/api` instead, set when the frontend image is built. The browser then calls the API on the same address the page came from, and Nginx passes the request to the backend (see `docker.md`).
 

@@ -21,7 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
  */
 class FacultyDashboardControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ROUTE = "/api/dashboard/faculty";
+    private static final String ROUTE = "/api/v1/dashboard/faculty";
     private static final long ACCOUNT = 20L;
 
     @MockitoBean

@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
 
-    private static final String COURSE = "/api/lms/courses/7";
+    private static final String COURSE = "/api/v1/lms/courses/7";
 
     // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-STUDENT-1";
@@ -152,10 +152,10 @@ class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void courseIdMustBeANumber() throws Exception {
-        getAs(studentToken(), "/api/lms/courses/abc")
+        getAs(studentToken(), "/api/v1/lms/courses/abc")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
-        getAs(studentToken(), "/api/lms/courses/99999999999999999999")
+        getAs(studentToken(), "/api/v1/lms/courses/99999999999999999999")
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(courseQueryService);
@@ -171,7 +171,7 @@ class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void routeAppearsInTheApiDocumentationAsABearerTokenOperation() throws Exception {
-        String operation = "$.paths['/api/lms/courses/{lmsCourseId}'].get";
+        String operation = "$.paths['/api/v1/lms/courses/{lmsCourseId}'].get";
 
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())

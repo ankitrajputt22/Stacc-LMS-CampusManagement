@@ -10,12 +10,15 @@ test('a student opens a course and hands in an assignment', async ({ page }) => 
   await page.getByRole('link', { name: ASSIGNMENT_TITLE }).first().click()
   await expect(page.getByRole('heading', { level: 1, name: ASSIGNMENT_TITLE })).toBeVisible()
 
-  // A student who has handed in before opens the form for a new attempt first.
+  // A student who has handed in before opens the form for a new attempt first. Wait until the submission area has
+  // loaded and shows one or the other, so the choice is never made on a half-loaded page.
   const another = page.getByRole('button', { name: 'Submit another attempt' })
+  const response = page.getByLabel('Text response (optional)')
+  await expect(another.or(response)).toBeVisible()
   if (await another.isVisible()) {
     await another.click()
   }
-  await page.getByLabel('Text response (optional)').fill('My linked list: insert, delete, and search, with tests.')
+  await response.fill('My linked list: insert, delete, and search, with tests.')
   await page.getByRole('button', { name: /^Submit (assignment|new attempt)$/ }).click()
 
   await expect(page.getByRole('status').filter({ hasText: /Attempt \d+ submitted\./ })).toBeAttached()

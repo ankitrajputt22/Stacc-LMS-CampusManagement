@@ -35,8 +35,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the hostel routes through Spring Security, with the hostel services as stand-ins. */
 class HostelControllerTest extends DatabaseFreeApiTest {
 
-    private static final String STUDENT = "/api/hostel/student";
-    private static final String ADMIN = "/api/hostel/admin";
+    private static final String STUDENT = "/api/v1/hostel/student";
+    private static final String ADMIN = "/api/v1/hostel/admin";
 
     @MockitoBean
     private HostelApplicationService applications;

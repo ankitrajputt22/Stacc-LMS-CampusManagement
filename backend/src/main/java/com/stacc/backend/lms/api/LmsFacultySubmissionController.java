@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * takes a faculty, profile, or student ID. A grade is given to one attempt.
  */
 @RestController
-@RequestMapping("/api/lms/faculty")
+@RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

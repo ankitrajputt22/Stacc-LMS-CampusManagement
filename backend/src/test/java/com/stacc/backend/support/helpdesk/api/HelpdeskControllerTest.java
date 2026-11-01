@@ -47,11 +47,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the helpdesk routes through Spring Security, with the helpdesk services as stand-ins. */
 class HelpdeskControllerTest extends DatabaseFreeApiTest {
 
-    private static final String TICKETS = "/api/helpdesk/tickets";
-    private static final String ADMIN_TICKETS = "/api/helpdesk/admin/tickets";
-    private static final String CATEGORIES = "/api/helpdesk/categories";
-    private static final String ADMIN_CATEGORIES = "/api/helpdesk/admin/categories";
-    private static final String ASSIGNEES = "/api/helpdesk/admin/assignees";
+    private static final String TICKETS = "/api/v1/helpdesk/tickets";
+    private static final String ADMIN_TICKETS = "/api/v1/helpdesk/admin/tickets";
+    private static final String CATEGORIES = "/api/v1/helpdesk/categories";
+    private static final String ADMIN_CATEGORIES = "/api/v1/helpdesk/admin/categories";
+    private static final String ASSIGNEES = "/api/v1/helpdesk/admin/assignees";
 
     private static final String[] OWN = {HelpdeskActor.CREATE, HelpdeskActor.VIEW_OWN, HelpdeskActor.REPLY_OWN};
     private static final String[] ALL = {HelpdeskActor.VIEW_ALL, HelpdeskActor.MANAGE, HelpdeskActor.REPLY_ALL};

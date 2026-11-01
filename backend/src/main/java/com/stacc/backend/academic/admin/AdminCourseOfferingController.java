@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * enrollment data and needs {@code ACADEMIC_ENROLLMENT_VIEW}. There is no delete.
  */
 @RestController
-@RequestMapping("/api/admin/academic/offerings")
+@RequestMapping("/api/v1/admin/academic/offerings")
 @Tag(name = "Admin course offerings")
 @ApiResponse(
         responseCode = "401",

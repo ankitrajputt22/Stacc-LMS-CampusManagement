@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * token. It takes no parameters.
  */
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")
 public class FacultyDashboardController {
 

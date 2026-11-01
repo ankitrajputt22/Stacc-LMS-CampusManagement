@@ -26,17 +26,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Checks permission rules through real requests. The "/api/test/permissions/..." routes and the
+ * Checks permission rules through real requests. The "/api/v1/test/permissions/..." routes and the
  * TEST_ permission names exist only in test code. They are not real Stacc permissions.
  */
 class PermissionAuthorizationTest extends DatabaseFreeApiTest {
 
-    private static final String READ = "/api/test/permissions/read";
-    private static final String WRITE = "/api/test/permissions/write";
-    private static final String READ_OR_SHARED = "/api/test/permissions/read-or-shared";
-    private static final String FACULTY_WRITE = "/api/test/permissions/faculty-write";
-    private static final String STUDENT_ONLY = "/api/test/roles/student";
-    private static final String WHO_AM_I = "/api/test/whoami";
+    private static final String READ = "/api/v1/test/permissions/read";
+    private static final String WRITE = "/api/v1/test/permissions/write";
+    private static final String READ_OR_SHARED = "/api/v1/test/permissions/read-or-shared";
+    private static final String FACULTY_WRITE = "/api/v1/test/permissions/faculty-write";
+    private static final String STUDENT_ONLY = "/api/v1/test/roles/student";
+    private static final String WHO_AM_I = "/api/v1/test/whoami";
 
     @Autowired
     private AccessTokenService accessTokenService;

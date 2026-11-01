@@ -8,7 +8,7 @@ Browser
    v
 frontend   Nginx, serves the built React app
    |
-   |  /api/...
+   |  /api/v1/...
    v
 backend    Spring Boot
    |
@@ -82,9 +82,9 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 ## How it fits together
 
-**One address for the browser.** The frontend image is built with `VITE_API_BASE_URL=/api`, so the browser calls the API on the same address the page came from. Nginx passes every `/api/...` request to the backend and keeps the `/api` prefix. Because page and API share one origin, no CORS setting is needed. A Docker name such as `backend` is never built into the frontend: a browser could not resolve it.
+**One address for the browser.** The frontend image is built with `VITE_API_BASE_URL=/api`, so the browser calls the API on the same address the page came from. Nginx passes every `/api/v1/...` request to the backend and keeps the `/api` prefix. Because page and API share one origin, no CORS setting is needed. A Docker name such as `backend` is never built into the frontend: a browser could not resolve it.
 
-**Signing in.** <http://localhost:3000> opens the sign-in page, and the login goes to `/api/auth/login` through Nginx. The `FRONTEND_ORIGIN` value in `.env` is not needed for this. It only matters if a frontend dev server on this machine (`npm run dev`) calls the Docker backend directly on port 8080.
+**Signing in.** <http://localhost:3000> opens the sign-in page, and the login goes to `/api/v1/auth/login` through Nginx. The `FRONTEND_ORIGIN` value in `.env` is not needed for this. It only matters if a frontend dev server on this machine (`npm run dev`) calls the Docker backend directly on port 8080.
 
 **Pages inside the app.** React Router handles pages in the browser. Nginx therefore answers any path that is not a real file with the app itself, so opening an address such as `/courses` directly works. A missing file under `/assets/` is still a real 404.
 
@@ -94,7 +94,7 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 **File storage.** The `minio` service runs `pgsty/minio`, pinned to one release. MinIO stopped publishing official images in 2025, and this is the community-maintained build that follows its releases. Inside Docker the backend reaches it as `http://minio:9000`, set in `compose.yaml`, and signs in with the MinIO account from `.env`. The backend creates its bucket (`stacc-materials` by default, `STACC_STORAGE_BUCKET`) on the first upload and never makes it public. Files are kept under keys the backend generates, never under their original names.
 
-**Upload size.** Every file may be up to 25 MB, and a submission attempt may have up to 3 files. Nginx accepts up to 80 MB on the submission route (`/api/lms/courses/{id}/assignments/{id}/submissions`) and 26 MB on every other request, so a file a little too large gets a clear message from the backend, and anything much larger is refused by Nginx at once.
+**Upload size.** Every file may be up to 25 MB, and a submission attempt may have up to 3 files. Nginx accepts up to 80 MB on the submission route (`/api/v1/lms/courses/{id}/assignments/{id}/submissions`) and 26 MB on every other request, so a file a little too large gets a clear message from the backend, and anything much larger is refused by Nginx at once.
 
 **Migrations.** Flyway runs inside the backend when it starts, exactly as in a direct run. An empty database gets every migration. There is no separate migration container.
 
@@ -149,7 +149,7 @@ The backend starts without storage. Only uploading and downloading files need it
 | `port is already allocated` | Change the port in `.env`. |
 | The backend stops with a message about `JWT_SECRET` | Create a new secret with `openssl rand -base64 48`. |
 | The backend stops with `Access denied for user` | The passwords in `.env` no longer match the existing database. See "Changing `.env` later". |
-| `/api/...` returns 502 on port 3000 | The backend is not running. Check `docker compose ps` and `docker compose logs backend`. |
+| `/api/v1/...` returns 502 on port 3000 | The backend is not running. Check `docker compose ps` and `docker compose logs backend`. |
 | AI pages say AI learning features are temporarily unavailable | AI is off (`AI_ENABLED`), the `ai` profile is not running, the tokens differ, or no model is pulled. Check `docker compose --profile ai logs ai-service`. |
 | Uploads say file storage is not available | MinIO is not running or the backend's storage account is wrong. Check `docker compose ps` and `docker compose logs minio`. |
 

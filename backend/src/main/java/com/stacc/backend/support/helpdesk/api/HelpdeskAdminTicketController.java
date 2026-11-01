@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * or reopened, and a closed ticket cannot be changed.
  */
 @RestController
-@RequestMapping("/api/helpdesk/admin/tickets")
+@RequestMapping("/api/v1/helpdesk/admin/tickets")
 @Tag(name = "Helpdesk admin")
 @ApiResponse(
         responseCode = "401",

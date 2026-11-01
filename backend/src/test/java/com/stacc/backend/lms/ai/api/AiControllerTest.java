@@ -67,14 +67,14 @@ class AiControllerTest extends DatabaseFreeApiTest {
 
     // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> studentRoutes() {
-        return List.of(json(post("/api/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}"),
-                post("/api/lms/courses/7/ai/topics/3/summary"),
-                json(post("/api/lms/courses/7/ai/practice"), "{\"questionCount\":3}"));
+        return List.of(json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}"),
+                post("/api/v1/lms/courses/7/ai/topics/3/summary"),
+                json(post("/api/v1/lms/courses/7/ai/practice"), "{\"questionCount\":3}"));
     }
 
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
-        return List.of(get("/api/lms/faculty/courses/7/ai/status"), post("/api/lms/faculty/courses/7/ai/sync"),
-                json(post("/api/lms/faculty/courses/7/ai/assessment-draft"),
+        return List.of(get("/api/v1/lms/faculty/courses/7/ai/status"), post("/api/v1/lms/faculty/courses/7/ai/sync"),
+                json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
                         "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}"));
     }
 
@@ -126,17 +126,17 @@ class AiControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void aiSwitchedOffAnswers503WithAPlainMessage() throws Exception {
-        mockMvc.perform(json(post("/api/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}")
+        mockMvc.perform(json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}")
                         .header(HttpHeaders.AUTHORIZATION, STUDENT))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.message").value("AI learning features are temporarily unavailable."));
-        mockMvc.perform(post("/api/lms/faculty/courses/7/ai/sync").header(HttpHeaders.AUTHORIZATION, FACULTY))
+        mockMvc.perform(post("/api/v1/lms/faculty/courses/7/ai/sync").header(HttpHeaders.AUTHORIZATION, FACULTY))
                 .andExpect(status().isServiceUnavailable());
     }
 
     @Test
     void facultyStatusStillWorksWithAiSwitchedOff() throws Exception {
-        mockMvc.perform(get("/api/lms/faculty/courses/7/ai/status").header(HttpHeaders.AUTHORIZATION, FACULTY))
+        mockMvc.perform(get("/api/v1/lms/faculty/courses/7/ai/status").header(HttpHeaders.AUTHORIZATION, FACULTY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(false))
                 .andExpect(jsonPath("$.status").value("NOT_INDEXED"))
@@ -159,13 +159,13 @@ class AiControllerTest extends DatabaseFreeApiTest {
     @Test
     void requestsAreValidated() throws Exception {
         for (String body : List.of("{\"questionCount\":0}", "{\"questionCount\":11}", "{\"topicId\":0}")) {
-            assertThat(statusOf(json(post("/api/lms/courses/7/ai/practice"), body), STUDENT)).isEqualTo(400);
+            assertThat(statusOf(json(post("/api/v1/lms/courses/7/ai/practice"), body), STUDENT)).isEqualTo(400);
         }
         for (String body : List.of("{\"questionCount\":1}", "{\"questionCount\":10}", "{}")) {
-            assertThat(statusOf(json(post("/api/lms/courses/7/ai/practice"), body), STUDENT)).isEqualTo(503);
+            assertThat(statusOf(json(post("/api/v1/lms/courses/7/ai/practice"), body), STUDENT)).isEqualTo(503);
         }
         for (String body : List.of("{}", "{\"question\":\"\"}", "{\"question\":\"" + "x".repeat(1001) + "\"}")) {
-            assertThat(statusOf(json(post("/api/lms/courses/7/ai/ask"), body), STUDENT)).isEqualTo(400);
+            assertThat(statusOf(json(post("/api/v1/lms/courses/7/ai/ask"), body), STUDENT)).isEqualTo(400);
         }
         for (String body : List.of(
                 "{\"questionCount\":0,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}",
@@ -174,9 +174,9 @@ class AiControllerTest extends DatabaseFreeApiTest {
                 "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"ESSAY\"}",
                 "{\"questionCount\":3,\"questionType\":\"MCQ\"}",
                 "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\",\"additionalInstruction\":\"" + "x".repeat(501) + "\"}")) {
-            assertThat(statusOf(json(post("/api/lms/faculty/courses/7/ai/assessment-draft"), body), FACULTY)).isEqualTo(400);
+            assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"), body), FACULTY)).isEqualTo(400);
         }
-        assertThat(statusOf(json(post("/api/lms/faculty/courses/7/ai/assessment-draft"),
+        assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
                 "{\"questionCount\":20,\"difficulty\":\"MIXED\",\"questionType\":\"MIXED\"}"), FACULTY)).isEqualTo(503);
     }
 
@@ -189,7 +189,7 @@ class AiControllerTest extends DatabaseFreeApiTest {
             statusOf(route, FACULTY);
         }
         // The student's course list does not depend on AI.
-        mockMvc.perform(get("/api/lms/my-courses").header(HttpHeaders.AUTHORIZATION, STUDENT)).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/lms/my-courses").header(HttpHeaders.AUTHORIZATION, STUDENT)).andExpect(status().isOk());
         verifyNoInteractions(assignments, submissions, grades, results, attendance);
     }
 }

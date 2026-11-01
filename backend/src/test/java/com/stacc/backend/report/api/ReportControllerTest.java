@@ -46,12 +46,12 @@ class ReportControllerTest extends DatabaseFreeApiTest {
 
     // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
-        return List.of(get("/api/reports/faculty/my-courses"), get("/api/reports/faculty/course-offerings/31"));
+        return List.of(get("/api/v1/reports/faculty/my-courses"), get("/api/v1/reports/faculty/course-offerings/31"));
     }
 
     private static List<MockHttpServletRequestBuilder> adminRoutes() {
-        return List.of(get("/api/reports/admin/overview"), get("/api/reports/admin/enrollments"),
-                get("/api/reports/admin/enrollments/export.csv"));
+        return List.of(get("/api/v1/reports/admin/overview"), get("/api/v1/reports/admin/enrollments"),
+                get("/api/v1/reports/admin/enrollments/export.csv"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -106,18 +106,18 @@ class ReportControllerTest extends DatabaseFreeApiTest {
     void aFacultyAndAdminAccountGetsBothPerspectives() throws Exception {
         prepareAdmin();
         String both = token(2, "ROLE_FACULTY", "ROLE_ADMIN", "FACULTY_REPORT_VIEW", "ADMIN_REPORT_VIEW");
-        assertThat(statusOf(get("/api/reports/faculty/my-courses"), both)).isEqualTo(200);
-        assertThat(statusOf(get("/api/reports/admin/overview"), both)).isEqualTo(200);
+        assertThat(statusOf(get("/api/v1/reports/faculty/my-courses"), both)).isEqualTo(200);
+        assertThat(statusOf(get("/api/v1/reports/admin/overview"), both)).isEqualTo(200);
     }
 
     @Test
     void theCallerAndFiltersComeFromTheTokenAndQuery() throws Exception {
         prepareAdmin();
-        mockMvc.perform(get("/api/reports/faculty/course-offerings/31").param("facultyProfileId", "9")
+        mockMvc.perform(get("/api/v1/reports/faculty/course-offerings/31").param("facultyProfileId", "9")
                 .header(HttpHeaders.AUTHORIZATION, token(80, "ROLE_FACULTY", "FACULTY_REPORT_VIEW"))).andExpect(status().isOk());
         verify(faculty).courseReport(80L, 31L);
 
-        mockMvc.perform(get("/api/reports/admin/overview").param("academicSessionId", "2").param("programId", "4")
+        mockMvc.perform(get("/api/v1/reports/admin/overview").param("academicSessionId", "2").param("programId", "4")
                 .param("semesterId", "5").header(HttpHeaders.AUTHORIZATION, token(1, "ROLE_ADMIN", "ADMIN_REPORT_VIEW",
                         "HOSTEL_MANAGE"))).andExpect(status().isOk());
         verify(admin).filters(2L, 4L, 5L);
@@ -127,7 +127,7 @@ class ReportControllerTest extends DatabaseFreeApiTest {
         assertThat(actor.getValue().roles()).containsExactly("ADMIN");
         assertThat(actor.getValue().authorities()).contains("ADMIN_REPORT_VIEW", "HOSTEL_MANAGE");
 
-        mockMvc.perform(get("/api/reports/admin/enrollments").param("page", "2").param("size", "50")
+        mockMvc.perform(get("/api/v1/reports/admin/enrollments").param("page", "2").param("size", "50")
                 .header(HttpHeaders.AUTHORIZATION, token(1, "ROLE_ADMIN", "ADMIN_REPORT_VIEW"))).andExpect(status().isOk());
         verify(admin).enrollments(any(), eq(2), eq(50));
     }
@@ -135,7 +135,7 @@ class ReportControllerTest extends DatabaseFreeApiTest {
     @Test
     void theCsvIsADownloadWithTheSameFilters() throws Exception {
         prepareAdmin();
-        mockMvc.perform(get("/api/reports/admin/enrollments/export.csv").param("programId", "4")
+        mockMvc.perform(get("/api/v1/reports/admin/enrollments/export.csv").param("programId", "4")
                         .header(HttpHeaders.AUTHORIZATION, token(1, "ROLE_ADMIN", "ADMIN_REPORT_VIEW")))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, containsString("text/csv")))
@@ -148,12 +148,12 @@ class ReportControllerTest extends DatabaseFreeApiTest {
     @Test
     void reportsAreReadOnlyAndInvalidIdsAre400() throws Exception {
         String both = token(2, "ROLE_FACULTY", "ROLE_ADMIN", "FACULTY_REPORT_VIEW", "ADMIN_REPORT_VIEW");
-        for (MockHttpServletRequestBuilder request : List.of(post("/api/reports/admin/overview"),
-                delete("/api/reports/faculty/course-offerings/31"), post("/api/reports/admin/enrollments"))) {
+        for (MockHttpServletRequestBuilder request : List.of(post("/api/v1/reports/admin/overview"),
+                delete("/api/v1/reports/faculty/course-offerings/31"), post("/api/v1/reports/admin/enrollments"))) {
             assertThat(statusOf(request, both)).isIn(404, 405);
         }
-        assertThat(statusOf(get("/api/reports/faculty/course-offerings/abc"), both)).isEqualTo(400);
-        assertThat(statusOf(get("/api/reports/admin/enrollments").param("semesterId", "x"), both)).isEqualTo(400);
+        assertThat(statusOf(get("/api/v1/reports/faculty/course-offerings/abc"), both)).isEqualTo(400);
+        assertThat(statusOf(get("/api/v1/reports/admin/enrollments").param("semesterId", "x"), both)).isEqualTo(400);
         verifyNoInteractions(faculty, admin);
     }
 
@@ -161,10 +161,10 @@ class ReportControllerTest extends DatabaseFreeApiTest {
     void theRoutesAreDocumented() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/api/reports/faculty/my-courses'].get.security[0].bearerAuth").exists())
-                .andExpect(jsonPath("$.paths['/api/reports/faculty/course-offerings/{courseOfferingId}'].get.responses['404']").exists())
-                .andExpect(jsonPath("$.paths['/api/reports/admin/overview'].get.responses['400']").exists())
-                .andExpect(jsonPath("$.paths['/api/reports/admin/enrollments'].get.responses['403']").exists())
-                .andExpect(jsonPath("$.paths['/api/reports/admin/enrollments/export.csv'].get.responses['200']").exists());
+                .andExpect(jsonPath("$.paths['/api/v1/reports/faculty/my-courses'].get.security[0].bearerAuth").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/reports/faculty/course-offerings/{courseOfferingId}'].get.responses['404']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/reports/admin/overview'].get.responses['400']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/reports/admin/enrollments'].get.responses['403']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/reports/admin/enrollments/export.csv'].get.responses['200']").exists());
     }
 }

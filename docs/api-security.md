@@ -2,13 +2,15 @@
 
 Stacc's API is protected by default. Everything under `/api/` needs a signed-in account unless it has been deliberately made public. A new endpoint under `/api/` is therefore protected the moment it is added, without anyone having to remember to secure it.
 
+The API is versioned: every route lives under `/api/v1/`, and a future incompatible version would sit beside it as `/api/v2/`. The protection and the CORS rule below cover all of `/api/`, whatever the version, so an old or mistyped address such as `/api/lms/my-courses` is refused like any other unknown protected path. The frontend adds the version itself (see `frontend-api.md`); the internal AI service is versioned the same way under `/internal/v1/`.
+
 The rules live in one place: `SecurityConfig` in `com.stacc.backend.auth.security`.
 
 ## Public routes
 
 | Route | Why it is public |
 | --- | --- |
-| `POST /api/auth/login` | Nobody has a token before signing in. Only `POST` is public. |
+| `POST /api/v1/auth/login` | Nobody has a token before signing in. Only `POST` is public. |
 | `/v3/api-docs`, `/v3/api-docs/**`, `/swagger-ui.html`, `/swagger-ui/**` | The API documentation, public during development. It only describes the API. Calling a protected endpoint from Swagger still needs a token. |
 
 Keep this list small. Make a route public only for a clear reason.
@@ -30,18 +32,18 @@ login  ->  receive the access token  ->  send "Authorization: Bearer <token>"  -
 
 Both 401 responses use the common error format and carry a `WWW-Authenticate: Bearer` header.
 
-Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. The first one is on `GET /api/lms/my-courses`, which needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission.
+Any signed-in account may use a protected route unless the operation itself requires a role or a permission. These rules are described in `authorization.md`. The first one is on `GET /api/v1/lms/my-courses`, which needs the `STUDENT` role and the `LMS_COURSE_VIEW` permission.
 
 ## Admin routes
 
-Everything under `/api/admin/` also needs the `ADMIN` role, checked in `SecurityConfig` before the route is run or its request body is read. Another signed-in account gets 403 there, also for an unknown path or a malformed body. Each admin operation still needs its own permission on top (see `admin-academic.md`).
+Everything under `/api/v1/admin/` also needs the `ADMIN` role, checked in `SecurityConfig` before the route is run or its request body is read. Another signed-in account gets 403 there, also for an unknown path or a malformed body. Each admin operation still needs its own permission on top (see `admin-academic.md`).
 
 ## Unknown routes
 
 The token is checked before the route is looked up, so:
 
 - an unknown path under `/api/` returns 401 without a token and 404 with a valid one;
-- `GET /api/auth/login` returns 401 without a token and 405 with a valid one, because only `POST` is public;
+- `GET /api/v1/auth/login` returns 401 without a token and 405 with a valid one, because only `POST` is public;
 - an unknown path outside `/api/` returns the normal 404.
 
 This is intended. It also means an anonymous caller cannot probe which API paths exist.

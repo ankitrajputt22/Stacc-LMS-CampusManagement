@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
  * takes an account, requester, or author ID. A ticket the caller may not see answers the same 404 as a missing one.
  */
 @RestController
-@RequestMapping("/api/helpdesk/tickets")
+@RequestMapping("/api/v1/helpdesk/tickets")
 @Tag(name = "Helpdesk")
 @ApiResponse(
         responseCode = "401",

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * check permission rules without adding real permissions or demo endpoints to the application.
  */
 @RestController
-@RequestMapping("/api/test/permissions")
+@RequestMapping("/api/v1/test/permissions")
 public class PermissionTestController {
 
     @GetMapping("/read")

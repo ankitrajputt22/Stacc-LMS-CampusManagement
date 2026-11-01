@@ -5,7 +5,7 @@ export type AttendanceSessionStatus = 'OPEN' | 'FINALIZED'
 /** UNMARKED means not marked yet; it never means absent. */
 export type AttendanceStatus = 'UNMARKED' | 'PRESENT' | 'ABSENT'
 
-/** A course offering the faculty member teaches, from GET /api/attendance/faculty/my-courses. */
+/** A course offering the faculty member teaches, from GET /api/v1/attendance/faculty/my-courses. */
 export type AttendanceCourseOffering = {
   courseOfferingId: number
   courseCode: string
@@ -70,7 +70,7 @@ export type StudentAttendanceSession = {
   status: 'PRESENT' | 'ABSENT'
 }
 
-/** A student's finalized attendance in one course offering, from GET /api/attendance/student/me. */
+/** A student's finalized attendance in one course offering, from GET /api/v1/attendance/student/me. */
 export type StudentCourseAttendance = {
   courseOfferingId: number
   courseCode: string

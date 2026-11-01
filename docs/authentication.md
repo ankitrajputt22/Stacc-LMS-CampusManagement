@@ -5,7 +5,7 @@ Every official Stacc account signs in through one central college login. There i
 ## Login
 
 ```text
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 Request:

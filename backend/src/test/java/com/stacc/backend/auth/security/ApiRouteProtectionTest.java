@@ -38,12 +38,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Checks which routes need a signed-in account. "/api/test/whoami" exists only in test code
+ * Checks which routes need a signed-in account. "/api/v1/test/whoami" exists only in test code
  * and stands in for any protected API route.
  */
 class ApiRouteProtectionTest extends DatabaseFreeApiTest {
 
-    private static final String PROTECTED_ROUTE = "/api/test/whoami";
+    private static final String PROTECTED_ROUTE = "/api/v1/test/whoami";
 
     @Autowired
     private JwtEncoder jwtEncoder;
@@ -119,10 +119,10 @@ class ApiRouteProtectionTest extends DatabaseFreeApiTest {
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(anyString())).thenReturn(Optional.empty());
 
         // A malformed request and wrong credentials are answered by the login itself, not by the token check.
-        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Validation failed"));
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"loginId\":\"EMP9999\",\"password\":\"TestPassword123!\"}"))
                 .andExpect(status().isUnauthorized())
@@ -131,9 +131,9 @@ class ApiRouteProtectionTest extends DatabaseFreeApiTest {
 
     @Test
     void onlyThePostLoginIsPublicInsideTheAuthPaths() throws Exception {
-        expectUnauthorized(mockMvc.perform(get("/api/auth/login")), "/api/auth/login", "Authentication is required.");
-        expectUnauthorized(mockMvc.perform(delete("/api/auth/login")), "/api/auth/login", "Authentication is required.");
-        expectUnauthorized(mockMvc.perform(post("/api/auth/anything-else")), "/api/auth/anything-else", "Authentication is required.");
+        expectUnauthorized(mockMvc.perform(get("/api/v1/auth/login")), "/api/v1/auth/login", "Authentication is required.");
+        expectUnauthorized(mockMvc.perform(delete("/api/v1/auth/login")), "/api/v1/auth/login", "Authentication is required.");
+        expectUnauthorized(mockMvc.perform(post("/api/v1/auth/anything-else")), "/api/v1/auth/anything-else", "Authentication is required.");
     }
 
     @Test
@@ -146,10 +146,10 @@ class ApiRouteProtectionTest extends DatabaseFreeApiTest {
 
     @Test
     void unknownApiRouteNeedsATokenFirstAndIsThenNotFound() throws Exception {
-        expectUnauthorized(mockMvc.perform(get("/api/does-not-exist")), "/api/does-not-exist", "Authentication is required.");
-        expectUnauthorized(mockMvc.perform(post("/api/does-not-exist")), "/api/does-not-exist", "Authentication is required.");
+        expectUnauthorized(mockMvc.perform(get("/api/v1/does-not-exist")), "/api/v1/does-not-exist", "Authentication is required.");
+        expectUnauthorized(mockMvc.perform(post("/api/v1/does-not-exist")), "/api/v1/does-not-exist", "Authentication is required.");
 
-        getWithToken("/api/does-not-exist", studentToken())
+        getWithToken("/api/v1/does-not-exist", studentToken())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("The requested resource was not found."));

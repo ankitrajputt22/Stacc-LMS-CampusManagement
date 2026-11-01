@@ -32,7 +32,7 @@ def indexed(client):
 
 
 def post(client, task, body):
-    return client.post(f"/internal/indexes/{COURSE}/{task}", headers=HEADERS, json={"indexFingerprint": FINGERPRINT, **body})
+    return client.post(f"/internal/v1/indexes/{COURSE}/{task}", headers=HEADERS, json={"indexFingerprint": FINGERPRINT, **body})
 
 
 class Scripted(ModelProvider):
@@ -126,7 +126,7 @@ def test_prompt_fences_course_text_and_states_the_rules(settings):
 def test_fingerprint_mismatch_and_missing_index(indexed, client):
     assert post(indexed, "ask", {"question": "What?", "indexFingerprint": "c" * 64}).status_code == 409
     other = "f" * 32
-    response = client.post(f"/internal/indexes/{other}/ask", headers=HEADERS,
+    response = client.post(f"/internal/v1/indexes/{other}/ask", headers=HEADERS,
                            json={"indexFingerprint": FINGERPRINT, "question": "What is a key?"})
     assert response.status_code == 404
     assert response.json()["code"] == "INDEX_NOT_FOUND"

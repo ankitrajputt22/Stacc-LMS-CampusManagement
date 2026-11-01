@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * CAMPUS_NOTICE_MANAGE. There is no delete, restore, or scheduling.
  */
 @RestController
-@RequestMapping("/api/campus/admin/notices")
+@RequestMapping("/api/v1/campus/admin/notices")
 @Tag(name = "Campus admin")
 @ApiResponse(
         responseCode = "401",

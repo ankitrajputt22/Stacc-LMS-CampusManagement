@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the Inbox routes through Spring Security, with the Inbox service as a stand-in. */
 class NotificationControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ROUTE = "/api/notifications";
+    private static final String ROUTE = "/api/v1/notifications";
 
     @MockitoBean
     private NotificationInboxService inbox;

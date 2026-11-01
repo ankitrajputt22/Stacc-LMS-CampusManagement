@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * calculated from LMS grades or attendance, and there is no delete and no unpublish.
  */
 @RestController
-@RequestMapping("/api/results/faculty")
+@RequestMapping("/api/v1/results/faculty")
 @Tag(name = "Results")
 @ApiResponse(
         responseCode = "401",

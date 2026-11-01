@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Read-only; nothing is stored.
  */
 @RestController
-@RequestMapping("/api/reports/admin")
+@RequestMapping("/api/v1/reports/admin")
 @Tag(name = "Reports")
 @ApiResponse(
         responseCode = "400",

@@ -149,7 +149,7 @@ public final class CampusServiceResponses {
             @Schema(nullable = true) Instant completedAt,
             List<ApprovalRequestStepResponse> approvalSteps,
             List<ApprovalHistoryResponse> approvalHistory,
-            @Schema(nullable = true, description = "The step waiting for a decision. Decide it with POST /api/approvals/tasks/{approvalRequestStepId}/approve or /reject.")
+            @Schema(nullable = true, description = "The step waiting for a decision. Decide it with POST /api/v1/approvals/tasks/{approvalRequestStepId}/approve or /reject.")
             CurrentApprovalStep currentApprovalStep,
             @Schema(description = "Whether the signed-in admin may decide the current step: they hold its role and APPROVAL_TASK_DECIDE, and are not the requester.")
             boolean canDecide,

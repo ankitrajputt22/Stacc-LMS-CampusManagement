@@ -134,7 +134,7 @@ function CourseOfferings({ dashboard, level }: { dashboard: Dashboard; level: Le
 }
 
 /**
- * The admin dashboard: the counts and offering preview GET /api/dashboard/admin sends, with links to the existing
+ * The admin dashboard: the counts and offering preview GET /api/v1/dashboard/admin sends, with links to the existing
  * Academic Admin pages. Nothing is filtered, calculated, or invented here.
  */
 export function AdminDashboard({ level = 2 }: { level?: Level }) {

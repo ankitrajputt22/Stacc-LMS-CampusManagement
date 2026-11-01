@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * assignment ID. There is no delete and no restore.
  */
 @RestController
-@RequestMapping("/api/lms/faculty")
+@RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",

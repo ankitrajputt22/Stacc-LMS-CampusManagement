@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  * there is no route here to start or cancel one, and no account or requester ID is ever accepted.
  */
 @RestController
-@RequestMapping("/api/approvals")
+@RequestMapping("/api/v1/approvals")
 @Tag(name = "Approvals")
 @ApiResponse(
         responseCode = "401",

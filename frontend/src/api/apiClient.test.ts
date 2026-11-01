@@ -2,7 +2,7 @@ import { AxiosError, AxiosHeaders, type AxiosAdapter, type InternalAxiosRequestC
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession, loadSession, saveSession } from '../auth/authStorage'
 import type { AuthSession } from '../auth/types'
-import { apiClient, onUnauthorized } from './apiClient'
+import { apiBaseUrl, apiClient, onUnauthorized } from './apiClient'
 
 const session: AuthSession = {
   accountId: 1,
@@ -37,6 +37,15 @@ describe('apiClient', () => {
 
   afterEach(() => {
     apiClient.defaults.adapter = originalAdapter
+  })
+
+  it('sends every request to the versioned API', async () => {
+    const { sent } = answerWith(200)
+
+    await apiClient.get('/lms/my-courses')
+
+    expect(apiBaseUrl).toBe('http://localhost:8080/api/v1')
+    expect(apiClient.getUri(sent[0])).toBe('http://localhost:8080/api/v1/lms/my-courses')
   })
 
   it('sends the access token only while signed in', async () => {

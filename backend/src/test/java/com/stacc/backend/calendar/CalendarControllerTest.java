@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 /** Calls the calendar route through Spring Security, with the query service as a stand-in. */
 class CalendarControllerTest extends DatabaseFreeApiTest {
 
-    private static final String ROUTE = "/api/calendar/me";
+    private static final String ROUTE = "/api/v1/calendar/me";
     private static final LocalDate FROM = LocalDate.of(2026, 10, 1);
     private static final LocalDate TO = LocalDate.of(2026, 10, 31);
 

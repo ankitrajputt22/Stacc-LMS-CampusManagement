@@ -1,6 +1,6 @@
 // These types mirror the backend's LMS answers in com.stacc.backend.lms.api.
 
-/** One LMS course the signed-in student can currently use, from GET /api/lms/my-courses. */
+/** One LMS course the signed-in student can currently use, from GET /api/v1/lms/my-courses. */
 export type LmsCourseSummary = {
   /** Identifies the LMS learning space. */
   lmsCourseId: number
@@ -16,7 +16,7 @@ export type LmsCourseSummary = {
 /** The states in which faculty can use an LMS course. Archived courses are never listed for them. */
 export type LmsFacultyCourseStatus = 'DRAFT' | 'PUBLISHED'
 
-/** One LMS course the signed-in student can currently open, from GET /api/lms/courses/{lmsCourseId}. */
+/** One LMS course the signed-in student can currently open, from GET /api/v1/lms/courses/{lmsCourseId}. */
 export type LmsCourseDetail = {
   lmsCourseId: number
   courseCode: string
@@ -62,7 +62,7 @@ export type LmsCourseModule = {
   topics: LmsCourseTopic[]
 }
 
-/** The published content of a course, from GET /api/lms/courses/{lmsCourseId}/content. */
+/** The published content of a course, from GET /api/v1/lms/courses/{lmsCourseId}/content. */
 export type LmsCourseContent = {
   modules: LmsCourseModule[]
 }
@@ -101,7 +101,7 @@ export type LmsFacultyModuleContent = LmsFacultyModule & {
   topics: LmsFacultyTopicContent[]
 }
 
-/** A course a faculty member teaches, with its content, from GET /api/lms/faculty/courses/{lmsCourseId}/content. */
+/** A course a faculty member teaches, with its content, from GET /api/v1/lms/faculty/courses/{lmsCourseId}/content. */
 export type LmsFacultyCourseContent = {
   lmsCourseId: number
   courseCode: string
@@ -206,7 +206,7 @@ export type LmsFacultyAssignment = {
   updatedAt: string
 }
 
-/** One assignment in a faculty member's list across their courses, from GET /api/lms/faculty/my-assignments. */
+/** One assignment in a faculty member's list across their courses, from GET /api/v1/lms/faculty/my-assignments. */
 export type LmsFacultyAssignmentOverview = {
   lmsCourseId: number
   courseCode: string

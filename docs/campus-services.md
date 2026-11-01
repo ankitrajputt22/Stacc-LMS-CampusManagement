@@ -56,12 +56,12 @@ Table `campus_service_requests`.
 
 ### Lifecycle
 
-- **Creating** (`POST /api/campus/requests`): the service must exist (404), be active (409), and be offered to at least one role the caller holds (409). A multi-role account may use a service through either role.
+- **Creating** (`POST /api/v1/campus/requests`): the service must exist (404), be active (409), and be offered to at least one role the caller holds (409). A multi-role account may use a service through either role.
   - **Approval required:** the request is saved as `SUBMITTED`, numbered, and `ApprovalWorkflowService.startApproval` is called with the service's workflow, the caller as requester, source type `CAMPUS_SERVICE_REQUEST`, the request ID as source ID, and a subject such as "Campus service request CSR-000012: ID card replacement". Everything happens in one transaction.
   - **No approval:** the request starts `APPROVED`, meaning **accepted for operational handling with no approval needed**. No approval request exists.
-- **Approving or rejecting** happens only in the approval engine, through `POST /api/approvals/tasks/{stepId}/approve` and `/reject`. There is no campus approve or reject route, and `CAMPUS_SERVICE_MANAGE` decides nothing.
-- **Cancelling** (`POST /api/campus/requests/{id}/cancel`, the requester only): allowed while the request is `SUBMITTED` or `APPROVED`; `COMPLETED`, `REJECTED`, and `CANCELLED` answer 409. A pending approval is cancelled through `ApprovalWorkflowService.cancelApprovalIfPending`, which locks the approval row before reading it; if an approver decided at the same moment, that decision stands and the request follows it.
-- **Completing** (`POST /api/campus/admin/requests/{id}/complete`): only an `APPROVED` request becomes `COMPLETED`, with `completedAt` set once and the requester told in the Inbox. Completing a completed request changes nothing; `SUBMITTED`, `REJECTED`, and `CANCELLED` answer 409.
+- **Approving or rejecting** happens only in the approval engine, through `POST /api/v1/approvals/tasks/{stepId}/approve` and `/reject`. There is no campus approve or reject route, and `CAMPUS_SERVICE_MANAGE` decides nothing.
+- **Cancelling** (`POST /api/v1/campus/requests/{id}/cancel`, the requester only): allowed while the request is `SUBMITTED` or `APPROVED`; `COMPLETED`, `REJECTED`, and `CANCELLED` answer 409. A pending approval is cancelled through `ApprovalWorkflowService.cancelApprovalIfPending`, which locks the approval row before reading it; if an approver decided at the same moment, that decision stands and the request follows it.
+- **Completing** (`POST /api/v1/campus/admin/requests/{id}/complete`): only an `APPROVED` request becomes `COMPLETED`, with `completedAt` set once and the requester told in the Inbox. Completing a completed request changes nothing; `SUBMITTED`, `REJECTED`, and `CANCELLED` answer 409.
 
 ### Approval synchronization
 
@@ -90,7 +90,7 @@ Table `campus_notices`.
 - **Archive:** `DRAFT` or `PUBLISHED` → `ARCHIVED`, final. Archiving again changes nothing.
 - No delete, restore, scheduling, expiry, attachments, comments, reactions, or read receipts.
 
-**Feed.** `GET /api/campus/notices` returns `PUBLISHED` notices whose flags match **any** role the caller holds, newest `publishedAt` first, then ID, 20 per page (at most 100). One query with the role flags; each notice appears once, however many of its flags match. Drafts and archived notices never appear. There is no notice detail page.
+**Feed.** `GET /api/v1/campus/notices` returns `PUBLISHED` notices whose flags match **any** role the caller holds, newest `publishedAt` first, then ID, 20 per page (at most 100). One query with the role flags; each notice appears once, however many of its flags match. Drafts and archived notices never appear. There is no notice detail page.
 
 ## Notifications
 
@@ -105,17 +105,17 @@ Drafts, edits, repeated publishes, archiving, and creating a request notify nobo
 
 | Method and path | Access | Purpose |
 | --- | --- | --- |
-| `GET /api/campus/services` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_CREATE` | Active services offered to any role the caller holds, once each: `serviceId`, `code`, `name`, `description`, `approvalRequired` (no workflow code). |
-| `POST /api/campus/requests` | same | Create a request: `serviceId`, `subject`, `details` only. |
-| `GET /api/campus/requests/me` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_VIEW_OWN` | Own requests; filters `status` and `serviceId`; 20 per page, at most 100; newest `submittedAt` first, then ID. |
-| `GET /api/campus/requests/{requestId}` | same | One own request. Another account's answers the same 404 as a missing one. |
-| `POST /api/campus/requests/{requestId}/cancel` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_CANCEL` | Cancel an own request. |
-| `GET /api/campus/notices` | `STUDENT`, `FACULTY`, or `ADMIN` + `CAMPUS_NOTICE_VIEW` | The notice feed. |
-| `GET`, `POST /api/campus/admin/services`; `GET`, `PUT /api/campus/admin/services/{serviceId}` | `ADMIN` + `CAMPUS_SERVICE_MANAGE` | The catalog. No delete. |
-| `GET /api/campus/admin/requests` | same | Every request; filters `serviceId`, `status`, `requesterLoginId`; paged, newest first. |
-| `GET /api/campus/admin/requests/{requestId}` | same | Detail with approval steps and history, the current step (`approvalRequestStepId` for the task routes), `canDecide`, and `canComplete`. |
-| `POST /api/campus/admin/requests/{requestId}/complete` | same | Complete an approved request. |
-| `GET`, `POST /api/campus/admin/notices`; `GET`, `PUT /api/campus/admin/notices/{noticeId}`; `POST .../publish`, `POST .../archive` | `ADMIN` + `CAMPUS_NOTICE_MANAGE` | Notice management. No delete or restore. |
+| `GET /api/v1/campus/services` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_CREATE` | Active services offered to any role the caller holds, once each: `serviceId`, `code`, `name`, `description`, `approvalRequired` (no workflow code). |
+| `POST /api/v1/campus/requests` | same | Create a request: `serviceId`, `subject`, `details` only. |
+| `GET /api/v1/campus/requests/me` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_VIEW_OWN` | Own requests; filters `status` and `serviceId`; 20 per page, at most 100; newest `submittedAt` first, then ID. |
+| `GET /api/v1/campus/requests/{requestId}` | same | One own request. Another account's answers the same 404 as a missing one. |
+| `POST /api/v1/campus/requests/{requestId}/cancel` | `STUDENT` or `FACULTY` + `CAMPUS_SERVICE_REQUEST_CANCEL` | Cancel an own request. |
+| `GET /api/v1/campus/notices` | `STUDENT`, `FACULTY`, or `ADMIN` + `CAMPUS_NOTICE_VIEW` | The notice feed. |
+| `GET`, `POST /api/v1/campus/admin/services`; `GET`, `PUT /api/v1/campus/admin/services/{serviceId}` | `ADMIN` + `CAMPUS_SERVICE_MANAGE` | The catalog. No delete. |
+| `GET /api/v1/campus/admin/requests` | same | Every request; filters `serviceId`, `status`, `requesterLoginId`; paged, newest first. |
+| `GET /api/v1/campus/admin/requests/{requestId}` | same | Detail with approval steps and history, the current step (`approvalRequestStepId` for the task routes), `canDecide`, and `canComplete`. |
+| `POST /api/v1/campus/admin/requests/{requestId}/complete` | same | Complete an approved request. |
+| `GET`, `POST /api/v1/campus/admin/notices`; `GET`, `PUT /api/v1/campus/admin/notices/{noticeId}`; `POST .../publish`, `POST .../archive` | `ADMIN` + `CAMPUS_NOTICE_MANAGE` | Notice management. No delete or restore. |
 
 Errors use the shared format: 400 for an invalid form, 401 without a token, 403 for a missing role or permission, 404 for anything unavailable, and 409 for a state conflict (inactive or unavailable service, invalid workflow configuration, cancelling a finished request, completing a request that is not approved, publishing or editing an archived notice, a duplicate service code).
 
@@ -144,7 +144,7 @@ Approval decisions still need the Phase 42 `APPROVAL_TASK_VIEW` and `APPROVAL_TA
 
 - **`/campus`** ("Campus", "Campus services and important notices."), shown once to any account holding `STUDENT`, `FACULTY`, or `ADMIN` in the Common navigation section. Accounts holding `STUDENT` or `FACULTY` see **Campus Services** (name, description, an "Approval required" tag, and Request service, which opens a form with only Subject and Details) and **My Service Requests** (number, service, subject, request status, approval status, submitted date). Every account sees **Campus Notices** (title, published date, message as plain text). A multi-role account sees one page; nothing uses `roles[0]`.
 - **`/campus/requests/:requestId`**: the request with its status, dates, details, and approval progress (including the real rejection note), and Cancel request with a confirmation while it can be cancelled. After creating a request the page opens here and shows "Request CSR-000012 submitted." A missing or foreign request shows "Request unavailable".
-- **`/admin/campus/:section`** ("Campus Management", in the Admin section): **Service Catalog** (code, name, availability, approval, active; Add service and Edit, the code read-only after creation, the workflow chosen from `GET /api/approvals/admin/workflows`), **Service Requests** (filters for service, status, and requester; paged), with review at `/admin/campus/requests/:requestId` (Approve and Reject through the approval task routes, a comment required to reject, and Mark completed with the confirmation "Mark this service request as completed?"), and **Notices** (title, visibility, status, published date; Edit, Publish, and Archive by status, each confirmed; archived notices read-only).
+- **`/admin/campus/:section`** ("Campus Management", in the Admin section): **Service Catalog** (code, name, availability, approval, active; Add service and Edit, the code read-only after creation, the workflow chosen from `GET /api/v1/approvals/admin/workflows`), **Service Requests** (filters for service, status, and requester; paged), with review at `/admin/campus/requests/:requestId` (Approve and Reject through the approval task routes, a comment required to reject, and Mark completed with the confirmation "Mark this service request as completed?"), and **Notices** (title, visibility, status, published date; Edit, Publish, and Archive by status, each confirmed; archived notices read-only).
 - The shared approval pieces live in `src/approvals/` (`approvalText.ts`, `ApprovalSteps.tsx`, `DecisionForm.tsx`) and are used by hostel and campus alike.
 - States use `LoadingState`, `EmptyState`, `ErrorState`, and `AccessDeniedState` with the texts "Loading campus information…", "Loading service requests…", "Loading campus service requests…", "Loading campus notices…", "No campus services are currently available.", "No service requests yet.", "No campus notices available.", "No matching service requests.", "Couldn't load campus services.", "Couldn't load service requests.", and "Couldn't load campus notices." with Retry. A 403 shows access denied and never signs out; a 409 shows the backend's message at page level and reloads.
 

@@ -44,8 +44,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
  */
 class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
 
-    private static final String OFFERINGS = "/api/admin/academic/offerings";
-    private static final String ENROLLMENTS = "/api/admin/academic/enrollments";
+    private static final String OFFERINGS = "/api/v1/admin/academic/offerings";
+    private static final String ENROLLMENTS = "/api/v1/admin/academic/enrollments";
 
     @MockitoBean
     private CourseOfferingManagementService offerings;

@@ -35,7 +35,7 @@ def material(source_id: int, topic_id: int, title: str, file_name: str, file_typ
 
 
 def replace(client: TestClient, sources: list[dict], fingerprint: str = FINGERPRINT, course: str = COURSE):
-    return client.post(f"/internal/indexes/{course}/replace", headers=HEADERS,
+    return client.post(f"/internal/v1/indexes/{course}/replace", headers=HEADERS,
                        json={"contentFingerprint": fingerprint, "sources": sources})
 
 

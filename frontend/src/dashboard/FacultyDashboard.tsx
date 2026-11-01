@@ -192,7 +192,7 @@ function OpenAttendance({ dashboard, level }: { dashboard: Dashboard; level: Lev
 }
 
 /**
- * The faculty dashboard: what GET /api/dashboard/faculty sends, as short previews that open the existing Teaching,
+ * The faculty dashboard: what GET /api/v1/dashboard/faculty sends, as short previews that open the existing Teaching,
  * assignment, grading, and attendance pages. The backend already decided what is visible; nothing is filtered,
  * calculated, or invented here.
  */

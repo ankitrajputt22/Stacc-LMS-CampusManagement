@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * decided from official enrollment or teaching assignments on every request. There is no delete.
  */
 @RestController
-@RequestMapping("/api/lms")
+@RequestMapping("/api/v1/lms")
 @Tag(name = "LMS")
 @ApiResponse(
         responseCode = "401",
