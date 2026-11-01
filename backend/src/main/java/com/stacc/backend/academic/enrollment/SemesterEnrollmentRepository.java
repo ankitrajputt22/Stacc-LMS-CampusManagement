@@ -15,6 +15,24 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
 
     Optional<SemesterEnrollment> findByStudentProfileIdAndSemesterId(Long studentProfileId, Long semesterId);
 
+    /**
+     * How many students are enrolled in a section now, read as a locking read ({@code FOR SHARE}) so it sees every
+     * committed placement. The caller holds the section's row lock, so the count cannot change before it saves.
+     */
+    @Query(value = "select count(*) from semester_enrollments where section_id = :sectionId and status = 'ENROLLED' for share",
+            nativeQuery = true)
+    long countEnrolledInSectionForShare(@Param("sectionId") Long sectionId);
+
+    /** How many students are enrolled in each section now, as pairs of section ID and count. */
+    @Query("""
+            select enrollment.section.id, count(enrollment)
+            from SemesterEnrollment enrollment
+            where enrollment.section is not null
+            and enrollment.status = com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus.ENROLLED
+            group by enrollment.section.id
+            """)
+    List<Object[]> countEnrolledBySection();
+
     /** How many semester enrollments have this status, such as every one still {@code ENROLLED}. */
     long countByStatus(SemesterEnrollmentStatus status);
 
@@ -25,6 +43,7 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             join fetch enrollment.semester semester
             join fetch semester.program
             join fetch semester.academicSession academicSession
+            left join fetch enrollment.section
             where enrollment.studentProfile.id = :studentProfileId
             order by academicSession.startDate desc, semester.semesterNumber desc, enrollment.id desc
             """)
@@ -38,6 +57,7 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             join fetch semester.academicSession
             join fetch enrollment.studentProfile studentProfile
             join fetch studentProfile.userAccount
+            left join fetch enrollment.section
             where enrollment.id = :semesterEnrollmentId
             """)
     Optional<SemesterEnrollment> findWithContextById(@Param("semesterEnrollmentId") Long semesterEnrollmentId);

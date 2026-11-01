@@ -2,6 +2,7 @@ package com.stacc.backend.academic.enrollment;
 
 import java.time.Instant;
 
+import com.stacc.backend.academic.section.Section;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.common.validation.Require;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -50,6 +51,11 @@ public class SemesterEnrollment {
     @JoinColumn(name = "semester_id", nullable = false, updatable = false)
     private Semester semester;
 
+    // The section the student is placed in for this semester, or none yet. Kept after the enrollment ends.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id")
+    private Section section;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SemesterEnrollmentStatus status = SemesterEnrollmentStatus.ENROLLED;
@@ -86,6 +92,22 @@ public class SemesterEnrollment {
 
     public Semester getSemester() {
         return semester;
+    }
+
+    /** The section the student is placed in, or null. */
+    public Section getSection() {
+        return section;
+    }
+
+    /**
+     * Places the student in a section of this same semester, or takes them out of one with null. Capacity and whether
+     * the section is active are checked by the feature that places students, under the section's row lock.
+     */
+    public void placeIn(Section section) {
+        if (section != null && !section.getSemester().getId().equals(semester.getId())) {
+            throw new IllegalArgumentException("section must belong to the enrollment's semester");
+        }
+        this.section = section;
     }
 
     public SemesterEnrollmentStatus getStatus() {

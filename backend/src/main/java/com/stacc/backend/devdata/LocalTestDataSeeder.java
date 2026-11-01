@@ -44,6 +44,8 @@ import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.result.CourseResultManagementService;
 import com.stacc.backend.academic.result.CourseResultRepository;
+import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.academic.session.AcademicSession;
@@ -213,6 +215,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final TeachingAssignmentRepository teaching;
         final SemesterEnrollmentRepository semesterEnrollments;
         final CourseEnrollmentRepository courseEnrollments;
+        final SectionRepository sections;
         final LmsCourseRepository lmsCourses;
         final LmsModuleRepository modules;
         final LmsTopicRepository topics;
@@ -255,7 +258,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds,
                 CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices,
                 CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications,
-                HostelAllocationRepository hostelAllocations) {
+                HostelAllocationRepository hostelAllocations, SectionRepository sections) {
             this.accounts = accounts;
             this.people = people;
             this.roles = roles;
@@ -294,6 +297,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.campusRequests = campusRequests;
             this.hostelApplications = hostelApplications;
             this.hostelAllocations = hostelAllocations;
+            this.sections = sections;
         }
     }
 
@@ -480,16 +484,19 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         // --- Official enrollment, before any LMS course, so creating one provisions its current students.
         SemesterEnrollment student1Previous = semesterEnrollment(student1Profile, previousSecond, SemesterEnrollment::markCompleted);
         courseEnrollment(student1Previous, cs201, CourseEnrollment::markCompleted);
-        SemesterEnrollment student1Third = semesterEnrollment(student1Profile, third, enrollment -> { });
+        Section sectionA = section(third, "A", 60);
+        Section sectionB = section(third, "B", 60);
+        SemesterEnrollment student1Third = semesterEnrollment(student1Profile, third, enrollment -> enrollment.placeIn(sectionA));
         CourseEnrollment student1In301 = courseEnrollment(student1Third, cs301, enrollment -> { });
         courseEnrollment(student1Third, cs302, enrollment -> { });
         courseEnrollment(student1Third, cs303, enrollment -> { });
         courseEnrollment(student1Third, cs304, enrollment -> { });
-        SemesterEnrollment student2Third = semesterEnrollment(student2Profile, third, enrollment -> { });
+        SemesterEnrollment student2Third = semesterEnrollment(student2Profile, third, enrollment -> enrollment.placeIn(sectionB));
         CourseEnrollment student2In301 = courseEnrollment(student2Third, cs301, enrollment -> { });
         courseEnrollment(student2Third, cs302, enrollment -> { });
         courseEnrollment(student2Third, cs304, CourseEnrollment::withdraw);
-        SemesterEnrollment studentFacultyThird = semesterEnrollment(studentFacultyStudent, third, enrollment -> { });
+        SemesterEnrollment studentFacultyThird = semesterEnrollment(studentFacultyStudent, third,
+                enrollment -> enrollment.placeIn(sectionA));
         CourseEnrollment studentFacultyIn301 = courseEnrollment(studentFacultyThird, cs301, enrollment -> { });
 
         // --- LMS courses: published, draft, archived, and CS304 and CS401 without one.
@@ -737,13 +744,19 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 () -> repositories.teaching.save(new TeachingAssignment(faculty, offering)));
     }
 
+    private Section section(Semester semester, String code, int capacity) {
+        return findOrCreate(repositories.sections.findAllWithContextBySemesterId(semester.getId()).stream()
+                        .filter(section -> section.getCode().equals(code)).findFirst(),
+                () -> repositories.sections.save(new Section(semester, code, "Section " + code, capacity)));
+    }
+
     private SemesterEnrollment semesterEnrollment(StudentProfile student, Semester semester,
             Consumer<SemesterEnrollment> lifecycle) {
         return findOrCreate(repositories.semesterEnrollments.findByStudentProfileIdAndSemesterId(student.getId(), semester.getId()),
                 () -> {
-                    SemesterEnrollment enrollment = repositories.semesterEnrollments.save(new SemesterEnrollment(student, semester));
+                    SemesterEnrollment enrollment = new SemesterEnrollment(student, semester);
                     lifecycle.accept(enrollment);
-                    return enrollment;
+                    return repositories.semesterEnrollments.save(enrollment);
                 });
     }
 

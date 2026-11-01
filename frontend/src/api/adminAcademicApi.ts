@@ -5,6 +5,7 @@ import type {
   AdminCourse,
   AdminDepartment,
   AdminProgram,
+  AdminSection,
   AdminSemester,
   CourseCreate,
   CourseUpdate,
@@ -12,6 +13,8 @@ import type {
   DepartmentUpdate,
   ProgramCreate,
   ProgramUpdate,
+  SectionCreate,
+  SectionUpdate,
   SemesterCreate,
   SemesterUpdate,
 } from '../types/admin'
@@ -63,3 +66,11 @@ export const updateSemester = (id: number, body: SemesterUpdate) => update<Admin
 export const getCourses = (signal?: AbortSignal) => list<AdminCourse>('courses', signal)
 export const createCourse = (body: CourseCreate) => create<AdminCourse>('courses', body)
 export const updateCourse = (id: number, body: CourseUpdate) => update<AdminCourse>('courses', id, body)
+
+/** Every section, or one semester's when a semester ID is given. */
+export async function getSections(semesterId?: number, signal?: AbortSignal): Promise<AdminSection[]> {
+  const response = await apiClient.get<AdminSection[]>(`${ROOT}/sections`, { params: { semesterId }, signal })
+  return response.data
+}
+export const createSection = (body: SectionCreate) => create<AdminSection>('sections', body)
+export const updateSection = (id: number, body: SectionUpdate) => update<AdminSection>('sections', id, body)

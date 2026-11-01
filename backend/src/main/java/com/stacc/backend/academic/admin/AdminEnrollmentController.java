@@ -5,6 +5,7 @@ import java.util.List;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentCreate;
+import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentSectionChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentCreatedResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentResponse;
@@ -143,6 +144,27 @@ public class AdminEnrollmentController {
     public SemesterEnrollmentResponse changeSemesterEnrollmentStatus(@PathVariable Long semesterEnrollmentId,
             @Valid @RequestBody SemesterEnrollmentStatusChange request) {
         return enrollments.changeSemesterEnrollmentStatus(semesterEnrollmentId, request);
+    }
+
+    @PutMapping("/semester-enrollments/{semesterEnrollmentId}/section")
+    @PreAuthorize(AdminAcademicAccess.ENROLLMENT_MANAGE)
+    @Operation(
+            summary = "Place a student in a section",
+            description = "Places an enrolled student in an active section of their semester, moves them to another, or "
+                    + "takes them out with a null section. A full section is refused.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The semester enrollment with its section.")
+    @ApiResponse(
+            responseCode = "404",
+            description = "The semester enrollment or the section does not exist.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "The enrollment has ended, or the section is of another semester, inactive, or full.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public SemesterEnrollmentResponse changeSection(@PathVariable Long semesterEnrollmentId,
+            @Valid @RequestBody SemesterEnrollmentSectionChange request) {
+        return enrollments.changeSection(semesterEnrollmentId, request);
     }
 
     @GetMapping("/semester-enrollments/{semesterEnrollmentId}/courses")

@@ -3,6 +3,7 @@ import { CalendarSection } from '../admin/CalendarSection'
 import { EnrollmentsSection } from '../admin/EnrollmentsSection'
 import { OfferingRoster } from '../admin/OfferingRoster'
 import { OfferingsSection } from '../admin/OfferingsSection'
+import { SectionsSection } from '../admin/SectionsSection'
 import {
   AcademicSessionsSection,
   CoursesSection,
@@ -22,6 +23,7 @@ const SECTIONS = [
   { path: 'programs', label: 'Programs', Section: ProgramsSection },
   { path: 'sessions', label: 'Academic Sessions', Section: AcademicSessionsSection },
   { path: 'semesters', label: 'Semesters', Section: SemestersSection },
+  { path: 'sections', label: 'Sections', Section: SectionsSection },
   { path: 'courses', label: 'Courses', Section: CoursesSection },
   { path: 'offerings', label: 'Course Offerings', Section: OfferingsSection },
   { path: 'enrollments', label: 'Enrollments', Section: EnrollmentsSection },

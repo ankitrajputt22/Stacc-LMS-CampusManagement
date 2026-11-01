@@ -16,6 +16,7 @@ export const queryKeys = {
     sessions: () => ['admin', 'academic', 'sessions'] as const,
     semesters: () => ['admin', 'academic', 'semesters'] as const,
     courses: () => ['admin', 'academic', 'courses'] as const,
+    sections: (semesterId?: number) => ['admin', 'academic', 'sections', { semesterId }] as const,
     offerings: (filters: { academicSessionId?: number; semesterId?: number }) =>
       ['admin', 'academic', 'offerings', filters] as const,
     offeringRoster: (courseOfferingId: number) => ['admin', 'academic', 'offerings', courseOfferingId, 'enrollments'] as const,

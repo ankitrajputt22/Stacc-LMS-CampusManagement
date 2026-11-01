@@ -67,6 +67,16 @@ Every route is under `/api/v1/admin/academic`, which `SecurityConfig` keeps to a
 - Setting the current session is `PATCH /api/v1/admin/academic/sessions/{academicSessionId}/current`, with no body.
 - `POST` answers 201, `PUT` 200. Invalid fields answer 400 with field errors, a missing record 404, a clash 409. No token answers 401; a student, a faculty member, or an admin without the permission answers 403.
 
+## Sections
+
+A section (`academic.section.Section`) is a group of students within one semester, such as Section A of BTECH-CSE semester 3 in 2026-27. The semester already says the program and the session, so neither is stored again.
+
+- `GET /api/v1/admin/academic/sections` lists every section, or one semester's with `?semesterId=`, the latest session first, each with `enrolledCount`: how many `ENROLLED` students are placed in it now. `POST` creates one with `semesterId`, `code` (uppercase, up to 10 characters, unique within the semester), an optional `name` (up to 60), and an optional `capacity` (1 to 1000; none means no limit). `PUT /{sectionId}` changes the name, capacity, and status. These routes use the academic master permissions.
+- A closed semester takes no new sections (409). The semester and code never change. A capacity below the students already enrolled in it answers 409. Sections are deactivated, never deleted; an inactive section keeps its students but takes no more.
+- A student is placed through their semester enrollment: `PUT /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/section` with `sectionId`, or `null` to take them out. It needs the enrollment permissions. Only an `ENROLLED` semester enrollment can change section, and only to an active section of its own semester (409 otherwise). The semester enrollment is locked first and then the section, always in that order, and the section's enrolled students are counted with a locking read only under its lock, so two placements at once never take its last place twice (`SectionCapacityMySqlIT`). A full section answers 409 "Section A is full: all 60 places are taken."
+- The section stays on an ended semester enrollment as history, and only `ENROLLED` students count towards a capacity. Semester enrollment answers carry `sectionId` and `sectionCode`.
+- The demo data has sections A and B (60 places each) in BTECH-CSE semester 3, 2026-27, with student1 and studentfaculty1 in A and student2 in B.
+
 ## Course offerings
 
 A course offering joins one course and one semester, at most once per pair (`uk_course_offerings_course_semester`). It has only those two and a status; no section, room, capacity, schedule, teacher, or LMS state.
@@ -128,13 +138,13 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 
 - Each master, and the course offerings, is a `Card` with its Add button, a search box, a status filter and its own filters (programs by department and degree, courses by department and type), and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column. Departments, programs, and courses change status with Activate and Deactivate, each confirmed first; their Edit forms no longer carry the status. Sessions show a Current badge and a confirmed Set as current action. Create forms list only parents that can take new children.
 - Add and Edit open one form at a time in its own card above the list, with `TextField` and `SelectField` and an error `Alert`. After a save, every academic admin list in the cache (`queryKeys.admin.academic`) is asked again, because the lists fill each other's choices.
-- Enrollments start with the student search; a student's semesters and courses are cards with their actions per row, and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
+- Enrollments start with the student search; a student's semesters and courses are cards with their actions per row (each semester shows its section, with Place in section or Change section while enrolled, listing that semester's active sections with their places), and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
 - Statuses are `Badge`s: green for in use (`ACTIVE`, `ENROLLED`), blue for still to come (`PLANNED`), neutral for ended; the word always says it. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 
 ## Not built yet

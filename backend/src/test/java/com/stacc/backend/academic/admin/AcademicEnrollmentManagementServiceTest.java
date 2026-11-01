@@ -3,6 +3,7 @@ package com.stacc.backend.academic.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentCreate;
+import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentSectionChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentStatusChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.SemesterEnrollmentResponse;
@@ -26,6 +28,8 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
+import com.stacc.backend.academic.section.Section;
+import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.student.StudentProfile;
@@ -43,8 +47,9 @@ class AcademicEnrollmentManagementServiceTest {
     private final CourseOfferingRepository offerings = mock(CourseOfferingRepository.class);
     private final SemesterEnrollmentRepository semesterEnrollments = mock(SemesterEnrollmentRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final SectionRepository sections = mock(SectionRepository.class);
     private final AcademicEnrollmentManagementService service = new AcademicEnrollmentManagementService(
-            students, semesters, offerings, semesterEnrollments, courseEnrollments);
+            students, semesters, offerings, semesterEnrollments, courseEnrollments, sections);
     private final EnrollmentFixtures college = new EnrollmentFixtures();
     private final SemesterEnrollment thirdSemester = college.semesterEnrollment(college.studentA, college.third, 88);
 
@@ -81,7 +86,7 @@ class AcademicEnrollmentManagementServiceTest {
     void aStudentIsEnrolledInASemesterOfTheirProgramAndStartsEnrolled() {
         SemesterEnrollmentResponse created = service.createSemesterEnrollment(57L, new SemesterEnrollmentCreate(9L));
 
-        assertEquals(new SemesterEnrollmentResponse(89L, 57L, 9L, 3, 4L, "BTECH-CSE", 2L, "2026-27", "ENROLLED"), created);
+        assertEquals(new SemesterEnrollmentResponse(89L, 57L, 9L, 3, 4L, "BTECH-CSE", 2L, "2026-27", null, null, "ENROLLED"), created);
     }
 
     @Test
@@ -271,5 +276,69 @@ class AcademicEnrollmentManagementServiceTest {
         assertRefused(HttpStatus.CONFLICT, CourseEnrollmentWorkflow.NOT_ENROLLED, () -> service.requireEnrolledCourseEnrollment(140L));
         assertRefused(HttpStatus.NOT_FOUND, AcademicEnrollmentManagementService.COURSE_ENROLLMENT_NOT_FOUND,
                 () -> service.requireEnrolledCourseEnrollment(99L));
+    }
+
+    // Sections: placing a student, moving them, and taking them out.
+
+    private Section section(long id, com.stacc.backend.academic.semester.Semester semester, String code, Integer capacity) {
+        Section section = MasterFixtures.withId(new Section(semester, code, null, capacity), id);
+        when(sections.findByIdForUpdate(id)).thenReturn(Optional.of(section));
+        return section;
+    }
+
+    private void placeRefused(Long sectionId, String message) {
+        ApiException refused = assertThrows(ApiException.class,
+                () -> service.changeSection(88L, new SemesterEnrollmentSectionChange(sectionId)));
+        assertEquals(HttpStatus.CONFLICT, refused.getStatus());
+        assertEquals(message, refused.getMessage());
+    }
+
+    @Test
+    void aStudentIsPlacedInASectionOfTheirSemesterWithRoom() {
+        section(21, college.third, "A", 2);
+        when(semesterEnrollments.findByIdForUpdate(88L)).thenReturn(Optional.of(thirdSemester));
+        when(semesterEnrollments.countEnrolledInSectionForShare(21L)).thenReturn(1L);
+        when(semesterEnrollments.saveAndFlush(thirdSemester)).thenReturn(thirdSemester);
+
+        SemesterEnrollmentResponse placed = service.changeSection(88L, new SemesterEnrollmentSectionChange(21L));
+
+        assertEquals(21L, placed.sectionId());
+        assertEquals("A", placed.sectionCode());
+    }
+
+    @Test
+    void aFullInactiveOrForeignSectionIsRefused() {
+        when(semesterEnrollments.findByIdForUpdate(88L)).thenReturn(Optional.of(thirdSemester));
+        section(21, college.third, "A", 2);
+        when(semesterEnrollments.countEnrolledInSectionForShare(21L)).thenReturn(2L);
+        placeRefused(21L, "Section A is full: all 2 places are taken.");
+
+        section(22, college.third, "B", null).deactivate();
+        placeRefused(22L, AcademicEnrollmentManagementService.SECTION_INACTIVE);
+
+        section(23, college.fourth, "A", null);
+        placeRefused(23L, AcademicEnrollmentManagementService.SECTION_OTHER_SEMESTER);
+        verify(semesterEnrollments, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void theSameSectionChangesNothingAndNullTakesTheStudentOut() {
+        Section a = section(21, college.third, "A", 1);
+        thirdSemester.placeIn(a);
+        when(semesterEnrollments.findByIdForUpdate(88L)).thenReturn(Optional.of(thirdSemester));
+        when(semesterEnrollments.saveAndFlush(thirdSemester)).thenReturn(thirdSemester);
+
+        assertEquals(21L, service.changeSection(88L, new SemesterEnrollmentSectionChange(21L)).sectionId());
+        verify(semesterEnrollments, never()).countEnrolledInSectionForShare(anyLong());
+
+        assertEquals(null, service.changeSection(88L, new SemesterEnrollmentSectionChange(null)).sectionId());
+    }
+
+    @Test
+    void anEndedEnrollmentCannotChangeSection() {
+        thirdSemester.withdraw();
+        when(semesterEnrollments.findByIdForUpdate(88L)).thenReturn(Optional.of(thirdSemester));
+
+        placeRefused(21L, AcademicEnrollmentManagementService.SEMESTER_ENDED);
     }
 }
