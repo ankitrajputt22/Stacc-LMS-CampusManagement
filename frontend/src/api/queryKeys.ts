@@ -27,8 +27,13 @@ export const queryKeys = {
     studentEnrollments: (studentProfileId: number) => ['admin', 'academic', 'students', studentProfileId] as const,
     calendarEvents: (filters: Record<string, string | undefined>) =>
       ['admin', 'academic', 'calendar-events', filters] as const,
+    studentProfiles: (query: string) => ['admin', 'academic', 'profiles', 'students', { query }] as const,
+    facultyProfiles: (query: string) => ['admin', 'academic', 'profiles', 'faculty', { query }] as const,
     courseEnrollments: (semesterEnrollmentId: number) =>
       ['admin', 'academic', 'semester-enrollments', semesterEnrollmentId] as const,
+  },
+  academic: {
+    myProfile: () => ['academic', 'me'] as const,
   },
   attendance: {
     myCourses: () => ['attendance', 'my-courses'] as const,

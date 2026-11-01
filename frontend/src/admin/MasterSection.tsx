@@ -57,6 +57,8 @@ type MasterSectionProps<T> = {
   rowName: (row: T) => string
   /** The text the filter box searches, such as the code and the name. */
   searchText: (row: T) => string
+  /** False when the toolbar already searches on the server, so the list does not get a second search box. */
+  clientSearch?: boolean
   /** The record's status, which adds a status filter. */
   rowStatus?: (row: T) => string
   /** More filters on the list the API sent, such as Department. */
@@ -64,7 +66,7 @@ type MasterSectionProps<T> = {
   /** When adding needs other masters first, such as departments for a program: why it cannot start yet. */
   blockedReason?: string | null
   /** The form for a new record. It calls `done` with an announcement once saved. */
-  renderCreate: (done: (announcement: string) => void, cancel: () => void) => ReactNode
+  renderCreate?: (done: (announcement: string) => void, cancel: () => void) => ReactNode
   renderEdit: (row: T, done: (announcement: string) => void, cancel: () => void) => ReactNode
   /** Instead of "No … yet.", such as "No course offerings available." */
   emptyTitle?: string
@@ -105,6 +107,7 @@ export function MasterSection<T>({
   rowKey,
   rowName,
   searchText,
+  clientSearch = true,
   rowStatus,
   filters = [],
   blockedReason,
@@ -234,7 +237,7 @@ export function MasterSection<T>({
           />
         </div>
       )}
-      {open?.type === 'create' && (
+      {open?.type === 'create' && renderCreate && (
         <div className="mb-4">{renderCreate((message) => done(message, 'add'), () => close(emptyList ? 'add-empty' : 'add'))}</div>
       )}
       {editing !== null && (
@@ -259,7 +262,7 @@ export function MasterSection<T>({
             )}
           </>
         }
-        action={rows !== null && rows.length > 0 && open?.type !== 'create' ? add('add') : undefined}
+        action={renderCreate && rows !== null && rows.length > 0 && open?.type !== 'create' ? add('add') : undefined}
         padding="none"
       >
         {(toolbar || (rows !== null && rows.length > 0)) && (
@@ -267,6 +270,7 @@ export function MasterSection<T>({
             {toolbar}
             {rows !== null && rows.length > 0 && (
               <>
+                {clientSearch && (
                 <TextField
                   label={`Search ${title.toLowerCase()}`}
                   type="search"
@@ -277,6 +281,7 @@ export function MasterSection<T>({
                     setPage(1)
                   }}
                 />
+                )}
                 {filters.map((filter, index) => (
                   <SelectField
                     key={filter.label}
@@ -327,7 +332,7 @@ export function MasterSection<T>({
           />
         )}
         {rows !== null && rows.length === 0 && open?.type !== 'create' && (
-          <EmptyState title={emptyTitle ?? `No ${title.toLowerCase()} yet.`} action={add('add-empty')} />
+          <EmptyState title={emptyTitle ?? `No ${title.toLowerCase()} yet.`} action={renderCreate ? add('add-empty') : undefined} />
         )}
         {rows !== null && rows.length > 0 && (
           <>

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
+import { AcademicProfilePage } from './pages/AcademicProfilePage'
 import { AdminCampusPage } from './pages/AdminCampusPage'
 import { AdminHostelPage } from './pages/AdminHostelPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
@@ -63,6 +64,7 @@ function App() {
           <Route path="attendance/:courseOfferingId" element={<CourseAttendancePage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />
+          <Route path="academic/profile" element={<AcademicProfilePage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />

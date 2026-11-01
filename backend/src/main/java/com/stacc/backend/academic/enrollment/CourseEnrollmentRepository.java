@@ -134,4 +134,17 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     boolean existsEnrolledInOtherSectionOffering(@Param("semesterEnrollmentId") Long semesterEnrollmentId,
             @Param("sectionId") Long sectionId);
+
+    /** The course enrollments of these semester enrollments with their offering and course, by course code. */
+    @Query("""
+            select enrollment
+            from CourseEnrollment enrollment
+            join fetch enrollment.courseOffering offering
+            join fetch offering.course course
+            left join fetch offering.section
+            where enrollment.semesterEnrollment.id in :semesterEnrollmentIds
+            order by course.code asc
+            """)
+    List<CourseEnrollment> findAllWithOfferingBySemesterEnrollmentIdIn(
+            @Param("semesterEnrollmentIds") java.util.Collection<Long> semesterEnrollmentIds);
 }

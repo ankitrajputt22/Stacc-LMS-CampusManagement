@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth } from '../../auth/AuthContext'
+import { hasAnyRole } from '../../auth/roles'
 import { badgeText, useUnreadCount } from '../../notifications/unreadCount'
 import { Button } from '../Button'
 import { useDisplayName } from '../../person/useDisplayName'
@@ -165,6 +166,15 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
             >
               Sign out
             </Button>
+            {hasAnyRole(account.roles, ['STUDENT', 'FACULTY']) && (
+              <Link
+                to="/academic/profile"
+                onClick={onClose}
+                className="mt-3 block text-sm font-medium text-white underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Academic profile
+              </Link>
+            )}
             <Link
               to="/account/password"
               onClick={onClose}

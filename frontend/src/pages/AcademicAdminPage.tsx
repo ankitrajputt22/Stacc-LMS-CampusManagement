@@ -4,6 +4,7 @@ import { EnrollmentsSection } from '../admin/EnrollmentsSection'
 import { FacultyAssignmentsSection } from '../admin/FacultyAssignmentsSection'
 import { OfferingRoster } from '../admin/OfferingRoster'
 import { OfferingsSection } from '../admin/OfferingsSection'
+import { FacultyProfilesSection, StudentProfilesSection } from '../admin/ProfilesSections'
 import { SectionsSection } from '../admin/SectionsSection'
 import {
   AcademicSessionsSection,
@@ -29,6 +30,8 @@ const SECTIONS = [
   { path: 'offerings', label: 'Course Offerings', Section: OfferingsSection },
   { path: 'faculty-assignments', label: 'Faculty Assignments', Section: FacultyAssignmentsSection },
   { path: 'enrollments', label: 'Enrollments', Section: EnrollmentsSection },
+  { path: 'students', label: 'Students', Section: StudentProfilesSection },
+  { path: 'faculty', label: 'Faculty', Section: FacultyProfilesSection },
   { path: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
 ] as const
 

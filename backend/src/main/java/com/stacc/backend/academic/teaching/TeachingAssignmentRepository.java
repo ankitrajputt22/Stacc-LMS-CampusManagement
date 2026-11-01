@@ -89,4 +89,30 @@ public interface TeachingAssignmentRepository extends JpaRepository<TeachingAssi
             """)
     List<TeachingAssignment> findAllWithFacultyInSession(@Param("academicSessionId") Long academicSessionId,
             @Param("semesterId") Long semesterId);
+
+    /** A faculty profile's active assignments with each offering's course, semester, program, session, and section. */
+    @Query("""
+            select assignment
+            from TeachingAssignment assignment
+            join fetch assignment.courseOffering offering
+            join fetch offering.course course
+            join fetch offering.semester semester
+            join fetch semester.program
+            join fetch semester.academicSession academicSession
+            left join fetch offering.section
+            where assignment.facultyProfile.id = :facultyProfileId
+              and assignment.status = com.stacc.backend.academic.teaching.TeachingAssignmentStatus.ACTIVE
+            order by academicSession.startDate desc, course.code asc
+            """)
+    List<TeachingAssignment> findActiveWithOfferingByFacultyProfileId(@Param("facultyProfileId") Long facultyProfileId);
+
+    /** How many active assignments each of these faculty profiles has, as pairs of profile ID and count. */
+    @Query("""
+            select assignment.facultyProfile.id, count(assignment)
+            from TeachingAssignment assignment
+            where assignment.facultyProfile.id in :facultyProfileIds
+              and assignment.status = com.stacc.backend.academic.teaching.TeachingAssignmentStatus.ACTIVE
+            group by assignment.facultyProfile.id
+            """)
+    List<Object[]> countActiveByFacultyProfileIdIn(@Param("facultyProfileIds") Collection<Long> facultyProfileIds);
 }
