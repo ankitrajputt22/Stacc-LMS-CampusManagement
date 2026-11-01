@@ -146,9 +146,6 @@ jobs:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    env:
-      # The generated settings of the throwaway stack (passwords included) live here, outside the repository.
-      E2E_ENV_FILE: ${{ runner.temp }}/stacc-e2e.env
     defaults:
       run:
         working-directory: e2e

@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 // The settings ./stack.sh generated for the throwaway stack: its address and the demo accounts' password. They are
 // read here and handed to the tests through the environment; nothing prints them.
-const envFile = process.env.E2E_ENV_FILE ?? join(tmpdir(), 'stacc-e2e.env')
+const envFile = process.env.E2E_ENV_FILE ?? join(process.env.RUNNER_TEMP ?? tmpdir(), 'stacc-e2e.env')
 if (existsSync(envFile)) {
   for (const line of readFileSync(envFile, 'utf8').split('\n')) {
     const match = /^([A-Z_]+)=(.*)$/.exec(line)

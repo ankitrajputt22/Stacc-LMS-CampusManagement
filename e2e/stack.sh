@@ -6,13 +6,14 @@
 #
 # It is its own Compose project, "stacc-e2e", with its own ports, volumes, and generated passwords, so it never touches
 # the "stacc" project or its data. The passwords live in an env file outside the repository (E2E_ENV_FILE, by default
-# in the temporary folder), created on the first "up" and deleted on "down". Nothing is printed from it.
+# in the temporary folder, or the runner's on GitHub), created on the first "up" and deleted on "down". Nothing is printed from it.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 PROJECT=stacc-e2e
-TMP_DIR="${TMPDIR:-/tmp}"
+# On GitHub the runner's own temporary folder; elsewhere the usual one.
+TMP_DIR="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
 ENV_FILE="${E2E_ENV_FILE:-${TMP_DIR%/}/stacc-e2e.env}"
 
 # Compose lets variables already set in the shell win over the env file, so it runs with a clean environment: only
