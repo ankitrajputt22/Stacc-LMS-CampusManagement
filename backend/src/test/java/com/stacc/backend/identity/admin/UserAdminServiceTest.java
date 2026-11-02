@@ -66,8 +66,9 @@ class UserAdminServiceTest {
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
     private final PasswordService passwords = mock(PasswordService.class);
     private final SessionService userSessions = mock(SessionService.class);
+    private final com.stacc.backend.audit.AuditService audit = mock(com.stacc.backend.audit.AuditService.class);
     private final UserAdminService service = new UserAdminService(accounts, mock(AccountSearchRepository.class), roles,
-            people, students, faculty, programs, sessions, departments, encoder, passwords, userSessions);
+            people, students, faculty, programs, sessions, departments, encoder, passwords, userSessions, audit);
 
     private final Department cse = withId(new Department("CSE", "Computer Science"), 3);
     private final Program btech = withId(new Program(cse, "BTECH", "B.Tech.", 8), 4);
@@ -125,7 +126,7 @@ class UserAdminServiceTest {
         UserCreate request = new UserCreate(" 25CSE104 ", "Riya Menon", "riya@college.example", Set.of(RoleName.STUDENT),
                 TEMPORARY, new StudentProfileCreate(4L, 2L, "25cse104"), null);
 
-        UserDetail created = service.create(request);
+        UserDetail created = service.create(ADMIN, request);
 
         assertEquals("25CSE104", created.loginId());
         assertEquals(List.of("STUDENT"), created.roles());
@@ -133,11 +134,15 @@ class UserAdminServiceTest {
         verify(students).saveAndFlush(any(StudentProfile.class));
         verify(faculty, never()).saveAndFlush(any());
         verify(passwords).issueTemporaryPassword(57L, TEMPORARY, null);
+        verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.USER_CREATED, "USER_ACCOUNT", 57L,
+                "Created 25CSE104 with roles STUDENT.");
+        verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.STUDENT_PROFILE_CREATED, "USER_ACCOUNT", 57L,
+                "Program BTECH, admitted 2026-27.");
     }
 
     @Test
     void aFacultyAndAdminAccountGetsAFacultyProfileAndItsRolesInOrder() {
-        UserDetail created = service.create(new UserCreate("EMP204", "Kiran Das", null,
+        UserDetail created = service.create(ADMIN, new UserCreate("EMP204", "Kiran Das", null,
                 Set.of(RoleName.ADMIN, RoleName.FACULTY), TEMPORARY, null, new FacultyProfileCreate(3L)));
 
         assertEquals(List.of("FACULTY", "ADMIN"), created.roles());
@@ -148,18 +153,18 @@ class UserAdminServiceTest {
     @Test
     void creationIsRefusedForTakenIdsMissingProfilesAndWeakPasswords() {
         when(accounts.existsByLoginId("student1")).thenReturn(true);
-        assertRefused(HttpStatus.CONFLICT, UserAdminService.LOGIN_TAKEN, () -> service.create(new UserCreate("student1",
+        assertRefused(HttpStatus.CONFLICT, UserAdminService.LOGIN_TAKEN, () -> service.create(ADMIN, new UserCreate("student1",
                 "A B", null, Set.of(RoleName.ADMIN), TEMPORARY, null, null)));
 
         when(people.existsByEmail("taken@college.example")).thenReturn(true);
-        assertRefused(HttpStatus.CONFLICT, UserAdminService.EMAIL_TAKEN, () -> service.create(new UserCreate("NEW1",
+        assertRefused(HttpStatus.CONFLICT, UserAdminService.EMAIL_TAKEN, () -> service.create(ADMIN, new UserCreate("NEW1",
                 "A B", "Taken@College.example", Set.of(RoleName.ADMIN), TEMPORARY, null, null)));
 
-        assertRefused(HttpStatus.BAD_REQUEST, UserAdminService.STUDENT_PROFILE_NEEDED, () -> service.create(
+        assertRefused(HttpStatus.BAD_REQUEST, UserAdminService.STUDENT_PROFILE_NEEDED, () -> service.create(ADMIN, 
                 new UserCreate("NEW2", "A B", null, Set.of(RoleName.STUDENT), TEMPORARY, null, null)));
-        assertRefused(HttpStatus.BAD_REQUEST, UserAdminService.FACULTY_PROFILE_NEEDED, () -> service.create(
+        assertRefused(HttpStatus.BAD_REQUEST, UserAdminService.FACULTY_PROFILE_NEEDED, () -> service.create(ADMIN, 
                 new UserCreate("NEW3", "A B", null, Set.of(RoleName.FACULTY), TEMPORARY, null, null)));
-        assertRefused(HttpStatus.BAD_REQUEST, null, () -> service.create(
+        assertRefused(HttpStatus.BAD_REQUEST, null, () -> service.create(ADMIN, 
                 new UserCreate("NEW4", "A B", null, Set.of(RoleName.ADMIN), "password123", null, null)));
 
         verify(accounts, never()).saveAndFlush(any());
@@ -170,7 +175,7 @@ class UserAdminServiceTest {
     void aStudentInAnInactiveProgramIsRefused() {
         btech.deactivate();
 
-        assertRefused(HttpStatus.CONFLICT, UserAdminService.PROGRAM_INACTIVE, () -> service.create(new UserCreate("NEW5",
+        assertRefused(HttpStatus.CONFLICT, UserAdminService.PROGRAM_INACTIVE, () -> service.create(ADMIN, new UserCreate("NEW5",
                 "A B", null, Set.of(RoleName.STUDENT), TEMPORARY, new StudentProfileCreate(4L, 2L, null), null)));
     }
 
@@ -182,6 +187,8 @@ class UserAdminServiceTest {
         assertEquals("DISABLED", service.updateStatus(ADMIN, 57L, AccountStatus.DISABLED).status());
         verify(userSessions).endAll(57L, SessionEndReason.ENDED_BY_COLLEGE);
         assertEquals(AccountStatus.DISABLED, account.getStatus());
+        verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.USER_STATUS_CHANGED, "USER_ACCOUNT", 57L,
+                "ACTIVE to DISABLED.");
 
         assertRefused(HttpStatus.CONFLICT, UserAdminService.SELF_DISABLE,
                 () -> service.updateStatus(ADMIN, ADMIN, AccountStatus.DISABLED));
@@ -200,6 +207,8 @@ class UserAdminServiceTest {
                 service.updateRoles(ADMIN, 57L, Set.of(RoleName.ADMIN, RoleName.FACULTY)).roles());
         verify(userSessions).endAll(57L, SessionEndReason.ENDED_BY_COLLEGE);
         assertTrue(account.hasRole(RoleName.ADMIN));
+        verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.USER_ROLES_CHANGED, "USER_ACCOUNT", 57L,
+                "FACULTY to FACULTY, ADMIN.");
 
         assertRefused(HttpStatus.CONFLICT, UserAdminService.SELF_ADMIN,
                 () -> service.updateRoles(ADMIN, ADMIN, Set.of(RoleName.FACULTY)));
@@ -209,10 +218,10 @@ class UserAdminServiceTest {
     void aTemporaryPasswordMustFollowThePolicyAndNeverIncludeTheLoginId() {
         stored(57L, "25CSE104", RoleName.STUDENT);
 
-        assertRefused(HttpStatus.BAD_REQUEST, null, () -> service.issueTemporaryPassword(57L, "my25CSE104pass"));
+        assertRefused(HttpStatus.BAD_REQUEST, null, () -> service.issueTemporaryPassword(ADMIN, 57L, "my25CSE104pass"));
         verify(passwords, never()).issueTemporaryPassword(anyLong(), anyString(), any());
 
-        service.issueTemporaryPassword(57L, TEMPORARY);
+        service.issueTemporaryPassword(ADMIN, 57L, TEMPORARY);
         verify(passwords).issueTemporaryPassword(57L, TEMPORARY, null);
     }
 
@@ -221,13 +230,13 @@ class UserAdminServiceTest {
         stored(57L, "EMP204", RoleName.FACULTY);
 
         assertRefused(HttpStatus.CONFLICT, UserAdminService.NOT_A_STUDENT,
-                () -> service.addStudentProfile(57L, new StudentProfileCreate(4L, 2L, null)));
-        service.addFacultyProfile(57L, new FacultyProfileCreate(3L));
+                () -> service.addStudentProfile(ADMIN, 57L, new StudentProfileCreate(4L, 2L, null)));
+        service.addFacultyProfile(ADMIN, 57L, new FacultyProfileCreate(3L));
         verify(faculty).saveAndFlush(any(FacultyProfile.class));
 
         when(faculty.findByUserAccountId(57L)).thenReturn(Optional.of(mock(FacultyProfile.class)));
         assertRefused(HttpStatus.CONFLICT, UserAdminService.FACULTY_EXISTS,
-                () -> service.addFacultyProfile(57L, new FacultyProfileCreate(3L)));
+                () -> service.addFacultyProfile(ADMIN, 57L, new FacultyProfileCreate(3L)));
     }
 
     @Test
@@ -236,13 +245,13 @@ class UserAdminServiceTest {
         PersonProfile person = new PersonProfile(account, "Riya M", null);
         when(people.findByUserAccountId(57L)).thenReturn(Optional.of(person));
 
-        UserDetail saved = service.updateDetails(57L, new DetailsUpdate("Riya Menon", "riya@college.example"));
+        UserDetail saved = service.updateDetails(ADMIN, 57L, new DetailsUpdate("Riya Menon", "riya@college.example"));
 
         assertEquals("Riya Menon", person.getFullName());
         assertEquals(57L, saved.accountId());
         when(people.existsByEmailAndUserAccountIdNot("other@college.example", 57L)).thenReturn(true);
         assertRefused(HttpStatus.CONFLICT, UserAdminService.EMAIL_TAKEN,
-                () -> service.updateDetails(57L, new DetailsUpdate("Riya Menon", "other@college.example")));
+                () -> service.updateDetails(ADMIN, 57L, new DetailsUpdate("Riya Menon", "other@college.example")));
     }
 
     @Test

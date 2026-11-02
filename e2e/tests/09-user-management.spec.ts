@@ -24,6 +24,14 @@ test('an admin creates an account and the new person must replace the temporary 
   await page.getByLabel('Search users').fill(LOGIN_ID)
   await page.getByRole('button', { name: 'Find' }).click()
   await expect(page.getByRole('table', { name: 'Users' }).getByRole('link', { name: 'Journey Admin' })).toBeVisible()
+
+  // The creation is in the audit log, by admin1, without the password.
+  await page.goto('/admin/audit')
+  await page.getByLabel('Search login IDs').fill(LOGIN_ID)
+  await page.getByRole('button', { name: 'Find' }).click()
+  const created = page.getByRole('table', { name: 'Audit log' }).getByRole('row').filter({ hasText: 'Account created' })
+  await expect(created).toContainText('admin1')
+  await expect(page.getByText(TEMPORARY)).toHaveCount(0)
   await signOut(page)
 
   await signIn(page, 'erp', LOGIN_ID, TEMPORARY)

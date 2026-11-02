@@ -102,8 +102,8 @@ public class AdminUserController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "The login ID, email, or roll number is taken, or the program or "
             + "department is inactive.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public UserDetail create(@Valid @RequestBody UserCreate request) {
-        return service.create(request);
+    public UserDetail create(@AuthenticationPrincipal Jwt token, @Valid @RequestBody UserCreate request) {
+        return service.create(AuthenticatedAccount.idFrom(token), request);
     }
 
     @PutMapping("/{accountId}/details")
@@ -116,8 +116,9 @@ public class AdminUserController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "Another person already has this email.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public UserDetail updateDetails(@PathVariable Long accountId, @Valid @RequestBody DetailsUpdate request) {
-        return service.updateDetails(accountId, request);
+    public UserDetail updateDetails(@AuthenticationPrincipal Jwt token, @PathVariable Long accountId,
+            @Valid @RequestBody DetailsUpdate request) {
+        return service.updateDetails(AuthenticatedAccount.idFrom(token), accountId, request);
     }
 
     @PutMapping("/{accountId}/status")
@@ -163,9 +164,9 @@ public class AdminUserController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "404", description = "The account does not exist.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public UserDetail issueTemporaryPassword(@PathVariable Long accountId,
+    public UserDetail issueTemporaryPassword(@AuthenticationPrincipal Jwt token, @PathVariable Long accountId,
             @Valid @RequestBody TemporaryPasswordIssue request) {
-        return service.issueTemporaryPassword(accountId, request.temporaryPassword());
+        return service.issueTemporaryPassword(AuthenticatedAccount.idFrom(token), accountId, request.temporaryPassword());
     }
 
     @PostMapping("/{accountId}/student-profile")
@@ -178,8 +179,9 @@ public class AdminUserController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "The account lacks STUDENT, already has a profile, the program is "
             + "inactive, or the roll number is taken.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public UserDetail addStudentProfile(@PathVariable Long accountId, @Valid @RequestBody StudentProfileCreate request) {
-        return service.addStudentProfile(accountId, request);
+    public UserDetail addStudentProfile(@AuthenticationPrincipal Jwt token, @PathVariable Long accountId,
+            @Valid @RequestBody StudentProfileCreate request) {
+        return service.addStudentProfile(AuthenticatedAccount.idFrom(token), accountId, request);
     }
 
     @PostMapping("/{accountId}/faculty-profile")
@@ -192,7 +194,8 @@ public class AdminUserController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "The account lacks FACULTY, already has a profile, or the "
             + "department is inactive.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public UserDetail addFacultyProfile(@PathVariable Long accountId, @Valid @RequestBody FacultyProfileCreate request) {
-        return service.addFacultyProfile(accountId, request);
+    public UserDetail addFacultyProfile(@AuthenticationPrincipal Jwt token, @PathVariable Long accountId,
+            @Valid @RequestBody FacultyProfileCreate request) {
+        return service.addFacultyProfile(AuthenticatedAccount.idFrom(token), accountId, request);
     }
 }

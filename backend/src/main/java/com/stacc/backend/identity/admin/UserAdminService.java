@@ -19,6 +19,8 @@ import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.program.ProgramStatus;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.session.AcademicSessionRepository;
+import com.stacc.backend.audit.AuditAction;
+import com.stacc.backend.audit.AuditService;
 import com.stacc.backend.auth.account.AccountStatus;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
@@ -58,7 +60,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Admins find, create, and manage accounts. Every account is created by the college with a temporary password the
  * person must replace at first sign-in; there is no signup. Accounts are disabled, never deleted. Changing the status
  * or the roles ends the account's sessions, so it takes effect at once. An admin never disables their own account or
- * removes their own admin role, so the college cannot lock itself out. Passwords and hashes are never returned.
+ * removes their own admin role, so the college cannot lock itself out. Passwords and hashes are never returned. Every
+ * change is recorded in the audit log in the same transaction, without names, contact details, or passwords.
  */
 @Service
 @Transactional
@@ -100,11 +103,12 @@ public class UserAdminService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordService passwords;
     private final SessionService userSessions;
+    private final AuditService audit;
 
     public UserAdminService(UserAccountRepository accounts, AccountSearchRepository search, RoleRepository roles,
             PersonProfileRepository people, StudentProfileRepository students, FacultyProfileRepository faculty,
             ProgramRepository programs, AcademicSessionRepository sessions, DepartmentRepository departments,
-            PasswordEncoder passwordEncoder, PasswordService passwords, SessionService userSessions) {
+            PasswordEncoder passwordEncoder, PasswordService passwords, SessionService userSessions, AuditService audit) {
         this.accounts = accounts;
         this.search = search;
         this.roles = roles;
@@ -117,6 +121,7 @@ public class UserAdminService {
         this.passwordEncoder = passwordEncoder;
         this.passwords = passwords;
         this.userSessions = userSessions;
+        this.audit = audit;
     }
 
     /** One page of accounts matching the filters, by login ID. */
@@ -150,7 +155,7 @@ public class UserAdminService {
      * Creates the account, its person profile, and the student or faculty profile its roles need, all at once or not
      * at all. The temporary password follows the password policy and must be replaced at first sign-in.
      */
-    public UserDetail create(UserCreate request) {
+    public UserDetail create(Long actorAccountId, UserCreate request) {
         String loginId = request.loginId().strip();
         if (accounts.existsByLoginId(loginId)) {
             throw conflict(LOGIN_TAKEN);
@@ -181,18 +186,20 @@ public class UserAdminService {
         } catch (DataIntegrityViolationException race) {
             throw conflict(LOGIN_TAKEN);
         }
+        audit.record(actorAccountId, AuditAction.USER_CREATED, AuditService.USER_ACCOUNT, account.getId(),
+                "Created " + loginId + " with roles " + rolesText(wanted) + ".");
         if (wanted.contains(RoleName.STUDENT)) {
-            createStudentProfile(account, request.studentProfile());
+            createStudentProfile(actorAccountId, account, request.studentProfile());
         }
         if (wanted.contains(RoleName.FACULTY)) {
-            createFacultyProfile(account, request.facultyProfile());
+            createFacultyProfile(actorAccountId, account, request.facultyProfile());
         }
         passwords.issueTemporaryPassword(account.getId(), request.temporaryPassword(), null);
         return detailOf(account);
     }
 
     /** Corrects the official full name and email, recording a person profile when the account has none. */
-    public UserDetail updateDetails(Long accountId, DetailsUpdate request) {
+    public UserDetail updateDetails(Long actorAccountId, Long accountId, DetailsUpdate request) {
         UserAccount account = find(accountId);
         String email = cleanEmail(request.email());
         if (email != null && people.existsByEmailAndUserAccountIdNot(email, accountId)) {
@@ -211,6 +218,8 @@ public class UserAdminService {
         } catch (DataIntegrityViolationException race) {
             throw conflict(EMAIL_TAKEN);
         }
+        audit.record(actorAccountId, AuditAction.USER_DETAILS_CHANGED, AuditService.USER_ACCOUNT, accountId,
+                "Official name or email corrected.");
         return detailOf(account);
     }
 
@@ -223,8 +232,11 @@ public class UserAdminService {
         if (status == AccountStatus.DISABLED && Objects.equals(actorAccountId, accountId)) {
             throw conflict(SELF_DISABLE);
         }
+        AccountStatus before = account.getStatus();
         account.setStatus(status);
         accounts.saveAndFlush(account);
+        audit.record(actorAccountId, AuditAction.USER_STATUS_CHANGED, AuditService.USER_ACCOUNT, accountId,
+                before.name() + " to " + status.name() + ".");
         if (status == AccountStatus.DISABLED) {
             userSessions.endAll(accountId, SessionEndReason.ENDED_BY_COLLEGE);
         }
@@ -259,37 +271,41 @@ public class UserAdminService {
             }
         }
         accounts.saveAndFlush(account);
+        audit.record(actorAccountId, AuditAction.USER_ROLES_CHANGED, AuditService.USER_ACCOUNT, accountId,
+                rolesText(current) + " to " + rolesText(target) + ".");
         userSessions.endAll(accountId, SessionEndReason.ENDED_BY_COLLEGE);
         return detailOf(account);
     }
 
     /** Issues a new temporary password; the person must replace it, and every session of the account ends. */
-    public UserDetail issueTemporaryPassword(Long accountId, String temporaryPassword) {
+    public UserDetail issueTemporaryPassword(Long actorAccountId, Long accountId, String temporaryPassword) {
         UserAccount account = find(accountId);
         checkPolicy(temporaryPassword, account.getLoginId());
         passwords.issueTemporaryPassword(accountId, temporaryPassword, null);
+        audit.record(actorAccountId, AuditAction.USER_TEMPORARY_PASSWORD_ISSUED, AuditService.USER_ACCOUNT, accountId,
+                "Temporary password issued; every session ended.");
         return detailOf(find(accountId));
     }
 
-    public UserDetail addStudentProfile(Long accountId, StudentProfileCreate request) {
+    public UserDetail addStudentProfile(Long actorAccountId, Long accountId, StudentProfileCreate request) {
         UserAccount account = find(accountId);
         if (!account.hasRole(RoleName.STUDENT)) {
             throw conflict(NOT_A_STUDENT);
         }
-        createStudentProfile(account, request);
+        createStudentProfile(actorAccountId, account, request);
         return detailOf(account);
     }
 
-    public UserDetail addFacultyProfile(Long accountId, FacultyProfileCreate request) {
+    public UserDetail addFacultyProfile(Long actorAccountId, Long accountId, FacultyProfileCreate request) {
         UserAccount account = find(accountId);
         if (!account.hasRole(RoleName.FACULTY)) {
             throw conflict(NOT_FACULTY);
         }
-        createFacultyProfile(account, request);
+        createFacultyProfile(actorAccountId, account, request);
         return detailOf(account);
     }
 
-    private void createStudentProfile(UserAccount account, StudentProfileCreate request) {
+    private void createStudentProfile(Long actorAccountId, UserAccount account, StudentProfileCreate request) {
         if (students.findByUserAccountId(account.getId()).isPresent()) {
             throw conflict(STUDENT_EXISTS);
         }
@@ -314,9 +330,11 @@ public class UserAdminService {
         } catch (DataIntegrityViolationException race) {
             throw conflict(roll == null ? STUDENT_EXISTS : ROLL_TAKEN);
         }
+        audit.record(actorAccountId, AuditAction.STUDENT_PROFILE_CREATED, AuditService.USER_ACCOUNT, account.getId(),
+                "Program " + program.getCode() + ", admitted " + admission.getCode() + ".");
     }
 
-    private void createFacultyProfile(UserAccount account, FacultyProfileCreate request) {
+    private void createFacultyProfile(Long actorAccountId, UserAccount account, FacultyProfileCreate request) {
         if (faculty.findByUserAccountId(account.getId()).isPresent()) {
             throw conflict(FACULTY_EXISTS);
         }
@@ -330,6 +348,8 @@ public class UserAdminService {
         } catch (DataIntegrityViolationException race) {
             throw conflict(FACULTY_EXISTS);
         }
+        audit.record(actorAccountId, AuditAction.FACULTY_PROFILE_CREATED, AuditService.USER_ACCOUNT, account.getId(),
+                "Department " + department.getCode() + ".");
     }
 
     private UserDetail detailOf(UserAccount account) {
@@ -355,6 +375,10 @@ public class UserAdminService {
         }
         return people.findAllByUserAccountIdIn(accountIds).stream()
                 .collect(Collectors.toMap(person -> person.getUserAccount().getId(), Function.identity(), (a, b) -> a));
+    }
+
+    private static String rolesText(Set<RoleName> names) {
+        return names.isEmpty() ? "none" : names.stream().sorted(ROLE_ORDER).map(RoleName::name).collect(Collectors.joining(", "));
     }
 
     private static List<String> roleNames(UserAccount account) {

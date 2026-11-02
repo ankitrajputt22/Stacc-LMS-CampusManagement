@@ -26,6 +26,7 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 - Accounts are disabled, never deleted, and every record that refers to them stays. Removing a role keeps the profile: it is academic history and grants nothing by itself.
 - An admin cannot disable their own account or remove their own `ADMIN` role (409), so the college cannot lock itself out.
 - Status and role changes lock the account row. The same status or the same set of roles changes nothing and ends no session.
+- Every change is recorded in the audit log (`docs/audit-log.md`) in the same transaction, by the admin from the token, without names, contact details, or passwords.
 - Academic corrections (roll number, profile status, primary department) stay under Academic Admin → People; enrollment stays under Enrollments.
 
 ## Frontend
@@ -36,4 +37,4 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 
 ## Not built yet
 
-Bulk CSV import (0.2.7), staff roles (0.2.8), the audit log of these changes (0.2.5), sign-in protection (0.2.4), self-service password recovery by email, and account deletion (never).
+Bulk CSV import (0.2.7), staff roles (0.2.8), self-service password recovery by email, and account deletion (never).
