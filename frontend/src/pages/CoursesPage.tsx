@@ -6,7 +6,9 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { CourseSummary } from '../courses/CourseSummary'
+import { groupByTerm } from '../courses/terms'
 import { useMyCourses } from '../courses/useMyCourses'
+import { PageHeader } from '../ui'
 
 const NOT_A_STUDENT = 'Courses are for student accounts.'
 const NO_STUDENT_ACCESS = 'You don’t have access to student courses.'
@@ -48,20 +50,33 @@ function MyCourses() {
       <StatePanel>
         <EmptyState
           title="No courses available"
-          description="Your current LMS courses will appear here when your academic enrollment and LMS access are available."
+          description="Your courses appear here once you are enrolled and your teachers publish them."
         />
       </StatePanel>
     )
   }
 
   return (
-    <ul aria-label="Your courses" className="grid gap-3 lg:grid-cols-2">
-      {courses.data.map((course) => (
-        <li key={course.lmsCourseId}>
-          <CourseSummary course={course} />
-        </li>
+    <div className="space-y-8">
+      {groupByTerm(courses.data).map((term) => (
+        <section key={term.key} aria-labelledby={`term-${term.key}`}>
+          <h2 id={`term-${term.key}`} className="text-lg font-semibold text-ink">
+            {term.heading}
+            <span className="ml-2 text-sm font-normal text-ink-muted">
+              <span className="sr-only">, program </span>
+              {term.programCode}
+            </span>
+          </h2>
+          <ul aria-label={`Courses of ${term.heading}`} className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {term.items.map((course) => (
+              <li key={course.lmsCourseId}>
+                <CourseSummary course={course} />
+              </li>
+            ))}
+          </ul>
+        </section>
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -77,14 +92,13 @@ export function CoursesPage() {
   return (
     <>
       <title>Courses · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Courses</h1>
-      {isStudent && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Your current LMS courses.
-        </p>
-      )}
+      <PageHeader
+        eyebrow="LMS"
+        title="Courses"
+        description={isStudent ? 'Your current courses, by term. You get each course while you are officially enrolled in it.' : undefined}
+      />
 
-      <div className="mt-6">
+      <div>
         {isStudent ? (
           <MyCourses />
         ) : (

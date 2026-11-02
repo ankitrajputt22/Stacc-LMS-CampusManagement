@@ -1,6 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { archiveLmsCourse, publishLmsCourse } from '../api/lmsCourseManagementApi'
+import { queryKeys } from '../api/queryKeys'
 import { ActionButton } from '../components/ActionButton'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
@@ -25,6 +27,7 @@ const ARCHIVE_FAILED = 'Couldn’t archive the course. Check your connection and
  */
 export function CourseSettings({ course, reload }: CourseSettingsProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const sectionRef = useRef<HTMLElement>(null)
   const [confirming, setConfirming] = useState<'publish' | 'archive' | null>(null)
   const [message, setMessage] = useState('')
@@ -92,6 +95,7 @@ export function CourseSettings({ course, reload }: CourseSettingsProps) {
             const published = await publishLmsCourse(course.lmsCourseId)
             setConfirming(null)
             setMessage(`Course published. ${enrolledText(published.currentStudentCount)}`.trim())
+            void queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })
             reload()
             focusLater('archive')
           }}
@@ -110,6 +114,7 @@ export function CourseSettings({ course, reload }: CourseSettingsProps) {
           busyLabel="Archiving…"
           onConfirm={async () => {
             await archiveLmsCourse(course.lmsCourseId)
+            await queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })
             navigate('/teaching', { state: { archivedCourse: courseName } })
           }}
           onCancel={() => {
