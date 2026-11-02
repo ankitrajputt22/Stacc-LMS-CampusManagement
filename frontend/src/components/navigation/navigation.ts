@@ -35,8 +35,9 @@ const navigationSections: readonly NavigationSection[] = [
     items: [{ label: 'Dashboard', to: '/', icon: 'dashboard' }],
   },
   {
+    // Each role's tray is named for what people do in it (roadmap decision 9): studying, teaching, managing.
     id: 'student',
-    title: 'Student',
+    title: 'Academics',
     roles: ['STUDENT'],
     icon: 'student',
     items: [
@@ -50,7 +51,7 @@ const navigationSections: readonly NavigationSection[] = [
   },
   {
     id: 'faculty',
-    title: 'Faculty',
+    title: 'Teaching',
     roles: ['FACULTY'],
     icon: 'faculty',
     items: [
@@ -64,7 +65,7 @@ const navigationSections: readonly NavigationSection[] = [
   },
   {
     id: 'admin',
-    title: 'Admin',
+    title: 'Manage',
     roles: ['ADMIN'],
     icon: 'admin',
     items: [

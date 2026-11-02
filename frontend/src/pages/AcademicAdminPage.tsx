@@ -20,19 +20,28 @@ import { StatePanel } from '../components/states/StatePanel'
 import { LinkTabs, PageHeader } from '../ui'
 import { NotFoundPage } from './NotFoundPage'
 
+// The pages of academic administration, grouped by the kind of work, so each row of tabs stays short. A group's tab
+// opens its first page.
+const GROUPS = [
+  { id: 'structure', label: 'Structure' },
+  { id: 'teaching', label: 'Teaching' },
+  { id: 'people', label: 'People' },
+  { id: 'calendar', label: 'Calendar' },
+] as const
+
 const SECTIONS = [
-  { path: 'departments', label: 'Departments', Section: DepartmentsSection },
-  { path: 'programs', label: 'Programs', Section: ProgramsSection },
-  { path: 'sessions', label: 'Academic Sessions', Section: AcademicSessionsSection },
-  { path: 'semesters', label: 'Semesters', Section: SemestersSection },
-  { path: 'sections', label: 'Sections', Section: SectionsSection },
-  { path: 'courses', label: 'Courses', Section: CoursesSection },
-  { path: 'offerings', label: 'Course Offerings', Section: OfferingsSection },
-  { path: 'faculty-assignments', label: 'Faculty Assignments', Section: FacultyAssignmentsSection },
-  { path: 'enrollments', label: 'Enrollments', Section: EnrollmentsSection },
-  { path: 'students', label: 'Students', Section: StudentProfilesSection },
-  { path: 'faculty', label: 'Faculty', Section: FacultyProfilesSection },
-  { path: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
+  { path: 'departments', group: 'structure', label: 'Departments', Section: DepartmentsSection },
+  { path: 'programs', group: 'structure', label: 'Programs', Section: ProgramsSection },
+  { path: 'sessions', group: 'structure', label: 'Academic Sessions', Section: AcademicSessionsSection },
+  { path: 'semesters', group: 'structure', label: 'Semesters', Section: SemestersSection },
+  { path: 'sections', group: 'structure', label: 'Sections', Section: SectionsSection },
+  { path: 'courses', group: 'structure', label: 'Courses', Section: CoursesSection },
+  { path: 'offerings', group: 'teaching', label: 'Course Offerings', Section: OfferingsSection },
+  { path: 'faculty-assignments', group: 'teaching', label: 'Faculty Assignments', Section: FacultyAssignmentsSection },
+  { path: 'enrollments', group: 'people', label: 'Enrollments', Section: EnrollmentsSection },
+  { path: 'students', group: 'people', label: 'Students', Section: StudentProfilesSection },
+  { path: 'faculty', group: 'people', label: 'Faculty', Section: FacultyProfilesSection },
+  { path: 'calendar', group: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
 ] as const
 
 const ID_PATTERN = /^[1-9]\d{0,17}$/
@@ -61,14 +70,29 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
       <PageHeader
         eyebrow="ERP"
         title="Academic Admin"
-        description="Manage academic masters, course offerings, official student enrollments, and the academic calendar."
+        description="Manage the academic structure, course offerings and who teaches them, students, faculty, and their official enrollment, and the academic calendar."
       />
       {isAdmin ? (
         <>
           <LinkTabs
-            label="Academic admin sections"
-            tabs={SECTIONS.map((candidate) => ({ to: `/admin/academic/${candidate.path}`, label: candidate.label }))}
+            label="Academic admin areas"
+            tabs={GROUPS.map((group) => ({
+              to: `/admin/academic/${SECTIONS.find((candidate) => candidate.group === group.id)?.path}`,
+              label: group.label,
+              current: group.id === current.group,
+            }))}
           />
+          {SECTIONS.filter((candidate) => candidate.group === current.group).length > 1 && (
+            <div className="-mt-3">
+              <LinkTabs
+                label="Academic admin sections"
+                tabs={SECTIONS.filter((candidate) => candidate.group === current.group).map((candidate) => ({
+                  to: `/admin/academic/${candidate.path}`,
+                  label: candidate.label,
+                }))}
+              />
+            </div>
+          )}
           {roster ? (
             <OfferingRoster
               courseOfferingId={courseOfferingId && ID_PATTERN.test(courseOfferingId) ? Number(courseOfferingId) : null}
