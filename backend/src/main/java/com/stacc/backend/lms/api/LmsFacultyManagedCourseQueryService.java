@@ -8,6 +8,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.stacc.backend.academic.course.Course;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository.OfferingStatusCount;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
@@ -32,14 +35,18 @@ public class LmsFacultyManagedCourseQueryService {
 
     private final TeachingAssignmentRepository teachingAssignments;
     private final LmsCourseRepository lmsCourses;
+    private final CourseEnrollmentRepository courseEnrollments;
 
-    public LmsFacultyManagedCourseQueryService(TeachingAssignmentRepository teachingAssignments, LmsCourseRepository lmsCourses) {
+    public LmsFacultyManagedCourseQueryService(TeachingAssignmentRepository teachingAssignments, LmsCourseRepository lmsCourses,
+            CourseEnrollmentRepository courseEnrollments) {
         this.teachingAssignments = teachingAssignments;
         this.lmsCourses = lmsCourses;
+        this.courseEnrollments = courseEnrollments;
     }
 
     /**
-     * The offerings of the faculty member behind this account, in course code order, in two queries. An assignment
+     * The offerings of the faculty member behind this account, in course code order, in three queries, each with the
+     * section, the caller's teaching role, and how many students are enrolled. An assignment
      * counts under {@link FacultyTeachingAccessService#isCurrentTeaching}: an active faculty profile and an active
      * teaching assignment. Nothing is created here.
      *
@@ -51,10 +58,10 @@ public class LmsFacultyManagedCourseQueryService {
             return List.of();
         }
         // Consistent data has one assignment per offering; a stray second one never lists an offering twice.
-        Map<Long, CourseOffering> offerings = new LinkedHashMap<>();
+        Map<Long, TeachingAssignment> offerings = new LinkedHashMap<>();
         for (TeachingAssignment assignment : teachingAssignments.findAllWithCourseDetailsByUserAccountId(userAccountId)) {
             if (FacultyTeachingAccessService.isCurrentTeaching(assignment, userAccountId)) {
-                offerings.putIfAbsent(assignment.getCourseOffering().getId(), assignment.getCourseOffering());
+                offerings.putIfAbsent(assignment.getCourseOffering().getId(), assignment);
             }
         }
         if (offerings.isEmpty()) {
@@ -62,14 +69,20 @@ public class LmsFacultyManagedCourseQueryService {
         }
         Map<Long, LmsCourse> lmsCourseByOffering = lmsCourses.findAllByCourseOfferingIdIn(offerings.keySet()).stream()
                 .collect(Collectors.toMap(lmsCourse -> lmsCourse.getCourseOffering().getId(), Function.identity()));
+        Map<Long, Long> enrolled = courseEnrollments.countByOfferingAndStatus(offerings.keySet()).stream()
+                .filter(count -> count.getStatus() == CourseEnrollmentStatus.ENROLLED)
+                .collect(Collectors.toMap(OfferingStatusCount::getCourseOfferingId, OfferingStatusCount::getTotal));
         return offerings.values().stream()
-                .map(offering -> responseOf(offering, lmsCourseByOffering.get(offering.getId())))
+                .map(assignment -> responseOf(assignment, lmsCourseByOffering.get(assignment.getCourseOffering().getId()),
+                        enrolled.getOrDefault(assignment.getCourseOffering().getId(), 0L)))
                 .sorted(BY_COURSE_CODE)
                 .toList();
     }
 
     // The course details are read from the academic records every time. The LMS keeps no copy.
-    private static LmsFacultyManagedCourseResponse responseOf(CourseOffering offering, LmsCourse lmsCourse) {
+    private static LmsFacultyManagedCourseResponse responseOf(TeachingAssignment assignment, LmsCourse lmsCourse,
+            long enrolledCount) {
+        CourseOffering offering = assignment.getCourseOffering();
         Course course = offering.getCourse();
         Semester semester = offering.getSemester();
         return new LmsFacultyManagedCourseResponse(
@@ -81,6 +94,9 @@ public class LmsFacultyManagedCourseQueryService {
                 semester.getProgram().getCode(),
                 semester.getAcademicSession().getCode(),
                 lmsCourse == null ? null : lmsCourse.getId(),
-                lmsCourse == null ? null : lmsCourse.getStatus().name());
+                lmsCourse == null ? null : lmsCourse.getStatus().name(),
+                offering.getSection() == null ? null : offering.getSection().getCode(),
+                assignment.getRole().name(),
+                enrolledCount);
     }
 }

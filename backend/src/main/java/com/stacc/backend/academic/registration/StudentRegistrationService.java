@@ -5,7 +5,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.OfferingFaculty;
 import com.stacc.backend.academic.admin.OfferingFacultyLoader;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
@@ -353,15 +351,8 @@ public class StudentRegistrationService {
                         CourseEnrollmentRepository.OfferingStatusCount::getTotal));
     }
 
-    /** The names of the faculty actively teaching each offering, primary first; members without a name are left out. */
     private Map<Long, List<String>> facultyNames(Collection<Long> offeringIds) {
-        Map<Long, List<String>> names = new LinkedHashMap<>();
-        faculty.byOffering(offeringIds).forEach((offeringId, members) -> names.put(offeringId, members.stream()
-                .filter(member -> "ACTIVE".equals(member.status()) && member.name() != null)
-                .sorted(Comparator.comparing((OfferingFaculty member) -> !"PRIMARY".equals(member.role())))
-                .map(OfferingFaculty::name)
-                .toList()));
-        return names;
+        return faculty.activeNamesByOffering(offeringIds);
     }
 
     private static BigDecimal enrolledCredits(List<CourseEnrollment> enrollments) {

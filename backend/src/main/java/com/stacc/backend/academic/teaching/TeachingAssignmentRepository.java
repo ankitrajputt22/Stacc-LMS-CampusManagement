@@ -70,6 +70,7 @@ public interface TeachingAssignmentRepository extends JpaRepository<TeachingAssi
             join fetch courseOffering.semester semester
             join fetch semester.program
             join fetch semester.academicSession
+            left join fetch courseOffering.section
             where facultyProfile.userAccount.id = :userAccountId
             """)
     List<TeachingAssignment> findAllWithCourseDetailsByUserAccountId(@Param("userAccountId") Long userAccountId);

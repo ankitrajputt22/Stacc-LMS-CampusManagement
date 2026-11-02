@@ -1,6 +1,7 @@
 package com.stacc.backend.academic.admin;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,20 @@ public class OfferingFacultyLoader {
                 LinkedHashMap::new,
                 Collectors.mapping(assignment -> OfferingFaculty.of(assignment,
                         names.get(assignment.getFacultyProfile().getUserAccount().getId())), Collectors.toList())));
+    }
+
+    /**
+     * The names of the faculty actively teaching each offering, primary first; members without a person profile name
+     * are left out. Only names: never login IDs or contact details. Offerings with nobody are missing from the map.
+     */
+    public Map<Long, List<String>> activeNamesByOffering(Collection<Long> courseOfferingIds) {
+        Map<Long, List<String>> names = new LinkedHashMap<>();
+        byOffering(courseOfferingIds).forEach((offeringId, members) -> names.put(offeringId, members.stream()
+                .filter(member -> "ACTIVE".equals(member.status()) && member.name() != null)
+                .sorted(Comparator.comparing((OfferingFaculty member) -> !"PRIMARY".equals(member.role())))
+                .map(OfferingFaculty::name)
+                .toList()));
+        return names;
     }
 
     List<OfferingFaculty> forOffering(Long courseOfferingId) {

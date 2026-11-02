@@ -60,7 +60,7 @@ class LmsSearchProviderTest {
     private final PageRequest five = PageRequest.of(0, 5);
 
     private static LmsCourseSummaryResponse course(long id, String code, String name) {
-        return new LmsCourseSummaryResponse(id, code, name, new BigDecimal("4.00"), 3, "BTECH-CSE", "2026-27");
+        return new LmsCourseSummaryResponse(id, code, name, new BigDecimal("4.00"), 3, "BTECH-CSE", "2026-27", null, java.util.List.of());
     }
 
     private static LmsAssignment assignment(long id, long courseId, String title, LmsContentStatus status) {
@@ -210,9 +210,9 @@ class LmsSearchProviderTest {
     @Test
     void teachingCoursesIncludeOfferingsWithoutAnLmsCourseAndArchivedOnesOpenTheTeachingList() {
         when(managedCourses.getManagedCourses(80L)).thenReturn(List.of(
-                new LmsFacultyManagedCourseResponse(31L, "CS301", "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "DRAFT"),
-                new LmsFacultyManagedCourseResponse(32L, "CS302", "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null),
-                new LmsFacultyManagedCourseResponse(33L, "CS303", "Data Mining", BigDecimal.ONE, 3, "BTECH", "2025-26", 23L, "ARCHIVED")));
+                new LmsFacultyManagedCourseResponse(31L, "CS301", "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "DRAFT", null, "PRIMARY", 0L),
+                new LmsFacultyManagedCourseResponse(32L, "CS302", "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null, null, "PRIMARY", 0L),
+                new LmsFacultyManagedCourseResponse(33L, "CS303", "Data Mining", BigDecimal.ONE, 3, "BTECH", "2025-26", 23L, "ARCHIVED", null, "PRIMARY", 0L)));
 
         var page = provider.search(SearchResultType.TEACHING_COURSE, context(faculty, "CS30"), five).orElseThrow();
 
@@ -230,7 +230,7 @@ class LmsSearchProviderTest {
                 "LMS_COURSE_MANAGE");
         when(studentCourses.getAccessibleCourses(90L)).thenReturn(List.of(course(11, "CS301", "Data Structures")));
         when(managedCourses.getManagedCourses(90L)).thenReturn(List.of(new LmsFacultyManagedCourseResponse(31L, "CS301",
-                "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "PUBLISHED")));
+                "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "PUBLISHED", null, "PRIMARY", 0L)));
         SearchContext context = context(both, "CS301");
 
         assertThat(provider.search(SearchResultType.COURSE, context, five).orElseThrow().getContent())

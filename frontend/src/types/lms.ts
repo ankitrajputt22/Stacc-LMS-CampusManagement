@@ -11,6 +11,10 @@ export type LmsCourseSummary = {
   semesterNumber: number
   programCode: string
   academicSessionCode: string
+  /** The section the offering is for, or null for the whole semester. */
+  sectionCode: string | null
+  /** Names of the faculty teaching it, primary first. */
+  faculty: string[]
 }
 
 /** The states in which faculty can use an LMS course. Archived courses are never listed for them. */
@@ -330,6 +334,11 @@ export type LmsManagedCourse = {
   academicSessionCode: string
   lmsCourseId: number | null
   lmsCourseStatus: LmsCourseLifecycleStatus | null
+  /** The section the offering is for, or null for the whole semester. */
+  sectionCode: string | null
+  teachingRole: 'PRIMARY' | 'CO_FACULTY'
+  /** Students enrolled in the offering now. */
+  enrolledCount: number
 }
 
 /** An LMS course after a management change. */

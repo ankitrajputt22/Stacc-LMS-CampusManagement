@@ -76,8 +76,8 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
     @Test
     void studentWithThePermissionGetsTheirCourses() throws Exception {
         when(courseQueryService.getAccessibleCourses(ACCOUNT_ID)).thenReturn(List.of(
-                new LmsCourseSummaryResponse(7L, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27"),
-                new LmsCourseSummaryResponse(8L, "TST302", "Test Course Two", new BigDecimal("1.50"), 3, "BTECH", "2026-27")));
+                new LmsCourseSummaryResponse(7L, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27", null, java.util.List.of()),
+                new LmsCourseSummaryResponse(8L, "TST302", "Test Course Two", new BigDecimal("1.50"), 3, "BTECH", "2026-27", null, java.util.List.of())));
 
         getMyCourses(studentToken())
                 .andExpect(status().isOk())
@@ -96,11 +96,11 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
     @Test
     void responseHoldsOnlyTheCourseSummaryFields() throws Exception {
         when(courseQueryService.getAccessibleCourses(ACCOUNT_ID)).thenReturn(List.of(
-                new LmsCourseSummaryResponse(7L, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27")));
+                new LmsCourseSummaryResponse(7L, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27", null, java.util.List.of())));
 
         getMyCourses(studentToken())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].*", hasSize(7)))
+                .andExpect(jsonPath("$[0].*", hasSize(9)))
                 .andExpect(content().string(not(containsString("password"))))
                 .andExpect(content().string(not(containsString(LOGIN_ID))))
                 .andExpect(content().string(not(containsString("accountId"))))
@@ -269,7 +269,7 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.responses['401']").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].get.responses['403']").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/lms/my-courses'].post").doesNotExist())
-                .andExpect(jsonPath("$.components.schemas.LmsCourseSummaryResponse.properties.*", hasSize(7)))
+                .andExpect(jsonPath("$.components.schemas.LmsCourseSummaryResponse.properties.*", hasSize(9)))
                 .andExpect(jsonPath("$.security").doesNotExist())
                 .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.security").doesNotExist());
     }

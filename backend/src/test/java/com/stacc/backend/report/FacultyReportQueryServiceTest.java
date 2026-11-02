@@ -172,9 +172,9 @@ class FacultyReportQueryServiceTest {
     @Test
     void myCoursesListsEveryTaughtOfferingWithGroupedCounts() {
         when(taught.getManagedCourses(80L)).thenReturn(List.of(
-                new LmsFacultyManagedCourseResponse(31L, "CS301", "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "PUBLISHED"),
-                new LmsFacultyManagedCourseResponse(32L, "CS302", "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null),
-                new LmsFacultyManagedCourseResponse(33L, "CS303", "Operating Systems", BigDecimal.ONE, 3, "BTECH", "2026-27", 23L, "ARCHIVED")));
+                new LmsFacultyManagedCourseResponse(31L, "CS301", "Data Structures", BigDecimal.ONE, 3, "BTECH", "2026-27", 21L, "PUBLISHED", null, "PRIMARY", 0L),
+                new LmsFacultyManagedCourseResponse(32L, "CS302", "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null, null, "PRIMARY", 0L),
+                new LmsFacultyManagedCourseResponse(33L, "CS303", "Operating Systems", BigDecimal.ONE, 3, "BTECH", "2026-27", 23L, "ARCHIVED", null, "PRIMARY", 0L)));
         when(enrollments.countByOfferingAndStatus(any())).thenReturn(List.of(
                 enrollment(31, CourseEnrollmentStatus.ENROLLED, 2), enrollment(31, CourseEnrollmentStatus.WITHDRAWN, 1),
                 enrollment(32, CourseEnrollmentStatus.ENROLLED, 5)));
@@ -212,7 +212,7 @@ class FacultyReportQueryServiceTest {
     @Test
     void withoutAnOpenLmsCourseNoAssignmentQueryIsSent() {
         when(taught.getManagedCourses(80L)).thenReturn(List.of(new LmsFacultyManagedCourseResponse(32L, "CS302",
-                "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null)));
+                "Databases", BigDecimal.ONE, 3, "BTECH", "2026-27", null, null, null, "PRIMARY", 0L)));
         service.myCourses(80L);
         verify(assignments, never()).countByCourseAndStatus(any(), any());
         verify(access, never()).canTeachCourseOffering(anyLong(), eq(32L));

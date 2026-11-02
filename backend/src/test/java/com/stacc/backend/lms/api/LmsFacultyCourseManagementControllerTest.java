@@ -86,8 +86,8 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
     @Test
     void theManagedCoursesComeFromTheAccountInTheTokenAndKeepOfferingsWithoutAnLmsCourse() throws Exception {
         when(queryService.getManagedCourses(ACCOUNT)).thenReturn(List.of(
-                new LmsFacultyManagedCourseResponse(33L, "CS301", "Data Structures", new BigDecimal("4.00"), 3, "BTECH", "2026-27", null, null),
-                new LmsFacultyManagedCourseResponse(34L, "CS303", "Networks", new BigDecimal("4.00"), 3, "BTECH", "2026-27", 44L, "ARCHIVED")));
+                new LmsFacultyManagedCourseResponse(33L, "CS301", "Data Structures", new BigDecimal("4.00"), 3, "BTECH", "2026-27", null, null, null, "PRIMARY", 0L),
+                new LmsFacultyManagedCourseResponse(34L, "CS303", "Networks", new BigDecimal("4.00"), 3, "BTECH", "2026-27", 44L, "ARCHIVED", null, "PRIMARY", 0L)));
 
         mockMvc.perform(as(manager(), get(ROOT + "/managed-courses").param("facultyProfileId", "9")))
                 .andExpect(status().isOk())

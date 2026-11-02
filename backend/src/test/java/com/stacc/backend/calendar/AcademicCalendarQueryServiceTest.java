@@ -94,7 +94,7 @@ class AcademicCalendarQueryServiceTest {
 
     private static LmsCourseSummaryResponse studentCourse(LmsCourse course) {
         return new LmsCourseSummaryResponse(course.getId(), course.getCourseOffering().getCourse().getCode(),
-                course.getCourseOffering().getCourse().getName(), new BigDecimal("4.00"), 3, "BTECH-CSE", "2026-27");
+                course.getCourseOffering().getCourse().getName(), new BigDecimal("4.00"), 3, "BTECH-CSE", "2026-27", null, java.util.List.of());
     }
 
     private static LmsFacultyCourseSummaryResponse facultyCourse(LmsCourse course, String status) {
