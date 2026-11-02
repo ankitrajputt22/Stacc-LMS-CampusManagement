@@ -55,10 +55,32 @@ public class AdminUserController {
 
     private final UserAdminService service;
     private final com.stacc.backend.identity.person.PersonPhotoService photos;
+    private final UserImportService imports;
 
-    public AdminUserController(UserAdminService service, com.stacc.backend.identity.person.PersonPhotoService photos) {
+    public AdminUserController(UserAdminService service, com.stacc.backend.identity.person.PersonPhotoService photos,
+            UserImportService imports) {
         this.service = service;
         this.photos = photos;
+        this.imports = imports;
+    }
+
+    @PostMapping(value = "/import", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(MANAGE)
+    @Operation(summary = "Import accounts from a CSV file",
+            description = "A UTF-8 CSV file (at most 1 MB and 500 accounts) whose first line is login_id,full_name,email,"
+                    + "roles,department,program,admission_session,roll_number. Roles are separated by ;. Every row is "
+                    + "checked and its problems listed by line. With dryRun true, or when any row has a problem, nothing is "
+                    + "saved; otherwise every account is created in one transaction with the one temporary password sent "
+                    + "here, which each person must replace. No password is read from the file.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The rows with their problems, and how many accounts were created.")
+    @ApiResponse(responseCode = "400", description = "No usable file, a wrong header, too many rows, or an unusable "
+            + "temporary password.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public UserImportService.ImportResult importAccounts(@AuthenticationPrincipal Jwt token,
+            @org.springframework.web.bind.annotation.RequestPart("file") org.springframework.web.multipart.MultipartFile file,
+            @org.springframework.web.bind.annotation.RequestPart("temporaryPassword") String temporaryPassword,
+            @RequestParam(defaultValue = "true") boolean dryRun) {
+        return imports.importCsv(AuthenticatedAccount.idFrom(token), file, temporaryPassword, dryRun);
     }
 
     @GetMapping("/{accountId}/photo")

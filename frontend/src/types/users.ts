@@ -60,3 +60,6 @@ export type UserCreate = {
 }
 
 export type UserFilters = { role?: RoleName; status?: AccountStatus; q?: string; page: number; size: number }
+
+export type ImportRow = { line: number; loginId: string; errors: string[] }
+export type ImportResult = { dryRun: boolean; created: number; rowsWithErrors: number; rows: ImportRow[] }

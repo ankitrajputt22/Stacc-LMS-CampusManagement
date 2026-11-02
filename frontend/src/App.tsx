@@ -31,6 +31,7 @@ import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
 import { CourseRegistrationPage } from './pages/CourseRegistrationPage'
 import { AdminUserCreatePage } from './pages/AdminUserCreatePage'
+import { AdminUserImportPage } from './pages/AdminUserImportPage'
 import { AdminUserPage } from './pages/AdminUserPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
 import { AdminAuditPage } from './pages/AdminAuditPage'
@@ -77,6 +78,7 @@ function App() {
           <Route path="admin/users" element={<AdminUsersPage />} />
           <Route path="admin/audit" element={<AdminAuditPage />} />
           <Route path="admin/users/new" element={<AdminUserCreatePage />} />
+          <Route path="admin/users/import" element={<AdminUserImportPage />} />
           <Route path="admin/users/:accountId" element={<AdminUserPage />} />
           <Route path="class-lists" element={<ClassListsPage />} />
           <Route path="class-lists/:courseOfferingId" element={<ClassListPage />} />

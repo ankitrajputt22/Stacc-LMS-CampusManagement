@@ -68,10 +68,19 @@ public class PasswordService {
      */
     @Transactional
     public void issueTemporaryPassword(Long accountId, String temporaryPassword, Duration validity) {
+        issueTemporaryPasswordHash(accountId, passwordEncoder.encode(temporaryPassword), validity);
+    }
+
+    /**
+     * The same, with a hash the shared {@link PasswordEncoder} already made, so one temporary password given to many new
+     * accounts at once (bulk import) is hashed only once.
+     */
+    @Transactional
+    public void issueTemporaryPasswordHash(Long accountId, String temporaryPasswordHash, Duration validity) {
         UserAccount account = accounts.findById(accountId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Account not found."));
         Instant expiresAt = clock.instant().plus(validity == null ? TEMPORARY_VALIDITY : validity);
-        account.issueTemporaryPassword(passwordEncoder.encode(temporaryPassword), expiresAt);
+        account.issueTemporaryPassword(temporaryPasswordHash, expiresAt);
         accounts.save(account);
         sessions.endAll(accountId, SessionEndReason.ENDED_BY_COLLEGE);
     }

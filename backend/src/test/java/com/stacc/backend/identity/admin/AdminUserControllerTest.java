@@ -34,6 +34,9 @@ class AdminUserControllerTest extends DatabaseFreeApiTest {
     @MockitoBean
     private UserAdminService service;
 
+    @MockitoBean
+    private UserImportService imports;
+
     private static String bearer(String... authorities) {
         return "Bearer " + TestTokens.valid("admin1", 70, authorities);
     }
@@ -87,5 +90,23 @@ class AdminUserControllerTest extends DatabaseFreeApiTest {
                 .contentType(MediaType.APPLICATION_JSON).content("{\"temporaryPassword\":\"Bright-Lantern-2047\"}"))
                 .andExpect(status().isOk());
         verify(service).issueTemporaryPassword(70L, 57L, "Bright-Lantern-2047");
+    }
+
+    @Test
+    void importingNeedsUserManageAndDefaultsToACheck() throws Exception {
+        org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile(
+                "file", "people.csv", "text/csv", "login_id\n".getBytes());
+        org.springframework.mock.web.MockMultipartFile password = new org.springframework.mock.web.MockMultipartFile(
+                "temporaryPassword", "", "text/plain", "Bright-Lantern-2047".getBytes());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(ROOT + "/import")
+                .file(file).file(password).header(HttpHeaders.AUTHORIZATION, bearer("ROLE_ADMIN", "USER_VIEW")))
+                .andExpect(status().isForbidden());
+        verifyNoInteractions(imports);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(ROOT + "/import")
+                .file(file).file(password)
+                .header(HttpHeaders.AUTHORIZATION, bearer("ROLE_ADMIN", "USER_VIEW", "USER_MANAGE")))
+                .andExpect(status().isOk());
+        verify(imports).importCsv(eq(70L), any(), eq("Bright-Lantern-2047"), eq(true));
     }
 }
