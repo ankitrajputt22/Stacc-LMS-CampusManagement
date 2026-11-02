@@ -49,8 +49,8 @@ class LocalTestDataSeederTest {
     }
 
     @Test
-    void theDocumentedAccountsAreTheSevenTestLogins() {
+    void theDocumentedAccountsAreTheEightTestLogins() {
         assertThat(LocalTestDataSeeder.TEST_LOGIN_IDS).containsExactly(
-                "student1", "student2", "faculty1", "faculty2", "admin1", "studentfaculty1", "facultyadmin1");
+                "student1", "student2", "faculty1", "faculty2", "admin1", "studentfaculty1", "facultyadmin1", "hod1");
     }
 }

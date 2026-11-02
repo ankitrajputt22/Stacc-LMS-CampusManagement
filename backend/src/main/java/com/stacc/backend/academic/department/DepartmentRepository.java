@@ -3,15 +3,22 @@ package com.stacc.backend.academic.department;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     Optional<Department> findByCode(String code);
+
+    /** Locks the department row, so changes of who heads it happen one at a time. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select department from Department department where department.id = :departmentId")
+    Optional<Department> findByIdForUpdate(@Param("departmentId") Long departmentId);
 
     /** Every department, by code. */
     List<Department> findAllByOrderByCodeAscIdAsc();

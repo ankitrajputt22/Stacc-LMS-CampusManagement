@@ -19,9 +19,12 @@ import com.stacc.backend.academic.profile.MyAcademicProfileResponse.SemesterReco
 import com.stacc.backend.academic.profile.MyAcademicProfileResponse.StudentPart;
 import com.stacc.backend.academic.profile.MyAcademicProfileResponse.Teaching;
 import com.stacc.backend.academic.result.CourseResult;
+import com.stacc.backend.academic.responsibility.DepartmentHeadResolver;
 import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
+import com.stacc.backend.identity.person.PersonProfile;
+import com.stacc.backend.identity.person.PersonProfileRepository;
 import com.stacc.backend.identity.student.StudentProfile;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import org.springframework.stereotype.Service;
@@ -42,16 +45,21 @@ public class MyAcademicProfileService {
     private final CourseEnrollmentRepository courseEnrollments;
     private final CourseResultRepository results;
     private final TeachingAssignmentRepository assignments;
+    private final DepartmentHeadResolver heads;
+    private final PersonProfileRepository people;
 
     public MyAcademicProfileService(StudentProfileRepository students, FacultyProfileRepository faculty,
             SemesterEnrollmentRepository semesterEnrollments, CourseEnrollmentRepository courseEnrollments,
-            CourseResultRepository results, TeachingAssignmentRepository assignments) {
+            CourseResultRepository results, TeachingAssignmentRepository assignments, DepartmentHeadResolver heads,
+            PersonProfileRepository people) {
         this.students = students;
         this.faculty = faculty;
         this.semesterEnrollments = semesterEnrollments;
         this.courseEnrollments = courseEnrollments;
         this.results = results;
         this.assignments = assignments;
+        this.heads = heads;
+        this.people = people;
     }
 
     /**
@@ -67,7 +75,8 @@ public class MyAcademicProfileService {
                         profile.getDepartment().getName(), profile.getStatus().name(),
                         assignments.findActiveWithOfferingByFacultyProfileId(profile.getId()).stream()
                                 .map(assignment -> teaching(assignment.getCourseOffering(), assignment.getRole().name()))
-                                .toList()))
+                                .toList(),
+                        headOf(profile.getDepartment().getId())))
                 .orElse(null) : null;
         return new MyAcademicProfileResponse(student, facultyPart);
     }
@@ -96,7 +105,16 @@ public class MyAcademicProfileService {
                         enrollment.getSection() == null ? null : enrollment.getSection().getCode(), enrollment.getStatus().name(),
                         courses.getOrDefault(enrollment.getId(), List.of()).stream()
                                 .map(course -> courseRecord(course, published.get(course.getId()))).toList()))
-                        .toList());
+                        .toList(),
+                headOf(program.getDepartment().getId()));
+    }
+
+    /** The name of who heads the department now (the login ID before a name is recorded), or null. */
+    private String headOf(Long departmentId) {
+        return heads.headOf(departmentId)
+                .map(account -> people.findByUserAccountId(account.getId()).map(PersonProfile::displayName)
+                        .orElse(account.getLoginId()))
+                .orElse(null);
     }
 
     private static CourseRecord courseRecord(CourseEnrollment enrollment, CourseResult result) {

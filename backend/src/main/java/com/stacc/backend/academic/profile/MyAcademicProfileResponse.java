@@ -26,7 +26,9 @@ public record MyAcademicProfileResponse(
             @Schema(description = "The session of original admission.", example = "2025-26") String admissionSessionCode,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}) String status,
             @Schema(description = "Where they study now, from their enrolled semester enrollment, or null.") Current current,
-            @Schema(description = "Every semester enrollment, the latest session first.") List<SemesterRecord> semesters) {
+            @Schema(description = "Every semester enrollment, the latest session first.") List<SemesterRecord> semesters,
+            @Schema(description = "The name of who heads the program's department now, or null when nobody does.")
+            String headOfDepartment) {
     }
 
     public record Current(
@@ -65,7 +67,9 @@ public record MyAcademicProfileResponse(
             @Schema(example = "CSE") String departmentCode,
             @Schema(example = "Computer Science and Engineering") String departmentName,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}) String status,
-            @Schema(description = "The course offerings they actively teach, the latest session first.") List<Teaching> teaching) {
+            @Schema(description = "The course offerings they actively teach, the latest session first.") List<Teaching> teaching,
+            @Schema(description = "The name of who heads their primary department now, or null when nobody does.")
+            String headOfDepartment) {
     }
 
     public record Teaching(

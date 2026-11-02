@@ -1,5 +1,6 @@
 import { useParams } from 'react-router'
 import { CalendarSection } from '../admin/CalendarSection'
+import { DepartmentHeadsSection } from '../admin/DepartmentHeadsSection'
 import { EnrollmentMonitorSection } from '../admin/EnrollmentMonitorSection'
 import { EnrollmentsSection } from '../admin/EnrollmentsSection'
 import { FacultyAssignmentsSection } from '../admin/FacultyAssignmentsSection'
@@ -43,6 +44,7 @@ const SECTIONS = [
   { path: 'course-enrollments', group: 'people', label: 'Course Enrollments', Section: EnrollmentMonitorSection },
   { path: 'students', group: 'people', label: 'Students', Section: StudentProfilesSection },
   { path: 'faculty', group: 'people', label: 'Faculty', Section: FacultyProfilesSection },
+  { path: 'department-heads', group: 'people', label: 'Department Heads', Section: DepartmentHeadsSection },
   { path: 'calendar', group: 'calendar', label: 'Academic Calendar', Section: CalendarSection },
 ] as const
 
@@ -72,7 +74,7 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
       <PageHeader
         eyebrow="ERP"
         title="Academic Admin"
-        description="Manage the academic structure, course offerings and who teaches them, students, faculty, and their official enrollment, and the academic calendar."
+        description="Manage the academic structure, course offerings and who teaches them, students, faculty, department heads, and official enrollment, and the academic calendar."
       />
       {isAdmin ? (
         <>

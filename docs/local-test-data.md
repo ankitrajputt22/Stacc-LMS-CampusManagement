@@ -50,6 +50,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 | `faculty2` | `FACULTY` | **Draft LMS course and no LMS course.**<br>• CS302 has a draft LMS course with draft content and a draft assignment.<br>• CS304 has no LMS course, so Teaching offers Create.<br>• Teaches the open elective CS305 (no LMS course).<br>• An open, unmarked attendance session. |
 | `admin1` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view.<br>• Helpdesk queue: every ticket, three of them assigned to `admin1`. |
 | `studentfaculty1` | `STUDENT`, `FACULTY` | **Student and teacher at once.**<br>• Enrolled in CS301, and co-teaches CS302 with `faculty2`.<br>• Both dashboard parts.<br>• Student and teaching deadlines on the calendar. |
+| `hod1` | `FACULTY`, `HOD` | **Head of department.**<br>• Heads `CSE`, so students and faculty of CSE see Lakshmi Menon as their head of department.<br>• Admins can end the term or set another head at Academic Admin → People → Department Heads.<br>• Teaches nothing. |
 | `facultyadmin1` | `FACULTY`, `ADMIN` | **Teacher and admin at once.**<br>• Teaches CS401 in semester 4, which has no LMS course.<br>• Faculty and admin dashboards.<br>• The admin calendar, including the semester 4 event.<br>• Helpdesk: assigned the projector ticket to `admin1`. |
 
 ## What is created
@@ -64,9 +65,10 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - CS401 in semester 4 (planned).
 
 **People and enrollment**
-- Person profiles with made-up names and addresses on the reserved `.example` domain (such as `student1@stacc.example`): `student1` Aarav Sharma, `student2` Diya Patel, `faculty1` Meera Iyer, `faculty2` Rohan Gupta, `admin1` Kavita Rao, `studentfaculty1` Arjun Nair, `facultyadmin1` Sanjay Verma.
+- Person profiles with made-up names and addresses on the reserved `.example` domain (such as `student1@stacc.example`): `student1` Aarav Sharma, `student2` Diya Patel, `faculty1` Meera Iyer, `faculty2` Rohan Gupta, `admin1` Kavita Rao, `studentfaculty1` Arjun Nair, `facultyadmin1` Sanjay Verma, `hod1` Lakshmi Menon.
 - Student profiles for `student1`, `student2`, and `studentfaculty1`, admitted in the previous session.
-- Faculty profiles for `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`, in `CSE`.
+- Faculty profiles for `faculty1`, `faculty2`, `studentfaculty1`, `facultyadmin1`, and `hod1`, in `CSE`.
+- `hod1` heads `CSE`, set through the normal department head service by `admin1`, unless CSE has ever had a head (an ended or replaced term is never started again).
 - Teaching assignments:
   - `faculty1`: CS201, CS301, CS303;
   - `faculty2`: CS302, CS304;

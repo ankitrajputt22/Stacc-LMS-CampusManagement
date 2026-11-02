@@ -19,6 +19,7 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.program.Program;
+import com.stacc.backend.academic.responsibility.DepartmentHeadResolver;
 import com.stacc.backend.academic.result.CourseResult;
 import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.academic.semester.Semester;
@@ -26,6 +27,7 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
+import com.stacc.backend.identity.person.PersonProfileRepository;
 import com.stacc.backend.identity.student.StudentProfile;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import org.junit.jupiter.api.Test;
@@ -39,8 +41,10 @@ class MyAcademicProfileServiceTest {
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
     private final CourseResultRepository results = mock(CourseResultRepository.class);
     private final TeachingAssignmentRepository assignments = mock(TeachingAssignmentRepository.class);
+    private final DepartmentHeadResolver heads = mock(DepartmentHeadResolver.class);
+    private final PersonProfileRepository people = mock(PersonProfileRepository.class);
     private final MyAcademicProfileService service = new MyAcademicProfileService(students, faculty, semesterEnrollments,
-            courseEnrollments, results, assignments);
+            courseEnrollments, results, assignments, heads, people);
 
     private static <T> T id(T entity, long id) {
         ReflectionTestUtils.setField(entity, "id", id);
@@ -72,6 +76,9 @@ class MyAcademicProfileServiceTest {
         when(semesterEnrollments.findAllWithContextByStudentProfileId(57L)).thenReturn(List.of(current, past));
         when(courseEnrollments.findAllWithOfferingBySemesterEnrollmentIdIn(any())).thenReturn(List.of(oopEnrollment, dsEnrollment));
         when(results.findAllByCourseEnrollmentIdIn(any())).thenReturn(List.of(publishedOop, draftDs));
+        UserAccount hod = id(new UserAccount("hod1", "example-hash-value"), 90);
+        when(heads.headOf(3L)).thenReturn(Optional.of(hod));
+        when(people.findByUserAccountId(90L)).thenReturn(Optional.empty());
 
         var student = service.profile(70L, true, false).student();
 
@@ -82,6 +89,7 @@ class MyAcademicProfileServiceTest {
         assertEquals(3, student.current().semesterNumber());
         assertNull(student.semesters().getFirst().courses().getFirst().result(), "a draft result is never shown");
         assertEquals("B+", student.semesters().get(1).courses().getFirst().result().gradeCode());
+        assertEquals("hod1", student.headOfDepartment(), "the login ID stands in until a name is recorded");
     }
 
     @Test

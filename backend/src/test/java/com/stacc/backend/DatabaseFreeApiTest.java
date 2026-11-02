@@ -16,6 +16,7 @@ import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.program.ProgramRepository;
+import com.stacc.backend.academic.responsibility.DepartmentHeadRepository;
 import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
@@ -129,7 +130,8 @@ import org.springframework.web.context.WebApplicationContext;
     SemesterEnrollmentRepository.class,
     SemesterRepository.class,
     StudentProfileRepository.class,
-    TeachingAssignmentRepository.class
+    TeachingAssignmentRepository.class,
+    DepartmentHeadRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 
