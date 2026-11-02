@@ -45,7 +45,7 @@ test('an admin creates an account and the new person must replace the temporary 
   // Account settings: the official name as the college recorded it, a preferred name, and this browser's session.
   await page.goto('/account')
   await expect(page.getByRole('heading', { level: 1, name: 'Account settings' })).toBeVisible()
-  await expect(page.getByText('Journey Admin').first()).toBeVisible()
+  await expect(page.getByRole('main').getByText('Journey Admin')).toBeVisible()
   await page.getByLabel(/Preferred name/).fill('Journey')
   await page.getByRole('button', { name: 'Save details' }).click()
   await expect(page.getByText('Your details are saved.')).toBeVisible()
