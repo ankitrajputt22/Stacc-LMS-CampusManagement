@@ -18,8 +18,8 @@ An account has at most one profile. Until the college records one, the login ID 
 
 | Route | Needs | Does |
 | --- | --- | --- |
-| `GET /api/v1/me/profile` | `STUDENT`, `FACULTY`, or `ADMIN` with `PERSON_PROFILE_VIEW_OWN` | The signed-in person's own profile, or the login ID alone (`recorded: false`). |
-| `PUT /api/v1/me/profile` | `STUDENT`, `FACULTY`, or `ADMIN` with `PERSON_PROFILE_EDIT_OWN` | Replaces the preferred name and the phone number; blank clears. 409 before the college records the profile. |
+| `GET /api/v1/me/profile` | `PERSON_PROFILE_VIEW_OWN` (every role holds it) | The signed-in person's own profile, or the login ID alone (`recorded: false`). |
+| `PUT /api/v1/me/profile` | `PERSON_PROFILE_EDIT_OWN` (every role holds it) | Replaces the preferred name and the phone number; blank clears. 409 before the college records the profile. |
 | `GET /api/v1/me/profile/photo` | as reading the profile | The person's own official photo, inline, `Cache-Control: no-store, private`, `nosniff`; 404 when there is none. |
 | `GET`, `POST /api/v1/admin/users/{accountId}/photo` | `ADMIN` with `USER_VIEW`; uploading also `USER_MANAGE` | Reads or sets an account's official photo (multipart `file`). Setting it needs a recorded profile (409) and is recorded in the audit log (`USER_PHOTO_CHANGED`). |
 

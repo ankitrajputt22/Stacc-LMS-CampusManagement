@@ -35,8 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class MyPersonProfileController {
 
-    static final String VIEW = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('PERSON_PROFILE_VIEW_OWN')";
-    static final String EDIT = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('PERSON_PROFILE_EDIT_OWN')";
+    // Every role holds both permissions (V64, V77): a profile belongs to an account, whatever roles it holds.
+    static final String VIEW = "hasAuthority('PERSON_PROFILE_VIEW_OWN')";
+    static final String EDIT = "hasAuthority('PERSON_PROFILE_EDIT_OWN')";
 
     private final PersonProfileService profiles;
     private final com.stacc.backend.identity.person.PersonPhotoService photos;

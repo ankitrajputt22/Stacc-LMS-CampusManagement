@@ -15,9 +15,10 @@ import org.junit.jupiter.api.Test;
 class RoleTest {
 
     @Test
-    void initialRolesAreStudentFacultyAndAdmin() {
+    void theRolesAreStudentFacultyAdminAndTheStaffRolesInThatOrder() {
         assertArrayEquals(
-                new RoleName[] {RoleName.STUDENT, RoleName.FACULTY, RoleName.ADMIN},
+                new RoleName[] {RoleName.STUDENT, RoleName.FACULTY, RoleName.ADMIN, RoleName.HOD, RoleName.WARDEN,
+                        RoleName.SECURITY, RoleName.MAINTENANCE, RoleName.LIBRARIAN, RoleName.PLACEMENT_OFFICER},
                 RoleName.values());
     }
 

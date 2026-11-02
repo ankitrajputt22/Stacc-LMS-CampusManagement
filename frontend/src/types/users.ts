@@ -1,6 +1,7 @@
 // Admin user management as /api/v1/admin/users sends it. No answer ever carries a password or a hash.
 
-export type RoleName = 'STUDENT' | 'FACULTY' | 'ADMIN'
+export type { AccountRole as RoleName } from '../auth/roles'
+import type { AccountRole as RoleName } from '../auth/roles'
 export type AccountStatus = 'ACTIVE' | 'DISABLED'
 
 export type UserSummary = {

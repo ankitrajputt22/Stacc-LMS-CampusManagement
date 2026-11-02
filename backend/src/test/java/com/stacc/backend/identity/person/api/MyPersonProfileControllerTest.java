@@ -36,11 +36,9 @@ class MyPersonProfileControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
-    void readingAndChangingNeedARoleAndTheirOwnPermission() throws Exception {
+    void readingAndChangingNeedTheirOwnPermission() throws Exception {
         mockMvc.perform(get(ROUTE)).andExpect(status().isUnauthorized());
         mockMvc.perform(get(ROUTE).header(HttpHeaders.AUTHORIZATION, token(7, "ROLE_STUDENT", "LMS_COURSE_VIEW")))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(get(ROUTE).header(HttpHeaders.AUTHORIZATION, token(7, "PERSON_PROFILE_VIEW_OWN")))
                 .andExpect(status().isForbidden());
         mockMvc.perform(put(ROUTE).contentType(MediaType.APPLICATION_JSON).content("{}")
                         .header(HttpHeaders.AUTHORIZATION, token(7, "ROLE_STUDENT", "PERSON_PROFILE_VIEW_OWN")))
@@ -51,7 +49,7 @@ class MyPersonProfileControllerTest extends DatabaseFreeApiTest {
     @Test
     void everyRoleReadsItsOwnProfileFromTheToken() throws Exception {
         when(profiles.myProfile(anyLong())).thenReturn(aarav());
-        for (String role : new String[] {"ROLE_STUDENT", "ROLE_FACULTY", "ROLE_ADMIN"}) {
+        for (String role : new String[] {"ROLE_STUDENT", "ROLE_FACULTY", "ROLE_ADMIN", "ROLE_SECURITY"}) {
             mockMvc.perform(get(ROUTE).param("accountId", "1")
                             .header(HttpHeaders.AUTHORIZATION, token(7, role, "PERSON_PROFILE_VIEW_OWN")))
                     .andExpect(status().isOk())
@@ -59,7 +57,7 @@ class MyPersonProfileControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath("$.fullName").value("Aarav Sharma"));
         }
         // The account came from the token, never from the accountId parameter.
-        verify(profiles, org.mockito.Mockito.times(3)).myProfile(7L);
+        verify(profiles, org.mockito.Mockito.times(4)).myProfile(7L);
     }
 
     @Test

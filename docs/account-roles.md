@@ -2,13 +2,14 @@
 
 Stacc accounts receive their roles from the college. Users never choose their own role: there is no role selector at signup, at login, or anywhere in the frontend. Role information always comes from the account stored in the backend.
 
-## Initial roles
+## Roles
 
 - `STUDENT`
 - `FACULTY`
 - `ADMIN`
+- Staff roles (`V77`): `HOD` (head of department), `WARDEN`, `SECURITY`, `MAINTENANCE`, `LIBRARIAN`, and `PLACEMENT_OFFICER`.
 
-Other roles, such as HOD or hostel warden, will be added by later migrations when their features are built.
+Admins assign every role on the Users pages and in CSV imports. A staff role holds only `PERSON_PROFILE_VIEW_OWN` and `PERSON_PROFILE_EDIT_OWN`, so its holders can sign in and use Account settings; each gets the permissions of its work only when that feature is built. A staff role needs no student or faculty profile. The same name list is `RoleName` in the backend and `ACCOUNT_ROLES` in the frontend, always shown in this order.
 
 ## How roles are stored
 
@@ -24,6 +25,6 @@ Role rows are shared by many accounts. Changing or deleting an account never cre
 ## What roles are not
 
 - Roles are separate from profile information such as name, department, or semester.
-- Roles are not permissions. A role can hold permissions (see `permissions.md`), but no permissions are assigned yet and nothing checks them yet.
+- Roles are not permissions. A role holds permissions (see `permissions.md`), and operations check them.
 - Operations can now require a role. See `authorization.md`.
-- There is no API for creating roles or assigning them yet.
+- Roles are created only by migrations. Admins assign them through `/api/v1/admin/users` (see `user-management.md`).

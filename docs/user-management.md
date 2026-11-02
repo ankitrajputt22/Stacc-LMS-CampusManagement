@@ -35,7 +35,7 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 
 - The login ID is the student or employee ID: unique, stripped of spaces, and never changed afterwards (409 when taken). Emails are optional and unique among people (409).
 - A new account always starts with a temporary password chosen by the admin. It follows `PasswordPolicy` (10 to 128 characters, not common, without the login ID; 400 otherwise), is hashed with the shared `PasswordEncoder`, expires after three days, and only lets the person choose a new password (`password_change_required`). It is never returned, logged, or shown again; no one can see an existing password.
-- Roles are `STUDENT`, `FACULTY`, and `ADMIN`; an account may hold several. A student account needs its program (active) and admission session, a faculty account its primary department (active); 400 when missing, 409 when inactive. Roll numbers are stored in uppercase and unique (409).
+- Roles are `STUDENT`, `FACULTY`, `ADMIN`, and the staff roles `HOD`, `WARDEN`, `SECURITY`, `MAINTENANCE`, `LIBRARIAN`, and `PLACEMENT_OFFICER`; an account may hold several. Staff roles need no profile. A student account needs its program (active) and admission session, a faculty account its primary department (active); 400 when missing, 409 when inactive. Roll numbers are stored in uppercase and unique (409).
 - Accounts are disabled, never deleted, and every record that refers to them stays. Removing a role keeps the profile: it is academic history and grants nothing by itself.
 - An admin cannot disable their own account or remove their own `ADMIN` role (409), so the college cannot lock itself out.
 - Status and role changes lock the account row. The same status or the same set of roles changes nothing and ends no session.
@@ -50,4 +50,4 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 
 ## Not built yet
 
-Staff roles (0.2.8), self-service password recovery by email, and account deletion (never).
+Self-service password recovery by email, and account deletion (never).
