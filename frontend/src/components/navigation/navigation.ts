@@ -76,7 +76,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Academic Admin', to: '/admin/academic' },
       { label: 'Hostel Management', to: '/admin/hostel' },
       { label: 'Campus Management', to: '/admin/campus' },
-      { label: 'Users' },
+      { label: 'Users', to: '/admin/users' },
       { label: 'Reports', to: '/reports' },
     ],
   },

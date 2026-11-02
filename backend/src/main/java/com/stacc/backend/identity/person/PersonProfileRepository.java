@@ -11,6 +11,8 @@ public interface PersonProfileRepository extends JpaRepository<PersonProfile, Lo
 
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndUserAccountIdNot(String email, Long userAccountId);
+
     /** The person profiles of these accounts, for showing names; accounts without one are simply missing. */
     List<PersonProfile> findAllByUserAccountIdIn(Collection<Long> userAccountIds);
 }

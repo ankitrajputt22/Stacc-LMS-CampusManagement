@@ -14,6 +14,14 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
 
     Optional<UserAccount> findByLoginId(String loginId);
 
+    boolean existsByLoginId(String loginId);
+
+    /** One account, locked until the transaction ends, so two changes to its status or roles never overlap. */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select account from UserAccount account where account.id = :accountId")
+    Optional<UserAccount> findByIdForUpdate(@Param("accountId") Long accountId);
+
+
     /** Loads the account together with its roles and their permissions in one query, for sign-in. */
     @EntityGraph(attributePaths = {"roles", "roles.permissions"})
     Optional<UserAccount> findWithRolesAndPermissionsByLoginId(String loginId);

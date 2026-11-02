@@ -120,6 +120,11 @@ public class UserAccount {
         return passwordChangeRequired && temporaryPasswordExpiresAt != null && !now.isBefore(temporaryPasswordExpiresAt);
     }
 
+    /** When the current temporary password stops working, or null when there is none. */
+    public Instant getTemporaryPasswordExpiresAt() {
+        return temporaryPasswordExpiresAt;
+    }
+
     public Instant getPasswordChangedAt() {
         return passwordChangedAt;
     }

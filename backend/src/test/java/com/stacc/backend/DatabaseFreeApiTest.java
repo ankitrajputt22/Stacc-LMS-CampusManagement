@@ -83,6 +83,7 @@ import org.springframework.web.context.WebApplicationContext;
     AcademicCalendarEventRepository.class,
     AiCourseKnowledgeIndexRepository.class,
     AcademicSessionRepository.class,
+    com.stacc.backend.identity.admin.AccountSearchRepository.class,
     ApprovalRequestHistoryRepository.class,
     ApprovalRequestRepository.class,
     ApprovalRequestStepRepository.class,

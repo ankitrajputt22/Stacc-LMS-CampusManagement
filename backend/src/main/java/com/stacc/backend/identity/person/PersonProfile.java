@@ -83,6 +83,12 @@ public class PersonProfile {
         this.phone = PersonProfileValues.phone(phone);
     }
 
+    /** The college corrects the official full name and email. The person never changes these. */
+    public void changeOfficialDetails(String fullName, String email) {
+        this.fullName = PersonProfileValues.fullName(fullName);
+        this.email = PersonProfileValues.email(email);
+    }
+
     /** The name to show: the preferred name when there is one, otherwise the full name. */
     public String displayName() {
         return preferredName != null ? preferredName : fullName;
