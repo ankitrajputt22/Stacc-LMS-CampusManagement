@@ -52,7 +52,7 @@ public class OfferingFacultyLoader {
     }
 
     /** The display name of each account that has a person profile. */
-    Map<Long, String> namesOfAccounts(Collection<Long> accountIds) {
+    public Map<Long, String> namesOfAccounts(Collection<Long> accountIds) {
         if (accountIds.isEmpty()) {
             return Map.of();
         }

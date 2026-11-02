@@ -61,6 +61,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Assignments', to: '/assignments' },
       { label: 'Attendance', to: '/attendance' },
       { label: 'Results', to: '/results' },
+      // Who is registered in each offering taught; read-only.
+      { label: 'Class Lists', to: '/class-lists' },
       // Counts for the offerings taught; the backend decides access with FACULTY_REPORT_VIEW.
       { label: 'Reports', to: '/reports' },
     ],

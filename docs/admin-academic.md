@@ -127,6 +127,7 @@ The official academic mapping of a student is their `StudentProfile` (program, w
 
 - `GET /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/courses` answers the student, the semester enrollment, and its course enrollments by course code, with course code, name, and credits.
 - `POST` on the same route takes only `courseOfferingId` and answers 201 with an `ENROLLED` course enrollment and an `lmsProvisioning` outcome. The semester enrollment must be `ENROLLED` (409 otherwise) and locked while the course is added; a missing semester enrollment or offering answers 404. The offering must belong to the semester enrollment's own semester: an offering of another semester answers 409 ("This course offering belongs to a different semester than the semester enrollment."). A second enrollment in the same offering answers 409 ("This student is already enrolled in this course offering."). The offering row is locked after the semester enrollment and its capacity counts `ENROLLED` students, as self-registration does (409 "CS301 is full: all 60 places are taken."). The registration status and period do not limit admins. No other program rule is applied, because the model has none.
+- `GET /api/v1/admin/academic/enrollments/course-enrollments` searches every course enrollment with filters, one page at a time (the Course Enrollments page; see `course-registration.md`).
 - `PUT /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/status` takes `status`. The row is locked while it changes. `DROPPED` is set only by the student (409 from admins); a dropped enrollment is ended like a withdrawn one.
 
 ## Status transitions
@@ -164,7 +165,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has two rows of tabs (`LinkTabs`) under the page header: the areas Structure (Departments to Courses), Teaching (Course Offerings, Faculty Assignments), People (Enrollments, Students, Faculty), and Calendar, then the pages of the current area. The pages are Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Students, Faculty, Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has two rows of tabs (`LinkTabs`) under the page header: the areas Structure (Departments to Courses), Teaching (Course Offerings, Faculty Assignments), People (Enrollments, Course Enrollments, Students, Faculty), and Calendar, then the pages of the current area. The pages are Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Students, Faculty, Enrollments (`/admin/academic/enrollments`), Course Enrollments (`/admin/academic/course-enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 

@@ -9,6 +9,8 @@ import type {
   CourseOfferingCreate,
   CourseOfferingFilters,
   CourseOfferingUpdate,
+  EnrollmentMonitorFilters,
+  EnrollmentMonitorPage,
   EnrollmentStatus,
   EnrollmentStudent,
   OfferingRoster,
@@ -23,6 +25,12 @@ import { apiClient } from './apiClient'
 
 const OFFERINGS = '/admin/academic/offerings'
 const ENROLLMENTS = '/admin/academic/enrollments'
+
+/** One page of course enrollments matching the filters, searched on the server. */
+export async function searchCourseEnrollments(filters: EnrollmentMonitorFilters, signal?: AbortSignal) {
+  const response = await apiClient.get<EnrollmentMonitorPage>(`${ENROLLMENTS}/course-enrollments`, { params: filters, signal })
+  return response.data
+}
 
 export async function getCourseOfferings(filters: CourseOfferingFilters, signal?: AbortSignal) {
   const response = await apiClient.get<AdminCourseOffering[]>(OFFERINGS, { params: filters, signal })

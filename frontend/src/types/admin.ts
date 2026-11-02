@@ -255,3 +255,41 @@ export type OfferingRoster = {
   /** Every enrollment of this offering, whatever its status, by student login ID. */
   enrollments: RosterEntry[]
 }
+
+// The enrollment monitor: every course enrollment, filtered and paged on the server.
+export type EnrollmentMonitorFilters = {
+  academicSessionId?: number
+  programId?: number
+  semesterId?: number
+  courseId?: number
+  status?: EnrollmentStatus
+  q?: string
+  page: number
+  size: number
+}
+
+export type EnrollmentMonitorRow = {
+  courseEnrollmentId: number
+  studentProfileId: number
+  loginId: string
+  name: string | null
+  rollNumber: string | null
+  courseCode: string
+  courseName: string
+  credits: number
+  academicSessionCode: string
+  programCode: string
+  semesterNumber: number
+  sectionCode: string | null
+  status: EnrollmentStatus
+  registeredAt: string
+  droppedAt: string | null
+}
+
+export type EnrollmentMonitorPage = {
+  items: EnrollmentMonitorRow[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
