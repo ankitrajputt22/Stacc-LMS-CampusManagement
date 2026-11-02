@@ -6,10 +6,12 @@ import {
   addFacultyProfile,
   addStudentProfile,
   getUser,
+  getUserPhoto,
   issueTemporaryPassword,
   updateUserDetails,
   updateUserRoles,
   updateUserStatus,
+  uploadUserPhoto,
 } from '../api/adminUsersApi'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { queryKeys } from '../api/queryKeys'
@@ -24,6 +26,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { formatDateTime } from '../courses/dates'
+import { usePhotoUrl } from '../person/usePhotoUrl'
 import type { RoleName, UserDetail } from '../types/users'
 import { Alert, Badge, Button, Card, PageHeader, SelectField, TextField } from '../ui'
 import { refusal, ROLES, roleWord, SIGN_IN_AGAIN, statusTone, statusWord, USERS_DENIED } from '../users/userText'
@@ -230,6 +233,62 @@ function PasswordCard({ user, onDone }: { user: UserDetail; onDone: (message: st
   )
 }
 
+function PhotoCard({ user, onDone }: { user: UserDetail; onDone: (message: string) => void }) {
+  const [version, setVersion] = useState(0)
+  const photoUrl = usePhotoUrl(user.hasPhoto ? queryKeys.users.photo(user.accountId, String(version)) : null, (signal) =>
+    getUserPhoto(user.accountId, signal),
+  )
+  const [file, setFile] = useState<File | null>(null)
+  const { busy, error, save } = useSave(user.accountId)
+  return (
+    <Card title="Official photo" description="A JPEG or PNG image up to 2 MB. The person sees it on their account page.">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+        {photoUrl ? (
+          <img src={photoUrl} alt={`Official photo of ${user.loginId}`} className="size-24 rounded-panel border border-line object-cover" />
+        ) : (
+          <div className="flex size-24 items-center justify-center rounded-panel border border-dashed border-line-strong text-center text-xs text-ink-muted">
+            No photo yet
+          </div>
+        )}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-ink" htmlFor="official-photo">
+            Photo file
+          </label>
+          <input
+            id="official-photo"
+            type="file"
+            accept="image/jpeg,image/png"
+            className="block text-sm text-ink"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          />
+          {user.fullName === null && (
+            <p className="text-sm text-ink-muted">Record the official details first; a photo needs them.</p>
+          )}
+          <Button
+            variant="secondary"
+            disabled={file === null}
+            aria-disabled={busy || undefined}
+            onClick={async () => {
+              if (file && (await save(() => uploadUserPhoto(user.accountId, file)))) {
+                setVersion((current) => current + 1)
+                setFile(null)
+                onDone('Official photo saved.')
+              }
+            }}
+          >
+            {busy ? 'Uploading…' : user.hasPhoto ? 'Replace photo' : 'Upload photo'}
+          </Button>
+        </div>
+      </div>
+      {error && (
+        <Alert tone="error" className="mt-3">
+          {error}
+        </Alert>
+      )}
+    </Card>
+  )
+}
+
 function ProfilesCard({ user, onDone }: { user: UserDetail; onDone: (message: string) => void }) {
   const needsStudent = user.roles.includes('STUDENT') && user.studentProfile === null
   const needsFaculty = user.roles.includes('FACULTY') && user.facultyProfile === null
@@ -386,6 +445,7 @@ function UserAccountView({ accountId }: { accountId: number }) {
           <StatusCard user={user} isSelf={isSelf} onDone={setNotice} />
           <RolesCard key={user.roles.join()} user={user} isSelf={isSelf} onDone={setNotice} />
           <DetailsCard key={`${user.fullName}|${user.email}`} user={user} onDone={setNotice} />
+          <PhotoCard user={user} onDone={setNotice} />
           <PasswordCard user={user} onDone={setNotice} />
           <ProfilesCard user={user} onDone={setNotice} />
         </div>

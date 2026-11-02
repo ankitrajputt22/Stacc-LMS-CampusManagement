@@ -54,9 +54,42 @@ public class AdminUserController {
     static final String MANAGE = "hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')";
 
     private final UserAdminService service;
+    private final com.stacc.backend.identity.person.PersonPhotoService photos;
 
-    public AdminUserController(UserAdminService service) {
+    public AdminUserController(UserAdminService service, com.stacc.backend.identity.person.PersonPhotoService photos) {
         this.service = service;
+        this.photos = photos;
+    }
+
+    @GetMapping("/{accountId}/photo")
+    @PreAuthorize(VIEW)
+    @Operation(summary = "An account's official photo", description = "The image, sent inline and never cached.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The JPEG or PNG image.")
+    @ApiResponse(responseCode = "404", description = "The account has no photo.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.InputStreamResource> photo(
+            @PathVariable Long accountId) {
+        return com.stacc.backend.identity.person.PhotoResponses.of(photos.open(accountId));
+    }
+
+    @PostMapping(value = "/{accountId}/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(MANAGE)
+    @Operation(summary = "Set the official photo",
+            description = "A JPEG or PNG image up to 2 MB, checked by its first bytes and kept in private storage. The "
+                    + "previous photo's file is kept. Needs a recorded person profile.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The account.")
+    @ApiResponse(responseCode = "400", description = "No file, too large, or not a JPEG or PNG image.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The account has no person profile yet.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "503", description = "Photo storage is not available right now.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public UserDetail uploadPhoto(@AuthenticationPrincipal Jwt token, @PathVariable Long accountId,
+            @org.springframework.web.bind.annotation.RequestPart("file") org.springframework.web.multipart.MultipartFile file) {
+        photos.upload(AuthenticatedAccount.idFrom(token), accountId, file);
+        return service.get(accountId);
     }
 
     @GetMapping

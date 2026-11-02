@@ -169,6 +169,13 @@ function AccountTray({ items, onClose }: { items: readonly NavigationItem[]; onC
           </Link>
         )}
         <Link
+          to="/account"
+          onClick={onClose}
+          className="mt-3 text-sm font-medium text-stacc-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+        >
+          Account settings
+        </Link>
+        <Link
           to="/account/password"
           onClick={onClose}
           className="mt-3 text-sm font-medium text-stacc-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"

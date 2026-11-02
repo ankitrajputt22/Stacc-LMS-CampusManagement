@@ -42,6 +42,8 @@ export type UserDetail = {
     status: string
   } | null
   facultyProfile: { facultyProfileId: number; departmentCode: string; departmentName: string; status: string } | null
+  /** Whether an official photo has been added. */
+  hasPhoto: boolean
 }
 
 export type StudentProfileCreate = { programId: number; admissionSessionId: number; rollNumber: string | null }

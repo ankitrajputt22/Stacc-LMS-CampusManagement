@@ -6,6 +6,8 @@
 export const queryKeys = {
   me: {
     profile: () => ['me', 'profile'] as const,
+    photo: () => ['me', 'photo'] as const,
+    sessions: () => ['me', 'sessions'] as const,
   },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
@@ -14,6 +16,7 @@ export const queryKeys = {
     all: ['admin', 'users'] as const,
     list: (filters: object) => ['admin', 'users', 'list', filters] as const,
     one: (accountId: number) => ['admin', 'users', accountId] as const,
+    photo: (accountId: number, version: string) => ['admin', 'users', accountId, 'photo', version] as const,
   },
   admin: {
     /** Everything the academic admin pages load. A change there makes all of it out of date, since the lists feed each

@@ -39,9 +39,27 @@ public class MyPersonProfileController {
     static final String EDIT = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('PERSON_PROFILE_EDIT_OWN')";
 
     private final PersonProfileService profiles;
+    private final com.stacc.backend.identity.person.PersonPhotoService photos;
 
-    public MyPersonProfileController(PersonProfileService profiles) {
+    public MyPersonProfileController(PersonProfileService profiles,
+            com.stacc.backend.identity.person.PersonPhotoService photos) {
         this.profiles = profiles;
+        this.photos = photos;
+    }
+
+    @GetMapping("/photo")
+    @PreAuthorize(VIEW)
+    @Operation(summary = "The signed-in person's official photo",
+            description = "The image the college added, sent inline and never cached by shared caches.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The JPEG or PNG image.")
+    @ApiResponse(responseCode = "404", description = "No photo has been added.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "503", description = "Photo storage is not available right now.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.InputStreamResource> myPhoto(
+            @AuthenticationPrincipal Jwt accessToken) {
+        return com.stacc.backend.identity.person.PhotoResponses.of(photos.open(AuthenticatedAccount.idFrom(accessToken)));
     }
 
     @GetMapping

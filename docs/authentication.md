@@ -62,6 +62,10 @@ Repeated failed sign-ins slow down further tries (v0.2.4, `auth.throttle.SignInT
 - The sign-in page shows "Too many sign-in attempts. Wait a few minutes and try again." for a 429.
 - Sessions already end after `STACC_SESSION_IDLE_TIMEOUT` without a request and after `STACC_SESSION_MAX_DURATION` in any case (see Sessions below).
 
+## Your sessions
+
+`GET /api/v1/me/sessions` lists the signed-in account's open sessions, newest first: the device description, when it signed in, when it was last active, when it ends at the latest, and which one is the current session. `POST /api/v1/me/sessions/{sessionId}/end` signs out one other open session of the same account at once (204); the current session answers 409 (use Sign out), and any other ID the same 404. Like signing out, both need only a signed-in session. **Account settings** shows the list with "This browser", a confirmed Sign out per other session, and a confirmed Sign out everywhere.
+
 ## How the check works
 
 The login ID and password are checked by Spring Security through the shared `AuthenticationManager`, which loads the `UserAccount` and compares the password with the shared password encoder. Nothing compares passwords by hand. See `authentication-foundation.md` for the details.
