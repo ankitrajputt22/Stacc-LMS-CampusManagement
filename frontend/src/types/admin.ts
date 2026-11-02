@@ -24,6 +24,8 @@ export type AdminProgram = {
   degreeType: DegreeType
   durationSemesters: number
   status: ActiveStatus
+  /** The most credits a student may register for in one semester; null means no limit. */
+  maxCreditsPerSemester: number | null
 }
 
 export type AdminAcademicSession = {
@@ -47,6 +49,10 @@ export type AdminSemester = {
   academicSessionCode: string
   semesterNumber: number
   status: LifecycleStatus
+  /** Registration period and drop deadline as UTC moments; null when not set. */
+  registrationOpensAt: string | null
+  registrationClosesAt: string | null
+  dropDeadline: string | null
 }
 
 export type AdminCourse = {
@@ -87,12 +93,25 @@ export type SectionUpdate = { name: string | null; capacity: number | null; stat
 
 export type DepartmentCreate = { code: string; name: string; description: string | null }
 export type DepartmentUpdate = { name: string; status: ActiveStatus; description: string | null }
-export type ProgramCreate = { departmentId: number; code: string; name: string; durationSemesters: number; degreeType: DegreeType }
-export type ProgramUpdate = { name: string; durationSemesters: number; status: ActiveStatus; degreeType: DegreeType }
+type ProgramLimits = { maxCreditsPerSemester: number | null }
+export type ProgramCreate = {
+  departmentId: number
+  code: string
+  name: string
+  durationSemesters: number
+  degreeType: DegreeType
+} & ProgramLimits
+export type ProgramUpdate = { name: string; durationSemesters: number; status: ActiveStatus; degreeType: DegreeType } & ProgramLimits
 export type AcademicSessionCreate = { code: string; startDate: string; endDate: string }
 export type AcademicSessionUpdate = { startDate: string; endDate: string; status: LifecycleStatus }
 export type SemesterCreate = { programId: number; academicSessionId: number; semesterNumber: number }
 export type SemesterUpdate = { status: LifecycleStatus }
+/** Moments with a zone, such as 2026-07-01T03:30:00.000Z. All null clears the period. */
+export type SemesterRegistrationUpdate = {
+  registrationOpensAt: string | null
+  registrationClosesAt: string | null
+  dropDeadline: string | null
+}
 type CourseDetails = { shortName: string | null; description: string | null; courseType: CourseType }
 export type CourseCreate = { departmentId: number; code: string; name: string; credits: number } & CourseDetails
 export type CourseUpdate = { name: string; credits: number; status: ActiveStatus } & CourseDetails

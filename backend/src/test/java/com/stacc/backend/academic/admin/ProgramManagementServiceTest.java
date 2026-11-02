@@ -51,16 +51,16 @@ class ProgramManagementServiceTest {
 
     @Test
     void aProgramIsCreatedInTheExistingDepartmentLoadedOnTheServer() {
-        ProgramResponse created = service.create(new ProgramCreate(3L, "mtech-cse", "Master of Technology", 4, null));
+        ProgramResponse created = service.create(new ProgramCreate(3L, "mtech-cse", "Master of Technology", 4, null, null));
 
         assertEquals(new ProgramResponse(9L, 3L, "CSE", "Computer Science and Engineering", "MTECH-CSE", "Master of Technology", "UNDERGRADUATE",
-                4, "ACTIVE"), created);
+                4, "ACTIVE", null), created);
     }
 
     @Test
     void aMissingDepartmentIsRefusedAndNothingIsCreated() {
         assertRefused(HttpStatus.BAD_REQUEST, ProgramManagementService.DEPARTMENT_MISSING,
-                () -> service.create(new ProgramCreate(99L, "X", "X", 4, null)));
+                () -> service.create(new ProgramCreate(99L, "X", "X", 4, null, null)));
         verify(programs, never()).saveAndFlush(any());
         verify(departments, never()).saveAndFlush(any());
     }
@@ -71,17 +71,17 @@ class ProgramManagementServiceTest {
         when(programs.existsByDepartmentIdAndName(3L, "Program BTECH-CSE")).thenReturn(true);
 
         assertRefused(HttpStatus.CONFLICT, ProgramManagementService.CODE_TAKEN,
-                () -> service.create(new ProgramCreate(3L, "btech-cse", "New name", 8, null)));
+                () -> service.create(new ProgramCreate(3L, "btech-cse", "New name", 8, null, null)));
         assertRefused(HttpStatus.CONFLICT, ProgramManagementService.NAME_TAKEN,
-                () -> service.create(new ProgramCreate(3L, "NEW", "Program BTECH-CSE", 8, null)));
+                () -> service.create(new ProgramCreate(3L, "NEW", "Program BTECH-CSE", 8, null, null)));
     }
 
     @Test
     void editingChangesNameDurationAndStatusButNeverTheDepartmentOrCode() {
-        ProgramResponse updated = service.update(4L, new ProgramUpdate("B.Tech. CSE", 10, ProgramStatus.INACTIVE, null));
+        ProgramResponse updated = service.update(4L, new ProgramUpdate("B.Tech. CSE", 10, ProgramStatus.INACTIVE, null, null));
 
         assertEquals(new ProgramResponse(4L, 3L, "CSE", "Computer Science and Engineering", "BTECH-CSE", "B.Tech. CSE", "UNDERGRADUATE", 10,
-                "INACTIVE"), updated);
+                "INACTIVE", null), updated);
     }
 
     @Test
@@ -89,9 +89,9 @@ class ProgramManagementServiceTest {
         when(semesters.findMaxSemesterNumberByProgramId(4L)).thenReturn(Optional.of(6));
 
         assertRefused(HttpStatus.CONFLICT, "This program already has semester 6, so its duration cannot be shorter than 6 semesters.",
-                () -> service.update(4L, new ProgramUpdate("B.Tech. CSE", 5, ProgramStatus.ACTIVE, null)));
+                () -> service.update(4L, new ProgramUpdate("B.Tech. CSE", 5, ProgramStatus.ACTIVE, null, null)));
         assertEquals(8, btech.getDurationSemesters());
-        assertEquals(6, service.update(4L, new ProgramUpdate("B.Tech. CSE", 6, ProgramStatus.ACTIVE, null)).durationSemesters());
+        assertEquals(6, service.update(4L, new ProgramUpdate("B.Tech. CSE", 6, ProgramStatus.ACTIVE, null, null)).durationSemesters());
     }
 
     @Test

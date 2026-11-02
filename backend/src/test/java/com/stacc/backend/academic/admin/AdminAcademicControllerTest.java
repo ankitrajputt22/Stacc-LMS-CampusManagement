@@ -197,7 +197,7 @@ class AdminAcademicControllerTest extends DatabaseFreeApiTest {
         for (String master : MASTERS) {
             mockMvc.perform(as(manager(), json(post(ROOT + master), createBody(master)))).andExpect(status().isCreated());
         }
-        verify(programs).create(new ProgramCreate(3L, "BTECH-CSE", "B.Tech. CSE", 8, null));
+        verify(programs).create(new ProgramCreate(3L, "BTECH-CSE", "B.Tech. CSE", 8, null, null));
         verify(sessions).create(new AcademicSessionCreate("2026-27", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30)));
         verify(semesters).create(new SemesterCreate(4L, 2L, 3));
         verify(courses).create(new CourseCreate(3L, "CS301", "Data Structures", new BigDecimal("4"), null, null, null));

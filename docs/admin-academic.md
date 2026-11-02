@@ -26,9 +26,9 @@ What identifies a record, its code and what it belongs to, is set on creation an
 | Master | Created with | Editable | Fixed after creation | Status |
 | --- | --- | --- | --- | --- |
 | Department | `code`, `name`, optional `description` | `name`, `description`, `status` | `code` | `ACTIVE` or `INACTIVE` |
-| Program | `departmentId`, `code`, `name`, `durationSemesters`, `degreeType` | `name`, `degreeType`, `durationSemesters`, `status` | department, `code` | `ACTIVE` or `INACTIVE` |
+| Program | `departmentId`, `code`, `name`, `durationSemesters`, `degreeType`, optional `maxCreditsPerSemester` | `name`, `degreeType`, `durationSemesters`, `maxCreditsPerSemester`, `status` | department, `code` | `ACTIVE` or `INACTIVE` |
 | Academic session | `code`, `startDate`, `endDate` | `startDate`, `endDate`, `status`; "current" through its own route | `code` | `PLANNED`, `ACTIVE`, `CLOSED` |
-| Semester | `programId`, `academicSessionId`, `semesterNumber` | `status` | program, session, number | `PLANNED`, `ACTIVE`, `CLOSED` |
+| Semester | `programId`, `academicSessionId`, `semesterNumber` | `status`; the registration period through its own route | program, session, number | `PLANNED`, `ACTIVE`, `CLOSED` |
 | Course | `departmentId`, `code`, `name`, `credits`, optional `shortName`, `description`, `courseType` | all but the fixed ones | department, `code` | `ACTIVE` or `INACTIVE` |
 
 - `description` (department up to 1000 characters, course up to 2000) and a course's `shortName` (up to 20, such as DBMS) are optional plain text; blank stores nothing.
@@ -40,6 +40,8 @@ What identifies a record, its code and what it belongs to, is set on creation an
 - Sessions and semesters move forward only: `PLANNED` to `ACTIVE` or `CLOSED`, `ACTIVE` to `CLOSED`. Going back to `PLANNED`, or making a closed one active again, answers 409.
 - A session must end after it starts. Overlapping sessions, and several active ones, are allowed: no such rule has been decided.
 - A semester number is from 1 up to its program's `durationSemesters`. A program's duration cannot drop below the highest semester it already has (409).
+- **Registration period (v0.4.1).** `PUT /api/v1/admin/academic/semesters/{semesterId}/registration` sets or clears `registrationOpensAt`, `registrationClosesAt`, and `dropDeadline`. They are moments with a zone or offset (a zone-less time is refused), stored in UTC (`DATETIME(6)`), between the years 2000 and 9999. Both ends or neither (400), closing after opening (400), and a drop deadline only with a period and not before it opens (400); a database check holds the same rule. A closed semester keeps its period (409). Registration is open from the opening moment until just before the closing one; without a drop deadline students cannot drop. Sending all three empty clears the period. Student registration itself comes in a later phase.
+- **Credit limit.** A program's optional `maxCreditsPerSemester` is an exact decimal above 0 and at most 60 (`DECIMAL(5,2)`); empty means no limit, and an edit always writes what is sent.
 - Credits are an exact decimal above 0 and at most 20, with at most two decimal places (`DECIMAL(4,2)`); `1.5` is kept as `1.50`, never rounded.
 - There is no delete for any master, and no `id` in any request body: the record being edited comes from the route. Editing never touches the records that refer to a master: offerings, students, results, attendance, and LMS data stay as they are.
 
@@ -60,7 +62,7 @@ Every route is under `/api/v1/admin/academic`, which `SecurityConfig` keeps to a
 | Departments | `GET`, `POST /api/v1/admin/academic/departments` | `GET`, `PUT /api/v1/admin/academic/departments/{departmentId}` |
 | Programs | `GET`, `POST /api/v1/admin/academic/programs` | `GET`, `PUT /api/v1/admin/academic/programs/{programId}` |
 | Academic sessions | `GET`, `POST /api/v1/admin/academic/sessions` | `GET`, `PUT /api/v1/admin/academic/sessions/{academicSessionId}` |
-| Semesters | `GET`, `POST /api/v1/admin/academic/semesters` | `GET`, `PUT /api/v1/admin/academic/semesters/{semesterId}` |
+| Semesters | `GET`, `POST /api/v1/admin/academic/semesters` | `GET`, `PUT /api/v1/admin/academic/semesters/{semesterId}`; `PUT .../{semesterId}/registration` |
 | Courses | `GET`, `POST /api/v1/admin/academic/courses` | `GET`, `PUT /api/v1/admin/academic/courses/{courseId}` |
 
 - Lists: departments and courses by code; programs by department code, then code; sessions by start date, latest first; semesters by session start date (latest first), then program code, then number. Each list is read in one query.
@@ -169,6 +171,7 @@ Every section is built from the shared components in `src/ui` (see `ui-design.md
 - Each master, and the course offerings, is a `Card` with its Add button, a search box, a status filter and its own filters (programs by department and degree, courses by department and type), and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column. Departments, programs, and courses change status with Activate and Deactivate, each confirmed first; their Edit forms no longer carry the status. Sessions show a Current badge and a confirmed Set as current action. Create forms list only parents that can take new children.
 - Add and Edit open one form at a time in its own card above the list, with `TextField` and `SelectField` and an error `Alert`. After a save, every academic admin list in the cache (`queryKeys.admin.academic`) is asked again, because the lists fill each other's choices.
 - Enrollments start with the student search; a student's semesters and courses are cards with their actions per row (each semester shows its section, with Place in section or Change section while enrolled, listing that semester's active sections with their places), and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
+- Programs show their credit limit ("No limit" when empty). Semesters show their registration period and drop deadline in the browser's time zone, and the semester edit form has optional date-and-time fields for them (not for a closed semester), checked for order before sending.
 - Statuses are `Badge`s: green for in use (`ACTIVE`, `ENROLLED`), blue for still to come (`PLANNED`), neutral for ended; the word always says it. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 
 ## Not built yet

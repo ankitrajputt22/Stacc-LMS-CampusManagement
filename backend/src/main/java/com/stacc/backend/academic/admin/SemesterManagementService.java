@@ -1,8 +1,10 @@
 package com.stacc.backend.academic.admin;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterCreate;
+import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterRegistrationUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterResponses.SemesterResponse;
 import com.stacc.backend.academic.program.Program;
@@ -34,6 +36,15 @@ public class SemesterManagementService {
     static final String SESSION_CLOSED = "This academic session is closed, so it cannot take new semesters.";
     static final String BACK_TO_PLANNED = "A semester that has started or closed cannot go back to planned.";
     static final String REOPEN = "A closed semester cannot be made active again.";
+    static final String PERIOD_HALF = "Give both the opening and the closing time, or neither.";
+    static final String PERIOD_ORDER = "Registration must close after it opens.";
+    static final String DROP_WITHOUT_PERIOD = "A drop deadline needs a registration period.";
+    static final String DROP_BEFORE_OPEN = "The drop deadline cannot be before registration opens.";
+    static final String YEAR_RANGE = "Registration times must be between the years 2000 and 9999.";
+    static final String PERIOD_CLOSED = "This semester is closed, so its registration period cannot change.";
+
+    private static final Instant EARLIEST = Instant.parse("2000-01-01T00:00:00Z");
+    private static final Instant LATEST = Instant.parse("+10000-01-01T00:00:00Z");
 
     private final SemesterRepository semesters;
     private final ProgramRepository programs;
@@ -94,6 +105,39 @@ public class SemesterManagementService {
                 semester.close();
             }
         }
+        return SemesterResponse.of(semesters.saveAndFlush(semester));
+    }
+
+    /**
+     * Sets or clears the semester's registration period and drop deadline. Students register only inside the period
+     * and drop only until the deadline. A closed semester keeps what it had.
+     */
+    public SemesterResponse updateRegistration(Long semesterId, SemesterRegistrationUpdate request) {
+        Semester semester = find(semesterId);
+        if (semester.getStatus() == SemesterStatus.CLOSED) {
+            throw AcademicMasterErrors.conflict(PERIOD_CLOSED);
+        }
+        Instant opens = request.registrationOpensAt();
+        Instant closes = request.registrationClosesAt();
+        Instant drop = request.dropDeadline();
+        for (Instant moment : new Instant[] {opens, closes, drop}) {
+            if (moment != null && (moment.isBefore(EARLIEST) || !moment.isBefore(LATEST))) {
+                throw AcademicMasterErrors.badRequest(YEAR_RANGE);
+            }
+        }
+        if ((opens == null) != (closes == null)) {
+            throw AcademicMasterErrors.badRequest(PERIOD_HALF);
+        }
+        if (opens != null && !closes.isAfter(opens)) {
+            throw AcademicMasterErrors.badRequest(PERIOD_ORDER);
+        }
+        if (drop != null && opens == null) {
+            throw AcademicMasterErrors.badRequest(DROP_WITHOUT_PERIOD);
+        }
+        if (drop != null && drop.isBefore(opens)) {
+            throw AcademicMasterErrors.badRequest(DROP_BEFORE_OPEN);
+        }
+        semester.changeRegistrationPeriod(opens, closes, drop);
         return SemesterResponse.of(semesters.saveAndFlush(semester));
     }
 

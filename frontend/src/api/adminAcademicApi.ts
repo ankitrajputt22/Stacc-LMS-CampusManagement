@@ -16,6 +16,7 @@ import type {
   SectionCreate,
   SectionUpdate,
   SemesterCreate,
+  SemesterRegistrationUpdate,
   SemesterUpdate,
 } from '../types/admin'
 import { apiClient } from './apiClient'
@@ -62,6 +63,12 @@ export async function makeAcademicSessionCurrent(id: number): Promise<AdminAcade
 export const getSemesters = (signal?: AbortSignal) => list<AdminSemester>('semesters', signal)
 export const createSemester = (body: SemesterCreate) => create<AdminSemester>('semesters', body)
 export const updateSemester = (id: number, body: SemesterUpdate) => update<AdminSemester>('semesters', id, body)
+
+/** Sets or clears when students may register for the semester's offerings and until when they may drop one. */
+export async function updateSemesterRegistration(id: number, body: SemesterRegistrationUpdate): Promise<AdminSemester> {
+  const response = await apiClient.put<AdminSemester>(`${ROOT}/semesters/${id}/registration`, body)
+  return response.data
+}
 
 export const getCourses = (signal?: AbortSignal) => list<AdminCourse>('courses', signal)
 export const createCourse = (body: CourseCreate) => create<AdminCourse>('courses', body)
