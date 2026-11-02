@@ -6,6 +6,8 @@ import type { LmsAssignmentInput } from '../types/lms'
 import type { FormOutcome } from './ContentForm'
 import { ASSIGNMENT_INSTRUCTIONS_MAX, TITLE_MAX } from './editorState'
 import { border, fieldClasses } from './formStyles'
+import { FormattedTextField } from '../formatting/FormattedTextField'
+import type { TextFormat } from '../formatting/textFormat'
 
 type Field = 'title' | 'instructions' | 'dueAt' | 'maxMarks'
 
@@ -13,7 +15,7 @@ type AssignmentFormProps = {
   heading: string
   /** A short neutral note shown above the fields. */
   note?: string
-  initial?: { title: string; instructions: string; dueAt: string; maxMarks: number }
+  initial?: { title: string; instructions: string; instructionsFormat: TextFormat; dueAt: string; maxMarks: number }
   /** Values to start a new assignment with, such as a reviewed AI draft. The teacher still checks and submits them. */
   prefill?: AssignmentDraftPrefill
   submitLabel: string
@@ -92,6 +94,10 @@ export function AssignmentForm({
   }
   const [title, setTitle] = useState(initial?.title ?? prefill?.title ?? '')
   const [instructions, setInstructions] = useState(initial?.instructions ?? prefill?.instructions ?? '')
+  // New instructions are formatted; an AI draft arrives as plain text, and an edit keeps the current format.
+  const [instructionsFormat, setInstructionsFormat] = useState<TextFormat>(
+    initial?.instructionsFormat ?? (prefill ? 'PLAIN' : 'FORMATTED'),
+  )
   const [dueAt, setDueAt] = useState(initial ? toLocalInputValue(initial.dueAt) : '')
   const [maxMarks, setMaxMarks] = useState(
     initial ? String(initial.maxMarks) : prefill?.maxMarks != null ? String(prefill.maxMarks) : '',
@@ -138,7 +144,13 @@ export function AssignmentForm({
     }
 
     setSubmitting(true)
-    const outcome = await onSubmit({ title, instructions, dueAt: due.toISOString(), maxMarks: Number(marks) })
+    const outcome = await onSubmit({
+      title,
+      instructions,
+      instructionsFormat,
+      dueAt: due.toISOString(),
+      maxMarks: Number(marks),
+    })
     // On success the editor closes this form, so nothing more is updated here.
     if (!outcome.ok) {
       setSubmitting(false)
@@ -188,27 +200,21 @@ export function AssignmentForm({
       </div>
 
       <div className="mt-4">
-        <label htmlFor={`${id}-instructions`} className="block text-sm font-medium text-ink">
-          Instructions
-        </label>
-        <p id={`${id}-instructions-hint`} className="mt-0.5 text-xs text-ink-muted">
-          Plain text. Line breaks are kept.
-        </p>
-        <textarea
-          ref={instructionsRef}
+        <FormattedTextField
           id={`${id}-instructions`}
+          label="Instructions"
           value={instructions}
-          rows={8}
-          maxLength={ASSIGNMENT_INSTRUCTIONS_MAX}
-          onChange={(event) => {
-            setInstructions(event.target.value)
+          onChange={(value) => {
+            setInstructions(value)
             clearError('instructions')
           }}
-          aria-invalid={errors.instructions ? true : undefined}
-          aria-describedby={describedBy('instructions', `${id}-instructions-hint`)}
-          className={`resize-y py-2 leading-6 ${fieldClasses} ${border(Boolean(errors.instructions))}`}
+          format={instructionsFormat}
+          onFormatChange={setInstructionsFormat}
+          rows={8}
+          maxLength={ASSIGNMENT_INSTRUCTIONS_MAX}
+          error={errors.instructions}
+          textareaRef={instructionsRef}
         />
-        <FieldError id={`${id}-instructions-error`} message={errors.instructions} />
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">

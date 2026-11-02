@@ -336,7 +336,7 @@ The content of an LMS course is organised in modules, such as "Introduction" or 
 
 - A module belongs to one LMS course, and a topic to one module. Neither can be moved to another parent. Nothing is cascaded: archiving or changing content never touches the course or the module above it.
 - A module has a title (up to 200 characters) and an optional description (up to 2,000). A topic has a title (up to 200) and optional content (up to 20,000). Titles need not be unique.
-- Descriptions and topic content are **plain text**. They are stored exactly as typed and shown as text with their line breaks. HTML is never interpreted, and there is no rich-text or Markdown editor. Files are study materials, described below.
+- Module descriptions are **plain text**: stored exactly as typed and shown as text with their line breaks. Topic content is plain text or, since v0.6.1, formatted text with the small safe formatting set (see `text-formatting.md`). HTML is never interpreted. Files are study materials, described below.
 - Modules are ordered by `position`, then by ID; topics the same way inside their module. A new module or topic is added after the current ones. A reorder numbers them 1, 2, 3 in one transaction. Positions are not unique in the database, so a reorder never trips over a half-finished numbering.
 
 ### Status
@@ -488,11 +488,11 @@ The AI study assistant and the faculty AI tools (Phase 47) are built only from *
 An announcement is a course-wide update from faculty to the students of one LMS course, such as "Friday's lab moves to Room 204". The code is `LmsAnnouncement` and `LmsAnnouncementManagementService` in `com.stacc.backend.lms.announcement`, and the table is `lms_announcements`.
 
 ```text
-LmsCourse ------< LmsAnnouncement   (title, plain-text message, status, publishedAt)
+LmsCourse ------< LmsAnnouncement   (title, message and its format, status, publishedAt)
 ```
 
 - An announcement belongs to one LMS course and cannot be moved to another. It is not attached to a module, a topic, a student, or a semester, and none of those is copied onto it.
-- It has a title (up to 200 characters) and a message (up to 10,000). Both are required. The message is **plain text**: stored as typed and shown as text with its line breaks, never as HTML.
+- It has a title (up to 200 characters) and a message (up to 10,000). Both are required. The message is **plain text** or formatted text (see `text-formatting.md`): stored as typed and shown as text with its line breaks, never as HTML.
 - The table has no foreign-key cascade. Changing or archiving the LMS course never touches its announcements.
 
 ### Lifecycle
@@ -533,13 +533,13 @@ Announcements use the same `LmsContentStatus` as course content:
 An assignment defines a piece of work in one LMS course: what to do, by when, and for how many marks. The code is `LmsAssignment` and `LmsAssignmentManagementService` in `com.stacc.backend.lms.assignment`, and the table is `lms_assignments`.
 
 ```text
-LmsCourse ------< LmsAssignment   (title, plain-text instructions, dueAt, maxMarks, status, publishedAt)
+LmsCourse ------< LmsAssignment   (title, instructions and their format, dueAt, maxMarks, status, publishedAt)
                        |
                        +-- submissions, attempts, and their grades: see below
 ```
 
 - An assignment belongs to one LMS course and cannot be moved to another. It is not attached to a module, a topic, a course offering, or a teacher, and none of those is copied onto it. The course offering is reached through the LMS course.
-- It has a title (up to 200 characters), instructions (up to 20,000), a deadline, and maximum marks. All are required. The instructions are **plain text**: stored as typed and shown as text with their line breaks, never as HTML. The column is `MEDIUMTEXT`, because 20,000 characters can need more bytes than `TEXT` holds.
+- It has a title (up to 200 characters), instructions (up to 20,000), a deadline, and maximum marks. All are required. The instructions are **plain text** or formatted text (see `text-formatting.md`): stored as typed, never as HTML. The column is `MEDIUMTEXT`, because 20,000 characters can need more bytes than `TEXT` holds.
 - **The deadline** (`dueAt`) is an absolute moment: a Java `Instant`, stored in UTC in a `DATETIME(6)` column, and sent as ISO 8601 such as `2026-10-20T18:29:00Z`. A request must give a time zone or offset; a date and time without one is refused. The year must be between 2000 and 9999. Each browser shows the deadline in its own time zone.
 - **Maximum marks** (`maxMarks`) are a `BigDecimal` in a `DECIMAL(8,2)` column: greater than zero, at most two decimal places, below 1,000,000, such as 10, 20, or 12.5. A student's marks are not part of the assignment; they belong to the later grading records.
 - The table has no foreign-key cascade, and a database check keeps `max_marks` above zero.

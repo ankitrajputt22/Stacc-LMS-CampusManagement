@@ -45,6 +45,11 @@ public class LmsTopic {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 
+    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content_format", nullable = false, length = 20)
+    private LmsTextFormat contentFormat = LmsTextFormat.PLAIN;
+
     @Column(nullable = false)
     private int position;
 
@@ -84,6 +89,16 @@ public class LmsTopic {
 
     public String getContent() {
         return content;
+    }
+
+    public LmsTextFormat getContentFormat() {
+        return contentFormat;
+    }
+
+    /** Says how the text is shown. An archived topic can no longer be changed. */
+    public void changeContentFormat(LmsTextFormat format) {
+        requireNotArchived();
+        this.contentFormat = Require.notNull(format, "format");
     }
 
     public int getPosition() {

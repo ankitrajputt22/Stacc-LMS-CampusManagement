@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import com.stacc.backend.common.validation.Require;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.course.LmsCourse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,6 +48,11 @@ public class LmsAnnouncement {
     // Plain text, line breaks kept. It is never treated as HTML.
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
+
+    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_format", nullable = false, length = 20)
+    private LmsTextFormat messageFormat = LmsTextFormat.PLAIN;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -104,6 +110,16 @@ public class LmsAnnouncement {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public LmsTextFormat getMessageFormat() {
+        return messageFormat;
+    }
+
+    /** Says how the message is shown. An archived announcement can no longer be changed. */
+    public void changeMessageFormat(LmsTextFormat format) {
+        requireNotArchived();
+        this.messageFormat = Require.notNull(format, "format");
     }
 
     public boolean isArchived() {

@@ -31,6 +31,7 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsModule;
 import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -108,14 +109,15 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void studentGetsThePublishedContentOfTheirCourse() throws Exception {
         when(studentContent.getPublishedContent(ACCOUNT_ID, 7L)).thenReturn(new LmsCourseContentResponse(List.of(
                 new LmsCourseModuleResponse(12L, "Introduction", null,
-                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two", List.of()))))));
+                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two", List.of(), LmsTextFormat.PLAIN))))));
 
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/content").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.modules", hasSize(1)))
                 .andExpect(jsonPath("$.modules[0].*", hasSize(4)))
                 .andExpect(jsonPath("$.modules[0].title").value("Introduction"))
-                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(4)))
+                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(5)))
+                .andExpect(jsonPath("$.modules[0].topics[0].contentFormat").value("PLAIN"))
                 .andExpect(jsonPath("$.modules[0].topics[0].materials", hasSize(0)))
                 .andExpect(jsonPath("$.modules[0].topics[0].content").value("Line one\nLine two"))
                 .andExpect(content().string(not(containsString("status"))))
@@ -204,12 +206,15 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void addingATopicAnswersCreatedWithTheNewTopic() throws Exception {
-        when(contentManagement.createTopic(ACCOUNT_ID, 12L, "Course overview", "Line one\nLine two")).thenReturn(topic);
+        when(contentManagement.createTopic(ACCOUNT_ID, 12L, "Course overview", "## Line one", LmsTextFormat.FORMATTED))
+                .thenReturn(topic);
 
-        mockMvc.perform(as(facultyManageToken(), json(post("/api/v1/lms/faculty/modules/12/topics"), VALID_TOPIC)))
+        mockMvc.perform(as(facultyManageToken(), json(post("/api/v1/lms/faculty/modules/12/topics"),
+                        "{\"title\":\"Course overview\",\"content\":\"## Line one\",\"contentFormat\":\"FORMATTED\"}")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(31))
-                .andExpect(jsonPath("$.status").value("DRAFT"));
+                .andExpect(jsonPath("$.status").value("DRAFT"))
+                .andExpect(jsonPath("$.contentFormat").value("PLAIN"));
     }
 
     @Test
@@ -219,7 +224,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         when(contentManagement.publishModule(ACCOUNT_ID, 12L)).thenReturn(module);
         when(contentManagement.archiveModule(ACCOUNT_ID, 12L)).thenReturn(module);
         when(contentManagement.reorderTopics(ACCOUNT_ID, 12L, List.of(31L))).thenReturn(List.of(topic));
-        when(contentManagement.updateTopic(ACCOUNT_ID, 31L, "Course overview", "Line one\nLine two")).thenReturn(topic);
+        when(contentManagement.updateTopic(ACCOUNT_ID, 31L, "Course overview", "Line one\nLine two", null)).thenReturn(topic);
         when(contentManagement.publishTopic(ACCOUNT_ID, 31L)).thenReturn(topic);
         when(contentManagement.archiveTopic(ACCOUNT_ID, 31L)).thenReturn(topic);
 
@@ -241,7 +246,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         verify(contentManagement).publishModule(ACCOUNT_ID, 12L);
         verify(contentManagement).archiveModule(ACCOUNT_ID, 12L);
         verify(contentManagement).reorderTopics(ACCOUNT_ID, 12L, List.of(31L));
-        verify(contentManagement).updateTopic(ACCOUNT_ID, 31L, "Course overview", "Line one\nLine two");
+        verify(contentManagement).updateTopic(ACCOUNT_ID, 31L, "Course overview", "Line one\nLine two", null);
         verify(contentManagement).publishTopic(ACCOUNT_ID, 31L);
         verify(contentManagement).archiveTopic(ACCOUNT_ID, 31L);
     }
@@ -298,7 +303,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void refusalsFromTheServiceKeepTheirStatusAndSafeMessage() throws Exception {
         when(contentManagement.publishModule(anyLong(), eq(12L)))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "Module not found or unavailable."));
-        when(contentManagement.updateTopic(anyLong(), eq(31L), any(), any()))
+        when(contentManagement.updateTopic(anyLong(), eq(31L), any(), any(), any()))
                 .thenThrow(new ApiException(HttpStatus.CONFLICT, "This topic is archived and can no longer be changed."));
         when(contentManagement.reorderModules(anyLong(), eq(7L), anyList()))
                 .thenThrow(new ApiException(HttpStatus.BAD_REQUEST, "List every current module of this course exactly once."));

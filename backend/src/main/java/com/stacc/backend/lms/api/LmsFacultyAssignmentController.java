@@ -109,7 +109,8 @@ public class LmsFacultyAssignmentController {
             @Valid @RequestBody LmsAssignmentRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAssignmentResponse.of(managementService.create(AuthenticatedAccount.idFrom(accessToken),
-                lmsCourseId, request.title(), request.instructions(), request.dueAt(), request.maxMarks()));
+                lmsCourseId, request.title(), request.instructions(), request.instructionsFormat(), request.dueAt(),
+                request.maxMarks()));
     }
 
     @PutMapping("/assignments/{assignmentId}")
@@ -138,7 +139,8 @@ public class LmsFacultyAssignmentController {
             @Valid @RequestBody LmsAssignmentRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAssignmentResponse.of(managementService.update(AuthenticatedAccount.idFrom(accessToken),
-                assignmentId, request.title(), request.instructions(), request.dueAt(), request.maxMarks()));
+                assignmentId, request.title(), request.instructions(), request.instructionsFormat(), request.dueAt(),
+                request.maxMarks()));
     }
 
     @PostMapping("/assignments/{assignmentId}/publish")

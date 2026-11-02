@@ -5,6 +5,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import type { LmsCourseContent, LmsCourseModule } from '../types/lms'
 import { StudyMaterialList } from './StudyMaterialList'
 import { useMaterialDownload } from './useMaterialDownload'
+import { FormattedText } from '../formatting/FormattedText'
 
 type CourseContentProps = {
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
@@ -47,9 +48,12 @@ function PublishedModule({ module, number, downloads }: PublishedModuleProps) {
             <li key={topic.id} className="px-4 py-3 sm:px-5">
               <h4 className="text-sm font-semibold break-words text-ink">{topic.title}</h4>
               {topic.content && (
-                <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">
-                  {topic.content}
-                </p>
+                <FormattedText
+                  text={topic.content}
+                  format={topic.contentFormat}
+                  className="mt-1 text-sm leading-6 text-ink"
+                  headingLevel={5}
+                />
               )}
               <StudyMaterialList materials={topic.materials} downloads={downloads} />
             </li>

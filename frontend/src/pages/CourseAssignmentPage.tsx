@@ -14,6 +14,7 @@ import { marksText } from '../courses/marks'
 import { PastDueLabel } from '../courses/PastDueLabel'
 import { useCourseAssignment } from '../courses/useCourseAssignment'
 import type { LmsCourseAssignmentDetail } from '../types/lms'
+import { FormattedText } from '../formatting/FormattedText'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -111,8 +112,13 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           Instructions
         </h2>
         <div className="mt-3 rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
-          {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
-          <p className="text-sm leading-6 break-words whitespace-pre-line text-ink">{assignment.instructions}</p>
+          {/* Shown as its format says; never as HTML. */}
+          <FormattedText
+            text={assignment.instructions}
+            format={assignment.instructionsFormat}
+            className="text-sm leading-6 text-ink"
+            headingLevel={3}
+          />
         </div>
       </section>
 

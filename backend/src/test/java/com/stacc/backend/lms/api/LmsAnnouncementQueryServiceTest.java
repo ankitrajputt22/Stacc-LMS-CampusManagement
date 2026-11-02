@@ -19,6 +19,7 @@ import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentPolicy;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -66,8 +67,8 @@ class LmsAnnouncementQueryServiceTest {
                         announcement(4, LmsContentStatus.ARCHIVED, "2026-10-16T09:00:00Z")));
 
         assertEquals(List.of(
-                new LmsCourseAnnouncementResponse(3L, "Announcement 3", "Message 3", Instant.parse("2026-10-15T09:00:00Z")),
-                new LmsCourseAnnouncementResponse(1L, "Announcement 1", "Message 1", Instant.parse("2026-10-14T09:00:00Z"))),
+                new LmsCourseAnnouncementResponse(3L, "Announcement 3", "Message 3", Instant.parse("2026-10-15T09:00:00Z"), LmsTextFormat.PLAIN),
+                new LmsCourseAnnouncementResponse(1L, "Announcement 1", "Message 1", Instant.parse("2026-10-14T09:00:00Z"), LmsTextFormat.PLAIN)),
                 service.getPublishedAnnouncements(STUDENT_ID, COURSE_ID));
         verify(announcements).findAllByLmsCourseIdAndStatusOrderByPublishedAtDescIdDesc(COURSE_ID, LmsContentStatus.PUBLISHED);
     }

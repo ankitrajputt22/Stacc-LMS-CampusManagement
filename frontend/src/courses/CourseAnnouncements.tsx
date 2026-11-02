@@ -2,6 +2,7 @@ import type { ApiRequestState } from '../api/useApiRequest'
 import { ActionButton } from '../components/ActionButton'
 import type { LmsCourseAnnouncement } from '../types/lms'
 import { formatDateTime } from './dates'
+import { FormattedText } from '../formatting/FormattedText'
 
 type CourseAnnouncementsProps = {
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
@@ -53,10 +54,13 @@ export function CourseAnnouncements({ announcements }: CourseAnnouncementsProps)
                   <p className="text-xs text-ink-muted">
                     Published <time dateTime={announcement.publishedAt}>{formatDateTime(announcement.publishedAt)}</time>
                   </p>
-                  {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
-                  <p className="mt-1.5 text-sm leading-6 break-words whitespace-pre-line text-ink">
-                    {announcement.message}
-                  </p>
+                  {/* Shown as its format says; never as HTML. */}
+                  <FormattedText
+                    text={announcement.message}
+                    format={announcement.messageFormat}
+                    className="mt-1.5 text-sm leading-6 text-ink"
+                    headingLevel={4}
+                  />
                 </article>
               </li>
             ))}

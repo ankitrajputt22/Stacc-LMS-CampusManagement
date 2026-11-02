@@ -37,6 +37,7 @@ import {
 import { StatusTag } from './StatusTag'
 import { TopicMaterials } from './TopicMaterials'
 import { useContentChanges, useFocusAfterChanges } from './useContentChanges'
+import { FormattedText } from '../formatting/FormattedText'
 
 type Downloads = ReturnType<typeof useMaterialDownload>
 
@@ -91,10 +92,11 @@ function TopicItem({
         bodyMaxLength={CONTENT_MAX}
         initialTitle={topic.title}
         initialBody={topic.content}
+        initialFormat={topic.contentFormat}
         submitLabel="Save topic"
         submittingLabel="Saving…"
-        onSubmit={async (title, content) => {
-          const result = await changes.run(() => updateTopic(topic.id, { title, content }), {
+        onSubmit={async (title, content, contentFormat) => {
+          const result = await changes.run(() => updateTopic(topic.id, { title, content, contentFormat }), {
             done: 'Topic saved.',
             focus: () => [`${key}-heading`],
             showError: false,
@@ -126,7 +128,12 @@ function TopicItem({
         <StatusTag status={topic.status} label="Topic status" />
       </div>
       {topic.content && (
-        <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{topic.content}</p>
+        <FormattedText
+          text={topic.content}
+          format={topic.contentFormat}
+          className="mt-1 text-sm leading-6 text-ink"
+          headingLevel={5}
+        />
       )}
 
       {isConfirming ? (
@@ -363,8 +370,9 @@ function ModuleItem({
               bodyMaxLength={CONTENT_MAX}
               submitLabel="Add topic"
               submittingLabel="Adding…"
-              onSubmit={async (title, content) => {
-                const result = await changes.run(() => createTopic(module.id, { title, content }), {
+              initialFormat="FORMATTED"
+              onSubmit={async (title, content, contentFormat) => {
+                const result = await changes.run(() => createTopic(module.id, { title, content, contentFormat }), {
                   done: 'Topic added as a draft.',
                   focus: (topic) => [`topic-${topic.id}-heading`],
                   showError: false,
