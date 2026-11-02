@@ -20,10 +20,12 @@ class SignInThrottleRows {
         this.throttles = throttles;
     }
 
+    /** Makes sure one key has a row, in a transaction of its own; usually it exists and nothing is written. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void ensure(String accountKey, String addressKey, Instant now) {
-        throttles.ensure(SignInThrottle.Scope.ACCOUNT.name(), accountKey, now);
-        throttles.ensure(SignInThrottle.Scope.ADDRESS.name(), addressKey, now);
+    public void ensure(SignInThrottle.Scope scope, String keyHash, Instant now) {
+        if (!throttles.existsByScopeAndKeyHash(scope, keyHash)) {
+            throttles.ensure(scope.name(), keyHash, now);
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
