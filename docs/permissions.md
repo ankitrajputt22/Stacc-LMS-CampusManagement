@@ -72,8 +72,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `CAMPUS_NOTICE_MANAGE` | `ADMIN` | Creating, editing, publishing, and archiving campus notices. Nothing can delete them. Added by `V56`. |
 | `GLOBAL_SEARCH_USE` | `STUDENT`, `FACULTY`, `ADMIN` | Using global search (`GET /api/v1/search` and `/api/v1/search/results`). It grants access to nothing it finds: every kind of result still needs its own domain's role and permissions. Added by `V59`. |
 | `FACULTY_REPORT_VIEW` | `FACULTY` | Reading the faculty reports (`/api/v1/reports/faculty/**`): counts for the course offerings taught through an active teaching assignment. It changes nothing. Added by `V60`. |
-| `PERSON_PROFILE_VIEW_OWN` | `STUDENT`, `FACULTY`, `ADMIN` | Reading one's own person profile: `GET /api/v1/me/profile`. Added by `V64`. |
-| `PERSON_PROFILE_EDIT_OWN` | `STUDENT`, `FACULTY`, `ADMIN` | Changing one's own preferred name and phone number: `PUT /api/v1/me/profile`. The college sets everything else. Added by `V64`. |
+| `PERSON_PROFILE_VIEW_OWN` | Every role | Reading one's own person profile: `GET /api/v1/me/profile`. The route checks only this permission. Added by `V64`; the staff roles got it in `V77`. |
+| `PERSON_PROFILE_EDIT_OWN` | Every role | Changing one's own preferred name and phone number: `PUT /api/v1/me/profile`. The college sets everything else. The route checks only this permission. Added by `V64`; the staff roles got it in `V77`. |
 | `AI_STUDY_USE` | `STUDENT` | Using the course AI study assistant (questions, topic summaries, practice questions) in courses the student may already open. Nothing is saved. Added by `V62`. |
 | `AI_TEACHING_USE` | `FACULTY` | Seeing and refreshing a taught course's AI knowledge and generating assessment drafts for review. It creates, publishes, and grades nothing. Added by `V62`. |
 | `ADMIN_REPORT_VIEW` | `ADMIN` | Reading the admin reports (`/api/v1/reports/admin/**`) and exporting the enrollment report as CSV. It changes nothing. Added by `V60`. |

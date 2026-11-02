@@ -3,7 +3,17 @@
  * sends these same plain names in the login answer (never with a ROLE_ prefix), so nothing is
  * stripped or renamed anywhere in the frontend.
  */
-export const ACCOUNT_ROLES = ['STUDENT', 'FACULTY', 'ADMIN'] as const
+export const ACCOUNT_ROLES = [
+  'STUDENT',
+  'FACULTY',
+  'ADMIN',
+  'HOD',
+  'WARDEN',
+  'SECURITY',
+  'MAINTENANCE',
+  'LIBRARIAN',
+  'PLACEMENT_OFFICER',
+] as const
 
 export type AccountRole = (typeof ACCOUNT_ROLES)[number]
 
@@ -11,6 +21,12 @@ const ROLE_LABELS: Record<AccountRole, string> = {
   STUDENT: 'Student',
   FACULTY: 'Faculty',
   ADMIN: 'Admin',
+  HOD: 'Head of Department',
+  WARDEN: 'Warden',
+  SECURITY: 'Security',
+  MAINTENANCE: 'Maintenance',
+  LIBRARIAN: 'Librarian',
+  PLACEMENT_OFFICER: 'Placement Officer',
 }
 
 /**

@@ -17,6 +17,7 @@
 - Do not expose JPA entities such as `UserAccount` directly through APIs.
 - Disable an account through its status. Do not delete accounts just to remove access.
 - Roles are assigned by the college through the backend. Users never choose their own role.
+- The roles are `STUDENT`, `FACULTY`, `ADMIN`, and the staff roles `HOD`, `WARDEN`, `SECURITY`, `MAINTENANCE`, `LIBRARIAN`, and `PLACEMENT_OFFICER` (`RoleName`, `ACCOUNT_ROLES`, always in that order). A staff role holds only the own-profile permissions until its feature adds more; never give it access ahead of its phase. See `docs/account-roles.md`.
 - An account can hold several roles. Do not assume it has only one.
 - `Role` rows are shared reference data. Never create or delete them as a side effect of changing an account.
 - Permission codes use `UPPERCASE_WITH_UNDERSCORES`. Add a permission only when a real feature needs it, through a migration.

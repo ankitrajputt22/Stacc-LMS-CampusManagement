@@ -14,7 +14,7 @@ Roles and permissions answer different questions. A role says what responsibilit
 
 ## Roles
 
-The current roles are `STUDENT`, `FACULTY`, and `ADMIN`. In Spring Security each one is the authority `ROLE_` plus its name, such as `ROLE_STUDENT`. They travel in the access token, so a role check never asks the database.
+The current roles are `STUDENT`, `FACULTY`, `ADMIN`, and the staff roles `HOD`, `WARDEN`, `SECURITY`, `MAINTENANCE`, `LIBRARIAN`, and `PLACEMENT_OFFICER` (see `account-roles.md`). In Spring Security each one is the authority `ROLE_` plus its name, such as `ROLE_STUDENT`. They travel in the access token, so a role check never asks the database.
 
 Method security is switched on, so an operation can state the role it needs:
 

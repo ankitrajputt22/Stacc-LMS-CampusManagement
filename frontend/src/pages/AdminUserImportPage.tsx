@@ -199,7 +199,7 @@ export function AdminUserImportPage() {
         eyebrow="ERP · Manage"
         title="Import users"
         breadcrumb={<Breadcrumb parent={{ to: '/admin/users', label: 'Users' }} current="Import" />}
-        description={isAdmin ? 'Create many student and faculty accounts from one CSV file. Check it first; nothing is created until every row is valid.' : undefined}
+        description={isAdmin ? 'Create many accounts from one CSV file. Check it first; nothing is created until every row is valid.' : undefined}
         actions={isAdmin ? <ButtonLink to="/admin/users" variant="secondary">Back to users</ButtonLink> : undefined}
       />
       {isAdmin ? (

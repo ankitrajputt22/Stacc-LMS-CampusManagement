@@ -54,6 +54,8 @@ public class UserImportService {
     public static final long MAX_BYTES = 1024L * 1024;
     static final List<String> COLUMNS = List.of("login_id", "full_name", "email", "roles", "department", "program",
             "admission_session", "roll_number");
+    static final String ROLE_LIST = java.util.Arrays.stream(RoleName.values()).map(RoleName::name)
+            .collect(java.util.stream.Collectors.joining(", "));
     static final String NO_FILE = "Choose a CSV file.";
     static final String TOO_LARGE = "The file must be at most 1 MB.";
     static final String NOT_TEXT = "The file must be UTF-8 text.";
@@ -205,7 +207,7 @@ public class UserImportService {
             try {
                 roles.add(RoleName.valueOf(name));
             } catch (IllegalArgumentException unknown) {
-                errors.add("Unknown role " + name + "; use STUDENT, FACULTY, or ADMIN, separated by ;.");
+                errors.add("Unknown role " + name + "; use " + ROLE_LIST + ", separated by ;.");
             }
         }
         if (roles.isEmpty() && errors.stream().noneMatch(error -> error.startsWith("Unknown role"))) {

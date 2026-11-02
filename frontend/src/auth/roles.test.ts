@@ -9,6 +9,7 @@ describe('toAccountRoles', () => {
   it('drops repeats and anything unknown, so a strange value never unlocks a menu', () => {
     expect(toAccountRoles(['FACULTY', 'FACULTY', 'ROLE_ADMIN', 'admin', 'SUPER_ADMIN'])).toEqual(['FACULTY'])
     expect(toAccountRoles([])).toEqual([])
+    expect(toAccountRoles(['WARDEN', 'STUDENT', 'HOD'])).toEqual(['STUDENT', 'HOD', 'WARDEN'])
   })
 })
 
@@ -24,5 +25,6 @@ describe('roleLabel', () => {
   it('gives the words shown in the interface', () => {
     expect(roleLabel('STUDENT')).toBe('Student')
     expect(roleLabel('ADMIN')).toBe('Admin')
+    expect(roleLabel('PLACEMENT_OFFICER')).toBe('Placement Officer')
   })
 })
