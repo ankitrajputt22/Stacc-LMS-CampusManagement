@@ -115,7 +115,7 @@ function AnnouncementItem({
         text={announcement.message}
         format={announcement.messageFormat}
         className="mt-1.5 text-sm leading-6 text-ink"
-        headingLevel={5}
+        headingLevel={4}
       />
 
       {isConfirming ? (

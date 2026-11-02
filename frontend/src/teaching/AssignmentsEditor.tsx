@@ -112,7 +112,7 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
           text={assignment.instructions}
           format={assignment.instructionsFormat}
           className="mt-1 text-sm leading-6 text-ink"
-          headingLevel={5}
+          headingLevel={4}
         />
       </details>
 
