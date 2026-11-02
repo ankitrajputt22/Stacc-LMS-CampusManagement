@@ -23,6 +23,7 @@ export const queryKeys = {
     offeringFaculty: (courseOfferingId: number) => ['admin', 'academic', 'offerings', courseOfferingId, 'faculty'] as const,
     facultySearch: (query: string) => ['admin', 'academic', 'faculty', { query }] as const,
     offeringRoster: (courseOfferingId: number) => ['admin', 'academic', 'offerings', courseOfferingId, 'enrollments'] as const,
+    enrollmentMonitor: (filters: object) => ['admin', 'academic', 'enrollment-monitor', filters] as const,
     studentSearch: (query: string) => ['admin', 'academic', 'students', { query }] as const,
     studentEnrollments: (studentProfileId: number) => ['admin', 'academic', 'students', studentProfileId] as const,
     calendarEvents: (filters: Record<string, string | undefined>) =>
@@ -45,6 +46,10 @@ export const queryKeys = {
     myCourses: () => ['results', 'my-courses'] as const,
     course: (courseOfferingId: number) => ['results', 'offerings', courseOfferingId] as const,
     mine: () => ['results', 'me'] as const,
+  },
+  classLists: {
+    mine: () => ['class-lists', 'me'] as const,
+    offering: (courseOfferingId: number) => ['class-lists', courseOfferingId] as const,
   },
   registration: {
     mine: () => ['registration', 'me'] as const,

@@ -30,6 +30,7 @@ import { StudentAttendancePage } from './pages/StudentAttendancePage'
 import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
 import { CourseRegistrationPage } from './pages/CourseRegistrationPage'
+import { ClassListPage, ClassListsPage } from './pages/ClassListsPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
 import { SupportPage } from './pages/SupportPage'
@@ -68,6 +69,8 @@ function App() {
           <Route path="academic/registration" element={<CourseRegistrationPage />} />
           <Route path="academic/profile" element={<AcademicProfilePage />} />
           <Route path="results" element={<ResultsPage />} />
+          <Route path="class-lists" element={<ClassListsPage />} />
+          <Route path="class-lists/:courseOfferingId" element={<ClassListPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           {/* One search page for every role; the address holds the query, and View all the kind and page. */}

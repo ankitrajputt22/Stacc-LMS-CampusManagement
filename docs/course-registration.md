@@ -47,6 +47,11 @@ Admins cannot set `DROPPED` (409); they complete or withdraw. A dropped enrollme
 
 The demo semester 3 opens registration a day before seeding for 61 days, with the same drop deadline, and the B.Tech. program has a 24-credit limit. CS305 Software Engineering (3 credits, whole semester, 60 places) and CS306 Web Technologies (4 credits, section A, 2 places) are open electives without LMS courses.
 
+## Enrollment monitor and class lists (v0.4.3)
+
+- **Admins**: `GET /api/v1/admin/academic/enrollments/course-enrollments` (`ADMIN` and `ACADEMIC_ENROLLMENT_VIEW`) answers one page (`page` from 0, `size` 1 to 100, default 20) of every course enrollment, whatever its status, filtered by `academicSessionId`, `programId`, `semesterId`, `sectionId` (the student's section), `courseId`, and `status`, and searched with `q` (at most 100 characters, matching the student ID, roll number, full or preferred name, or course code, case-insensitive, `LIKE` escaped with `!`). It is one query with a count; rows carry the student ID, name, roll number, course, semester, section, status, `registeredAt`, and `droppedAt`, never contact details. The page is Course Enrollments under People in Academic Admin (`/admin/academic/course-enrollments`); changes stay on the student's page under Enrollments.
+- **Faculty**: `GET /api/v1/faculty/me/course-offerings` and `GET /api/v1/faculty/me/course-offerings/{courseOfferingId}/students` (`FACULTY` and `ENROLLED_STUDENTS_VIEW`, from `V73`) list the offerings the caller teaches now through an active teaching assignment, with enrolled counts, and every enrollment of one of them by student ID. An offering the caller does not teach answers the same 404 as a missing one. The pages are Class Lists in the Teaching tray (`/class-lists` and `/class-lists/:courseOfferingId`), read-only.
+
 ## Not built yet
 
-Prerequisites, curriculum rules, elective groups, minimum credits, waiting lists, withdrawal approval, admin enrollment search, and the faculty registered-students list.
+Prerequisites, curriculum rules, elective groups, minimum credits, waiting lists, and withdrawal approval.
