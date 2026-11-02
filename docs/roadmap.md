@@ -97,12 +97,12 @@ Goal: make every later change safe to make. No new features.
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.4.1 | Registration windows | Open and close dates per session, program, and semester, with add/drop deadlines. |
-| ★ 0.4.2 | Registration rules | The curriculum (which courses a program offers in which semester, core or elective), prerequisites, credit limits, and elective groups, checked on the server with a clear reason when something is not allowed. |
-| ★ 0.4.3 | Self-registration | Students register for sections themselves; capacity is held under a row lock so the last seat is never taken twice. |
-| 0.4.4 | Add, drop, withdraw | Changes within the deadlines, with history kept. |
-| ★ 0.4.5 | Registration pages | The student registration flow and an admin registration monitor. |
-| 0.4.6 | Registration load test | A k6 test of many students registering at once, with the result recorded. |
+| ★ 0.4.1 | Registration periods | A registration period and drop deadline per semester, and an optional credit limit per program. Done. |
+| ★ 0.4.2 | Self-registration and drop | Students see the offerings open to their semester and section, register for several at once (all or nothing, capacity and credit limit held under row locks), and drop before the deadline; dropped enrollments stay as history. Done. |
+| ★ 0.4.3 | Enrollment monitor | Admins search and filter every course enrollment; faculty see the students registered in offerings they teach. |
+| 0.4.4 | Registration load test | A k6 test of many students registering at once, with the result recorded. |
+
+The v0.4 specification keeps prerequisites, curriculum rules, elective groups, minimum credits, and withdrawal approval for later phases.
 
 ## v0.5 ERP to LMS access
 
@@ -287,5 +287,5 @@ Goal: make every later change safe to make. No new features.
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
-| v0.4 Course registration | In progress: 0.4.1 done |
+| v0.4 Course registration | In progress: 0.4.1 and 0.4.2 done |
 | v0.5 – v1.0 | Not started |

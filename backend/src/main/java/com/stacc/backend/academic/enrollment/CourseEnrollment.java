@@ -54,6 +54,9 @@ public class CourseEnrollment {
     @Column(nullable = false, length = 20)
     private CourseEnrollmentStatus status = CourseEnrollmentStatus.ENROLLED;
 
+    @Column(name = "dropped_at")
+    private Instant droppedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -92,6 +95,11 @@ public class CourseEnrollment {
         return status;
     }
 
+    /** When the student dropped the course, or null when they did not. */
+    public Instant getDroppedAt() {
+        return droppedAt;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -108,6 +116,13 @@ public class CourseEnrollment {
     public void withdraw() {
         requireStillEnrolled();
         this.status = CourseEnrollmentStatus.WITHDRAWN;
+    }
+
+    /** The student drops the course; the record stays as history. */
+    public void drop(Instant moment) {
+        requireStillEnrolled();
+        this.status = CourseEnrollmentStatus.DROPPED;
+        this.droppedAt = Require.notNull(moment, "moment");
     }
 
     private void requireStillEnrolled() {

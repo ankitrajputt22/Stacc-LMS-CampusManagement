@@ -118,9 +118,9 @@ export type CourseUpdate = { name: string; credits: number; status: ActiveStatus
 
 // Course offerings and official enrollments as the admin API sends them. A course offering is one course taught in
 // one semester; its course and semester never change. Enrollments start ENROLLED and may end once, as COMPLETED or
-// WITHDRAWN. A student appears only by profile ID, login ID, program, and admission session.
+// WITHDRAWN; a course enrollment may also be DROPPED by the student. A student appears only by profile ID, login ID, program, and admission session.
 
-export type EnrollmentStatus = 'ENROLLED' | 'COMPLETED' | 'WITHDRAWN'
+export type EnrollmentStatus = 'ENROLLED' | 'COMPLETED' | 'WITHDRAWN' | 'DROPPED'
 
 export type AdminCourseOffering = {
   courseOfferingId: number

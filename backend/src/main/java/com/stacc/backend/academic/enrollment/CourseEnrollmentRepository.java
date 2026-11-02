@@ -73,6 +73,14 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllCurrentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
+    /**
+     * How many students are enrolled in one offering now, read with a shared lock. Called while the offering row is
+     * locked, so two registrations for the last place cannot both see it free.
+     */
+    @Query(value = "select count(*) from course_enrollments where course_offering_id = :courseOfferingId "
+            + "and status = 'ENROLLED' for share", nativeQuery = true)
+    long countEnrolledInOfferingForShare(@Param("courseOfferingId") Long courseOfferingId);
+
     /** One enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")

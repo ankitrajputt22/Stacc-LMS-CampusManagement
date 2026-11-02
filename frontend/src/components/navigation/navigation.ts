@@ -42,6 +42,8 @@ const navigationSections: readonly NavigationSection[] = [
     icon: 'student',
     items: [
       { label: 'Courses', to: '/courses' },
+      // Choosing courses for the semester while registration is open.
+      { label: 'Registration', to: '/academic/registration' },
       // The student's academic records: one real link each, no separate menu.
       { label: 'Attendance', to: '/academic/attendance' },
       { label: 'Results', to: '/academic/results' },

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  * where a person profile exists, their name. Two queries however many offerings are listed.
  */
 @Component
-class OfferingFacultyLoader {
+public class OfferingFacultyLoader {
 
     private final TeachingAssignmentRepository assignments;
     private final PersonProfileRepository people;
@@ -29,7 +29,7 @@ class OfferingFacultyLoader {
     }
 
     /** Each offering's assignments, active ones first, keyed by offering ID; an offering with none is missing. */
-    Map<Long, List<OfferingFaculty>> byOffering(Collection<Long> courseOfferingIds) {
+    public Map<Long, List<OfferingFaculty>> byOffering(Collection<Long> courseOfferingIds) {
         if (courseOfferingIds.isEmpty()) {
             return Map.of();
         }

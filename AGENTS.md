@@ -111,6 +111,14 @@
 - Official course enrollment decides LMS eligibility. Save and commit it first, then provision LMS membership through `CourseEnrollmentLmsPort` only when the offering already has an `LmsCourse`. Enrollment succeeds without one, never creates one, and an LMS failure never undoes it; the retry route recovers.
 - Offerings need `ADMIN` with `ACADEMIC_OFFERING_VIEW` and, to change, `ACADEMIC_OFFERING_MANAGE`; enrollments and rosters need `ADMIN` with `ACADEMIC_ENROLLMENT_VIEW` and, to change, `ACADEMIC_ENROLLMENT_MANAGE`.
 
+## Course Registration
+
+- Students register themselves in `academic.registration` (`docs/course-registration.md`): the student always comes from the access token, and registration creates an ordinary `CourseEnrollment`, never a separate registration record.
+- Registration is all or nothing. Lock the student's semester enrollments, then the offerings, in ID order (admin enrollment uses the same order), then count `ENROLLED` places with a locking read, so a capacity is never exceeded. Check the registration status `OPEN`, the semester's period, the section, an earlier enrollment, the capacity, and the program's credit limit on the server every time.
+- Dropping is only by the student, before the semester's drop deadline: the enrollment becomes `DROPPED` with `droppedAt` and is never deleted or reopened, and the same offering cannot be taken again. Admins complete or withdraw; they never set `DROPPED`.
+- Commit the enrollment first, then provision or deactivate LMS membership through `CourseEnrollmentLmsPort`; an LMS failure never undoes registration or a drop.
+- The registration routes need `STUDENT` with `COURSE_REGISTRATION_VIEW`, `COURSE_REGISTER`, or `COURSE_DROP`. Do not add prerequisites, elective groups, waiting lists, or withdrawal approval without their own phase.
+
 ## Attendance
 
 - Attendance (`academic.attendance`) belongs to `CourseOffering`, never to `Course` or `LmsCourse`, and must not depend on LMS data or provisioning. See `docs/attendance.md`.
@@ -240,6 +248,7 @@
 - Admins manage the academic masters at `/admin/academic/:section` (departments, programs, sessions, semesters, courses), with Edit but never Delete, and parent selects filled from the admin API.
 - Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Show LMS provisioning outcomes neutrally, and never offer to create an LMS course there.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
+- Students register at `/academic/registration` (Registration in the Academics tray): choose open courses, see the summary and credits after registration, and confirm before anything is sent; Drop is confirmed first. Show reasons, seats, and statuses only as the backend sends them.
 - Faculty take attendance at `/attendance` and `/attendance/:courseOfferingId`; students read theirs at `/academic/attendance`. Never preselect Absent, show the backend's percentage as given, and show "No attendance recorded yet." instead of 0% when nothing is finalized.
 - The Calendar item opens `/calendar` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`. It loads one month at a time from `GET /api/v1/calendar/me` with the browser's time zone, lists a multi-day event once with its range, shows Cancelled in words, and adds no data the API does not send. Student deadlines link to the assignment page and teaching deadlines to `/teaching/:lmsCourseId`; it is not an assignment editor.
 - Support is one area per `UserAccount` at `/support`, shown once to any account holding `STUDENT`, `FACULTY`, or `ADMIN`; never build a support area or ticket engine per role, and never use `roles[0]`. Requester pages are `/support` and `/support/new`; the ticket page `/support/tickets/:ticketId` is shared by requesters and admins; admins add `/support/admin` and `/support/admin/categories`. See `docs/helpdesk.md`.

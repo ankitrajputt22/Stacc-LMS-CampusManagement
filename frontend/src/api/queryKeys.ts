@@ -46,6 +46,9 @@ export const queryKeys = {
     course: (courseOfferingId: number) => ['results', 'offerings', courseOfferingId] as const,
     mine: () => ['results', 'me'] as const,
   },
+  registration: {
+    mine: () => ['registration', 'me'] as const,
+  },
   calendar: {
     mine: (range: { from: string; to: string; timeZone: string }) => ['calendar', 'me', range] as const,
   },

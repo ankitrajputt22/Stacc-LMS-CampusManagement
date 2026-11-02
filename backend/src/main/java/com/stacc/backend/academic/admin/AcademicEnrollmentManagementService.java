@@ -14,6 +14,7 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOffering;
+import com.stacc.backend.academic.offering.OfferingCapacity;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.section.Section;
 import com.stacc.backend.academic.section.SectionRepository;
@@ -53,7 +54,8 @@ public class AcademicEnrollmentManagementService {
             "This course offering belongs to a different semester than the semester enrollment.";
     static final String COURSE_TAKEN = "This student is already enrolled in this course offering.";
     static final String COURSE_ENROLLMENT_NOT_FOUND = "Course enrollment not found.";
-    static final String COURSE_ENDED = "A completed or withdrawn course enrollment cannot be changed.";
+    static final String COURSE_ENDED = "A completed, withdrawn, or dropped course enrollment cannot be changed.";
+    static final String DROP_BY_STUDENT = "Only the student drops a course, before the semester's drop deadline.";
     static final String SECTION_MISSING = "The selected section does not exist.";
     static final String SECTION_OTHER_SEMESTER = "This section belongs to a different semester.";
     static final String SECTION_INACTIVE = "This section is inactive, so no students can be placed in it.";
@@ -168,6 +170,8 @@ public class AcademicEnrollmentManagementService {
                 .orElseThrow(() -> AcademicMasterErrors.notFound(SEMESTER_ENROLLMENT_NOT_FOUND));
         CourseOffering offering = offerings.findWithContextById(request.courseOfferingId())
                 .orElseThrow(() -> AcademicMasterErrors.notFound(OFFERING_MISSING));
+        // Locked after the semester enrollment, as self-registration does, so a capacity holds.
+        offerings.findByIdForUpdate(offering.getId());
         if (semesterEnrollment.getStatus() != SemesterEnrollmentStatus.ENROLLED) {
             throw AcademicMasterErrors.conflict(NOT_ENROLLED_IN_SEMESTER);
         }
@@ -184,6 +188,10 @@ public class AcademicEnrollmentManagementService {
                 .isPresent()) {
             throw AcademicMasterErrors.conflict(COURSE_TAKEN);
         }
+        Integer capacity = offering.getCapacity();
+        if (capacity != null && courseEnrollments.countEnrolledInOfferingForShare(offering.getId()) >= capacity) {
+            throw AcademicMasterErrors.conflict(OfferingCapacity.fullMessage(offering));
+        }
         return CourseEnrollmentResponse.of(AcademicMasterErrors.savedOrConflict(
                 () -> courseEnrollments.saveAndFlush(new CourseEnrollment(semesterEnrollment, offering)), COURSE_TAKEN));
     }
@@ -199,6 +207,9 @@ public class AcademicEnrollmentManagementService {
         CourseEnrollmentStatus target = request.status();
         if (target == enrollment.getStatus()) {
             return CourseEnrollmentResponse.of(enrollment);
+        }
+        if (target == CourseEnrollmentStatus.DROPPED) {
+            throw AcademicMasterErrors.conflict(DROP_BY_STUDENT);
         }
         if (enrollment.getStatus() != CourseEnrollmentStatus.ENROLLED) {
             throw AcademicMasterErrors.conflict(COURSE_ENDED);

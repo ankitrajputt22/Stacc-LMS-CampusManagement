@@ -24,7 +24,7 @@ import { MasterForm } from './MasterForm'
 import { MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 
-type Ending = { semesterEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
+type Ending = { semesterEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED' | 'DROPPED'> }
 
 type StudentEnrollmentsProps = {
   studentProfileId: number
