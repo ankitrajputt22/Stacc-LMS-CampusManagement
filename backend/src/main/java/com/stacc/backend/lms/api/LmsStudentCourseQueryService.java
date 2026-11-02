@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.stacc.backend.academic.course.Course;
+import com.stacc.backend.academic.admin.OfferingFacultyLoader;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
@@ -38,14 +39,17 @@ public class LmsStudentCourseQueryService {
     private final CourseEnrollmentRepository courseEnrollments;
     private final LmsCourseRepository lmsCourses;
     private final LmsStudentAccessService accessService;
+    private final OfferingFacultyLoader faculty;
 
     public LmsStudentCourseQueryService(
             CourseEnrollmentRepository courseEnrollments,
             LmsCourseRepository lmsCourses,
-            LmsStudentAccessService accessService) {
+            LmsStudentAccessService accessService,
+            OfferingFacultyLoader faculty) {
         this.courseEnrollments = courseEnrollments;
         this.lmsCourses = lmsCourses;
         this.accessService = accessService;
+        this.faculty = faculty;
     }
 
     /**
@@ -68,12 +72,20 @@ public class LmsStudentCourseQueryService {
                         .map(enrollment -> enrollment.getCourseOffering().getId()).distinct().toList())
                 .stream()
                 .collect(Collectors.toMap(course -> course.getCourseOffering().getId(), Function.identity()));
-        return enrollments.stream()
+        List<LmsCourse> accessible = enrollments.stream()
                 .filter(enrollment -> byOffering.containsKey(enrollment.getCourseOffering().getId()))
                 .filter(enrollment -> LmsStudentAccessPolicy.grantsCurrentAccess(enrollment,
                         byOffering.get(enrollment.getCourseOffering().getId()), userAccountId))
                 .map(enrollment -> byOffering.get(enrollment.getCourseOffering().getId()))
-                .map(LmsStudentCourseQueryService::summaryOf)
+                .distinct()
+                .toList();
+        if (accessible.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, List<String>> names = faculty.activeNamesByOffering(
+                accessible.stream().map(course -> course.getCourseOffering().getId()).toList());
+        return accessible.stream()
+                .map(course -> summaryOf(course, names.getOrDefault(course.getCourseOffering().getId(), List.of())))
                 // Consistent data never lists a course twice. This keeps the answer clean if it is not.
                 .distinct()
                 .sorted(BY_COURSE_CODE)
@@ -103,7 +115,7 @@ public class LmsStudentCourseQueryService {
     }
 
     // The course details are read from the academic records every time. The LMS keeps no copy.
-    private static LmsCourseSummaryResponse summaryOf(LmsCourse lmsCourse) {
+    private static LmsCourseSummaryResponse summaryOf(LmsCourse lmsCourse, List<String> facultyNames) {
         CourseOffering courseOffering = lmsCourse.getCourseOffering();
         Course course = courseOffering.getCourse();
         Semester semester = courseOffering.getSemester();
@@ -114,7 +126,9 @@ public class LmsStudentCourseQueryService {
                 course.getCredits(),
                 semester.getSemesterNumber(),
                 semester.getProgram().getCode(),
-                semester.getAcademicSession().getCode());
+                semester.getAcademicSession().getCode(),
+                courseOffering.getSection() == null ? null : courseOffering.getSection().getCode(),
+                facultyNames);
     }
 
     // The department is the course's owning department, which may differ from the programme's.

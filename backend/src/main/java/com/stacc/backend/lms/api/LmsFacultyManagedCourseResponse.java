@@ -38,5 +38,17 @@ public record LmsFacultyManagedCourseResponse(
                 + "can use it, ARCHIVED once it is kept only as history. Null when the offering has no LMS course yet; "
                 + "that is not a stored status.", allowableValues = {"DRAFT", "PUBLISHED", "ARCHIVED"},
                 example = "DRAFT", nullable = true)
-        String lmsCourseStatus) {
+        String lmsCourseStatus,
+
+        @Schema(description = "The section the offering is for, or null for the whole semester.", example = "A",
+                nullable = true)
+        String sectionCode,
+
+        @Schema(description = "The faculty member's role in teaching the offering.",
+                allowableValues = {"PRIMARY", "CO_FACULTY"}, example = "PRIMARY")
+        String teachingRole,
+
+        @Schema(description = "Students whose course enrollment in the offering is ENROLLED now. They use the LMS "
+                + "course while it is published.", example = "52")
+        long enrolledCount) {
 }

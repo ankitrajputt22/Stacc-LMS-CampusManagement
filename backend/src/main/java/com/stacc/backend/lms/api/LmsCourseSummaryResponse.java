@@ -25,5 +25,12 @@ public record LmsCourseSummaryResponse(
         String programCode,
 
         @Schema(example = "2026-27")
-        String academicSessionCode) {
+        String academicSessionCode,
+
+        @Schema(description = "The section the offering is for, or null for the whole semester.", example = "A",
+                nullable = true)
+        String sectionCode,
+
+        @Schema(description = "Names of the faculty actively teaching the offering, primary first. Only names.")
+        java.util.List<String> faculty) {
 }

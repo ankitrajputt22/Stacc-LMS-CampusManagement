@@ -61,9 +61,11 @@ class LmsStudentCourseQueryServiceTest {
 
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final com.stacc.backend.academic.admin.OfferingFacultyLoader faculty =
+            mock(com.stacc.backend.academic.admin.OfferingFacultyLoader.class);
     private final LmsStudentAccessService accessCheck = new LmsStudentAccessService(lmsCourses, courseEnrollments);
     private final LmsStudentCourseQueryService service =
-            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, accessCheck);
+            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, accessCheck, faculty);
 
     // What the stand-in database holds: the student's course enrollments, and each offering's LMS course.
     private final List<CourseEnrollment> stored = new ArrayList<>();
@@ -147,8 +149,19 @@ class LmsStudentCourseQueryServiceTest {
 
         assertEquals(
                 List.of(new LmsCourseSummaryResponse(
-                        LMS_COURSE_ID, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27")),
+                        LMS_COURSE_ID, "TST301", "Test Course One", new BigDecimal("4.00"), 3, "BTECH", "2026-27", null, java.util.List.of())),
                 service.getAccessibleCourses(ACCOUNT_ID));
+    }
+
+    @Test
+    void eachCourseNamesItsSectionAndActiveFacultyOnly() {
+        when(faculty.activeNamesByOffering(java.util.List.of(OFFERING_ID)))
+                .thenReturn(java.util.Map.of(OFFERING_ID, List.of("Meera Iyer", "Arjun Nair")));
+
+        LmsCourseSummaryResponse listed = service.getAccessibleCourses(ACCOUNT_ID).get(0);
+
+        assertEquals(List.of("Meera Iyer", "Arjun Nair"), listed.faculty());
+        assertEquals(null, listed.sectionCode());
     }
 
     @Test

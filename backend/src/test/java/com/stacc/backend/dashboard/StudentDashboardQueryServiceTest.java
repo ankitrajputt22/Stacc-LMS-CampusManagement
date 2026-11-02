@@ -71,7 +71,8 @@ class StudentDashboardQueryServiceTest {
     private final AttendanceRecordRepository attendanceRecords = mock(AttendanceRecordRepository.class);
     private final CourseResultRepository results = mock(CourseResultRepository.class);
     private final StudentDashboardQueryService service = new StudentDashboardQueryService(
-            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, mock(LmsStudentAccessService.class)),
+            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, mock(LmsStudentAccessService.class),
+                    mock(com.stacc.backend.academic.admin.OfferingFacultyLoader.class)),
             assignments, announcements, new StudentAttendanceQueryService(attendanceRecords),
             new StudentResultQueryService(results), Clock.fixed(NOW, ZoneOffset.UTC));
 

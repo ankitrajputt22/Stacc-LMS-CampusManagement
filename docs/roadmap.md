@@ -109,7 +109,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 0.5.1 | Live student access | Course access worked out from official enrollment and the course's state (decision 5); dropping a course removes access everywhere, including AI. Done: the membership copy, provisioning, and sync actions are gone. |
-| ★ 0.5.2 | Instructor access | Teaching assignments per section give course access; removing one removes it. |
+| ★ 0.5.2 | Instructor access | Teaching assignments per section give course access; removing one removes it. Done: access was already live from active teaching assignments; the course lists now carry the section, faculty names, teaching role, and enrolled count. |
 | ★ 0.5.3 | Course lists | The student Courses and faculty Teaching pages redesigned around terms and course cards. |
 
 ## v0.6 LMS core — the course space
@@ -288,5 +288,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
-| v0.5 ERP to LMS access | In progress: 0.5.1 done |
+| v0.5 ERP to LMS access | In progress: 0.5.1 and 0.5.2 done |
 | v0.6 – v1.0 | Not started |

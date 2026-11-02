@@ -64,7 +64,8 @@ class FacultyDashboardQueryServiceTest {
     private final AttendanceSessionRepository sessions = mock(AttendanceSessionRepository.class);
     private final AttendanceRecordRepository records = mock(AttendanceRecordRepository.class);
     private final FacultyDashboardQueryService service = new FacultyDashboardQueryService(
-            new LmsFacultyManagedCourseQueryService(teachingAssignments, lmsCourses), assignments, attempts, sessions, records,
+            new LmsFacultyManagedCourseQueryService(teachingAssignments, lmsCourses,
+            org.mockito.Mockito.mock(com.stacc.backend.academic.enrollment.CourseEnrollmentRepository.class)), assignments, attempts, sessions, records,
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     private final FacultyProfile faculty = AttendanceFixtures.faculty(FACULTY, 7);

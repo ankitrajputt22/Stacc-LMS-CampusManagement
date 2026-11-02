@@ -131,7 +131,9 @@ The first LMS endpoint returns the LMS courses the signed-in student can current
     "credits": 4.00,
     "semesterNumber": 3,
     "programCode": "BTECH",
-    "academicSessionCode": "2026-27"
+    "academicSessionCode": "2026-27",
+    "sectionCode": "A",
+    "faculty": ["Meera Iyer"]
   }
 ]
 ```
@@ -142,9 +144,9 @@ The first LMS endpoint returns the LMS courses the signed-in student can current
 - A student with no such course gets `200` with `[]`, not an error.
 - Courses come in course code order.
 - `lmsCourseId` identifies the learning space. The course code, name, and credits are read from the official course every time, and the semester, program, and session from the course offering. The LMS keeps no copy of them.
+- `sectionCode` is the offering's section, or null for the whole semester. `faculty` lists the names of the faculty actively teaching it, primary first (v0.5.2); a member without a person profile name is left out, and no login ID or contact detail is sent.
 - The response holds nothing else: no account details, and no enrollment IDs or statuses.
-- It is a pure read: the student's course enrollments, then the LMS courses of their offerings, in two queries. It changes nothing.
-- The list is read with a single database query.
+- It is a pure read in four queries: the student's course enrollments, the LMS courses of their offerings, and the teaching assignments with names. It changes nothing.
 
 | Request | Response |
 | --- | --- |
@@ -304,7 +306,7 @@ Faculty manage the LMS courses of the course offerings they officially teach, th
 
 | Route | What it does |
 | --- | --- |
-| `GET /api/v1/lms/faculty/managed-courses` | Every offering the faculty member teaches now, in course code order: `courseOfferingId`, course code, name, credits, semester number, program code, session code, and `lmsCourseId` and `lmsCourseStatus`, both null when there is no LMS course yet. Archived courses are listed as `ARCHIVED`, never as missing. Two queries, whatever the number of offerings. |
+| `GET /api/v1/lms/faculty/managed-courses` | Every offering the faculty member teaches now, in course code order: `courseOfferingId`, course code, name, credits, semester number, program code, session code, and `lmsCourseId` and `lmsCourseStatus`, both null when there is no LMS course yet, plus `sectionCode`, the caller's `teachingRole` (`PRIMARY` or `CO_FACULTY`), and `enrolledCount`, the offering's `ENROLLED` course enrollments (v0.5.2). Archived courses are listed as `ARCHIVED`, never as missing. Three queries, whatever the number of offerings. |
 | `POST /api/v1/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | Creates the offering's LMS course as `DRAFT` (201). A second LMS course answers 409 ("An LMS course already exists for this course offering."), also when the unique constraint catches two requests at once. |
 | `POST /api/v1/lms/faculty/courses/{lmsCourseId}/publish` | Moves `DRAFT` to `PUBLISHED`; a published course stays published. An archived one answers 409. |
 | `POST /api/v1/lms/faculty/courses/{lmsCourseId}/archive` | Moves `DRAFT` or `PUBLISHED` to `ARCHIVED`; an archived course stays archived. |
