@@ -19,6 +19,18 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 | `POST /admin/users/{accountId}/faculty-profile` | Creates the faculty profile of an account holding `FACULTY` without one. |
 | `GET`, `POST /admin/users/{accountId}/photo` | Reads or sets the official photo (see `person-profiles.md`). |
 
+## Bulk import (v0.2.7)
+
+`POST /api/v1/admin/users/import` (`ADMIN` with `USER_VIEW` and `USER_MANAGE`) takes a multipart `file` and `temporaryPassword`, and `dryRun` (default `true`).
+
+- The file is UTF-8 CSV (RFC 4180 quoting, a byte-order mark ignored), at most 1 MB and 500 accounts, whose first line is exactly `login_id,full_name,email,roles,department,program,admission_session,roll_number`. Roles are separated by `;`. Codes are matched in uppercase. Students need the department, program (of that department, active), and admission session; faculty need the department (active, their primary department).
+- Every row is checked as one account would be, plus repeats inside the file: login IDs, emails, and roll numbers already taken or repeated, unknown roles or codes, inactive programs or departments, missing fields, and the temporary password's policy against each login ID. The answer lists every row with its problems by line (the header is line 1).
+- With `dryRun` true, or while any row has a problem, nothing is saved (`created: 0`). Otherwise every account is created in one transaction through the normal account creation (person, roles, profiles, audit record each), so a failure creates none.
+- All imported accounts get the one temporary password typed by the admin, hashed once with the shared `PasswordEncoder`; each person must replace it at first sign-in. No password is ever read from the file. The import itself is recorded as `USERS_IMPORTED`.
+- A file that cannot be used at all (no file, too large, not UTF-8, a wrong header, no rows, too many rows, an unusable password) answers 400.
+
+**Import from CSV** on the Users page opens `/admin/users/import`: the column guide with an example, the file, the shared temporary password, **Check file**, a table of rows marked Ready or with their problems, and **Import N accounts** only after a clean check, confirmed first. Changing the file or password asks for a new check.
+
 ## Rules
 
 - The login ID is the student or employee ID: unique, stripped of spaces, and never changed afterwards (409 when taken). Emails are optional and unique among people (409).
@@ -38,4 +50,4 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 
 ## Not built yet
 
-Bulk CSV import (0.2.7), staff roles (0.2.8), self-service password recovery by email, and account deletion (never).
+Staff roles (0.2.8), self-service password recovery by email, and account deletion (never).

@@ -133,7 +133,7 @@ class UserAdminServiceTest {
         verify(people).saveAndFlush(any(PersonProfile.class));
         verify(students).saveAndFlush(any(StudentProfile.class));
         verify(faculty, never()).saveAndFlush(any());
-        verify(passwords).issueTemporaryPassword(57L, TEMPORARY, null);
+        verify(passwords).issueTemporaryPasswordHash(57L, "{test}hash", null);
         verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.USER_CREATED, "USER_ACCOUNT", 57L,
                 "Created 25CSE104 with roles STUDENT.");
         verify(audit).record(ADMIN, com.stacc.backend.audit.AuditAction.STUDENT_PROFILE_CREATED, "USER_ACCOUNT", 57L,
@@ -168,7 +168,7 @@ class UserAdminServiceTest {
                 new UserCreate("NEW4", "A B", null, Set.of(RoleName.ADMIN), "password123", null, null)));
 
         verify(accounts, never()).saveAndFlush(any());
-        verify(passwords, never()).issueTemporaryPassword(anyLong(), anyString(), any());
+        verify(passwords, never()).issueTemporaryPasswordHash(anyLong(), anyString(), any());
     }
 
     @Test

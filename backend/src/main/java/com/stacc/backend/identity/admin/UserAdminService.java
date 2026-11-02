@@ -156,11 +156,19 @@ public class UserAdminService {
      * at all. The temporary password follows the password policy and must be replaced at first sign-in.
      */
     public UserDetail create(Long actorAccountId, UserCreate request) {
+        checkPolicy(request.temporaryPassword(), request.loginId().strip());
+        return createWithHash(actorAccountId, request, passwordEncoder.encode(request.temporaryPassword()));
+    }
+
+    /**
+     * Creates one account with an already-made hash of its temporary password, whose policy the caller has checked for
+     * this login ID. Bulk import hashes the shared temporary password once and calls this for every row.
+     */
+    public UserDetail createWithHash(Long actorAccountId, UserCreate request, String temporaryPasswordHash) {
         String loginId = request.loginId().strip();
         if (accounts.existsByLoginId(loginId)) {
             throw conflict(LOGIN_TAKEN);
         }
-        checkPolicy(request.temporaryPassword(), loginId);
         String email = cleanEmail(request.email());
         if (email != null && people.existsByEmail(email)) {
             throw conflict(EMAIL_TAKEN);
@@ -175,7 +183,7 @@ public class UserAdminService {
 
         UserAccount account;
         try {
-            account = new UserAccount(loginId, passwordEncoder.encode(request.temporaryPassword()));
+            account = new UserAccount(loginId, temporaryPasswordHash);
             for (RoleName name : wanted) {
                 account.assignRole(role(name));
             }
@@ -194,7 +202,7 @@ public class UserAdminService {
         if (wanted.contains(RoleName.FACULTY)) {
             createFacultyProfile(actorAccountId, account, request.facultyProfile());
         }
-        passwords.issueTemporaryPassword(account.getId(), request.temporaryPassword(), null);
+        passwords.issueTemporaryPasswordHash(account.getId(), temporaryPasswordHash, null);
         return detailOf(account);
     }
 

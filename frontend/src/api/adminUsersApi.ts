@@ -1,4 +1,5 @@
 import type {
+  ImportResult,
   AccountStatus,
   FacultyProfileCreate,
   RoleName,
@@ -61,4 +62,15 @@ export async function uploadUserPhoto(accountId: number, file: File) {
   const body = new FormData()
   body.append('file', file)
   return (await apiClient.post<UserDetail>(`${ROOT}/${accountId}/photo`, body)).data
+}
+
+/**
+ * Checks a CSV file of accounts (dryRun) or imports it. Every account gets the one temporary password sent here;
+ * nothing is created unless every row is valid.
+ */
+export async function importUsers(file: File, temporaryPassword: string, dryRun: boolean) {
+  const body = new FormData()
+  body.append('file', file)
+  body.append('temporaryPassword', new Blob([temporaryPassword], { type: 'text/plain' }))
+  return (await apiClient.post<ImportResult>(`${ROOT}/import`, body, { params: { dryRun } })).data
 }

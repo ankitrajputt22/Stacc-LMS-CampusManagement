@@ -139,7 +139,16 @@ export function AdminUsersPage() {
         eyebrow="ERP · Manage"
         title="Users"
         description={isAdmin ? 'Find accounts, add new ones, and manage their roles, status, and passwords.' : undefined}
-        actions={isAdmin ? <ButtonLink to="/admin/users/new">Add user</ButtonLink> : undefined}
+        actions={
+          isAdmin ? (
+            <>
+              <ButtonLink to="/admin/users/import" variant="secondary">
+                Import from CSV
+              </ButtonLink>
+              <ButtonLink to="/admin/users/new">Add user</ButtonLink>
+            </>
+          ) : undefined
+        }
       />
       {isAdmin ? (
         <UserList />

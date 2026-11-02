@@ -77,7 +77,7 @@ Goal: make every later change safe to make. No new features.
 | ★ 0.2.4 | Sign-in protection | Growing delays after failed attempts per account and per address, without locking accounts; session timeout. Done. |
 | ★ 0.2.5 | Audit log | One append-only `AuditService` for sensitive actions (role and status changes first), with a read-only, filtered admin view. Done. |
 | ★ 0.2.6 | User management | Admins find, create, disable, and re-enable accounts, reset passwords, assign roles, and create student and faculty profiles. Done. |
-| 0.2.7 | Bulk import | CSV import of students and faculty with a dry-run preview and per-row errors. |
+| 0.2.7 | Bulk import | CSV import of students and faculty with a dry-run preview and per-row errors. Done. |
 | ★ 0.2.8 | Staff roles | Reference roles for HOD, Warden, Security, Maintenance, Librarian, and Placement Officer, each with only the permissions its feature needs (added with those features). |
 | ★ 0.2.9 | Scoped assignments | Explicit "who is responsible for what" records, starting with the head of a department; a resolver that later lets approvals go to "the student's HOD", "the student's warden", or "the student's mentor". |
 | ★ 0.2.10 | Account pages | Account settings (profile, photo, password, active sessions) and the admin People pages, redesigned. Done: `/account`, official photos, own sessions; the admin account pages are the Users pages of 0.2.6. |
@@ -285,7 +285,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Version | Status |
 | --- | --- |
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
-| v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.6 and 0.2.10 done |
+| v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.7 and 0.2.10 done |
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
