@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /** One assignment as faculty manage it. */
@@ -15,7 +16,7 @@ public record LmsFacultyAssignmentResponse(
         @Schema(example = "Arrays practice")
         String title,
 
-        @Schema(description = "Plain text with line breaks. It is never HTML.",
+        @Schema(description = "The text with line breaks, shown as its format says. It is never HTML.",
                 example = "Solve problems 1 to 5 from the arrays worksheet.")
         String instructions,
 
@@ -36,11 +37,13 @@ public record LmsFacultyAssignmentResponse(
         Instant createdAt,
 
         @Schema(example = "2026-10-14T09:30:00Z")
-        Instant updatedAt) {
+        Instant updatedAt,
+        @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
+        LmsTextFormat instructionsFormat) {
 
     static LmsFacultyAssignmentResponse of(LmsAssignment assignment) {
         return new LmsFacultyAssignmentResponse(assignment.getId(), assignment.getTitle(), assignment.getInstructions(),
                 assignment.getDueAt(), assignment.getMaxMarks(), assignment.getStatus(), assignment.getPublishedAt(),
-                assignment.getCreatedAt(), assignment.getUpdatedAt());
+                assignment.getCreatedAt(), assignment.getUpdatedAt(), assignment.getInstructionsFormat());
     }
 }

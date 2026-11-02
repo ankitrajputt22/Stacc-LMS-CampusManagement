@@ -91,18 +91,31 @@ public class LmsContentManagementService {
         return reorder(current, moduleIds, LmsModule::getId, LmsModule::moveTo, MODULE_ORDER_MISMATCH);
     }
 
-    /** Adds a draft topic after the module's current topics. */
+    /** Adds a draft plain-text topic after the module's current topics. */
     public LmsTopic createTopic(Long userAccountId, Long moduleId, String title, String content) {
+        return createTopic(userAccountId, moduleId, title, content, null);
+    }
+
+    /** Adds a draft topic after the module's current topics, with its text's format (plain when none is sent). */
+    public LmsTopic createTopic(Long userAccountId, Long moduleId, String title, String content, LmsTextFormat format) {
         LmsModule module = changeableModule(userAccountId, moduleId);
         List<LmsTopic> current = topics.findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(
                 module.getId(), LmsContentPolicy.IN_USE);
         int position = current.stream().mapToInt(LmsTopic::getPosition).max().orElse(0) + 1;
-        return topics.save(new LmsTopic(module, title, content, position));
+        LmsTopic topic = new LmsTopic(module, title, content, position);
+        topic.changeContentFormat(LmsTextFormat.orKeep(format, LmsTextFormat.PLAIN));
+        return topics.save(topic);
     }
 
     public LmsTopic updateTopic(Long userAccountId, Long topicId, String title, String content) {
+        return updateTopic(userAccountId, topicId, title, content, null);
+    }
+
+    /** Changes the title and text. Without a format the text keeps its current one. */
+    public LmsTopic updateTopic(Long userAccountId, Long topicId, String title, String content, LmsTextFormat format) {
         LmsTopic topic = changeableTopic(userAccountId, topicId);
         topic.edit(title, content);
+        topic.changeContentFormat(LmsTextFormat.orKeep(format, topic.getContentFormat()));
         return topic;
     }
 

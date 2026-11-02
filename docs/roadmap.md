@@ -116,7 +116,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.6.1 | Safe formatting | The shared formatting set and an editor with preview (decision 10); existing plain text keeps working. |
+| ★ 0.6.1 | Safe formatting | The shared formatting set and an editor with preview (decision 10); existing plain text keeps working. Done: `V79` format per text for topics, announcements, and assignment instructions; `FormattedText` and `FormattedTextField` (see `text-formatting.md`). |
 | ★ 0.6.2 | Pages | Course pages inside modules, with draft and published states. |
 | ★ 0.6.3 | Files | A course files area built on the existing private storage and upload checks. |
 | ★ 0.6.4 | Syllabus | A syllabus page per course. |
@@ -289,4 +289,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
-| v0.6 – v1.0 | Not started |
+| v0.6 LMS core | In progress: 0.6.1 done |
+| v0.7 – v1.0 | Not started |

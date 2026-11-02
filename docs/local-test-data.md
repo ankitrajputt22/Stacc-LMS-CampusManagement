@@ -82,7 +82,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 **LMS**
 - LMS courses: CS301 published, CS302 draft, CS303 archived. Their enrolled students use the published one through official enrollment.
 - Course content:
-  - CS301 has a published unit with three published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `faculty1` at `/teaching/:lmsCourseId/ai`.
+  - CS301 has a published unit with four published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text; the fourth, "Complexity cheat sheet", formatted text with a heading, a table, a list, code, and maths, added in v0.6.1) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `faculty1` at `/teaching/:lmsCourseId/ai`.
   - CS302 has a draft unit.
 - Announcements: one published and one draft in CS301, and a draft in CS302.
 - Assignments in CS301:

@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 import com.stacc.backend.common.validation.Require;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.course.LmsCourse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -61,6 +62,11 @@ public class LmsAssignment {
     // Plain text, line breaks kept. It is never treated as HTML.
     @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
     private String instructions;
+
+    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "instructions_format", nullable = false, length = 20)
+    private LmsTextFormat instructionsFormat = LmsTextFormat.PLAIN;
 
     // An absolute moment, stored in UTC. Each browser shows it in its own time zone.
     @Column(name = "due_at", nullable = false)
@@ -143,6 +149,16 @@ public class LmsAssignment {
     /** Whether this deadline can be set: within {@link #EARLIEST_DUE_AT} and {@link #LATEST_DUE_AT}. */
     public static boolean isSupportedDueAt(Instant dueAt) {
         return dueAt != null && !dueAt.isBefore(EARLIEST_DUE_AT) && !dueAt.isAfter(LATEST_DUE_AT);
+    }
+
+    public LmsTextFormat getInstructionsFormat() {
+        return instructionsFormat;
+    }
+
+    /** Says how the instructions are shown. An archived assignment can no longer be changed. */
+    public void changeInstructionsFormat(LmsTextFormat format) {
+        requireNotArchived();
+        this.instructionsFormat = Require.notNull(format, "format");
     }
 
     /**

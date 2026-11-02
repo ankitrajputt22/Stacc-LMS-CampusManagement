@@ -102,7 +102,8 @@ public class LmsAnnouncementController {
             @Valid @RequestBody LmsAnnouncementRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAnnouncementResponse.of(managementService.create(
-                AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request.title(), request.message()));
+                AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request.title(), request.message(),
+                request.messageFormat()));
     }
 
     @PutMapping("/faculty/announcements/{announcementId}")
@@ -122,7 +123,8 @@ public class LmsAnnouncementController {
             @Valid @RequestBody LmsAnnouncementRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAnnouncementResponse.of(managementService.update(
-                AuthenticatedAccount.idFrom(accessToken), announcementId, request.title(), request.message()));
+                AuthenticatedAccount.idFrom(accessToken), announcementId, request.title(), request.message(),
+                request.messageFormat()));
     }
 
     @PostMapping("/faculty/announcements/{announcementId}/publish")

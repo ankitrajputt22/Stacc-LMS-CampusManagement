@@ -20,6 +20,7 @@ import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentPolicy;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -123,7 +124,7 @@ class LmsStudentAssignmentQueryServiceTest {
 
         assertEquals(new LmsCourseAssignmentDetailResponse(1L, COURSE_ID, "TST301", "Test Data Structures", "Assignment 1",
                         "Instructions 1", Instant.parse("2026-10-20T18:29:00Z"), new BigDecimal("20.00"),
-                        Instant.parse("2026-10-01T09:00:00Z")),
+                        Instant.parse("2026-10-01T09:00:00Z"), LmsTextFormat.PLAIN),
                 service.getPublishedAssignment(STUDENT_ID, COURSE_ID, 1L));
     }
 

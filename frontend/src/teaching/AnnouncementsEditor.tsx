@@ -15,6 +15,8 @@ import { ANNOUNCEMENT_MESSAGE_MAX, asOutcome, srContext, TITLE_MAX } from './edi
 import { StatusTag } from './StatusTag'
 import { type ChangeResult, useContentChanges, useFocusAfterChanges } from './useContentChanges'
 import { useFacultyAnnouncements } from './useFacultyAnnouncements'
+import { FormattedText } from '../formatting/FormattedText'
+import type { TextFormat } from '../formatting/textFormat'
 
 type AnnouncementForm = { type: 'add' } | { type: 'edit'; id: number }
 
@@ -62,14 +64,18 @@ function AnnouncementItem({
         }
         initialTitle={announcement.title}
         initialBody={announcement.message}
+        initialFormat={announcement.messageFormat}
         submitLabel="Save announcement"
         submittingLabel="Saving…"
-        onSubmit={async (title, message) => {
-          const result = await changes.run(() => updateAnnouncement(announcement.id, { title, message: message ?? '' }), {
-            done: 'Announcement saved.',
-            focus: () => [`${key}-heading`],
-            showError: false,
-          })
+        onSubmit={async (title, message, messageFormat) => {
+          const result = await changes.run(
+            () => updateAnnouncement(announcement.id, { title, message: message ?? '', messageFormat }),
+            {
+              done: 'Announcement saved.',
+              focus: () => [`${key}-heading`],
+              showError: false,
+            },
+          )
           if (result?.ok) {
             setOpenForm(null)
           }
@@ -105,7 +111,12 @@ function AnnouncementItem({
           'Not published yet. Students cannot see it.'
         )}
       </p>
-      <p className="mt-1.5 text-sm leading-6 break-words whitespace-pre-line text-ink">{announcement.message}</p>
+      <FormattedText
+        text={announcement.message}
+        format={announcement.messageFormat}
+        className="mt-1.5 text-sm leading-6 text-ink"
+        headingLevel={5}
+      />
 
       {isConfirming ? (
         <ArchiveConfirmation
@@ -163,9 +174,9 @@ export function AnnouncementsEditor({ lmsCourseId }: { lmsCourseId: number }) {
 
   useFocusAfterChanges(containerRef, list, changes.pendingFocus, changes.focusHandled)
 
-  async function add(title: string, message: string | null) {
+  async function add(title: string, message: string | null, messageFormat?: TextFormat) {
     const result: ChangeResult<LmsFacultyAnnouncement> | null = await changes.run(
-      () => createAnnouncement(lmsCourseId, { title, message: message ?? '' }),
+      () => createAnnouncement(lmsCourseId, { title, message: message ?? '', messageFormat }),
       {
         done: 'Announcement added as a draft.',
         focus: (created) => [`announcement-${created.id}-heading`],
@@ -238,6 +249,7 @@ export function AnnouncementsEditor({ lmsCourseId }: { lmsCourseId: number }) {
             {...FORM_LABELS}
             heading="New announcement"
             note="It is saved as a draft. Students see it once you publish it."
+            initialFormat="FORMATTED"
             submitLabel="Create announcement"
             submittingLabel="Creating…"
             onSubmit={add}

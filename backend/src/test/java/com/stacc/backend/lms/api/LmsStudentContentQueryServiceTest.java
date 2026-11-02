@@ -25,6 +25,7 @@ import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -74,7 +75,7 @@ class LmsStudentContentQueryServiceTest {
         LmsCourseContentResponse content = service.getPublishedContent(ACCOUNT_ID, COURSE_ID);
 
         assertEquals(new LmsCourseContentResponse(List.of(new LmsCourseModuleResponse(11L, "Module 11", null,
-                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31", List.of()))))), content);
+                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31", List.of(), LmsTextFormat.PLAIN))))), content);
     }
 
     @Test

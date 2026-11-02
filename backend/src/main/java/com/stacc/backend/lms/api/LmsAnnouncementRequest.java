@@ -1,6 +1,7 @@
 package com.stacc.backend.lms.api;
 
 import com.stacc.backend.lms.announcement.LmsAnnouncement;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,8 +16,10 @@ public record LmsAnnouncementRequest(
         @Size(max = LmsAnnouncement.MAX_TITLE_LENGTH, message = "Title must be at most " + LmsAnnouncement.MAX_TITLE_LENGTH + " characters")
         String title,
 
-        @Schema(description = "Plain text. Line breaks are kept; HTML is not interpreted.", example = "The mid-semester exam is next Monday.")
+        @Schema(description = "Shown as its format says. Line breaks are kept; HTML is never interpreted.", example = "The mid-semester exam is next Monday.")
         @NotBlank(message = "Message is required")
         @Size(max = LmsAnnouncement.MAX_MESSAGE_LENGTH, message = "Message must be at most 10,000 characters")
-        String message) {
+        String message,
+        @Schema(description = "PLAIN shows the text exactly as typed; FORMATTED uses the small formatting set (Markdown headings, lists, links, code, tables, and $maths$), never HTML. Left out, a new text is PLAIN and an edited one keeps its format.", allowableValues = {"PLAIN", "FORMATTED"})
+        LmsTextFormat messageFormat) {
 }

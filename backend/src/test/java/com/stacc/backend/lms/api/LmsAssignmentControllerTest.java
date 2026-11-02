@@ -28,6 +28,7 @@ import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.assignment.LmsAssignmentManagementService;
 import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -126,11 +127,11 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
     void studentOpensOnePublishedAssignmentWithItsCourse() throws Exception {
         when(studentQueries.getPublishedAssignment(ACCOUNT_ID, 7L, 9L)).thenReturn(new LmsCourseAssignmentDetailResponse(
                 9L, 7L, "TST301", "Test Data Structures", "Arrays practice", "Solve 1 to 5.\nShow working.", DUE,
-                new BigDecimal("12.50"), Instant.parse("2026-10-14T09:30:00Z")));
+                new BigDecimal("12.50"), Instant.parse("2026-10-14T09:30:00Z"), LmsTextFormat.PLAIN));
 
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/assignments/9")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(9)))
+                .andExpect(jsonPath("$.*", hasSize(10)))
                 .andExpect(jsonPath("$.courseCode").value("TST301"))
                 .andExpect(jsonPath("$.instructions").value("Solve 1 to 5.\nShow working."))
                 .andExpect(jsonPath("$.dueAt").value("2026-10-20T18:29:00Z"))
@@ -178,7 +179,7 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$[0].publishedAt").doesNotExist())
                 .andExpect(jsonPath("$[0].dueAt").value("2026-10-20T18:29:00Z"))
-                .andExpect(jsonPath("$[0].*", hasSize(9)));
+                .andExpect(jsonPath("$[0].*", hasSize(10)));
         mockMvc.perform(as(facultyReaderToken(), get("/api/v1/lms/faculty/my-assignments")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].*", hasSize(8)))
@@ -204,7 +205,7 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void addingAnAssignmentAnswersCreatedAndIgnoresStatusAndOwnershipInTheBody() throws Exception {
-        when(managementService.create(ACCOUNT_ID, 7L, "Arrays practice", "Solve 1 to 5.\nShow working.", DUE, MARKS))
+        when(managementService.create(ACCOUNT_ID, 7L, "Arrays practice", "Solve 1 to 5.\nShow working.", null, DUE, MARKS))
                 .thenReturn(assignment);
 
         mockMvc.perform(as(managerToken(), json(post("/api/v1/lms/faculty/courses/7/assignments"),
@@ -217,12 +218,12 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.status").value("DRAFT"))
                 .andExpect(jsonPath("$.publishedAt").doesNotExist());
 
-        verify(managementService).create(ACCOUNT_ID, 7L, "Arrays practice", "Solve 1 to 5.\nShow working.", DUE, MARKS);
+        verify(managementService).create(ACCOUNT_ID, 7L, "Arrays practice", "Solve 1 to 5.\nShow working.", null, DUE, MARKS);
     }
 
     @Test
     void deadlineWithAnOffsetArrivesAsTheSameMomentAndIsSentBackInUtc() throws Exception {
-        when(managementService.update(eq(ACCOUNT_ID), eq(9L), any(), any(), any(), any())).thenReturn(assignment);
+        when(managementService.update(eq(ACCOUNT_ID), eq(9L), any(), any(), any(), any(), any())).thenReturn(assignment);
 
         mockMvc.perform(as(managerToken(), json(put("/api/v1/lms/faculty/assignments/9"),
                         "{\"title\":\"Arrays practice\",\"instructions\":\"Solve 1 to 5.\\nShow working.\","
@@ -230,13 +231,13 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dueAt").value("2026-10-20T18:29:00Z"));
 
-        verify(managementService).update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", DUE,
+        verify(managementService).update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", null, DUE,
                 new BigDecimal("12.5"));
     }
 
     @Test
     void eachChangeRouteCallsItsActionForTheAccountInTheToken() throws Exception {
-        when(managementService.update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", DUE, MARKS))
+        when(managementService.update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", null, DUE, MARKS))
                 .thenReturn(assignment);
         when(managementService.publish(ACCOUNT_ID, 9L)).thenReturn(assignment);
         when(managementService.archive(ACCOUNT_ID, 9L)).thenReturn(assignment);
@@ -245,7 +246,7 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
             mockMvc.perform(as(managerToken(), route)).andExpect(status().isOk());
         }
 
-        verify(managementService).update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", DUE, MARKS);
+        verify(managementService).update(ACCOUNT_ID, 9L, "Arrays practice", "Solve 1 to 5.\nShow working.", null, DUE, MARKS);
         verify(managementService).publish(ACCOUNT_ID, 9L);
         verify(managementService).archive(ACCOUNT_ID, 9L);
     }

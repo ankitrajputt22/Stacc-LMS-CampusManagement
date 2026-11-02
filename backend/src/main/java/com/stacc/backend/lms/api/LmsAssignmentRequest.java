@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -21,7 +22,7 @@ public record LmsAssignmentRequest(
         @Size(max = LmsAssignment.MAX_TITLE_LENGTH, message = "Title must be at most " + LmsAssignment.MAX_TITLE_LENGTH + " characters")
         String title,
 
-        @Schema(description = "Plain text. Line breaks are kept; HTML is not interpreted.",
+        @Schema(description = "Shown as its format says. Line breaks are kept; HTML is never interpreted.",
                 example = "Solve problems 1 to 5 from the arrays worksheet.")
         @NotBlank(message = "Instructions are required")
         @Size(max = LmsAssignment.MAX_INSTRUCTIONS_LENGTH, message = "Instructions must be at most 20,000 characters")
@@ -38,5 +39,7 @@ public record LmsAssignmentRequest(
         @DecimalMin(value = "0", inclusive = false, message = "Maximum marks must be greater than zero")
         @Digits(integer = 6, fraction = LmsAssignment.MARK_DECIMAL_PLACES,
                 message = "Maximum marks must be below 1,000,000 with at most 2 decimal places")
-        BigDecimal maxMarks) {
+        BigDecimal maxMarks,
+        @Schema(description = "PLAIN shows the text exactly as typed; FORMATTED uses the small formatting set (Markdown headings, lists, links, code, tables, and $maths$), never HTML. Left out, a new text is PLAIN and an edited one keeps its format.", allowableValues = {"PLAIN", "FORMATTED"})
+        LmsTextFormat instructionsFormat) {
 }

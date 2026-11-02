@@ -1,3 +1,4 @@
+import type { TextFormat } from '../formatting/textFormat'
 // These types mirror the backend's LMS answers in com.stacc.backend.lms.api.
 
 /** One LMS course the signed-in student can currently use, from GET /api/v1/lms/my-courses. */
@@ -54,6 +55,7 @@ export type LmsCourseTopic = {
   id: number
   title: string
   content: string | null
+  contentFormat: TextFormat
   /** Its published study materials. Often empty. */
   materials: LmsCourseMaterial[]
 }
@@ -76,6 +78,7 @@ export type LmsFacultyTopic = {
   id: number
   title: string
   content: string | null
+  contentFormat: TextFormat
   position: number
   status: LmsContentStatus
 }
@@ -142,6 +145,8 @@ export type LmsMaterialInput = {
 export type LmsTopicInput = {
   title: string
   content: string | null
+  /** Left out, a new text is plain and an edited one keeps its format. */
+  contentFormat?: TextFormat
 }
 
 /** One published announcement of a course, as a student sees it. The message is plain text. */
@@ -149,6 +154,7 @@ export type LmsCourseAnnouncement = {
   id: number
   title: string
   message: string
+  messageFormat: TextFormat
   /** When it was first published, as an ISO 8601 time in UTC. */
   publishedAt: string
 }
@@ -158,6 +164,7 @@ export type LmsFacultyAnnouncement = {
   id: number
   title: string
   message: string
+  messageFormat: TextFormat
   status: LmsContentStatus
   /** When it was first published, or null for a draft. Corrections never change it. */
   publishedAt: string | null
@@ -169,6 +176,8 @@ export type LmsFacultyAnnouncement = {
 export type LmsAnnouncementInput = {
   title: string
   message: string
+  /** Left out, a new text is plain and an edited one keeps its format. */
+  messageFormat?: TextFormat
 }
 
 /** One published assignment in a student's course list. Past-due assignments are included. */
@@ -189,6 +198,7 @@ export type LmsCourseAssignmentDetail = {
   courseName: string
   title: string
   instructions: string
+  instructionsFormat: TextFormat
   /** The deadline, as an ISO 8601 time in UTC. */
   dueAt: string
   maxMarks: number
@@ -201,6 +211,7 @@ export type LmsFacultyAssignment = {
   id: number
   title: string
   instructions: string
+  instructionsFormat: TextFormat
   dueAt: string
   maxMarks: number
   status: LmsContentStatus
@@ -226,6 +237,8 @@ export type LmsFacultyAssignmentOverview = {
 export type LmsAssignmentInput = {
   title: string
   instructions: string
+  /** Left out, a new text is plain and an edited one keeps its format. */
+  instructionsFormat?: TextFormat
   /** An absolute moment as an ISO 8601 time with a zone, such as 2026-10-20T18:29:00.000Z. */
   dueAt: string
   maxMarks: number

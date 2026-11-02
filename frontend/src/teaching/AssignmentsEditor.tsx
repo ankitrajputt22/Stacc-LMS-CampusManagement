@@ -14,6 +14,7 @@ import { ASSIGNMENTS_SECTION_ID, asOutcome, srContext, submissionsPath } from '.
 import { StatusTag } from './StatusTag'
 import { type ChangeResult, useContentChanges, useFocusAfterChanges } from './useContentChanges'
 import { useFacultyAssignments } from './useFacultyAssignments'
+import { FormattedText } from '../formatting/FormattedText'
 
 type AssignmentFormState = { type: 'add' } | { type: 'edit'; id: number }
 
@@ -106,8 +107,13 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
         <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-control text-sm font-medium text-stacc-primary hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0">
           Instructions{srContext(`of ${name}`)}
         </summary>
-        {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
-        <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{assignment.instructions}</p>
+        {/* Shown as its format says; never as HTML. */}
+        <FormattedText
+          text={assignment.instructions}
+          format={assignment.instructionsFormat}
+          className="mt-1 text-sm leading-6 text-ink"
+          headingLevel={5}
+        />
       </details>
 
       {isConfirming ? (

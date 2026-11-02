@@ -250,6 +250,29 @@ class LmsContentManagementServiceTest {
     }
 
     @Test
+    void aTopicIsPlainUnlessFormattedAndAnEditWithoutAFormatKeepsIt() {
+        assertEquals(LmsTextFormat.PLAIN, service.createTopic(ACCOUNT_ID, first.getId(), "Plain", "Text").getContentFormat());
+        LmsTopic formatted = service.createTopic(ACCOUNT_ID, first.getId(), "Formatted", "## Text", LmsTextFormat.FORMATTED);
+        assertEquals(LmsTextFormat.FORMATTED, formatted.getContentFormat());
+
+        service.updateTopic(ACCOUNT_ID, topicB.getId(), "Base cases", "**Bold**", LmsTextFormat.FORMATTED);
+        service.updateTopic(ACCOUNT_ID, topicB.getId(), "Base cases", "Still formatted");
+        assertEquals(LmsTextFormat.FORMATTED, topicB.getContentFormat());
+
+        service.updateTopic(ACCOUNT_ID, topicB.getId(), "Base cases", "Plain again", LmsTextFormat.PLAIN);
+        assertEquals(LmsTextFormat.PLAIN, topicB.getContentFormat());
+    }
+
+    @Test
+    void anArchivedTopicsFormatCannotChange() {
+        LmsTopic topic = new LmsTopic(first, "Archived", null, 1);
+        topic.archive();
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> topic.changeContentFormat(LmsTextFormat.FORMATTED));
+    }
+
+    @Test
     void editingATopicChangesItsTextOnly() {
         LmsTopic edited = service.updateTopic(ACCOUNT_ID, topicB.getId(), "Base cases", null);
 

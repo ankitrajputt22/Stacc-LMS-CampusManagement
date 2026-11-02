@@ -1,6 +1,7 @@
 package com.stacc.backend.lms.api;
 
 import com.stacc.backend.lms.content.LmsTopic;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,7 +16,9 @@ public record LmsTopicRequest(
         @Size(max = LmsTopic.MAX_TITLE_LENGTH, message = "Title must be at most " + LmsTopic.MAX_TITLE_LENGTH + " characters")
         String title,
 
-        @Schema(description = "Optional plain text. Line breaks are kept; HTML is not interpreted.", example = "Read the syllabus before the first class.")
+        @Schema(description = "Optional text, shown as its format says. Line breaks are kept; HTML is never interpreted.", example = "Read the syllabus before the first class.")
         @Size(max = LmsTopic.MAX_CONTENT_LENGTH, message = "Content must be at most 20,000 characters")
-        String content) {
+        String content,
+        @Schema(description = "PLAIN shows the text exactly as typed; FORMATTED uses the small formatting set (Markdown headings, lists, links, code, tables, and $maths$), never HTML. Left out, a new text is PLAIN and an edited one keeps its format.", allowableValues = {"PLAIN", "FORMATTED"})
+        LmsTextFormat contentFormat) {
 }

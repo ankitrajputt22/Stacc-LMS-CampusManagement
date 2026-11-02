@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Button } from '../components/Button'
+import { FormattedTextField } from '../formatting/FormattedTextField'
+import type { TextFormat } from '../formatting/textFormat'
 import { border, fieldClasses } from './formStyles'
 
 /** What happened to a submitted form: done, or refused with messages to show. */
@@ -24,13 +26,19 @@ type ContentFormProps = {
   initialBody?: string | null
   submitLabel: string
   submittingLabel: string
-  onSubmit: (title: string, body: string | null) => Promise<FormOutcome>
+  /**
+   * When set, the body is course text with a format: Formatted (with Write and Preview) or Plain text. This is the
+   * format it starts with: the text's current one, or Formatted for new text.
+   */
+  initialFormat?: TextFormat
+  /** The format is sent only when the body has one. */
+  onSubmit: (title: string, body: string | null, format?: TextFormat) => Promise<FormOutcome>
   onCancel: () => void
 }
 
 /**
- * A small contained form for a title and a plain-text body, used to add or edit a module or topic.
- * The body is a normal text area: what is typed is stored and shown as plain text.
+ * A small contained form for a title and a body, used to add or edit modules, topics, materials, and announcements.
+ * Without `initialFormat` the body is plain text; with it, the body is course text with a format and a preview.
  */
 export function ContentForm({
   heading,
@@ -46,6 +54,7 @@ export function ContentForm({
   initialBody = '',
   submitLabel,
   submittingLabel,
+  initialFormat,
   onSubmit,
   onCancel,
 }: ContentFormProps) {
@@ -54,6 +63,7 @@ export function ContentForm({
   const bodyRef = useRef<HTMLTextAreaElement>(null)
   const [title, setTitle] = useState(initialTitle)
   const [body, setBody] = useState(initialBody ?? '')
+  const [format, setFormat] = useState<TextFormat>(initialFormat ?? 'PLAIN')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -87,7 +97,7 @@ export function ContentForm({
     }
 
     setSubmitting(true)
-    const outcome = await onSubmit(title, body.trim() === '' ? null : body)
+    const outcome = await onSubmit(title, body.trim() === '' ? null : body, initialFormat ? format : undefined)
     // On success the editor closes this form, so nothing more is updated here.
     if (!outcome.ok) {
       setSubmitting(false)
@@ -139,6 +149,22 @@ export function ContentForm({
         )}
       </div>
 
+      {initialFormat ? (
+        <div className="mt-4">
+          <FormattedTextField
+            id={`${id}-body`}
+            label={bodyLabel}
+            value={body}
+            onChange={setBody}
+            format={format}
+            onFormatChange={setFormat}
+            rows={bodyRows}
+            maxLength={bodyMaxLength}
+            error={bodyError}
+            textareaRef={bodyRef}
+          />
+        </div>
+      ) : (
       <div className="mt-4">
         <label htmlFor={`${id}-body`} className="block text-sm font-medium text-ink">
           {bodyLabel}
@@ -163,6 +189,7 @@ export function ContentForm({
           </p>
         )}
       </div>
+      )}
 
       <div role="alert">
         {formError && (

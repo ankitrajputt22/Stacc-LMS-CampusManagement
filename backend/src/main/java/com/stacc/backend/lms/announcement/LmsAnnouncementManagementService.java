@@ -6,6 +6,7 @@ import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,19 +41,33 @@ public class LmsAnnouncementManagementService {
         this.clock = clock;
     }
 
-    /** Adds a draft announcement to the course. */
+    /** Adds a draft plain-text announcement to the course. */
     public LmsAnnouncement create(Long userAccountId, Long lmsCourseId, String title, String message) {
+        return create(userAccountId, lmsCourseId, title, message, null);
+    }
+
+    /** Adds a draft announcement to the course, with its message's format (plain when none is sent). */
+    public LmsAnnouncement create(Long userAccountId, Long lmsCourseId, String title, String message, LmsTextFormat format) {
         if (!facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw notFound(COURSE_UNAVAILABLE);
         }
         LmsCourse lmsCourse = lmsCourses.findById(lmsCourseId).orElseThrow(() -> notFound(COURSE_UNAVAILABLE));
-        return announcements.save(new LmsAnnouncement(lmsCourse, title, message));
+        LmsAnnouncement announcement = new LmsAnnouncement(lmsCourse, title, message);
+        announcement.changeMessageFormat(LmsTextFormat.orKeep(format, LmsTextFormat.PLAIN));
+        return announcements.save(announcement);
     }
 
     /** Changes the title and message of a draft or published announcement. Publication time is kept. */
     public LmsAnnouncement update(Long userAccountId, Long announcementId, String title, String message) {
+        return update(userAccountId, announcementId, title, message, null);
+    }
+
+    /** As above; without a format the message keeps its current one. */
+    public LmsAnnouncement update(Long userAccountId, Long announcementId, String title, String message,
+            LmsTextFormat format) {
         LmsAnnouncement announcement = changeable(userAccountId, announcementId);
         announcement.edit(title, message);
+        announcement.changeMessageFormat(LmsTextFormat.orKeep(format, announcement.getMessageFormat()));
         return announcement;
     }
 

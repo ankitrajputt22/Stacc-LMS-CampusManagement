@@ -123,6 +123,7 @@ import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
 import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterialService;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourse;
@@ -561,6 +562,19 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 known node takes constant time, but finding the element at a position means walking from the head, O(n).
                 Choose an array when you mostly read by index and the size changes rarely. Choose a linked list when you \
                 often insert and delete in the middle and walk the elements in order.""", true);
+        // A formatted topic (v0.6.1): headings, a list, a table, code, and maths, shown with the small formatting set.
+        topic(faculty1, unit1, "Complexity cheat sheet", """
+                ## Costs at a glance
+
+                | Operation | Array | Linked list |
+                | --- | --- | --- |
+                | Read by index | $O(1)$ | $O(n)$ |
+                | Insert after a known node | $O(n)$ | $O(1)$ |
+
+                - Arrays keep elements **next to each other** in memory.
+                - Linked lists follow `next` pointers from the head.
+
+                Summing $n$ elements takes $\\sum_{i=1}^{n} 1 = n$ steps.""", LmsTextFormat.FORMATTED, true);
         materialFacultyId = faculty1.getId();
         materialTopicId = singlyLinked;
         topic(faculty1, unit1, "Doubly linked lists", "Draft notes: previous pointers and sentinel nodes.", false);
@@ -875,12 +889,17 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     private Long topic(UserAccount faculty, Long moduleId, String title, String content, boolean publish) {
+        return topic(faculty, moduleId, title, content, LmsTextFormat.PLAIN, publish);
+    }
+
+    private Long topic(UserAccount faculty, Long moduleId, String title, String content, LmsTextFormat format,
+            boolean publish) {
         Optional<LmsTopic> found = repositories.topics
                 .findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(moduleId, ANY_CONTENT_STATUS).stream()
                 .filter(topic -> topic.getTitle().equals(title))
                 .findFirst();
         return findOrCreate(found, () -> {
-            LmsTopic topic = services.content.createTopic(faculty.getId(), moduleId, title, content);
+            LmsTopic topic = services.content.createTopic(faculty.getId(), moduleId, title, content, format);
             if (publish) {
                 services.content.publishTopic(faculty.getId(), topic.getId());
             }

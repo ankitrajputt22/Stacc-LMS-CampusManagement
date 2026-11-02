@@ -26,6 +26,7 @@ import com.stacc.backend.lms.announcement.LmsAnnouncement;
 import com.stacc.backend.lms.announcement.LmsAnnouncementManagementService;
 import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -88,12 +89,12 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
     @Test
     void studentGetsPublishedAnnouncementsWithoutStatus() throws Exception {
         when(queryService.getPublishedAnnouncements(ACCOUNT_ID, 7L)).thenReturn(List.of(new LmsCourseAnnouncementResponse(
-                5L, "Exam schedule", "Monday at 9.\nRoom 4.", Instant.parse("2026-10-14T09:30:00Z"))));
+                5L, "Exam schedule", "Monday at 9.\nRoom 4.", Instant.parse("2026-10-14T09:30:00Z"), LmsTextFormat.PLAIN)));
 
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/announcements").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].*", hasSize(4)))
+                .andExpect(jsonPath("$[0].*", hasSize(5)))
                 .andExpect(jsonPath("$[0].message").value("Monday at 9.\nRoom 4."))
                 .andExpect(jsonPath("$[0].publishedAt").value("2026-10-14T09:30:00Z"))
                 .andExpect(content().string(not(containsString("status"))));
@@ -129,7 +130,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$[0].publishedAt").doesNotExist())
-                .andExpect(jsonPath("$[0].*", hasSize(7)));
+                .andExpect(jsonPath("$[0].*", hasSize(8)));
         mockMvc.perform(get("/api/v1/lms/faculty/courses/7/announcements")).andExpect(status().isUnauthorized());
         for (String token : List.of(tokenWith("ROLE_FACULTY"), tokenWith("ROLE_FACULTY", "LMS_CONTENT_MANAGE"), studentToken(),
                 tokenWith("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_CONTENT_MANAGE"))) {
@@ -139,7 +140,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void addingAnAnnouncementAnswersCreatedAndIgnoresStatusAndCourseInTheBody() throws Exception {
-        when(managementService.create(ACCOUNT_ID, 7L, "Exam schedule", "Monday at 9.\nRoom 4.")).thenReturn(announcement);
+        when(managementService.create(ACCOUNT_ID, 7L, "Exam schedule", "Monday at 9.\nRoom 4.", null)).thenReturn(announcement);
 
         mockMvc.perform(as(managerToken(), json(post("/api/v1/lms/faculty/courses/7/announcements"),
                         "{\"title\":\"Exam schedule\",\"message\":\"Monday at 9.\\nRoom 4.\",\"status\":\"PUBLISHED\","
@@ -148,12 +149,12 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.id").value(5))
                 .andExpect(jsonPath("$.status").value("DRAFT"));
 
-        verify(managementService).create(ACCOUNT_ID, 7L, "Exam schedule", "Monday at 9.\nRoom 4.");
+        verify(managementService).create(ACCOUNT_ID, 7L, "Exam schedule", "Monday at 9.\nRoom 4.", null);
     }
 
     @Test
     void eachChangeRouteCallsItsActionForTheAccountInTheToken() throws Exception {
-        when(managementService.update(ACCOUNT_ID, 5L, "Exam schedule", "Monday at 9.\nRoom 4.")).thenReturn(announcement);
+        when(managementService.update(ACCOUNT_ID, 5L, "Exam schedule", "Monday at 9.\nRoom 4.", null)).thenReturn(announcement);
         when(managementService.publish(ACCOUNT_ID, 5L)).thenReturn(announcement);
         when(managementService.archive(ACCOUNT_ID, 5L)).thenReturn(announcement);
 
@@ -161,7 +162,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
             mockMvc.perform(as(managerToken(), route)).andExpect(status().isOk());
         }
 
-        verify(managementService).update(ACCOUNT_ID, 5L, "Exam schedule", "Monday at 9.\nRoom 4.");
+        verify(managementService).update(ACCOUNT_ID, 5L, "Exam schedule", "Monday at 9.\nRoom 4.", null);
         verify(managementService).publish(ACCOUNT_ID, 5L);
         verify(managementService).archive(ACCOUNT_ID, 5L);
     }

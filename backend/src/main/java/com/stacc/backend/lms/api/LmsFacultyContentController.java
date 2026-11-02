@@ -171,7 +171,8 @@ public class LmsFacultyContentController {
             @Valid @RequestBody LmsTopicRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyTopicResponse.of(contentManagement.createTopic(
-                AuthenticatedAccount.idFrom(accessToken), moduleId, request.title(), request.content()));
+                AuthenticatedAccount.idFrom(accessToken), moduleId, request.title(), request.content(),
+                request.contentFormat()));
     }
 
     @PutMapping("/modules/{moduleId}/topics/reorder")
@@ -210,7 +211,8 @@ public class LmsFacultyContentController {
             @Valid @RequestBody LmsTopicRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyTopicResponse.of(contentManagement.updateTopic(
-                AuthenticatedAccount.idFrom(accessToken), topicId, request.title(), request.content()));
+                AuthenticatedAccount.idFrom(accessToken), topicId, request.title(), request.content(),
+                request.contentFormat()));
     }
 
     @PostMapping("/topics/{topicId}/publish")

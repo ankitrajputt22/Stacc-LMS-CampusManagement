@@ -10,6 +10,7 @@ import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
+import com.stacc.backend.lms.content.LmsTextFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,14 +48,22 @@ public class LmsAssignmentManagementService {
         this.notifications = notifications;
     }
 
-    /** Adds a draft assignment to the course. */
+    /** Adds a draft assignment with plain-text instructions to the course. */
     public LmsAssignment create(
             Long userAccountId, Long lmsCourseId, String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
+        return create(userAccountId, lmsCourseId, title, instructions, null, dueAt, maxMarks);
+    }
+
+    /** Adds a draft assignment to the course, with its instructions' format (plain when none is sent). */
+    public LmsAssignment create(Long userAccountId, Long lmsCourseId, String title, String instructions,
+            LmsTextFormat format, Instant dueAt, BigDecimal maxMarks) {
         if (!facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw notFound(COURSE_UNAVAILABLE);
         }
         LmsCourse lmsCourse = lmsCourses.findById(lmsCourseId).orElseThrow(() -> notFound(COURSE_UNAVAILABLE));
-        return assignments.save(new LmsAssignment(lmsCourse, title, instructions, dueAt, maxMarks));
+        LmsAssignment assignment = new LmsAssignment(lmsCourse, title, instructions, dueAt, maxMarks);
+        assignment.changeInstructionsFormat(LmsTextFormat.orKeep(format, LmsTextFormat.PLAIN));
+        return assignments.save(assignment);
     }
 
     /**
@@ -63,8 +72,15 @@ public class LmsAssignmentManagementService {
      */
     public LmsAssignment update(
             Long userAccountId, Long assignmentId, String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
+        return update(userAccountId, assignmentId, title, instructions, null, dueAt, maxMarks);
+    }
+
+    /** As above; without a format the instructions keep their current one. */
+    public LmsAssignment update(Long userAccountId, Long assignmentId, String title, String instructions,
+            LmsTextFormat format, Instant dueAt, BigDecimal maxMarks) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
         assignment.edit(title, instructions, dueAt, maxMarks);
+        assignment.changeInstructionsFormat(LmsTextFormat.orKeep(format, assignment.getInstructionsFormat()));
         return assignment;
     }
 
