@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.management;
 
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
@@ -7,23 +8,20 @@ import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembershipProvisioningService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Faculty create, publish, and archive the LMS course of a course offering they teach, and synchronize its students'
- * memberships. Who may do so comes from {@link FacultyTeachingAccessService} for the offering, found from the stored LMS
+ * Faculty create, publish, and archive the LMS course of a course offering they teach. Who may do so comes from {@link FacultyTeachingAccessService} for the offering, found from the stored LMS
  * course and never from the client, so an archived course stays manageable while the normal faculty access policy
  * refuses it. Anything the faculty member does not teach answers the same 404 as a missing course.
  *
  * <p>A new LMS course starts {@code DRAFT}. Publishing moves a draft to {@code PUBLISHED}; archiving moves either to
- * {@code ARCHIVED}, which is final: nothing restores it, and nothing is ever deleted. Creating and publishing also
- * give every current student of the offering an active membership through
- * {@link LmsStudentMembershipProvisioningService}, in the same transaction, so a consistency error leaves nothing
- * half done. Course offerings, enrollments, and teaching assignments are only read.
+ * {@code ARCHIVED}, which is final: nothing restores it, and nothing is ever deleted. Students need no membership:
+ * while the course is published, its offering's current students use it, worked out live from official enrollment.
+ * Course offerings, enrollments, and teaching assignments are only read.
  */
 @Service
 @Transactional
@@ -33,24 +31,22 @@ public class LmsCourseManagementService {
     static final String COURSE_NOT_FOUND = "LMS course not found.";
     static final String ALREADY_EXISTS = "An LMS course already exists for this course offering.";
     static final String ARCHIVED_NOT_PUBLISHABLE = "An archived LMS course cannot be published.";
-    static final String ARCHIVED_NOT_SYNCHRONIZED = "Student access cannot be synchronized for an archived LMS course.";
 
     private final CourseOfferingRepository courseOfferings;
     private final LmsCourseRepository lmsCourses;
     private final FacultyTeachingAccessService teachingAccess;
-    private final LmsStudentMembershipProvisioningService provisioning;
+    private final CourseEnrollmentRepository courseEnrollments;
 
     public LmsCourseManagementService(CourseOfferingRepository courseOfferings, LmsCourseRepository lmsCourses,
-            FacultyTeachingAccessService teachingAccess, LmsStudentMembershipProvisioningService provisioning) {
+            FacultyTeachingAccessService teachingAccess, CourseEnrollmentRepository courseEnrollments) {
         this.courseOfferings = courseOfferings;
         this.lmsCourses = lmsCourses;
         this.teachingAccess = teachingAccess;
-        this.provisioning = provisioning;
+        this.courseEnrollments = courseEnrollments;
     }
 
     /**
-     * Creates the draft LMS course of a course offering the faculty member teaches, and gives its current students
-     * active memberships. An offering already has at most one LMS course: a second one answers 409, also when the
+     * Creates the draft LMS course of a course offering the faculty member teaches. An offering already has at most one LMS course: a second one answers 409, also when the
      * database's unique constraint catches two requests at once.
      *
      * @param userAccountId the ID of the signed-in account, taken from its access token
@@ -70,35 +66,25 @@ public class LmsCourseManagementService {
         } catch (DataIntegrityViolationException clash) {
             throw new ApiException(HttpStatus.CONFLICT, ALREADY_EXISTS);
         }
-        return changeOf(lmsCourse, provisioning.provisionCurrentEnrollments(lmsCourse));
-    }
-
-    /** Gives every current student of a draft or published LMS course an active membership. Safe to repeat. */
-    public LmsCourseChange synchronizeStudentMemberships(Long userAccountId, Long lmsCourseId) {
-        LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
-        if (lmsCourse.getStatus() == LmsCourseStatus.ARCHIVED) {
-            throw new ApiException(HttpStatus.CONFLICT, ARCHIVED_NOT_SYNCHRONIZED);
-        }
-        return changeOf(lmsCourse, provisioning.provisionCurrentEnrollments(lmsCourse));
+        return changeOf(lmsCourse, currentStudents(lmsCourse));
     }
 
     /**
-     * Publishes a draft LMS course after synchronizing its memberships; a published one stays published and is
-     * synchronized again. Students still get in only through the student access policy.
+     * Publishes a draft LMS course; a published one stays published. Its offering's current students then use it,
+     * decided on every request by the student access policy.
      */
     public LmsCourseChange publish(Long userAccountId, Long lmsCourseId) {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
         if (lmsCourse.getStatus() == LmsCourseStatus.ARCHIVED) {
             throw new ApiException(HttpStatus.CONFLICT, ARCHIVED_NOT_PUBLISHABLE);
         }
-        int synchronizedCount = provisioning.provisionCurrentEnrollments(lmsCourse);
         lmsCourse.publish();
-        return changeOf(lmsCourse, synchronizedCount);
+        return changeOf(lmsCourse, currentStudents(lmsCourse));
     }
 
     /**
      * Archives a draft or published LMS course; an archived one stays archived. Its content, assignments, submissions,
-     * grades, and memberships are all kept. Students and the normal faculty pages lose access to it.
+     * and grades are all kept. Students and the normal faculty pages lose access to it.
      */
     public LmsCourseChange archive(Long userAccountId, Long lmsCourseId) {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
@@ -117,8 +103,12 @@ public class LmsCourseManagementService {
         return lmsCourse;
     }
 
-    private static LmsCourseChange changeOf(LmsCourse lmsCourse, Integer synchronizedCount) {
+    private int currentStudents(LmsCourse lmsCourse) {
+        return courseEnrollments.findAllCurrentByCourseOfferingId(lmsCourse.getCourseOffering().getId()).size();
+    }
+
+    private static LmsCourseChange changeOf(LmsCourse lmsCourse, Integer currentStudentCount) {
         return new LmsCourseChange(lmsCourse.getId(), lmsCourse.getCourseOffering().getId(), lmsCourse.getStatus(),
-                synchronizedCount);
+                currentStudentCount);
     }
 }

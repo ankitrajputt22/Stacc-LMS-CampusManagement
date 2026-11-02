@@ -5,7 +5,6 @@ import type {
   AdminCourseEnrollment,
   AdminCourseOffering,
   AdminSemesterEnrollment,
-  CourseEnrollmentCreated,
   CourseOfferingCreate,
   CourseOfferingFilters,
   CourseOfferingUpdate,
@@ -104,7 +103,7 @@ export async function getSemesterCourseEnrollments(semesterEnrollmentId: number,
 }
 
 export async function createCourseEnrollment(semesterEnrollmentId: number, courseOfferingId: number) {
-  const response = await apiClient.post<CourseEnrollmentCreated>(
+  const response = await apiClient.post<AdminCourseEnrollment>(
     `${ENROLLMENTS}/semester-enrollments/${semesterEnrollmentId}/courses`,
     { courseOfferingId },
   )
@@ -115,14 +114,6 @@ export async function updateCourseEnrollmentStatus(courseEnrollmentId: number, s
   const response = await apiClient.put<AdminCourseEnrollment>(
     `${ENROLLMENTS}/course-enrollments/${courseEnrollmentId}/status`,
     { status },
-  )
-  return response.data
-}
-
-/** Tries LMS membership again for an enrolled course enrollment whose offering has an LMS course. */
-export async function retryLmsProvisioning(courseEnrollmentId: number) {
-  const response = await apiClient.post<{ courseEnrollmentId: number; lmsProvisioning: 'PROVISIONED' }>(
-    `${ENROLLMENTS}/course-enrollments/${courseEnrollmentId}/provision-lms`,
   )
   return response.data
 }

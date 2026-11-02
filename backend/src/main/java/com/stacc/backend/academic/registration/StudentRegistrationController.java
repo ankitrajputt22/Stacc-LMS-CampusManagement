@@ -40,11 +40,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudentRegistrationController {
 
     private final StudentRegistrationService service;
-    private final StudentRegistrationWorkflow workflow;
 
-    public StudentRegistrationController(StudentRegistrationService service, StudentRegistrationWorkflow workflow) {
+    public StudentRegistrationController(StudentRegistrationService service) {
         this.service = service;
-        this.workflow = workflow;
     }
 
     @GetMapping("/course-registration")
@@ -77,7 +75,7 @@ public class StudentRegistrationController {
     @ApiResponse(responseCode = "409", description = "A chosen offering cannot be taken; the message says which and "
             + "why. Nothing is saved.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public RegistrationResult register(@AuthenticationPrincipal Jwt token, @Valid @RequestBody RegistrationRequest request) {
-        return workflow.register(AuthenticatedAccount.idFrom(token), request.courseOfferingIds());
+        return service.register(AuthenticatedAccount.idFrom(token), request.courseOfferingIds());
     }
 
     @PostMapping("/course-enrollments/{courseEnrollmentId}/drop")
@@ -92,6 +90,6 @@ public class StudentRegistrationController {
     @ApiResponse(responseCode = "409", description = "It is not enrolled, dropping is not allowed for its semester, "
             + "or the deadline has passed.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public RegisteredCourse drop(@AuthenticationPrincipal Jwt token, @PathVariable Long courseEnrollmentId) {
-        return workflow.drop(AuthenticatedAccount.idFrom(token), courseEnrollmentId);
+        return service.drop(AuthenticatedAccount.idFrom(token), courseEnrollmentId);
     }
 }

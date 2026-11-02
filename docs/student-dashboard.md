@@ -20,7 +20,7 @@ GET /api/v1/dashboard/student
 
 | Field | What it holds | Preview |
 | --- | --- | --- |
-| `courseCount`, `courses` | The LMS courses the student can use now, from `LmsStudentCourseQueryService.getAccessibleCourses`, the same rule as `GET /api/v1/lms/my-courses`: active profile, both enrollments `ENROLLED`, an active membership, and a `PUBLISHED` course. Draft, archived, and membership-only courses are never counted. | First 6, in course code order; `courseCount` is the full number. |
+| `courseCount`, `courses` | The LMS courses the student can use now, from `LmsStudentCourseQueryService.getAccessibleCourses`, the same rule as `GET /api/v1/lms/my-courses`: active profile, both enrollments `ENROLLED`, and a `PUBLISHED` course. Draft and archived courses are never counted. | First 6, in course code order; `courseCount` is the full number. |
 | `upcomingAssignmentCount`, `upcomingAssignments` | `PUBLISHED` assignments of exactly those courses whose `dueAt` is now or later, compared as absolute UTC moments with the application `Clock`. A deadline that has passed is not upcoming. Nothing is said about whether the student has submitted: there is no completion, missing, or overdue model. | First 5, nearest deadline first, then assignment ID; the count covers all of them. |
 | `recentAnnouncements` | `PUBLISHED` announcements of exactly those courses: title and publication time, without the message. There is no read or unread state. | First 5, newest `publishedAt` first, then announcement ID. |
 | `attendanceCourseCount`, `attendance` | `StudentAttendanceQueryService.getMyAttendance`, the same as `GET /api/v1/attendance/student/me`: the student's own finalized sessions only, per course offering, with the backend's own percentage. A course without finalized attendance is not listed, so 0% is never shown for attendance that was never taken. There is no overall percentage across courses and no threshold or warning. | First 4, in course code order; the count is the full number. |
@@ -30,7 +30,7 @@ Attendance and results follow the student's own course enrollments and need no L
 
 ## Queries
 
-The dashboard reads in a fixed number of queries, whatever the number of courses: the student's memberships with their courses, one page of upcoming assignments with its count, one page of recent announcements, the student's finalized attendance records, and the student's published results. Course names on assignments and announcements come from the course list, not from a query per row. When the student has no current course, the assignment and announcement queries are not made at all, so no empty `IN` list is ever sent.
+The dashboard reads in a fixed number of queries, whatever the number of courses: the student's course enrollments and the LMS courses of their offerings, one page of upcoming assignments with its count, one page of recent announcements, the student's finalized attendance records, and the student's published results. Course names on assignments and announcements come from the course list, not from a query per row. When the student has no current course, the assignment and announcement queries are not made at all, so no empty `IN` list is ever sent.
 
 ## Frontend
 

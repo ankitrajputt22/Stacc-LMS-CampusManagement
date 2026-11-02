@@ -143,6 +143,34 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                                    or lower(person.preferredName) like :pattern escape '!')))
             """;
 
+    /**
+     * The course enrollments of the student behind one account, whatever their status, with the semester enrollment,
+     * student profile, account, and course offering loaded. Who may use what is decided by the caller.
+     */
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch studentProfile.userAccount userAccount
+            join fetch courseEnrollment.courseOffering
+            where userAccount.id = :userAccountId
+            """)
+    List<CourseEnrollment> findAllWithStudentByUserAccountId(@Param("userAccountId") Long userAccountId);
+
+    /** The same, for one course offering only. */
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch studentProfile.userAccount userAccount
+            join fetch courseEnrollment.courseOffering courseOffering
+            where userAccount.id = :userAccountId and courseOffering.id = :courseOfferingId
+            """)
+    List<CourseEnrollment> findAllWithStudentByUserAccountIdAndCourseOfferingId(
+            @Param("userAccountId") Long userAccountId, @Param("courseOfferingId") Long courseOfferingId);
+
     /** One enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")

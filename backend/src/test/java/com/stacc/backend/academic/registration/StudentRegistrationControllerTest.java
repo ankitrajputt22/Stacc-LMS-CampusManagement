@@ -28,9 +28,6 @@ class StudentRegistrationControllerTest extends DatabaseFreeApiTest {
     @MockitoBean
     private StudentRegistrationService service;
 
-    @MockitoBean
-    private StudentRegistrationWorkflow workflow;
-
     private static String bearer(String... authorities) {
         return "Bearer " + TestTokens.valid("someone", 70, authorities);
     }
@@ -52,7 +49,7 @@ class StudentRegistrationControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void registeringNeedsTheRegisterPermissionAndAValidList() throws Exception {
-        when(workflow.register(anyLong(), any())).thenReturn(new RegistrationResult(List.of(), 0, BigDecimal.ZERO));
+        when(service.register(anyLong(), any())).thenReturn(new RegistrationResult(List.of(), 0, BigDecimal.ZERO));
         String path = "/api/v1/students/me/course-registration";
         String student = bearer("ROLE_STUDENT", "COURSE_REGISTER");
         mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, bearer("ROLE_STUDENT", "COURSE_REGISTRATION_VIEW"))
@@ -61,12 +58,12 @@ class StudentRegistrationControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, student)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"courseOfferingIds\":[]}"))
                 .andExpect(status().isBadRequest());
-        verifyNoInteractions(workflow);
+        verifyNoInteractions(service);
 
         mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, student)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"courseOfferingIds\":[101,102],\"studentId\":5}"))
                 .andExpect(status().isCreated());
-        verify(workflow).register(eq(70L), eq(List.of(101L, 102L)));
+        verify(service).register(eq(70L), eq(List.of(101L, 102L)));
     }
 
     @Test
@@ -74,10 +71,10 @@ class StudentRegistrationControllerTest extends DatabaseFreeApiTest {
         String path = "/api/v1/students/me/course-enrollments/601/drop";
         mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, bearer("ROLE_STUDENT", "COURSE_REGISTER")))
                 .andExpect(status().isForbidden());
-        verifyNoInteractions(workflow);
+        verifyNoInteractions(service);
 
         mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, bearer("ROLE_STUDENT", "COURSE_DROP")))
                 .andExpect(status().isOk());
-        verify(workflow).drop(70L, 601L);
+        verify(service).drop(70L, 601L);
     }
 }

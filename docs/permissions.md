@@ -31,7 +31,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `ACADEMIC_OFFERING_VIEW` | `ADMIN` | Reading course offerings, one course taught in one semester. Added by `V36`. |
 | `ACADEMIC_OFFERING_MANAGE` | `ADMIN` | Creating course offerings and changing their status. Nothing can delete them. Added by `V36`. |
 | `ACADEMIC_ENROLLMENT_VIEW` | `ADMIN` | Looking up students and reading their official semester and course enrollments, and an offering's roster. Added by `V36`. |
-| `ACADEMIC_ENROLLMENT_MANAGE` | `ADMIN` | Enrolling students in semesters and course offerings, ending those enrollments, and retrying LMS provisioning. Nothing can delete them. Added by `V36`. |
+| `ACADEMIC_ENROLLMENT_MANAGE` | `ADMIN` | Enrolling students in semesters and course offerings, and ending those enrollments. Nothing can delete them. Added by `V36`. |
 | `FACULTY_ASSIGNMENT_VIEW` | `ADMIN` | Seeing who teaches each course offering and finding faculty members by employee ID. Added by `V69`. |
 | `FACULTY_ASSIGNMENT_MANAGE` | `ADMIN` | Assigning faculty to course offerings as primary or co-faculty, changing the role, and making an assignment inactive or active again. Nothing can delete one. Added by `V69`. |
 | `ACADEMIC_PROFILE_VIEW` | `ADMIN` | Finding students and faculty with their official academic mapping, never contact details. Added by `V70`. |
@@ -41,7 +41,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `COURSE_REGISTER` | `STUDENT` | Registering oneself for open course offerings. Added by `V72`. |
 | `COURSE_DROP` | `STUDENT` | Dropping one's own course before the semester's drop deadline. Added by `V72`. |
 | `ENROLLED_STUDENTS_VIEW` | `FACULTY` | Reading the class lists of the course offerings one teaches. Added by `V73`. |
-| `LMS_COURSE_MANAGE` | `FACULTY` | Managing the LMS courses of the course offerings a faculty member teaches: listing them, creating a missing LMS course, synchronizing student memberships, publishing, and archiving. Added by `V37`. |
+| `LMS_COURSE_MANAGE` | `FACULTY` | Managing the LMS courses of the course offerings a faculty member teaches: listing them, creating a missing LMS course, publishing, and archiving. Added by `V37`. |
 | `STUDENT_DASHBOARD_VIEW` | `STUDENT` | Reading the student's own dashboard, `GET /api/v1/dashboard/student`. Added by `V38`. |
 | `FACULTY_DASHBOARD_VIEW` | `FACULTY` | Reading the faculty member's own dashboard, `GET /api/v1/dashboard/faculty`. Added by `V39`. |
 | `ADMIN_DASHBOARD_VIEW` | `ADMIN` | Reading the admin dashboard, `GET /api/v1/dashboard/admin`. It changes nothing. Added by `V40`. |
@@ -81,7 +81,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `ATTENDANCE_VIEW` | `STUDENT` | Reading one's own finalized attendance and its summaries. Added by `V32`. |
 | `LMS_ASSIGNMENT_GRADE` | `FACULTY` | Reviewing students' submissions for published assignments, downloading their files, and saving or changing the grade and feedback of an attempt. Added by `V30`. |
 
-`LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided by official enrollment and LMS membership (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
+`LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided live by official enrollment (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 
 `FACULTY_COURSE_VIEW` works the same way for faculty. Which courses a faculty member gets is decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and an account that holds `FACULTY` as well as other roles gets it through `FACULTY`. A faculty member signed in before `V20` must sign in again to get it.
 

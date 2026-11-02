@@ -29,13 +29,13 @@ Reading changes nothing.
 3. The student's semester enrollments, then the offerings, are locked in ID order, the same order admin enrollment uses.
 4. For each offering: registration `OPEN` and the offering not closed, the semester not closed and inside its period, the section matching, no earlier course enrollment in it (a dropped one is never reopened), and a free place counted with a locking read. The first problem answers 409 with a message naming the course, such as "CS306 is full: its one place is taken."
 5. The credit limit is checked per semester over the enrolled credits plus the new ones (409 "This would bring you to 26 credits in semester 3, over the limit of 24.").
-6. The course enrollments are saved as `ENROLLED` and committed. Then LMS membership is provisioned for each offering that already has an LMS course; an LMS failure is only logged and never undoes the registration (admins can retry it).
+6. The course enrollments are saved as `ENROLLED`. Nothing else is written: the student uses each offering's LMS course while it is published, worked out live from the enrollment (v0.5.1).
 
 The answer (201) lists the new enrollments with the total courses and credits.
 
 ## Dropping
 
-`POST /api/v1/students/me/course-enrollments/{courseEnrollmentId}/drop` (`STUDENT` and `COURSE_DROP`) locks the enrollment. Another student's enrollment answers the same 404 as a missing one. The profile must be `ACTIVE`, the enrollment `ENROLLED`, the semester must have a drop deadline (409 "Courses of this semester cannot be dropped.") that has not passed (409). The enrollment becomes `DROPPED` with `droppedAt`; nothing is deleted. Its LMS membership is then made inactive, and the student access policy already refuses a dropped enrollment.
+`POST /api/v1/students/me/course-enrollments/{courseEnrollmentId}/drop` (`STUDENT` and `COURSE_DROP`) locks the enrollment. Another student's enrollment answers the same 404 as a missing one. The profile must be `ACTIVE`, the enrollment `ENROLLED`, the semester must have a drop deadline (409 "Courses of this semester cannot be dropped.") that has not passed (409). The enrollment becomes `DROPPED` with `droppedAt`; nothing is deleted. The student access policy refuses a dropped enrollment, so LMS access ends at once.
 
 Admins cannot set `DROPPED` (409); they complete or withdraw. A dropped enrollment takes no new result, and attendance rosters take only `ENROLLED` students.
 

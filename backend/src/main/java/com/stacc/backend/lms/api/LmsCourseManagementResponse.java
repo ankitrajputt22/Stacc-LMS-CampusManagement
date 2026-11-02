@@ -14,14 +14,13 @@ public record LmsCourseManagementResponse(
         @Schema(allowableValues = {"DRAFT", "PUBLISHED", "ARCHIVED"}, example = "PUBLISHED")
         String lmsCourseStatus,
 
-        @Schema(description = "How many current students of the offering have an active LMS membership after the "
-                + "change: their course and semester enrollments are ENROLLED and their student profile is ACTIVE. "
-                + "Null when the change did not synchronize memberships, as for archiving.", example = "28",
-                nullable = true)
-        Integer synchronizedCount) {
+        @Schema(description = "How many students are currently enrolled in the offering: their course and semester "
+                + "enrollments are ENROLLED and their student profile is ACTIVE. They use the course while it is "
+                + "published, worked out live from enrollment. Null for archiving.", example = "28", nullable = true)
+        Integer currentStudentCount) {
 
     static LmsCourseManagementResponse of(LmsCourseChange change) {
         return new LmsCourseManagementResponse(change.lmsCourseId(), change.courseOfferingId(), change.status().name(),
-                change.synchronizedCount());
+                change.currentStudentCount());
     }
 }

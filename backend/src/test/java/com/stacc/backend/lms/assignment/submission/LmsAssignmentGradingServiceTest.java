@@ -73,7 +73,7 @@ class LmsAssignmentGradingServiceTest {
     private final TeachingAssignment teachingA = new TeachingAssignment(facultyA, course.getCourseOffering());
     private final LmsAssignment assignment = SubmissionFixtures.assignment(course, 5, LmsContentStatus.PUBLISHED);
     private final LmsAssignmentSubmission submission =
-            new LmsAssignmentSubmission(assignment, SubmissionFixtures.membership(course, 12, 40).getCourseEnrollment());
+            new LmsAssignmentSubmission(assignment, SubmissionFixtures.enrollment(course, 12, 40));
     private final LmsSubmissionAttempt first = attempt(submission, 301, 1, "2026-10-20T17:00:00Z");
     private final LmsSubmissionAttempt secondLate = attempt(submission, 302, 2, "2026-10-20T19:00:00Z");
 

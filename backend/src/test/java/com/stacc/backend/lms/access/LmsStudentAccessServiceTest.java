@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,6 +18,7 @@ import java.util.Optional;
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
@@ -28,21 +28,17 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.identity.student.StudentProfile;
-import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembershipStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * Every test starts from a student who is allowed in, and then changes exactly one thing.
- * That is how each rule is shown to matter on its own.
+ * Access is worked out live from the official enrollment and the course's state. Every test starts from a student who
+ * is allowed in, and then changes exactly one thing, so each rule is shown to matter on its own.
  */
 class LmsStudentAccessServiceTest {
 
@@ -53,11 +49,9 @@ class LmsStudentAccessServiceTest {
     private static final Long OFFERING_ID = 50L;
     private static final Long OTHER_OFFERING_ID = 72L;
 
-    private final StudentProfileRepository studentProfiles = mock(StudentProfileRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
-    private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
-    private final LmsStudentAccessService service =
-            new LmsStudentAccessService(studentProfiles, lmsCourses, memberships);
+    private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final LmsStudentAccessService service = new LmsStudentAccessService(lmsCourses, courseEnrollments);
 
     private final Department department = new Department("CSE", "Computer Science and Engineering");
     private final Program program = new Program(department, "BTECH", "Bachelor of Technology", 8);
@@ -70,7 +64,6 @@ class LmsStudentAccessServiceTest {
     private final CourseOffering offering = offering("TST301", OFFERING_ID);
     private final CourseEnrollment courseEnrollment = new CourseEnrollment(semesterEnrollment, offering);
     private final LmsCourse lmsCourse = lmsCourse(offering, LMS_COURSE_ID);
-    private final LmsStudentMembership membership = new LmsStudentMembership(courseEnrollment, lmsCourse);
 
     private StudentProfile student(String loginId, Long accountId) {
         UserAccount account = new UserAccount(loginId, "example-hash-value");
@@ -94,13 +87,13 @@ class LmsStudentAccessServiceTest {
     @BeforeEach
     void studentWhoIsAllowedIn() {
         lmsCourse.publish();
-        when(studentProfiles.findByUserAccountId(ACCOUNT_ID)).thenReturn(Optional.of(student));
         when(lmsCourses.findById(LMS_COURSE_ID)).thenReturn(Optional.of(lmsCourse));
-        foundMemberships(membership);
+        foundEnrollments(courseEnrollment);
     }
 
-    private void foundMemberships(LmsStudentMembership... found) {
-        when(memberships.findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID)).thenReturn(List.of(found));
+    private void foundEnrollments(CourseEnrollment... found) {
+        when(courseEnrollments.findAllWithStudentByUserAccountIdAndCourseOfferingId(ACCOUNT_ID, OFFERING_ID))
+                .thenReturn(List.of(found));
     }
 
     private boolean canAccess() {
@@ -108,13 +101,13 @@ class LmsStudentAccessServiceTest {
     }
 
     @Test
-    void enrolledStudentWithActiveMembershipInAPublishedCourseIsAllowed() {
+    void enrolledStudentInAPublishedCourseIsAllowedWithoutAnyMembership() {
         assertTrue(canAccess());
     }
 
     @Test
-    void accountWithoutAStudentProfileIsDenied() {
-        when(studentProfiles.findByUserAccountId(ACCOUNT_ID)).thenReturn(Optional.empty());
+    void studentWithoutAnEnrollmentInTheOfferingIsDenied() {
+        foundEnrollments();
 
         assertFalse(canAccess());
     }
@@ -134,10 +127,8 @@ class LmsStudentAccessServiceTest {
     }
 
     @Test
-    void draftLmsCourseIsDeniedEvenWithActiveMembershipAndEnrollment() {
-        LmsCourse draft = lmsCourse(offering, LMS_COURSE_ID);
-        when(lmsCourses.findById(LMS_COURSE_ID)).thenReturn(Optional.of(draft));
-        foundMemberships(new LmsStudentMembership(courseEnrollment, draft));
+    void draftLmsCourseIsDeniedEvenWithAnEnrolledStudent() {
+        when(lmsCourses.findById(LMS_COURSE_ID)).thenReturn(Optional.of(lmsCourse(offering, LMS_COURSE_ID)));
 
         assertFalse(canAccess());
     }
@@ -150,24 +141,8 @@ class LmsStudentAccessServiceTest {
     }
 
     @Test
-    void studentWithoutAMembershipIsDenied() {
-        foundMemberships();
-
-        assertFalse(canAccess());
-    }
-
-    @Test
-    void inactiveMembershipIsDeniedEvenWithEnrolledEnrollment() {
-        membership.deactivate();
-
-        assertFalse(canAccess());
-        assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
-    }
-
-    @Test
-    void completedSemesterEnrollmentIsDenied() {
+    void endedSemesterEnrollmentsAreDenied() {
         semesterEnrollment.markCompleted();
-
         assertFalse(canAccess());
     }
 
@@ -179,72 +154,64 @@ class LmsStudentAccessServiceTest {
     }
 
     @Test
-    void completedCourseEnrollmentIsDeniedEvenWithActiveMembershipInAPublishedCourse() {
+    void completedCourseEnrollmentIsDenied() {
         courseEnrollment.markCompleted();
 
         assertFalse(canAccess());
-        assertEquals(LmsStudentMembershipStatus.ACTIVE, membership.getStatus());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }
 
     @Test
-    void withdrawnCourseEnrollmentIsDeniedEvenWithActiveMembershipInAPublishedCourse() {
+    void withdrawnCourseEnrollmentIsDenied() {
         courseEnrollment.withdraw();
 
         assertFalse(canAccess());
     }
 
     @Test
+    void droppingTheCourseEndsAccessAtOnce() {
+        assertTrue(canAccess());
+
+        courseEnrollment.drop(java.time.Instant.parse("2026-07-05T06:00:00Z"));
+
+        assertFalse(canAccess());
+    }
+
+    @Test
     void courseEnrollmentForAnotherOfferingIsDenied() {
-        CourseEnrollment elsewhere =
-                new CourseEnrollment(semesterEnrollment, offering("TST302", OTHER_OFFERING_ID));
-        foundMemberships(new LmsStudentMembership(elsewhere, lmsCourse));
+        foundEnrollments(new CourseEnrollment(semesterEnrollment, offering("TST302", OTHER_OFFERING_ID)));
 
         assertFalse(canAccess());
     }
 
     @Test
     void sameOfferingHeldAsDifferentObjectsStillMatches() {
-        CourseEnrollment loadedSeparately =
-                new CourseEnrollment(semesterEnrollment, offering("TST301", OFFERING_ID));
-        foundMemberships(new LmsStudentMembership(loadedSeparately, lmsCourse));
+        foundEnrollments(new CourseEnrollment(semesterEnrollment, offering("TST301", OFFERING_ID)));
 
         assertTrue(canAccess());
     }
 
     @Test
-    void membershipOfAnotherStudentIsDenied() {
+    void anotherStudentsEnrollmentIsDenied() {
         StudentProfile classmate = student("TEST-STUDENT-2", OTHER_ACCOUNT_ID);
-        CourseEnrollment theirs = new CourseEnrollment(new SemesterEnrollment(classmate, semester), offering);
-        foundMemberships(new LmsStudentMembership(theirs, lmsCourse));
+        foundEnrollments(new CourseEnrollment(new SemesterEnrollment(classmate, semester), offering));
 
         assertFalse(canAccess());
     }
 
     @Test
-    void membershipInAnotherLmsCourseIsDenied() {
-        LmsCourse another = lmsCourse(offering, 8L);
-        another.publish();
-        foundMemberships(new LmsStudentMembership(courseEnrollment, another));
+    void aStrayEnrollmentNeitherGrantsNorBlocksAccess() {
+        CourseEnrollment elsewhere = new CourseEnrollment(semesterEnrollment, offering("TST302", OTHER_OFFERING_ID));
 
-        assertFalse(canAccess());
-    }
-
-    @Test
-    void strayInconsistentMembershipNeitherGrantsNorBlocksAccess() {
-        CourseEnrollment elsewhere =
-                new CourseEnrollment(semesterEnrollment, offering("TST302", OTHER_OFFERING_ID));
-        LmsStudentMembership stray = new LmsStudentMembership(elsewhere, lmsCourse);
-
-        foundMemberships(stray);
+        foundEnrollments(elsewhere);
         assertFalse(canAccess());
 
-        foundMemberships(stray, membership);
+        foundEnrollments(elsewhere, courseEnrollment);
         assertTrue(canAccess());
     }
 
     @Test
-    void anotherAccountGetsNoAccessFromThisStudentsMembership() {
+    void anotherAccountGetsNoAccessFromThisStudentsEnrollment() {
         assertFalse(service.canAccessCourse(OTHER_ACCOUNT_ID, LMS_COURSE_ID));
     }
 
@@ -253,67 +220,44 @@ class LmsStudentAccessServiceTest {
         assertFalse(service.canAccessCourse(null, LMS_COURSE_ID));
         assertFalse(service.canAccessCourse(ACCOUNT_ID, null));
 
-        verifyNoInteractions(studentProfiles, lmsCourses, memberships);
+        verifyNoInteractions(lmsCourses, courseEnrollments);
     }
 
     @Test
-    void allowedCheckOnlyReadsAndChangesNothing() {
+    void theCheckOnlyReadsAndChangesNothing() {
         assertTrue(canAccess());
 
-        verify(studentProfiles).findByUserAccountId(ACCOUNT_ID);
         verify(lmsCourses).findById(LMS_COURSE_ID);
-        verify(memberships).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
-        verifyNoMoreInteractions(studentProfiles, lmsCourses, memberships);
+        verify(courseEnrollments).findAllWithStudentByUserAccountIdAndCourseOfferingId(ACCOUNT_ID, OFFERING_ID);
+        verifyNoMoreInteractions(lmsCourses, courseEnrollments);
         assertEquals(StudentProfileStatus.ACTIVE, student.getStatus());
         assertEquals(SemesterEnrollmentStatus.ENROLLED, semesterEnrollment.getStatus());
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
-        assertEquals(LmsStudentMembershipStatus.ACTIVE, membership.getStatus());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }
 
     @Test
-    void deniedCheckDoesNotCreateOrReactivateAMembership() {
-        membership.deactivate();
-        assertFalse(canAccess());
-
-        foundMemberships();
-        assertFalse(canAccess());
-
-        assertEquals(LmsStudentMembershipStatus.INACTIVE, membership.getStatus());
-        verify(studentProfiles, times(2)).findByUserAccountId(ACCOUNT_ID);
-        verify(lmsCourses, times(2)).findById(LMS_COURSE_ID);
-        verify(memberships, times(2)).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
-        verifyNoMoreInteractions(studentProfiles, lmsCourses, memberships);
+    void allowedStudentGetsTheCourseEnrollmentThatGrantsAccess() {
+        assertSame(courseEnrollment, service.findAccessGrantingEnrollment(ACCOUNT_ID, LMS_COURSE_ID).orElseThrow());
     }
 
     @Test
-    void allowedStudentGetsTheMembershipThatGrantsAccessWithItsCourseEnrollment() {
-        Optional<LmsStudentMembership> granting = service.findAccessGrantingMembership(ACCOUNT_ID, LMS_COURSE_ID);
-
-        assertSame(membership, granting.orElseThrow());
-        assertSame(courseEnrollment, granting.orElseThrow().getCourseEnrollment());
-    }
-
-    @Test
-    void membershipLookupFollowsExactlyTheSameRuleAsTheAccessCheck() {
-        membership.deactivate();
+    void theEnrollmentLookupFollowsExactlyTheSameRuleAsTheAccessCheck() {
+        courseEnrollment.withdraw();
 
         assertFalse(canAccess());
-        assertTrue(service.findAccessGrantingMembership(ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
-        assertTrue(service.findAccessGrantingMembership(OTHER_ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
-        assertTrue(service.findAccessGrantingMembership(null, LMS_COURSE_ID).isEmpty());
-        assertTrue(service.findAccessGrantingMembership(ACCOUNT_ID, null).isEmpty());
+        assertTrue(service.findAccessGrantingEnrollment(ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingEnrollment(OTHER_ACCOUNT_ID, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingEnrollment(null, LMS_COURSE_ID).isEmpty());
+        assertTrue(service.findAccessGrantingEnrollment(ACCOUNT_ID, null).isEmpty());
     }
 
     @Test
-    void theStudentsToTellAboutACourseAreExactlyThoseWhoMayUseItNow() {
-        LmsStudentMembership second = new LmsStudentMembership(
-                new CourseEnrollment(new SemesterEnrollment(student("TEST-STUDENT-2", 14L), semester), offering), lmsCourse);
-        CourseEnrollment withdrawn = new CourseEnrollment(new SemesterEnrollment(student("TEST-STUDENT-3", 15L), semester), offering);
-        withdrawn.withdraw();
-        LmsStudentMembership withdrawnMembership = new LmsStudentMembership(withdrawn, lmsCourse);
-        when(memberships.findAllWithStudentByLmsCourseId(LMS_COURSE_ID))
-                .thenReturn(List.of(membership, second, withdrawnMembership, membership));
+    void theStudentsToTellAboutACourseAreItsCurrentStudents() {
+        CourseEnrollment second = new CourseEnrollment(
+                new SemesterEnrollment(student("TEST-STUDENT-2", 14L), semester), offering);
+        when(courseEnrollments.findAllCurrentByCourseOfferingId(OFFERING_ID))
+                .thenReturn(List.of(courseEnrollment, second, courseEnrollment));
 
         assertEquals(List.of(ACCOUNT_ID, 14L), service.findStudentAccountIdsWithAccess(LMS_COURSE_ID));
         assertEquals(List.of(), service.findStudentAccountIdsWithAccess(null));
@@ -322,9 +266,9 @@ class LmsStudentAccessServiceTest {
     @Test
     void nobodyIsToldAboutACourseThatIsNotPublished() {
         LmsCourse draft = lmsCourse(offering("TST399", 99L), 9L);
-        when(memberships.findAllWithStudentByLmsCourseId(9L)).thenReturn(List.of(
-                new LmsStudentMembership(new CourseEnrollment(semesterEnrollment, draft.getCourseOffering()), draft)));
+        when(lmsCourses.findById(9L)).thenReturn(Optional.of(draft));
 
         assertEquals(List.of(), service.findStudentAccountIdsWithAccess(9L));
+        verify(courseEnrollments, org.mockito.Mockito.never()).findAllCurrentByCourseOfferingId(99L);
     }
 }

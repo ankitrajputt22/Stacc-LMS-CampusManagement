@@ -221,15 +221,4 @@ public class AcademicEnrollmentManagementService {
         }
         return CourseEnrollmentResponse.of(courseEnrollments.saveAndFlush(enrollment));
     }
-
-    /** The course enrollment, which must still be {@code ENROLLED} to be given LMS access. */
-    @Transactional(readOnly = true)
-    public CourseEnrollmentResponse requireEnrolledCourseEnrollment(Long courseEnrollmentId) {
-        CourseEnrollment enrollment = courseEnrollments.findWithOfferingById(courseEnrollmentId)
-                .orElseThrow(() -> AcademicMasterErrors.notFound(COURSE_ENROLLMENT_NOT_FOUND));
-        if (enrollment.getStatus() != CourseEnrollmentStatus.ENROLLED) {
-            throw AcademicMasterErrors.conflict(CourseEnrollmentWorkflow.NOT_ENROLLED);
-        }
-        return CourseEnrollmentResponse.of(enrollment);
-    }
 }

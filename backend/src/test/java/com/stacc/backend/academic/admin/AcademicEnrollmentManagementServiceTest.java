@@ -266,18 +266,6 @@ class AcademicEnrollmentManagementServiceTest {
         assertEquals("COMPLETED", service.changeSemesterEnrollmentStatus(88L, semesterTo(SemesterEnrollmentStatus.COMPLETED)).status());
     }
 
-    @Test
-    void onlyAnEnrolledCourseEnrollmentCanBeOfferedLmsProvisioningAgain() {
-        CourseEnrollment active = college.courseEnrollment(thirdSemester, college.offeringA, 140);
-        when(courseEnrollments.findWithOfferingById(140L)).thenReturn(Optional.of(active));
-
-        assertEquals(140L, service.requireEnrolledCourseEnrollment(140L).courseEnrollmentId());
-        active.withdraw();
-        assertRefused(HttpStatus.CONFLICT, CourseEnrollmentWorkflow.NOT_ENROLLED, () -> service.requireEnrolledCourseEnrollment(140L));
-        assertRefused(HttpStatus.NOT_FOUND, AcademicEnrollmentManagementService.COURSE_ENROLLMENT_NOT_FOUND,
-                () -> service.requireEnrolledCourseEnrollment(99L));
-    }
-
     // Sections: placing a student, moving them, and taking them out.
 
     private Section section(long id, com.stacc.backend.academic.semester.Semester semester, String code, Integer capacity) {

@@ -48,7 +48,6 @@ import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
 import com.stacc.backend.lms.content.LmsTopicRepository;
 import com.stacc.backend.lms.course.LmsCourseRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import com.stacc.backend.notification.NotificationRecipientRepository;
 import com.stacc.backend.notification.NotificationRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryRepository;
@@ -113,7 +112,6 @@ import org.springframework.web.context.WebApplicationContext;
     LmsAssignmentSubmissionRepository.class,
     LmsCourseRepository.class,
     LmsModuleRepository.class,
-    LmsStudentMembershipRepository.class,
     LmsStudyMaterialRepository.class,
     LmsSubmissionAttachmentRepository.class,
     LmsSubmissionAttemptRepository.class,

@@ -14,12 +14,12 @@ export function lmsStatusWord(status: LmsCourseLifecycleStatus | null): string {
   return status === null ? 'Not created' : STATUS_WORDS[status]
 }
 
-/** "Student access synchronized for 28 students.", with the count the backend sent. */
-export function synchronizedText(count: number | null): string {
+/** "28 students are enrolled.", with the count the backend sent, or nothing when it sent none. */
+export function enrolledText(count: number | null): string {
   if (count === null) {
-    return 'Student access synchronized.'
+    return ''
   }
-  return `Student access synchronized for ${count} ${count === 1 ? 'student' : 'students'}.`
+  return count === 1 ? '1 student is enrolled.' : `${count} students are enrolled.`
 }
 
 /** A refused lifecycle change in safe words: the backend's message for a 400 or 409, never a raw error. */

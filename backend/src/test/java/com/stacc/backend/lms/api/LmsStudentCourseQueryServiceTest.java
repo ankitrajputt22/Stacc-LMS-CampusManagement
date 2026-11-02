@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -17,12 +16,16 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus;
@@ -33,15 +36,11 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.student.StudentProfile;
-import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.identity.student.StudentProfileStatus;
 import com.stacc.backend.lms.access.LmsStudentAccessService;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembershipStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -60,13 +59,15 @@ class LmsStudentCourseQueryServiceTest {
     private static final Long LMS_COURSE_ID = 7L;
     private static final Long OFFERING_ID = 50L;
 
-    private final StudentProfileRepository studentProfiles = mock(StudentProfileRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
-    private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
-    private final LmsStudentAccessService accessCheck =
-            new LmsStudentAccessService(studentProfiles, lmsCourses, memberships);
+    private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final LmsStudentAccessService accessCheck = new LmsStudentAccessService(lmsCourses, courseEnrollments);
     private final LmsStudentCourseQueryService service =
-            new LmsStudentCourseQueryService(memberships, lmsCourses, accessCheck);
+            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, accessCheck);
+
+    // What the stand-in database holds: the student's course enrollments, and each offering's LMS course.
+    private final List<CourseEnrollment> stored = new ArrayList<>();
+    private final Map<Long, LmsCourse> lmsCourseOfOffering = new HashMap<>();
 
     private final Department department = new Department("TST", "Test Department");
     private final Program program = new Program(department, "BTECH", "Test Program", 8);
@@ -79,10 +80,6 @@ class LmsStudentCourseQueryServiceTest {
     private final CourseOffering offering = offering("TST301", "Test Course One", OFFERING_ID, semester);
     private final CourseEnrollment courseEnrollment = new CourseEnrollment(semesterEnrollment, offering);
     private final LmsCourse lmsCourse = publishedLmsCourse(offering, LMS_COURSE_ID);
-    private final LmsStudentMembership membership = new LmsStudentMembership(courseEnrollment, lmsCourse);
-
-    // What the stand-in repository holds for the student's account.
-    private final List<LmsStudentMembership> stored = new ArrayList<>(List.of(membership));
 
     private StudentProfile student(String loginId, Long accountId) {
         UserAccount account = new UserAccount(loginId, "example-hash-value");
@@ -101,6 +98,7 @@ class LmsStudentCourseQueryServiceTest {
         LmsCourse created = new LmsCourse(courseOffering);
         ReflectionTestUtils.setField(created, "id", id);
         when(lmsCourses.findById(id)).thenReturn(Optional.of(created));
+        lmsCourseOfOffering.put(courseOffering.getId(), created);
         return created;
     }
 
@@ -110,20 +108,25 @@ class LmsStudentCourseQueryServiceTest {
         return created;
     }
 
-    /** One more course the student may use, with its own offering, enrollment, and membership. */
+    /** One more course the student may use, with its own offering, enrollment, and published LMS course. */
     private void anotherUsableCourse(String courseCode, Long offeringId, Long lmsCourseId, Semester inSemester) {
         CourseOffering another = offering(courseCode, "Test Course " + courseCode, offeringId, inSemester);
-        stored.add(new LmsStudentMembership(
-                new CourseEnrollment(semesterEnrollment, another), publishedLmsCourse(another, lmsCourseId)));
+        publishedLmsCourse(another, lmsCourseId);
+        stored.add(new CourseEnrollment(semesterEnrollment, another));
     }
 
     @BeforeEach
     void standInRepositories() {
-        when(studentProfiles.findByUserAccountId(ACCOUNT_ID)).thenReturn(Optional.of(student));
-        when(memberships.findAllWithCourseDetailsByUserAccountId(ACCOUNT_ID)).thenAnswer(call -> List.copyOf(stored));
-        when(memberships.findAllByUserAccountIdAndLmsCourseId(eq(ACCOUNT_ID), anyLong())).thenAnswer(call -> stored.stream()
-                .filter(found -> call.getArgument(1).equals(found.getLmsCourse().getId()))
-                .toList());
+        stored.add(courseEnrollment);
+        when(courseEnrollments.findAllWithStudentByUserAccountId(ACCOUNT_ID)).thenAnswer(call -> List.copyOf(stored));
+        when(courseEnrollments.findAllWithStudentByUserAccountIdAndCourseOfferingId(eq(ACCOUNT_ID), anyLong()))
+                .thenAnswer(call -> stored.stream()
+                        .filter(found -> call.getArgument(1).equals(found.getCourseOffering().getId()))
+                        .toList());
+        when(lmsCourses.findAllWithAcademicContextByCourseOfferingIdIn(any())).thenAnswer(call -> {
+            Collection<Long> ids = call.getArgument(0);
+            return ids.stream().filter(lmsCourseOfOffering::containsKey).map(lmsCourseOfOffering::get).toList();
+        });
     }
 
     private List<Long> listedCourseIds() {
@@ -185,16 +188,15 @@ class LmsStudentCourseQueryServiceTest {
     }
 
     @Test
-    void inactiveMembershipIsLeftOut() {
-        membership.deactivate();
+    void droppedCourseEnrollmentIsLeftOut() {
+        courseEnrollment.drop(java.time.Instant.parse("2026-07-05T06:00:00Z"));
 
         expectCourseListed(false);
     }
 
     @Test
     void draftLmsCourseIsLeftOut() {
-        stored.clear();
-        stored.add(new LmsStudentMembership(courseEnrollment, lmsCourseStandIn(offering, LMS_COURSE_ID)));
+        lmsCourseStandIn(offering, LMS_COURSE_ID);
 
         expectCourseListed(false);
     }
@@ -211,30 +213,29 @@ class LmsStudentCourseQueryServiceTest {
         CourseEnrollment elsewhere = new CourseEnrollment(
                 semesterEnrollment, offering("TST302", "Test Course Two", 72L, semester));
         stored.clear();
-        stored.add(new LmsStudentMembership(elsewhere, lmsCourse));
+        stored.add(elsewhere);
 
         expectCourseListed(false);
     }
 
     @Test
-    void membershipOfAnotherStudentIsLeftOut() {
+    void enrollmentOfAnotherStudentIsLeftOut() {
         StudentProfile classmate = student("TEST-STUDENT-2", OTHER_ACCOUNT_ID);
         CourseEnrollment theirs = new CourseEnrollment(new SemesterEnrollment(classmate, semester), offering);
         stored.clear();
-        stored.add(new LmsStudentMembership(theirs, lmsCourse));
+        stored.add(theirs);
 
         expectCourseListed(false);
     }
 
     @Test
-    void enrolledCourseWithoutAMembershipIsLeftOutAndNoMembershipIsCreated() {
-        stored.clear();
+    void enrolledCourseWithoutAnLmsCourseIsLeftOutAndNothingIsCreated() {
+        lmsCourseOfOffering.clear();
 
-        expectCourseListed(false);
+        assertEquals(List.of(), listedCourseIds());
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
-        verify(memberships, atLeastOnce()).findAllWithCourseDetailsByUserAccountId(ACCOUNT_ID);
-        verify(memberships, atLeastOnce()).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
-        verifyNoMoreInteractions(memberships);
+        verify(lmsCourses, never()).save(any());
+        verify(courseEnrollments, never()).save(any());
     }
 
     @Test
@@ -244,10 +245,11 @@ class LmsStudentCourseQueryServiceTest {
         CourseOffering ended = offering("TST304", "Test Course Four", 53L, semester);
         CourseEnrollment endedEnrollment = new CourseEnrollment(semesterEnrollment, ended);
         endedEnrollment.withdraw();
-        stored.add(new LmsStudentMembership(endedEnrollment, publishedLmsCourse(ended, 10L)));
+        publishedLmsCourse(ended, 10L);
+        stored.add(endedEnrollment);
         CourseOffering unpublished = offering("TST305", "Test Course Five", 54L, semester);
-        stored.add(new LmsStudentMembership(
-                new CourseEnrollment(semesterEnrollment, unpublished), lmsCourseStandIn(unpublished, 11L)));
+        lmsCourseStandIn(unpublished, 11L);
+        stored.add(new CourseEnrollment(semesterEnrollment, unpublished));
 
         assertEquals(List.of(7L, 8L, 9L), listedCourseIds());
         for (long lmsCourseId = 7; lmsCourseId <= 11; lmsCourseId++) {
@@ -287,13 +289,13 @@ class LmsStudentCourseQueryServiceTest {
 
     @Test
     void courseIsNeverListedTwice() {
-        stored.add(new LmsStudentMembership(new CourseEnrollment(semesterEnrollment, offering), lmsCourse));
+        stored.add(new CourseEnrollment(semesterEnrollment, offering));
 
         assertEquals(List.of(LMS_COURSE_ID), listedCourseIds());
     }
 
     @Test
-    void studentWithNoMembershipsGetsAnEmptyList() {
+    void studentWithNoEnrollmentsGetsAnEmptyList() {
         stored.clear();
 
         assertEquals(List.of(), service.getAccessibleCourses(ACCOUNT_ID));
@@ -308,19 +310,17 @@ class LmsStudentCourseQueryServiceTest {
     void missingAccountIdListsNothingWithoutAnyLookup() {
         assertEquals(List.of(), service.getAccessibleCourses(null));
 
-        verifyNoInteractions(memberships);
+        verifyNoInteractions(courseEnrollments, lmsCourses);
     }
 
     @Test
     void listingOnlyReadsAndChangesNothing() {
-        membership.deactivate();
         anotherUsableCourse("TST302", 51L, 8L, semester);
 
         service.getAccessibleCourses(ACCOUNT_ID);
 
-        verify(memberships).findAllWithCourseDetailsByUserAccountId(ACCOUNT_ID);
-        verifyNoMoreInteractions(memberships);
-        assertEquals(LmsStudentMembershipStatus.INACTIVE, membership.getStatus());
+        verify(courseEnrollments).findAllWithStudentByUserAccountId(ACCOUNT_ID);
+        verifyNoMoreInteractions(courseEnrollments);
         assertEquals(StudentProfileStatus.ACTIVE, student.getStatus());
         assertEquals(SemesterEnrollmentStatus.ENROLLED, semesterEnrollment.getStatus());
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
@@ -359,7 +359,7 @@ class LmsStudentCourseQueryServiceTest {
         CourseOffering shared = new CourseOffering(sharedCourse, semester);
         ReflectionTestUtils.setField(shared, "id", 60L);
         LmsCourse sharedLmsCourse = publishedLmsCourse(shared, 30L);
-        stored.add(new LmsStudentMembership(new CourseEnrollment(semesterEnrollment, shared), sharedLmsCourse));
+        stored.add(new CourseEnrollment(semesterEnrollment, shared));
         detailStandIn(sharedLmsCourse);
 
         LmsCourseDetailResponse detail = service.getAccessibleCourse(ACCOUNT_ID, 30L);
@@ -407,7 +407,7 @@ class LmsStudentCourseQueryServiceTest {
         expectUnavailable(null, LMS_COURSE_ID);
         expectUnavailable(ACCOUNT_ID, null);
 
-        verifyNoInteractions(studentProfiles, lmsCourses, memberships);
+        verifyNoInteractions(lmsCourses, courseEnrollments);
     }
 
     @Test
@@ -416,12 +416,10 @@ class LmsStudentCourseQueryServiceTest {
 
         service.getAccessibleCourse(ACCOUNT_ID, LMS_COURSE_ID);
 
-        verify(studentProfiles).findByUserAccountId(ACCOUNT_ID);
         verify(lmsCourses).findById(LMS_COURSE_ID);
-        verify(memberships).findAllByUserAccountIdAndLmsCourseId(ACCOUNT_ID, LMS_COURSE_ID);
+        verify(courseEnrollments).findAllWithStudentByUserAccountIdAndCourseOfferingId(ACCOUNT_ID, OFFERING_ID);
         verify(lmsCourses).findWithAcademicContextById(LMS_COURSE_ID);
-        verifyNoMoreInteractions(studentProfiles, lmsCourses, memberships);
-        assertEquals(LmsStudentMembershipStatus.ACTIVE, membership.getStatus());
+        verifyNoMoreInteractions(lmsCourses, courseEnrollments);
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }

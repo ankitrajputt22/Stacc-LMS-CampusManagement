@@ -43,8 +43,8 @@ import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsMaterialProperties;
 import com.stacc.backend.lms.course.LmsCourse;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -71,7 +71,7 @@ class LmsAssignmentSubmissionServiceTest {
 
     private final LmsStudentAccessService studentAccess = mock(LmsStudentAccessService.class);
     private final LmsAssignmentRepository assignmentRows = mock(LmsAssignmentRepository.class);
-    private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
+    private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
     private final LmsAssignmentSubmissionRepository submissions = mock(LmsAssignmentSubmissionRepository.class);
     private final LmsSubmissionAttemptRepository attempts = mock(LmsSubmissionAttemptRepository.class);
     private final LmsSubmissionAttachmentRepository attachments = mock(LmsSubmissionAttachmentRepository.class);
@@ -80,15 +80,15 @@ class LmsAssignmentSubmissionServiceTest {
 
     private final LmsCourse course = SubmissionFixtures.course(7);
     private final LmsCourse otherCourse = SubmissionFixtures.course(8);
-    private final LmsStudentMembership membershipA = SubmissionFixtures.membership(course, STUDENT_A, 40);
-    private final LmsStudentMembership membershipB = SubmissionFixtures.membership(course, STUDENT_B, 41);
+    private final CourseEnrollment enrollmentA = SubmissionFixtures.enrollment(course, STUDENT_A, 40);
+    private final CourseEnrollment enrollmentB = SubmissionFixtures.enrollment(course, STUDENT_B, 41);
     private final LmsAssignment published = SubmissionFixtures.assignment(course, 5, LmsContentStatus.PUBLISHED);
 
     private final AtomicLong nextId = new AtomicLong(100);
     private final List<LmsAssignmentSubmission> storedSubmissions = new ArrayList<>();
 
     private LmsAssignmentSubmissionService serviceAt(Instant now) {
-        return new LmsAssignmentSubmissionService(studentAccess, assignmentRows, memberships, submissions, attempts, attachments,
+        return new LmsAssignmentSubmissionService(studentAccess, assignmentRows, courseEnrollments, submissions, attempts, attachments,
                 grades, storage, Clock.fixed(now, ZoneOffset.UTC), new LmsMaterialProperties(DataSize.ofBytes(1024)),
                 new LmsSubmissionProperties(3));
     }
@@ -97,11 +97,11 @@ class LmsAssignmentSubmissionServiceTest {
 
     @BeforeEach
     void studentAWhoMayUseCourseSeven() {
-        when(studentAccess.findAccessGrantingMembership(STUDENT_A, 7L)).thenReturn(Optional.of(membershipA));
-        when(studentAccess.findAccessGrantingMembership(STUDENT_B, 7L)).thenReturn(Optional.of(membershipB));
+        when(studentAccess.findAccessGrantingEnrollment(STUDENT_A, 7L)).thenReturn(Optional.of(enrollmentA));
+        when(studentAccess.findAccessGrantingEnrollment(STUDENT_B, 7L)).thenReturn(Optional.of(enrollmentB));
         when(assignmentRows.findById(5L)).thenReturn(Optional.of(published));
-        when(memberships.findByIdForUpdate(anyLong())).thenAnswer(call ->
-                Optional.of(call.getArgument(0).equals(membershipA.getId()) ? membershipA : membershipB));
+        when(courseEnrollments.findByIdForUpdate(anyLong())).thenAnswer(call ->
+                Optional.of(call.getArgument(0).equals(enrollmentA.getId()) ? enrollmentA : enrollmentB));
         // The database stand-in: one submission row per assignment and enrollment, IDs given on save.
         when(submissions.findForUpdate(anyLong(), anyLong())).thenAnswer(call -> storedSubmissions.stream()
                 .filter(row -> row.getAssignment().getId().equals(call.getArgument(0))
@@ -155,7 +155,7 @@ class LmsAssignmentSubmissionServiceTest {
         assertEquals("My answer", attempt.getTextContent());
         assertEquals(BEFORE_DUE, attempt.getSubmittedAt());
         assertSame(published, attempt.getSubmission().getAssignment());
-        assertSame(membershipA.getCourseEnrollment(), attempt.getSubmission().getCourseEnrollment());
+        assertSame(enrollmentA, attempt.getSubmission().getCourseEnrollment());
         assertEquals(List.of(), submitted.attachments());
         verifyNoInteractions(storage);
     }
@@ -265,11 +265,24 @@ class LmsAssignmentSubmissionServiceTest {
     void filesAreStoredBeforeTheStudentsRecordsAreLockedAndTheNumberIsReservedUnderTheLock() {
         service.submit(STUDENT_A, 7L, 5L, null, List.of(pdf("solution.pdf")));
 
-        InOrder order = inOrder(storage, memberships, submissions, attempts);
+        InOrder order = inOrder(storage, courseEnrollments, submissions, attempts);
         order.verify(storage).store(anyString(), any(InputStream.class), eq((long) PDF.length), eq("application/pdf"));
-        order.verify(memberships).findByIdForUpdate(membershipA.getId());
+        order.verify(courseEnrollments).findByIdForUpdate(40L);
         order.verify(submissions).findForUpdate(5L, 40L);
         order.verify(attempts).saveAndFlush(any(LmsSubmissionAttempt.class));
+    }
+
+    @Test
+    void aDropThatFinishesBeforeTheLockEndsTheSubmissionAndRemovesItsFiles() {
+        enrollmentA.drop(BEFORE_DUE);
+        ArgumentCaptor<String> stored = ArgumentCaptor.forClass(String.class);
+
+        assertRefused(HttpStatus.NOT_FOUND, LmsAssignmentSubmissionService.ASSIGNMENT_UNAVAILABLE,
+                () -> service.submit(STUDENT_A, 7L, 5L, null, List.of(pdf("late.pdf"))));
+
+        verify(storage).store(stored.capture(), any(InputStream.class), anyLong(), anyString());
+        verify(storage).delete(stored.getValue());
+        verify(attempts, never()).saveAndFlush(any());
     }
 
     @Test
@@ -299,7 +312,7 @@ class LmsAssignmentSubmissionServiceTest {
                 () -> service.submit(STUDENT_A, 7L, 5L, "Answer", List.of(pdf("a.pdf"))));
 
         verify(storage).delete(stored.getValue());
-        verify(memberships, never()).findByIdForUpdate(anyLong());
+        verify(courseEnrollments, never()).findByIdForUpdate(anyLong());
         verify(attempts, never()).saveAndFlush(any());
     }
 
@@ -363,7 +376,7 @@ class LmsAssignmentSubmissionServiceTest {
 
     @Test
     void historyIsTheStudentsOwnAttemptsNewestFirstWithTheirFilesAndEachAttemptsOwnGrade() {
-        LmsAssignmentSubmission own = new LmsAssignmentSubmission(published, membershipA.getCourseEnrollment());
+        LmsAssignmentSubmission own = new LmsAssignmentSubmission(published, enrollmentA);
         ReflectionTestUtils.setField(own, "id", 70L);
         LmsSubmissionAttempt first = withId(new LmsSubmissionAttempt(own, 1, "First", BEFORE_DUE, SubmissionFixtures.DUE));
         LmsSubmissionAttempt second = withId(new LmsSubmissionAttempt(own, 2, null, AFTER_DUE, SubmissionFixtures.DUE));
@@ -389,8 +402,8 @@ class LmsAssignmentSubmissionServiceTest {
 
     // --- downloads -------------------------------------------------------------------------------------
 
-    private LmsSubmissionAttachment attachmentOf(LmsStudentMembership owner, LmsAssignment assignment, long id) {
-        LmsAssignmentSubmission submission = new LmsAssignmentSubmission(assignment, owner.getCourseEnrollment());
+    private LmsSubmissionAttachment attachmentOf(CourseEnrollment owner, LmsAssignment assignment, long id) {
+        LmsAssignmentSubmission submission = new LmsAssignmentSubmission(assignment, owner);
         LmsSubmissionAttempt attempt = withId(new LmsSubmissionAttempt(submission, 1, null, BEFORE_DUE, SubmissionFixtures.DUE));
         LmsSubmissionAttachment attachment = new LmsSubmissionAttachment(
                 attempt, "lms/submissions/key-" + id, "answer-" + id + ".pdf", "application/pdf", PDF.length);
@@ -401,7 +414,7 @@ class LmsAssignmentSubmissionServiceTest {
 
     @Test
     void studentDownloadsTheirOwnFileFromPrivateStorage() {
-        attachmentOf(membershipA, published, 31L);
+        attachmentOf(enrollmentA, published, 31L);
         when(storage.open("lms/submissions/key-31")).thenReturn(new ByteArrayInputStream(PDF));
 
         LmsAssignmentSubmissionService.Download download = service.openOwnAttachment(STUDENT_A, 31L);
@@ -413,8 +426,8 @@ class LmsAssignmentSubmissionServiceTest {
 
     @Test
     void anotherStudentsFileAndFilesNoLongerVisibleLookLikeMissingOnes() {
-        attachmentOf(membershipA, published, 31L);
-        attachmentOf(membershipA, SubmissionFixtures.assignment(course, 9, LmsContentStatus.ARCHIVED), 32L);
+        attachmentOf(enrollmentA, published, 31L);
+        attachmentOf(enrollmentA, SubmissionFixtures.assignment(course, 9, LmsContentStatus.ARCHIVED), 32L);
 
         for (Executable action : List.<Executable>of(
                 () -> service.openOwnAttachment(STUDENT_B, 31L),
@@ -429,7 +442,7 @@ class LmsAssignmentSubmissionServiceTest {
 
     @Test
     void ownFileThatStorageCannotReadIsReportedAsUnavailableStorage() {
-        attachmentOf(membershipA, published, 31L);
+        attachmentOf(enrollmentA, published, 31L);
         when(storage.open(anyString())).thenThrow(new ObjectStorageException("down", null));
 
         assertRefused(HttpStatus.SERVICE_UNAVAILABLE, LmsAssignmentSubmissionService.STORAGE_UNAVAILABLE,

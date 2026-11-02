@@ -36,7 +36,6 @@ import com.stacc.backend.lms.assignment.submission.LmsSubmissionGradeRepository;
 import com.stacc.backend.lms.assignment.submission.SubmissionFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -70,8 +69,8 @@ class LmsFacultySubmissionQueryServiceTest {
 
     /** A submission by the student with this login ID, with its attempts numbered 1 to the count. */
     private LmsAssignmentSubmission submission(LmsAssignment of, long id, String studentLoginId, int attemptCount) {
-        LmsStudentMembership membership = SubmissionFixtures.membership(of.getLmsCourse(), id + 1000, id + 40, studentLoginId);
-        LmsAssignmentSubmission created = new LmsAssignmentSubmission(of, membership.getCourseEnrollment());
+        LmsAssignmentSubmission created = new LmsAssignmentSubmission(of,
+                SubmissionFixtures.enrollment(of.getLmsCourse(), id + 1000, id + 40, studentLoginId));
         ReflectionTestUtils.setField(created, "id", id);
         ReflectionTestUtils.setField(created, "latestAttemptNumber", attemptCount);
         return created;

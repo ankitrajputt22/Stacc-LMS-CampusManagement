@@ -1,88 +1,69 @@
 package com.stacc.backend.lms.access;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import com.stacc.backend.identity.student.StudentProfile;
-import com.stacc.backend.identity.student.StudentProfileRepository;
-import com.stacc.backend.identity.student.StudentProfileStatus;
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Answers one question: may the student behind this account use this LMS course right now?
  *
- * <p>The answer comes only from stored official data, starting from the signed-in account.
- * It is a plain yes or no, so a caller cannot learn why access was refused. Checking access
- * never creates, repairs, or changes anything: a missing membership stays missing.
+ * <p>The answer comes only from the official enrollment and the course's state, read live, starting from the signed-in
+ * account. It is a plain yes or no, so a caller cannot learn why access was refused. Checking access never creates or
+ * changes anything. Dropping or withdrawing a course, an inactive profile, or an archived course ends access at once,
+ * everywhere that asks here.
  */
 @Service
 public class LmsStudentAccessService {
 
-    private final StudentProfileRepository studentProfiles;
     private final LmsCourseRepository lmsCourses;
-    private final LmsStudentMembershipRepository memberships;
+    private final CourseEnrollmentRepository courseEnrollments;
 
-    public LmsStudentAccessService(
-            StudentProfileRepository studentProfiles,
-            LmsCourseRepository lmsCourses,
-            LmsStudentMembershipRepository memberships) {
-        this.studentProfiles = studentProfiles;
+    public LmsStudentAccessService(LmsCourseRepository lmsCourses, CourseEnrollmentRepository courseEnrollments) {
         this.lmsCourses = lmsCourses;
-        this.memberships = memberships;
+        this.courseEnrollments = courseEnrollments;
     }
 
     /**
-     * True only when the account has an active student profile, the LMS course is published,
-     * and the student has an active membership in it that rests on a semester enrollment and
-     * a course enrollment that are both still enrolled, for the same course offering as the
-     * LMS course. Anything else, including an unknown account or course, is false. The rule
-     * itself is stated once, in {@link LmsStudentAccessPolicy}.
+     * True only when {@link LmsStudentAccessPolicy} grants the student behind this account the LMS course now.
+     * Anything else, including an unknown account or course, is false.
      *
-     * @param userAccountId the ID of the signed-in account, taken from its access token and
-     *                      never from anything the client sends in the request
+     * @param userAccountId the ID of the signed-in account, taken from its access token and never from anything the
+     *                      client sends in the request
      */
     @Transactional(readOnly = true)
     public boolean canAccessCourse(Long userAccountId, Long lmsCourseId) {
-        return findAccessGrantingMembership(userAccountId, lmsCourseId).isPresent();
+        return findAccessGrantingEnrollment(userAccountId, lmsCourseId).isPresent();
     }
 
     /**
-     * The membership through which the student behind this account may use the LMS course right
-     * now, by exactly the rule of {@link #canAccessCourse}. Its course enrollment is the student's
-     * official place in the course, for features that act on the student's own records. Empty
-     * whenever access is not granted.
+     * The official course enrollment through which the student behind this account may use the LMS course right now,
+     * by exactly the rule of {@link #canAccessCourse}. It is the student's place in the course, for features that act
+     * on the student's own records. Empty whenever access is not granted.
      *
-     * @param userAccountId the ID of the signed-in account, taken from its access token and
-     *                      never from anything the client sends in the request
+     * @param userAccountId the ID of the signed-in account, taken from its access token and never from anything the
+     *                      client sends in the request
      */
     @Transactional(readOnly = true)
-    public Optional<LmsStudentMembership> findAccessGrantingMembership(Long userAccountId, Long lmsCourseId) {
+    public Optional<CourseEnrollment> findAccessGrantingEnrollment(Long userAccountId, Long lmsCourseId) {
         if (userAccountId == null || lmsCourseId == null) {
             return Optional.empty();
         }
-
-        Optional<StudentProfile> studentProfile = studentProfiles.findByUserAccountId(userAccountId);
-        if (studentProfile.isEmpty() || studentProfile.get().getStatus() != StudentProfileStatus.ACTIVE) {
+        Optional<LmsCourse> lmsCourse = lmsCourses.findById(lmsCourseId)
+                .filter(course -> course.getStatus() == LmsCourseStatus.PUBLISHED);
+        if (lmsCourse.isEmpty()) {
             return Optional.empty();
         }
-
-        Optional<LmsCourse> lmsCourse = lmsCourses.findById(lmsCourseId);
-        if (lmsCourse.isEmpty() || lmsCourse.get().getStatus() != LmsCourseStatus.PUBLISHED) {
-            return Optional.empty();
-        }
-
-        // The lookup already asks for this LMS course. It is checked again here, so that access
-        // never depends on the lookup alone.
-        return memberships.findAllByUserAccountIdAndLmsCourseId(userAccountId, lmsCourseId).stream()
-                .filter(membership -> lmsCourseId.equals(membership.getLmsCourse().getId())
-                        && LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId))
+        Long courseOfferingId = lmsCourse.get().getCourseOffering().getId();
+        return courseEnrollments.findAllWithStudentByUserAccountIdAndCourseOfferingId(userAccountId, courseOfferingId)
+                .stream()
+                .filter(enrollment -> LmsStudentAccessPolicy.grantsCurrentAccess(enrollment, lmsCourse.get(), userAccountId))
                 .findFirst();
     }
 
@@ -96,11 +77,13 @@ public class LmsStudentAccessService {
         if (lmsCourseId == null) {
             return List.of();
         }
-        return memberships.findAllWithStudentByLmsCourseId(lmsCourseId).stream()
-                .map(membership -> Map.entry(membership,
-                        membership.getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount().getId()))
-                .filter(entry -> LmsStudentAccessPolicy.grantsCurrentAccess(entry.getKey(), entry.getValue()))
-                .map(Map.Entry::getValue)
+        Optional<LmsCourse> lmsCourse = lmsCourses.findById(lmsCourseId)
+                .filter(course -> course.getStatus() == LmsCourseStatus.PUBLISHED);
+        if (lmsCourse.isEmpty()) {
+            return List.of();
+        }
+        return courseEnrollments.findAllCurrentByCourseOfferingId(lmsCourse.get().getCourseOffering().getId()).stream()
+                .map(enrollment -> enrollment.getSemesterEnrollment().getStudentProfile().getUserAccount().getId())
                 .distinct()
                 .toList();
     }

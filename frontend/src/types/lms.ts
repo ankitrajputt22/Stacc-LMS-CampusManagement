@@ -337,6 +337,6 @@ export type LmsCourseManagement = {
   lmsCourseId: number
   courseOfferingId: number
   lmsCourseStatus: LmsCourseLifecycleStatus
-  /** How many current students have an active membership now; null when the change did not synchronize them. */
-  synchronizedCount: number | null
+  /** How many students are enrolled in the offering now; null for archiving. */
+  currentStudentCount: number | null
 }

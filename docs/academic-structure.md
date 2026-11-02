@@ -265,44 +265,18 @@ ERP SemesterEnrollment  = official participation in a semester
 ERP CourseEnrollment    = official participation in a course offering
 ```
 
-The LMS is built on this data, in the `lms` module (see `lms-foundation.md`). An `LmsCourse` is the learning space for one course offering, and an `LmsStudentMembership` is the LMS-side membership for one course enrollment.
+The LMS is built on this data, in the `lms` module (see `lms-foundation.md`). An `LmsCourse` is the learning space for one course offering.
 
 ```text
-ERP:   UserAccount
-            |
-            v
-       StudentProfile
-            |
-            v
-       SemesterEnrollment
-            |
-            v
-       CourseEnrollment
-            |
-            v
-       CourseOffering ------> Course, Semester
-
-
-LMS:   CourseEnrollment
-            |
-            v
-       LmsStudentMembership
-            |
-            v
-       LmsCourse
-            |
-            v
-       CourseOffering
+ERP:   UserAccount -> StudentProfile -> SemesterEnrollment -> CourseEnrollment -> CourseOffering
+LMS:                                                                               LmsCourse -> CourseOffering
 ```
 
 - The course offering and the course enrollment stay ERP academic data. The LMS records point to them, never the other way round.
-- One course offering has at most one LMS course, and one course enrollment has at most one LMS membership.
-- The student, course, program, semester, and academic session are not stored again on the LMS records.
-- The ERP remains authoritative. An LMS membership is not an academic enrollment.
+- One course offering has at most one LMS course. The student, course, program, semester, and academic session are not stored again on the LMS records.
+- Student access is worked out live from the official course enrollment: there is no membership copy to provision or synchronize (v0.5.1).
 
-The ERP course enrollment is the source for LMS membership provisioning. An explicit LMS service creates a membership from a course enrollment that is still `ENROLLED`. It only reads ERP data and never changes it. Admin course enrollment calls it right after the official enrollment is saved, when the offering already has an LMS course, and makes the membership inactive when the enrollment ends. Academic enrollment succeeds without an LMS course and never creates one.
-
-The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, on top of the LMS-side conditions. A withdrawn or completed enrollment therefore ends normal access at once, without anything being copied. The student course list, `GET /api/v1/lms/my-courses`, returns only courses that satisfy this policy. Nothing else creates memberships: there is no listener, scheduler, or bulk job.
+The LMS student access policy consults this official ERP state on every check. A student may use an LMS course only while their student profile is `ACTIVE` and both their semester enrollment and their course enrollment are `ENROLLED`, and the LMS course is `PUBLISHED` for the same offering. A withdrawn, dropped, or completed enrollment therefore ends normal access at once. The student course list, `GET /api/v1/lms/my-courses`, returns only courses that satisfy this policy.
 
 ## Keeping history
 

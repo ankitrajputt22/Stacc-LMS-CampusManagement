@@ -5,8 +5,7 @@ import com.stacc.backend.lms.course.LmsCourseStatus;
 /**
  * The state of an LMS course after a management change.
  *
- * @param synchronizedCount how many current students have an active membership after the change, or null when the
- *                          change did not synchronize memberships
+ * @param currentStudentCount how many students are currently enrolled in the offering, or null for archiving
  */
-public record LmsCourseChange(Long lmsCourseId, Long courseOfferingId, LmsCourseStatus status, Integer synchronizedCount) {
+public record LmsCourseChange(Long lmsCourseId, Long courseOfferingId, LmsCourseStatus status, Integer currentStudentCount) {
 }

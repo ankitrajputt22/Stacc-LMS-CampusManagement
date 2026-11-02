@@ -24,7 +24,7 @@ class LmsSubmissionGradeTest {
     private final LmsCourse course = SubmissionFixtures.course(7);
     private final LmsSubmissionAttempt attempt = new LmsSubmissionAttempt(
             new LmsAssignmentSubmission(SubmissionFixtures.assignment(course, 5, LmsContentStatus.PUBLISHED),
-                    SubmissionFixtures.membership(course, 12, 40).getCourseEnrollment()),
+                    SubmissionFixtures.enrollment(course, 12, 40)),
             1, "Answer", Instant.parse("2026-10-20T17:00:00Z"), SubmissionFixtures.DUE);
     private final FacultyProfile facultyA = SubmissionFixtures.faculty(course, 21, 61);
     private final FacultyProfile facultyB = SubmissionFixtures.faculty(course, 22, 62);

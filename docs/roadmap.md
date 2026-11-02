@@ -33,7 +33,7 @@ These were settled while reviewing the specifications. Each takes effect in the 
 | # | Decision | Phase |
 | --- | --- | --- |
 | 1 | Sign-in moves from browser-stored tokens to **server sessions**: every sign-in is a `user_sessions` row checked on each request, and browsers carry its signed token in a secure HttpOnly cookie with CSRF protection, so logout, disabling an account, and forced password changes take effect at once. | 0.2.2 |
-| 2 | Every public route moves under **`/api/v1/v1`**; the internal AI service uses `/internal/v1/v1`. | 0.1.6 |
+| 2 | Every public route moves under **`/api/v1`**; the internal AI service uses `/internal/v1`. | 0.1.6 |
 | 3 | Names, photos, and contact details live on a **person profile** per account, separate from the login account and from the academic student and faculty profiles. | 0.2.1 |
 | 4 | One dashboard with a part per role the account holds. Staff roles (Security, Maintenance) get their own focused pages. | 0.2.10 |
 | 5 | LMS student access is **worked out live** from official enrollment and the course's state, with no synchronised membership copy that can drift. | 0.5.1 |
@@ -108,7 +108,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.5.1 | Live student access | Course access worked out from official enrollment and the course's state (decision 5); dropping a course removes access everywhere, including AI. |
+| ★ 0.5.1 | Live student access | Course access worked out from official enrollment and the course's state (decision 5); dropping a course removes access everywhere, including AI. Done: the membership copy, provisioning, and sync actions are gone. |
 | ★ 0.5.2 | Instructor access | Teaching assignments per section give course access; removing one removes it. |
 | ★ 0.5.3 | Course lists | The student Courses and faculty Teaching pages redesigned around terms and course cards. |
 
@@ -288,4 +288,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.2 Accounts, roles, and audit | In progress: 0.2.1 to 0.2.3 done |
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
-| v0.5 – v1.0 | Not started |
+| v0.5 ERP to LMS access | In progress: 0.5.1 done |
+| v0.6 – v1.0 | Not started |
