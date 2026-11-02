@@ -17,6 +17,7 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 | `POST /admin/users/{accountId}/temporary-password` | Issues a new temporary password and ends every session. |
 | `POST /admin/users/{accountId}/student-profile` | Creates the student profile of an account holding `STUDENT` without one. |
 | `POST /admin/users/{accountId}/faculty-profile` | Creates the faculty profile of an account holding `FACULTY` without one. |
+| `GET`, `POST /admin/users/{accountId}/photo` | Reads or sets the official photo (see `person-profiles.md`). |
 
 ## Rules
 
@@ -33,7 +34,7 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 
 - **Users** in the Manage tray opens `/admin/users`: filters by role and status, a search sent only on **Find**, a paged table (name linked to the account, login ID, email, roles, status, "Must change password"), and **Add user**.
 - `/admin/users/new` has the account fields, a **Show password** switch, role checkboxes, and the student or faculty profile fields when those roles are chosen. Obvious mistakes are caught before sending; the backend checks everything again. After creating, the account page opens and says to give the person the temporary password.
-- `/admin/users/:accountId` has **Status** (Disable or Activate account, confirmed first; not offered for one's own active account), **Roles** (checkboxes, Save roles confirmed first, one's own Admin role locked), **Official details**, **Temporary password**, and **Academic profiles** with Create student or faculty profile when a role needs one. Refusals show the backend's message; a 403 never signs the user out.
+- `/admin/users/:accountId` has **Status** (Disable or Activate account, confirmed first; not offered for one's own active account), **Roles** (checkboxes, Save roles confirmed first, one's own Admin role locked), **Official details**, **Official photo** (preview and upload), **Temporary password**, and **Academic profiles** with Create student or faculty profile when a role needs one. Refusals show the backend's message; a 403 never signs the user out.
 
 ## Not built yet
 

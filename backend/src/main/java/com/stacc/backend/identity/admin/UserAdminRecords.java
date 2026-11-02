@@ -137,7 +137,8 @@ public final class UserAdminRecords {
             Instant temporaryPasswordExpiresAt,
             Instant createdAt,
             StudentProfileSummary studentProfile,
-            FacultyProfileSummary facultyProfile) {
+            FacultyProfileSummary facultyProfile,
+            @Schema(description = "Whether an official photo has been added.") boolean hasPhoto) {
     }
 
     public record StudentProfileSummary(

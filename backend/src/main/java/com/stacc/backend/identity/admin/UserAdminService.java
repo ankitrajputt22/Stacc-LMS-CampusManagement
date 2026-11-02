@@ -366,7 +366,8 @@ public class UserAdminService {
         return new UserDetail(account.getId(), account.getLoginId(), person == null ? null : person.getFullName(),
                 person == null ? null : person.getPreferredName(), person == null ? null : person.getEmail(),
                 roleNames(account), account.getStatus().name(), account.isPasswordChangeRequired(),
-                account.getTemporaryPasswordExpiresAt(), account.getCreatedAt(), student, teacher);
+                account.getTemporaryPasswordExpiresAt(), account.getCreatedAt(), student, teacher,
+                person != null && person.hasPhoto());
     }
 
     private Map<Long, PersonProfile> personsOf(Collection<Long> accountIds) {

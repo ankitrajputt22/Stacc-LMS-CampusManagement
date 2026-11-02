@@ -40,7 +40,7 @@ class AdminUserControllerTest extends DatabaseFreeApiTest {
 
     private static UserDetail detail() {
         return new UserDetail(57L, "25CSE104", "Riya Menon", null, null, List.of("STUDENT"), "ACTIVE", true, null, null,
-                null, null);
+                null, null, false);
     }
 
     @Test

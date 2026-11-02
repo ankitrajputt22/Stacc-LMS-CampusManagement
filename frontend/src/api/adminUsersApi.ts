@@ -50,3 +50,15 @@ export async function addStudentProfile(accountId: number, body: StudentProfileC
 export async function addFacultyProfile(accountId: number, body: FacultyProfileCreate) {
   return (await apiClient.post<UserDetail>(`${ROOT}/${accountId}/faculty-profile`, body)).data
 }
+
+/** An account's official photo as image data, for an object URL. */
+export async function getUserPhoto(accountId: number, signal?: AbortSignal) {
+  return (await apiClient.get<Blob>(`${ROOT}/${accountId}/photo`, { responseType: 'blob', signal })).data
+}
+
+/** Sets the official photo: a JPEG or PNG image up to 2 MB. */
+export async function uploadUserPhoto(accountId: number, file: File) {
+  const body = new FormData()
+  body.append('file', file)
+  return (await apiClient.post<UserDetail>(`${ROOT}/${accountId}/photo`, body)).data
+}

@@ -122,6 +122,29 @@ public class PersonProfile {
         return photoObjectKey != null;
     }
 
+    /** The server-made storage key of the official photo, or null. It never leaves the backend. */
+    public String getPhotoObjectKey() {
+        return photoObjectKey;
+    }
+
+    public String getPhotoContentType() {
+        return photoContentType;
+    }
+
+    public Instant getPhotoUpdatedAt() {
+        return photoUpdatedAt;
+    }
+
+    /** The college sets a new official photo; the old stored file is kept. */
+    public void changePhoto(String objectKey, String contentType, Instant now) {
+        if (objectKey == null || objectKey.isBlank() || contentType == null || contentType.isBlank()) {
+            throw new IllegalArgumentException("A photo needs its storage key and content type");
+        }
+        this.photoObjectKey = objectKey;
+        this.photoContentType = contentType;
+        this.photoUpdatedAt = now;
+    }
+
     public Instant getUpdatedAt() {
         return updatedAt;
     }

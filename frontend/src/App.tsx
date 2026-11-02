@@ -34,6 +34,7 @@ import { AdminUserCreatePage } from './pages/AdminUserCreatePage'
 import { AdminUserPage } from './pages/AdminUserPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
 import { AdminAuditPage } from './pages/AdminAuditPage'
+import { AccountSettingsPage } from './pages/AccountSettingsPage'
 import { ClassListPage, ClassListsPage } from './pages/ClassListsPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
@@ -87,6 +88,7 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/faculty/course-offerings/:courseOfferingId" element={<FacultyCourseReportPage />} />
           <Route path="inbox" element={<InboxPage />} />
+          <Route path="account" element={<AccountSettingsPage />} />
           <Route path="account/password" element={<ChangePasswordPage />} />
           {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
           <Route path="support" element={<SupportPage />} />

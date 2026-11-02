@@ -176,6 +176,13 @@ export function Sidebar({ id, isOpen, onClose }: SidebarProps) {
               </Link>
             )}
             <Link
+              to="/account"
+              onClick={onClose}
+              className="mt-3 block text-sm font-medium text-white underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Account settings
+            </Link>
+            <Link
               to="/account/password"
               onClick={onClose}
               className="mt-3 block text-sm font-medium text-white underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
