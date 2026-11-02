@@ -7,6 +7,9 @@ export const queryKeys = {
   me: {
     profile: () => ['me', 'profile'] as const,
   },
+  audit: {
+    events: (filters: object) => ['admin', 'audit', filters] as const,
+  },
   users: {
     all: ['admin', 'users'] as const,
     list: (filters: object) => ['admin', 'users', 'list', filters] as const,

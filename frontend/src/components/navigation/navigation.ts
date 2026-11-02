@@ -77,6 +77,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Hostel Management', to: '/admin/hostel' },
       { label: 'Campus Management', to: '/admin/campus' },
       { label: 'Users', to: '/admin/users' },
+      // Read-only record of sensitive changes; the backend checks AUDIT_LOG_VIEW.
+      { label: 'Audit log', to: '/admin/audit' },
       { label: 'Reports', to: '/reports' },
     ],
   },

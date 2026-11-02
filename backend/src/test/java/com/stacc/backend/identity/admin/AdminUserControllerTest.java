@@ -69,7 +69,7 @@ class AdminUserControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(service);
 
-        when(service.create(any())).thenReturn(detail());
+        when(service.create(any(), any())).thenReturn(detail());
         mockMvc.perform(post(ROOT).header(HttpHeaders.AUTHORIZATION, manager).contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isCreated())
@@ -86,6 +86,6 @@ class AdminUserControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(post(ROOT + "/57/temporary-password").header(HttpHeaders.AUTHORIZATION, manager)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"temporaryPassword\":\"Bright-Lantern-2047\"}"))
                 .andExpect(status().isOk());
-        verify(service).issueTemporaryPassword(57L, "Bright-Lantern-2047");
+        verify(service).issueTemporaryPassword(70L, 57L, "Bright-Lantern-2047");
     }
 }

@@ -27,6 +27,9 @@ class UserAdminMySqlIT extends MySqlIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private com.stacc.backend.audit.AuditQueryService audit;
+
     @Test
     void searchingFiltersByRoleStatusAndText() {
         UserPage students = users.list(RoleName.STUDENT, AccountStatus.ACTIVE, null, 0, 100);
@@ -45,7 +48,7 @@ class UserAdminMySqlIT extends MySqlIntegrationTest {
         Long sessionId = jdbc.queryForObject(
                 "select id from academic_sessions where is_current = true", Long.class);
 
-        UserDetail created = users.create(new UserCreate("ITUSER01", "Integration Student", "it.user01@college.example",
+        UserDetail created = users.create(null, new UserCreate("ITUSER01", "Integration Student", "it.user01@college.example",
                 Set.of(RoleName.STUDENT), "Quiet-Harbor-2091", new StudentProfileCreate(programId, sessionId, "itroll01"),
                 null));
 
@@ -54,7 +57,15 @@ class UserAdminMySqlIT extends MySqlIntegrationTest {
         assertThat(created.studentProfile().rollNumber()).isEqualTo("ITROLL01");
         assertThat(jdbc.queryForObject("select count(*) from person_profiles where email = 'it.user01@college.example'",
                 Integer.class)).isEqualTo(1);
-        assertThatThrownBy(() -> users.create(new UserCreate("ITUSER01", "Again", null, Set.of(RoleName.ADMIN),
+        assertThat(audit.search(null, null, null, "ituser01", 0, 10).items())
+                .extracting(com.stacc.backend.audit.AuditQueryService.AuditRow::action)
+                .containsExactlyInAnyOrder("USER_CREATED", "STUDENT_PROFILE_CREATED");
+        assertThat(audit.search(com.stacc.backend.audit.AuditAction.USER_CREATED, null, null, "ituser01", 0, 10).items())
+                .singleElement().satisfies(row -> {
+                    assertThat(row.targetLoginId()).isEqualTo("ITUSER01");
+                    assertThat(row.details()).doesNotContain("Quiet-Harbor").doesNotContain("it.user01");
+                });
+        assertThatThrownBy(() -> users.create(null, new UserCreate("ITUSER01", "Again", null, Set.of(RoleName.ADMIN),
                 "Quiet-Harbor-2091", null, null))).isInstanceOf(ApiException.class);
     }
 }

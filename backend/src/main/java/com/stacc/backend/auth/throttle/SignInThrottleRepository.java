@@ -14,6 +14,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface SignInThrottleRepository extends JpaRepository<SignInThrottle, Long> {
 
+    boolean existsByScopeAndKeyHash(SignInThrottle.Scope scope, String keyHash);
+
     /** Makes sure the key has a row; two requests at once never create two. */
     @Modifying
     @Query(value = "insert ignore into sign_in_throttles (scope, key_hash, failures, updated_at) "

@@ -61,8 +61,11 @@ public class SignInThrottleService {
         Instant now = clock.instant();
         String account = accountKey(loginId);
         String place = addressKey(address);
-        rows.ensure(account, place, now);
-        rows.countFailure(account, place, now, properties);
+        // MySQL may report a deadlock when several sign-ins create the same new row at once. Each step is safe to repeat:
+        // a step that lost a deadlock was rolled back and changed nothing.
+        retrying(() -> rows.ensure(SignInThrottle.Scope.ACCOUNT, account, now));
+        retrying(() -> rows.ensure(SignInThrottle.Scope.ADDRESS, place, now));
+        retrying(() -> rows.countFailure(account, place, now, properties));
     }
 
     /** A successful sign-in forgets the login ID's failures. The address keeps its count until its window passes. */
@@ -70,6 +73,27 @@ public class SignInThrottleService {
     public void recordSuccess(String loginId) {
         throttles.findForUpdate(SignInThrottle.Scope.ACCOUNT, accountKey(loginId))
                 .ifPresent(throttle -> throttle.clear(clock.instant()));
+    }
+
+    private static final int ATTEMPTS = 5;
+
+    private static void retrying(Runnable step) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                step.run();
+                return;
+            } catch (org.springframework.dao.PessimisticLockingFailureException lost) {
+                if (attempt >= ATTEMPTS) {
+                    throw lost;
+                }
+                try {
+                    Thread.sleep(10L * attempt);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw lost;
+                }
+            }
+        }
     }
 
     static String accountKey(String loginId) {
