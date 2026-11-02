@@ -83,4 +83,6 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
     Optional<StudentProfile> findWithContextByUserAccountId(@Param("userAccountId") Long userAccountId);
 
     boolean existsByRollNumberAndIdNot(String rollNumber, Long id);
+
+    boolean existsByRollNumber(String rollNumber);
 }

@@ -30,6 +30,9 @@ import { StudentAttendancePage } from './pages/StudentAttendancePage'
 import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
 import { CourseRegistrationPage } from './pages/CourseRegistrationPage'
+import { AdminUserCreatePage } from './pages/AdminUserCreatePage'
+import { AdminUserPage } from './pages/AdminUserPage'
+import { AdminUsersPage } from './pages/AdminUsersPage'
 import { ClassListPage, ClassListsPage } from './pages/ClassListsPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
@@ -69,6 +72,9 @@ function App() {
           <Route path="academic/registration" element={<CourseRegistrationPage />} />
           <Route path="academic/profile" element={<AcademicProfilePage />} />
           <Route path="results" element={<ResultsPage />} />
+          <Route path="admin/users" element={<AdminUsersPage />} />
+          <Route path="admin/users/new" element={<AdminUserCreatePage />} />
+          <Route path="admin/users/:accountId" element={<AdminUserPage />} />
           <Route path="class-lists" element={<ClassListsPage />} />
           <Route path="class-lists/:courseOfferingId" element={<ClassListPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />

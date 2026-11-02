@@ -7,6 +7,11 @@ export const queryKeys = {
   me: {
     profile: () => ['me', 'profile'] as const,
   },
+  users: {
+    all: ['admin', 'users'] as const,
+    list: (filters: object) => ['admin', 'users', 'list', filters] as const,
+    one: (accountId: number) => ['admin', 'users', accountId] as const,
+  },
   admin: {
     /** Everything the academic admin pages load. A change there makes all of it out of date, since the lists feed each
      * other's choices (departments for programs, semesters for offerings, and so on). */

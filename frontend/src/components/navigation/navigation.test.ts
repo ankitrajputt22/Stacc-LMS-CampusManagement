@@ -25,10 +25,11 @@ describe('navigationFor', () => {
     expect(labels([])).toEqual(['Dashboard'])
   })
 
-  it('shows upcoming features as items without a link', () => {
+  it('links Users to user management for admins only', () => {
     const users = navigationFor(['ADMIN']).flatMap((section) => section.items).find((item) => item.label === 'Users')
-    expect(users).toBeDefined()
-    expect(users?.to).toBeUndefined()
+    expect(users?.to).toBe('/admin/users')
+    const forStudents = navigationFor(['STUDENT']).flatMap((section) => section.items).find((item) => item.label === 'Users')
+    expect(forStudents).toBeUndefined()
   })
 
   it('only links inside the app', () => {
