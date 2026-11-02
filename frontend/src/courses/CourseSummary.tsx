@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { courseColor } from '../dashboard/courseColors'
 import type { LmsCourseSummary } from '../types/lms'
 import { CourseFacts } from './CourseFacts'
 
@@ -13,11 +14,14 @@ type CourseSummaryProps = {
  */
 export function CourseSummary({ course }: CourseSummaryProps) {
   return (
-    <article className="group relative h-full rounded-panel border border-line bg-surface px-4 py-3.5 hover:border-slate-400 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5 sm:py-4">
+    <article
+      style={{ borderTopColor: courseColor(course.lmsCourseId) }}
+      className="group relative h-full rounded-panel border border-t-4 border-line bg-surface px-4 py-3.5 hover:border-slate-400 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5 sm:py-4"
+    >
       <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">
         {course.courseCode}
       </p>
-      <h2 className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
+      <h3 className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
         {/* The course route uses the LMS course ID, not the course or offering ID. */}
         <Link
           to={`/courses/${course.lmsCourseId}`}
@@ -25,8 +29,14 @@ export function CourseSummary({ course }: CourseSummaryProps) {
         >
           {course.courseName}
         </Link>
-      </h2>
+      </h3>
       <CourseFacts course={course} />
+      {course.faculty.length > 0 && (
+        <p className="text-sm leading-6 break-words text-ink-muted">
+          <span className="sr-only">Taught by </span>
+          {course.faculty.join(', ')}
+        </p>
+      )}
     </article>
   )
 }

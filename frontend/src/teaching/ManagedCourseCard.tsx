@@ -1,13 +1,16 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { createLmsCourse, publishLmsCourse } from '../api/lmsCourseManagementApi'
+import { queryKeys } from '../api/queryKeys'
 import { ActionButton } from '../components/ActionButton'
 import { actionLinkClasses } from '../components/actionStyles'
 import { Button } from '../components/Button'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { CourseFacts } from '../courses/CourseFacts'
+import { courseColor } from '../dashboard/courseColors'
 import type { LmsCourseManagement, LmsManagedCourse } from '../types/lms'
 import { enrolledText, lifecycleRefusal, lmsStatusWord } from './lmsCourseText'
 
@@ -28,6 +31,7 @@ const PUBLISH_FAILED = 'Couldn’t publish the course. Check your connection and
  */
 export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps) {
   const id = useId()
+  const queryClient = useQueryClient()
   const cardRef = useRef<HTMLElement>(null)
   const busyRef = useRef(false)
   const [creating, setCreating] = useState(false)
@@ -50,6 +54,7 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
       const created = await createLmsCourse(course.courseOfferingId)
       setMessage(`LMS course created as a draft. ${enrolledText(created.currentStudentCount)}`.trim())
       onChanged(created)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })
       // The Create button is gone; focus moves to the new course's Open link.
       focusLater('open')
     } catch (failure) {
@@ -67,13 +72,24 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
     <article
       ref={cardRef}
       aria-labelledby={`${id}-name`}
-      className="h-full rounded-panel border border-line bg-surface px-4 py-3.5 sm:px-5 sm:py-4"
+      style={{ borderTopColor: courseColor(course.courseOfferingId) }}
+      className="h-full rounded-panel border border-t-4 border-line bg-surface px-4 py-3.5 sm:px-5 sm:py-4"
     >
       <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-      <h2 id={`${id}-name`} className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
+      <h3 id={`${id}-name`} className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
         {course.courseName}
-      </h2>
+      </h3>
       <CourseFacts course={course} />
+      <p className="text-sm leading-6 text-ink-muted">
+        {course.enrolledCount === 1 ? '1 student enrolled' : `${course.enrolledCount} students enrolled`}
+        {course.teachingRole === 'CO_FACULTY' && (
+          <>
+            <span aria-hidden="true"> · </span>
+            <span className="sr-only">, </span>
+            You co-teach this course
+          </>
+        )}
+      </p>
 
       <dl className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
         <dt className="text-ink-muted">LMS course</dt>
@@ -140,6 +156,7 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
             setConfirmingPublish(false)
             setMessage(`Course published. ${enrolledText(published.currentStudentCount)}`.trim())
             onChanged(published)
+            void queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })
             focusLater('open')
           }}
           onCancel={() => {

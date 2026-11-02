@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router'
 import { getManagedTeachingCourses } from '../api/lmsCourseManagementApi'
-import { useApiRequest } from '../api/useApiRequest'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
@@ -9,8 +10,10 @@ import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { groupByTerm } from '../courses/terms'
 import { ManagedCourseCard } from '../teaching/ManagedCourseCard'
 import type { LmsManagedCourse } from '../types/lms'
+import { PageHeader } from '../ui'
 
 const NOT_FACULTY = 'This page is for faculty accounts.'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -21,7 +24,7 @@ const SIGN_IN_AGAIN =
 type LmsState = Pick<LmsManagedCourse, 'lmsCourseId' | 'lmsCourseStatus'>
 
 function ManagedCourses() {
-  const courses = useApiRequest(getManagedTeachingCourses)
+  const courses = useApiQuery(queryKeys.lms.managedCourses(), getManagedTeachingCourses)
   // Changes made on this page, shown at once without asking the backend again.
   const [changes, setChanges] = useState<Record<number, LmsState>>({})
 
@@ -58,21 +61,34 @@ function ManagedCourses() {
   }
 
   return (
-    <ul aria-label="Your teaching courses" className="grid gap-3 lg:grid-cols-2">
-      {courses.data.map((course) => (
-        <li key={course.courseOfferingId}>
-          <ManagedCourseCard
-            course={{ ...course, ...changes[course.courseOfferingId] }}
-            onChanged={(change) =>
-              setChanges((current) => ({
-                ...current,
-                [change.courseOfferingId]: { lmsCourseId: change.lmsCourseId, lmsCourseStatus: change.lmsCourseStatus },
-              }))
-            }
-          />
-        </li>
+    <div className="space-y-8">
+      {groupByTerm(courses.data).map((term) => (
+        <section key={term.key} aria-labelledby={`term-${term.key}`}>
+          <h2 id={`term-${term.key}`} className="text-lg font-semibold text-ink">
+            {term.heading}
+            <span className="ml-2 text-sm font-normal text-ink-muted">
+              <span className="sr-only">, program </span>
+              {term.programCode}
+            </span>
+          </h2>
+          <ul aria-label={`Teaching courses of ${term.heading}`} className="mt-3 grid gap-3 lg:grid-cols-2">
+            {term.items.map((course) => (
+              <li key={course.courseOfferingId}>
+                <ManagedCourseCard
+                  course={{ ...course, ...changes[course.courseOfferingId] }}
+                  onChanged={(change) =>
+                    setChanges((current) => ({
+                      ...current,
+                      [change.courseOfferingId]: { lmsCourseId: change.lmsCourseId, lmsCourseStatus: change.lmsCourseStatus },
+                    }))
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -92,17 +108,16 @@ export function TeachingPage() {
   return (
     <>
       <title>Teaching · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Teaching</h1>
-      {isFaculty && (
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          The course offerings you are assigned to teach, with their LMS courses.
-        </p>
-      )}
+      <PageHeader
+        eyebrow="LMS"
+        title="Teaching"
+        description={isFaculty ? 'The course offerings you are assigned to teach, by term, with their LMS courses.' : undefined}
+      />
       <p role="status" className={archivedCourse ? 'mt-4 rounded-control border border-line-strong bg-surface-muted px-3 py-2.5 text-sm leading-5 text-ink' : 'sr-only'}>
         {archivedCourse ? `${archivedCourse} was archived. Its content and history are kept.` : ''}
       </p>
 
-      <div className="mt-6">
+      <div className="mt-4">
         {isFaculty ? (
           <ManagedCourses />
         ) : (

@@ -60,6 +60,7 @@ export const queryKeys = {
   lms: {
     all: ['lms'] as const,
     myCourses: () => ['lms', 'my-courses'] as const,
+    managedCourses: () => ['lms', 'managed-courses'] as const,
     course: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId] as const,
   },
 } as const
