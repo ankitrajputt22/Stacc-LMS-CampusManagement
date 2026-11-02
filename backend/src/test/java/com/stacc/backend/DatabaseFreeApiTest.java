@@ -84,6 +84,7 @@ import org.springframework.web.context.WebApplicationContext;
     AiCourseKnowledgeIndexRepository.class,
     AcademicSessionRepository.class,
     com.stacc.backend.identity.admin.AccountSearchRepository.class,
+    com.stacc.backend.auth.throttle.SignInThrottleRepository.class,
     ApprovalRequestHistoryRepository.class,
     ApprovalRequestRepository.class,
     ApprovalRequestStepRepository.class,

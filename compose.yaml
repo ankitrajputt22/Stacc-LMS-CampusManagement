@@ -72,6 +72,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env, for example with - openssl rand -base64 48}
       STACC_SESSION_MAX_DURATION: ${STACC_SESSION_MAX_DURATION:-12h}
       STACC_SESSION_IDLE_TIMEOUT: ${STACC_SESSION_IDLE_TIMEOUT:-2h}
+      # Sign-in throttling reads the client address from the frontend proxy's X-Real-IP. The backend port is published
+      # on 127.0.0.1 only, so no outside caller can set that header itself.
+      STACC_SIGN_IN_TRUST_PROXY: ${STACC_SIGN_IN_TRUST_PROXY:-true}
       # Only for a frontend dev server on this machine that calls this backend directly. The
       # Docker frontend needs no such permission: its page and the API share one address.
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}

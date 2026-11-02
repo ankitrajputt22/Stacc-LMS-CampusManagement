@@ -32,6 +32,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import com.stacc.backend.auth.throttle.SignInThrottleService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class LoginServiceTest {
@@ -43,7 +44,16 @@ class LoginServiceTest {
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AccessTokenService accessTokenService = mock(AccessTokenService.class);
     private final SessionService sessions = mock(SessionService.class);
-    private final LoginService loginService = new LoginService(authenticationManager, accessTokenService, sessions);
+    private final SignInThrottleService throttle = throttleThatAllows();
+    private final LoginService loginService = new LoginService(authenticationManager, accessTokenService, sessions, throttle);
+    private static final String ADDRESS = "203.0.113.5";
+
+    private static SignInThrottleService throttleThatAllows() {
+        SignInThrottleService allowing = mock(SignInThrottleService.class);
+        org.mockito.Mockito.when(allowing.waitFor(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.time.Duration.ZERO);
+        return allowing;
+    }
     private static final Instant SESSION_END = Instant.parse("2026-11-01T22:00:00Z");
     private static final UserSession SESSION = new UserSession(12L, "Chrome on Android",
             SESSION_END.minusSeconds(12 * 3600), SESSION_END);
@@ -71,7 +81,7 @@ class LoginServiceTest {
     void loginIdAndPasswordAreCheckedByTheAuthenticationManagerExactlyAsSent() {
         authenticationSucceedsWith(principalWithRoles(RoleName.FACULTY));
 
-        loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0");
+        loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS);
 
         ArgumentCaptor<Authentication> attempt = ArgumentCaptor.forClass(Authentication.class);
         verify(authenticationManager).authenticate(attempt.capture());
@@ -85,7 +95,7 @@ class LoginServiceTest {
     void successfulLoginReturnsTheAccountAndItsSortedRoleNames() {
         authenticationSucceedsWith(principalWithRoles(RoleName.FACULTY, RoleName.ADMIN));
 
-        SessionResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0").session();
+        SessionResponse response = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS).session();
 
         assertEquals(12L, response.accountId());
         assertEquals(SESSION_END, response.expiresAt());
@@ -98,7 +108,7 @@ class LoginServiceTest {
         StaccUserPrincipal principal = principalWithRoles(RoleName.STUDENT);
         authenticationSucceedsWith(principal);
 
-        LoginService.SignIn signIn = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0");
+        LoginService.SignIn signIn = loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS);
 
         verify(sessions).start(12L, "Mozilla/5.0");
         verify(accessTokenService).issue(principal, SESSION.getId(), SESSION_END);
@@ -112,14 +122,14 @@ class LoginServiceTest {
     void wrongCredentialsAndDisabledAccountsFailWithTheSameSafeMessage() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
         ApiException wrongCredentials =
-                assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
+                assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
 
         AuthenticationManager disabledManager = mock(AuthenticationManager.class);
         when(disabledManager.authenticate(any())).thenThrow(new DisabledException("User is disabled"));
         ApiException disabled = assertThrows(
                 ApiException.class,
-                () -> new LoginService(disabledManager, accessTokenService, sessions)
-                        .login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
+                () -> new LoginService(disabledManager, accessTokenService, sessions, throttle)
+                        .login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
 
         assertEquals(HttpStatus.UNAUTHORIZED, wrongCredentials.getStatus());
         assertEquals("Invalid login ID or password.", wrongCredentials.getMessage());
@@ -131,7 +141,7 @@ class LoginServiceTest {
     void failedLoginNeverGetsAToken() {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
 
-        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
+        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
 
         verifyNoInteractions(accessTokenService, sessions);
     }
@@ -144,7 +154,7 @@ class LoginServiceTest {
 
         InternalAuthenticationServiceException thrown = assertThrows(
                 InternalAuthenticationServiceException.class,
-                () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0"));
+                () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
 
         assertSame(databaseDown, thrown);
     }
@@ -152,5 +162,26 @@ class LoginServiceTest {
     @Test
     void loginRequestTextFormLeavesOutThePassword() {
         assertFalse(new LoginRequest(LOGIN_ID, PASSWORD).toString().contains(PASSWORD));
+    }
+
+    @Test
+    void aBlockedSignInIsRefusedBeforeThePasswordIsChecked() {
+        org.mockito.Mockito.when(throttle.waitFor(LOGIN_ID, ADDRESS)).thenReturn(java.time.Duration.ofSeconds(30));
+
+        ApiException refused = assertThrows(ApiException.class,
+                () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
+
+        assertEquals(org.springframework.http.HttpStatus.TOO_MANY_REQUESTS, refused.getStatus());
+        assertEquals(LoginService.TOO_MANY_MESSAGE, refused.getMessage());
+        org.mockito.Mockito.verifyNoInteractions(authenticationManager, sessions);
+    }
+
+    @Test
+    void aFailureIsCountedAndASuccessForgetsTheLoginIdsFailures() {
+        org.mockito.Mockito.when(authenticationManager.authenticate(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new org.springframework.security.authentication.BadCredentialsException("wrong"));
+        assertThrows(ApiException.class, () -> loginService.login(new LoginRequest(LOGIN_ID, PASSWORD), "Mozilla/5.0", ADDRESS));
+        org.mockito.Mockito.verify(throttle).recordFailure(LOGIN_ID, ADDRESS);
+        org.mockito.Mockito.verify(throttle, org.mockito.Mockito.never()).recordSuccess(org.mockito.ArgumentMatchers.any());
     }
 }

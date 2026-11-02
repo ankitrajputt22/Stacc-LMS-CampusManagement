@@ -50,7 +50,7 @@ class PasswordLifecycleMySqlIT extends MySqlIntegrationTest {
     void changingAndTemporaryPasswordsFollowTheLifecycle() {
         Long id = accounts.saveAndFlush(new UserAccount(LOGIN_ID, encoder.encode(FIRST))).getId();
 
-        LoginService.SignIn signIn = login.login(new LoginRequest(LOGIN_ID, FIRST), null);
+        LoginService.SignIn signIn = login.login(new LoginRequest(LOGIN_ID, FIRST), null, "198.51.100.7");
         assertThat(signIn.session().passwordChangeRequired()).isFalse();
         String thisSession = sessions.openSessions(id).getFirst().getId();
         UserSession otherDevice = sessions.start(id, null);
@@ -63,12 +63,12 @@ class PasswordLifecycleMySqlIT extends MySqlIntegrationTest {
                 otherDevice.getId())).isEqualTo("PASSWORD_CHANGED");
         assertThat(jdbc.queryForObject("select password_changed_at is not null from user_accounts where id = ?",
                 Boolean.class, id)).isTrue();
-        assertThatThrownBy(() -> login.login(new LoginRequest(LOGIN_ID, FIRST), null)).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> login.login(new LoginRequest(LOGIN_ID, FIRST), null, "198.51.100.7")).isInstanceOf(ApiException.class);
 
         passwords.issueTemporaryPassword(id, TEMPORARY, Duration.ofDays(1));
         assertThat(sessions.openSessions(id)).as("every session ends").isEmpty();
 
-        LoginService.SignIn temporary = login.login(new LoginRequest(LOGIN_ID, TEMPORARY), null);
+        LoginService.SignIn temporary = login.login(new LoginRequest(LOGIN_ID, TEMPORARY), null, "198.51.100.7");
         assertThat(temporary.session().passwordChangeRequired()).isTrue();
         String forced = sessions.openSessions(id).getFirst().getId();
         assertThat(sessions.check(forced, id)).isEqualTo(new SessionService.SessionCheck(true, true));
@@ -76,7 +76,7 @@ class PasswordLifecycleMySqlIT extends MySqlIntegrationTest {
         // Moved back inside MySQL, so no time zone of this machine can get in the way.
         jdbc.update("update user_accounts set temporary_password_expires_at = "
                 + "date_sub(temporary_password_expires_at, interval 2 day) where id = ?", id);
-        assertThatThrownBy(() -> login.login(new LoginRequest(LOGIN_ID, TEMPORARY), null))
+        assertThatThrownBy(() -> login.login(new LoginRequest(LOGIN_ID, TEMPORARY), null, "198.51.100.7"))
                 .isInstanceOf(ApiException.class).hasMessage("Invalid login ID or password.");
     }
 }
