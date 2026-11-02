@@ -1,5 +1,7 @@
 import type {
   LmsCourseContent,
+  LmsCoursePage,
+  LmsFacultyPage,
   LmsFacultyCourseContent,
   LmsFacultyMaterial,
   LmsFacultyModule,
@@ -23,6 +25,18 @@ export async function getLmsCourseContent(
     `/lms/courses/${lmsCourseId}/content`,
     { signal },
   )
+  return response.data
+}
+
+/** One published page of a course the signed-in student may use, with the pages around it. */
+export async function getLmsCoursePage(lmsCourseId: number, pageId: number, signal?: AbortSignal): Promise<LmsCoursePage> {
+  const response = await apiClient.get<LmsCoursePage>(`/lms/courses/${lmsCourseId}/pages/${pageId}`, { signal })
+  return response.data
+}
+
+/** One page of a course the signed-in faculty member teaches, drafts included. The backend finds the course. */
+export async function getFacultyPage(pageId: number, signal?: AbortSignal): Promise<LmsFacultyPage> {
+  const response = await apiClient.get<LmsFacultyPage>(`/lms/faculty/pages/${pageId}`, { signal })
   return response.data
 }
 

@@ -73,6 +73,19 @@ public class LmsFacultyContentController {
         return contentQueryService.getCourseContent(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
 
+    @GetMapping("/pages/{pageId}")
+    @PreAuthorize(VIEW)
+    @Operation(
+            summary = "Preview one page of a course the faculty member teaches",
+            description = "Returns one page (a topic) that is not archived, drafts included, with its study materials "
+                    + "and the pages before and after it, as students will see it once it is published. The course is "
+                    + "found from the stored page.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The page.")
+    public LmsFacultyPageResponse page(@PathVariable Long pageId, @AuthenticationPrincipal Jwt accessToken) {
+        return contentQueryService.getPage(AuthenticatedAccount.idFrom(accessToken), pageId);
+    }
+
     @PostMapping("/courses/{lmsCourseId}/modules")
     @PreAuthorize(MANAGE)
     @ResponseStatus(HttpStatus.CREATED)

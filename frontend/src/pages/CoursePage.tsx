@@ -156,7 +156,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
 
       <CourseAnnouncements announcements={announcements} />
       <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
-      <CourseContent content={content} />
+      <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
     </>
   )
 }

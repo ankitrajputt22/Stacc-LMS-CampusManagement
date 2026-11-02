@@ -163,7 +163,8 @@ public class LmsSearchProvider implements SearchProvider {
                     return new SearchResult(SearchResultType.STUDY_MATERIAL, material.getTitle(),
                             SearchFormat.join(courseLabel(course.courseCode(), course.courseName()),
                                     material.getOriginalFileName()),
-                            SearchFormat.snippet(material.getDescription()), "/courses/" + course.lmsCourseId(), null);
+                            SearchFormat.snippet(material.getDescription()),
+                            "/courses/" + course.lmsCourseId() + "/pages/" + material.getLmsTopic().getId(), null);
                 });
     }
 

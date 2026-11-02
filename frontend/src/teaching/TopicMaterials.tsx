@@ -339,7 +339,7 @@ function MaterialItem({
             <ActionButton
               onClick={() =>
                 void changes.run(() => publishMaterial(material.id), {
-                  done: `Published ${name}. Students see it once its topic and module are published.`,
+                  done: `Published ${name}. Students see it once its page and module are published.`,
                   focus: () => [`${key}-heading`],
                 })
               }
@@ -441,7 +441,7 @@ export function TopicMaterials({
             focusKey={`${key}-add-material`}
             onClick={() => setOpenForm({ type: 'addMaterial', topicId: topic.id })}
           >
-            Add material{srContext(`to topic “${topic.title}”`)}
+            Add material{srContext(`to page “${topic.title}”`)}
           </ActionButton>
         )}
       </div>

@@ -76,6 +76,47 @@ class LmsFacultyContentQueryServiceTest {
     }
 
     @Test
+    void aDraftPageOpensForPreviewWithThePagesAroundItAndTheCourseFromTheStoredPage() {
+        LmsModule draft = module(course, 11, 1, LmsContentStatus.DRAFT);
+        LmsModule archived = module(course, 13, 3, LmsContentStatus.ARCHIVED);
+        LmsTopic first = topic(draft, 31, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic second = topic(draft, 32, 2, LmsContentStatus.DRAFT);
+        LmsTopic gone = topic(draft, 33, 3, LmsContentStatus.ARCHIVED);
+        LmsTopic inArchived = topic(archived, 34, 1, LmsContentStatus.DRAFT);
+        when(modules.findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(COURSE_ID, LmsContentPolicy.IN_USE))
+                .thenReturn(List.of(draft, archived));
+        when(topics.findAllInCourse(COURSE_ID, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE))
+                .thenReturn(List.of(first, second, gone, inArchived));
+        for (LmsTopic topic : List.of(first, second, gone, inArchived)) {
+            when(topics.findWithModuleById(topic.getId())).thenReturn(Optional.of(topic));
+        }
+
+        LmsFacultyPageResponse page = service.getPage(ACCOUNT_ID, 32L);
+
+        assertEquals(LmsContentStatus.DRAFT, page.status());
+        assertEquals(LmsContentStatus.DRAFT, page.moduleStatus());
+        assertEquals(7L, page.lmsCourseId());
+        assertEquals(new LmsPageLink(31L, "Topic 31", "Module 11"), page.previous());
+        assertEquals(null, page.next(), "the archived page is not listed");
+        for (Long hidden : List.of(33L, 34L, 999L)) {
+            assertEquals(HttpStatus.NOT_FOUND,
+                    assertThrows(ApiException.class, () -> service.getPage(ACCOUNT_ID, hidden)).getStatus());
+        }
+    }
+
+    @Test
+    void aPageOfACourseTheFacultyMemberDoesNotTeachLooksMissing() {
+        LmsModule draft = module(course, 11, 1, LmsContentStatus.DRAFT);
+        when(topics.findWithModuleById(31L)).thenReturn(Optional.of(topic(draft, 31, 1, LmsContentStatus.DRAFT)));
+        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+
+        ApiException refused = assertThrows(ApiException.class, () -> service.getPage(ACCOUNT_ID, 31L));
+
+        assertEquals(HttpStatus.NOT_FOUND, refused.getStatus());
+        assertEquals("Page not found or unavailable.", refused.getMessage());
+    }
+
+    @Test
     void courseWithoutContentGivesAnEmptyModuleList() {
         when(modules.findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(COURSE_ID, LmsContentPolicy.IN_USE))
                 .thenReturn(List.of());

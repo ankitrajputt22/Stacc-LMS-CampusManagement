@@ -54,4 +54,30 @@ public class LmsStudentContentController {
     public LmsCourseContentResponse content(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
         return contentQueryService.getPublishedContent(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
+
+    @GetMapping("/courses/{lmsCourseId}/pages/{pageId}")
+    @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
+    @Operation(
+            summary = "Open one published page of an accessible LMS course",
+            description = "Returns one published page (a topic of a published module) with its published study "
+                    + "materials and the published pages before and after it, if the signed-in student may currently "
+                    + "use the course. The student is taken from the access token.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The page.")
+    @ApiResponse(
+            responseCode = "401",
+            description = "No valid access token was sent.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "403",
+            description = "The account is not allowed to use this operation.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "The course or page does not exist, or is not available to this student. All look the same.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsCoursePageResponse page(@PathVariable Long lmsCourseId, @PathVariable Long pageId,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return contentQueryService.getPublishedPage(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, pageId);
+    }
 }

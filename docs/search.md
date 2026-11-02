@@ -53,7 +53,7 @@ Only kinds that are implemented exist. The preview lists them in this order:
 | `TEACHING_COURSE` | `FACULTY` + `FACULTY_COURSE_VIEW` + `LMS_COURSE_MANAGE` | the same | `/teaching/{lmsCourseId}` for a draft or published LMS course, otherwise `/teaching` |
 | `ASSIGNMENT` | `STUDENT` + `LMS_COURSE_VIEW` | title | `/courses/{lmsCourseId}/assignments/{assignmentId}` |
 | `TEACHING_ASSIGNMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | title | `/teaching/{lmsCourseId}` |
-| `STUDY_MATERIAL` | `STUDENT` + `LMS_COURSE_VIEW` | title, original file name, description | `/courses/{lmsCourseId}` |
+| `STUDY_MATERIAL` | `STUDENT` + `LMS_COURSE_VIEW` | title, original file name, description | `/courses/{lmsCourseId}/pages/{pageId}` (the material's page) |
 | `TEACHING_MATERIAL` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}` |
 | `ANNOUNCEMENT` | `STUDENT` + `LMS_COURSE_VIEW` | title, message | `/courses/{lmsCourseId}` |
 | `TEACHING_ANNOUNCEMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}` |

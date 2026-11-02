@@ -3,6 +3,8 @@ import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
 import { AcademicProfilePage } from './pages/AcademicProfilePage'
+import { LearningPage } from './pages/LearningPage'
+import { TeachingPagePreview } from './pages/TeachingPagePreview'
 import { AdminCampusPage } from './pages/AdminCampusPage'
 import { AdminHostelPage } from './pages/AdminHostelPage'
 import { AssignmentsPage } from './pages/AssignmentsPage'
@@ -60,9 +62,11 @@ function App() {
           <Route path="courses/:lmsCourseId" element={<CoursePage />} />
           <Route path="courses/:lmsCourseId/assignments/:assignmentId" element={<CourseAssignmentPage />} />
           <Route path="courses/:lmsCourseId/ai" element={<CourseAiPage />} />
+          <Route path="courses/:lmsCourseId/pages/:pageId" element={<LearningPage />} />
           <Route path="teaching" element={<TeachingPage />} />
           <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
           <Route path="teaching/:lmsCourseId/ai" element={<TeachingAiPage />} />
+          <Route path="teaching/:lmsCourseId/pages/:pageId" element={<TeachingPagePreview />} />
           <Route
             path="teaching/:lmsCourseId/assignments/:assignmentId/submissions"
             element={<FacultyAssignmentSubmissionsPage />}

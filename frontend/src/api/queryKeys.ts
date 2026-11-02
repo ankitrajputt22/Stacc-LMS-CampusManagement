@@ -76,5 +76,7 @@ export const queryKeys = {
     myCourses: () => ['lms', 'my-courses'] as const,
     managedCourses: () => ['lms', 'managed-courses'] as const,
     course: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId] as const,
+    coursePage: (lmsCourseId: number, pageId: number) => ['lms', 'courses', lmsCourseId, 'pages', pageId] as const,
+    facultyPage: (pageId: number) => ['lms', 'faculty-pages', pageId] as const,
   },
 } as const
