@@ -54,7 +54,15 @@ function AcademicMasters({ dashboard, level }: { dashboard: Dashboard; level: Le
           ['Courses', masters.courseCount],
         ]}
       />
-      <Actions links={[{ to: '/admin/academic', label: 'Manage academic data' }]} />
+      <Actions
+        links={[
+          { to: '/admin/academic/departments', label: 'Departments' },
+          { to: '/admin/academic/programs', label: 'Programs' },
+          { to: '/admin/academic/courses', label: 'Courses' },
+          { to: '/admin/academic/offerings', label: 'Course offerings' },
+          { to: '/admin/academic/faculty-assignments', label: 'Faculty assignments' },
+        ]}
+      />
     </DashboardSection>
   )
 }

@@ -162,7 +162,7 @@ The master permissions give no access to offerings or enrollments, and the rever
 
 ## Frontend
 
-`/admin/academic` has one row of tabs (`LinkTabs`) under the page header for Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Students, Faculty, Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
+`/admin/academic` has two rows of tabs (`LinkTabs`) under the page header: the areas Structure (Departments to Courses), Teaching (Course Offerings, Faculty Assignments), People (Enrollments, Students, Faculty), and Calendar, then the pages of the current area. The pages are Departments, Programs, Academic Sessions, Semesters, Sections, Courses, Course Offerings (`/admin/academic/offerings`), Faculty Assignments (`/admin/academic/faculty-assignments`), Students, Faculty, Enrollments (`/admin/academic/enrollments`), and Academic Calendar (`/admin/academic/calendar`). An offering's roster is at `/admin/academic/offerings/:courseOfferingId/enrollments`. See `docs/frontend-layout.md`.
 
 Every section is built from the shared components in `src/ui` (see `ui-design.md`):
 

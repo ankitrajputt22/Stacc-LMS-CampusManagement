@@ -123,7 +123,7 @@ The faculty dashboard:
 
 The admin dashboard:
 
-- **Academic Masters** lists Departments, Programs, Academic Sessions, Semesters, and Courses with their counts, and **Manage academic data** opens `/admin/academic`.
+- **Academic Masters** lists Departments, Programs, Academic Sessions, Semesters, and Courses with their counts, with shortcuts to Departments, Programs, Courses, Course offerings, and Faculty assignments.
 - **Academic Operations** lists Course Offerings, Active Semester Enrollments, and Active Course Enrollments, says that active means currently enrolled, and links to **Manage course offerings** (`/admin/academic/offerings`) and **Manage enrollments** (`/admin/academic/enrollments`).
 - **Course Offerings** lists up to five offerings in the admin list's order with code, name, program, semester, session, and credits, each with **View roster** (`/admin/academic/offerings/:courseOfferingId/enrollments`), and **View all** opens `/admin/academic/offerings`. With none it says "No course offerings available."
 - A zero is shown as 0. There are no charts, trends, rates, rankings, activity feeds, or student and faculty totals. Users stays "Soon" in the navigation.

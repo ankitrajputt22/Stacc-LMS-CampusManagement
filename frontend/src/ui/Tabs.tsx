@@ -6,7 +6,8 @@ const tabBase =
 const tabIdle = 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
 const tabSelected = 'border-portal-navy text-portal-navy font-semibold'
 
-export type LinkTab = { to: string; label: string; end?: boolean }
+/** `current` overrides the address match, for a tab that stands for several pages, such as a group of sections. */
+export type LinkTab = { to: string; label: string; end?: boolean; current?: boolean }
 
 /**
  * Tabs that are pages, such as a course's Home, Modules, and Grades: each is a link with its own address, and the
@@ -18,7 +19,12 @@ export function LinkTabs({ label, tabs }: { label: string; tabs: readonly LinkTa
       <ul className="flex gap-1">
         {tabs.map((tab) => (
           <li key={tab.to}>
-            <NavLink to={tab.to} end={tab.end} className={({ isActive }) => `${tabBase} ${isActive ? tabSelected : tabIdle}`}>
+            <NavLink
+              to={tab.to}
+              end={tab.end}
+              aria-current={tab.current === undefined ? undefined : tab.current ? 'page' : false}
+              className={({ isActive }) => `${tabBase} ${(tab.current ?? isActive) ? tabSelected : tabIdle}`}
+            >
               {tab.label}
             </NavLink>
           </li>
