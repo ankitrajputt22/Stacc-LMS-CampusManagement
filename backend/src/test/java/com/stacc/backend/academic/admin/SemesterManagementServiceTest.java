@@ -56,7 +56,7 @@ class SemesterManagementServiceTest {
     void aSemesterJoinsAnExistingProgramAndSessionLoadedOnTheServer() {
         SemesterResponse created = service.create(new SemesterCreate(4L, 2L, 5));
 
-        assertEquals(new SemesterResponse(9L, 4L, "BTECH-CSE", "Program BTECH-CSE", "CSE", 2L, "2026-27", 5, "PLANNED"), created);
+        assertEquals(new SemesterResponse(9L, 4L, "BTECH-CSE", "Program BTECH-CSE", "CSE", 2L, "2026-27", 5, "PLANNED", null, null, null), created);
     }
 
     @Test

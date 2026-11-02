@@ -1,6 +1,7 @@
 package com.stacc.backend.academic.admin;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 import com.stacc.backend.academic.course.Course;
@@ -43,13 +44,15 @@ public final class AcademicMasterResponses {
             @Schema(allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
                     example = "UNDERGRADUATE") String degreeType,
             @Schema(example = "8") int durationSemesters,
-            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {
+            @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status,
+            @Schema(description = "Credit limit per semester; null means no limit.", example = "24")
+            BigDecimal maxCreditsPerSemester) {
 
         static ProgramResponse of(Program program) {
             Department department = program.getDepartment();
             return new ProgramResponse(program.getId(), department.getId(), department.getCode(), department.getName(),
                     program.getCode(), program.getName(), program.getDegreeType().name(), program.getDurationSemesters(),
-                    program.getStatus().name());
+                    program.getStatus().name(), program.getMaxCreditsPerSemester());
         }
     }
 
@@ -76,14 +79,21 @@ public final class AcademicMasterResponses {
             @Schema(example = "2") Long academicSessionId,
             @Schema(example = "2026-27") String academicSessionCode,
             @Schema(example = "3") int semesterNumber,
-            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status) {
+            @Schema(allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "PLANNED") String status,
+            @Schema(description = "When registration opens, in UTC; null when no period is set.")
+            Instant registrationOpensAt,
+            @Schema(description = "When registration closes, in UTC; null when no period is set.")
+            Instant registrationClosesAt,
+            @Schema(description = "The last moment students may drop a course, in UTC; null when they cannot.")
+            Instant dropDeadline) {
 
         static SemesterResponse of(Semester semester) {
             Program program = semester.getProgram();
             AcademicSession session = semester.getAcademicSession();
             return new SemesterResponse(semester.getId(), program.getId(), program.getCode(), program.getName(),
                     program.getDepartment().getCode(), session.getId(), session.getCode(), semester.getSemesterNumber(),
-                    semester.getStatus().name());
+                    semester.getStatus().name(), semester.getRegistrationOpensAt(), semester.getRegistrationClosesAt(),
+                    semester.getDropDeadline());
         }
     }
 

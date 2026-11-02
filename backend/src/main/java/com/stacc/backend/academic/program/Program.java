@@ -1,5 +1,6 @@
 package com.stacc.backend.academic.program;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Locale;
 
@@ -36,6 +37,7 @@ public class Program {
     public static final int MAX_CODE_LENGTH = 30;
     public static final int MAX_NAME_LENGTH = 150;
     public static final int MAX_DURATION_SEMESTERS = 20;
+    public static final BigDecimal MAX_CREDITS_PER_SEMESTER = new BigDecimal("60");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +60,10 @@ public class Program {
 
     @Column(name = "duration_semesters", nullable = false)
     private int durationSemesters;
+
+    // The most credits a student of this program may register for in one semester; null means no limit.
+    @Column(name = "max_credits_per_semester", precision = 5, scale = 2)
+    private BigDecimal maxCreditsPerSemester;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -126,6 +132,18 @@ public class Program {
 
     public void rename(String name) {
         this.name = Require.text(name, "name", MAX_NAME_LENGTH);
+    }
+
+    public BigDecimal getMaxCreditsPerSemester() {
+        return maxCreditsPerSemester;
+    }
+
+    /** Sets the credit limit per semester, from more than 0 up to 60, or clears it with null. */
+    public void changeMaxCreditsPerSemester(BigDecimal maxCredits) {
+        if (maxCredits != null && (maxCredits.signum() <= 0 || maxCredits.compareTo(MAX_CREDITS_PER_SEMESTER) > 0)) {
+            throw new IllegalArgumentException("maxCreditsPerSemester must be more than 0 and at most 60");
+        }
+        this.maxCreditsPerSemester = maxCredits;
     }
 
     public void changeDuration(int durationSemesters) {

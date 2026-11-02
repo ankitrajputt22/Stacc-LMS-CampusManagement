@@ -1,6 +1,7 @@
 package com.stacc.backend.academic.admin;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 import com.stacc.backend.academic.course.Course;
@@ -91,7 +92,13 @@ public final class AcademicMasterRequests {
             @Schema(description = "What kind of degree the program leads to. UNDERGRADUATE when left out.",
                     allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
                     example = "UNDERGRADUATE")
-            DegreeType degreeType) {
+            DegreeType degreeType,
+            @Schema(description = "The most credits a student of this program may register for in one semester, more "
+                    + "than 0 and at most 60. Empty means no limit.", example = "24")
+            @DecimalMin(value = "0", inclusive = false, message = "Credit limit must be greater than zero")
+            @DecimalMax(value = "60.00", message = "Credit limit must be at most 60")
+            @Digits(integer = 2, fraction = 2, message = "Credit limit can have at most 2 decimal places")
+            BigDecimal maxCreditsPerSemester) {
     }
 
     public record ProgramUpdate(
@@ -112,7 +119,13 @@ public final class AcademicMasterRequests {
             @Schema(description = "What kind of degree the program leads to. Unchanged when left out.",
                     allowableValues = {"UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA", "DOCTORATE", "CERTIFICATE"},
                     example = "UNDERGRADUATE")
-            DegreeType degreeType) {
+            DegreeType degreeType,
+            @Schema(description = "The most credits a student of this program may register for in one semester, more "
+                    + "than 0 and at most 60. Empty means no limit.", example = "24")
+            @DecimalMin(value = "0", inclusive = false, message = "Credit limit must be greater than zero")
+            @DecimalMax(value = "60.00", message = "Credit limit must be at most 60")
+            @Digits(integer = 2, fraction = 2, message = "Credit limit can have at most 2 decimal places")
+            BigDecimal maxCreditsPerSemester) {
     }
 
     public record AcademicSessionCreate(
@@ -168,6 +181,23 @@ public final class AcademicMasterRequests {
                     + "cannot be made active again.", allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "ACTIVE")
             @NotNull(message = "Status is required")
             SemesterStatus status) {
+    }
+
+    /**
+     * A semester's registration period and drop deadline, all optional. Times carry a zone or offset, such as
+     * 2026-07-01T09:00:00+05:30, and are stored in UTC. Sending none clears the period.
+     */
+    public record SemesterRegistrationUpdate(
+            @Schema(description = "When students may start registering. Needed together with the closing time.",
+                    example = "2026-07-01T09:00:00+05:30")
+            Instant registrationOpensAt,
+
+            @Schema(description = "When registration closes; after the opening time.", example = "2026-07-15T17:00:00+05:30")
+            Instant registrationClosesAt,
+
+            @Schema(description = "The last moment a student may drop a registered course. Optional, never before "
+                    + "registration opens. Without it students cannot drop.", example = "2026-07-31T17:00:00+05:30")
+            Instant dropDeadline) {
     }
 
     public record CourseCreate(

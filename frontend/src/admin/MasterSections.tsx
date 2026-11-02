@@ -15,10 +15,12 @@ import {
   updateDepartment,
   updateProgram,
   updateSemester,
+  updateSemesterRegistration,
 } from '../api/adminAcademicApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { creditsText } from '../courses/credits'
+import { formatDateTime, localTimeZoneName } from '../courses/dates'
 import type {
   AdminAcademicSession,
   AdminCourse,
@@ -34,6 +36,7 @@ import { courseTypeOptions, courseTypeWord, degreeOptions, degreeWord, optional 
 import { type FieldOption, type FieldSpec, MasterForm, type Values } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterParts'
 import { MasterSection } from './MasterSection'
+import { localValue, moment, registrationInOrder } from './registrationPeriod'
 import { statusAction } from './statusAction'
 import { lifecycleOptions } from './masterStatus'
 
@@ -151,7 +154,11 @@ export function ProgramsSection() {
     degreeField,
     { name: 'durationSemesters', label: 'Duration (semesters)', kind: 'integer', min: 1, max: 20,
       hint: 'From 1 to 20, and not below a semester the program already has.' },
+    { name: 'maxCreditsPerSemester', label: 'Credit limit per semester (optional)', kind: 'decimal', above: 0, max: 60,
+      optional: true, hint: 'The most credits a student may register for in one semester, up to 60. Leave empty for no limit.' },
   ]
+  const limit = (values: Values) =>
+    values.maxCreditsPerSemester.trim() === '' ? null : Number(values.maxCreditsPerSemester)
 
   return (
     <MasterSection<AdminProgram>
@@ -175,6 +182,11 @@ export function ProgramsSection() {
         { header: 'Department', cell: (row) => row.departmentCode },
         { header: 'Degree', cell: (row) => degreeWord(row.degreeType) },
         { header: 'Duration', cell: (row) => `${row.durationSemesters} ${row.durationSemesters === 1 ? 'semester' : 'semesters'}` },
+        {
+          header: 'Credit limit',
+          cell: (row) =>
+            row.maxCreditsPerSemester === null ? <span className="text-ink-muted">No limit</span> : creditsText(row.maxCreditsPerSemester),
+        },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
       rowActions={(row, actions) =>
@@ -186,6 +198,7 @@ export function ProgramsSection() {
           save: async (status) => {
             await updateProgram(row.id, {
               name: row.name, degreeType: row.degreeType, durationSemesters: row.durationSemesters, status,
+              maxCreditsPerSemester: row.maxCreditsPerSemester,
             })
           },
         })
@@ -199,7 +212,7 @@ export function ProgramsSection() {
             { name: 'code', label: 'Code', kind: 'text', maxLength: 30, hint: `${UPPERCASE} Unique within the department.` },
             ...editFields,
           ]}
-          initial={{ departmentId: '', code: '', name: '', degreeType: 'UNDERGRADUATE', durationSemesters: '' }}
+          initial={{ departmentId: '', code: '', name: '', degreeType: 'UNDERGRADUATE', durationSemesters: '', maxCreditsPerSemester: '' }}
           submitLabel="Save program"
           onSubmit={async (values) => {
             const saved = await createProgram({
@@ -208,6 +221,7 @@ export function ProgramsSection() {
               name: values.name.trim(),
               degreeType: values.degreeType as DegreeType,
               durationSemesters: Number(values.durationSemesters),
+              maxCreditsPerSemester: limit(values),
             })
             done(`Program ${saved.code} added.`)
           }}
@@ -219,13 +233,19 @@ export function ProgramsSection() {
           heading={`Edit program ${row.code}`}
           note={`Department ${row.departmentCode}. The department and code cannot be changed.`}
           fields={editFields}
-          initial={{ name: row.name, degreeType: row.degreeType, durationSemesters: String(row.durationSemesters) }}
+          initial={{
+            name: row.name,
+            degreeType: row.degreeType,
+            durationSemesters: String(row.durationSemesters),
+            maxCreditsPerSemester: row.maxCreditsPerSemester === null ? '' : String(row.maxCreditsPerSemester),
+          }}
           submitLabel="Save program"
           onSubmit={async (values) => {
             await updateProgram(row.id, {
               name: values.name.trim(),
               degreeType: values.degreeType as DegreeType,
               durationSemesters: Number(values.durationSemesters),
+              maxCreditsPerSemester: limit(values),
               status: row.status,
             })
             done(`Program ${row.code} saved.`)
@@ -350,6 +370,30 @@ export function AcademicSessionsSection() {
   )
 }
 
+const registrationFields: FieldSpec[] = [
+  { name: 'registrationOpensAt', label: 'Registration opens (optional)', kind: 'datetime', optional: true,
+    hint: 'When students may start registering for this semester’s offerings.' },
+  { name: 'registrationClosesAt', label: 'Registration closes (optional)', kind: 'datetime', optional: true,
+    hint: 'After it opens. Both times or neither.' },
+  { name: 'dropDeadline', label: 'Drop deadline (optional)', kind: 'datetime', optional: true,
+    hint: 'The last moment a student may drop a course. Without it, students cannot drop.' },
+]
+
+/** "1 Jul 2026, 9:00 am – 15 Jul 2026, 5:00 pm" with the drop deadline under it, or Not set. */
+function RegistrationPeriod({ semester }: { semester: AdminSemester }) {
+  if (semester.registrationOpensAt === null || semester.registrationClosesAt === null) {
+    return <span className="text-ink-muted">Not set</span>
+  }
+  return (
+    <>
+      {formatDateTime(semester.registrationOpensAt)} – {formatDateTime(semester.registrationClosesAt)}
+      <span className="block text-sm text-ink-muted">
+        {semester.dropDeadline === null ? 'No dropping' : `Drop until ${formatDateTime(semester.dropDeadline)}`}
+      </span>
+    </>
+  )
+}
+
 export function SemestersSection() {
   const request = useApiQuery(queryKeys.admin.semesters(), getSemesters)
   const programs = useApiQuery(queryKeys.admin.programs(), getPrograms)
@@ -378,6 +422,7 @@ export function SemestersSection() {
         { header: 'Session', cell: (row) => <span className="font-medium">{row.academicSessionCode}</span> },
         { header: 'Program', cell: (row) => <CodeName code={row.programCode} name={row.programName} /> },
         { header: 'Semester', cell: (row) => `Semester ${row.semesterNumber}` },
+        { header: 'Registration', cell: (row) => <RegistrationPeriod semester={row} /> },
         { header: 'Status', cell: (row) => <MasterStatus status={row.status} /> },
       ]}
       renderCreate={(done, cancel) => (
@@ -423,12 +468,41 @@ export function SemestersSection() {
       renderEdit={(row, done, cancel) => (
         <MasterForm
           heading={`Edit semester ${row.semesterNumber} of ${row.programCode} in ${row.academicSessionCode}`}
-          note="Only the status can change."
-          fields={[{ name: 'status', label: 'Status', kind: 'select', options: lifecycleOptions(row.status) }]}
-          initial={{ status: row.status }}
+          note={
+            row.status === 'CLOSED'
+              ? 'A closed semester keeps its registration period.'
+              : `Program, session, and number cannot change. Times are in your time zone (${localTimeZoneName()}). Leave the registration times empty to close registration.`
+          }
+          fields={[
+            { name: 'status', label: 'Status', kind: 'select', options: lifecycleOptions(row.status) },
+            ...(row.status === 'CLOSED' ? [] : registrationFields),
+          ]}
+          initial={{
+            status: row.status,
+            registrationOpensAt: localValue(row.registrationOpensAt),
+            registrationClosesAt: localValue(row.registrationClosesAt),
+            dropDeadline: localValue(row.dropDeadline),
+          }}
+          validate={row.status === 'CLOSED' ? undefined : registrationInOrder}
           submitLabel="Save semester"
           onSubmit={async (values) => {
-            await updateSemester(row.id, { status: values.status as LifecycleStatus })
+            if (row.status !== 'CLOSED') {
+              const period = {
+                registrationOpensAt: moment(values.registrationOpensAt),
+                registrationClosesAt: moment(values.registrationClosesAt),
+                dropDeadline: moment(values.dropDeadline),
+              }
+              if (
+                period.registrationOpensAt !== moment(localValue(row.registrationOpensAt)) ||
+                period.registrationClosesAt !== moment(localValue(row.registrationClosesAt)) ||
+                period.dropDeadline !== moment(localValue(row.dropDeadline))
+              ) {
+                await updateSemesterRegistration(row.id, period)
+              }
+            }
+            if (values.status !== row.status) {
+              await updateSemester(row.id, { status: values.status as LifecycleStatus })
+            }
             done(`Semester ${row.semesterNumber} of ${row.programCode} saved.`)
           }}
           onCancel={cancel}

@@ -68,11 +68,12 @@ public class ProgramManagementService {
         }
         Program program = new Program(department, code, name, request.durationSemesters());
         program.changeDegreeType(request.degreeType() == null ? DegreeType.UNDERGRADUATE : request.degreeType());
+        program.changeMaxCreditsPerSemester(request.maxCreditsPerSemester());
         return ProgramResponse.of(AcademicMasterErrors.savedOrConflict(() -> programs.saveAndFlush(program), TAKEN));
     }
 
     /**
-     * Changes the name, duration, and status. The duration cannot drop below the highest semester the program already
+     * Changes the name, duration, credit limit, and status. An empty credit limit clears it. The duration cannot drop below the highest semester the program already
      * has, so no existing semester ends up beyond the program's length.
      */
     public ProgramResponse update(Long programId, ProgramUpdate request) {
@@ -88,6 +89,7 @@ public class ProgramManagementService {
         }
         program.rename(name);
         program.changeDuration(request.durationSemesters());
+        program.changeMaxCreditsPerSemester(request.maxCreditsPerSemester());
         if (request.degreeType() != null) {
             program.changeDegreeType(request.degreeType());
         }

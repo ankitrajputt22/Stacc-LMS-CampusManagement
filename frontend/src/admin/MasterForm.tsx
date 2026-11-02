@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
+import { fromLocalInputValue } from '../courses/dates'
 import { Alert, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
 
 export type FieldOption = { value: string; label: string }
@@ -8,7 +9,7 @@ export type FieldOption = { value: string; label: string }
 export type FieldSpec = {
   name: string
   label: string
-  kind: 'text' | 'textarea' | 'integer' | 'decimal' | 'date' | 'select'
+  kind: 'text' | 'textarea' | 'integer' | 'decimal' | 'date' | 'datetime' | 'select'
   /** May be left empty; the backend stores nothing for it. */
   optional?: boolean
   hint?: string
@@ -62,6 +63,8 @@ function checked(fields: FieldSpec[], values: Values): Partial<Record<string, st
       if (!INTEGER_PATTERN.test(value) || (field.min !== undefined && number < field.min) || (field.max !== undefined && number > field.max)) {
         errors[field.name] = `Enter a whole number from ${field.min ?? 0} to ${field.max}.`
       }
+    } else if (field.kind === 'datetime' && fromLocalInputValue(value) === null) {
+      errors[field.name] = 'Enter a complete date and time.'
     } else if (field.kind === 'decimal') {
       const number = Number(value)
       if (!DECIMAL_PATTERN.test(value) || (field.above !== undefined && number <= field.above) || (field.max !== undefined && number > field.max)) {
@@ -201,7 +204,7 @@ export function MasterForm({
               <TextField
                 key={field.name}
                 {...common}
-                type={field.kind === 'date' ? 'date' : 'text'}
+                type={field.kind === 'date' ? 'date' : field.kind === 'datetime' ? 'datetime-local' : 'text'}
                 inputMode={field.kind === 'integer' ? 'numeric' : field.kind === 'decimal' ? 'decimal' : undefined}
                 autoComplete="off"
                 maxLength={field.maxLength}

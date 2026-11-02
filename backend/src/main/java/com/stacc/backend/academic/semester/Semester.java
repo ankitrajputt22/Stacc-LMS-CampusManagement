@@ -50,6 +50,16 @@ public class Semester {
     @Column(name = "semester_number", nullable = false, updatable = false)
     private int semesterNumber;
 
+    // The registration period and drop deadline, in UTC. No period means registration is not open.
+    @Column(name = "registration_opens_at")
+    private Instant registrationOpensAt;
+
+    @Column(name = "registration_closes_at")
+    private Instant registrationClosesAt;
+
+    @Column(name = "drop_deadline")
+    private Instant dropDeadline;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SemesterStatus status = SemesterStatus.PLANNED;
@@ -100,6 +110,49 @@ public class Semester {
 
     public SemesterStatus getStatus() {
         return status;
+    }
+
+    public Instant getRegistrationOpensAt() {
+        return registrationOpensAt;
+    }
+
+    public Instant getRegistrationClosesAt() {
+        return registrationClosesAt;
+    }
+
+    public Instant getDropDeadline() {
+        return dropDeadline;
+    }
+
+    /**
+     * Sets or clears the registration period. The opening and closing moments come together or not at all, closing
+     * comes after opening, and a drop deadline needs a period and is not before it opens.
+     */
+    public void changeRegistrationPeriod(Instant opensAt, Instant closesAt, Instant dropDeadline) {
+        if ((opensAt == null) != (closesAt == null)) {
+            throw new IllegalArgumentException("registration needs both an opening and a closing time, or neither");
+        }
+        if (opensAt != null && !closesAt.isAfter(opensAt)) {
+            throw new IllegalArgumentException("registration must close after it opens");
+        }
+        if (dropDeadline != null && (opensAt == null || dropDeadline.isBefore(opensAt))) {
+            throw new IllegalArgumentException("the drop deadline needs a registration period and cannot be before it opens");
+        }
+        this.registrationOpensAt = opensAt;
+        this.registrationClosesAt = closesAt;
+        this.dropDeadline = dropDeadline;
+    }
+
+    /** True when a period is set and the moment falls inside it; the closing moment itself is outside. */
+    public boolean isRegistrationOpenAt(Instant moment) {
+        return registrationOpensAt != null
+                && !moment.isBefore(registrationOpensAt)
+                && moment.isBefore(registrationClosesAt);
+    }
+
+    /** True when a drop deadline is set and the moment is not after it. */
+    public boolean isDropAllowedAt(Instant moment) {
+        return dropDeadline != null && !moment.isAfter(dropDeadline);
     }
 
     public Instant getCreatedAt() {

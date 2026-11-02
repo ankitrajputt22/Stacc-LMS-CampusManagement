@@ -3,6 +3,7 @@ package com.stacc.backend.academic.admin;
 import java.util.List;
 
 import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterCreate;
+import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterRegistrationUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterRequests.SemesterUpdate;
 import com.stacc.backend.academic.admin.AcademicMasterResponses.SemesterResponse;
 import com.stacc.backend.common.config.OpenApiConfig;
@@ -112,5 +113,31 @@ public class AdminSemesterController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public SemesterResponse update(@PathVariable Long semesterId, @Valid @RequestBody SemesterUpdate request) {
         return service.update(semesterId, request);
+    }
+
+    @PutMapping("/{semesterId}/registration")
+    @PreAuthorize(AdminAcademicAccess.MANAGE)
+    @Operation(
+            summary = "Set a semester's registration period",
+            description = "Sets or clears when students may register for the semester's course offerings and the last "
+                    + "moment they may drop one. Times need a zone or offset and are stored in UTC.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The changed semester.")
+    @ApiResponse(
+            responseCode = "400",
+            description = "Only one end of the period was given, it closes before it opens, or the drop deadline has no "
+                    + "period or comes before it opens. Nothing is saved.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "The semester does not exist.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "The semester is closed.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public SemesterResponse updateRegistration(
+            @PathVariable Long semesterId, @Valid @RequestBody SemesterRegistrationUpdate request) {
+        return service.updateRegistration(semesterId, request);
     }
 }

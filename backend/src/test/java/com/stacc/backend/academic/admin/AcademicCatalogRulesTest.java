@@ -82,7 +82,7 @@ class AcademicCatalogRulesTest {
 
         assertRefused(HttpStatus.CONFLICT, ProgramManagementService.DEPARTMENT_INACTIVE,
                 () -> new ProgramManagementService(programs, departments, semesters)
-                        .create(new ProgramCreate(3L, "MTECH", "M.Tech", 4, DegreeType.POSTGRADUATE)));
+                        .create(new ProgramCreate(3L, "MTECH", "M.Tech", 4, DegreeType.POSTGRADUATE, null)));
         assertRefused(HttpStatus.CONFLICT, CourseManagementService.DEPARTMENT_INACTIVE,
                 () -> new CourseManagementService(courses, departments)
                         .create(new CourseCreate(3L, "CS999", "New", new BigDecimal("3"), null, null, null)));
@@ -96,8 +96,8 @@ class AcademicCatalogRulesTest {
         when(programs.saveAndFlush(any(Program.class))).thenAnswer(call -> MasterFixtures.saved(call.getArgument(0), 9L));
         ProgramManagementService service = new ProgramManagementService(programs, departments, semesters);
 
-        assertEquals("UNDERGRADUATE", service.create(new ProgramCreate(3L, "BCA", "BCA", 6, null)).degreeType());
-        assertEquals("POSTGRADUATE", service.create(new ProgramCreate(3L, "MCA", "MCA", 4, DegreeType.POSTGRADUATE)).degreeType());
+        assertEquals("UNDERGRADUATE", service.create(new ProgramCreate(3L, "BCA", "BCA", 6, null, null)).degreeType());
+        assertEquals("POSTGRADUATE", service.create(new ProgramCreate(3L, "MCA", "MCA", 4, DegreeType.POSTGRADUATE, null)).degreeType());
     }
 
     @Test
