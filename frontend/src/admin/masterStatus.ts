@@ -9,6 +9,7 @@ const STATUS_WORDS: Record<string, string> = {
   ENROLLED: 'Enrolled',
   COMPLETED: 'Completed',
   WITHDRAWN: 'Withdrawn',
+  DROPPED: 'Dropped',
 }
 
 /** A record's status as a word, such as "Active" or "Closed". */

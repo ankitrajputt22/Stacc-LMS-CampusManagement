@@ -9,4 +9,5 @@ export const ENROLLMENT_WORDS = {
   ENROLLED: 'Enrolled',
   COMPLETED: 'Completed',
   WITHDRAWN: 'Withdrawn',
+  DROPPED: 'Dropped',
 } as const

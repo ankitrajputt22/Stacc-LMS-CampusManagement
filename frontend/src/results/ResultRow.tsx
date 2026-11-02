@@ -109,7 +109,8 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
   const [confirming, setConfirming] = useState(false)
   const [announcement, setAnnouncement] = useState('')
   const headingId = `${id}-student`
-  const withdrawn = student.courseEnrollmentStatus === 'WITHDRAWN'
+  // Withdrawn and dropped enrollments take no new result.
+  const withdrawn = student.courseEnrollmentStatus === 'WITHDRAWN' || student.courseEnrollmentStatus === 'DROPPED'
   const saved = valuesOf(result)
   const dirty = FIELD_ORDER.some((field) => values[field].trim() !== saved[field].trim())
 
@@ -230,12 +231,12 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
     </div>
   )
 
-  // A withdrawn enrollment without a result cannot get a new one; an existing result stays editable below.
+  // A withdrawn or dropped enrollment without a result cannot get a new one; an existing result stays editable below.
   if (withdrawn && result === null) {
     return (
       <article aria-labelledby={headingId} className="px-4 py-4 sm:px-5">
         {header}
-        <p className="mt-2 text-sm text-ink-muted">This enrollment is withdrawn, so a new result cannot be recorded.</p>
+        <p className="mt-2 text-sm text-ink-muted">This enrollment is {student.courseEnrollmentStatus === 'DROPPED' ? 'dropped' : 'withdrawn'}, so a new result cannot be recorded.</p>
       </article>
     )
   }

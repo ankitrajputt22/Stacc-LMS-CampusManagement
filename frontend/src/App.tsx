@@ -29,6 +29,7 @@ import { SearchPage } from './pages/SearchPage'
 import { StudentAttendancePage } from './pages/StudentAttendancePage'
 import { StudentHostelPage } from './pages/StudentHostelPage'
 import { StudentResultsPage } from './pages/StudentResultsPage'
+import { CourseRegistrationPage } from './pages/CourseRegistrationPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
 import { SupportPage } from './pages/SupportPage'
@@ -64,6 +65,7 @@ function App() {
           <Route path="attendance/:courseOfferingId" element={<CourseAttendancePage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />
+          <Route path="academic/registration" element={<CourseRegistrationPage />} />
           <Route path="academic/profile" element={<AcademicProfilePage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />

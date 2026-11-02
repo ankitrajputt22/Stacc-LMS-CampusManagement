@@ -32,6 +32,7 @@ import com.stacc.backend.academic.calendar.AcademicCalendarEventRepository;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventStatus;
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.course.CourseRepository;
+import com.stacc.backend.academic.course.CourseType;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
@@ -40,6 +41,7 @@ import com.stacc.backend.academic.enrollment.SemesterEnrollment;
 import com.stacc.backend.academic.enrollment.SemesterEnrollmentRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
+import com.stacc.backend.academic.offering.OfferingRegistrationStatus;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.program.ProgramRepository;
 import com.stacc.backend.academic.result.CourseResultManagementService;
@@ -439,15 +441,25 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         Department cse = findOrCreate(repositories.departments.findByCode("CSE"),
                 () -> repositories.departments.save(new Department("CSE", "Computer Science and Engineering")));
         Program btech = findOrCreate(repositories.programs.findByDepartmentIdAndCode(cse.getId(), "BTECH-CSE"),
-                () -> repositories.programs.save(
-                        new Program(cse, "BTECH-CSE", "Bachelor of Technology in Computer Science and Engineering", 8)));
+                () -> {
+                    Program program = new Program(cse, "BTECH-CSE",
+                            "Bachelor of Technology in Computer Science and Engineering", 8);
+                    program.changeMaxCreditsPerSemester(new BigDecimal("24.00"));
+                    return repositories.programs.save(program);
+                });
         AcademicSession previous = session(startYear - 1, AcademicSession::close);
         AcademicSession current = session(startYear, session -> {
             session.markActive();
             session.makeCurrent();
         });
         Semester previousSecond = semester(btech, previous, 2, Semester::close);
-        Semester third = semester(btech, current, 3, Semester::markActive);
+        // Registration for semester 3 opened yesterday and stays open, with dropping allowed, for 60 days.
+        Instant registrationOpened = clock.instant().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.DAYS);
+        Semester third = semester(btech, current, 3, semester -> {
+            semester.markActive();
+            semester.changeRegistrationPeriod(registrationOpened, registrationOpened.plus(61, ChronoUnit.DAYS),
+                    registrationOpened.plus(61, ChronoUnit.DAYS));
+        });
         Semester fourth = semester(btech, current, 4, semester -> { });
 
         Course oop = course(cse, "CS201", "Object-Oriented Programming", "4.00");
@@ -456,6 +468,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         Course operatingSystems = course(cse, "CS303", "Operating Systems", "3.00");
         Course discreteMaths = course(cse, "CS304", "Discrete Mathematics", "3.00");
         Course networks = course(cse, "CS401", "Computer Networks", "4.00");
+        Course softwareEngineering = course(cse, "CS305", "Software Engineering", "3.00", CourseType.ELECTIVE);
+        Course webTechnologies = course(cse, "CS306", "Web Technologies", "4.00", CourseType.ELECTIVE);
 
         CourseOffering cs201 = offering(oop, previousSecond, CourseOffering::close);
         CourseOffering cs301 = offering(dataStructures, third, CourseOffering::markActive);
@@ -487,6 +501,19 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         courseEnrollment(student1Previous, cs201, CourseEnrollment::markCompleted);
         Section sectionA = section(third, "A", 60);
         Section sectionB = section(third, "B", 60);
+        // Open for self-registration: an elective for the whole semester, and one for section A with two places.
+        CourseOffering cs305 = offering(softwareEngineering, third, offering -> {
+            offering.markActive();
+            offering.changeCapacity(60);
+            offering.changeRegistrationStatus(OfferingRegistrationStatus.OPEN);
+        });
+        CourseOffering cs306 = sectionOffering(webTechnologies, third, sectionA, offering -> {
+            offering.markActive();
+            offering.changeCapacity(2);
+            offering.changeRegistrationStatus(OfferingRegistrationStatus.OPEN);
+        });
+        teaching(faculty2Profile, cs305);
+        teaching(faculty1Profile, cs306);
         SemesterEnrollment student1Third = semesterEnrollment(student1Profile, third, enrollment -> enrollment.placeIn(sectionA));
         CourseEnrollment student1In301 = courseEnrollment(student1Third, cs301, enrollment -> { });
         courseEnrollment(student1Third, cs302, enrollment -> { });
@@ -718,8 +745,15 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     private Course course(Department department, String code, String name, String credits) {
-        return findOrCreate(repositories.courses.findByCode(code),
-                () -> repositories.courses.save(new Course(department, code, name, new BigDecimal(credits))));
+        return course(department, code, name, credits, CourseType.CORE);
+    }
+
+    private Course course(Department department, String code, String name, String credits, CourseType type) {
+        return findOrCreate(repositories.courses.findByCode(code), () -> {
+            Course course = new Course(department, code, name, new BigDecimal(credits));
+            course.describe(null, null, type);
+            return repositories.courses.save(course);
+        });
     }
 
     private CourseOffering offering(Course course, Semester semester, Consumer<CourseOffering> lifecycle) {
@@ -728,6 +762,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             lifecycle.accept(offering);
             return repositories.offerings.save(offering);
         });
+    }
+
+    private CourseOffering sectionOffering(Course course, Semester semester, Section section,
+            Consumer<CourseOffering> lifecycle) {
+        return findOrCreate(repositories.offerings.findByCourseIdAndSemesterIdAndSectionId(
+                course.getId(), semester.getId(), section.getId()), () -> {
+                    CourseOffering offering = new CourseOffering(course, semester, section);
+                    lifecycle.accept(offering);
+                    return repositories.offerings.save(offering);
+                });
     }
 
     private StudentProfile studentProfile(UserAccount account, Program program, AcademicSession admission, String rollNumber) {

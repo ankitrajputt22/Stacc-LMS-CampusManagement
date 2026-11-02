@@ -24,7 +24,7 @@ import { MasterForm } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 
-type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED'> }
+type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED' | 'DROPPED'> }
 
 /** What the LMS step said after a course was added. The academic enrollment stands in every case. */
 type LmsNote =

@@ -9,7 +9,7 @@ test('an admin filters the course catalog, sees the sections, opens a roster, an
   const courses = page.getByRole('table', { name: 'Courses' })
   await expect(courses.getByRole('rowheader', { name: /CS201/ })).toBeVisible()
 
-  // Every demo course is a core course, so filtering by Lab leaves none.
+  // No demo course is a lab course, so filtering by Lab leaves none.
   await page.getByLabel('Type').selectOption('LAB')
   await expect(page.getByText('No courses match.')).toBeVisible()
   await page.getByLabel('Type').selectOption('CORE')

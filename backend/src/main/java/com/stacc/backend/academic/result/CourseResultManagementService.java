@@ -36,7 +36,7 @@ public class CourseResultManagementService {
     static final String COURSE_UNAVAILABLE = "Course offering not found or unavailable.";
     static final String ENROLLMENT_UNAVAILABLE = "Course enrollment not found or unavailable.";
     static final String NO_RESULT = "No result has been saved for this student yet. Save it before publishing.";
-    static final String WITHDRAWN = "A new result cannot be recorded for a withdrawn enrollment.";
+    static final String WITHDRAWN = "A new result cannot be recorded for a withdrawn or dropped enrollment.";
     static final String MARKS_REQUIRED = "Marks obtained and maximum marks are required.";
     static final String NEGATIVE_MARKS = "Marks obtained cannot be negative.";
     static final String MAX_NOT_POSITIVE = "Maximum marks must be greater than zero.";
@@ -98,7 +98,8 @@ public class CourseResultManagementService {
             }
             return saved;
         }
-        if (enrollment.getStatus() == CourseEnrollmentStatus.WITHDRAWN) {
+        if (enrollment.getStatus() != CourseEnrollmentStatus.ENROLLED
+                && enrollment.getStatus() != CourseEnrollmentStatus.COMPLETED) {
             throw new ApiException(HttpStatus.CONFLICT, WITHDRAWN);
         }
         return results.saveAndFlush(

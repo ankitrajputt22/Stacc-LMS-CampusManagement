@@ -3,7 +3,7 @@
 
 export type CourseResultStatus = 'DRAFT' | 'PUBLISHED'
 
-export type CourseEnrollmentStatus = 'ENROLLED' | 'COMPLETED' | 'WITHDRAWN'
+export type CourseEnrollmentStatus = 'ENROLLED' | 'COMPLETED' | 'WITHDRAWN' | 'DROPPED'
 
 /** A course offering the faculty member teaches, from GET /api/v1/results/faculty/my-courses. */
 export type ResultCourseOffering = {
