@@ -39,6 +39,12 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, s
 | `STACC_SESSION_MAX_DURATION` | `12h` | | | The longest a sign-in lasts, 15m to 24h. |
 | `STACC_SESSION_IDLE_TIMEOUT` | `2h` | | | A sign-in ends after this long without a request; at least 5m. |
 | `STACC_SESSION_SECURE_COOKIE` | `false` (`prod`: `true`) | must be `true` | | Sends the session cookie over HTTPS only. |
+| `STACC_SIGN_IN_ACCOUNT_THRESHOLD` | `5` | | | Failed sign-ins for one login ID within the window before tries slow down; 3 to 50. |
+| `STACC_SIGN_IN_ADDRESS_THRESHOLD` | `30` | | | The same for one network address; at least the account threshold, at most 500. |
+| `STACC_SIGN_IN_WINDOW` | `15m` | | | How long failures are remembered; 1m to 24h. |
+| `STACC_SIGN_IN_BASE_DELAY` | `30s` | | | The first wait once a threshold is reached, doubling with each further failure; at least 1s. |
+| `STACC_SIGN_IN_MAX_DELAY` | `15m` | | | The longest wait; from the base delay up to 1h. |
+| `STACC_SIGN_IN_TRUST_PROXY` | `false` | | | Read the client address from Stacc's own proxy (`X-Real-IP`). Only when the backend is reachable through that proxy alone; the Docker stack sets `true`. |
 | `FRONTEND_ORIGIN` | `http://localhost:5173` (`prod`: none) | | | Exact origins allowed to call the API from another address, comma-separated. Same-origin setups need none. |
 | `STACC_STORAGE_ENDPOINT` | `http://localhost:9000` | yes | | The private S3-compatible store. Docker sets `http://minio:9000`. |
 | `STACC_STORAGE_ACCESS_KEY` | empty | yes | | Its access key. |

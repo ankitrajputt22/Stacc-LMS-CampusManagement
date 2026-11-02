@@ -9,6 +9,8 @@ const INVALID_CREDENTIALS = 'Invalid login ID or password.'
 const CONNECTION_PROBLEM = 'Unable to connect to Stacc. Please try again.'
 const SERVER_PROBLEM = 'Stacc could not sign you in right now. Please try again.'
 const REJECTED_INPUT = 'Check your college ID and password, then try again.'
+// The same text whoever is slowed down, like the backend: it never says whether the ID exists.
+const TOO_MANY_ATTEMPTS = 'Too many sign-in attempts. Wait a few minutes and try again.'
 const LOGIN_ID_REQUIRED = 'Enter your college ID or employee ID.'
 const PASSWORD_REQUIRED = 'Enter your password.'
 
@@ -32,6 +34,9 @@ function describeFailure(error: unknown): Failure {
   }
   if (error.response.status === 401) {
     return { message: INVALID_CREDENTIALS, fields: {} }
+  }
+  if (error.response.status === 429) {
+    return { message: TOO_MANY_ATTEMPTS, fields: {} }
   }
   if (error.response.status === 400) {
     const fields: FieldErrors = {}

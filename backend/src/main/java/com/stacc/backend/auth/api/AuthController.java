@@ -41,11 +41,14 @@ public class AuthController {
     private final LoginService loginService;
     private final SessionService sessions;
     private final PasswordService passwords;
+    private final com.stacc.backend.auth.throttle.SignInThrottleProperties throttleProperties;
 
-    public AuthController(LoginService loginService, SessionService sessions, PasswordService passwords) {
+    public AuthController(LoginService loginService, SessionService sessions, PasswordService passwords,
+            com.stacc.backend.auth.throttle.SignInThrottleProperties throttleProperties) {
         this.loginService = loginService;
         this.sessions = sessions;
         this.passwords = passwords;
+        this.throttleProperties = throttleProperties;
     }
 
     @PostMapping("/login")
@@ -59,9 +62,14 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "The login ID or password is wrong, or a temporary password has "
             + "run out. The message is the same in every case.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "429", description = "Too many failed sign-ins for this login ID or from this address; "
+            + "try again after a short wait. Accounts are never locked.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public ResponseEntity<SessionResponse> login(@Valid @RequestBody LoginRequest request,
-            @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent) {
-        LoginService.SignIn signIn = loginService.login(request, userAgent);
+            @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        LoginService.SignIn signIn = loginService.login(request, userAgent, ClientAddress.of(httpRequest,
+                throttleProperties.trustProxy()));
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, SessionCookies.create(signIn.token(), signIn.lifetime(),
                         sessions.properties().secureCookie()).toString())
