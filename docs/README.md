@@ -43,6 +43,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 
 - [Academic structure](academic-structure.md)
 - [Admin academic masters, offerings, and enrollment](admin-academic.md)
+- [Department heads](department-heads.md)
 - [Attendance](attendance.md)
 - [Results](results.md)
 - [Academic calendar](academic-calendar.md)

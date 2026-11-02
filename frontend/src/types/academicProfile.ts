@@ -66,6 +66,8 @@ export type MyAcademicProfile = {
     status: ActiveStatus
     current: CurrentPlacement | null
     semesters: MySemesterRecord[]
+    /** The name of who heads the program's department now, or null when nobody does. */
+    headOfDepartment: string | null
   } | null
   faculty: {
     loginId: string
@@ -82,5 +84,7 @@ export type MyAcademicProfile = {
       sectionCode: string | null
       role: TeachingRole
     }[]
+    /** The name of who heads their primary department now, or null when nobody does. */
+    headOfDepartment: string | null
   } | null
 }

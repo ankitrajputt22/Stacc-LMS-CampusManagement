@@ -82,6 +82,7 @@ function StudentProfile({ student }: { student: StudentPart }) {
             ['Program', `${student.programCode} · ${student.programName}`],
             ['Degree', degreeWord(student.degreeType)],
             ['Department', `${student.departmentCode} · ${student.departmentName}`],
+            ['Head of department', student.headOfDepartment],
             ['Admitted', student.admissionSessionCode],
             [
               'Studying now',
@@ -117,6 +118,7 @@ function FacultyProfile({ faculty }: { faculty: FacultyPart }) {
           items={[
             ['Employee ID', faculty.loginId],
             ['Primary department', `${faculty.departmentCode} · ${faculty.departmentName}`],
+            ['Head of department', faculty.headOfDepartment],
           ]}
         />
       </Card>

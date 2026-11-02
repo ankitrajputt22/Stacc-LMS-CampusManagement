@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 
 import com.stacc.backend.academic.admin.AcademicCalendarManagementService;
 import com.stacc.backend.academic.admin.AcademicCalendarRequests.AcademicCalendarEventCreate;
+import com.stacc.backend.academic.admin.DepartmentHeadRecords.AssignDepartmentHead;
+import com.stacc.backend.academic.admin.DepartmentHeadService;
 import com.stacc.backend.academic.attendance.AttendanceManagementService.RecordChange;
 import com.stacc.backend.academic.attendance.AttendanceManagementService;
 import com.stacc.backend.academic.attendance.AttendanceRecord;
@@ -35,6 +37,7 @@ import com.stacc.backend.academic.course.CourseRepository;
 import com.stacc.backend.academic.course.CourseType;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
+import com.stacc.backend.academic.responsibility.DepartmentHeadRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
@@ -169,7 +172,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     static final int MIN_PASSWORD_LENGTH = 8;
     /** The login IDs of the test accounts, in the order they are documented. */
     static final List<String> TEST_LOGIN_IDS = List.of(
-            "student1", "student2", "faculty1", "faculty2", "admin1", "studentfaculty1", "facultyadmin1");
+            "student1", "student2", "faculty1", "faculty2", "admin1", "studentfaculty1", "facultyadmin1", "hod1");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalTestDataSeeder.class);
     private static final Set<String> PRODUCTION_PROFILES = Set.of("prod", "production");
@@ -219,6 +222,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final SemesterEnrollmentRepository semesterEnrollments;
         final CourseEnrollmentRepository courseEnrollments;
         final SectionRepository sections;
+        final DepartmentHeadRepository departmentHeads;
         final LmsCourseRepository lmsCourses;
         final LmsModuleRepository modules;
         final LmsTopicRepository topics;
@@ -261,7 +265,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelRepository hostels, HostelRoomRepository hostelRooms, HostelBedRepository hostelBeds,
                 CampusServiceDefinitionRepository campusServices, CampusNoticeRepository campusNotices,
                 CampusServiceRequestRepository campusRequests, HostelApplicationRepository hostelApplications,
-                HostelAllocationRepository hostelAllocations, SectionRepository sections) {
+                HostelAllocationRepository hostelAllocations, SectionRepository sections,
+                DepartmentHeadRepository departmentHeads) {
             this.accounts = accounts;
             this.people = people;
             this.roles = roles;
@@ -301,6 +306,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostelApplications = hostelApplications;
             this.hostelAllocations = hostelAllocations;
             this.sections = sections;
+            this.departmentHeads = departmentHeads;
         }
     }
 
@@ -330,6 +336,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelApplicationService hostelApplications;
         final HostelAllocationService hostelAllocations;
         final PersonProfileService personProfiles;
+        final DepartmentHeadService departmentHeads;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -342,7 +349,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
-                PersonProfileService personProfiles) {
+                PersonProfileService personProfiles, DepartmentHeadService departmentHeads) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -365,6 +372,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostelApplications = hostelApplications;
             this.hostelAllocations = hostelAllocations;
             this.personProfiles = personProfiles;
+            this.departmentHeads = departmentHeads;
         }
     }
 
@@ -427,6 +435,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         UserAccount admin1 = account("admin1", password, RoleName.ADMIN);
         UserAccount studentFaculty = account("studentfaculty1", password, RoleName.STUDENT, RoleName.FACULTY);
         UserAccount facultyAdmin = account("facultyadmin1", password, RoleName.FACULTY, RoleName.ADMIN);
+        UserAccount hod1 = account("hod1", password, RoleName.FACULTY, RoleName.HOD);
 
         // --- People: made-up names, and addresses on the reserved .example domain that can never receive mail.
         person(student1, "Aarav Sharma");
@@ -436,6 +445,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         person(admin1, "Kavita Rao");
         person(studentFaculty, "Arjun Nair");
         person(facultyAdmin, "Sanjay Verma");
+        person(hod1, "Lakshmi Menon");
 
         // --- Academic masters.
         Department cse = findOrCreate(repositories.departments.findByCode("CSE"),
@@ -486,6 +496,10 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         FacultyProfile faculty2Profile = facultyProfile(faculty2, cse);
         FacultyProfile studentFacultyTeacher = facultyProfile(studentFaculty, cse);
         FacultyProfile facultyAdminProfile = facultyProfile(facultyAdmin, cse);
+        facultyProfile(hod1, cse);
+        // hod1 heads CSE, unless CSE has ever had a head: an ended or replaced term is never started again here.
+        createUnless(!repositories.departmentHeads.findAllByDepartmentId(cse.getId()).isEmpty(),
+                () -> services.departmentHeads.assign(admin1.getId(), cse.getId(), new AssignDepartmentHead(hod1.getId())));
 
         // --- Teaching: several faculty may share an offering.
         teaching(faculty1Profile, cs201);

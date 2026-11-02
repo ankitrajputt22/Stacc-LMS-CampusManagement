@@ -39,6 +39,17 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     List<Long> findDistinctIdsByRoleNamesAndStatus(@Param("roleNames") Collection<RoleName> roleNames,
             @Param("status") AccountStatus status);
 
+    /** The accounts in this status that hold the role, in login ID order. */
+    @Query("""
+            select account
+            from UserAccount account
+            join account.roles role
+            where role.name = :roleName and account.status = :status
+            order by account.loginId
+            """)
+    List<UserAccount> findAllByRoleNameAndStatus(@Param("roleName") RoleName roleName,
+            @Param("status") AccountStatus status);
+
     /** The login IDs of the accounts in this status that hold the role, in login ID order. */
     @Query("""
             select account.loginId

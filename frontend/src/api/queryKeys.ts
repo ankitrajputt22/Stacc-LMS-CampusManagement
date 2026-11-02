@@ -43,6 +43,9 @@ export const queryKeys = {
     facultyProfiles: (query: string) => ['admin', 'academic', 'profiles', 'faculty', { query }] as const,
     courseEnrollments: (semesterEnrollmentId: number) =>
       ['admin', 'academic', 'semester-enrollments', semesterEnrollmentId] as const,
+    departmentHeads: () => ['admin', 'academic', 'department-heads'] as const,
+    departmentHeadCandidates: () => ['admin', 'academic', 'department-heads', 'candidates'] as const,
+    departmentHeadHistory: (departmentId: number) => ['admin', 'academic', 'department-heads', departmentId] as const,
   },
   academic: {
     myProfile: () => ['academic', 'me'] as const,
