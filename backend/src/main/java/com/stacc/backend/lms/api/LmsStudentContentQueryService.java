@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 /** Read-only answers about what a student sees inside an LMS course. */
 @Service
 public class LmsStudentContentQueryService {
+
+    static final String PAGE_UNAVAILABLE_MESSAGE = "Page not found or unavailable.";
 
     private final LmsStudentAccessService accessService;
     private final LmsModuleRepository modules;
@@ -74,5 +77,40 @@ public class LmsStudentContentQueryService {
                 .filter(LmsContentPolicy::isVisibleToStudents)
                 .map(module -> LmsCourseModuleResponse.of(module, topicsByModule.getOrDefault(module.getId(), List.of())))
                 .toList());
+    }
+
+    /**
+     * One published page (a topic) of a course the student may use, with the published pages before and after it in
+     * course order. It is found in exactly what {@link #getPublishedContent} shows, so the same rules decide: a page
+     * that is missing, a draft, archived, in an unpublished module, or in another course answers the same 404.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    @Transactional(readOnly = true)
+    public LmsCoursePageResponse getPublishedPage(Long userAccountId, Long lmsCourseId, Long pageId) {
+        List<LmsCourseModuleResponse> content = getPublishedContent(userAccountId, lmsCourseId).modules();
+        List<LmsCourseModuleResponse> moduleOfPage = new ArrayList<>();
+        List<LmsCourseTopicResponse> pages = new ArrayList<>();
+        for (LmsCourseModuleResponse module : content) {
+            for (LmsCourseTopicResponse page : module.topics()) {
+                moduleOfPage.add(module);
+                pages.add(page);
+            }
+        }
+        for (int index = 0; index < pages.size(); index++) {
+            LmsCourseTopicResponse page = pages.get(index);
+            if (page.id().equals(pageId)) {
+                LmsCourseModuleResponse module = moduleOfPage.get(index);
+                return new LmsCoursePageResponse(page.id(), page.title(), page.content(), page.contentFormat(),
+                        module.id(), module.title(), page.materials(),
+                        index == 0 ? null : link(pages.get(index - 1), moduleOfPage.get(index - 1)),
+                        index == pages.size() - 1 ? null : link(pages.get(index + 1), moduleOfPage.get(index + 1)));
+            }
+        }
+        throw new ApiException(HttpStatus.NOT_FOUND, PAGE_UNAVAILABLE_MESSAGE);
+    }
+
+    private static LmsPageLink link(LmsCourseTopicResponse page, LmsCourseModuleResponse module) {
+        return new LmsPageLink(page.id(), page.title(), module.title());
     }
 }

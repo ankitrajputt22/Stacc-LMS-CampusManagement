@@ -180,6 +180,7 @@
 - Faculty access must not be modelled from student course enrollment.
 - Course content is `LmsCourse` → `LmsModule` → `LmsTopic` in `lms.content`, with `DRAFT`, `PUBLISHED`, `ARCHIVED`. Archive content; never hard-delete it or add delete routes.
 - Students see a topic only when the student access policy allows the course and both the module and the topic are `PUBLISHED`. The rule lives in `LmsContentPolicy`; do not repeat or loosen it.
+- A course page is an `LmsTopic`; never add a second page model. Students open one at `GET /api/v1/lms/courses/{lmsCourseId}/pages/{pageId}` and faculty preview one, drafts included, at `GET /api/v1/lms/faculty/pages/{pageId}` (course from the stored page); both are answered from exactly what the content routes list, so every hidden page is the same 404. See `docs/course-pages.md`.
 - Faculty content changes go through `LmsContentManagementService`, which finds the course from the stored module or topic and checks `LmsFacultyAccessService` every time. Never trust a course ID from the client as ownership. Inaccessible content answers 404.
 - Reorder requests must list every non-archived child exactly once; reject duplicates and foreign IDs.
 - Study materials (`LmsStudyMaterial`) belong to an `LmsTopic`. MySQL stores only their details; the bytes live in private object storage behind `ObjectStorageService`. Never store file bytes in the database or call the MinIO client outside `common.storage`.
@@ -236,7 +237,7 @@
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
 - Read pages must never change data.
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
-- The course home shows only what `GET /api/v1/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return. Do not add placeholder tabs or content before their phases.
+- The course home shows only what `GET /api/v1/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return, with each published page as a link to `/courses/:lmsCourseId/pages/:pageId` (text, materials, previous and next). Faculty preview pages at `/teaching/:lmsCourseId/pages/:pageId`; editing stays in course content. Do not add placeholder tabs or content before their phases.
 - Deadlines are entered and shown in the browser's own time zone; "Past due" is display only. The faculty `/assignments` overview links to course pages and is not a second editor.
 - The assignment page's submission area shows on time or late exactly as the backend returns it for each attempt, renders submitted text as plain text, and downloads files only through the API.
 - Faculty grade at `/teaching/:lmsCourseId/assignments/:assignmentId/submissions`, which shows only what the grading API returns and says that saving makes the grade visible to the student. Grades and feedback are shown per attempt, as plain text.

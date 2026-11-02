@@ -38,10 +38,12 @@ import { StatusTag } from './StatusTag'
 import { TopicMaterials } from './TopicMaterials'
 import { useContentChanges, useFocusAfterChanges } from './useContentChanges'
 import { FormattedText } from '../formatting/FormattedText'
+import { ButtonLink } from '../ui'
 
 type Downloads = ReturnType<typeof useMaterialDownload>
 
 type TopicItemProps = {
+  lmsCourseId: number
   topic: LmsFacultyTopicContent
   moduleId: number
   index: number
@@ -55,6 +57,7 @@ type TopicItemProps = {
 }
 
 function TopicItem({
+  lmsCourseId,
   topic,
   moduleId,
   index,
@@ -69,7 +72,7 @@ function TopicItem({
   const key = `topic-${topic.id}`
   const isEditing = openForm?.type === 'editTopic' && openForm.id === topic.id
   const isConfirming = confirming?.kind === 'topic' && confirming.id === topic.id
-  const name = `topic “${topic.title}”`
+  const name = `page “${topic.title}”`
 
   function move(direction: -1 | 1) {
     const away = direction === -1 ? 'up' : 'down'
@@ -84,7 +87,7 @@ function TopicItem({
     return (
       <ContentForm
         heading={`Edit ${name}`}
-        titleLabel="Topic title"
+        titleLabel="Page title"
         bodyLabel="Content (optional)"
         bodyField="content"
         bodyRows={8}
@@ -93,11 +96,11 @@ function TopicItem({
         initialTitle={topic.title}
         initialBody={topic.content}
         initialFormat={topic.contentFormat}
-        submitLabel="Save topic"
+        submitLabel="Save page"
         submittingLabel="Saving…"
         onSubmit={async (title, content, contentFormat) => {
           const result = await changes.run(() => updateTopic(topic.id, { title, content, contentFormat }), {
-            done: 'Topic saved.',
+            done: 'Page saved.',
             focus: () => [`${key}-heading`],
             showError: false,
           })
@@ -125,7 +128,7 @@ function TopicItem({
         >
           {topic.title}
         </h4>
-        <StatusTag status={topic.status} label="Topic status" />
+        <StatusTag status={topic.status} label="Page status" />
       </div>
       {topic.content && (
         <FormattedText
@@ -156,6 +159,9 @@ function TopicItem({
           <ActionButton focusKey={`${key}-edit`} onClick={() => setOpenForm({ type: 'editTopic', id: topic.id })}>
             Edit{srContext(name)}
           </ActionButton>
+          <ButtonLink to={`/teaching/${lmsCourseId}/pages/${topic.id}`} variant="secondary" size="sm">
+            Preview{srContext(name)}
+          </ButtonLink>
           {topic.status === 'DRAFT' && (
             <ActionButton
               onClick={() =>
@@ -310,7 +316,7 @@ function ModuleItem({
                   <ActionButton
                     onClick={() =>
                       void changes.run(() => publishModule(module.id), {
-                        done: `Published ${name}. Students see its published topics.`,
+                        done: `Published ${name}. Students see its published pages.`,
                         focus: () => [`${key}-heading`],
                       })
                     }
@@ -336,10 +342,11 @@ function ModuleItem({
       {/* Topics sit inside their module, set in by a line, so the hierarchy reads at any width. */}
       <div className="border-t border-line px-4 pb-3 sm:px-5">
         {module.topics.length > 0 ? (
-          <ol aria-label={`Topics in ${module.title}`} className="divide-y divide-line border-l-2 border-line pl-3 sm:pl-4">
+          <ol aria-label={`Pages in ${module.title}`} className="divide-y divide-line border-l-2 border-line pl-3 sm:pl-4">
             {module.topics.map((topic, topicIndex) => (
               <li key={topic.id}>
                 <TopicItem
+                  lmsCourseId={lmsCourseId}
                   topic={topic}
                   moduleId={module.id}
                   index={topicIndex}
@@ -355,25 +362,25 @@ function ModuleItem({
             ))}
           </ol>
         ) : (
-          <p className="pt-3 text-sm text-ink-muted">No topics yet.</p>
+          <p className="pt-3 text-sm text-ink-muted">No pages yet.</p>
         )}
 
         <div className="mt-3">
           {isAddingTopic ? (
             <ContentForm
-              heading={`New topic in ${name}`}
-              titleLabel="Topic title"
+              heading={`New page in ${name}`}
+              titleLabel="Page title"
               bodyLabel="Content (optional)"
               bodyField="content"
               bodyRows={8}
               titleMaxLength={TITLE_MAX}
               bodyMaxLength={CONTENT_MAX}
-              submitLabel="Add topic"
+              submitLabel="Add page"
               submittingLabel="Adding…"
               initialFormat="FORMATTED"
               onSubmit={async (title, content, contentFormat) => {
                 const result = await changes.run(() => createTopic(module.id, { title, content, contentFormat }), {
-                  done: 'Topic added as a draft.',
+                  done: 'Page added as a draft.',
                   focus: (topic) => [`topic-${topic.id}-heading`],
                   showError: false,
                 })
@@ -392,7 +399,7 @@ function ModuleItem({
               focusKey={`${key}-add-topic`}
               onClick={() => setOpenForm({ type: 'addTopic', moduleId: module.id })}
             >
-              Add topic{srContext(`to ${name}`)}
+              Add page{srContext(`to ${name}`)}
             </ActionButton>
           )}
         </div>
@@ -503,7 +510,7 @@ export function CourseContentEditor({ course, reload }: CourseContentEditorProps
           <StatePanel>
             <EmptyState
               title="No course content yet"
-              description="Add your first module to start organising this course. New modules and topics start as drafts."
+              description="Add your first module to start organising this course. New modules and pages start as drafts."
               action={
                 <Button
                   data-focus-key="add-first-module"

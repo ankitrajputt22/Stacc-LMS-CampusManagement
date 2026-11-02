@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class LmsFacultyContentQueryService {
 
     static final String COURSE_UNAVAILABLE_MESSAGE = "Course not found or unavailable.";
+    static final String PAGE_UNAVAILABLE_MESSAGE = "Page not found or unavailable.";
 
     private final LmsFacultyAccessService accessService;
     private final LmsCourseRepository lmsCourses;
@@ -103,6 +105,55 @@ public class LmsFacultyContentQueryService {
                 semester.getAcademicSession().getCode(),
                 lmsCourse.getStatus().name(),
                 moduleContent);
+    }
+
+    /**
+     * One page (a topic) that is not archived, drafts included, of a course the faculty member may use, with the pages
+     * before and after it in course order. The course is found from the stored page, never from the client, and the
+     * page is found in exactly what {@link #getCourseContent} lists, so the same rules decide. A page that is missing,
+     * archived, in an archived module, or in a course they do not teach answers the same 404.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    @Transactional(readOnly = true)
+    public LmsFacultyPageResponse getPage(Long userAccountId, Long pageId) {
+        Long lmsCourseId = topics.findWithModuleById(pageId)
+                .map(topic -> topic.getLmsModule().getLmsCourse().getId())
+                .orElseThrow(LmsFacultyContentQueryService::pageUnavailable);
+        LmsFacultyCourseContentResponse course;
+        try {
+            course = getCourseContent(userAccountId, lmsCourseId);
+        } catch (ApiException unavailable) {
+            throw pageUnavailable();
+        }
+        List<LmsFacultyModuleContentResponse> moduleOfPage = new ArrayList<>();
+        List<LmsFacultyTopicContentResponse> pages = new ArrayList<>();
+        for (LmsFacultyModuleContentResponse module : course.modules()) {
+            for (LmsFacultyTopicContentResponse page : module.topics()) {
+                moduleOfPage.add(module);
+                pages.add(page);
+            }
+        }
+        for (int index = 0; index < pages.size(); index++) {
+            LmsFacultyTopicContentResponse page = pages.get(index);
+            if (page.id().equals(pageId)) {
+                LmsFacultyModuleContentResponse module = moduleOfPage.get(index);
+                return new LmsFacultyPageResponse(course.lmsCourseId(), course.courseCode(), course.courseName(),
+                        course.lmsCourseStatus(), page.id(), page.title(), page.content(), page.contentFormat(),
+                        page.status(), module.id(), module.title(), module.status(), page.materials(),
+                        index == 0 ? null : link(pages.get(index - 1), moduleOfPage.get(index - 1)),
+                        index == pages.size() - 1 ? null : link(pages.get(index + 1), moduleOfPage.get(index + 1)));
+            }
+        }
+        throw pageUnavailable();
+    }
+
+    private static LmsPageLink link(LmsFacultyTopicContentResponse page, LmsFacultyModuleContentResponse module) {
+        return new LmsPageLink(page.id(), page.title(), module.title());
+    }
+
+    private static ApiException pageUnavailable() {
+        return new ApiException(HttpStatus.NOT_FOUND, PAGE_UNAVAILABLE_MESSAGE);
     }
 
     private static ApiException courseUnavailable() {

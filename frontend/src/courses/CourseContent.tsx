@@ -2,24 +2,28 @@ import type { ApiRequestState } from '../api/useApiRequest'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { Link } from 'react-router'
 import type { LmsCourseContent, LmsCourseModule } from '../types/lms'
-import { StudyMaterialList } from './StudyMaterialList'
-import { useMaterialDownload } from './useMaterialDownload'
-import { FormattedText } from '../formatting/FormattedText'
+import { textLinkClasses } from '../ui/styles'
 
 type CourseContentProps = {
+  lmsCourseId: number
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
 }
 
 const HEADING_ID = 'course-content-heading'
 
 type PublishedModuleProps = {
+  lmsCourseId: number
   module: LmsCourseModule
   number: number
-  downloads: ReturnType<typeof useMaterialDownload>
 }
 
-function PublishedModule({ module, number, downloads }: PublishedModuleProps) {
+function fileCount(count: number): string {
+  return count === 1 ? '1 file' : `${count} files`
+}
+
+function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) {
   const headingId = `course-module-${module.id}`
 
   return (
@@ -45,23 +49,21 @@ function PublishedModule({ module, number, downloads }: PublishedModuleProps) {
       {module.topics.length > 0 ? (
         <ol className="divide-y divide-line border-t border-line">
           {module.topics.map((topic) => (
-            <li key={topic.id} className="px-4 py-3 sm:px-5">
-              <h4 className="text-sm font-semibold break-words text-ink">{topic.title}</h4>
-              {topic.content && (
-                <FormattedText
-                  text={topic.content}
-                  format={topic.contentFormat}
-                  className="mt-1 text-sm leading-6 text-ink"
-                  headingLevel={5}
-                />
+            <li key={topic.id} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-4 py-3 sm:px-5">
+              <h4 className="text-sm break-words">
+                <Link to={`/courses/${lmsCourseId}/pages/${topic.id}`} className={textLinkClasses}>
+                  {topic.title}
+                </Link>
+              </h4>
+              {topic.materials.length > 0 && (
+                <span className="text-xs text-ink-muted">{fileCount(topic.materials.length)}</span>
               )}
-              <StudyMaterialList materials={topic.materials} downloads={downloads} />
             </li>
           ))}
         </ol>
       ) : (
         <p className="border-t border-line px-4 py-3 text-sm text-ink-muted sm:px-5">
-          No topics published in this module yet.
+          No pages published in this module yet.
         </p>
       )}
     </section>
@@ -69,12 +71,11 @@ function PublishedModule({ module, number, downloads }: PublishedModuleProps) {
 }
 
 /**
- * The published modules and topics of the course. Everything the API sends is already published,
- * so no status is shown. A failure here does not hide the course details above it.
+ * The published modules of the course, each listing its published pages as links to the page itself
+ * (/courses/:lmsCourseId/pages/:pageId), where the text and study materials are. Everything the API sends is already
+ * published, so no status is shown. A failure here does not hide the course details above it.
  */
-export function CourseContent({ content }: CourseContentProps) {
-  const downloads = useMaterialDownload()
-
+export function CourseContent({ lmsCourseId, content }: CourseContentProps) {
   return (
     <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
       <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
@@ -115,7 +116,7 @@ export function CourseContent({ content }: CourseContentProps) {
           <ol className="space-y-3">
             {content.data.modules.map((module, index) => (
               <li key={module.id}>
-                <PublishedModule module={module} number={index + 1} downloads={downloads} />
+                <PublishedModule lmsCourseId={lmsCourseId} module={module} number={index + 1} />
               </li>
             ))}
           </ol>

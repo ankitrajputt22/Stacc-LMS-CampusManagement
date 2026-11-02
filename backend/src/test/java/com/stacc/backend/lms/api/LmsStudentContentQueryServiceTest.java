@@ -109,6 +109,54 @@ class LmsStudentContentQueryServiceTest {
         assertEquals(List.of(40L), content.modules().get(1).topics().stream().map(LmsCourseTopicResponse::id).toList());
     }
 
+    // Pages
+
+    @Test
+    void aPageOpensWithThePublishedPagesAroundItAcrossModules() {
+        LmsModule first = module(course, 15, 1, LmsContentStatus.PUBLISHED);
+        LmsModule second = module(course, 9, 2, LmsContentStatus.PUBLISHED);
+        stored(List.of(first, second), List.of(
+                topic(first, 41, 1, LmsContentStatus.PUBLISHED),
+                topic(first, 39, 2, LmsContentStatus.PUBLISHED),
+                topic(first, 38, 3, LmsContentStatus.DRAFT),
+                topic(second, 40, 1, LmsContentStatus.PUBLISHED)));
+
+        LmsCoursePageResponse middle = service.getPublishedPage(ACCOUNT_ID, COURSE_ID, 39L);
+        assertEquals("Topic 39", middle.title());
+        assertEquals("Module 15", middle.moduleTitle());
+        assertEquals(new LmsPageLink(41L, "Topic 41", "Module 15"), middle.previous());
+        assertEquals(new LmsPageLink(40L, "Topic 40", "Module 9"), middle.next(), "the draft page is skipped");
+
+        assertEquals(null, service.getPublishedPage(ACCOUNT_ID, COURSE_ID, 41L).previous());
+        assertEquals(null, service.getPublishedPage(ACCOUNT_ID, COURSE_ID, 40L).next());
+    }
+
+    @Test
+    void aHiddenMissingOrForeignPageLooksTheSame() {
+        LmsModule published = module(course, 11, 1, LmsContentStatus.PUBLISHED);
+        LmsModule draft = module(course, 12, 2, LmsContentStatus.DRAFT);
+        stored(List.of(published, draft), List.of(
+                topic(published, 31, 1, LmsContentStatus.PUBLISHED),
+                topic(published, 32, 2, LmsContentStatus.DRAFT),
+                topic(draft, 34, 1, LmsContentStatus.PUBLISHED)));
+
+        for (Long pageId : List.of(32L, 34L, 999L)) {
+            ApiException refused = assertThrows(ApiException.class,
+                    () -> service.getPublishedPage(ACCOUNT_ID, COURSE_ID, pageId));
+            assertEquals(HttpStatus.NOT_FOUND, refused.getStatus());
+            assertEquals("Page not found or unavailable.", refused.getMessage());
+        }
+    }
+
+    @Test
+    void aPageOfACourseTheStudentMayNotUseIsUnavailable() {
+        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+
+        assertEquals(HttpStatus.NOT_FOUND,
+                assertThrows(ApiException.class, () -> service.getPublishedPage(ACCOUNT_ID, COURSE_ID, 31L)).getStatus());
+        verifyNoInteractions(modules, topics, materials);
+    }
+
     @Test
     void courseTheStudentMayNotUseIsUnavailableAndNothingIsRead() {
         when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);

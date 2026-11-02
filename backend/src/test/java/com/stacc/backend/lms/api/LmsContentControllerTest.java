@@ -136,6 +136,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 tokenWith("ROLE_FACULTY", "LMS_COURSE_VIEW"),
                 tokenWith("ROLE_ADMIN", "LMS_COURSE_VIEW"))) {
             mockMvc.perform(as(token, get("/api/v1/lms/courses/7/content"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/courses/7/pages/31"))).andExpect(status().isForbidden());
         }
 
         verifyNoInteractions(studentContent);
@@ -149,6 +150,36 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/content")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Course not found or unavailable."));
+    }
+
+    @Test
+    void studentOpensAPageForTheirOwnAccountAndAHiddenOneLooksMissing() throws Exception {
+        when(studentContent.getPublishedPage(ACCOUNT_ID, 7L, 31L)).thenReturn(new LmsCoursePageResponse(31L, "Overview",
+                "## Hello", LmsTextFormat.FORMATTED, 12L, "Unit 1", List.of(), null, new LmsPageLink(32L, "Next", "Unit 1")));
+        when(studentContent.getPublishedPage(ACCOUNT_ID, 7L, 33L))
+                .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "Page not found or unavailable."));
+
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/pages/31")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contentFormat").value("FORMATTED"))
+                .andExpect(jsonPath("$.previous").doesNotExist())
+                .andExpect(jsonPath("$.next.id").value(32));
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/pages/33")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Page not found or unavailable."));
+    }
+
+    @Test
+    void facultyPreviewsAPageFoundFromTheStoredPage() throws Exception {
+        when(facultyContent.getPage(ACCOUNT_ID, 31L)).thenReturn(new LmsFacultyPageResponse(7L, "TST301", "Test", "DRAFT",
+                31L, "Overview", null, LmsTextFormat.PLAIN, LmsContentStatus.DRAFT, 12L, "Unit 1", LmsContentStatus.DRAFT,
+                List.of(), null, null));
+
+        mockMvc.perform(as(facultyViewToken(), get("/api/v1/lms/faculty/pages/31")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DRAFT"))
+                .andExpect(jsonPath("$.lmsCourseId").value(7));
+        verify(facultyContent).getPage(ACCOUNT_ID, 31L);
     }
 
     // Faculty content
@@ -182,6 +213,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 tokenWith("ROLE_STUDENT", "FACULTY_COURSE_VIEW"),
                 tokenWith("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_CONTENT_MANAGE"))) {
             mockMvc.perform(as(token, get("/api/v1/lms/faculty/courses/7/content"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/faculty/pages/31"))).andExpect(status().isForbidden());
         }
 
         verifyNoInteractions(facultyContent);

@@ -163,7 +163,8 @@ class LmsSearchProviderTest {
 
         assertThat(provider.search(SearchResultType.STUDY_MATERIAL, context(student, "notes"), five).orElseThrow()
                 .getContent()).singleElement().satisfies(result -> {
-                    assertThat(result.actionPath()).isEqualTo("/courses/11");
+                    // The material is on its page, so the result opens the page.
+                    assertThat(result.actionPath()).isEqualTo("/courses/11/pages/" + published.getLmsTopic().getId());
                     assertThat(result.subtitle()).isEqualTo("CS301 Data Structures · notes.pdf");
                 });
 

@@ -362,3 +362,42 @@ export type LmsCourseManagement = {
   /** How many students are enrolled in the offering now; null for archiving. */
   currentStudentCount: number | null
 }
+
+/** The page before or after another, in course order. */
+export type LmsPageLink = {
+  id: number
+  title: string
+  moduleTitle: string
+}
+
+/** One published page (a topic of a module), as a student opens it at /courses/:lmsCourseId/pages/:pageId. */
+export type LmsCoursePage = {
+  id: number
+  title: string
+  content: string | null
+  contentFormat: TextFormat
+  moduleId: number
+  moduleTitle: string
+  materials: LmsCourseMaterial[]
+  previous: LmsPageLink | null
+  next: LmsPageLink | null
+}
+
+/** One page of a course the faculty member teaches, drafts included, for previewing it as students will see it. */
+export type LmsFacultyPage = {
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  lmsCourseStatus: 'DRAFT' | 'PUBLISHED'
+  id: number
+  title: string
+  content: string | null
+  contentFormat: TextFormat
+  status: LmsContentStatus
+  moduleId: number
+  moduleTitle: string
+  moduleStatus: LmsContentStatus
+  materials: LmsFacultyMaterial[]
+  previous: LmsPageLink | null
+  next: LmsPageLink | null
+}
