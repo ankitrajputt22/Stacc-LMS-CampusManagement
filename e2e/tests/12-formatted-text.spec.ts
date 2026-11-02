@@ -18,7 +18,7 @@ test('a student reads formatted course text, and a faculty member previews and s
   const form = page.getByRole('form', { name: 'New announcement' })
   await form.getByLabel('Title').fill('Lab room change (formatted)')
   await expect(form.getByLabel('Text format')).toHaveValue('FORMATTED')
-  await form.getByLabel('Message').fill('## Lab room\n\n- Bring your **ID card**\n- <script>alert(1)</script>')
+  await form.getByRole('textbox', { name: 'Message' }).fill('## Lab room\n\n- Bring your **ID card**\n- <script>alert(1)</script>')
   await form.getByRole('tab', { name: 'Preview' }).click()
   await expect(form.getByRole('heading', { name: 'Lab room' })).toBeVisible()
   await expect(form.getByText('ID card')).toHaveJSProperty('tagName', 'STRONG')
