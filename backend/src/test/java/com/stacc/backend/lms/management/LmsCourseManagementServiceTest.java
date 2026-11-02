@@ -37,10 +37,6 @@ import com.stacc.backend.lms.access.LmsStudentAccessPolicy;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipProvisioningService;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembershipStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -49,8 +45,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * The management service with the real teaching-access rule and the real membership provisioning; only the
- * repositories are stand-ins. Memberships saved by provisioning are kept in a list, the way the database would.
+ * The management service with the real teaching-access rule; only the repositories are stand-ins. Students need no
+ * membership: the count in each answer is the offering's current students, and the access policy decides live.
  */
 class LmsCourseManagementServiceTest {
 
@@ -61,18 +57,14 @@ class LmsCourseManagementServiceTest {
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
-    private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
-    private final LmsStudentMembershipProvisioningService provisioning =
-            new LmsStudentMembershipProvisioningService(courseEnrollments, lmsCourses, memberships);
     private final LmsCourseManagementService service = new LmsCourseManagementService(
-            courseOfferings, lmsCourses, new FacultyTeachingAccessService(teachingAssignments), provisioning);
+            courseOfferings, lmsCourses, new FacultyTeachingAccessService(teachingAssignments), courseEnrollments);
 
     private final CourseOffering offering = AttendanceFixtures.offering(31, "CS301", "Data Structures");
     private final FacultyProfile faculty = AttendanceFixtures.faculty(FACULTY_ACCOUNT, 7);
     private final TeachingAssignment teaching = AttendanceFixtures.teaching(faculty, offering);
     private final CourseEnrollment studentA = AttendanceFixtures.enrollment(offering, 50, 140, "STU-TEST-A");
     private final CourseEnrollment studentB = AttendanceFixtures.enrollment(offering, 51, 141, "STU-TEST-B");
-    private final List<LmsStudentMembership> saved = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -81,14 +73,6 @@ class LmsCourseManagementServiceTest {
         when(lmsCourses.saveAndFlush(any(LmsCourse.class))).thenAnswer(call -> withId(call.getArgument(0), 42));
         // The query returns only current students; a withdrawn one is never among them.
         when(courseEnrollments.findAllCurrentByCourseOfferingId(31L)).thenReturn(List.of(studentA, studentB));
-        when(memberships.save(any(LmsStudentMembership.class))).thenAnswer(call -> {
-            saved.add(call.getArgument(0));
-            return call.getArgument(0);
-        });
-        when(memberships.findAllByCourseEnrollmentIdIn(anyCollection())).thenAnswer(call -> {
-            Collection<Long> ids = call.getArgument(0);
-            return saved.stream().filter(membership -> ids.contains(membership.getCourseEnrollment().getId())).toList();
-        });
     }
 
     private static LmsCourse withId(LmsCourse lmsCourse, long id) {
@@ -114,13 +98,10 @@ class LmsCourseManagementServiceTest {
     }
 
     @Test
-    void theTeachingFacultyCreatesADraftCourseAndItsCurrentStudentsGetMemberships() {
+    void theTeachingFacultyCreatesADraftCourseAndLearnsHowManyStudentsAreEnrolled() {
         LmsCourseChange created = service.create(FACULTY_ACCOUNT, 31L);
 
         assertEquals(new LmsCourseChange(42L, 31L, LmsCourseStatus.DRAFT, 2), created);
-        assertEquals(List.of(140L, 141L), saved.stream().map(membership -> membership.getCourseEnrollment().getId()).toList());
-        assertTrue(saved.stream().allMatch(membership -> membership.getStatus() == LmsStudentMembershipStatus.ACTIVE));
-        assertTrue(saved.stream().allMatch(membership -> membership.getLmsCourse().getId() == 42L));
     }
 
     @Test
@@ -135,7 +116,6 @@ class LmsCourseManagementServiceTest {
         assertRefused(HttpStatus.NOT_FOUND, LmsCourseManagementService.OFFERING_NOT_FOUND, () -> service.create(FACULTY_ACCOUNT, 31L));
 
         verify(lmsCourses, never()).saveAndFlush(any());
-        verify(memberships, never()).save(any());
     }
 
     @Test
@@ -146,58 +126,29 @@ class LmsCourseManagementServiceTest {
         when(lmsCourses.findByCourseOfferingId(31L)).thenReturn(Optional.empty());
         when(lmsCourses.saveAndFlush(any(LmsCourse.class))).thenThrow(new DataIntegrityViolationException("uk_lms_courses_course_offering"));
         assertRefused(HttpStatus.CONFLICT, LmsCourseManagementService.ALREADY_EXISTS, () -> service.create(FACULTY_ACCOUNT, 31L));
-        verify(memberships, never()).save(any());
     }
 
     @Test
-    void synchronizingTwiceKeepsOneMembershipEachAndReactivatesAnInactiveOne() {
-        LmsCourse lmsCourse = stored(LmsCourseStatus.DRAFT);
-
-        assertEquals(2, service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L).synchronizedCount());
-        saved.get(0).deactivate();
-        assertEquals(2, service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L).synchronizedCount());
-
-        assertEquals(2, saved.size());
-        assertTrue(saved.stream().allMatch(membership -> membership.getStatus() == LmsStudentMembershipStatus.ACTIVE));
-        assertEquals(LmsCourseStatus.DRAFT, lmsCourse.getStatus());
-    }
-
-    @Test
-    void aMembershipLinkedToAnotherLmsCourseIsReportedNotRepaired() {
-        stored(LmsCourseStatus.DRAFT);
-        CourseOffering other = AttendanceFixtures.offering(32, "CS302", "Databases");
-        saved.add(new LmsStudentMembership(studentA, withId(new LmsCourse(other), 43)));
-
-        assertThrows(IllegalStateException.class, () -> service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L));
-        assertEquals(43L, saved.get(0).getLmsCourse().getId());
-    }
-
-    @Test
-    void publishingSynchronizesFirstThenPublishesAndRepeatingChangesNothing() {
+    void publishingPublishesUnderTheLockAndRepeatingChangesNothing() {
         LmsCourse lmsCourse = stored(LmsCourseStatus.DRAFT);
 
         LmsCourseChange published = service.publish(FACULTY_ACCOUNT, 42L);
 
         assertEquals(new LmsCourseChange(42L, 31L, LmsCourseStatus.PUBLISHED, 2), published);
-        var order = inOrder(courseEnrollments, lmsCourses);
-        order.verify(lmsCourses).findByIdForUpdate(42L);
-        order.verify(courseEnrollments).findAllCurrentByCourseOfferingId(31L);
+        verify(lmsCourses).findByIdForUpdate(42L);
         assertEquals(LmsCourseStatus.PUBLISHED, service.publish(FACULTY_ACCOUNT, 42L).status());
-        assertEquals(2, saved.size());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }
 
     @Test
-    void anArchivedCourseIsNeitherPublishedNorSynchronizedAndArchivingAgainChangesNothing() {
+    void anArchivedCourseIsNotPublishedAndArchivingAgainChangesNothing() {
         LmsCourse lmsCourse = stored(LmsCourseStatus.ARCHIVED);
 
         assertRefused(HttpStatus.CONFLICT, LmsCourseManagementService.ARCHIVED_NOT_PUBLISHABLE, () -> service.publish(FACULTY_ACCOUNT, 42L));
-        assertRefused(HttpStatus.CONFLICT, LmsCourseManagementService.ARCHIVED_NOT_SYNCHRONIZED,
-                () -> service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L));
         LmsCourseChange archived = service.archive(FACULTY_ACCOUNT, 42L);
 
         assertEquals(LmsCourseStatus.ARCHIVED, archived.status());
-        assertNull(archived.synchronizedCount());
+        assertNull(archived.currentStudentCount());
         assertEquals(LmsCourseStatus.ARCHIVED, lmsCourse.getStatus());
         verify(courseEnrollments, never()).findAllCurrentByCourseOfferingId(anyLong());
     }
@@ -209,44 +160,34 @@ class LmsCourseManagementServiceTest {
         for (Executable change : new Executable[] {
                 () -> service.publish(OTHER_FACULTY_ACCOUNT, 42L),
                 () -> service.archive(OTHER_FACULTY_ACCOUNT, 42L),
-                () -> service.synchronizeStudentMemberships(OTHER_FACULTY_ACCOUNT, 42L),
                 () -> service.publish(FACULTY_ACCOUNT, 99L)}) {
             assertRefused(HttpStatus.NOT_FOUND, LmsCourseManagementService.COURSE_NOT_FOUND, change);
         }
         assertEquals(LmsCourseStatus.DRAFT, lmsCourse.getStatus());
-        verify(memberships, never()).save(any());
     }
 
     @Test
-    void studentsGetInOnlyOncePublishedAndLoseAccessWhenArchivedWhileEverythingIsKept() {
+    void studentsGetInOnlyWhilePublishedWithoutAnyMembershipAndEverythingIsKept() {
         LmsCourse lmsCourse = stored(LmsCourseStatus.DRAFT);
-        service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L);
-        LmsStudentMembership membershipA = saved.get(0);
-        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(membershipA, 50L));
+        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(studentA, lmsCourse, 50L));
 
         service.publish(FACULTY_ACCOUNT, 42L);
-        assertTrue(LmsStudentAccessPolicy.grantsCurrentAccess(membershipA, 50L));
-        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(membershipA, 51L));
+        assertTrue(LmsStudentAccessPolicy.grantsCurrentAccess(studentA, lmsCourse, 50L));
+        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(studentA, lmsCourse, 51L));
 
         service.archive(FACULTY_ACCOUNT, 42L);
-        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(membershipA, 50L));
+        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(studentA, lmsCourse, 50L));
         assertFalse(LmsFacultyAccessPolicy.grantsCurrentAccess(teaching, lmsCourse, FACULTY_ACCOUNT));
-        assertEquals(LmsStudentMembershipStatus.ACTIVE, membershipA.getStatus());
         verify(lmsCourses, never()).delete(any());
-        verify(memberships, never()).delete(any());
     }
 
     @Test
-    void aWithdrawnStudentKeepsNoAccessEvenWithAnOldMembership() {
-        stored(LmsCourseStatus.PUBLISHED);
+    void aWithdrawnStudentHasNoAccessInAPublishedCourse() {
+        LmsCourse lmsCourse = stored(LmsCourseStatus.PUBLISHED);
         CourseEnrollment withdrawn = AttendanceFixtures.enrollment(offering, 52, 142, "STU-TEST-C");
         withdrawn.withdraw();
-        LmsStudentMembership old = new LmsStudentMembership(withdrawn, lmsCourses.findByIdForUpdate(42L).orElseThrow());
 
-        service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L);
-
-        assertFalse(saved.stream().anyMatch(membership -> membership.getCourseEnrollment() == withdrawn));
-        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(old, 52L));
+        assertFalse(LmsStudentAccessPolicy.grantsCurrentAccess(withdrawn, lmsCourse, 52L));
         assertEquals(CourseEnrollmentStatus.WITHDRAWN, withdrawn.getStatus());
     }
 
@@ -254,7 +195,6 @@ class LmsCourseManagementServiceTest {
     void managementNeverChangesAcademicRecords() {
         service.create(FACULTY_ACCOUNT, 31L);
         stored(LmsCourseStatus.DRAFT);
-        service.synchronizeStudentMemberships(FACULTY_ACCOUNT, 42L);
         service.publish(FACULTY_ACCOUNT, 42L);
         service.archive(FACULTY_ACCOUNT, 42L);
 

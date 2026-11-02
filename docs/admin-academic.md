@@ -126,7 +126,7 @@ The official academic mapping of a student is their `StudentProfile` (program, w
 ## Course enrollments
 
 - `GET /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/courses` answers the student, the semester enrollment, and its course enrollments by course code, with course code, name, and credits.
-- `POST` on the same route takes only `courseOfferingId` and answers 201 with an `ENROLLED` course enrollment and an `lmsProvisioning` outcome. The semester enrollment must be `ENROLLED` (409 otherwise) and locked while the course is added; a missing semester enrollment or offering answers 404. The offering must belong to the semester enrollment's own semester: an offering of another semester answers 409 ("This course offering belongs to a different semester than the semester enrollment."). A second enrollment in the same offering answers 409 ("This student is already enrolled in this course offering."). The offering row is locked after the semester enrollment and its capacity counts `ENROLLED` students, as self-registration does (409 "CS301 is full: all 60 places are taken."). The registration status and period do not limit admins. No other program rule is applied, because the model has none.
+- `POST` on the same route takes only `courseOfferingId` and answers 201 with the `ENROLLED` course enrollment. The semester enrollment must be `ENROLLED` (409 otherwise) and locked while the course is added; a missing semester enrollment or offering answers 404. The offering must belong to the semester enrollment's own semester: an offering of another semester answers 409 ("This course offering belongs to a different semester than the semester enrollment."). A second enrollment in the same offering answers 409 ("This student is already enrolled in this course offering."). The offering row is locked after the semester enrollment and its capacity counts `ENROLLED` students, as self-registration does (409 "CS301 is full: all 60 places are taken."). The registration status and period do not limit admins. No other program rule is applied, because the model has none.
 - `GET /api/v1/admin/academic/enrollments/course-enrollments` searches every course enrollment with filters, one page at a time (the Course Enrollments page; see `course-registration.md`).
 - `PUT /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/status` takes `status`. The row is locked while it changes. `DROPPED` is set only by the student (409 from admins); a dropped enrollment is ended like a withdrawn one.
 
@@ -136,15 +136,9 @@ Semester and course enrollments share one conservative rule: `ENROLLED` may beco
 
 A semester enrollment cannot end while any of its course enrollments is still `ENROLLED`: that answers 409 ("Active course enrollments must be resolved before closing the semester enrollment.") and nothing changes. Nothing cascades: each course enrollment is completed or withdrawn on its own first. Because enrollments never return to `ENROLLED`, a course enrollment is never `ENROLLED` under a semester enrollment that has ended. Nothing is ever deleted.
 
-## LMS provisioning
+## LMS access
 
-The official course enrollment is saved and committed first. Only then does `CourseEnrollmentWorkflow`, which is not transactional, ask the LMS through `CourseEnrollmentLmsPort`. The academic module defines that port; `lms.membership.AcademicEnrollmentLmsAdapter` implements it with the existing `LmsStudentMembershipProvisioningService`, so academic code never refers to LMS models.
-
-- If the offering has an LMS course, the student gets an active membership (or an inactive one is reactivated): `lmsProvisioning` is `PROVISIONED`. The LMS course does not have to be published; student access still follows the access policy.
-- If the offering has no LMS course, the enrollment still succeeds: `NO_LMS_COURSE`. No LMS course is ever created here. The faculty who teach the offering create it later, and creating it gives the offering's current students their memberships (see `lms-foundation.md`).
-- If provisioning fails, the enrollment still stands, the failure is logged without personal data, and the answer says `FAILED`. `POST /api/v1/admin/academic/enrollments/course-enrollments/{courseEnrollmentId}/provision-lms` retries it: 200 when the membership exists, 409 when the enrollment is no longer `ENROLLED` or the offering has no LMS course, and 503 when it fails again. It is safe to repeat.
-- When a course enrollment ends, its membership is made inactive through the same service, never deleted. The student access policy already refuses an enrollment that is not `ENROLLED`, so a failure there is only logged.
-- Academic enrollment stays an admin responsibility. Faculty LMS management only derives LMS memberships from it and never creates, changes, or ends an enrollment.
+Nothing on the LMS side is written when a course enrollment is made or ended. A student uses the offering's LMS course while it is published and their profile, semester enrollment, and course enrollment are active, worked out live on every request (see `lms-foundation.md`). Ending an enrollment ends access at once. No LMS course is ever created here; the faculty who teach the offering create it. Until v0.5.1 a membership copy was provisioned here with a retry route; both are gone.
 
 ## Roster
 
@@ -159,7 +153,7 @@ The official course enrollment is saved and committed first. Only then does `Cou
 | `GET /api/v1/admin/academic/offerings`, `GET .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW` |
 | `POST /api/v1/admin/academic/offerings`, `PUT .../offerings/{courseOfferingId}` | `ADMIN`, `ACADEMIC_OFFERING_VIEW`, `ACADEMIC_OFFERING_MANAGE` |
 | `GET .../offerings/{courseOfferingId}/enrollments` and the `GET` enrollment routes | `ADMIN`, `ACADEMIC_ENROLLMENT_VIEW` |
-| The `POST` and `PUT` enrollment routes and `provision-lms` | `ADMIN`, `ACADEMIC_ENROLLMENT_VIEW`, `ACADEMIC_ENROLLMENT_MANAGE` |
+| The `POST` and `PUT` enrollment routes | `ADMIN`, `ACADEMIC_ENROLLMENT_VIEW`, `ACADEMIC_ENROLLMENT_MANAGE` |
 
 The master permissions give no access to offerings or enrollments, and the reverse. No route accepts an account, student, or enrollment ID in a body to say whose record changes: the route names it, and the acting admin comes from the access token.
 
@@ -171,7 +165,7 @@ Every section is built from the shared components in `src/ui` (see `ui-design.md
 
 - Each master, and the course offerings, is a `Card` with its Add button, a search box, a status filter and its own filters (programs by department and degree, courses by department and type), and the records in a `DataTable`, 20 to a page (`Pagination`). Search, status, and pages work on the list the API already sent; the offerings' session and semester filters still ask the backend. Edit and the other row actions sit in the last column. Departments, programs, and courses change status with Activate and Deactivate, each confirmed first; their Edit forms no longer carry the status. Sessions show a Current badge and a confirmed Set as current action. Create forms list only parents that can take new children.
 - Add and Edit open one form at a time in its own card above the list, with `TextField` and `SelectField` and an error `Alert`. After a save, every academic admin list in the cache (`queryKeys.admin.academic`) is asked again, because the lists fill each other's choices.
-- Enrollments start with the student search; a student's semesters and courses are cards with their actions per row (each semester shows its section, with Place in section or Change section while enrolled, listing that semester's active sections with their places), and ending an enrollment is confirmed in an amber box first. LMS provisioning outcomes show as an `Alert`.
+- Enrollments start with the student search; a student's semesters and courses are cards with their actions per row (each semester shows its section, with Place in section or Change section while enrolled, listing that semester's active sections with their places), and ending an enrollment is confirmed in an amber box first.
 - Programs show their credit limit ("No limit" when empty). Semesters show their registration period and drop deadline in the browser's time zone, and the semester edit form has optional date-and-time fields for them (not for a closed semester), checked for order before sending.
 - Statuses are `Badge`s: green for in use (`ACTIVE`, `ENROLLED`), blue for still to come (`PLANNED`), neutral for ended; the word always says it. The admin dashboard on `/` shows read-only counts of these records and links here (see `admin-dashboard.md`).
 

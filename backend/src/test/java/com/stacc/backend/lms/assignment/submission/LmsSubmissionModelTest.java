@@ -28,7 +28,7 @@ class LmsSubmissionModelTest {
 
     private final LmsCourse course = SubmissionFixtures.course(7);
     private final LmsAssignment assignment = SubmissionFixtures.assignment(course, 5, LmsContentStatus.PUBLISHED);
-    private final CourseEnrollment enrollment = SubmissionFixtures.membership(course, 12, 40).getCourseEnrollment();
+    private final CourseEnrollment enrollment = SubmissionFixtures.enrollment(course, 12, 40);
     private final LmsAssignmentSubmission submission = new LmsAssignmentSubmission(assignment, enrollment);
 
     private LmsSubmissionAttempt attempt(String submittedAt) {

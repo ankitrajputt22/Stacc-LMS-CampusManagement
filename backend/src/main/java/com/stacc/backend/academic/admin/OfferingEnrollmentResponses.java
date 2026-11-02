@@ -122,7 +122,7 @@ public final class OfferingEnrollmentResponses {
             @Schema(example = "2026-27") String academicSessionCode,
             @Schema(description = "The section the student is placed in, or null.", example = "21") Long sectionId,
             @Schema(description = "That section's code, or null.", example = "A") String sectionCode,
-            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN"}, example = "ENROLLED") String status) {
+            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN", "DROPPED"}, example = "ENROLLED") String status) {
 
         static SemesterEnrollmentResponse of(SemesterEnrollment enrollment) {
             Semester semester = enrollment.getSemester();
@@ -150,7 +150,7 @@ public final class OfferingEnrollmentResponses {
             @Schema(example = "CS301") String courseCode,
             @Schema(example = "Data Structures") String courseName,
             @Schema(description = "An exact decimal with two places.", example = "4.00") BigDecimal credits,
-            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN"}, example = "ENROLLED") String status) {
+            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN", "DROPPED"}, example = "ENROLLED") String status) {
 
         static CourseEnrollmentResponse of(CourseEnrollment enrollment) {
             CourseOffering offering = enrollment.getCourseOffering();
@@ -167,26 +167,12 @@ public final class OfferingEnrollmentResponses {
             @Schema(description = "By course code.") List<CourseEnrollmentResponse> courseEnrollments) {
     }
 
-    public record CourseEnrollmentCreatedResponse(
-            CourseEnrollmentResponse courseEnrollment,
-            @Schema(description = "What happened on the LMS side once the official enrollment was saved: PROVISIONED "
-                    + "(the student has LMS membership), NO_LMS_COURSE (the offering has no LMS course yet), or FAILED "
-                    + "(membership could not be given now; the enrollment stands, and provisioning can be retried).",
-                    allowableValues = {"PROVISIONED", "NO_LMS_COURSE", "FAILED"}, example = "PROVISIONED")
-            String lmsProvisioning) {
-    }
-
-    public record LmsProvisioningResponse(
-            @Schema(example = "140") Long courseEnrollmentId,
-            @Schema(allowableValues = {"PROVISIONED"}, example = "PROVISIONED") String lmsProvisioning) {
-    }
-
     public record RosterEntryResponse(
             @Schema(example = "140") Long courseEnrollmentId,
             @Schema(example = "88") Long semesterEnrollmentId,
             @Schema(example = "57") Long studentProfileId,
             @Schema(example = "STU-2026-001") String studentLoginId,
-            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN"}, example = "ENROLLED") String status) {
+            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN", "DROPPED"}, example = "ENROLLED") String status) {
 
         static RosterEntryResponse of(CourseEnrollment enrollment) {
             SemesterEnrollment semesterEnrollment = enrollment.getSemesterEnrollment();

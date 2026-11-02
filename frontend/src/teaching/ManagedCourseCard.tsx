@@ -9,7 +9,7 @@ import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { CourseFacts } from '../courses/CourseFacts'
 import type { LmsCourseManagement, LmsManagedCourse } from '../types/lms'
-import { lifecycleRefusal, lmsStatusWord, synchronizedText } from './lmsCourseText'
+import { enrolledText, lifecycleRefusal, lmsStatusWord } from './lmsCourseText'
 
 type ManagedCourseCardProps = {
   course: LmsManagedCourse
@@ -48,7 +48,7 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
     setMessage('')
     try {
       const created = await createLmsCourse(course.courseOfferingId)
-      setMessage(`LMS course created as a draft. ${synchronizedText(created.synchronizedCount)}`)
+      setMessage(`LMS course created as a draft. ${enrolledText(created.currentStudentCount)}`.trim())
       onChanged(created)
       // The Create button is gone; focus moves to the new course's Open link.
       focusLater('open')
@@ -132,13 +132,13 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
       {confirmingPublish && course.lmsCourseId !== null && (
         <StatusConfirmation
           question="Publish LMS course?"
-          detail="Students with valid enrollment and LMS membership will be able to access the course."
+          detail="Students officially enrolled in this course offering will be able to open the course."
           confirmLabel="Publish course"
           busyLabel="Publishing…"
           onConfirm={async () => {
             const published = await publishLmsCourse(course.lmsCourseId as number)
             setConfirmingPublish(false)
-            setMessage(`Course published. ${synchronizedText(published.synchronizedCount)}`)
+            setMessage(`Course published. ${enrolledText(published.currentStudentCount)}`.trim())
             onChanged(published)
             focusLater('open')
           }}

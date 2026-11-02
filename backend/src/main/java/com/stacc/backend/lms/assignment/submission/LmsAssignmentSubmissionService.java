@@ -12,6 +12,9 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.common.storage.ObjectStorageException;
 import com.stacc.backend.common.storage.ObjectStorageService;
@@ -21,8 +24,6 @@ import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsMaterialFiles;
 import com.stacc.backend.lms.content.LmsMaterialProperties;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -54,7 +55,7 @@ public class LmsAssignmentSubmissionService {
 
     private final LmsStudentAccessService studentAccess;
     private final LmsAssignmentRepository assignments;
-    private final LmsStudentMembershipRepository memberships;
+    private final CourseEnrollmentRepository courseEnrollments;
     private final LmsAssignmentSubmissionRepository submissions;
     private final LmsSubmissionAttemptRepository attempts;
     private final LmsSubmissionAttachmentRepository attachments;
@@ -67,7 +68,7 @@ public class LmsAssignmentSubmissionService {
     public LmsAssignmentSubmissionService(
             LmsStudentAccessService studentAccess,
             LmsAssignmentRepository assignments,
-            LmsStudentMembershipRepository memberships,
+            CourseEnrollmentRepository courseEnrollments,
             LmsAssignmentSubmissionRepository submissions,
             LmsSubmissionAttemptRepository attempts,
             LmsSubmissionAttachmentRepository attachments,
@@ -78,7 +79,7 @@ public class LmsAssignmentSubmissionService {
             LmsSubmissionProperties submissionProperties) {
         this.studentAccess = studentAccess;
         this.assignments = assignments;
-        this.memberships = memberships;
+        this.courseEnrollments = courseEnrollments;
         this.submissions = submissions;
         this.attempts = attempts;
         this.attachments = attachments;
@@ -107,8 +108,8 @@ public class LmsAssignmentSubmissionService {
      * The attempt needs non-blank text, at least one file, or both.
      *
      * <p>Files are checked first and stored before anything is written to the database, so no lock is held
-     * while they upload. The attempt number is then reserved under a lock on the student's membership in
-     * the course, and the submission record is read with a lock too, so two requests from the same student
+     * while they upload. The attempt number is then reserved under a lock on the student's course enrollment,
+     * which must still be enrolled, and the submission record is read with a lock too, so two requests from the same student
      * never get the same number; a unique constraint backs this up. The database and the storage cannot
      * share a transaction: if a file cannot be stored, or the attempt cannot be saved, the files already
      * stored for it are removed again.
@@ -117,7 +118,7 @@ public class LmsAssignmentSubmissionService {
      */
     public SubmittedAttempt submit(
             Long userAccountId, Long lmsCourseId, Long assignmentId, String textContent, List<MultipartFile> files) {
-        LmsStudentMembership membership = studentAccess.findAccessGrantingMembership(userAccountId, lmsCourseId)
+        CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
                 .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
         LmsAssignment assignment = visibleAssignment(lmsCourseId, assignmentId);
 
@@ -131,13 +132,16 @@ public class LmsAssignmentSubmissionService {
         }
         List<CheckedUpload> checked = chosen.stream().map(this::checked).toList();
 
-        Long courseEnrollmentId = membership.getCourseEnrollment().getId();
+        Long courseEnrollmentId = enrollment.getId();
         List<String> storedKeys = store(assignment.getId(), courseEnrollmentId, checked);
         try {
-            memberships.findByIdForUpdate(membership.getId()).orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
+            // A drop or withdrawal that finished meanwhile ends access here too.
+            courseEnrollments.findByIdForUpdate(courseEnrollmentId)
+                    .filter(locked -> locked.getStatus() == CourseEnrollmentStatus.ENROLLED)
+                    .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
             LmsAssignmentSubmission submission = submissions.findForUpdate(assignment.getId(), courseEnrollmentId)
                     .orElseGet(() -> submissions.saveAndFlush(
-                            new LmsAssignmentSubmission(assignment, membership.getCourseEnrollment())));
+                            new LmsAssignmentSubmission(assignment, enrollment)));
             int attemptNumber = submission.takeNextAttemptNumber();
             // Accepted now, by the server's clock, at the precision the database keeps, so the answer shows
             // exactly what every later read shows. The deadline that applies now is kept with the attempt.
@@ -168,11 +172,11 @@ public class LmsAssignmentSubmissionService {
      */
     @Transactional(readOnly = true)
     public List<SubmittedAttempt> history(Long userAccountId, Long lmsCourseId, Long assignmentId) {
-        LmsStudentMembership membership = studentAccess.findAccessGrantingMembership(userAccountId, lmsCourseId)
+        CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
                 .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
         LmsAssignment assignment = visibleAssignment(lmsCourseId, assignmentId);
 
-        return submissions.findByAssignmentIdAndCourseEnrollmentId(assignment.getId(), membership.getCourseEnrollment().getId())
+        return submissions.findByAssignmentIdAndCourseEnrollmentId(assignment.getId(), enrollment.getId())
                 .map(this::attemptsOf)
                 .orElse(List.of());
     }
@@ -206,8 +210,8 @@ public class LmsAssignmentSubmissionService {
         LmsAssignmentSubmission submission = attachment.getAttempt().getSubmission();
         LmsAssignment assignment = submission.getAssignment();
         return assignment.getStatus() == LmsContentStatus.PUBLISHED
-                && studentAccess.findAccessGrantingMembership(userAccountId, assignment.getLmsCourse().getId())
-                        .map(membership -> membership.getCourseEnrollment().getId().equals(submission.getCourseEnrollment().getId()))
+                && studentAccess.findAccessGrantingEnrollment(userAccountId, assignment.getLmsCourse().getId())
+                        .map(enrollment -> enrollment.getId().equals(submission.getCourseEnrollment().getId()))
                         .orElse(false);
     }
 

@@ -156,8 +156,8 @@ import org.springframework.web.multipart.MultipartFile;
  * production profile. Every account gets the one password in {@value #PASSWORD_VARIABLE}, hashed with the shared
  * {@link PasswordEncoder}; it is never logged. Each record is looked up by its natural key first and only created when
  * missing, so running it again adds nothing and changes nothing that exists, not even an existing account's password.
- * Records are created through the same services the API uses wherever one exists, so their rules apply: LMS
- * memberships come from provisioning, rosters are snapshotted, and attempt numbers are reserved as usual. Everything
+ * Records are created through the same services the API uses wherever one exists, so their rules apply: rosters
+ * are snapshotted, and attempt numbers are reserved as usual. Everything
  * happens in one transaction, so a failed run leaves nothing half done. Dates are relative to the day it runs.
  */
 @Component

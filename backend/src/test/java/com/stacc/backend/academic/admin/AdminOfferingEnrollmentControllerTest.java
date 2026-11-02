@@ -23,7 +23,6 @@ import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferin
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseOfferingUpdate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentStatusChange;
-import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentCreatedResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.StudentLookupResponse;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
@@ -55,9 +54,6 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean
     private AcademicEnrollmentManagementService enrollments;
-
-    @MockitoBean
-    private CourseEnrollmentWorkflow courseEnrollments;
 
     private static String token(String... authorities) {
         return TestTokens.valid("ADM-TEST-1", 1, authorities);
@@ -97,8 +93,7 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         return List.of(json(post(ENROLLMENTS + "/students/57/semesters"), "{\"semesterId\":9}"),
                 json(put(ENROLLMENTS + "/semester-enrollments/88/status"), "{\"status\":\"COMPLETED\"}"),
                 json(post(ENROLLMENTS + "/semester-enrollments/88/courses"), "{\"courseOfferingId\":31}"),
-                json(put(ENROLLMENTS + "/course-enrollments/140/status"), "{\"status\":\"WITHDRAWN\"}"),
-                post(ENROLLMENTS + "/course-enrollments/140/provision-lms"));
+                json(put(ENROLLMENTS + "/course-enrollments/140/status"), "{\"status\":\"WITHDRAWN\"}"));
     }
 
     // Each call gets new requests, so a token is never added to a request that already carries one.
@@ -111,7 +106,7 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         for (MockHttpServletRequestBuilder request : requests.get()) {
             mockMvc.perform(request).andExpect(status().isUnauthorized());
         }
-        verifyNoInteractions(offerings, queries, enrollments, courseEnrollments);
+        verifyNoInteractions(offerings, queries, enrollments);
     }
 
     @Test
@@ -171,7 +166,7 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
             mockMvc.perform(as(denied, json(post(ENROLLMENTS + "/students/57/semesters"), "not json"))).andExpect(status().isForbidden());
             mockMvc.perform(as(denied, json(put(ENROLLMENTS + "/course-enrollments/abc/status"), "{}"))).andExpect(status().isForbidden());
         }
-        verifyNoInteractions(offerings, queries, enrollments, courseEnrollments);
+        verifyNoInteractions(offerings, queries, enrollments);
     }
 
     @Test
@@ -190,9 +185,8 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void enrollmentRequestsTakeTheStudentAndEnrollmentFromThePathAndNeverAStatusOnCreation() throws Exception {
-        when(courseEnrollments.create(eq(88L), any())).thenReturn(new CourseEnrollmentCreatedResponse(
-                new CourseEnrollmentResponse(140L, 88L, 31L, 12L, "CS301", "Data Structures", new BigDecimal("4.00"), "ENROLLED"),
-                "NO_LMS_COURSE"));
+        when(enrollments.createCourseEnrollment(eq(88L), any())).thenReturn(
+                new CourseEnrollmentResponse(140L, 88L, 31L, 12L, "CS301", "Data Structures", new BigDecimal("4.00"), "ENROLLED"));
 
         mockMvc.perform(as(enrollmentManager(), json(post(ENROLLMENTS + "/students/57/semesters"),
                         "{\"semesterId\":9,\"studentProfileId\":58,\"status\":\"COMPLETED\"}")))
@@ -200,20 +194,17 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(enrollmentManager(), json(post(ENROLLMENTS + "/semester-enrollments/88/courses"),
                         "{\"courseOfferingId\":31,\"semesterEnrollmentId\":90,\"status\":\"WITHDRAWN\"}")))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.courseEnrollment.status").value("ENROLLED"))
-                .andExpect(jsonPath("$.lmsProvisioning").value("NO_LMS_COURSE"));
+                .andExpect(jsonPath("$.status").value("ENROLLED"))
+                .andExpect(jsonPath("$.lmsProvisioning").doesNotExist());
         mockMvc.perform(as(enrollmentManager(), json(put(ENROLLMENTS + "/semester-enrollments/88/status"), "{\"status\":\"WITHDRAWN\"}")))
                 .andExpect(status().isOk());
         mockMvc.perform(as(enrollmentManager(), json(put(ENROLLMENTS + "/course-enrollments/140/status"), "{\"status\":\"COMPLETED\"}")))
                 .andExpect(status().isOk());
-        mockMvc.perform(as(enrollmentManager(), post(ENROLLMENTS + "/course-enrollments/140/provision-lms")))
-                .andExpect(status().isOk());
 
         verify(enrollments).createSemesterEnrollment(57L, new SemesterEnrollmentCreate(9L));
-        verify(courseEnrollments).create(88L, new CourseEnrollmentCreate(31L));
+        verify(enrollments).createCourseEnrollment(88L, new CourseEnrollmentCreate(31L));
         verify(enrollments).changeSemesterEnrollmentStatus(88L, new SemesterEnrollmentStatusChange(SemesterEnrollmentStatus.WITHDRAWN));
-        verify(courseEnrollments).changeStatus(140L, new CourseEnrollmentStatusChange(CourseEnrollmentStatus.COMPLETED));
-        verify(courseEnrollments).retryProvisioning(140L);
+        verify(enrollments).changeCourseEnrollmentStatus(140L, new CourseEnrollmentStatusChange(CourseEnrollmentStatus.COMPLETED));
     }
 
     @Test
@@ -246,7 +237,7 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isBadRequest());
         mockMvc.perform(as(enrollmentManager(), json(put(ENROLLMENTS + "/course-enrollments/abc/status"), "{\"status\":\"COMPLETED\"}")))
                 .andExpect(status().isBadRequest());
-        verifyNoInteractions(offerings, queries, enrollments, courseEnrollments);
+        verifyNoInteractions(offerings, queries, enrollments);
     }
 
     @Test
@@ -254,14 +245,12 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         when(offerings.create(any())).thenThrow(new ApiException(HttpStatus.CONFLICT, CourseOfferingManagementService.TAKEN));
         when(enrollments.createSemesterEnrollment(eq(57L), any()))
                 .thenThrow(new ApiException(HttpStatus.CONFLICT, AcademicEnrollmentManagementService.SEMESTER_TAKEN));
-        when(courseEnrollments.create(eq(88L), any()))
+        when(enrollments.createCourseEnrollment(eq(88L), any()))
                 .thenThrow(new ApiException(HttpStatus.CONFLICT, AcademicEnrollmentManagementService.OTHER_SEMESTER));
         when(enrollments.changeSemesterEnrollmentStatus(eq(88L), any()))
                 .thenThrow(new ApiException(HttpStatus.CONFLICT, AcademicEnrollmentManagementService.ACTIVE_COURSES));
         when(queries.studentSemesterEnrollments(99L))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, AdminEnrollmentQueryService.STUDENT_NOT_FOUND));
-        when(courseEnrollments.retryProvisioning(140L))
-                .thenThrow(new ApiException(HttpStatus.SERVICE_UNAVAILABLE, CourseEnrollmentWorkflow.PROVISIONING_FAILED));
 
         mockMvc.perform(as(offeringManager(), json(post(OFFERINGS), "{\"courseId\":12,\"semesterId\":9}")))
                 .andExpect(status().isConflict())
@@ -278,9 +267,6 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(enrollmentManager(), get(ENROLLMENTS + "/students/99/semesters")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Student not found."));
-        mockMvc.perform(as(enrollmentManager(), post(ENROLLMENTS + "/course-enrollments/140/provision-lms")))
-                .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.message").value(CourseEnrollmentWorkflow.PROVISIONING_FAILED));
     }
 
     @Test
@@ -292,7 +278,7 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
                 ENROLLMENTS + "/course-enrollments/140/status"}) {
             mockMvc.perform(as(everything, delete(path))).andExpect(status().isMethodNotAllowed());
         }
-        verifyNoInteractions(offerings, queries, enrollments, courseEnrollments);
+        verifyNoInteractions(offerings, queries, enrollments);
     }
 
     @Test
@@ -306,8 +292,10 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
                 {ENROLLMENTS + "/semester-enrollments/{semesterEnrollmentId}/status", "put"},
                 {ENROLLMENTS + "/semester-enrollments/{semesterEnrollmentId}/courses", "get"},
                 {ENROLLMENTS + "/semester-enrollments/{semesterEnrollmentId}/courses", "post"},
-                {ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/status", "put"},
-                {ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/provision-lms", "post"}};
+                {ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/status", "put"}};
+        // LMS access is worked out live from enrollment, so there is nothing to provision or retry.
+        result.andExpect(jsonPath("$.paths['" + ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/provision-lms']")
+                .doesNotExist());
         for (String[] operation : operations) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())

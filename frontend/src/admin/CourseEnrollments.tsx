@@ -1,11 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
-import { getApiError, getHttpStatus } from '../api/apiError'
 import {
   createCourseEnrollment,
   getCourseOfferings,
   getSemesterCourseEnrollments,
-  retryLmsProvisioning,
   updateCourseEnrollmentStatus,
 } from '../api/adminEnrollmentApi'
 import { queryKeys } from '../api/queryKeys'
@@ -18,7 +16,7 @@ import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { creditsText } from '../courses/credits'
 import type { AdminCourseEnrollment, AdminSemesterEnrollment, EnrollmentStatus } from '../types/admin'
-import { Alert, Button, Card } from '../ui'
+import { Button, Card } from '../ui'
 import { ENROLLMENT_DENIED, offeringLabel, refusalText, semesterContext } from './enrollmentText'
 import { MasterForm } from './MasterForm'
 import { CodeName, MasterStatus } from './MasterParts'
@@ -26,20 +24,11 @@ import { SIGN_IN_AGAIN } from './MasterSection'
 
 type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED' | 'DROPPED'> }
 
-/** What the LMS step said after a course was added. The academic enrollment stands in every case. */
-type LmsNote =
-  | { kind: 'noLmsCourse' }
-  | { kind: 'failed'; courseEnrollmentId: number; courseCode: string; retrying: boolean; error: string | null }
-  | { kind: 'provisioned'; courseCode: string }
-
-const NO_LMS_COURSE = 'Academic enrollment created. LMS access will be available when an LMS course is provisioned.'
-const LMS_FAILED = 'Course enrollment was created, but LMS access could not be provisioned.'
-
 /**
  * The course enrollments of one semester enrollment. While it is enrolled, a course can be added from the offerings
  * of the same semester, which the backend filters, and each enrolled course can be completed or withdrawn after a
- * confirmation. An ended semester enrollment's courses are read-only. LMS membership follows the official
- * enrollment on the backend; this only reports what happened and offers a retry when it failed.
+ * confirmation. An ended semester enrollment's courses are read-only. LMS access follows the official enrollment
+ * live, whenever the offering's LMS course is published, so there is nothing to provision here.
  */
 export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: AdminSemesterEnrollment }) {
   const queryClient = useQueryClient()
@@ -56,7 +45,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
   const [adding, setAdding] = useState(false)
   const [ending, setEnding] = useState<Ending | null>(null)
   const [announcement, setAnnouncement] = useState('')
-  const [lmsNote, setLmsNote] = useState<LmsNote | null>(null)
   const rows = request.status === 'loaded' ? request.data.courseEnrollments : null
   const focusLater = usePendingFocus(sectionRef)
   const context = semesterContext(semesterEnrollment)
@@ -91,21 +79,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
     void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
   }
 
-  async function retry(note: Extract<LmsNote, { kind: 'failed' }>) {
-    setLmsNote({ ...note, retrying: true, error: null })
-    try {
-      await retryLmsProvisioning(note.courseEnrollmentId)
-      setLmsNote({ kind: 'provisioned', courseCode: note.courseCode })
-    } catch (failure) {
-      const status = getHttpStatus(failure)
-      setLmsNote({
-        ...note,
-        retrying: false,
-        error: status === 401 ? null : refusalText(status, getApiError(failure)?.message ?? null),
-      })
-    }
-  }
-
   function endingFor(row: AdminCourseEnrollment) {
     return ending?.courseEnrollmentId === row.courseEnrollmentId ? ending : null
   }
@@ -119,7 +92,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
       onClick={() => {
         if (!blocked) {
           setAnnouncement('')
-          setLmsNote(null)
           setAdding(true)
         }
       }}
@@ -133,23 +105,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
       <p role="status" className="sr-only">
         {announcement}
       </p>
-      <div role="status">
-        {lmsNote?.kind === 'noLmsCourse' && <Alert tone="info">{NO_LMS_COURSE}</Alert>}
-        {lmsNote?.kind === 'provisioned' && <Alert tone="success">LMS access provisioned for {lmsNote.courseCode}.</Alert>}
-      </div>
-      {lmsNote?.kind === 'failed' && (
-        <Alert
-          tone="error"
-          title={LMS_FAILED}
-          action={
-            <Button variant="secondary" size="sm" aria-disabled={lmsNote.retrying || undefined} onClick={() => !lmsNote.retrying && retry(lmsNote)}>
-              {lmsNote.retrying ? 'Retrying…' : 'Retry LMS provisioning'}
-            </Button>
-          }
-        >
-          {lmsNote.error}
-        </Alert>
-      )}
 
       {adding && choices !== null && (
           <MasterForm
@@ -163,17 +118,9 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
             initial={{ courseOfferingId: '' }}
             submitLabel="Add course"
             onSubmit={async (values) => {
-              const created = await createCourseEnrollment(semesterEnrollmentId, Number(values.courseOfferingId))
-              const course = created.courseEnrollment
+              const course = await createCourseEnrollment(semesterEnrollmentId, Number(values.courseOfferingId))
               setAdding(false)
               changed(`${course.courseCode} added to ${context}.`)
-              setLmsNote(
-                created.lmsProvisioning === 'NO_LMS_COURSE'
-                  ? { kind: 'noLmsCourse' }
-                  : created.lmsProvisioning === 'FAILED'
-                    ? { kind: 'failed', courseEnrollmentId: course.courseEnrollmentId, courseCode: course.courseCode, retrying: false, error: null }
-                    : null,
-              )
               focusLater('add-course')
             }}
             onCancel={() => {

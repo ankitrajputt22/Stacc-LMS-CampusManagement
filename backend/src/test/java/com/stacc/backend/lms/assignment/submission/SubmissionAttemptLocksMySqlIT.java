@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Several hand-ins by one student at the same moment, on MySQL: each becomes its own attempt with its own number, and
- * the numbers continue without gaps or repeats. The numbers are reserved under the membership row lock, never from
+ * the numbers continue without gaps or repeats. The numbers are reserved under the course enrollment row lock, never from
  * {@code MAX + 1}. Uses student2 in CS301's published assignment with a future deadline, which no other MySQL test uses.
  */
 class SubmissionAttemptLocksMySqlIT extends MySqlIntegrationTest {

@@ -65,7 +65,7 @@ Three separate things are checked, in this order:
 
 1. The role: the caller is a student account.
 2. The permission: that account may use the LMS course-view feature.
-3. The data: the query returns only the LMS courses this particular student may currently use, decided from official enrollment and LMS membership.
+3. The data: the query returns only the LMS courses this particular student may currently use, decided live from official enrollment and the course's state.
 
 The first two are the method rule. The third is not, and a method rule can never replace it: passing the rule only lets the caller ask. What they may see is still decided from the data, for the account in the token. An admin who is not a student is refused by the rule, even with the permission.
 

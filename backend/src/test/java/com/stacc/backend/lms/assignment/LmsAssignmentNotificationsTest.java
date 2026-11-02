@@ -57,7 +57,7 @@ class LmsAssignmentNotificationsTest {
     @Test
     void aGradeReachesOnlyTheStudentWhoHandedInTheAttempt() {
         LmsAssignmentSubmission submission = new LmsAssignmentSubmission(assignment,
-                SubmissionFixtures.membership(course, 12, 40).getCourseEnrollment());
+                SubmissionFixtures.enrollment(course, 12, 40));
         LmsSubmissionAttempt attempt = new LmsSubmissionAttempt(submission, 2, "Work", Instant.parse("2026-10-20T17:00:00Z"),
                 SubmissionFixtures.DUE);
         LmsSubmissionGrade grade = new LmsSubmissionGrade(attempt, SubmissionFixtures.faculty(course, 21, 61),

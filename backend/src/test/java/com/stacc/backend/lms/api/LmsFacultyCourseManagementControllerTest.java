@@ -56,7 +56,7 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
 
     private static List<MockHttpServletRequestBuilder> routes() {
         return List.of(get(ROOT + "/managed-courses"), post(ROOT + "/course-offerings/31/lms-course"),
-                post(ROOT + "/courses/42/sync-student-memberships"), post(ROOT + "/courses/42/publish"),
+                post(ROOT + "/courses/42/publish"),
                 post(ROOT + "/courses/42/archive"));
     }
 
@@ -103,7 +103,6 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
     @Test
     void lifecycleChangesTakeTheCourseFromThePathAndTheFacultyFromTheToken() throws Exception {
         when(managementService.create(ACCOUNT, 31L)).thenReturn(new LmsCourseChange(42L, 31L, LmsCourseStatus.DRAFT, 2));
-        when(managementService.synchronizeStudentMemberships(ACCOUNT, 42L)).thenReturn(new LmsCourseChange(42L, 31L, LmsCourseStatus.DRAFT, 2));
         when(managementService.publish(ACCOUNT, 42L)).thenReturn(new LmsCourseChange(42L, 31L, LmsCourseStatus.PUBLISHED, 2));
         when(managementService.archive(ACCOUNT, 42L)).thenReturn(new LmsCourseChange(42L, 31L, LmsCourseStatus.ARCHIVED, null));
 
@@ -111,15 +110,15 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.lmsCourseId").value(42))
                 .andExpect(jsonPath("$.lmsCourseStatus").value("DRAFT"))
-                .andExpect(jsonPath("$.synchronizedCount").value(2));
-        mockMvc.perform(as(manager(), post(ROOT + "/courses/42/sync-student-memberships"))).andExpect(status().isOk());
+                .andExpect(jsonPath("$.currentStudentCount").value(2));
+        mockMvc.perform(as(manager(), post(ROOT + "/courses/42/sync-student-memberships"))).andExpect(status().isNotFound());
         mockMvc.perform(as(manager(), post(ROOT + "/courses/42/publish")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lmsCourseStatus").value("PUBLISHED"));
         mockMvc.perform(as(manager(), post(ROOT + "/courses/42/archive")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lmsCourseStatus").value("ARCHIVED"))
-                .andExpect(jsonPath("$.synchronizedCount").isEmpty());
+                .andExpect(jsonPath("$.currentStudentCount").isEmpty());
     }
 
     @Test
@@ -150,7 +149,7 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
         var result = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
         String[][] operations = {
                 {"/managed-courses", "get"}, {"/course-offerings/{courseOfferingId}/lms-course", "post"},
-                {"/courses/{lmsCourseId}/sync-student-memberships", "post"}, {"/courses/{lmsCourseId}/publish", "post"},
+                {"/courses/{lmsCourseId}/publish", "post"},
                 {"/courses/{lmsCourseId}/archive", "post"}};
         for (String[] operation : operations) {
             String path = "$.paths['" + ROOT + operation[0] + "']." + operation[1];

@@ -2,9 +2,14 @@ package com.stacc.backend.lms.api;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.academic.department.Department;
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.program.Program;
 import com.stacc.backend.academic.semester.Semester;
@@ -13,15 +18,13 @@ import com.stacc.backend.lms.access.LmsStudentAccessPolicy;
 import com.stacc.backend.lms.access.LmsStudentAccessService;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Lists the LMS courses a student may currently use, and shows one of them. It only reads: it never
- * creates a missing membership, and a course the student cannot use is left out or unavailable.
+ * Lists the LMS courses a student may currently use, and shows one of them. It only reads, from the official
+ * enrollment and the course's state; a course the student cannot use is left out or unavailable.
  */
 @Service
 public class LmsStudentCourseQueryService {
@@ -32,15 +35,15 @@ public class LmsStudentCourseQueryService {
             .comparing(LmsCourseSummaryResponse::courseCode)
             .thenComparing(LmsCourseSummaryResponse::lmsCourseId);
 
-    private final LmsStudentMembershipRepository memberships;
+    private final CourseEnrollmentRepository courseEnrollments;
     private final LmsCourseRepository lmsCourses;
     private final LmsStudentAccessService accessService;
 
     public LmsStudentCourseQueryService(
-            LmsStudentMembershipRepository memberships,
+            CourseEnrollmentRepository courseEnrollments,
             LmsCourseRepository lmsCourses,
             LmsStudentAccessService accessService) {
-        this.memberships = memberships;
+        this.courseEnrollments = courseEnrollments;
         this.lmsCourses = lmsCourses;
         this.accessService = accessService;
     }
@@ -57,9 +60,19 @@ public class LmsStudentCourseQueryService {
         if (userAccountId == null) {
             return List.of();
         }
-        return memberships.findAllWithCourseDetailsByUserAccountId(userAccountId).stream()
-                .filter(membership -> LmsStudentAccessPolicy.grantsCurrentAccess(membership, userAccountId))
-                .map(LmsStudentMembership::getLmsCourse)
+        List<CourseEnrollment> enrollments = courseEnrollments.findAllWithStudentByUserAccountId(userAccountId);
+        if (enrollments.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, LmsCourse> byOffering = lmsCourses.findAllWithAcademicContextByCourseOfferingIdIn(enrollments.stream()
+                        .map(enrollment -> enrollment.getCourseOffering().getId()).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(course -> course.getCourseOffering().getId(), Function.identity()));
+        return enrollments.stream()
+                .filter(enrollment -> byOffering.containsKey(enrollment.getCourseOffering().getId()))
+                .filter(enrollment -> LmsStudentAccessPolicy.grantsCurrentAccess(enrollment,
+                        byOffering.get(enrollment.getCourseOffering().getId()), userAccountId))
+                .map(enrollment -> byOffering.get(enrollment.getCourseOffering().getId()))
                 .map(LmsStudentCourseQueryService::summaryOf)
                 // Consistent data never lists a course twice. This keeps the answer clean if it is not.
                 .distinct()

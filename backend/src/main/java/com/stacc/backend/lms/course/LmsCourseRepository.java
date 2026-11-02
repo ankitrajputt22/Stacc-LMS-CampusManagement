@@ -34,9 +34,25 @@ public interface LmsCourseRepository extends JpaRepository<LmsCourse, Long> {
             """)
     Optional<LmsCourse> findWithAcademicContextById(@Param("lmsCourseId") Long lmsCourseId);
 
+    /** The LMS courses of these course offerings, each with the same academic details as one course page. */
+    @Query("""
+            select lmsCourse
+            from LmsCourse lmsCourse
+            join fetch lmsCourse.courseOffering courseOffering
+            join fetch courseOffering.course course
+            join fetch course.department
+            join fetch courseOffering.semester semester
+            join fetch semester.program
+            join fetch semester.academicSession
+            left join fetch courseOffering.section
+            where courseOffering.id in :courseOfferingIds
+            """)
+    List<LmsCourse> findAllWithAcademicContextByCourseOfferingIdIn(
+            @Param("courseOfferingIds") Collection<Long> courseOfferingIds);
+
     /**
-     * One LMS course, locked until the transaction ends ({@code SELECT ... FOR UPDATE}), so two lifecycle changes or
-     * membership synchronizations of the same course never run at once.
+     * One LMS course, locked until the transaction ends ({@code SELECT ... FOR UPDATE}), so two lifecycle changes of the
+     * same course never run at once.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select lmsCourse from LmsCourse lmsCourse where lmsCourse.id = :lmsCourseId")

@@ -108,7 +108,7 @@
 - New enrollments always start `ENROLLED`; never take the status, the student, or the enrollment from a request body. `ENROLLED` may become `COMPLETED` or `WITHDRAWN` once (and a course enrollment `DROPPED`, only by the student); the same status changes nothing, and nothing reopens.
 - A semester enrollment ends only after its course enrollments have ended. Never cascade statuses, and keep every enrollment as history.
 - The student lookup is read-only and returns only profile ID, login ID, program, admission session, and profile status. Never create or edit accounts or profiles in enrollment APIs.
-- Official course enrollment decides LMS eligibility. Save and commit it first, then provision LMS membership through `CourseEnrollmentLmsPort` only when the offering already has an `LmsCourse`. Enrollment succeeds without one, never creates one, and an LMS failure never undoes it; the retry route recovers.
+- Official course enrollment decides LMS access live (see LMS Data); enrolling or ending an enrollment touches no LMS table and never creates an `LmsCourse`.
 - Offerings need `ADMIN` with `ACADEMIC_OFFERING_VIEW` and, to change, `ACADEMIC_OFFERING_MANAGE`; enrollments and rosters need `ADMIN` with `ACADEMIC_ENROLLMENT_VIEW` and, to change, `ACADEMIC_ENROLLMENT_MANAGE`.
 
 ## Course Registration
@@ -116,13 +116,13 @@
 - Students register themselves in `academic.registration` (`docs/course-registration.md`): the student always comes from the access token, and registration creates an ordinary `CourseEnrollment`, never a separate registration record.
 - Registration is all or nothing. Lock the student's semester enrollments, then the offerings, in ID order (admin enrollment uses the same order), then count `ENROLLED` places with a locking read, so a capacity is never exceeded. Check the registration status `OPEN`, the semester's period, the section, an earlier enrollment, the capacity, and the program's credit limit on the server every time.
 - Dropping is only by the student, before the semester's drop deadline: the enrollment becomes `DROPPED` with `droppedAt` and is never deleted or reopened, and the same offering cannot be taken again. Admins complete or withdraw; they never set `DROPPED`.
-- Commit the enrollment first, then provision or deactivate LMS membership through `CourseEnrollmentLmsPort`; an LMS failure never undoes registration or a drop.
+- LMS access follows the enrollment live, so registering or dropping writes nothing on the LMS side.
 - The admin enrollment monitor (`GET /api/v1/admin/academic/enrollments/course-enrollments`, `ADMIN` with `ACADEMIC_ENROLLMENT_VIEW`) filters and pages in one bounded query and only reads. Faculty class lists (`/api/v1/faculty/me/course-offerings`, `FACULTY` with `ENROLLED_STUDENTS_VIEW`) come only from `FacultyTeachingAccessService`; an offering not taught answers 404, and faculty never change enrollments. Neither shows contact details.
 - The registration routes need `STUDENT` with `COURSE_REGISTRATION_VIEW`, `COURSE_REGISTER`, or `COURSE_DROP`. Do not add prerequisites, elective groups, waiting lists, or withdrawal approval without their own phase.
 
 ## Attendance
 
-- Attendance (`academic.attendance`) belongs to `CourseOffering`, never to `Course` or `LmsCourse`, and must not depend on LMS data or provisioning. See `docs/attendance.md`.
+- Attendance (`academic.attendance`) belongs to `CourseOffering`, never to `Course` or `LmsCourse`, and must not depend on LMS data. See `docs/attendance.md`.
 - Faculty attendance access comes from `FacultyTeachingAccessService`: an `ACTIVE` faculty profile with an `ACTIVE` teaching assignment for the offering. Find the offering from the stored session, never from the client. No admin pass.
 - Creating a session snapshots the offering's currently `ENROLLED` course enrollments in the same transaction. Later enrollment changes never alter an existing roster, and faculty never add or remove students.
 - Records start `UNMARKED`, never `ABSENT`. Saves name records by `attendanceRecordId` only, each once and from that session. The server sets `markedBy` and `markedAt`.
@@ -159,25 +159,20 @@
 - ERP `CourseEnrollment` remains the source of truth for official LMS student access. A `PUBLISHED` LMS course alone grants no student access.
 - Archive an LMS course instead of deleting it, so its history is kept.
 - The `lms` module may use academic data. Academic models must never refer to LMS models.
-- ERP `CourseEnrollment` is the source of truth for official student course participation. `LmsStudentMembership` is only an LMS-side projection of it.
-- One course enrollment has at most one `LmsStudentMembership`, and its course enrollment and LMS course must belong to the same course offering.
-- Create LMS student memberships only through `LmsStudentMembershipProvisioningService`, from an official ERP course enrollment. Only an `ENROLLED` enrollment may get an active membership.
-- Provisioning must stay idempotent. It must never modify ERP data, create a missing `LmsCourse`, or move a membership to another LMS course.
-- Do not copy the student, account, course offering, course, or semester onto an LMS membership. Make a membership inactive instead of deleting it.
-- An `ACTIVE` membership alone does not give access. The LMS course's status and the ERP enrollment still count.
+- ERP `CourseEnrollment` is the source of truth for official student course participation, and student LMS access is worked out live from it and the course's state (roadmap decision 5). There is no student membership copy: never add one, a sync job, or a provisioning step. The old `lms_student_memberships` table is kept only as history; nothing reads or writes it.
 - Student access to an LMS course is decided on the backend by `LmsStudentAccessService`, from the signed-in account's ID. Hiding things in the frontend is not security, and an ID sent by the client never says who the caller is.
-- Current student access needs all of: an `ACTIVE` student profile, an `ENROLLED` semester enrollment and course enrollment, an `ACTIVE` membership, a `PUBLISHED` LMS course, and the same course offering on both sides.
-- An access check only reads. It must never provision, reactivate, repair, or change data.
+- Current student access needs all of: an `ACTIVE` student profile, an `ENROLLED` semester enrollment and course enrollment, a `PUBLISHED` LMS course, and the same course offering on both sides. Dropping, withdrawing, completing, or deactivating ends it at once everywhere (course pages, submissions, notifications, search, calendar, AI).
+- An access check only reads. It must never change data.
 - The access rule is written once, in `LmsStudentAccessPolicy`. Every LMS check and list must use it instead of repeating or loosening the conditions.
 - Self-service endpoints take the caller from the access token with `AuthenticatedAccount.idFrom(...)`. Never accept an account, student, profile, or enrollment ID from the client to decide whose data is returned.
-- `GET /api/v1/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment and membership policy still decides what is returned.
-- LMS read endpoints must be side-effect free and must never provision a missing membership.
+- `GET /api/v1/lms/my-courses` requires the `STUDENT` role and the `LMS_COURSE_VIEW` permission together. Passing that rule only lets the caller ask; the enrollment policy still decides what is returned.
+- LMS read endpoints must be side-effect free.
 - `GET /api/v1/lms/courses/{lmsCourseId}` uses the same rule as `my-courses` and runs the access policy again on every request. A missing course and one the student may not use get the same 404, so the API never reveals which LMS course IDs exist.
 - `ADMIN` gets no implicit student LMS access. Design any admin or faculty LMS access explicitly, with its own permission.
 - A migration that adds a permission also lists it in `docs/permissions.md` and looks roles and permissions up by name, never by ID.
 - Do not add historical or read-only LMS access rules without an explicit feature phase.
-- Provisioning is an explicit call. Do not add automatic ERP-to-LMS synchronization (listeners, schedulers, startup scans, or bulk jobs) without a dedicated phase.
-- Faculty access must not be modelled from student course enrollment or added to the student membership.
+- Do not add ERP-to-LMS synchronization (listeners, schedulers, startup scans, bulk jobs, or sync records): access is derived, so there is nothing to sync.
+- Faculty access must not be modelled from student course enrollment.
 - Course content is `LmsCourse` → `LmsModule` → `LmsTopic` in `lms.content`, with `DRAFT`, `PUBLISHED`, `ARCHIVED`. Archive content; never hard-delete it or add delete routes.
 - Students see a topic only when the student access policy allows the course and both the module and the topic are `PUBLISHED`. The rule lives in `LmsContentPolicy`; do not repeat or loosen it.
 - Faculty content changes go through `LmsContentManagementService`, which finds the course from the stored module or topic and checks `LmsFacultyAccessService` every time. Never trust a course ID from the client as ownership. Inaccessible content answers 404.
@@ -196,8 +191,8 @@
 - Assignments use `LmsContentStatus` with the same `publishedAt` rules as announcements. Archive them; never hard-delete them. A published assignment stays visible to students after its deadline; never hide or archive it automatically.
 - Students see only `PUBLISHED` assignments of courses the student access policy allows. Faculty read them with `FACULTY_COURSE_VIEW` under the faculty access policy, finding the course from the stored assignment; every change also needs `LMS_ASSIGNMENT_MANAGE`.
 - Do not add assignment attachments, rubrics, or reminders without their own phase. Only the first publication notifies students, through the Inbox.
-- A submission (`lms.assignment.submission`) belongs to one assignment and the student's official `CourseEnrollment`, unique per pair. Never store an account, profile, or login ID on it, and never accept one from the client for "my" submissions: find the enrollment with `LmsStudentAccessService.findAccessGrantingMembership`.
-- Every hand-in is a new immutable `LmsSubmissionAttempt`. Never edit, overwrite, or delete attempts or their attachments. Reserve attempt numbers under the membership row lock and a locking read of the submission, never from `MAX + 1` alone.
+- A submission (`lms.assignment.submission`) belongs to one assignment and the student's official `CourseEnrollment`, unique per pair. Never store an account, profile, or login ID on it, and never accept one from the client for "my" submissions: find the enrollment with `LmsStudentAccessService.findAccessGrantingEnrollment`.
+- Every hand-in is a new immutable `LmsSubmissionAttempt`. Never edit, overwrite, or delete attempts or their attachments. Reserve attempt numbers under the course enrollment row lock (re-checking it is still `ENROLLED`) and a locking read of the submission, never from `MAX + 1` alone.
 - Each attempt keeps `dueAtSnapshot`; `late` is computed from it, never from the assignment's current deadline. Late work is accepted and marked late until a phase adds cut-offs.
 - Submission files reuse the study-material file rules and the private bucket behind `ObjectStorageService`, with server-made keys that never reach a client. A student downloads only their own files; anything else answers the same 404 as a missing file. Submission routes need `STUDENT`, `LMS_COURSE_VIEW`, and `LMS_ASSIGNMENT_SUBMIT`.
 - A grade (`LmsSubmissionGrade` in `lms.assignment.submission`) belongs to one attempt, at most one each. Regrading replaces the marks and feedback without history. Never put marks on an attempt, submission, or assignment, and never move a grade to another attempt.
@@ -207,11 +202,10 @@
 - Faculty LMS access derives directly from official `TeachingAssignment` records through `LmsFacultyAccessService` and the single rule in `LmsFacultyAccessPolicy`. Do not add an `LmsFacultyMembership` without a real need.
 - Faculty access needs an `ACTIVE` faculty profile, an `ACTIVE` teaching assignment for the LMS course's offering, and a `DRAFT` or `PUBLISHED` LMS course. Students stay `PUBLISHED`-only; faculty draft access must never reach the student policy.
 - `GET /api/v1/lms/faculty/my-courses` requires `FACULTY` and `FACULTY_COURSE_VIEW` together and takes the caller from the access token, never a faculty, profile, employee, or assignment ID from the client. There is no admin pass.
-- Faculty create and manage an `LmsCourse` only for an offering they teach through an `ACTIVE` teaching assignment, checked with `FacultyTeachingAccessService` on the offering found from the stored course. `LmsCourseManagementService` owns create, sync, publish, and archive; every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_COURSE_MANAGE`. See `docs/lms-foundation.md`.
+- Faculty create and manage an `LmsCourse` only for an offering they teach through an `ACTIVE` teaching assignment, checked with `FacultyTeachingAccessService` on the offering found from the stored course. `LmsCourseManagementService` owns create, publish, and archive; every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_COURSE_MANAGE`. See `docs/lms-foundation.md`.
 - `LmsCourse` stays one-to-one with `CourseOffering` and starts `DRAFT`. Publish only a draft, archive a draft or published course, and never restore, delete, or add course settings fields without their own phase.
 - The faculty management list starts from teaching assignments, so offerings without an `LmsCourse` and archived courses always appear. Do not loosen `LmsFacultyAccessPolicy` to show archived courses.
-- Membership synchronization reuses `LmsStudentMembershipProvisioningService`; never insert memberships elsewhere. It provisions only current students (both enrollments `ENROLLED`, profile `ACTIVE`), never creates or changes an enrollment, and never deletes a membership. Creating a course and its memberships is one transaction.
-- Faculty never manage course offerings, enrollments, teaching assignments, or individual memberships. Academic data stays the source of truth.
+- Faculty never manage course offerings, enrollments, or teaching assignments. Academic data stays the source of truth.
 - Add LMS content models only in their own feature phases.
 
 ## Frontend Authentication
@@ -234,7 +228,7 @@
 - Do not build role-specific dashboards or role route trees before their roadmap phases. The student, faculty, and admin dashboards render on `/`, one part per role the account holds, in the fixed order Student, Faculty, Admin; never pick a role with `roles[0]`, and add no role switcher.
 - The student Courses page (`/courses`) gets its data only from `GET /api/v1/lms/my-courses` through `apiClient`. Never show made-up academic or LMS data, such as teachers, progress, grades, or due dates the API does not send.
 - The Courses link is shown to any account holding `STUDENT`. The backend's `LMS_COURSE_VIEW` and enrollment policy still decide what is listed; a 403 shows an access-denied state and never ends the session.
-- Read pages must never provision LMS memberships or change data.
+- Read pages must never change data.
 - A course page lives at `/courses/:lmsCourseId`, using the `lmsCourseId` from the API. Never put a course code, enrollment ID, or account ID in the URL, and never treat arriving from the list as access: the backend checks every request.
 - The course home shows only what `GET /api/v1/lms/courses/{lmsCourseId}` and its `/content`, `/announcements`, and `/assignments` routes return. Do not add placeholder tabs or content before their phases.
 - Deadlines are entered and shown in the browser's own time zone; "Past due" is display only. The faculty `/assignments` overview links to course pages and is not a second editor.
@@ -242,12 +236,12 @@
 - Faculty grade at `/teaching/:lmsCourseId/assignments/:assignmentId/submissions`, which shows only what the grading API returns and says that saving makes the grade visible to the student. Grades and feedback are shown per attempt, as plain text.
 - On a course page, a 404 shows one "Course unavailable" message for missing and inaccessible courses alike, and a 403 shows access denied without ending the session.
 - The faculty Teaching page (`/teaching`) gets its data only from `GET /api/v1/lms/faculty/managed-courses`, is shown to any account holding `FACULTY`, and shows every offering taught with its LMS state: Create for none, Open and Publish for a draft, Open for a published course, and nothing to open for an archived one. It links only to `/teaching/:lmsCourseId`, never to the student course home. A 403 on faculty pages never ends the session. Do not add invented faculty figures.
-- `/teaching/:lmsCourseId` has Course settings for syncing student access, publishing, and archiving, each confirmed when it cannot be undone; archiving returns to `/teaching`. Do not add student or enrollment editing to faculty pages.
+- `/teaching/:lmsCourseId` has Course settings for publishing and archiving, each confirmed when it cannot be undone; archiving returns to `/teaching`. Do not add student or enrollment editing to faculty pages.
 - Content ordering uses keyboard-accessible Move up and Move down buttons. Do not make drag and drop the only way to reorder.
 - The ERP pages (academic admin, attendance, results, calendar) are built only from `src/ui` and load data with `useApiQuery`; keep them that way. Admin lists search, filter by status, and page on the client over what the API sent, and a change invalidates `queryKeys.admin.academic`.
 - Academic Admin has two rows of `LinkTabs`: areas (Structure, Teaching, People, Calendar; an area's tab opens its first page) and that area's pages. Keep new admin pages inside an area instead of lengthening a row.
 - Admins manage the academic masters at `/admin/academic/:section` (departments, programs, sessions, semesters, courses), with Edit but never Delete, and parent selects filled from the admin API.
-- Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Show LMS provisioning outcomes neutrally, and never offer to create an LMS course there.
+- Admins manage course offerings at `/admin/academic/offerings`, with a read-only roster at `/admin/academic/offerings/:courseOfferingId/enrollments`, and enrollments at `/admin/academic/enrollments`, one student at a time. Ending an enrollment is confirmed first. The add-course select lists only the semester's offerings from the backend. Never offer to create an LMS course there.
 - Faculty record results at `/results` and `/results/:courseOfferingId`; students read their published results at `/academic/results`. Omit the grade and remarks when none were entered, and never show percentages, GPA, or pass or fail.
 - Students register at `/academic/registration` (Registration in the Academics tray): choose open courses, see the summary and credits after registration, and confirm before anything is sent; Drop is confirmed first. Show reasons, seats, and statuses only as the backend sends them.
 - Admins read every course enrollment at `/admin/academic/course-enrollments` (filters and search sent to the server, paged); faculty read class lists at `/class-lists` and `/class-lists/:courseOfferingId`, read-only.

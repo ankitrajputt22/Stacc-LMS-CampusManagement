@@ -7,9 +7,7 @@ import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.CourseEnrollm
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentCreate;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentSectionChange;
 import com.stacc.backend.academic.admin.OfferingEnrollmentRequests.SemesterEnrollmentStatusChange;
-import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentCreatedResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.CourseEnrollmentResponse;
-import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.LmsProvisioningResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.SemesterCourseEnrollmentsResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.SemesterEnrollmentResponse;
 import com.stacc.backend.academic.admin.OfferingEnrollmentResponses.StudentLookupResponse;
@@ -57,13 +55,10 @@ public class AdminEnrollmentController {
 
     private final AdminEnrollmentQueryService queries;
     private final AcademicEnrollmentManagementService enrollments;
-    private final CourseEnrollmentWorkflow courseEnrollments;
 
-    public AdminEnrollmentController(AdminEnrollmentQueryService queries, AcademicEnrollmentManagementService enrollments,
-            CourseEnrollmentWorkflow courseEnrollments) {
+    public AdminEnrollmentController(AdminEnrollmentQueryService queries, AcademicEnrollmentManagementService enrollments) {
         this.queries = queries;
         this.enrollments = enrollments;
-        this.courseEnrollments = courseEnrollments;
     }
 
     @GetMapping("/students")
@@ -187,9 +182,9 @@ public class AdminEnrollmentController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Enroll a student in a course offering",
-            description = "Creates an ENROLLED course enrollment under an ENROLLED semester enrollment, for an offering of the same semester. The status cannot be chosen. Once it is saved, the student is given LMS membership if the offering already has an LMS course; none is ever created. An LMS problem never undoes the enrollment: lmsProvisioning says what happened.",
+            description = "Creates an ENROLLED course enrollment under an ENROLLED semester enrollment, for an offering of the same semester. The status cannot be chosen. While it stays ENROLLED, the student uses the offering's LMS course whenever that course is published; access is worked out live, so nothing else is created.",
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
-    @ApiResponse(responseCode = "201", description = "The new course enrollment and the LMS outcome.")
+    @ApiResponse(responseCode = "201", description = "The new course enrollment.")
     @ApiResponse(
             responseCode = "400",
             description = "A field is missing or invalid. Nothing is saved.",
@@ -202,16 +197,16 @@ public class AdminEnrollmentController {
             responseCode = "409",
             description = "The student is already enrolled in this offering, the semester enrollment has ended, or the offering belongs to another semester.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public CourseEnrollmentCreatedResponse createCourseEnrollment(@PathVariable Long semesterEnrollmentId,
+    public CourseEnrollmentResponse createCourseEnrollment(@PathVariable Long semesterEnrollmentId,
             @Valid @RequestBody CourseEnrollmentCreate request) {
-        return courseEnrollments.create(semesterEnrollmentId, request);
+        return enrollments.createCourseEnrollment(semesterEnrollmentId, request);
     }
 
     @PutMapping("/course-enrollments/{courseEnrollmentId}/status")
     @PreAuthorize(AdminAcademicAccess.ENROLLMENT_MANAGE)
     @Operation(
             summary = "Change a course enrollment’s status",
-            description = "An ENROLLED course enrollment may become COMPLETED or WITHDRAWN. Sending the current status changes nothing. An ended enrollment never changes again; its LMS membership is made inactive, never deleted, and the student loses LMS access to the course.",
+            description = "An ENROLLED course enrollment may become COMPLETED or WITHDRAWN. Sending the current status changes nothing. An ended enrollment never changes again, and the student loses LMS access to the course at once.",
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The course enrollment.")
     @ApiResponse(
@@ -228,29 +223,6 @@ public class AdminEnrollmentController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public CourseEnrollmentResponse changeCourseEnrollmentStatus(@PathVariable Long courseEnrollmentId,
             @Valid @RequestBody CourseEnrollmentStatusChange request) {
-        return courseEnrollments.changeStatus(courseEnrollmentId, request);
-    }
-
-    @PostMapping("/course-enrollments/{courseEnrollmentId}/provision-lms")
-    @PreAuthorize(AdminAcademicAccess.ENROLLMENT_MANAGE)
-    @Operation(
-            summary = "Retry LMS provisioning",
-            description = "Gives the student of an ENROLLED course enrollment LMS membership in the offering’s existing LMS course, when that failed before. It is safe to repeat. It never creates an LMS course and never changes the enrollment.",
-            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
-    @ApiResponse(responseCode = "200", description = "The student has LMS membership.")
-    @ApiResponse(
-            responseCode = "404",
-            description = "The course enrollment does not exist.",
-            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(
-            responseCode = "409",
-            description = "The course enrollment is no longer ENROLLED, or the offering has no LMS course yet.",
-            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(
-            responseCode = "503",
-            description = "LMS membership could not be given just now. The enrollment is unchanged; try again later.",
-            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public LmsProvisioningResponse retryLmsProvisioning(@PathVariable Long courseEnrollmentId) {
-        return courseEnrollments.retryProvisioning(courseEnrollmentId);
+        return enrollments.changeCourseEnrollmentStatus(courseEnrollmentId, request);
     }
 }

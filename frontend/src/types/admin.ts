@@ -231,17 +231,6 @@ export type SemesterCourseEnrollments = {
   courseEnrollments: AdminCourseEnrollment[]
 }
 
-/**
- * What happened on the LMS side once the official course enrollment was saved. The enrollment stands in every case.
- * NO_LMS_COURSE: the offering has no LMS course yet. FAILED: membership can be retried.
- */
-export type LmsProvisioning = 'PROVISIONED' | 'NO_LMS_COURSE' | 'FAILED'
-
-export type CourseEnrollmentCreated = {
-  courseEnrollment: AdminCourseEnrollment
-  lmsProvisioning: LmsProvisioning
-}
-
 export type RosterEntry = {
   courseEnrollmentId: number
   semesterEnrollmentId: number

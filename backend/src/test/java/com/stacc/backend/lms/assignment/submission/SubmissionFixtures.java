@@ -13,7 +13,6 @@ import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /** Made-up courses, enrollments, and assignments for the submission tests, with IDs set the way the database would. */
@@ -33,24 +32,22 @@ public final class SubmissionFixtures {
     }
 
     /**
-     * A student's membership in the course: an account, an active student profile, a semester enrollment,
-     * and a course enrollment for the course's offering.
+     * A student's official place in the course: an account, an active student profile, a semester enrollment, and a
+     * course enrollment for the course's offering, both enrolled.
      */
-    public static LmsStudentMembership membership(LmsCourse course, long accountId, long courseEnrollmentId) {
-        return membership(course, accountId, courseEnrollmentId, "TEST-STUDENT-" + accountId);
+    public static CourseEnrollment enrollment(LmsCourse course, long accountId, long courseEnrollmentId) {
+        return enrollment(course, accountId, courseEnrollmentId, "TEST-STUDENT-" + accountId);
     }
 
     /** The same, for an account with this login ID. */
-    public static LmsStudentMembership membership(LmsCourse course, long accountId, long courseEnrollmentId, String loginId) {
+    public static CourseEnrollment enrollment(LmsCourse course, long accountId, long courseEnrollmentId, String loginId) {
         Semester semester = course.getCourseOffering().getSemester();
         UserAccount account = new UserAccount(loginId, "example-hash-value");
         ReflectionTestUtils.setField(account, "id", accountId);
         StudentProfile student = new StudentProfile(account, semester.getProgram(), semester.getAcademicSession());
         CourseEnrollment courseEnrollment = new CourseEnrollment(new SemesterEnrollment(student, semester), course.getCourseOffering());
         ReflectionTestUtils.setField(courseEnrollment, "id", courseEnrollmentId);
-        LmsStudentMembership membership = new LmsStudentMembership(courseEnrollment, course);
-        ReflectionTestUtils.setField(membership, "id", courseEnrollmentId + 1000);
-        return membership;
+        return courseEnrollment;
     }
 
     /** A faculty member of the course's department, with an account. */

@@ -31,7 +31,7 @@ The seeding runs once the application has started and the database migrations ha
 - With the profile but no `STACC_TEST_PASSWORD` (or one shorter than 8 characters), the backend refuses to start and says why. It also refuses to run next to a `prod` or `production` profile.
 - Passwords are hashed with the shared `PasswordEncoder`, like any other account. Authentication and permissions are unchanged; each account gets its permissions from its roles, as usual.
 - Running it again creates no duplicates and changes nothing that exists. Each record is looked up by its natural key first: login ID, department code, program code, session code, course code, and the title of a module, assignment, event, and so on; a helpdesk category by its code, a ticket by its requester and subject, an approval workflow by its code, a demo approval request by its source ID, a hostel by its code, a room by its hostel and number, and a bed by its room and number. An existing account keeps its password, even if `STACC_TEST_PASSWORD` changed.
-- Records are created through the same services the API uses wherever one exists. So LMS memberships come from provisioning, attendance rosters are snapshots, attempt numbers are reserved as usual, and every rule applies.
+- Records are created through the same services the API uses wherever one exists. So attendance rosters are snapshots, attempt numbers are reserved as usual, and every rule applies.
 - Everything is created in one transaction: if any step fails, nothing is saved.
 - It only adds records. If your database already has records with the same codes, such as a `CSE` department, they are reused, not changed.
 - Dates are relative to the day it first runs. Deadlines, attendance, and calendar events lie around that day, and the academic session is the one that day falls in (July to June).
@@ -78,7 +78,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
   - `studentfaculty1`: CS301.
 
 **LMS**
-- LMS courses: CS301 published, CS302 draft, CS303 archived. Their current students get memberships through provisioning.
+- LMS courses: CS301 published, CS302 draft, CS303 archived. Their enrolled students use the published one through official enrollment.
 - Course content:
   - CS301 has a published unit with three published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `faculty1` at `/teaching/:lmsCourseId/ai`.
   - CS302 has a draft unit.

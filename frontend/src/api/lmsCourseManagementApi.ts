@@ -11,14 +11,9 @@ export async function getManagedTeachingCourses(signal?: AbortSignal) {
   return response.data
 }
 
-/** Creates the draft LMS course of an offering and gives its current students LMS membership. */
+/** Creates the draft LMS course of an offering. Its enrolled students use it once it is published. */
 export async function createLmsCourse(courseOfferingId: number) {
   const response = await apiClient.post<LmsCourseManagement>(`/lms/faculty/course-offerings/${courseOfferingId}/lms-course`)
-  return response.data
-}
-
-export async function syncStudentMemberships(lmsCourseId: number) {
-  const response = await apiClient.post<LmsCourseManagement>(`/lms/faculty/courses/${lmsCourseId}/sync-student-memberships`)
   return response.data
 }
 

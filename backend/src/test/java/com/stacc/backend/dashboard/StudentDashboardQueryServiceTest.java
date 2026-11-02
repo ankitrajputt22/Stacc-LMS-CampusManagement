@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.attendance.AttendanceFixtures;
 import com.stacc.backend.academic.attendance.AttendanceRecord;
 import com.stacc.backend.academic.attendance.AttendanceRecordRepository;
@@ -44,8 +45,6 @@ import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
-import com.stacc.backend.lms.membership.LmsStudentMembership;
-import com.stacc.backend.lms.membership.LmsStudentMembershipRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -65,13 +64,14 @@ class StudentDashboardQueryServiceTest {
     private static final long STUDENT = 50L;
     private static final Instant NOW = Instant.parse("2026-10-19T00:00:00Z");
 
-    private final LmsStudentMembershipRepository memberships = mock(LmsStudentMembershipRepository.class);
+    private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
+    private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
     private final LmsAnnouncementRepository announcements = mock(LmsAnnouncementRepository.class);
     private final AttendanceRecordRepository attendanceRecords = mock(AttendanceRecordRepository.class);
     private final CourseResultRepository results = mock(CourseResultRepository.class);
     private final StudentDashboardQueryService service = new StudentDashboardQueryService(
-            new LmsStudentCourseQueryService(memberships, mock(LmsCourseRepository.class), mock(LmsStudentAccessService.class)),
+            new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, mock(LmsStudentAccessService.class)),
             assignments, announcements, new StudentAttendanceQueryService(attendanceRecords),
             new StudentResultQueryService(results), Clock.fixed(NOW, ZoneOffset.UTC));
 
@@ -87,11 +87,11 @@ class StudentDashboardQueryServiceTest {
     void setUp() {
         CourseEnrollment enrollmentD = AttendanceFixtures.enrollment(offeringD, STUDENT, 143, "STU-TEST-A");
         enrollmentD.withdraw();
-        when(memberships.findAllWithCourseDetailsByUserAccountId(STUDENT)).thenReturn(List.of(
-                new LmsStudentMembership(enrollmentA, published),
-                new LmsStudentMembership(AttendanceFixtures.enrollment(offeringB, STUDENT, 141, "STU-TEST-A"), lmsCourse(offeringB, 42, "DRAFT")),
-                new LmsStudentMembership(AttendanceFixtures.enrollment(offeringC, STUDENT, 142, "STU-TEST-A"), lmsCourse(offeringC, 43, "ARCHIVED")),
-                new LmsStudentMembership(enrollmentD, lmsCourse(offeringD, 44, "PUBLISHED"))));
+        when(courseEnrollments.findAllWithStudentByUserAccountId(STUDENT)).thenReturn(List.of(enrollmentA,
+                AttendanceFixtures.enrollment(offeringB, STUDENT, 141, "STU-TEST-A"),
+                AttendanceFixtures.enrollment(offeringC, STUDENT, 142, "STU-TEST-A"), enrollmentD));
+        when(lmsCourses.findAllWithAcademicContextByCourseOfferingIdIn(any())).thenReturn(List.of(published,
+                lmsCourse(offeringB, 42, "DRAFT"), lmsCourse(offeringC, 43, "ARCHIVED"), lmsCourse(offeringD, 44, "PUBLISHED")));
         when(assignments.findByLmsCourseIdInAndStatusAndDueAtGreaterThanEqual(any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of()));
     }
@@ -167,7 +167,7 @@ class StudentDashboardQueryServiceTest {
 
     @Test
     void withoutCurrentCoursesNoLmsQueryIsMadeButAttendanceAndResultsStillShow() {
-        when(memberships.findAllWithCourseDetailsByUserAccountId(STUDENT)).thenReturn(List.of());
+        when(courseEnrollments.findAllWithStudentByUserAccountId(STUDENT)).thenReturn(List.of());
         enrollmentA.markCompleted();
         when(attendanceRecords.findAllFinalizedByUserAccountId(STUDENT)).thenReturn(List.of(record(offeringA, 1, true, AttendanceStatus.PRESENT)));
         when(results.findAllPublishedByUserAccountId(STUDENT)).thenReturn(List.of(result(offeringA, "A", NOW.minusSeconds(60), true)));
@@ -248,14 +248,14 @@ class StudentDashboardQueryServiceTest {
     void everythingIsReadForTheSignedInAccountOnly() {
         service.getDashboard(STUDENT);
 
-        verify(memberships).findAllWithCourseDetailsByUserAccountId(STUDENT);
+        verify(courseEnrollments).findAllWithStudentByUserAccountId(STUDENT);
         verify(attendanceRecords).findAllFinalizedByUserAccountId(STUDENT);
         verify(results).findAllPublishedByUserAccountId(STUDENT);
-        verify(memberships, never()).findAllWithCourseDetailsByUserAccountId(longThat(id -> id != STUDENT));
+        verify(courseEnrollments, never()).findAllWithStudentByUserAccountId(longThat(id -> id != STUDENT));
         assertEquals(Set.of(41L), Set.copyOf(askedCourseIds()));
-        // Another student's membership in the same published course does not count for this one.
+        // Another student's enrollment in the same published course does not count for this one.
         CourseEnrollment someoneElse = AttendanceFixtures.enrollment(offeringA, 51, 150, "STU-TEST-B");
-        when(memberships.findAllWithCourseDetailsByUserAccountId(STUDENT)).thenReturn(List.of(new LmsStudentMembership(someoneElse, published)));
+        when(courseEnrollments.findAllWithStudentByUserAccountId(STUDENT)).thenReturn(List.of(someoneElse));
         assertEquals(0, service.getDashboard(STUDENT).courseCount());
         verify(attendanceRecords, never()).findAllFinalizedByUserAccountId(51L);
     }
