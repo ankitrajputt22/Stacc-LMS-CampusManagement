@@ -28,11 +28,14 @@ public class SignInThrottleService {
     private final SignInThrottleRepository throttles;
     private final SignInThrottleProperties properties;
     private final Clock clock;
+    private final SignInThrottleRows rows;
 
-    public SignInThrottleService(SignInThrottleRepository throttles, SignInThrottleProperties properties, Clock clock) {
+    public SignInThrottleService(SignInThrottleRepository throttles, SignInThrottleProperties properties, Clock clock,
+            SignInThrottleRows rows) {
         this.throttles = throttles;
         this.properties = properties;
         this.clock = clock;
+        this.rows = rows;
     }
 
     public SignInThrottleProperties properties() {
@@ -49,12 +52,17 @@ public class SignInThrottleService {
                 .orElse(Duration.ZERO);
     }
 
-    /** Counts a failed sign-in for the login ID and the address, each under its own row lock. */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    /**
+     * Counts a failed sign-in for the login ID and the address, each under its own row lock. The rows are first made
+     * sure to exist in a transaction of their own: an {@code insert ignore} leaves a shared lock on an existing row, and
+     * taking the row lock in that same transaction would let simultaneous failures deadlock one another.
+     */
     public void recordFailure(String loginId, String address) {
         Instant now = clock.instant();
-        fail(SignInThrottle.Scope.ACCOUNT, accountKey(loginId), properties.accountThreshold(), now);
-        fail(SignInThrottle.Scope.ADDRESS, addressKey(address), properties.addressThreshold(), now);
+        String account = accountKey(loginId);
+        String place = addressKey(address);
+        rows.ensure(account, place, now);
+        rows.countFailure(account, place, now, properties);
     }
 
     /** A successful sign-in forgets the login ID's failures. The address keeps its count until its window passes. */
@@ -62,13 +70,6 @@ public class SignInThrottleService {
     public void recordSuccess(String loginId) {
         throttles.findForUpdate(SignInThrottle.Scope.ACCOUNT, accountKey(loginId))
                 .ifPresent(throttle -> throttle.clear(clock.instant()));
-    }
-
-    private void fail(SignInThrottle.Scope scope, String keyHash, int threshold, Instant now) {
-        throttles.ensure(scope.name(), keyHash, now);
-        SignInThrottle throttle = throttles.findForUpdate(scope, keyHash)
-                .orElseThrow(() -> new IllegalStateException("The sign-in throttle row is missing"));
-        throttle.fail(now, threshold, properties.window(), properties.baseDelay(), properties.maxDelay());
     }
 
     static String accountKey(String loginId) {
