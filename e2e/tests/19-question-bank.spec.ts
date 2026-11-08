@@ -30,5 +30,5 @@ test('a faculty member adds a question to the bank, reviews it, offers it for pr
   await expect(bank.getByText('No questions match these filters.')).toBeVisible()
   await bank.getByLabel('Status').selectOption('ARCHIVED')
   await expect(bank.getByText('A primary key may contain null values.', { exact: true })).toBeVisible()
-  await expect(bank.getByText('Archived', { exact: true })).toBeVisible()
+  await expect(bank.getByRole('listitem').getByText('Archived', { exact: true })).toBeVisible()
 })
