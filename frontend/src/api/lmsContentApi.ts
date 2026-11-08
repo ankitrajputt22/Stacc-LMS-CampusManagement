@@ -1,5 +1,7 @@
 import type {
   LmsCourseContent,
+  LmsCourseFile,
+  LmsFacultyCourseFiles,
   LmsCoursePage,
   LmsFacultyPage,
   LmsFacultyCourseContent,
@@ -25,6 +27,18 @@ export async function getLmsCourseContent(
     `/lms/courses/${lmsCourseId}/content`,
     { signal },
   )
+  return response.data
+}
+
+/** Every published file of a course the signed-in student may use, in course order, with its page. */
+export async function getLmsCourseFiles(lmsCourseId: number, signal?: AbortSignal): Promise<LmsCourseFile[]> {
+  const response = await apiClient.get<LmsCourseFile[]>(`/lms/courses/${lmsCourseId}/files`, { signal })
+  return response.data
+}
+
+/** Every file that is not archived, drafts included, of a course the signed-in faculty member teaches. */
+export async function getFacultyCourseFiles(lmsCourseId: number, signal?: AbortSignal): Promise<LmsFacultyCourseFiles> {
+  const response = await apiClient.get<LmsFacultyCourseFiles>(`/lms/faculty/courses/${lmsCourseId}/files`, { signal })
   return response.data
 }
 

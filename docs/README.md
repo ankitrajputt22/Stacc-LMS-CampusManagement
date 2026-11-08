@@ -53,6 +53,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [LMS foundation](lms-foundation.md)
 - [Text formatting](text-formatting.md)
 - [Course pages](course-pages.md)
+- [Course files](course-files.md)
 - [AI learning](ai-learning.md)
 
 ## Dashboards, reports, and search

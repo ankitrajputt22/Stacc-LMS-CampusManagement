@@ -137,6 +137,27 @@ class LmsFacultyContentQueryServiceTest {
     }
 
     @Test
+    void theFilesListHasDraftsWithThePageAndModuleStatusButNoArchivedFiles() {
+        LmsModule module = module(course, 11, 1, LmsContentStatus.DRAFT);
+        LmsTopic topic = topic(module, 31, 1, LmsContentStatus.PUBLISHED);
+        when(modules.findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(COURSE_ID, LmsContentPolicy.IN_USE))
+                .thenReturn(List.of(module));
+        when(topics.findAllInCourse(COURSE_ID, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE)).thenReturn(List.of(topic));
+        when(materials.findAllInCourse(COURSE_ID, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE, LmsContentPolicy.IN_USE))
+                .thenReturn(List.of(material(topic, 7, 1, LmsContentStatus.DRAFT), material(topic, 9, 2, LmsContentStatus.ARCHIVED)));
+
+        LmsFacultyCourseFilesResponse files = service.getCourseFiles(ACCOUNT_ID, COURSE_ID);
+
+        assertEquals("DRAFT", files.lmsCourseStatus());
+        assertEquals(1, files.files().size());
+        LmsFacultyCourseFileResponse file = files.files().get(0);
+        assertEquals(LmsContentStatus.DRAFT, file.status());
+        assertEquals(LmsContentStatus.PUBLISHED, file.pageStatus());
+        assertEquals(LmsContentStatus.DRAFT, file.moduleStatus());
+        assertEquals(31L, file.pageId());
+    }
+
+    @Test
     void draftAndPublishedMaterialsAreShownUnderTheirTopicButArchivedOnesAreNot() {
         LmsModule module = module(course, 11, 1, LmsContentStatus.DRAFT);
         LmsTopic topic = topic(module, 31, 1, LmsContentStatus.DRAFT);
@@ -155,8 +176,8 @@ class LmsFacultyContentQueryServiceTest {
                 service.getCourseContent(ACCOUNT_ID, COURSE_ID).modules().get(0).topics().get(0).materials();
 
         assertEquals(List.of(
-                new LmsFacultyMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007, 1, LmsContentStatus.DRAFT),
-                new LmsFacultyMaterialResponse(8L, "Material 8", null, "material-8.pdf", "application/pdf", 1008, 2, LmsContentStatus.PUBLISHED)),
+                new LmsFacultyMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007, 1, LmsContentStatus.DRAFT, null),
+                new LmsFacultyMaterialResponse(8L, "Material 8", null, "material-8.pdf", "application/pdf", 1008, 2, LmsContentStatus.PUBLISHED, null)),
                 shown);
     }
 }

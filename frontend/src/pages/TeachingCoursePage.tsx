@@ -99,7 +99,10 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
           <title>{`${course.data.courseName} · Teaching · Stacc`}</title>
           <Breadcrumb parent={TEACHING} current={course.data.courseName} />
           <CourseHeader course={course.data} />
-          <nav aria-label="Course tools" className="mt-3">
+          <nav aria-label="Course tools" className="mt-3 flex flex-wrap gap-2">
+            <Link to={`/teaching/${course.data.lmsCourseId}/files`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
+              Files
+            </Link>
             <Link
               to={`/teaching/${course.data.lmsCourseId}/ai`}
               className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9"

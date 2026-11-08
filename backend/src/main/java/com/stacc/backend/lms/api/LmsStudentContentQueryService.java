@@ -110,6 +110,25 @@ public class LmsStudentContentQueryService {
         throw new ApiException(HttpStatus.NOT_FOUND, PAGE_UNAVAILABLE_MESSAGE);
     }
 
+    /**
+     * Every published file of a course the student may use, in course order (module, page, then file), with the page
+     * and module it is on. It is taken from exactly what {@link #getPublishedContent} shows, so the same rules decide.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    @Transactional(readOnly = true)
+    public List<LmsCourseFileResponse> getPublishedFiles(Long userAccountId, Long lmsCourseId) {
+        List<LmsCourseFileResponse> files = new ArrayList<>();
+        for (LmsCourseModuleResponse module : getPublishedContent(userAccountId, lmsCourseId).modules()) {
+            for (LmsCourseTopicResponse page : module.topics()) {
+                for (LmsCourseMaterialResponse file : page.materials()) {
+                    files.add(LmsCourseFileResponse.of(file, page, module));
+                }
+            }
+        }
+        return files;
+    }
+
     private static LmsPageLink link(LmsCourseTopicResponse page, LmsCourseModuleResponse module) {
         return new LmsPageLink(page.id(), page.title(), module.title());
     }

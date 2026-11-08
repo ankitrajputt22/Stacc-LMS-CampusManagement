@@ -78,9 +78,14 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
 export function CourseContent({ lmsCourseId, content }: CourseContentProps) {
   return (
     <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
-      <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
-        Course content
-      </h2>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
+          Course content
+        </h2>
+        <Link to={`/courses/${lmsCourseId}/files`} className={`text-sm ${textLinkClasses}`}>
+          All files
+        </Link>
+      </div>
 
       <div className="mt-3">
         {content.status === 'loading' && (
