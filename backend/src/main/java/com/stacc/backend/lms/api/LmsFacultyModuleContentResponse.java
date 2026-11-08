@@ -25,10 +25,13 @@ public record LmsFacultyModuleContentResponse(
         LmsContentStatus status,
 
         @ArraySchema(arraySchema = @Schema(description = "The topics that are not archived, in module order."))
-        List<LmsFacultyTopicContentResponse> topics) {
+        List<LmsFacultyTopicContentResponse> topics,
+        @Schema(description = "Whether students must complete the previous module first.")
+        boolean requiresPrevious) {
 
     static LmsFacultyModuleContentResponse of(LmsModule module, List<LmsFacultyTopicContentResponse> topics) {
         return new LmsFacultyModuleContentResponse(
-                module.getId(), module.getTitle(), module.getDescription(), module.getPosition(), module.getStatus(), topics);
+                module.getId(), module.getTitle(), module.getDescription(), module.getPosition(), module.getStatus(), topics,
+                module.isRequiresPrevious());
     }
 }

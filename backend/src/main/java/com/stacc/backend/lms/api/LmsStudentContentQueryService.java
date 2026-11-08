@@ -5,9 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.access.LmsStudentAccessService;
 import com.stacc.backend.lms.content.LmsContentPolicy;
+import com.stacc.backend.lms.content.LmsLearningPath;
+import com.stacc.backend.lms.content.LmsLearningPathService;
+import com.stacc.backend.lms.content.LmsModule;
 import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
 import com.stacc.backend.lms.content.LmsStudyMaterialRepository;
@@ -27,16 +31,19 @@ public class LmsStudentContentQueryService {
     private final LmsModuleRepository modules;
     private final LmsTopicRepository topics;
     private final LmsStudyMaterialRepository materials;
+    private final LmsLearningPathService paths;
 
     public LmsStudentContentQueryService(
             LmsStudentAccessService accessService,
             LmsModuleRepository modules,
             LmsTopicRepository topics,
-            LmsStudyMaterialRepository materials) {
+            LmsStudyMaterialRepository materials,
+            LmsLearningPathService paths) {
         this.accessService = accessService;
         this.modules = modules;
         this.topics = topics;
         this.materials = materials;
+        this.paths = paths;
     }
 
     /**
@@ -50,9 +57,8 @@ public class LmsStudentContentQueryService {
      */
     @Transactional(readOnly = true)
     public LmsCourseContentResponse getPublishedContent(Long userAccountId, Long lmsCourseId) {
-        if (!accessService.canAccessCourse(userAccountId, lmsCourseId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, LmsStudentCourseQueryService.COURSE_UNAVAILABLE_MESSAGE);
-        }
+        CourseEnrollment enrollment = accessService.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, LmsStudentCourseQueryService.COURSE_UNAVAILABLE_MESSAGE));
 
         Map<Long, List<LmsCourseMaterialResponse>> materialsByTopic = materials
                 .findAllInCourse(lmsCourseId, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
@@ -62,21 +68,62 @@ public class LmsStudentContentQueryService {
                         (LmsStudyMaterial material) -> material.getLmsTopic().getId(),
                         Collectors.mapping(LmsCourseMaterialResponse::of, Collectors.toList())));
 
-        Map<Long, List<LmsCourseTopicResponse>> topicsByModule = topics
+        List<LmsTopic> visibleTopics = topics
                 .findAllInCourse(lmsCourseId, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY).stream()
                 .filter(LmsContentPolicy::isVisibleToStudents)
-                .collect(Collectors.groupingBy(
-                        (LmsTopic topic) -> topic.getLmsModule().getId(),
-                        Collectors.mapping(
-                                topic -> LmsCourseTopicResponse.of(topic, materialsByTopic.getOrDefault(topic.getId(), List.of())),
-                                Collectors.toList())));
-
-        return new LmsCourseContentResponse(modules
+                .toList();
+        List<LmsModule> visibleModules = modules
                 .findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(lmsCourseId, LmsContentPolicy.PUBLISHED_ONLY)
                 .stream()
                 .filter(LmsContentPolicy::isVisibleToStudents)
-                .map(module -> LmsCourseModuleResponse.of(module, topicsByModule.getOrDefault(module.getId(), List.of())))
+                .toList();
+        LmsLearningPath path = LmsLearningPath.of(visibleModules, visibleTopics, paths.completedPageIds(enrollment));
+
+        Map<Long, List<LmsCourseTopicResponse>> topicsByModule = visibleTopics.stream()
+                .collect(Collectors.groupingBy(
+                        (LmsTopic topic) -> topic.getLmsModule().getId(),
+                        Collectors.mapping(
+                                topic -> LmsCourseTopicResponse.of(topic, materialsByTopic.getOrDefault(topic.getId(), List.of()),
+                                        path.isCompleted(topic.getId())),
+                                Collectors.toList())));
+
+        return new LmsCourseContentResponse(visibleModules.stream()
+                .map(module -> {
+                    LmsLearningPath.ModuleState state = path.module(module.getId());
+                    List<LmsCourseTopicResponse> pages = topicsByModule.getOrDefault(module.getId(), List.of());
+                    // A locked module's pages keep their titles but send no text or files.
+                    return new LmsCourseModuleResponse(module.getId(), module.getTitle(), module.getDescription(),
+                            state.locked() ? pages.stream().map(LmsCourseTopicResponse::withoutContent).toList() : pages,
+                            module.isRequiresPrevious(), state.locked(), state.completed(), state.waitingFor());
+                })
                 .toList());
+    }
+
+    /**
+     * The student's own progress in the course: required pages completed, and the next required page to do in a module
+     * that is open to them. Worked out from exactly what {@link #getPublishedContent} shows.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    @Transactional(readOnly = true)
+    public LmsCourseProgressResponse getProgress(Long userAccountId, Long lmsCourseId) {
+        int required = 0;
+        int completed = 0;
+        LmsPageLink next = null;
+        for (LmsCourseModuleResponse module : getPublishedContent(userAccountId, lmsCourseId).modules()) {
+            for (LmsCourseTopicResponse page : module.topics()) {
+                if (!page.required()) {
+                    continue;
+                }
+                required++;
+                if (page.completed()) {
+                    completed++;
+                } else if (next == null && !module.locked()) {
+                    next = new LmsPageLink(page.id(), page.title(), module.title());
+                }
+            }
+        }
+        return new LmsCourseProgressResponse(required, completed, next);
     }
 
     /**
@@ -104,7 +151,8 @@ public class LmsStudentContentQueryService {
                 return new LmsCoursePageResponse(page.id(), page.title(), page.content(), page.contentFormat(),
                         module.id(), module.title(), page.materials(),
                         index == 0 ? null : link(pages.get(index - 1), moduleOfPage.get(index - 1)),
-                        index == pages.size() - 1 ? null : link(pages.get(index + 1), moduleOfPage.get(index + 1)));
+                        index == pages.size() - 1 ? null : link(pages.get(index + 1), moduleOfPage.get(index + 1)),
+                        page.required(), page.completed(), module.locked(), module.waitingFor());
             }
         }
         throw new ApiException(HttpStatus.NOT_FOUND, PAGE_UNAVAILABLE_MESSAGE);
@@ -120,6 +168,7 @@ public class LmsStudentContentQueryService {
     public List<LmsCourseFileResponse> getPublishedFiles(Long userAccountId, Long lmsCourseId) {
         List<LmsCourseFileResponse> files = new ArrayList<>();
         for (LmsCourseModuleResponse module : getPublishedContent(userAccountId, lmsCourseId).modules()) {
+            // A locked module's pages carry no files, so its files stay out of the list too.
             for (LmsCourseTopicResponse page : module.topics()) {
                 for (LmsCourseMaterialResponse file : page.materials()) {
                     files.add(LmsCourseFileResponse.of(file, page, module));

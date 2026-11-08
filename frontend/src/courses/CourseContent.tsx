@@ -4,6 +4,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { Link } from 'react-router'
 import type { LmsCourseContent, LmsCourseModule } from '../types/lms'
+import { Badge } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 type CourseContentProps = {
@@ -38,6 +39,19 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
         <h3 id={headingId} className="mt-0.5 text-base font-semibold break-words text-ink">
           {module.title}
         </h3>
+        {module.locked ? (
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+            <Badge tone="neutral">Locked</Badge>
+            Complete “{module.waitingFor}” first.
+          </p>
+        ) : (
+          module.completed &&
+          module.topics.some((topic) => topic.required) && (
+            <p className="mt-1">
+              <Badge tone="success">Module completed</Badge>
+            </p>
+          )
+        )}
         {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
         {module.description && (
           <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink-muted">
@@ -51,13 +65,19 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
           {module.topics.map((topic) => (
             <li key={topic.id} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-4 py-3 sm:px-5">
               <h4 className="text-sm break-words">
-                <Link to={`/courses/${lmsCourseId}/pages/${topic.id}`} className={textLinkClasses}>
-                  {topic.title}
-                </Link>
+                {module.locked ? (
+                  <span className="text-ink-muted">{topic.title}</span>
+                ) : (
+                  <Link to={`/courses/${lmsCourseId}/pages/${topic.id}`} className={textLinkClasses}>
+                    {topic.title}
+                  </Link>
+                )}
               </h4>
-              {topic.materials.length > 0 && (
-                <span className="text-xs text-ink-muted">{fileCount(topic.materials.length)}</span>
-              )}
+              <span className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                {topic.materials.length > 0 && fileCount(topic.materials.length)}
+                {topic.required && !topic.completed && <Badge tone="info">Required</Badge>}
+                {topic.completed && <Badge tone="success">Completed</Badge>}
+              </span>
             </li>
           ))}
         </ol>

@@ -47,6 +47,7 @@ public class LmsStudyMaterialService {
     private final LmsFacultyAccessService facultyAccess;
     private final LmsStudentAccessService studentAccess;
     private final ObjectStorageService storage;
+    private final LmsLearningPathService paths;
     private final long maxFileBytes;
 
     public LmsStudyMaterialService(
@@ -55,12 +56,14 @@ public class LmsStudyMaterialService {
             LmsFacultyAccessService facultyAccess,
             LmsStudentAccessService studentAccess,
             ObjectStorageService storage,
-            LmsMaterialProperties properties) {
+            LmsMaterialProperties properties,
+            LmsLearningPathService paths) {
         this.topics = topics;
         this.materials = materials;
         this.facultyAccess = facultyAccess;
         this.studentAccess = studentAccess;
         this.storage = storage;
+        this.paths = paths;
         this.maxFileBytes = properties.maxFileSize().toBytes();
     }
 
@@ -177,7 +180,8 @@ public class LmsStudyMaterialService {
         return asFaculty
                 || (reader.student()
                         && LmsContentPolicy.isVisibleToStudents(material)
-                        && studentAccess.canAccessCourse(userAccountId, lmsCourseId));
+                        // The module must also be open to the student: a locked module's files stay closed.
+                        && paths.isOpenTo(userAccountId, lmsCourseId, material.getLmsTopic().getLmsModule().getId()));
     }
 
     // The course is taken from the stored topic and its module, never from the request.

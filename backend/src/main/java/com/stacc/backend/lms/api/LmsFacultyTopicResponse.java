@@ -22,10 +22,13 @@ public record LmsFacultyTopicResponse(
         @Schema(description = "DRAFT is hidden from students. PUBLISHED is shown once its module is published too.")
         LmsContentStatus status,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat contentFormat) {
+        LmsTextFormat contentFormat,
+        @Schema(description = "Whether the page counts towards its module's completion and students' progress.")
+        boolean required) {
 
     static LmsFacultyTopicResponse of(LmsTopic topic) {
         return new LmsFacultyTopicResponse(
-                topic.getId(), topic.getTitle(), topic.getContent(), topic.getPosition(), topic.getStatus(), topic.getContentFormat());
+                topic.getId(), topic.getTitle(), topic.getContent(), topic.getPosition(), topic.getStatus(), topic.getContentFormat(),
+                topic.isRequired());
     }
 }

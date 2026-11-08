@@ -5,6 +5,7 @@ import java.util.List;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
+import com.stacc.backend.lms.content.LmsPageCompletionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class LmsStudentContentController {
 
     private final LmsStudentContentQueryService contentQueryService;
+    private final LmsPageCompletionService completions;
 
-    public LmsStudentContentController(LmsStudentContentQueryService contentQueryService) {
+    public LmsStudentContentController(LmsStudentContentQueryService contentQueryService,
+            LmsPageCompletionService completions) {
         this.contentQueryService = contentQueryService;
+        this.completions = completions;
     }
 
     // The same rule as the student course routes. Whether this student may open this course, and which
@@ -55,6 +60,43 @@ public class LmsStudentContentController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsCourseContentResponse content(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
         return contentQueryService.getPublishedContent(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
+    }
+
+    @GetMapping("/courses/{lmsCourseId}/progress")
+    @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
+    @Operation(
+            summary = "Read one's own progress in an accessible LMS course",
+            description = "Required pages and how many of them the signed-in student completed, with the next required "
+                    + "page to do in a module that is open to them. Worked out every time; nothing is stored.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The progress.")
+    @ApiResponse(
+            responseCode = "404",
+            description = "The course does not exist or is not available to this student. Both look the same.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsCourseProgressResponse progress(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
+        return contentQueryService.getProgress(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
+    }
+
+    @PostMapping("/courses/{lmsCourseId}/pages/{pageId}/complete")
+    @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
+    @Operation(
+            summary = "Mark a page complete",
+            description = "Records once that the signed-in student completed a page they can see, in a module that is "
+                    + "open to them, and answers their progress. Marking it again changes nothing; nothing undoes it.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The student's progress after the change.")
+    @ApiResponse(
+            responseCode = "404",
+            description = "The course or page does not exist, or is not available to this student. All look the same.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The page's module is locked until an earlier module is completed.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsCourseProgressResponse complete(@PathVariable Long lmsCourseId, @PathVariable Long pageId,
+            @AuthenticationPrincipal Jwt accessToken) {
+        Long account = AuthenticatedAccount.idFrom(accessToken);
+        completions.complete(account, lmsCourseId, pageId);
+        return contentQueryService.getProgress(account, lmsCourseId);
     }
 
     @GetMapping("/courses/{lmsCourseId}/files")

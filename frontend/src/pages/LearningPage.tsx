@@ -12,6 +12,8 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId, parseRouteId } from '../courses/courseRoute'
 import { PageBody } from '../courses/PageBody'
+import { PageCompletion } from '../courses/PageCompletion'
+import { Alert } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -102,13 +104,33 @@ export function LearningPage() {
         <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{data.moduleTitle}</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{data.title}</h1>
       </header>
+      {data.locked ? (
+        <Alert tone="info" className="mt-6 max-w-3xl" title="This page is locked">
+          Complete the required pages of “{data.waitingFor}” first. Then this module opens.
+        </Alert>
+      ) : (
+        <>
+          <PageBody
+            content={data.content}
+            contentFormat={data.contentFormat}
+            materials={data.materials}
+            previous={null}
+            next={null}
+            pathTo={(id) => `/courses/${lmsCourseId}/pages/${id}`}
+          />
+          {lmsCourseId !== null && (
+            <PageCompletion lmsCourseId={lmsCourseId} pageId={data.id} required={data.required} completed={data.completed} />
+          )}
+        </>
+      )}
       <PageBody
-        content={data.content}
-        contentFormat={data.contentFormat}
-        materials={data.materials}
+        content={null}
+        contentFormat="PLAIN"
+        materials={[]}
         previous={data.previous}
         next={data.next}
         pathTo={(id) => `/courses/${lmsCourseId}/pages/${id}`}
+        neighboursOnly
       />
     </>
   )

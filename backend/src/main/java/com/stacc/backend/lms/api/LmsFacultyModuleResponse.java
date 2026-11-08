@@ -19,10 +19,13 @@ public record LmsFacultyModuleResponse(
         int position,
 
         @Schema(description = "DRAFT is hidden from students. PUBLISHED is shown with its published topics.")
-        LmsContentStatus status) {
+        LmsContentStatus status,
+        @Schema(description = "Whether students must complete the previous module first.")
+        boolean requiresPrevious) {
 
     static LmsFacultyModuleResponse of(LmsModule module) {
         return new LmsFacultyModuleResponse(
-                module.getId(), module.getTitle(), module.getDescription(), module.getPosition(), module.getStatus());
+                module.getId(), module.getTitle(), module.getDescription(), module.getPosition(), module.getStatus(),
+                module.isRequiresPrevious());
     }
 }

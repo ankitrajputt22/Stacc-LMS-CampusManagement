@@ -61,9 +61,11 @@ class LmsStudyMaterialServiceTest {
     private final LmsStudyMaterialRepository materials = mock(LmsStudyMaterialRepository.class);
     private final LmsFacultyAccessService facultyAccess = mock(LmsFacultyAccessService.class);
     private final LmsStudentAccessService studentAccess = mock(LmsStudentAccessService.class);
+    private final LmsLearningPathService paths = mock(LmsLearningPathService.class);
     private final ObjectStorageService storage = mock(ObjectStorageService.class);
     private final LmsStudyMaterialService service = new LmsStudyMaterialService(
-            topics, materials, facultyAccess, studentAccess, storage, new LmsMaterialProperties(DataSize.ofKilobytes(1)));
+            topics, materials, facultyAccess, studentAccess, storage, new LmsMaterialProperties(DataSize.ofKilobytes(1)),
+            paths);
 
     private final LmsCourse course = ContentFixtures.lmsCourse(COURSE_ID);
     private final LmsModule module = module(course, 11, 1, LmsContentStatus.PUBLISHED);
@@ -78,6 +80,9 @@ class LmsStudyMaterialServiceTest {
     void facultyMemberWhoTeachesCourseSevenAndAStudentWhoTakesIt() {
         when(facultyAccess.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(true);
         when(studentAccess.canAccessCourse(STUDENT_ID, COURSE_ID)).thenReturn(true);
+        // The student may use the course and every module is open to them, unless a test says otherwise.
+        when(paths.isOpenTo(org.mockito.ArgumentMatchers.eq(STUDENT_ID), org.mockito.ArgumentMatchers.eq(COURSE_ID),
+                org.mockito.ArgumentMatchers.anyLong())).thenReturn(true);
         when(topics.findWithModuleById(31L)).thenReturn(Optional.of(topic));
         for (LmsStudyMaterial material : List.of(first, second, foreign)) {
             when(materials.findWithTopicAndModuleById(material.getId())).thenReturn(Optional.of(material));
@@ -347,6 +352,17 @@ class LmsStudyMaterialServiceTest {
 
         assertEquals("material-7.pdf", service.openForDownload(STUDENT_ID, AS_BOTH, 7L).fileName());
         assertEquals("material-3.pdf", service.openForDownload(ACCOUNT_ID, AS_BOTH, 3L).fileName());
+    }
+
+    @Test
+    void aLockedModulesFilesStayClosedToStudents() {
+        storedContent();
+        when(paths.isOpenTo(org.mockito.ArgumentMatchers.eq(STUDENT_ID), org.mockito.ArgumentMatchers.eq(COURSE_ID),
+                org.mockito.ArgumentMatchers.anyLong())).thenReturn(false);
+
+        assertRefused(HttpStatus.NOT_FOUND, LmsStudyMaterialService.MATERIAL_UNAVAILABLE,
+                () -> service.openForDownload(STUDENT_ID, AS_STUDENT, 7L));
+        verify(storage, never()).open(anyString());
     }
 
     @Test

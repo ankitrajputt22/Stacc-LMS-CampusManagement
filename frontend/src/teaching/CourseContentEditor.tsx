@@ -8,6 +8,8 @@ import {
   publishTopic,
   reorderModules,
   reorderTopics,
+  setModuleRequiresPrevious,
+  setPageRequired,
   updateModule,
   updateTopic,
 } from '../api/lmsContentApi'
@@ -129,6 +131,11 @@ function TopicItem({
           {topic.title}
         </h4>
         <StatusTag status={topic.status} label="Page status" />
+        {topic.required && (
+          <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
+            Required
+          </span>
+        )}
       </div>
       {topic.content && (
         <FormattedText
@@ -174,6 +181,20 @@ function TopicItem({
               Publish{srContext(name)}
             </ActionButton>
           )}
+          <ActionButton
+            focusKey={`${key}-required`}
+            onClick={() =>
+              void changes.run(() => setPageRequired(topic.id, !topic.required), {
+                done: topic.required
+                  ? `${name} is optional now. It no longer counts towards students' progress.`
+                  : `${name} is required now. Students need it to complete the module.`,
+                focus: () => [`${key}-required`],
+              })
+            }
+          >
+            {topic.required ? 'Make optional' : 'Make required'}
+            {srContext(name)}
+          </ActionButton>
           <ActionButton focusKey={`${key}-archive`} onClick={() => setConfirming({ kind: 'topic', id: topic.id })}>
             Archive{srContext(name)}
           </ActionButton>
@@ -285,6 +306,11 @@ function ModuleItem({
                 {module.title}
               </h3>
               <StatusTag status={module.status} label="Module status" />
+              {index > 0 && module.requiresPrevious && (
+                <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
+                  Waits for previous module
+                </span>
+              )}
             </div>
             {module.description && (
               <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink-muted">
@@ -322,6 +348,22 @@ function ModuleItem({
                     }
                   >
                     Publish{srContext(name)}
+                  </ActionButton>
+                )}
+                {index > 0 && (
+                  <ActionButton
+                    focusKey={`${key}-previous`}
+                    onClick={() =>
+                      void changes.run(() => setModuleRequiresPrevious(module.id, !module.requiresPrevious), {
+                        done: module.requiresPrevious
+                          ? `${name} no longer waits for the module before it.`
+                          : `${name} now opens for students only after they complete the module before it.`,
+                        focus: () => [`${key}-previous`],
+                      })
+                    }
+                  >
+                    {module.requiresPrevious ? 'Don’t wait for previous module' : 'Wait for previous module'}
+                    {srContext(name)}
                   </ActionButton>
                 )}
                 <ActionButton focusKey={`${key}-archive`} onClick={() => setConfirming({ kind: 'module', id: module.id })}>

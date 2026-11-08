@@ -28,5 +28,12 @@ public record LmsCoursePageResponse(
         @Schema(description = "The published page before this one in course order, or null for the first.")
         LmsPageLink previous,
         @Schema(description = "The published page after this one in course order, or null for the last.")
-        LmsPageLink next) {
+        LmsPageLink next,
+        boolean required,
+        @Schema(description = "Whether this student marked the page complete.")
+        boolean completed,
+        @Schema(description = "Whether the page's module is locked for this student; then the text and files are left out.")
+        boolean locked,
+        @Schema(description = "The module to complete first, when locked; otherwise null.")
+        String waitingFor) {
 }

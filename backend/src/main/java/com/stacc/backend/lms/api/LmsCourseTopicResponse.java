@@ -21,9 +21,23 @@ public record LmsCourseTopicResponse(
         @ArraySchema(arraySchema = @Schema(description = "The published study materials, in topic order. Often empty."))
         List<LmsCourseMaterialResponse> materials,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat contentFormat) {
+        LmsTextFormat contentFormat,
+        @Schema(description = "Whether the page counts towards the module's completion and the student's progress.")
+        boolean required,
+        @Schema(description = "Whether this student marked the page complete.")
+        boolean completed) {
 
     static LmsCourseTopicResponse of(LmsTopic topic, List<LmsCourseMaterialResponse> materials) {
-        return new LmsCourseTopicResponse(topic.getId(), topic.getTitle(), topic.getContent(), materials, topic.getContentFormat());
+        return of(topic, materials, false);
+    }
+
+    static LmsCourseTopicResponse of(LmsTopic topic, List<LmsCourseMaterialResponse> materials, boolean completed) {
+        return new LmsCourseTopicResponse(topic.getId(), topic.getTitle(), topic.getContent(), materials, topic.getContentFormat(),
+                topic.isRequired(), completed);
+    }
+
+    /** The page in a locked module: its title and flags only, never its text or files. */
+    LmsCourseTopicResponse withoutContent() {
+        return new LmsCourseTopicResponse(id, title, null, List.of(), contentFormat, required, completed);
     }
 }

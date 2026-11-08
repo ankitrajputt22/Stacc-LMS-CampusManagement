@@ -254,6 +254,37 @@ public class LmsFacultyContentController {
         return LmsFacultyTopicResponse.of(contentManagement.publishTopic(AuthenticatedAccount.idFrom(accessToken), topicId));
     }
 
+    @PutMapping("/topics/{topicId}/required")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Make a page required or optional",
+            description = "Required pages decide when students complete a module and count towards their progress.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The page.")
+    @ApiResponse(responseCode = "409", description = "The page is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsFacultyTopicResponse setTopicRequired(@PathVariable Long topicId, @Valid @RequestBody LmsRequirementRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return LmsFacultyTopicResponse.of(contentManagement.setTopicRequired(
+                AuthenticatedAccount.idFrom(accessToken), topicId, request.required()));
+    }
+
+    @PutMapping("/modules/{moduleId}/requires-previous")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Make a module wait for the previous one, or not",
+            description = "When required, students can open the module only after completing every required page of the "
+                    + "module before it. The first module never waits.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The module.")
+    @ApiResponse(responseCode = "409", description = "The module is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsFacultyModuleResponse setModuleRequiresPrevious(@PathVariable Long moduleId,
+            @Valid @RequestBody LmsRequirementRequest request, @AuthenticationPrincipal Jwt accessToken) {
+        return LmsFacultyModuleResponse.of(contentManagement.setModuleRequiresPrevious(
+                AuthenticatedAccount.idFrom(accessToken), moduleId, request.required()));
+    }
+
     @PostMapping("/topics/{topicId}/archive")
     @PreAuthorize(MANAGE)
     @Operation(

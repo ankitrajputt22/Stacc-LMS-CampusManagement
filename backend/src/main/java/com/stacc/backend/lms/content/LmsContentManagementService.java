@@ -157,6 +157,20 @@ public class LmsContentManagementService {
         return module;
     }
 
+    /** Whether students must complete the previous module before this one. */
+    public LmsModule setModuleRequiresPrevious(Long userAccountId, Long moduleId, boolean requiresPrevious) {
+        LmsModule module = changeableModule(userAccountId, moduleId);
+        module.requirePrevious(requiresPrevious);
+        return module;
+    }
+
+    /** Whether students must complete the page; required pages decide module completion and progress. */
+    public LmsTopic setTopicRequired(Long userAccountId, Long topicId, boolean required) {
+        LmsTopic topic = changeableTopic(userAccountId, topicId);
+        topic.markRequired(required);
+        return topic;
+    }
+
     private LmsModule changeableModule(Long userAccountId, Long moduleId) {
         LmsModule module = manageableModule(userAccountId, moduleId);
         if (module.isArchived()) {

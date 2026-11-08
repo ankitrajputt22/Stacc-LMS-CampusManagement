@@ -1,5 +1,6 @@
 import type {
   LmsCourseContent,
+  LmsCourseProgress,
   LmsCourseFile,
   LmsFacultyCourseFiles,
   LmsCoursePage,
@@ -40,6 +41,26 @@ export async function getLmsCourseFiles(lmsCourseId: number, signal?: AbortSigna
 export async function getFacultyCourseFiles(lmsCourseId: number, signal?: AbortSignal): Promise<LmsFacultyCourseFiles> {
   const response = await apiClient.get<LmsFacultyCourseFiles>(`/lms/faculty/courses/${lmsCourseId}/files`, { signal })
   return response.data
+}
+
+/** The signed-in student's own progress in a course. */
+export async function getCourseProgress(lmsCourseId: number, signal?: AbortSignal): Promise<LmsCourseProgress> {
+  return (await apiClient.get<LmsCourseProgress>(`/lms/courses/${lmsCourseId}/progress`, { signal })).data
+}
+
+/** Marks a page complete for the signed-in student, once, and answers their progress. */
+export async function completePage(lmsCourseId: number, pageId: number): Promise<LmsCourseProgress> {
+  return (await apiClient.post<LmsCourseProgress>(`/lms/courses/${lmsCourseId}/pages/${pageId}/complete`)).data
+}
+
+/** Makes a page required or optional. */
+export async function setPageRequired(pageId: number, required: boolean): Promise<LmsFacultyTopic> {
+  return (await apiClient.put<LmsFacultyTopic>(`/lms/faculty/topics/${pageId}/required`, { required })).data
+}
+
+/** Makes a module wait for the previous one, or not. */
+export async function setModuleRequiresPrevious(moduleId: number, required: boolean): Promise<LmsFacultyModule> {
+  return (await apiClient.put<LmsFacultyModule>(`/lms/faculty/modules/${moduleId}/requires-previous`, { required })).data
 }
 
 /** One published page of a course the signed-in student may use, with the pages around it. */
