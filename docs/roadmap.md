@@ -122,7 +122,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.6.4 | Syllabus | A syllabus page per course. Done: `V80` one formatted syllabus per course with a draft and a published version (see `course-syllabus.md`). |
 | 0.6.5 | Requirements and progress | Module prerequisites and requirements, and completion recorded once per student per item ("opened", "completed"). Done: `V81` required pages, modules that wait for the previous one, completions recorded once per enrollment and page on Mark as complete (opening records nothing, since read pages never change data), and the student's own progress (see `learning-progress.md`). |
 | ★ 0.6.6 | Course home and navigation | A chosen course home and Canvas-style course navigation: Home, Modules, Pages, Files, Syllabus, Assignments, Grades. Done: one course navigation for students and faculty, the home chosen by faculty (overview, modules, or syllabus) with a welcome message (`V82`); Grades waits for v0.7 (see `course-navigation.md`). |
-| ★ 0.6.7 | Course space redesign | Every course page rebuilt on the shared components, phone-first for students. |
+| ★ 0.6.7 | Course space redesign | Every course page rebuilt on the shared components, phone-first for students. Done: `PageHeader`, `Card`, and shared states on every course page (see `course-navigation.md`). |
 | 0.6.8 | Course copy | Faculty copy content from a previous offering of the same course. |
 
 ## v0.7 Assessment
@@ -289,5 +289,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
-| v0.6 LMS core | In progress: 0.6.1 to 0.6.6 done |
+| v0.6 LMS core | In progress: 0.6.1 to 0.6.7 done |
 | v0.7 – v1.0 | Not started |

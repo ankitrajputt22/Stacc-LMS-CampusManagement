@@ -3,6 +3,7 @@ import { FormattedText } from '../formatting/FormattedText'
 import type { TextFormat } from '../formatting/textFormat'
 import type { LmsCourseMaterial, LmsPageLink } from '../types/lms'
 import { StudyMaterialList } from './StudyMaterialList'
+import { Card } from '../ui'
 import { useMaterialDownload } from './useMaterialDownload'
 
 type PageBodyProps = {
@@ -30,26 +31,23 @@ export function PageBody({ content, contentFormat, materials, previous, next, pa
   return (
     <>
       {!neighboursOnly && (
-      <div className="mt-6 max-w-3xl rounded-panel border border-line bg-surface px-4 py-4 sm:px-6">
-        {content ? (
-          <FormattedText text={content} format={contentFormat} className="text-base leading-7 text-ink" headingLevel={2} />
-        ) : (
-          <p className="text-sm text-ink-muted">This page has no text.</p>
-        )}
-      </div>
+        <Card>
+          {content ? (
+            <FormattedText text={content} format={contentFormat} className="text-base leading-7 text-ink" headingLevel={2} />
+          ) : (
+            <p className="text-sm text-ink-muted">This page has no text.</p>
+          )}
+        </Card>
       )}
 
       {!neighboursOnly && materials.length > 0 && (
-        <section aria-labelledby="page-materials-heading" className="mt-6 max-w-3xl">
-          <h2 id="page-materials-heading" className="text-base font-semibold text-ink">
-            Study materials
-          </h2>
+        <Card title="Study materials" className="mt-6">
           <StudyMaterialList materials={materials} downloads={downloads} />
-        </section>
+        </Card>
       )}
 
       {(previous || next) && (
-        <nav aria-label="Pages of this course" className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+        <nav aria-label="Pages of this course" className="mt-8 grid gap-3 sm:grid-cols-2">
           {previous ? (
             <Link to={pathTo(previous.id)} className={neighbourClasses}>
               <span className="text-xs text-ink-muted">Previous: {previous.moduleTitle}</span>

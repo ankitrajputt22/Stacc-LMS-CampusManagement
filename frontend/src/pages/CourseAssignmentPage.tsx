@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -15,12 +15,10 @@ import { PastDueLabel } from '../courses/PastDueLabel'
 import { useCourseAssignment } from '../courses/useCourseAssignment'
 import type { LmsCourseAssignmentDetail } from '../types/lms'
 import { FormattedText } from '../formatting/FormattedText'
+import { ButtonLink, Card, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-
-const backLinkClasses =
-  'inline-flex min-h-11 items-center rounded-control font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0'
 
 function coursePath(lmsCourseId: number | null): string {
   return lmsCourseId === null ? COURSES.to : `/courses/${lmsCourseId}`
@@ -31,20 +29,20 @@ function AssignmentState({ lmsCourseId, children }: { lmsCourseId: number | null
   return (
     <>
       <title>Assignment · Stacc</title>
-      <Breadcrumb parent={lmsCourseId === null ? COURSES : [COURSES, { to: coursePath(lmsCourseId), label: 'Course' }]} />
-      <h1 className="sr-only">Assignment</h1>
-      <div className="mt-4">
-        <StatePanel>{children}</StatePanel>
-      </div>
+      <PageHeader
+        breadcrumb={<Breadcrumb parent={lmsCourseId === null ? COURSES : [COURSES, { to: coursePath(lmsCourseId), label: 'Course' }]} />}
+        title="Assignment"
+      />
+      <StatePanel>{children}</StatePanel>
     </>
   )
 }
 
 function BackToCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
   return (
-    <Link to={coursePath(lmsCourseId)} className={`mt-6 text-sm ${backLinkClasses}`}>
+    <ButtonLink to={coursePath(lmsCourseId)} variant="secondary">
       {lmsCourseId === null ? 'Back to Courses' : 'Back to Course'}
-    </Link>
+    </ButtonLink>
   )
 }
 
@@ -52,12 +50,12 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
   return (
     <>
       <title>Assignment unavailable · Stacc</title>
-      <Breadcrumb parent={COURSES} />
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Assignment unavailable</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        This assignment could not be found or is not available to your account.
-      </p>
-      <BackToCourse lmsCourseId={lmsCourseId} />
+      <PageHeader
+        breadcrumb={<Breadcrumb parent={COURSES} />}
+        title="Assignment unavailable"
+        description="This assignment could not be found or is not available to your account."
+        actions={<BackToCourse lmsCourseId={lmsCourseId} />}
+      />
     </>
   )
 }
@@ -79,24 +77,27 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
   const [now] = useState(() => Date.now())
 
   return (
-    <>
+    <div className="max-w-3xl">
       <title>{`${assignment.title} · ${assignment.courseName} · Stacc`}</title>
-      <Breadcrumb
-        parent={[COURSES, { to: coursePath(assignment.lmsCourseId), label: assignment.courseName }]}
-        current={assignment.title}
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb
+            parent={[COURSES, { to: coursePath(assignment.lmsCourseId), label: assignment.courseName }]}
+            current={assignment.title}
+          />
+        }
+        eyebrow={
+          <>
+            {assignment.courseCode}
+            <span aria-hidden="true"> · </span>
+            <span className="sr-only">, </span>
+            {assignment.courseName}
+          </>
+        }
+        title={assignment.title}
       />
 
-      <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
-          {assignment.courseCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          {assignment.courseName}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{assignment.title}</h1>
-      </header>
-
-      <dl className="mt-6 max-w-2xl divide-y divide-line rounded-panel border border-line bg-surface">
+      <dl className="divide-y divide-line rounded-panel border border-line bg-surface">
         <InformationRow term="Due">
           <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
           {isPast(assignment.dueAt, now) && <PastDueLabel />}
@@ -107,11 +108,8 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
         </InformationRow>
       </dl>
 
-      <section aria-labelledby="assignment-instructions-heading" className="mt-8 max-w-2xl">
-        <h2 id="assignment-instructions-heading" className="text-base font-semibold text-ink">
-          Instructions
-        </h2>
-        <div className="mt-3 rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
+      <Card title="Instructions" className="mt-6">
+        <div>
           {/* Shown as its format says; never as HTML. */}
           <FormattedText
             text={assignment.instructions}
@@ -120,12 +118,14 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
             headingLevel={3}
           />
         </div>
-      </section>
+      </Card>
 
       <AssignmentSubmission lmsCourseId={assignment.lmsCourseId} assignmentId={assignment.id} dueAt={assignment.dueAt} />
 
-      <BackToCourse lmsCourseId={assignment.lmsCourseId} />
-    </>
+      <div className="mt-6">
+        <BackToCourse lmsCourseId={assignment.lmsCourseId} />
+      </div>
+    </div>
   )
 }
 

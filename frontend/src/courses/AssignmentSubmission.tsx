@@ -129,7 +129,7 @@ export function AssignmentSubmission({ lmsCourseId, assignmentId, dueAt }: Assig
   const pastDue = isPast(dueAt, now)
 
   return (
-    <section ref={sectionRef} aria-labelledby="your-submission-heading" className="mt-8 max-w-2xl border-t border-line pt-6">
+    <section ref={sectionRef} aria-labelledby="your-submission-heading" className="mt-6 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
       <h2 id="your-submission-heading" className="text-base font-semibold text-ink">
         Your submission
       </h2>

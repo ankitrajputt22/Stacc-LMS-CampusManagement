@@ -13,7 +13,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId, parseRouteId } from '../courses/courseRoute'
 import { PageBody } from '../courses/PageBody'
 import type { LmsFacultyPage } from '../types/lms'
-import { Alert, ButtonLink } from '../ui'
+import { Alert, ButtonLink, PageHeader } from '../ui'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -107,19 +107,17 @@ export function TeachingPagePreview() {
   return (
     <>
       <title>{`Preview: ${data.title} · Stacc`}</title>
-      <Breadcrumb parent={[TEACHING, { to: coursePath, label: data.courseName }]} current={data.title} />
-      <header className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
-            {data.courseCode} · {data.moduleTitle}
-          </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{data.title}</h1>
-        </div>
-        <ButtonLink to={`${coursePath}/modules`} variant="secondary">
-          Edit in Modules
-        </ButtonLink>
-      </header>
-      <Alert tone={hidden ? 'warning' : 'success'} className="mt-4 max-w-3xl" title="Preview">
+      <PageHeader
+        breadcrumb={<Breadcrumb parent={[TEACHING, { to: coursePath, label: data.courseName }]} current={data.title} />}
+        eyebrow={`${data.courseCode} · ${data.moduleTitle}`}
+        title={data.title}
+        actions={
+          <ButtonLink to={`${coursePath}/modules`} variant="secondary">
+            Edit in Modules
+          </ButtonLink>
+        }
+      />
+      <Alert tone={hidden ? 'warning' : 'success'} className="mb-6 max-w-3xl" title="Preview">
         {hidden
           ? `This is how students will see the page. They cannot see it yet: ${hidden}.`
           : 'This is how students enrolled in the course see this page.'}

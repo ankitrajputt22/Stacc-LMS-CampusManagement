@@ -1,4 +1,4 @@
-import { ActionButton } from '../components/ActionButton'
+import { Button } from '../ui'
 import type { LmsCourseMaterial } from '../types/lms'
 import { fileTypeLabel, formatFileSize } from './materials'
 import type { useMaterialDownload } from './useMaterialDownload'
@@ -39,9 +39,8 @@ export function StudyMaterialList({ materials, downloads }: StudyMaterialListPro
   }
 
   return (
-    <div className="mt-3">
-      <p className="text-xs font-semibold tracking-[0.04em] text-ink-muted uppercase">Study materials</p>
-      <ul className="mt-1.5 divide-y divide-line rounded-control border border-line">
+    <div>
+      <ul className="divide-y divide-line rounded-control border border-line">
         {materials.map((material) => {
           const isDownloading = downloads.downloadingId === material.id
           const failed = downloads.failure?.fileId === material.id ? downloads.failure.message : null
@@ -58,13 +57,15 @@ export function StudyMaterialList({ materials, downloads }: StudyMaterialListPro
                   )}
                 </div>
                 <div className="shrink-0">
-                  <ActionButton
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     aria-disabled={isDownloading || undefined}
                     onClick={() => void downloads.download(material)}
                   >
                     {isDownloading ? 'Downloading…' : 'Download'}
                     <span className="sr-only"> {material.title}</span>
-                  </ActionButton>
+                  </Button>
                 </div>
               </div>
               <div role="alert">

@@ -16,6 +16,7 @@ import { CourseSettings } from '../teaching/CourseSettings'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
+import { PageHeader } from '../ui'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
 
@@ -24,23 +25,24 @@ function TeachingCourseState({ heading, srOnlyHeading = true, children }: { head
   return (
     <>
       <title>{`${heading} · Stacc`}</title>
-      <Breadcrumb parent={TEACHING} />
-      <h1 className={srOnlyHeading ? 'sr-only' : 'mt-4 text-3xl font-bold tracking-tight text-portal-navy'}>
-        {heading}
-      </h1>
-      <div className="mt-4">
-        <StatePanel>{children}</StatePanel>
-      </div>
+      {srOnlyHeading ? (
+        <>
+          <Breadcrumb parent={TEACHING} />
+          <h1 className="sr-only">{heading}</h1>
+          <div className="mt-4" />
+        </>
+      ) : (
+        <PageHeader breadcrumb={<Breadcrumb parent={TEACHING} />} title={heading} />
+      )}
+      <StatePanel>{children}</StatePanel>
     </>
   )
 }
 
-function CourseHeader({ course }: { course: LmsFacultyCourseContent }) {
+/** The official details of the course, from the academic records: code, program, semester, session, and credits. */
+function courseLine(course: LmsFacultyCourseContent): ReactNode {
   return (
-    <header className="mt-4">
-      <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-      <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{course.courseName}</h1>
-      <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
+      <>
         <span className="sr-only">Program </span>
         {course.programCode}
         <span aria-hidden="true"> · </span>
@@ -52,8 +54,7 @@ function CourseHeader({ course }: { course: LmsFacultyCourseContent }) {
         <span aria-hidden="true"> · </span>
         <span className="sr-only">, </span>
         {creditsText(course.credits)}
-      </p>
-    </header>
+      </>
   )
 }
 
@@ -120,15 +121,17 @@ function TeachingCourseFrame({
       return (
         <>
           <title>{`${section.title}${section.title === course.data.courseName ? '' : ` · ${course.data.courseName}`} · Teaching · Stacc`}</title>
-          <Breadcrumb
-            parent={section.heading === '' ? TEACHING : [TEACHING, { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName }]}
-            current={section.heading === '' ? course.data.courseName : section.heading}
+          <PageHeader
+            breadcrumb={
+              <Breadcrumb
+                parent={section.heading === '' ? TEACHING : [TEACHING, { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName }]}
+                current={section.heading === '' ? course.data.courseName : section.heading}
+              />
+            }
+            eyebrow={course.data.courseCode}
+            title={section.heading === '' ? course.data.courseName : section.heading}
+            description={section.heading === '' ? courseLine(course.data) : undefined}
           />
-          {section.heading === '' ? (
-            <CourseHeader course={course.data} />
-          ) : (
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">{section.heading}</h1>
-          )}
           {children(course.data, course.refresh)}
         </>
       )
@@ -146,7 +149,8 @@ export function TeachingCoursePage() {
       {(course, reload) => (
         <>
           <CourseSettings course={course} reload={reload} />
-          <CourseHomeSettings key={`${course.homeView}|${course.welcomeMessage ?? ''}`} course={course} />
+          {/* Not keyed by the saved values: a save reloads the course, and remounting would drop "Course home saved." */}
+          <CourseHomeSettings course={course} />
         </>
       )}
     </TeachingCourseFrame>
