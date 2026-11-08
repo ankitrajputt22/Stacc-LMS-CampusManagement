@@ -135,7 +135,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.7.4 | Taking a quiz | Server-side timer, autosave, and submission under a lock; answers never sent early. Done: `V86` attempts per course enrollment with deadlines fixed at the start, answers saved under the attempt row lock, hand-in as submitted or expired, per-attempt shuffling, and the student Quizzes pages with a timer and autosave (see `quizzes.md`). |
 | ★ 0.7.5 | Quiz grading | Automatic for objective questions, by hand for descriptive ones, with regrading. Done: scores worked out on every read, `V87` teachers' marks per answer under the attempt row lock, result release and answer settings, closing attempts whose time is up, and the faculty Results and marking pages (see `quizzes.md`). |
 | ★ 0.7.6 | Gradebook | Assignments, quizzes, and manual items in one gradebook, with publishing rules; students see only published grades. Done: assignment and quiz columns read live from their own marks, `V88` manual items and entries, column publishing under the course row lock, the faculty Gradebook and the student Grades pages (see `gradebook.md`). |
-| 0.7.7 | Rubrics | Rubrics attached to assignments, used while grading, with totals matching the marks. |
+| 0.7.7 | Rubrics | Rubrics attached to assignments, used while grading, with totals matching the marks. Done: `V89` rubrics with criteria and levels, an assignment rubric whose total equals its marks, grading by criterion with the sum as marks and the scores kept with the grade, and the Rubrics page (see `rubrics.md`). |
 | 0.7.8 | Assignment upgrades | Availability windows, attempt limits, and cut-off times. |
 | 0.7.9 | Blueprints and papers | Exam blueprints and a paper builder from the question bank (no AI), with a print view and DOCX export. |
 | ★ 0.7.10 | Grading view | One grading screen per submission or attempt, with rubric, feedback, and next/previous student. |
@@ -290,5 +290,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
-| v0.7 Assessment | In progress: 0.7.1 to 0.7.6 done |
+| v0.7 Assessment | In progress: 0.7.1 to 0.7.7 done |
 | v0.8 – v1.0 | Not started |

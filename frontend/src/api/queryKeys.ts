@@ -92,6 +92,7 @@ export const queryKeys = {
     quizAttempt: (attemptId: number) => ['lms', 'quiz-attempts', attemptId] as const,
     quizResults: (quizId: number) => ['lms', 'faculty-quizzes', quizId, 'results'] as const,
     quizAttemptReview: (attemptId: number) => ['lms', 'faculty-quiz-attempts', attemptId] as const,
+    rubrics: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'rubrics'] as const,
     gradebook: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'gradebook'] as const,
     myGrades: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'grades'] as const,
     facultyQuizzes: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'quizzes'] as const,

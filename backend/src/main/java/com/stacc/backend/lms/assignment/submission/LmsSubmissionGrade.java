@@ -2,10 +2,12 @@ package com.stacc.backend.lms.assignment.submission;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 import com.stacc.backend.common.validation.Require;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.lms.assignment.LmsAssignment;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 /**
@@ -62,6 +65,10 @@ public class LmsSubmissionGrade {
     @Column(name = "graded_at", nullable = false)
     private Instant gradedAt;
 
+    // How the marks were given with a rubric, if they were. Part of the grade: replaced or removed with it.
+    @OneToOne(mappedBy = "grade", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private LmsRubricAssessment rubricAssessment;
+
     protected LmsSubmissionGrade() {
         // Required by JPA.
     }
@@ -96,6 +103,24 @@ public class LmsSubmissionGrade {
     }
 
     /** The feedback as it will be stored: unchanged, or null when it is missing or blank. Too long is refused. */
+    /** Keeps the rubric scores the marks were given with, replacing earlier ones. */
+    public void useRubric(List<LmsRubricScore> scores) {
+        if (rubricAssessment == null) {
+            rubricAssessment = new LmsRubricAssessment(this);
+        }
+        rubricAssessment.replace(scores);
+    }
+
+    /** Drops the rubric scores, for marks given without the rubric. */
+    public void clearRubric() {
+        this.rubricAssessment = null;
+    }
+
+    /** The rubric scores the marks were given with, or none. */
+    public List<LmsRubricScore> getRubricScores() {
+        return rubricAssessment == null ? List.of() : rubricAssessment.getScores();
+    }
+
     public static String feedbackOrNull(String feedback) {
         if (feedback == null || feedback.isBlank()) {
             return null;

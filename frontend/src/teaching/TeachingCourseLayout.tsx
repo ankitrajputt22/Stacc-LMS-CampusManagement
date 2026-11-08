@@ -30,6 +30,7 @@ export function TeachingCourseLayout() {
             { to: `${root}/modules`, label: 'Modules' },
             { to: `${root}/announcements`, label: 'Announcements' },
             { to: `${root}/assignments`, label: 'Assignments' },
+            { to: `${root}/rubrics`, label: 'Rubrics' },
             { to: `${root}/quizzes`, label: 'Quizzes' },
             { to: `${root}/gradebook`, label: 'Gradebook' },
             { to: `${root}/outcomes`, label: 'Outcomes' },

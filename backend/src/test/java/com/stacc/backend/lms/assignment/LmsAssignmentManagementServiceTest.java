@@ -32,6 +32,7 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricRepository;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
@@ -56,6 +57,7 @@ class LmsAssignmentManagementServiceTest {
     private static final Instant DUE = Instant.parse("2026-10-20T18:29:00Z");
     private static final BigDecimal MARKS = new BigDecimal("20");
 
+    private final LmsRubricRepository rubrics = mock(LmsRubricRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
@@ -64,7 +66,7 @@ class LmsAssignmentManagementServiceTest {
             org.mockito.Mockito.mock(com.stacc.backend.lms.outcome.LmsCourseOutcomeRepository.class);
     private final LmsAssignmentManagementService service = new LmsAssignmentManagementService(
             lmsCourses, assignments, new LmsFacultyAccessService(lmsCourses, teachingAssignments), Clock.fixed(NOW, ZoneOffset.UTC),
-            notifications, outcomes);
+            notifications, outcomes, rubrics);
 
     private final Department department = new Department("CSE", "Computer Science and Engineering");
     private final Semester semester = new Semester(

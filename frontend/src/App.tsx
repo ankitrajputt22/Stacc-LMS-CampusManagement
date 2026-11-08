@@ -62,6 +62,7 @@ import {
   TeachingQuizPage,
   TeachingQuizResultsPage,
   TeachingQuizzesPage,
+  TeachingRubricsPage,
 } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 import { CourseLayout } from './courses/CourseLayout'
@@ -114,6 +115,7 @@ function App() {
             <Route path="quizzes/:quizId/results" element={<TeachingQuizResultsPage />} />
             <Route path="quiz-attempts/:attemptId" element={<TeachingQuizAttemptPage />} />
             <Route path="gradebook" element={<TeachingGradebookPage />} />
+            <Route path="rubrics" element={<TeachingRubricsPage />} />
             <Route path="gradebook/items/:itemId" element={<TeachingGradeItemPage />} />
             <Route path="questions" element={<TeachingQuestionBankPage />} />
             <Route path="assignments/:assignmentId/submissions" element={<FacultyAssignmentSubmissionsPage />} />

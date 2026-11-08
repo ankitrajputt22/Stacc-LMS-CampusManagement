@@ -27,5 +27,7 @@ public record LmsFacultySubmissionDetailResponse(
         Long submissionId,
 
         @Schema(description = "Newest first, by attempt number.")
-        List<LmsFacultySubmissionAttemptResponse> attempts) {
+        List<LmsFacultySubmissionAttemptResponse> attempts,
+        @Schema(description = "The rubric the assignment is graded with, or null.")
+        LmsRubricResponse rubric) {
 }

@@ -2,12 +2,19 @@ package com.stacc.backend.lms.assignment;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.stacc.backend.common.validation.Require;
+import com.stacc.backend.lms.assignment.rubric.LmsRubric;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.outcome.BloomLevel;
+import com.stacc.backend.lms.outcome.LmsCourseOutcome;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,18 +24,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import com.stacc.backend.lms.outcome.BloomLevel;
-import com.stacc.backend.lms.outcome.LmsCourseOutcome;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 
 /**
  * The definition of a piece of work set in one LMS course: a title, plain-text instructions, a deadline,
@@ -48,6 +49,8 @@ public class LmsAssignment {
     /** The largest value the max_marks column holds, DECIMAL(8,2). */
     public static final BigDecimal MAX_MARKS = new BigDecimal("999999.99");
     /** The range of deadlines accepted: wide enough for any real course, and storable in MySQL. */
+    public static final String RUBRIC_TOTAL_FIXED =
+            "The maximum marks must equal the rubric's total. Remove the rubric first to change them.";
     public static final Instant EARLIEST_DUE_AT = Instant.parse("2000-01-01T00:00:00Z");
     public static final Instant LATEST_DUE_AT = Instant.parse("9999-12-31T00:00:00Z");
 
@@ -104,6 +107,12 @@ public class LmsAssignment {
             joinColumns = @JoinColumn(name = "lms_assignment_id"),
             inverseJoinColumns = @JoinColumn(name = "lms_course_outcome_id"))
     private Set<LmsCourseOutcome> outcomes = new HashSet<>();
+
+    // The rubric it is graded with, if any: one of the same course whose total equals the maximum marks.
+    // Loaded with the assignment (one row and its few criteria), because answers are built after the transaction.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lms_rubric_id")
+    private LmsRubric rubric;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -172,6 +181,28 @@ public class LmsAssignment {
         return dueAt != null && !dueAt.isBefore(EARLIEST_DUE_AT) && !dueAt.isAfter(LATEST_DUE_AT);
     }
 
+    public LmsRubric getRubric() {
+        return rubric;
+    }
+
+    /**
+     * Grades with this rubric from now on, or without one. The rubric must belong to the same course and its total must
+     * equal the maximum marks; an archived assignment can no longer change.
+     */
+    public void useRubric(LmsRubric chosen) {
+        requireNotArchived();
+        if (chosen != null) {
+            if (!chosen.getLmsCourse().getId().equals(lmsCourse.getId())) {
+                throw new IllegalArgumentException("A rubric of another course cannot be used.");
+            }
+            if (chosen.getTotalPoints().compareTo(maxMarks) != 0) {
+                throw new IllegalStateException("The rubric's total (" + chosen.getTotalPoints().stripTrailingZeros().toPlainString()
+                        + ") must equal the assignment's maximum marks (" + maxMarks.stripTrailingZeros().toPlainString() + ").");
+            }
+        }
+        this.rubric = chosen;
+    }
+
     public LmsTextFormat getInstructionsFormat() {
         return instructionsFormat;
     }
@@ -193,6 +224,9 @@ public class LmsAssignment {
         String validInstructions = Require.text(instructions, "instructions", MAX_INSTRUCTIONS_LENGTH);
         Instant validDueAt = validDueAt(dueAt);
         BigDecimal validMaxMarks = validMaxMarks(maxMarks);
+        if (rubric != null && validMaxMarks.compareTo(rubric.getTotalPoints()) != 0) {
+            throw new IllegalStateException(RUBRIC_TOTAL_FIXED);
+        }
         this.title = validTitle;
         this.instructions = validInstructions;
         this.dueAt = validDueAt;

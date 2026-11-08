@@ -16,6 +16,7 @@ import { useCourseAssignment } from '../courses/useCourseAssignment'
 import type { LmsCourseAssignmentDetail } from '../types/lms'
 import { bloomLabel } from '../courses/bloomText'
 import { FormattedText } from '../formatting/FormattedText'
+import { RubricView } from '../courses/RubricView'
 import { ButtonLink, Card, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -132,6 +133,12 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           />
         </div>
       </Card>
+
+      {assignment.rubric && (
+        <Card title="Rubric" description={`How this assignment is graded: ${assignment.rubric.title}.`} className="mt-6">
+          <RubricView rubric={assignment.rubric} />
+        </Card>
+      )}
 
       <AssignmentSubmission lmsCourseId={assignment.lmsCourseId} assignmentId={assignment.id} dueAt={assignment.dueAt} />
 

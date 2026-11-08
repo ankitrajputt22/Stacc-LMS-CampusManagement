@@ -38,6 +38,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Announcements | `/announcements` | The announcement editor. |
 | Assignments | `/assignments` | The assignment editor; grading opens at `/assignments/:assignmentId/submissions`. |
 | Quizzes | `/quizzes` | See `quizzes.md`; each quiz opens at `/quizzes/:quizId`, its results at `/quizzes/:quizId/results`, and an attempt for marking at `/quiz-attempts/:attemptId`. |
+| Rubrics | `/rubrics` | See `rubrics.md`. |
 | Gradebook | `/gradebook` | See `gradebook.md`; a manual item opens at `/gradebook/items/:itemId`. |
 | Outcomes | `/outcomes` | See `course-outcomes.md`. |
 | Question bank | `/questions` | See `question-bank.md`. |
