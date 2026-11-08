@@ -105,9 +105,10 @@ public class LmsStudentCourseQueryService {
         if (!accessService.canAccessCourse(userAccountId, lmsCourseId)) {
             throw courseUnavailable();
         }
-        return lmsCourses.findWithAcademicContextById(lmsCourseId)
-                .map(LmsStudentCourseQueryService::detailOf)
+        LmsCourse lmsCourse = lmsCourses.findWithAcademicContextById(lmsCourseId)
                 .orElseThrow(LmsStudentCourseQueryService::courseUnavailable);
+        Long offeringId = lmsCourse.getCourseOffering().getId();
+        return detailOf(lmsCourse, faculty.activeNamesByOffering(List.of(offeringId)).getOrDefault(offeringId, List.of()));
     }
 
     private static ApiException courseUnavailable() {
@@ -132,7 +133,7 @@ public class LmsStudentCourseQueryService {
     }
 
     // The department is the course's owning department, which may differ from the programme's.
-    private static LmsCourseDetailResponse detailOf(LmsCourse lmsCourse) {
+    private static LmsCourseDetailResponse detailOf(LmsCourse lmsCourse, List<String> facultyNames) {
         CourseOffering courseOffering = lmsCourse.getCourseOffering();
         Course course = courseOffering.getCourse();
         Department department = course.getDepartment();
@@ -148,6 +149,10 @@ public class LmsStudentCourseQueryService {
                 program.getCode(),
                 program.getName(),
                 semester.getSemesterNumber(),
-                semester.getAcademicSession().getCode());
+                semester.getAcademicSession().getCode(),
+                courseOffering.getSection() == null ? null : courseOffering.getSection().getCode(),
+                facultyNames,
+                lmsCourse.getHomeView(),
+                lmsCourse.getWelcomeMessage());
     }
 }

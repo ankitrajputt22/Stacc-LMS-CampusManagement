@@ -202,7 +202,7 @@ class LmsSearchProviderTest {
         verify(assignments).search(eq(Set.of(21L)), eq(LmsContentPolicy.IN_USE), any(), any(), any(), any());
         assertThat(page.getContent()).singleElement().satisfies(result -> {
             assertThat(result.type()).isEqualTo(SearchResultType.TEACHING_ASSIGNMENT);
-            assertThat(result.actionPath()).isEqualTo("/teaching/21");
+            assertThat(result.actionPath()).isEqualTo("/teaching/21/assignments");
             assertThat(result.subtitle()).isEqualTo("CS301 Data Structures · Draft");
         });
         verify(studentCourses, never()).getAccessibleCourses(anyLong());

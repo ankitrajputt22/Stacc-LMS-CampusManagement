@@ -55,7 +55,7 @@ class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
     private static LmsCourseDetailResponse aCourse() {
         return new LmsCourseDetailResponse(
                 7L, "TST301", "Test Course One", new BigDecimal("4.00"),
-                "TST", "Test Department", "BTECH", "Test Program", 3, "2026-27");
+                "TST", "Test Department", "BTECH", "Test Program", 3, "2026-27", null, java.util.List.of(), com.stacc.backend.lms.course.LmsCourseHomeView.OVERVIEW, null);
     }
 
     private void expectForbidden(String token) throws Exception {
@@ -88,7 +88,7 @@ class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
 
         getAs(studentToken(), COURSE)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(10)))
+                .andExpect(jsonPath("$.*", hasSize(14)))
                 .andExpect(content().string(not(containsString(LOGIN_ID))))
                 .andExpect(content().string(not(containsString("accountId"))))
                 .andExpect(content().string(not(containsString("Enrollment"))))
@@ -184,6 +184,6 @@ class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath(operation + ".responses['401']").exists())
                 .andExpect(jsonPath(operation + ".responses['403']").exists())
                 .andExpect(jsonPath(operation + ".responses['404']").exists())
-                .andExpect(jsonPath("$.components.schemas.LmsCourseDetailResponse.properties.*", hasSize(10)));
+                .andExpect(jsonPath("$.components.schemas.LmsCourseDetailResponse.properties.*", hasSize(14)));
     }
 }

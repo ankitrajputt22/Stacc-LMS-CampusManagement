@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -13,7 +13,8 @@ import { AnnouncementsEditor } from '../teaching/AnnouncementsEditor'
 import { AssignmentsEditor } from '../teaching/AssignmentsEditor'
 import { CourseContentEditor } from '../teaching/CourseContentEditor'
 import { CourseSettings } from '../teaching/CourseSettings'
-import { useFacultyCourseContent } from '../teaching/useFacultyCourseContent'
+import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
+import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
@@ -56,14 +57,40 @@ function CourseHeader({ course }: { course: LmsFacultyCourseContent }) {
   )
 }
 
-function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
-  const course = useFacultyCourseContent(lmsCourseId)
+type Section = { title: string; heading: string }
+
+/**
+ * Loads the course the faculty member teaches once (from the shared cache) and shows its loading, missing, refused,
+ * and failed states the same way on every teaching page; then the page's own part, with the course and a reload.
+ */
+function TeachingCourseFrame({
+  section,
+  children,
+}: {
+  section: Section
+  children: (course: LmsFacultyCourseContent, reload: () => void) => ReactNode
+}) {
+  const { account } = useAuth()
+  const { lmsCourseId } = useParams()
+  const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])
+  const course = useFacultyCourse(isFaculty ? parseCourseId(lmsCourseId) : null)
+
+  if (!isFaculty) {
+    return (
+      <TeachingCourseState heading="Course">
+        <AccessDeniedState
+          title="This page is for faculty accounts."
+          message="If you think you should, contact the college administration."
+        />
+      </TeachingCourseState>
+    )
+  }
 
   switch (course.status) {
     case 'loading':
       return (
         <TeachingCourseState heading="Course">
-          <LoadingState label="Loading course content…" />
+          <LoadingState label="Loading course…" />
         </TeachingCourseState>
       )
     case 'notFound':
@@ -86,62 +113,69 @@ function FacultyCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
     case 'failed':
       return (
         <TeachingCourseState heading="Course">
-          <ErrorState
-            title="Couldn’t load course content"
-            message="Check your connection and try again."
-            onRetry={course.retry}
-          />
+          <ErrorState title="Couldn’t load the course" message="Check your connection and try again." onRetry={course.retry} />
         </TeachingCourseState>
       )
     case 'loaded':
       return (
         <>
-          <title>{`${course.data.courseName} · Teaching · Stacc`}</title>
-          <Breadcrumb parent={TEACHING} current={course.data.courseName} />
-          <CourseHeader course={course.data} />
-          <nav aria-label="Course tools" className="mt-3 flex flex-wrap gap-2">
-            <Link to={`/teaching/${course.data.lmsCourseId}/syllabus`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
-              Syllabus
-            </Link>
-            <Link to={`/teaching/${course.data.lmsCourseId}/files`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
-              Files
-            </Link>
-            <Link
-              to={`/teaching/${course.data.lmsCourseId}/ai`}
-              className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9"
-            >
-              AI Tools
-            </Link>
-          </nav>
-          <CourseSettings course={course.data} reload={course.refresh} />
-          <AnnouncementsEditor lmsCourseId={course.data.lmsCourseId} />
-          <AssignmentsEditor lmsCourseId={course.data.lmsCourseId} />
-          <CourseContentEditor course={course.data} reload={course.refresh} />
+          <title>{`${section.title}${section.title === course.data.courseName ? '' : ` · ${course.data.courseName}`} · Teaching · Stacc`}</title>
+          <Breadcrumb
+            parent={section.heading === '' ? TEACHING : [TEACHING, { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName }]}
+            current={section.heading === '' ? course.data.courseName : section.heading}
+          />
+          {section.heading === '' ? (
+            <CourseHeader course={course.data} />
+          ) : (
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">{section.heading}</h1>
+          )}
+          {children(course.data, course.refresh)}
         </>
       )
   }
 }
 
 /**
- * One course the signed-in faculty member teaches, at /teaching/:lmsCourseId, where they manage its
- * LMS lifecycle in Course settings and its announcements, assignments, modules, and topics. The backend checks access from official teaching assignments on every request.
- * Accounts without the faculty role see an explanation instead, and no request is made.
+ * /teaching/:lmsCourseId, the course's home for faculty: its official details, Course settings (publish and archive),
+ * and the course home students see first. Modules, announcements, assignments, files, the syllabus, and AI tools have
+ * their own pages in the course navigation. The backend checks access from official teaching assignments every time.
  */
 export function TeachingCoursePage() {
-  const { account } = useAuth()
-  const { lmsCourseId } = useParams()
-  const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])
+  return (
+    <TeachingCourseFrame section={{ title: 'Course', heading: '' }}>
+      {(course, reload) => (
+        <>
+          <CourseSettings course={course} reload={reload} />
+          <CourseHomeSettings key={`${course.homeView}|${course.welcomeMessage ?? ''}`} course={course} />
+        </>
+      )}
+    </TeachingCourseFrame>
+  )
+}
 
-  if (!isFaculty) {
-    return (
-      <TeachingCourseState heading="Course">
-        <AccessDeniedState
-          title="This page is for faculty accounts."
-          message="If you think you should, contact the college administration."
-        />
-      </TeachingCourseState>
-    )
-  }
+/** /teaching/:lmsCourseId/modules: modules and their pages, with every change the content editor offers. */
+export function TeachingModulesPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Modules', heading: 'Modules' }}>
+      {(course, reload) => <CourseContentEditor course={course} reload={reload} />}
+    </TeachingCourseFrame>
+  )
+}
 
-  return <FacultyCourse lmsCourseId={parseCourseId(lmsCourseId)} />
+/** /teaching/:lmsCourseId/announcements: the course's announcements, drafts included. */
+export function TeachingAnnouncementsPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Announcements', heading: 'Announcements' }}>
+      {(course) => <AnnouncementsEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/assignments: the course's assignments, with links to their submissions. */
+export function TeachingAssignmentsPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Assignments', heading: 'Assignments' }}>
+      {(course) => <AssignmentsEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
 }

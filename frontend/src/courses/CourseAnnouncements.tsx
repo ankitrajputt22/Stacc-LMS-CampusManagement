@@ -5,6 +5,8 @@ import { formatDateTime } from './dates'
 import { FormattedText } from '../formatting/FormattedText'
 
 type CourseAnnouncementsProps = {
+  /** On the section's own page, whose title already names it: the heading is for screen readers only, and no top margin. */
+  standalone?: boolean
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
 }
 
@@ -14,10 +16,10 @@ const HEADING_ID = 'course-announcements-heading'
  * The course's published announcements, newest first, as plain text with their line breaks. This
  * section loads on its own: if it fails, the rest of the course page stays as it is.
  */
-export function CourseAnnouncements({ announcements }: CourseAnnouncementsProps) {
+export function CourseAnnouncements({ announcements, standalone = false }: CourseAnnouncementsProps) {
   return (
-    <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
-      <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
+    <section aria-labelledby={HEADING_ID} className={standalone ? 'mt-4 max-w-2xl' : 'mt-8 max-w-2xl'}>
+      <h2 id={HEADING_ID} className={standalone ? 'sr-only' : 'text-base font-semibold text-ink'}>
         Announcements
       </h2>
 

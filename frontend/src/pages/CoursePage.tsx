@@ -8,11 +8,13 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
-import { creditsText, formatCredits } from '../courses/credits'
+import { creditsText } from '../courses/credits'
 import { CourseAnnouncements } from '../courses/CourseAnnouncements'
 import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { CourseProgressCard } from '../courses/CourseProgressCard'
+import { SyllabusBody } from '../courses/SyllabusBody'
+import { FormattedText } from '../formatting/FormattedText'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
@@ -68,15 +70,6 @@ function CourseUnavailable() {
   )
 }
 
-function InformationRow({ term, children }: { term: string; children: ReactNode }) {
-  return (
-    <div className="grid gap-0.5 px-4 py-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4 sm:px-5">
-      <dt className="text-sm text-ink-muted">{term}</dt>
-      <dd className="text-sm break-words text-ink">{children}</dd>
-    </div>
-  )
-}
-
 type CourseHomeProps = {
   course: LmsCourseDetail
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
@@ -84,11 +77,27 @@ type CourseHomeProps = {
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
 }
 
+/** "Section A · Taught by Meera Iyer and Rohan Gupta", from what the API sent; empty when it sent neither. */
+function teachingLine(course: LmsCourseDetail): string {
+  const parts = []
+  if (course.sectionCode) {
+    parts.push(`Section ${course.sectionCode}`)
+  }
+  if (course.faculty.length > 0) {
+    parts.push(`Taught by ${listFormat.format(course.faculty)}`)
+  }
+  return parts.join(' · ')
+}
+
+const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
+
 /**
- * The course home: the course's academic information, its published announcements and assignments, then
- * its published content. Only what the backend sent.
+ * The course home: the official course details, then what the faculty chose students see first: the overview
+ * (welcome message, progress, announcements, assignments, and modules), the modules, or the syllabus. Only what the
+ * backend sent; the course navigation leads to everything else.
  */
 function CourseHome({ course, announcements, assignments, content }: CourseHomeProps) {
+  const teaching = teachingLine(course)
   return (
     <>
       <title>{`${course.courseName} · Stacc`}</title>
@@ -114,61 +123,38 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
           <span className="sr-only">, </span>
           {creditsText(course.credits)}
         </p>
+        {teaching && <p className="mt-1 text-sm leading-6 break-words text-ink">{teaching}</p>}
       </header>
 
-      <nav aria-label="Course tools" className="mt-4 flex flex-wrap gap-2">
-        <Link to={`/courses/${course.lmsCourseId}/syllabus`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
-          Syllabus
-        </Link>
-        <Link to={`/courses/${course.lmsCourseId}/files`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
-          Files
-        </Link>
-      </nav>
+      {course.homeView === 'SYLLABUS' && (
+        <section aria-labelledby="course-home-syllabus" className="mt-6 max-w-3xl">
+          <h2 id="course-home-syllabus" className="mb-3 text-base font-semibold text-ink">
+            Syllabus
+          </h2>
+          <SyllabusBody lmsCourseId={course.lmsCourseId} headingLevel={3} />
+        </section>
+      )}
 
-      <CourseProgressCard lmsCourseId={course.lmsCourseId} />
+      {course.homeView === 'MODULES' && (
+        <>
+          <CourseProgressCard lmsCourseId={course.lmsCourseId} />
+          <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
+        </>
+      )}
 
-      <section
-        aria-labelledby="course-ai-heading"
-        className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5"
-      >
-        <h2 id="course-ai-heading" className="text-base font-semibold text-ink">
-          AI Study Assistant
-        </h2>
-        <p className="mt-1 text-sm leading-6 text-ink-muted">
-          Ask questions, summarise topics, and practise, based on this course’s published materials.
-        </p>
-        <Link to={`/courses/${course.lmsCourseId}/ai`} className={`mt-1 text-sm ${backLinkClasses}`}>
-          Open AI Study Assistant
-        </Link>
-      </section>
-
-      <section aria-labelledby="course-academic-information" className="mt-8 max-w-2xl">
-        <h2
-          id="course-academic-information"
-          className="text-base font-semibold text-ink"
-        >
-          Academic information
-        </h2>
-        <dl className="mt-3 divide-y divide-line rounded-panel border border-line bg-surface">
-          <InformationRow term="Program">
-            {course.programName}{' '}
-            <span className="text-ink-muted">({course.programCode})</span>
-          </InformationRow>
-          <InformationRow term="Department">
-            {course.departmentName}{' '}
-            <span className="text-ink-muted">({course.departmentCode})</span>
-          </InformationRow>
-          <InformationRow term="Semester">{course.semesterNumber}</InformationRow>
-          <InformationRow term="Academic session">
-            {course.academicSessionCode}
-          </InformationRow>
-          <InformationRow term="Credits">{formatCredits(course.credits)}</InformationRow>
-        </dl>
-      </section>
-
-      <CourseAnnouncements announcements={announcements} />
-      <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
-      <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
+      {course.homeView === 'OVERVIEW' && (
+        <>
+          {course.welcomeMessage && (
+            <section aria-label="Welcome" className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
+              <FormattedText text={course.welcomeMessage} format="FORMATTED" className="text-sm leading-6 text-ink" headingLevel={2} />
+            </section>
+          )}
+          <CourseProgressCard lmsCourseId={course.lmsCourseId} />
+          <CourseAnnouncements announcements={announcements} />
+          <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
+          <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
+        </>
+      )}
     </>
   )
 }

@@ -1,5 +1,6 @@
 import type { LmsCourseManagement, LmsManagedCourse } from '../types/lms'
 import { apiClient } from './apiClient'
+import type { LmsCourseHomeView } from '../types/lms'
 
 // The client's base URL already ends in /api. Every route needs the faculty role, FACULTY_COURSE_VIEW, and
 // LMS_COURSE_MANAGE; which offerings a faculty member manages is decided on the backend from official teaching
@@ -26,3 +27,15 @@ export async function archiveLmsCourse(lmsCourseId: number) {
   const response = await apiClient.post<LmsCourseManagement>(`/lms/faculty/courses/${lmsCourseId}/archive`)
   return response.data
 }
+
+/** Chooses what the course home shows and its welcome message. Official course details never change here. */
+export async function changeCourseHome(
+  lmsCourseId: number,
+  input: { homeView: LmsCourseHomeView; welcomeMessage: string | null },
+): Promise<{ homeView: LmsCourseHomeView; welcomeMessage: string | null }> {
+  return (await apiClient.put<{ homeView: LmsCourseHomeView; welcomeMessage: string | null }>(
+    `/lms/faculty/courses/${lmsCourseId}/home`,
+    input,
+  )).data
+}
+

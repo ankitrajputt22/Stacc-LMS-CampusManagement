@@ -29,3 +29,8 @@ export async function signOut(page: Page): Promise<void> {
 export const COURSE_CODE = 'CS301'
 export const COURSE_NAME = 'Data Structures'
 export const ASSIGNMENT_TITLE = 'Linked list implementation'
+
+/** Opens a section of the current course from its course navigation, such as Modules or Files. */
+export async function openCourseSection(page: Page, section: string): Promise<void> {
+  await page.getByRole('navigation', { name: 'Course navigation' }).getByRole('link', { name: section, exact: true }).click()
+}

@@ -26,6 +26,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import org.springframework.http.MediaType;
 
 /**
  * Calls the faculty LMS course management routes through Spring Security. The services are stand-ins, so these tests
@@ -57,7 +59,8 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
     private static List<MockHttpServletRequestBuilder> routes() {
         return List.of(get(ROOT + "/managed-courses"), post(ROOT + "/course-offerings/31/lms-course"),
                 post(ROOT + "/courses/42/publish"),
-                post(ROOT + "/courses/42/archive"));
+                post(ROOT + "/courses/42/archive"),
+                put(ROOT + "/courses/42/home").contentType(MediaType.APPLICATION_JSON).content("{\"homeView\":\"MODULES\"}"));
     }
 
     private void refused(List<String> tokens, Supplier<List<MockHttpServletRequestBuilder>> requests) throws Exception {
@@ -81,6 +84,22 @@ class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
                 token("ROLE_STUDENT", "LMS_COURSE_VIEW", "FACULTY_COURSE_VIEW", "LMS_COURSE_MANAGE"),
                 token("ROLE_ADMIN", "ACADEMIC_OFFERING_VIEW", "ACADEMIC_OFFERING_MANAGE", "ACADEMIC_ENROLLMENT_MANAGE"),
                 token("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_COURSE_MANAGE")), LmsFacultyCourseManagementControllerTest::routes);
+    }
+
+    @Test
+    void theCourseHomeIsChosenForTheCourseInThePathByTheAccountInTheToken() throws Exception {
+        com.stacc.backend.lms.course.LmsCourse course = com.stacc.backend.lms.content.ContentFixtures.lmsCourse(42);
+        course.changeHome(com.stacc.backend.lms.course.LmsCourseHomeView.SYLLABUS, "Welcome");
+        when(managementService.changeHome(ACCOUNT, 42L, com.stacc.backend.lms.course.LmsCourseHomeView.SYLLABUS, "Welcome"))
+                .thenReturn(course);
+
+        mockMvc.perform(as(manager(), put(ROOT + "/courses/42/home").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"homeView\":\"SYLLABUS\",\"welcomeMessage\":\"Welcome\"}")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.homeView").value("SYLLABUS"))
+                .andExpect(jsonPath("$.welcomeMessage").value("Welcome"));
+        mockMvc.perform(as(manager(), put(ROOT + "/courses/42/home").contentType(MediaType.APPLICATION_JSON).content("{}")))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

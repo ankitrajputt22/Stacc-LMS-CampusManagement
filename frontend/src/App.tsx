@@ -49,8 +49,21 @@ import { SupportPage } from './pages/SupportPage'
 import { SupportQueuePage } from './pages/SupportQueuePage'
 import { SupportTicketPage } from './pages/SupportTicketPage'
 import { TeachingAiPage } from './pages/TeachingAiPage'
-import { TeachingCoursePage } from './pages/TeachingCoursePage'
+import {
+  TeachingAnnouncementsPage,
+  TeachingAssignmentsPage,
+  TeachingCoursePage,
+  TeachingModulesPage,
+} from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
+import { CourseLayout } from './courses/CourseLayout'
+import {
+  CourseAnnouncementsPage,
+  CourseAssignmentsPage,
+  CourseModulesPage,
+  CoursePagesIndexPage,
+} from './pages/CourseSectionPages'
+import { TeachingCourseLayout } from './teaching/TeachingCourseLayout'
 
 function App() {
   return (
@@ -63,22 +76,31 @@ function App() {
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="courses" element={<CoursesPage />} />
-          <Route path="courses/:lmsCourseId" element={<CoursePage />} />
-          <Route path="courses/:lmsCourseId/assignments/:assignmentId" element={<CourseAssignmentPage />} />
-          <Route path="courses/:lmsCourseId/ai" element={<CourseAiPage />} />
-          <Route path="courses/:lmsCourseId/pages/:pageId" element={<LearningPage />} />
-          <Route path="courses/:lmsCourseId/files" element={<CourseFilesPage />} />
-          <Route path="courses/:lmsCourseId/syllabus" element={<CourseSyllabusPage />} />
+          {/* Every page of one course shares the course navigation. */}
+          <Route path="courses/:lmsCourseId" element={<CourseLayout />}>
+            <Route index element={<CoursePage />} />
+            <Route path="modules" element={<CourseModulesPage />} />
+            <Route path="pages" element={<CoursePagesIndexPage />} />
+            <Route path="pages/:pageId" element={<LearningPage />} />
+            <Route path="assignments" element={<CourseAssignmentsPage />} />
+            <Route path="assignments/:assignmentId" element={<CourseAssignmentPage />} />
+            <Route path="announcements" element={<CourseAnnouncementsPage />} />
+            <Route path="files" element={<CourseFilesPage />} />
+            <Route path="syllabus" element={<CourseSyllabusPage />} />
+            <Route path="ai" element={<CourseAiPage />} />
+          </Route>
           <Route path="teaching" element={<TeachingPage />} />
-          <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
-          <Route path="teaching/:lmsCourseId/ai" element={<TeachingAiPage />} />
-          <Route path="teaching/:lmsCourseId/pages/:pageId" element={<TeachingPagePreview />} />
-          <Route path="teaching/:lmsCourseId/files" element={<TeachingFilesPage />} />
-          <Route path="teaching/:lmsCourseId/syllabus" element={<TeachingSyllabusPage />} />
-          <Route
-            path="teaching/:lmsCourseId/assignments/:assignmentId/submissions"
-            element={<FacultyAssignmentSubmissionsPage />}
-          />
+          <Route path="teaching/:lmsCourseId" element={<TeachingCourseLayout />}>
+            <Route index element={<TeachingCoursePage />} />
+            <Route path="modules" element={<TeachingModulesPage />} />
+            <Route path="announcements" element={<TeachingAnnouncementsPage />} />
+            <Route path="assignments" element={<TeachingAssignmentsPage />} />
+            <Route path="assignments/:assignmentId/submissions" element={<FacultyAssignmentSubmissionsPage />} />
+            <Route path="pages/:pageId" element={<TeachingPagePreview />} />
+            <Route path="files" element={<TeachingFilesPage />} />
+            <Route path="syllabus" element={<TeachingSyllabusPage />} />
+            <Route path="ai" element={<TeachingAiPage />} />
+          </Route>
           <Route path="assignments" element={<AssignmentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />
           <Route path="attendance/:courseOfferingId" element={<CourseAttendancePage />} />

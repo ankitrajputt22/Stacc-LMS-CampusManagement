@@ -55,7 +55,7 @@ function DraftEditor({ lmsCourseId, draft }: { lmsCourseId: number; draft: AiAss
       return
     }
     // Only the form's own Create button creates an assignment, and it starts as a draft.
-    navigate(`/teaching/${lmsCourseId}`, {
+    navigate(`/teaching/${lmsCourseId}/assignments`, {
       state: { assignmentDraft: assignmentPrefill(value.title, value.instructions, value.questions) },
     })
   }

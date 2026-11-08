@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { COURSE_CODE, COURSE_NAME, signIn, signOut } from './support'
+import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './support'
 
 const FILE_TITLE = 'Array exercises (files journey)'
 
 test('a faculty member uploads and publishes a course file, and a student finds and downloads it', async ({ page }) => {
   await signIn(page, 'lms', 'faculty1')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
-  await page.getByRole('navigation', { name: 'Course tools' }).getByRole('link', { name: 'Files' }).click()
+  await openCourseSection(page, 'Files')
   await expect(page.getByRole('heading', { level: 1, name: 'Files' })).toBeVisible()
 
   // Every file is on a page; a new one starts as a draft that students cannot see.
@@ -29,7 +29,7 @@ test('a faculty member uploads and publishes a course file, and a student finds 
 
   await signIn(page, 'lms', 'student1')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
-  await page.getByRole('navigation', { name: 'Course tools' }).getByRole('link', { name: 'Files' }).click()
+  await openCourseSection(page, 'Files')
   const studentFiles = page.getByRole('table', { name: 'Course files' })
   const studentRow = studentFiles.getByRole('row').filter({ hasText: FILE_TITLE })
   await expect(studentRow.getByRole('link', { name: 'Arrays and memory layout' })).toBeVisible()

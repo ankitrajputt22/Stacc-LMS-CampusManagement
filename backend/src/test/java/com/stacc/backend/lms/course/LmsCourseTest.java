@@ -57,10 +57,12 @@ class LmsCourseTest {
     @Test
     void courseOfferingIsTheOnlyAcademicDataStoredOnTheLmsCourse() {
         List<String> fields = Arrays.stream(LmsCourse.class.getDeclaredFields())
+                .filter(field -> !java.lang.reflect.Modifier.isStatic(field.getModifiers()))
                 .map(Field::getName)
                 .toList();
 
-        assertEquals(List.of("id", "courseOffering", "status", "createdAt", "updatedAt"), fields);
+        // The home choice and welcome message are LMS settings, not academic data.
+        assertEquals(List.of("id", "courseOffering", "status", "homeView", "welcomeMessage", "createdAt", "updatedAt"), fields);
     }
 
     @Test

@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { COURSE_CODE, COURSE_NAME, signIn, signOut } from './support'
+import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './support'
 
 const PAGE = 'Arrays and memory layout'
 
 test('a faculty member makes a page required and a student continues to it and marks it complete', async ({ page }) => {
   await signIn(page, 'lms', 'faculty1')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
+  await openCourseSection(page, 'Modules')
   await page.getByRole('button', { name: new RegExp(`^Make required\\s*page “${PAGE}”$`) }).click()
   await expect(page.getByRole('button', { name: new RegExp(`^Make optional\\s*page “${PAGE}”$`) })).toBeVisible()
   await signOut(page)

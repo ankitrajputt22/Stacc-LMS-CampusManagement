@@ -139,7 +139,7 @@ function FacultyDeadlineItem({ deadline }: { deadline: FacultyAssignmentDeadline
         </p>
       </div>
       {/* The teaching course page is where assignments are managed; the calendar is not a second editor. */}
-      <Link to={`/teaching/${deadline.lmsCourseId}`} className={`${actionLinkClasses} self-start`}>
+      <Link to={`/teaching/${deadline.lmsCourseId}/assignments`} className={`${actionLinkClasses} self-start`}>
         Open teaching course
         <span className="sr-only">
           {' '}

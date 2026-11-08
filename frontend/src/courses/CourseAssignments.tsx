@@ -8,6 +8,8 @@ import { marksText } from './marks'
 import { PastDueLabel } from './PastDueLabel'
 
 type CourseAssignmentsProps = {
+  /** On the section's own page, whose title already names it: the heading is for screen readers only, and no top margin. */
+  standalone?: boolean
   lmsCourseId: number
   assignments: ApiRequestState<LmsCourseAssignment[]> & { retry: () => void }
 }
@@ -33,13 +35,13 @@ export function AssignmentFacts({ dueAt, maxMarks, now }: { dueAt: string; maxMa
  * The course's published assignments, earliest deadline first, past-due ones included. Each opens its own
  * page. This section loads on its own: if it fails, the rest of the course page stays as it is.
  */
-export function CourseAssignments({ lmsCourseId, assignments }: CourseAssignmentsProps) {
+export function CourseAssignments({ lmsCourseId, assignments, standalone = false }: CourseAssignmentsProps) {
   // One moment for the whole list, so every row agrees on what has passed.
   const [now] = useState(() => Date.now())
 
   return (
-    <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
-      <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
+    <section aria-labelledby={HEADING_ID} className={standalone ? 'mt-4 max-w-2xl' : 'mt-8 max-w-2xl'}>
+      <h2 id={HEADING_ID} className={standalone ? 'sr-only' : 'text-base font-semibold text-ink'}>
         Assignments
       </h2>
 

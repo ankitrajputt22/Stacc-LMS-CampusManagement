@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.stacc.backend.lms.course.LmsCourseHomeView;
 
 /** One LMS course a faculty member teaches, with the content they manage. Archived content is left out. */
 public record LmsFacultyCourseContentResponse(
@@ -36,5 +37,9 @@ public record LmsFacultyCourseContentResponse(
         String lmsCourseStatus,
 
         @ArraySchema(arraySchema = @Schema(description = "The modules that are not archived, in course order."))
-        List<LmsFacultyModuleContentResponse> modules) {
+        List<LmsFacultyModuleContentResponse> modules,
+        @Schema(description = "What the course home shows students.", allowableValues = {"OVERVIEW", "MODULES", "SYLLABUS"})
+        LmsCourseHomeView homeView,
+        @Schema(description = "The welcome message in formatted text, or null.")
+        String welcomeMessage) {
 }
