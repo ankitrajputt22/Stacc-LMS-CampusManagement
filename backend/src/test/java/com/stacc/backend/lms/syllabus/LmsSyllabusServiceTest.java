@@ -50,6 +50,7 @@ class LmsSyllabusServiceTest {
     @Test
     void theFirstSaveStartsADraftThatStudentsDoNotSee() {
         when(syllabi.findByLmsCourseId(COURSE_ID)).thenReturn(Optional.empty());
+        when(syllabi.findByLmsCourseIdForUpdate(COURSE_ID)).thenReturn(Optional.empty());
 
         LmsSyllabus saved = service.saveDraft(FACULTY, COURSE_ID, "  ## Overview  ");
 
@@ -64,6 +65,7 @@ class LmsSyllabusServiceTest {
     void publishingCopiesTheDraftAndALaterDraftDoesNotChangeWhatStudentsRead() {
         LmsSyllabus syllabus = new LmsSyllabus(course, "First", NOW.minusSeconds(60));
         when(syllabi.findByLmsCourseId(COURSE_ID)).thenReturn(Optional.of(syllabus));
+        when(syllabi.findByLmsCourseIdForUpdate(COURSE_ID)).thenReturn(Optional.of(syllabus));
 
         service.publish(FACULTY, COURSE_ID);
         assertThat(syllabus.getPublishedContent()).isEqualTo("First");
@@ -84,6 +86,7 @@ class LmsSyllabusServiceTest {
     @Test
     void publishingWithoutADraftIsRefused() {
         when(syllabi.findByLmsCourseId(COURSE_ID)).thenReturn(Optional.empty());
+        when(syllabi.findByLmsCourseIdForUpdate(COURSE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.publish(FACULTY, COURSE_ID)).isInstanceOfSatisfying(ApiException.class,
                 refusal -> assertThat(refusal.getStatus()).isEqualTo(HttpStatus.CONFLICT));

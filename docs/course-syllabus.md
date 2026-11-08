@@ -7,7 +7,7 @@ Every LMS course can have one **syllabus** (v0.6.4): formatted text (`text-forma
 - `draftContent` is what faculty save, as often as they like (required, at most 30,000 characters). `publishedContent` is what students read. Publishing copies the draft to the published version.
 - `firstPublishedAt` is set by the first publication and never changes; `lastPublishedAt` moves with each publication that changes something. Publishing a draft students already read changes nothing. There is no unpublish and no delete.
 - The official course code, name, credits, program, term, and department always come from the academic records and are shown beside the syllabus, never stored in it.
-- Saving and publishing lock the course row, so two first saves at once make one syllabus (`LmsSyllabusMySqlIT`).
+- Saving and publishing lock the course row and then read the syllabus with a locking read (a plain read could see a snapshot from before the lock), so two first saves at once make one syllabus (`LmsSyllabusMySqlIT`).
 
 ## API
 

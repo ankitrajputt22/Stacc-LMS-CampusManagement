@@ -15,7 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Reads and changes course syllabi. Students read only the published version of a course the student access policy
  * allows; faculty read and change the draft of a course the faculty access policy allows. The caller always comes from
- * the access token. Changes lock the course row, so the first saves of two faculty members make one syllabus.
+ * the access token. Changes lock the course row and then read the syllabus with a lock (which sees the latest committed
+ * row, unlike a plain read after the access check), so the first saves of two faculty members make one syllabus.
  */
 @Service
 public class LmsSyllabusService {
@@ -58,7 +59,7 @@ public class LmsSyllabusService {
     @Transactional
     public LmsSyllabus saveDraft(Long userAccountId, Long lmsCourseId, String content) {
         LmsCourse lmsCourse = lockedCourse(userAccountId, lmsCourseId);
-        Optional<LmsSyllabus> current = syllabi.findByLmsCourseId(lmsCourseId);
+        Optional<LmsSyllabus> current = syllabi.findByLmsCourseIdForUpdate(lmsCourseId);
         if (current.isPresent()) {
             current.get().saveDraft(content, clock.instant());
             return current.get();
@@ -70,7 +71,7 @@ public class LmsSyllabusService {
     @Transactional
     public LmsSyllabus publish(Long userAccountId, Long lmsCourseId) {
         lockedCourse(userAccountId, lmsCourseId);
-        LmsSyllabus syllabus = syllabi.findByLmsCourseId(lmsCourseId)
+        LmsSyllabus syllabus = syllabi.findByLmsCourseIdForUpdate(lmsCourseId)
                 .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, NOTHING_TO_PUBLISH));
         syllabus.publish(clock.instant());
         return syllabus;
