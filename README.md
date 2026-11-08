@@ -12,7 +12,7 @@ Already working:
 
 - **Sign-in:** one college login with ERP and LMS entry points, roles and permissions checked by the backend.
 - **ERP:** departments, programs, academic sessions, semesters, courses, course offerings, semester and course enrollment, teaching assignments, attendance, official results, and the academic calendar.
-- **LMS:** courses per offering, modules and topics, study materials, announcements, assignments with submissions and grading, course outcomes, a question bank, and quizzes.
+- **LMS:** courses per offering, modules and topics, study materials, announcements, assignments with submissions and grading, course outcomes, a question bank, quizzes, and a gradebook.
 - **Shared services:** Inbox notifications, helpdesk tickets, an approval workflow engine, campus services and notices, global search, and reports.
 - **Hostel:** hostels, rooms, beds, applications through the approval engine, and allocations.
 - **AI study tools** (optional): answers, summaries, and practice questions from published course material, through an internal Python service with a self-hosted model.

@@ -75,6 +75,21 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllCurrentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
+    /** The same current course enrollments with the student's account loaded, by the student's login ID. */
+    @Query("""
+            select courseEnrollment
+            from CourseEnrollment courseEnrollment
+            join fetch courseEnrollment.semesterEnrollment semesterEnrollment
+            join fetch semesterEnrollment.studentProfile studentProfile
+            join fetch studentProfile.userAccount account
+            where courseEnrollment.courseOffering.id = :courseOfferingId
+              and courseEnrollment.status = com.stacc.backend.academic.enrollment.CourseEnrollmentStatus.ENROLLED
+              and semesterEnrollment.status = com.stacc.backend.academic.enrollment.SemesterEnrollmentStatus.ENROLLED
+              and studentProfile.status = com.stacc.backend.identity.student.StudentProfileStatus.ACTIVE
+            order by account.loginId asc
+            """)
+    List<CourseEnrollment> findAllCurrentWithAccountByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
+
     /**
      * How many students are enrolled in one offering now, read with a shared lock. Called while the offering row is
      * locked, so two registrations for the last place cannot both see it free.

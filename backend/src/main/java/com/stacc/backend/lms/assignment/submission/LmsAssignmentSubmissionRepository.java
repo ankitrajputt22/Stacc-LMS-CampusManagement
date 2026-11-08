@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.assignment.submission;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface LmsAssignmentSubmissionRepository extends JpaRepository<LmsAssignmentSubmission, Long> {
+
+    /** These enrollments' submissions for these assignments that have at least one attempt. */
+    @Query("""
+            select submission from LmsAssignmentSubmission submission
+            where submission.assignment.id in :assignmentIds and submission.courseEnrollment.id in :courseEnrollmentIds
+              and submission.latestAttemptNumber > 0
+            """)
+    List<LmsAssignmentSubmission> findAllSubmitted(@Param("assignmentIds") Collection<Long> assignmentIds,
+            @Param("courseEnrollmentIds") Collection<Long> courseEnrollmentIds);
 
     /** The student's submission record for the assignment, if they have made one. For reading. */
     Optional<LmsAssignmentSubmission> findByAssignmentIdAndCourseEnrollmentId(Long assignmentId, Long courseEnrollmentId);

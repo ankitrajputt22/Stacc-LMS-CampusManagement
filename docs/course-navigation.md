@@ -10,6 +10,7 @@ Every page of an LMS course shares one **course navigation** (v0.6.6): a left co
 | Modules | `/modules` | Your progress and the published modules with their pages. |
 | Pages | `/pages` | Every published page in course order, with its module and Required, Completed, Optional, or Locked. |
 | Assignments | `/assignments` | The published assignments; each opens at `/assignments/:assignmentId`. |
+| Grades | `/grades` | See `gradebook.md`. |
 | Quizzes | `/quizzes` | See `quizzes.md`; a quiz opens at `/quizzes/:quizId` and an attempt at `/quizzes/:quizId/attempts/:attemptId`. |
 | Announcements | `/announcements` | The published announcements, newest first. |
 | Files | `/files` | See `course-files.md`. |
@@ -37,6 +38,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Announcements | `/announcements` | The announcement editor. |
 | Assignments | `/assignments` | The assignment editor; grading opens at `/assignments/:assignmentId/submissions`. |
 | Quizzes | `/quizzes` | See `quizzes.md`; each quiz opens at `/quizzes/:quizId`, its results at `/quizzes/:quizId/results`, and an attempt for marking at `/quiz-attempts/:attemptId`. |
+| Gradebook | `/gradebook` | See `gradebook.md`; a manual item opens at `/gradebook/items/:itemId`. |
 | Outcomes | `/outcomes` | See `course-outcomes.md`. |
 | Question bank | `/questions` | See `question-bank.md`. |
 | Files | `/files` | See `course-files.md`. |

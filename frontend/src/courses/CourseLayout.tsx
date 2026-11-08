@@ -31,6 +31,7 @@ export function CourseLayout() {
             { to: `${root}/pages`, label: 'Pages' },
             { to: `${root}/assignments`, label: 'Assignments' },
             { to: `${root}/quizzes`, label: 'Quizzes' },
+            { to: `${root}/grades`, label: 'Grades' },
             { to: `${root}/announcements`, label: 'Announcements' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },

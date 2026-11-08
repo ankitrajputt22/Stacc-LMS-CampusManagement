@@ -793,3 +793,48 @@ export type QuizAttemptReview = {
   }[]
 }
 
+export type GradeItemType = 'ASSIGNMENT' | 'QUIZ' | 'MANUAL'
+
+/** GRADED, NEEDS_GRADING (handed in, not marked yet), or NO_MARKS. */
+export type GradeCellStatus = 'GRADED' | 'NEEDS_GRADING' | 'NO_MARKS'
+
+export type GradebookColumn = {
+  type: GradeItemType
+  /** The assignment, quiz, or manual item ID; with the type, it names the column. */
+  sourceId: number
+  title: string
+  maxMarks: number
+  dueAt: string | null
+  published: boolean
+  publishedAt: string | null
+}
+
+export type GradebookCell = { marks: number | null; status: GradeCellStatus; feedback: string | null }
+
+/** A course's gradebook for faculty: columns and every current student's cells, in column order, by college ID. */
+export type Gradebook = {
+  columns: GradebookColumn[]
+  students: {
+    courseEnrollmentId: number
+    studentLoginId: string
+    cells: GradebookCell[]
+    totalMarks: number
+    totalOutOf: number
+  }[]
+}
+
+/** The signed-in student's own published grades in one course. */
+export type StudentGrades = {
+  items: {
+    type: GradeItemType
+    title: string
+    dueAt: string | null
+    marks: number | null
+    maxMarks: number
+    status: GradeCellStatus
+    feedback: string | null
+  }[]
+  totalMarks: number
+  totalOutOf: number
+}
+
