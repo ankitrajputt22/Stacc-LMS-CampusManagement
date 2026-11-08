@@ -7,6 +7,8 @@ import com.stacc.backend.academic.course.Course;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import com.stacc.backend.lms.outcome.BloomLevel;
 
 /**
  * One published assignment as a student opens it. The course code and name come from the official catalog;
@@ -41,7 +43,11 @@ public record LmsCourseAssignmentDetailResponse(
         @Schema(description = "When it was first published.", example = "2026-10-14T09:30:00Z")
         Instant publishedAt,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat instructionsFormat) {
+        LmsTextFormat instructionsFormat,
+        @Schema(description = "The Bloom level it works at, or null.")
+        BloomLevel bloomLevel,
+        @Schema(description = "The course outcomes it assesses, by code.")
+        List<LmsOutcomeResponse> outcomes) {
 
     static LmsCourseAssignmentDetailResponse of(LmsAssignment assignment) {
         Course course = assignment.getLmsCourse().getCourseOffering().getCourse();
@@ -55,6 +61,8 @@ public record LmsCourseAssignmentDetailResponse(
                 assignment.getDueAt(),
                 assignment.getMaxMarks(),
                 assignment.getPublishedAt(),
-                assignment.getInstructionsFormat());
+                assignment.getInstructionsFormat(),
+                assignment.getBloomLevel(),
+                assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList());
     }
 }

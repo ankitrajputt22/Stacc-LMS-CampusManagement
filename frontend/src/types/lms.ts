@@ -234,6 +234,8 @@ export type LmsCourseAssignmentDetail = {
   maxMarks: number
   /** When it was first published, as an ISO 8601 time in UTC. */
   publishedAt: string
+  bloomLevel: BloomLevel | null
+  outcomes: LmsOutcome[]
 }
 
 /** One assignment as faculty manage it. Archived assignments are not sent. */
@@ -249,6 +251,10 @@ export type LmsFacultyAssignment = {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+  /** The Bloom level it works at, or null. */
+  bloomLevel: BloomLevel | null
+  /** The course outcomes it assesses, by code. */
+  outcomes: LmsOutcome[]
 }
 
 /** One assignment in a faculty member's list across their courses, from GET /api/v1/lms/faculty/my-assignments. */
@@ -492,4 +498,15 @@ export type LmsFacultySyllabus = {
   firstPublishedAt: string | null
   lastPublishedAt: string | null
   unpublishedChanges: boolean
+}
+
+/** The six levels of the revised Bloom's taxonomy, lowest first. */
+export type BloomLevel = 'REMEMBER' | 'UNDERSTAND' | 'APPLY' | 'ANALYZE' | 'EVALUATE' | 'CREATE'
+
+/** One course learning outcome, such as CO2. Plain text. */
+export type LmsOutcome = {
+  id: number
+  code: string
+  description: string
+  status: 'ACTIVE' | 'ARCHIVED'
 }

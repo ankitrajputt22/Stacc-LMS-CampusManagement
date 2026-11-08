@@ -7,6 +7,8 @@ import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import com.stacc.backend.lms.outcome.BloomLevel;
 
 /** One assignment as faculty manage it. */
 public record LmsFacultyAssignmentResponse(
@@ -39,11 +41,16 @@ public record LmsFacultyAssignmentResponse(
         @Schema(example = "2026-10-14T09:30:00Z")
         Instant updatedAt,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat instructionsFormat) {
+        LmsTextFormat instructionsFormat,
+        @Schema(description = "The Bloom level it works at, or null.")
+        BloomLevel bloomLevel,
+        @Schema(description = "The course outcomes it assesses, by code.")
+        List<LmsOutcomeResponse> outcomes) {
 
     static LmsFacultyAssignmentResponse of(LmsAssignment assignment) {
         return new LmsFacultyAssignmentResponse(assignment.getId(), assignment.getTitle(), assignment.getInstructions(),
                 assignment.getDueAt(), assignment.getMaxMarks(), assignment.getStatus(), assignment.getPublishedAt(),
-                assignment.getCreatedAt(), assignment.getUpdatedAt(), assignment.getInstructionsFormat());
+                assignment.getCreatedAt(), assignment.getUpdatedAt(), assignment.getInstructionsFormat(),
+                assignment.getBloomLevel(), assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList());
     }
 }

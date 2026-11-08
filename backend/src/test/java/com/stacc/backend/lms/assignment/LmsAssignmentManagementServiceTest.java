@@ -60,9 +60,11 @@ class LmsAssignmentManagementServiceTest {
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
     private final LmsAssignmentNotifications notifications = mock(LmsAssignmentNotifications.class);
+    private final com.stacc.backend.lms.outcome.LmsCourseOutcomeRepository outcomes =
+            org.mockito.Mockito.mock(com.stacc.backend.lms.outcome.LmsCourseOutcomeRepository.class);
     private final LmsAssignmentManagementService service = new LmsAssignmentManagementService(
             lmsCourses, assignments, new LmsFacultyAccessService(lmsCourses, teachingAssignments), Clock.fixed(NOW, ZoneOffset.UTC),
-            notifications);
+            notifications, outcomes);
 
     private final Department department = new Department("CSE", "Computer Science and Engineering");
     private final Semester semester = new Semester(
@@ -254,4 +256,42 @@ class LmsAssignmentManagementServiceTest {
         verify(assignments, never()).delete(any());
         verify(assignments, never()).deleteById(any());
     }
+
+    // Alignment
+
+    private com.stacc.backend.lms.outcome.LmsCourseOutcome outcome(LmsCourse lmsCourse, long id, int number, boolean active) {
+        var created = new com.stacc.backend.lms.outcome.LmsCourseOutcome(lmsCourse, number, "Outcome " + number);
+        ReflectionTestUtils.setField(created, "id", id);
+        if (!active) {
+            created.archive();
+        }
+        return created;
+    }
+
+    @Test
+    void anAssignmentIsAlignedWithActiveOutcomesOfItsOwnCourseAndKeepsAnArchivedOneItAlreadyHad() {
+        var co1 = outcome(course, 91, 1, true);
+        var co2 = outcome(course, 92, 2, false);
+        var foreignOutcome = outcome(otherCourse, 93, 1, true);
+        when(outcomes.findAllByIdIn(java.util.Set.of(91L))).thenReturn(List.of(co1));
+        when(outcomes.findAllByIdIn(java.util.Set.of(91L, 92L))).thenReturn(List.of(co1, co2));
+        when(outcomes.findAllByIdIn(java.util.Set.of(93L))).thenReturn(List.of(foreignOutcome));
+        when(outcomes.findAllByIdIn(java.util.Set.of(94L))).thenReturn(List.of());
+
+        service.align(ACCOUNT_ID, 5L, com.stacc.backend.lms.outcome.BloomLevel.APPLY, List.of(91L));
+        assertEquals(List.of(co1), draft.getOutcomes());
+        assertEquals(com.stacc.backend.lms.outcome.BloomLevel.APPLY, draft.getBloomLevel());
+
+        // An archived outcome cannot be newly added, another course's never, and an unknown one is refused too.
+        for (List<Long> wanted : List.of(List.of(91L, 92L), List.of(93L), List.of(94L))) {
+            assertRefused(HttpStatus.CONFLICT, LmsAssignmentManagementService.OUTCOMES_INVALID,
+                    () -> service.align(ACCOUNT_ID, 5L, null, wanted));
+        }
+
+        draft.align(null, List.of(co1, co2));
+        service.align(ACCOUNT_ID, 5L, null, List.of(91L, 92L));
+        assertEquals(List.of(co1, co2), draft.getOutcomes(), "an outcome archived after aligning may stay");
+        assertEquals(null, draft.getBloomLevel());
+    }
+
 }

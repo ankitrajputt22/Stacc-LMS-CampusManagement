@@ -178,4 +178,20 @@ public class LmsFacultyAssignmentController {
     public LmsFacultyAssignmentResponse archive(@PathVariable Long assignmentId, @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAssignmentResponse.of(managementService.archive(AuthenticatedAccount.idFrom(accessToken), assignmentId));
     }
+
+    @PutMapping("/assignments/{assignmentId}/alignment")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Align an assignment with outcomes and a Bloom level",
+            description = "Sets the Bloom level (or none) and the course outcomes the assignment assesses. Newly added "
+                    + "outcomes must be active outcomes of the same course; one already aligned may stay after it is archived.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The assignment.")
+    @ApiResponse(responseCode = "409", description = "An outcome is not an active outcome of this course, or the assignment is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsFacultyAssignmentResponse align(@PathVariable Long assignmentId,
+            @Valid @RequestBody LmsAssignmentAlignmentRequest request, @AuthenticationPrincipal Jwt accessToken) {
+        return LmsFacultyAssignmentResponse.of(managementService.align(AuthenticatedAccount.idFrom(accessToken), assignmentId,
+                request.bloomLevel(), request.outcomeIds()));
+    }
 }

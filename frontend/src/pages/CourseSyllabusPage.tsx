@@ -13,6 +13,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
 import { creditsText } from '../courses/credits'
+import { CourseOutcomesCard } from '../courses/CourseOutcomesCard'
 import { SyllabusBody } from '../courses/SyllabusBody'
 import { Card, PageHeader } from '../ui'
 
@@ -94,6 +95,7 @@ export function CourseSyllabusPage() {
           ))}
         </dl>
       </Card>
+      <CourseOutcomesCard lmsCourseId={details.lmsCourseId} />
       <div className="mt-6">
         <SyllabusBody lmsCourseId={details.lmsCourseId} />
       </div>

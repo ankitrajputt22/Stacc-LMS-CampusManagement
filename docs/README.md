@@ -58,6 +58,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Learning requirements and progress](learning-progress.md)
 - [Course home and navigation](course-navigation.md)
 - [Course copy](course-copy.md)
+- [Course outcomes and Bloom levels](course-outcomes.md)
 - [AI learning](ai-learning.md)
 
 ## Dashboards, reports, and search

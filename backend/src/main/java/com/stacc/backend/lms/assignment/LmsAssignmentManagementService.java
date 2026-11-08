@@ -14,6 +14,14 @@ import com.stacc.backend.lms.content.LmsTextFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import com.stacc.backend.lms.outcome.BloomLevel;
+import com.stacc.backend.lms.outcome.LmsCourseOutcome;
+import com.stacc.backend.lms.outcome.LmsCourseOutcomeRepository;
 
 /**
  * Every change faculty make to the assignments of an LMS course. Before any change, the course is found
@@ -28,24 +36,28 @@ public class LmsAssignmentManagementService {
     static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
     static final String ASSIGNMENT_UNAVAILABLE = "Assignment not found or unavailable.";
     static final String ASSIGNMENT_ARCHIVED = "This assignment is archived and can no longer be changed.";
+    static final String OUTCOMES_INVALID = "Choose active outcomes of this course.";
 
     private final LmsCourseRepository lmsCourses;
     private final LmsAssignmentRepository assignments;
     private final LmsFacultyAccessService facultyAccess;
     private final Clock clock;
     private final LmsAssignmentNotifications notifications;
+    private final LmsCourseOutcomeRepository outcomes;
 
     public LmsAssignmentManagementService(
             LmsCourseRepository lmsCourses,
             LmsAssignmentRepository assignments,
             LmsFacultyAccessService facultyAccess,
             Clock clock,
-            LmsAssignmentNotifications notifications) {
+            LmsAssignmentNotifications notifications,
+            LmsCourseOutcomeRepository outcomes) {
         this.lmsCourses = lmsCourses;
         this.assignments = assignments;
         this.facultyAccess = facultyAccess;
         this.clock = clock;
         this.notifications = notifications;
+        this.outcomes = outcomes;
     }
 
     /** Adds a draft assignment with plain-text instructions to the course. */
@@ -112,6 +124,25 @@ public class LmsAssignmentManagementService {
         if (assignment == null || !facultyAccess.canAccessCourse(userAccountId, assignment.getLmsCourse().getId())) {
             throw notFound(ASSIGNMENT_UNAVAILABLE);
         }
+        return assignment;
+    }
+
+    /**
+     * Aligns the assignment with a Bloom level (or none) and outcomes of its own course. A newly added outcome must be
+     * active; one already aligned may stay after it is archived. Anything else is refused (409).
+     */
+    public LmsAssignment align(Long userAccountId, Long assignmentId, BloomLevel bloomLevel, Collection<Long> outcomeIds) {
+        LmsAssignment assignment = changeable(userAccountId, assignmentId);
+        Set<Long> wanted = new HashSet<>(outcomeIds);
+        Set<Long> current = assignment.getOutcomes().stream().map(LmsCourseOutcome::getId).collect(Collectors.toSet());
+        List<LmsCourseOutcome> chosen = outcomes.findAllByIdIn(wanted);
+        boolean valid = chosen.size() == wanted.size() && chosen.stream().allMatch(outcome ->
+                outcome.getLmsCourse().getId().equals(assignment.getLmsCourse().getId())
+                        && (outcome.isActive() || current.contains(outcome.getId())));
+        if (!valid) {
+            throw new ApiException(HttpStatus.CONFLICT, OUTCOMES_INVALID);
+        }
+        assignment.align(bloomLevel, chosen);
         return assignment;
     }
 

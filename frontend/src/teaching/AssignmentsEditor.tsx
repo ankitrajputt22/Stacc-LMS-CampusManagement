@@ -15,6 +15,7 @@ import { StatusTag } from './StatusTag'
 import { type ChangeResult, useContentChanges, useFocusAfterChanges } from './useContentChanges'
 import { useFacultyAssignments } from './useFacultyAssignments'
 import { FormattedText } from '../formatting/FormattedText'
+import { AssignmentAlignment } from './AssignmentAlignment'
 
 type AssignmentFormState = { type: 'add' } | { type: 'edit'; id: number }
 
@@ -115,6 +116,7 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
           headingLevel={4}
         />
       </details>
+      <AssignmentAlignment lmsCourseId={lmsCourseId} assignment={assignment} name={name} changes={changes} />
 
       {isConfirming ? (
         <ArchiveConfirmation

@@ -54,6 +54,7 @@ import {
   TeachingAssignmentsPage,
   TeachingCoursePage,
   TeachingModulesPage,
+  TeachingOutcomesPage,
 } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 import { CourseLayout } from './courses/CourseLayout'
@@ -95,6 +96,7 @@ function App() {
             <Route path="modules" element={<TeachingModulesPage />} />
             <Route path="announcements" element={<TeachingAnnouncementsPage />} />
             <Route path="assignments" element={<TeachingAssignmentsPage />} />
+            <Route path="outcomes" element={<TeachingOutcomesPage />} />
             <Route path="assignments/:assignmentId/submissions" element={<FacultyAssignmentSubmissionsPage />} />
             <Route path="pages/:pageId" element={<TeachingPagePreview />} />
             <Route path="files" element={<TeachingFilesPage />} />

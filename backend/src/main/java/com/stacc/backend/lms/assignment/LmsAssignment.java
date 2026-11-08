@@ -21,6 +21,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import com.stacc.backend.lms.outcome.BloomLevel;
+import com.stacc.backend.lms.outcome.LmsCourseOutcome;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 
 /**
  * The definition of a piece of work set in one LMS course: a title, plain-text instructions, a deadline,
@@ -83,6 +91,19 @@ public class LmsAssignment {
     // is edited or archived.
     @Column(name = "published_at")
     private Instant publishedAt;
+
+    // Optional alignment: the Bloom level the assignment works at and the course outcomes it assesses.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bloom_level", length = 20)
+    private BloomLevel bloomLevel;
+
+    // No cascade: outcomes belong to the course and are never created or deleted through an assignment. Loaded with
+    // the assignment (a few rows at most), because answers are built after the transaction.
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "lms_assignment_outcomes",
+            joinColumns = @JoinColumn(name = "lms_assignment_id"),
+            inverseJoinColumns = @JoinColumn(name = "lms_course_outcome_id"))
+    private Set<LmsCourseOutcome> outcomes = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -196,6 +217,30 @@ public class LmsAssignment {
     /** Hides the assignment for good and keeps it, with its publication time. Archiving again changes nothing. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
+    }
+
+    public BloomLevel getBloomLevel() {
+        return bloomLevel;
+    }
+
+    /** The aligned outcomes, by number. */
+    public List<LmsCourseOutcome> getOutcomes() {
+        return outcomes.stream().sorted(Comparator.comparingInt(LmsCourseOutcome::getNumber)).toList();
+    }
+
+    /**
+     * Sets the Bloom level (or none) and the outcomes the assignment assesses. Every outcome must belong to the
+     * assignment's own course; the service checks they may be used. An archived assignment can no longer change.
+     */
+    public void align(BloomLevel bloomLevel, Collection<LmsCourseOutcome> outcomes) {
+        requireNotArchived();
+        for (LmsCourseOutcome outcome : outcomes) {
+            if (!outcome.getLmsCourse().getId().equals(lmsCourse.getId())) {
+                throw new IllegalArgumentException("An outcome of another course cannot be aligned");
+            }
+        }
+        this.bloomLevel = bloomLevel;
+        this.outcomes = new HashSet<>(outcomes);
     }
 
     private void requireNotArchived() {
