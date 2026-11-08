@@ -220,7 +220,7 @@ public class LmsQuizAttemptService {
             throw notFound(QUESTION_UNAVAILABLE);
         }
         Checked checked = checked(quizQuestion.getQuestion(), input == null ? new AnswerInput(null, null, null) : input);
-        LmsQuizAnswer answer = answers.findByAttemptIdAndQuizQuestionId(attemptId, quizQuestionId)
+        LmsQuizAnswer answer = answers.findForUpdate(attemptId, quizQuestionId)
                 .orElseGet(() -> new LmsQuizAnswer(attempt, quizQuestion));
         answer.replace(checked.positions(), checked.trueFalse(), checked.text(), now);
         return answers.saveAndFlush(answer);

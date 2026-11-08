@@ -93,9 +93,9 @@ class LmsQuizGradingServiceTest {
         when(attempts.findWithStudentById(9L)).thenReturn(Optional.of(attempt));
         when(quizQuestions.findById(601L)).thenReturn(Optional.of(question));
         when(quizQuestions.findAllForQuizzes(any())).thenReturn(List.of(question));
-        when(answers.findByAttemptIdAndQuizQuestionId(9L, 601L)).thenReturn(Optional.of(answer));
+        when(answers.findForUpdate(9L, 601L)).thenReturn(Optional.of(answer));
         when(answers.findAllByAttemptIdIn(any())).thenReturn(List.of(answer));
-        when(marks.findByAnswerId(77L)).thenReturn(Optional.empty());
+        when(marks.findByAnswerIdForUpdate(77L)).thenReturn(Optional.empty());
     }
 
     @Test

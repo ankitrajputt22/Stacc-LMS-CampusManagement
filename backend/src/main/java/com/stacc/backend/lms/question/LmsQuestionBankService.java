@@ -78,12 +78,13 @@ public class LmsQuestionBankService {
 
     /**
      * Replaces what the question says; it then needs a new review and is no longer offered for practice. A question
-     * that a published or archived quiz uses keeps what students were asked (409). The quizzes using it are read with
-     * a shared lock before the question is locked, the same order publishing takes, so the two never miss each other.
+     * that a published or archived quiz uses keeps what students were asked (409). The course row is locked first, as
+     * every quiz change does, so an edit and a publication run one after the other and never miss each other.
      */
     @Transactional
     public LmsQuestion edit(Long userAccountId, Long questionId, LmsQuestionContent written, Long outcomeId) {
-        requireQuestion(userAccountId, questionId);
+        Long lmsCourseId = requireQuestion(userAccountId, questionId);
+        lmsCourses.findByIdForUpdate(lmsCourseId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
         if (questions.findQuizStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
             throw new ApiException(HttpStatus.CONFLICT, IN_PUBLISHED_QUIZ);
         }
@@ -152,11 +153,12 @@ public class LmsQuestionBankService {
         return lockedAfterAccess(questionId);
     }
 
-    private void requireQuestion(Long userAccountId, Long questionId) {
+    private Long requireQuestion(Long userAccountId, Long questionId) {
         Long lmsCourseId = questionId == null ? null : questions.findLmsCourseIdById(questionId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE);
         }
+        return lmsCourseId;
     }
 
     private LmsQuestion lockedAfterAccess(Long questionId) {

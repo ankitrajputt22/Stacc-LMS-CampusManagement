@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,6 +28,14 @@ public interface LmsQuizQuestionRepository extends JpaRepository<LmsQuizQuestion
 
     /** The links of a quiz in order, without loading the bank questions. */
     List<LmsQuizQuestion> findAllByQuizIdOrderByPosition(Long quizId);
+
+    /**
+     * The same links read with a locking read. Called while the quiz row is locked, so a question another request just
+     * added or removed is seen.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select link from LmsQuizQuestion link where link.quiz.id = :quizId order by link.position")
+    List<LmsQuizQuestion> findAllForUpdate(@Param("quizId") Long quizId);
 
     /** How many questions each quiz has and the marks they carry together. */
     @Query("""

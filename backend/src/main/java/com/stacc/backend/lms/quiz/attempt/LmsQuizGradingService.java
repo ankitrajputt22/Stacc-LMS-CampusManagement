@@ -99,10 +99,10 @@ public class LmsQuizGradingService {
         if (quizQuestion == null || !quizQuestion.getQuiz().getId().equals(attempt.getQuiz().getId())) {
             throw notFound(QUESTION_UNAVAILABLE);
         }
-        LmsQuizAnswer answer = answers.findByAttemptIdAndQuizQuestionId(attemptId, quizQuestionId)
+        LmsQuizAnswer answer = answers.findForUpdate(attemptId, quizQuestionId)
                 .filter(QuizScoring::answered)
                 .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, UNANSWERED));
-        LmsQuizAnswerMark mark = marks.findByAnswerId(answer.getId()).orElseGet(() -> new LmsQuizAnswerMark(answer));
+        LmsQuizAnswerMark mark = marks.findByAnswerIdForUpdate(answer.getId()).orElseGet(() -> new LmsQuizAnswerMark(answer));
         try {
             mark.mark(given, quizQuestion.getMarks(), feedback, userAccountId, now());
         } catch (IllegalArgumentException invalid) {

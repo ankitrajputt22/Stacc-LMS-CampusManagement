@@ -145,7 +145,7 @@ class LmsQuizAttemptServiceTest {
             return attempt;
         });
         when(answers.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
-        when(answers.findByAttemptIdAndQuizQuestionId(anyLong(), anyLong())).thenReturn(Optional.empty());
+        when(answers.findForUpdate(anyLong(), anyLong())).thenReturn(Optional.empty());
         when(quizQuestions.findAllForQuiz(QUIZ_ID)).thenReturn(List.of(single, written));
         when(quizQuestions.findAllForQuizzes(any())).thenReturn(List.of(single, written));
     }
