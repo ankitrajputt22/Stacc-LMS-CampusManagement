@@ -16,6 +16,7 @@ import { type ChangeResult, useContentChanges, useFocusAfterChanges } from './us
 import { useFacultyAssignments } from './useFacultyAssignments'
 import { FormattedText } from '../formatting/FormattedText'
 import { AssignmentAlignment } from './AssignmentAlignment'
+import { AssignmentRubric } from './AssignmentRubric'
 
 type AssignmentFormState = { type: 'add' } | { type: 'edit'; id: number }
 
@@ -117,6 +118,7 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
         />
       </details>
       <AssignmentAlignment lmsCourseId={lmsCourseId} assignment={assignment} name={name} changes={changes} />
+      <AssignmentRubric lmsCourseId={lmsCourseId} assignment={assignment} name={name} changes={changes} />
 
       {isConfirming ? (
         <ArchiveConfirmation

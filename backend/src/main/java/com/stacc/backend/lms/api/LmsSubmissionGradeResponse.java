@@ -2,6 +2,7 @@ package com.stacc.backend.lms.api;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionGrade;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,12 +21,21 @@ public record LmsSubmissionGradeResponse(
         String feedback,
 
         @Schema(description = "When the current marks and feedback were saved.", example = "2026-10-21T04:00:00Z")
-        Instant gradedAt) {
+        Instant gradedAt,
+        @Schema(description = "The points per criterion when graded with a rubric; empty otherwise.")
+        List<RubricScore> rubric) {
+
+    /** One criterion's points and comment, with its title and maximum as they were when graded. */
+    public record RubricScore(String criterion, BigDecimal points, BigDecimal maxPoints, String comment) {
+    }
 
     static LmsSubmissionGradeResponse of(LmsSubmissionGrade grade) {
         return grade == null
                 ? null
                 : new LmsSubmissionGradeResponse(grade.getMarksAwarded(), grade.getMaxMarksSnapshot(), grade.getFeedback(),
-                        grade.getGradedAt());
+                        grade.getGradedAt(), grade.getRubricScores().stream()
+                                .map(score -> new RubricScore(score.getCriterionTitle(), score.getPoints(), score.getMaxPoints(),
+                                        score.getComment()))
+                                .toList());
     }
 }

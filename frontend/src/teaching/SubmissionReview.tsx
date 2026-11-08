@@ -9,8 +9,10 @@ import { AttemptFiles, GradeSummary, TimingTag } from '../courses/AttemptParts'
 import { formatDateTime } from '../courses/dates'
 import { formatMarks } from '../courses/marks'
 import { useFileDownload } from '../courses/useFileDownload'
-import type { LmsFacultySubmissionAttempt, LmsFacultySubmissionDetail, LmsSubmissionGrade } from '../types/lms'
+import type { LmsFacultySubmissionAttempt, LmsFacultySubmissionDetail, LmsRubric, LmsSubmissionGrade } from '../types/lms'
+import { Button } from '../ui'
 import { GradeForm } from './GradeForm'
+import { RubricGradeForm } from './RubricGradeForm'
 import { useFacultySubmissionDetail } from './useFacultySubmissions'
 
 export const GRADING_DENIED = 'You don’t have access to grade this assignment.'
@@ -25,14 +27,18 @@ type AttemptReviewProps = {
   isLatest: boolean
   /** The assignment's maximum now. A first grade is out of this; a regrade keeps its own maximum. */
   maxMarks: number
+  /** The rubric the assignment is graded with, or null. */
+  rubric: LmsRubric | null
   downloads: ReturnType<typeof useFileDownload>
   onSaved: (attempt: LmsFacultySubmissionAttempt, grade: LmsSubmissionGrade) => void
 }
 
 /** One attempt as the student handed it in, its current grade, and the form to grade it. */
-function AttemptReview({ attempt, isLatest, maxMarks, downloads, onSaved }: AttemptReviewProps) {
+function AttemptReview({ attempt, isLatest, maxMarks, rubric, downloads, onSaved }: AttemptReviewProps) {
   const headingId = `review-attempt-${attempt.attemptId}-heading`
   const outOf = attempt.grade?.maxMarksSnapshot ?? maxMarks
+  // With a rubric, grading starts from it; marks can still be given without it.
+  const [withRubric, setWithRubric] = useState(rubric !== null)
 
   return (
     <article aria-labelledby={headingId} className="mt-4 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
@@ -71,7 +77,16 @@ function AttemptReview({ attempt, isLatest, maxMarks, downloads, onSaved }: Atte
         </p>
       )}
       {/* A new form for each attempt, so typed marks never carry over to another attempt. */}
-      <GradeForm key={attempt.attemptId} attempt={attempt} outOf={outOf} onSaved={(grade) => onSaved(attempt, grade)} />
+      {rubric && withRubric ? (
+        <RubricGradeForm key={attempt.attemptId} attempt={attempt} rubric={rubric} onSaved={(grade) => onSaved(attempt, grade)} />
+      ) : (
+        <GradeForm key={attempt.attemptId} attempt={attempt} outOf={outOf} onSaved={(grade) => onSaved(attempt, grade)} />
+      )}
+      {rubric && (
+        <Button variant="secondary" size="sm" className="mt-3" onClick={() => setWithRubric(!withRubric)}>
+          {withRubric ? 'Grade without the rubric' : 'Grade with the rubric'}
+        </Button>
+      )}
     </article>
   )
 }
@@ -136,6 +151,7 @@ function Reviewed({
         attempt={selected}
         isLatest={selected.attemptId === latest.attemptId}
         maxMarks={detail.maxMarks}
+        rubric={detail.rubric}
         downloads={downloads}
         onSaved={onSaved}
       />

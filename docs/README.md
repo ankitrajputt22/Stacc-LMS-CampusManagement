@@ -62,6 +62,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Question bank](question-bank.md)
 - [Quizzes](quizzes.md)
 - [Gradebook](gradebook.md)
+- [Rubrics](rubrics.md)
 - [AI learning](ai-learning.md)
 
 ## Dashboards, reports, and search

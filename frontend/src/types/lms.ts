@@ -236,6 +236,8 @@ export type LmsCourseAssignmentDetail = {
   publishedAt: string
   bloomLevel: BloomLevel | null
   outcomes: LmsOutcome[]
+  /** The rubric it is graded with, or null. */
+  rubric: LmsRubric | null
 }
 
 /** One assignment as faculty manage it. Archived assignments are not sent. */
@@ -255,6 +257,8 @@ export type LmsFacultyAssignment = {
   bloomLevel: BloomLevel | null
   /** The course outcomes it assesses, by code. */
   outcomes: LmsOutcome[]
+  /** The rubric it is graded with, or null. */
+  rubric: LmsRubric | null
 }
 
 /** One assignment in a faculty member's list across their courses, from GET /api/v1/lms/faculty/my-assignments. */
@@ -318,6 +322,8 @@ export type LmsSubmissionGrade = {
   feedback: string | null
   /** When the current marks and feedback were saved, as an ISO 8601 time in UTC. */
   gradedAt: string
+  /** The points per criterion when graded with a rubric; empty otherwise. */
+  rubric: { criterion: string; points: number; maxPoints: number; comment: string | null }[]
 }
 
 /** One student's submission for an assignment, summed up by its latest attempt, for faculty. */
@@ -358,6 +364,8 @@ export type LmsFacultySubmissionDetail = {
   studentLoginId: string
   submissionId: number
   attempts: LmsFacultySubmissionAttempt[]
+  /** The rubric the assignment is graded with, or null. */
+  rubric: LmsRubric | null
 }
 
 /** The marks and feedback for one attempt. */
@@ -836,5 +844,34 @@ export type StudentGrades = {
   }[]
   totalMarks: number
   totalOutOf: number
+}
+
+/** A rubric with its criteria and levels. */
+export type LmsRubric = {
+  id: number
+  title: string
+  description: string | null
+  status: 'ACTIVE' | 'ARCHIVED'
+  totalPoints: number
+  /** Used for grading, so its criteria can no longer change. */
+  inUse: boolean
+  criteria: {
+    id: number
+    title: string
+    description: string | null
+    maxPoints: number
+    levels: { title: string; description: string | null; points: number }[]
+  }[]
+}
+
+export type LmsRubricInput = {
+  title: string
+  description: string | null
+  criteria: {
+    title: string
+    description: string | null
+    maxPoints: number
+    levels: { title: string; description: string | null; points: number }[]
+  }[]
 }
 

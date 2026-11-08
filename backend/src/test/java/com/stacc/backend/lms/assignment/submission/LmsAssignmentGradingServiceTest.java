@@ -33,6 +33,9 @@ import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.assignment.LmsAssignmentNotifications;
+import com.stacc.backend.lms.assignment.rubric.LmsRubric;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricRepository;
+import com.stacc.backend.lms.assignment.rubric.RubricFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
@@ -58,6 +61,7 @@ class LmsAssignmentGradingServiceTest {
     private static final Instant NOW_STORED = Instant.parse("2026-10-21T04:00:00.123456Z");
     private static final Instant LATER = Instant.parse("2026-10-22T09:15:00Z");
 
+    private final LmsRubricRepository rubrics = mock(LmsRubricRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final TeachingAssignmentRepository teachingAssignments = mock(TeachingAssignmentRepository.class);
     private final FacultyProfileRepository facultyProfiles = mock(FacultyProfileRepository.class);
@@ -82,7 +86,7 @@ class LmsAssignmentGradingServiceTest {
 
     private LmsAssignmentGradingService serviceAt(Instant now) {
         return new LmsAssignmentGradingService(attempts, grades, new LmsFacultyAccessService(lmsCourses, teachingAssignments),
-                facultyProfiles, Clock.fixed(now, ZoneOffset.UTC), notifications);
+                facultyProfiles, Clock.fixed(now, ZoneOffset.UTC), notifications, rubrics);
     }
 
     private final LmsAssignmentGradingService service = serviceAt(NOW);
@@ -295,4 +299,48 @@ class LmsAssignmentGradingServiceTest {
         }
         verify(grades, never()).saveAndFlush(any());
     }
+
+    @Test
+    void gradingWithTheRubricSumsThePointsAndKeepsTheScoresUntilAPlainGradeReplacesThem() {
+        when(teachingAssignments.findAllByUserAccountIdAndCourseOfferingId(FACULTY_A, course.getCourseOffering().getId()))
+                .thenReturn(List.of(teachingA));
+        LmsRubric rubric = RubricFixtures.rubric(course, 4, "12", "8");
+        assignment.useRubric(rubric);
+        when(rubrics.findByIdForShare(4L)).thenReturn(Optional.of(rubric));
+
+        LmsSubmissionGrade graded = service.gradeWithRubric(FACULTY_A, 301L, List.of(
+                new LmsAssignmentGradingService.RubricScoreInput(40L, new BigDecimal("10.5"), " Clear diagram "),
+                new LmsAssignmentGradingService.RubricScoreInput(41L, new BigDecimal("6"), null)), "Good");
+        assertEquals(0, new BigDecimal("16.50").compareTo(graded.getMarksAwarded()));
+        assertEquals(List.of("Design", "Explanation"), graded.getRubricScores().stream().map(LmsRubricScore::getCriterionTitle).toList());
+        assertEquals("Clear diagram", graded.getRubricScores().getFirst().getComment());
+
+        service.grade(FACULTY_A, 301L, new BigDecimal("15"), "Regraded");
+        assertEquals(List.of(), storedGrades.get(301L).getRubricScores());
+    }
+
+    @Test
+    void rubricScoresMustCoverEveryCriterionOnceWithinItsPoints() {
+        LmsRubric rubric = RubricFixtures.rubric(course, 4, "12", "8");
+        assignment.useRubric(rubric);
+        when(rubrics.findByIdForShare(4L)).thenReturn(Optional.of(rubric));
+
+        assertRefused(HttpStatus.BAD_REQUEST, LmsAssignmentGradingService.SCORES_INVALID, () -> service.gradeWithRubric(FACULTY_A, 301L,
+                List.of(new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null)), null));
+        assertRefused(HttpStatus.BAD_REQUEST, LmsAssignmentGradingService.SCORES_INVALID, () -> service.gradeWithRubric(FACULTY_A, 301L,
+                List.of(new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null),
+                        new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null)), null));
+        assertRefused(HttpStatus.BAD_REQUEST, "Explanation: points must be from 0 to 8, with at most 2 decimal places.",
+                () -> service.gradeWithRubric(FACULTY_A, 301L, List.of(
+                        new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null),
+                        new LmsAssignmentGradingService.RubricScoreInput(41L, new BigDecimal("9"), null)), null));
+        verify(grades, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void anAssignmentWithoutARubricIsNotGradedWithOne() {
+        assertRefused(HttpStatus.CONFLICT, LmsAssignmentGradingService.NO_RUBRIC, () -> service.gradeWithRubric(FACULTY_A, 301L,
+                List.of(new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null)), null));
+    }
 }
+

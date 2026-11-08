@@ -87,6 +87,27 @@ export function GradeSummary({ grade }: { grade: LmsSubmissionGrade | null }) {
       <p className="text-sm text-ink">
         <span className="font-semibold">Grade</span> {formatMarks(grade.marksAwarded)} / {formatMarks(grade.maxMarksSnapshot)}
       </p>
+      {(grade.rubric ?? []).length > 0 && (
+        <table className="mt-2 w-full border-collapse text-left text-sm">
+          <caption className="sr-only">Rubric scores</caption>
+          <thead>
+            <tr className="text-xs text-ink-muted">
+              <th scope="col" className="py-1 pr-3 font-semibold">Criterion</th>
+              <th scope="col" className="py-1 pr-3 text-right font-semibold">Points</th>
+              <th scope="col" className="py-1 font-semibold">Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {grade.rubric.map((score) => (
+              <tr key={score.criterion} className="border-t border-line align-top">
+                <th scope="row" className="py-1 pr-3 font-medium break-words text-ink">{score.criterion}</th>
+                <td className="py-1 pr-3 text-right text-ink tabular-nums">{`${formatMarks(score.points)} / ${formatMarks(score.maxPoints)}`}</td>
+                <td className="py-1 break-words whitespace-pre-line text-ink">{score.comment ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       {grade.feedback && (
         <div className="mt-1.5">
           <p className="text-xs font-semibold text-ink-muted">Feedback</p>

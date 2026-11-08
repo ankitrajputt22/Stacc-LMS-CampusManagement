@@ -45,12 +45,15 @@ public record LmsFacultyAssignmentResponse(
         @Schema(description = "The Bloom level it works at, or null.")
         BloomLevel bloomLevel,
         @Schema(description = "The course outcomes it assesses, by code.")
-        List<LmsOutcomeResponse> outcomes) {
+        List<LmsOutcomeResponse> outcomes,
+        @Schema(description = "The rubric it is graded with, or null.")
+        LmsRubricResponse rubric) {
 
     static LmsFacultyAssignmentResponse of(LmsAssignment assignment) {
         return new LmsFacultyAssignmentResponse(assignment.getId(), assignment.getTitle(), assignment.getInstructions(),
                 assignment.getDueAt(), assignment.getMaxMarks(), assignment.getStatus(), assignment.getPublishedAt(),
                 assignment.getCreatedAt(), assignment.getUpdatedAt(), assignment.getInstructionsFormat(),
-                assignment.getBloomLevel(), assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList());
+                assignment.getBloomLevel(), assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList(),
+                LmsRubricResponse.ofNullable(assignment.getRubric()));
     }
 }

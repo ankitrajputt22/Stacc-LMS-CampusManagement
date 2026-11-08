@@ -108,7 +108,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
                 List.of(new LmsFacultySubmissionAttemptResponse(31L, 2, "Answer\nLine two", Instant.parse("2026-10-20T19:00:00Z"),
                         Instant.parse("2026-10-20T18:00:00Z"), true,
                         List.of(new LmsSubmissionAttachmentResponse(40L, "answer.pdf", "application/pdf", 9)),
-                        LmsSubmissionGradeResponse.of(grade("18", "Good."))))));
+                        LmsSubmissionGradeResponse.of(grade("18", "Good.")))), null));
 
         mockMvc.perform(as(graderToken(), get("/api/v1/lms/faculty/assignments/5/submissions/12")))
                 .andExpect(status().isOk())
@@ -116,7 +116,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.attempts[0].late").value(true))
                 .andExpect(jsonPath("$.attempts[0].textContent").value("Answer\nLine two"))
                 .andExpect(jsonPath("$.attempts[0].attachments[0].*", hasSize(4)))
-                .andExpect(jsonPath("$.attempts[0].grade.*", hasSize(4)))
+                .andExpect(jsonPath("$.attempts[0].grade.*", hasSize(5)))
                 .andExpect(content().string(containsString("\"marksAwarded\":18.00")))
                 .andExpect(content().string(not(containsString("objectKey"))))
                 .andExpect(content().string(not(containsString("gradedBy"))));
@@ -143,7 +143,7 @@ class LmsFacultySubmissionControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(graderToken(), gradeRequest("{\"marksAwarded\":18.5,\"feedback\":\"Good.\\nExplain question 4.\","
                         + "\"maxMarksSnapshot\":100,\"gradedAt\":\"2020-01-01T00:00:00Z\",\"facultyProfileId\":9,\"attemptId\":77}")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(4)))
+                .andExpect(jsonPath("$.*", hasSize(5)))
                 .andExpect(jsonPath("$.gradedAt").value("2026-10-21T04:00:00Z"))
                 .andExpect(content().string(containsString("\"marksAwarded\":18.50")))
                 .andExpect(content().string(containsString("\"maxMarksSnapshot\":20.00")));

@@ -138,4 +138,24 @@ public class LmsFacultySubmissionController {
         return LmsSubmissionGradeResponse.of(gradingService.grade(
                 AuthenticatedAccount.idFrom(accessToken), attemptId, request.marksAwarded(), request.feedback()));
     }
+
+    @PutMapping("/submission-attempts/{attemptId}/rubric-grade")
+    @PreAuthorize(GRADE)
+    @Operation(
+            summary = "Grade an attempt with the assignment's rubric",
+            description = "Points for every criterion exactly once, with optional comments; the marks are their sum. "
+                    + "Replaces an earlier grade, as grading without the rubric does.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The attempt's grade with its rubric scores.")
+    @ApiResponse(responseCode = "400", description = "A criterion is missing or repeated, or its points are out of range.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The assignment is not graded with a rubric.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsSubmissionGradeResponse gradeWithRubric(
+            @PathVariable Long attemptId,
+            @Valid @RequestBody LmsRubricGradeRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return LmsSubmissionGradeResponse.of(gradingService.gradeWithRubric(
+                AuthenticatedAccount.idFrom(accessToken), attemptId, request.inputs(), request.feedback()));
+    }
 }

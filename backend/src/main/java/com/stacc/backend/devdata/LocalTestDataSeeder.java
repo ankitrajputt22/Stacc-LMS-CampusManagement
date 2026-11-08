@@ -44,6 +44,8 @@ import com.stacc.backend.lms.question.LmsQuestionBankService;
 import com.stacc.backend.lms.question.LmsQuestionContent;
 import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricService;
+import com.stacc.backend.lms.assignment.rubric.RubricContent;
 import com.stacc.backend.lms.gradebook.GradeItemType;
 import com.stacc.backend.lms.gradebook.LmsGradebookService;
 import com.stacc.backend.lms.quiz.LmsQuizService;
@@ -353,6 +355,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final LmsQuestionBankService questionBank;
         final LmsQuizService quizzes;
         final LmsGradebookService gradebook;
+        final LmsRubricService rubrics;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -366,7 +369,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
                 PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
-                LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook) {
+                LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook,
+                LmsRubricService rubrics) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -394,6 +398,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.questionBank = questionBank;
             this.quizzes = quizzes;
             this.gradebook = gradebook;
+            this.rubrics = rubrics;
         }
     }
 
@@ -673,6 +678,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
         submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
         grade(faculty1, warmUp, student1In301, 1, "17", "Good work. Problem 4 needs a tighter loop bound.");
+
+        // --- Rubric (v0.7.7): the warm-up is graded with a two-criterion rubric worth its 20 marks.
+        rubric(faculty1, lms301, warmUp, new RubricContent("Array exercises rubric", "How the warm-up exercises are marked.", List.of(
+                new RubricContent.Criterion("Correct answers", "Problems 1 to 5 give the right results.", new BigDecimal("12"), List.of(
+                        new RubricContent.Level("All correct", null, new BigDecimal("12")),
+                        new RubricContent.Level("Mostly correct", null, new BigDecimal("8")),
+                        new RubricContent.Level("Few correct", null, new BigDecimal("3")))),
+                new RubricContent.Criterion("Clear working", "Each step is shown and explained.", new BigDecimal("8"), List.of(
+                        new RubricContent.Level("Clear", null, new BigDecimal("8")),
+                        new RubricContent.Level("Partly clear", null, new BigDecimal("4")))))));
 
         // --- Gradebook (v0.7.6): the warm-up's grades are published, and a paper class test is a published manual item
         // with student1's marks.
@@ -1342,6 +1357,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             Long itemId = services.gradebook.addManualItem(faculty.getId(), lmsCourseId, title, new BigDecimal(maxMarks)).getId();
             services.gradebook.enterMarks(faculty.getId(), itemId, student.getId(), new BigDecimal(marks), feedback);
             services.gradebook.publishColumn(faculty.getId(), lmsCourseId, GradeItemType.MANUAL, itemId);
+        });
+    }
+
+    /** A rubric of the course, found by its title, used by the assignment, as the teacher would set it up. */
+    private void rubric(UserAccount faculty, Long lmsCourseId, LmsAssignment assignment, RubricContent content) {
+        boolean exists = services.rubrics.list(faculty.getId(), lmsCourseId).rubrics().stream()
+                .anyMatch(rubric -> rubric.getTitle().equals(content.title()));
+        createUnless(exists, () -> {
+            Long rubricId = services.rubrics.create(faculty.getId(), lmsCourseId, content).getId();
+            services.assignments.useRubric(faculty.getId(), assignment.getId(), rubricId);
         });
     }
 

@@ -155,7 +155,8 @@ public class LmsFacultySubmissionQueryService {
                         LmsSubmissionGradeResponse.of(gradeByAttempt.get(attempt.getId()))))
                 .toList();
         return new LmsFacultySubmissionDetailResponse(assignment.getId(), assignment.getTitle(), assignment.getMaxMarks(),
-                assignment.getDueAt(), studentLoginId(submission), submission.getId(), attemptResponses);
+                assignment.getDueAt(), studentLoginId(submission), submission.getId(), attemptResponses,
+                LmsRubricResponse.ofNullable(assignment.getRubric()));
     }
 
     /**

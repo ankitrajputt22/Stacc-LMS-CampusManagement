@@ -20,6 +20,7 @@ import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
 import { GradebookEditor } from '../teaching/GradebookEditor'
 import { ManualGradeItem } from '../teaching/ManualGradeItem'
 import { QuizAttemptMarking } from '../teaching/QuizAttemptMarking'
+import { RubricsEditor } from '../teaching/RubricsEditor'
 import { QuizEditor } from '../teaching/QuizEditor'
 import { QuizResultsTable } from '../teaching/QuizResultsTable'
 import { QuizzesEditor } from '../teaching/QuizzesEditor'
@@ -306,6 +307,15 @@ export function TeachingGradeItemPage() {
           <ManualGradeItem key={itemId} lmsCourseId={course.lmsCourseId} itemId={itemId} />
         )
       }
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/rubrics: the course's rubrics. */
+export function TeachingRubricsPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Rubrics', heading: 'Rubrics' }}>
+      {(course) => <RubricsEditor lmsCourseId={course.lmsCourseId} />}
     </TeachingCourseFrame>
   )
 }
