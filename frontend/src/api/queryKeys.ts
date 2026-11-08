@@ -83,6 +83,7 @@ export const queryKeys = {
     facultyCourseContent: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'content'] as const,
     syllabus: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'syllabus'] as const,
     progress: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'progress'] as const,
+    copySources: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'copy-sources'] as const,
     facultySyllabus: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'syllabus'] as const,
   },
 } as const
