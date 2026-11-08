@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { AxiosError, type AxiosResponse } from 'axios'
@@ -8,7 +9,7 @@ import { AuthContext, type AuthContextValue } from '../auth/AuthContext'
 import { testQueryClient } from '../test/queryTestUtils'
 import { LearningPage } from './LearningPage'
 
-vi.mock('../api/lmsContentApi', () => ({ getLmsCoursePage: vi.fn(), downloadMaterialFile: vi.fn() }))
+vi.mock('../api/lmsContentApi', () => ({ getLmsCoursePage: vi.fn(), downloadMaterialFile: vi.fn(), completePage: vi.fn() }))
 
 const auth: AuthContextValue = {
   isChecking: false,
@@ -41,7 +42,8 @@ describe('LearningPage', () => {
     vi.mocked(contentApi.getLmsCoursePage).mockResolvedValue({
       id: 32, title: 'Singly linked lists', content: '## Insertion\n\nAdd after the **head**.', contentFormat: 'FORMATTED',
       moduleId: 12, moduleTitle: 'Unit 1', materials: [],
-      previous: { id: 31, title: 'Arrays', moduleTitle: 'Unit 1' }, next: null,
+      previous: { id: 31, title: 'Arrays', moduleTitle: 'Unit 1' }, next: null, required: false, completed: false, locked: false,
+      waitingFor: null,
     })
     show('/courses/42/pages/32')
 
@@ -49,6 +51,28 @@ describe('LearningPage', () => {
     expect(await screen.findByRole('heading', { level: 3, name: 'Insertion' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Arrays/ })).toHaveAttribute('href', '/courses/42/pages/31')
     expect(contentApi.getLmsCoursePage).toHaveBeenCalledWith(42, 32, expect.anything())
+  })
+
+  it('marks a page complete once and shows a locked page without its text', async () => {
+    const page = {
+      id: 33, title: 'Arrays', content: 'Text', contentFormat: 'PLAIN' as const, moduleId: 12, moduleTitle: 'Unit 1',
+      materials: [], previous: null, next: null, required: true, completed: false, locked: false, waitingFor: null,
+    }
+    vi.mocked(contentApi.getLmsCoursePage).mockReset().mockResolvedValue(page)
+    vi.mocked(contentApi.completePage).mockResolvedValue({ requiredPages: 1, completedRequiredPages: 1, next: null })
+    const user = userEvent.setup()
+    show('/courses/42/pages/33')
+
+    expect(await screen.findByText('This page is required for your progress in the course.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Mark as complete' }))
+    expect(contentApi.completePage).toHaveBeenCalledWith(42, 33)
+
+    vi.mocked(contentApi.getLmsCoursePage).mockReset().mockResolvedValue({
+      ...page, id: 41, title: 'Stacks', content: null, locked: true, waitingFor: 'Unit 1',
+    })
+    show('/courses/42/pages/41')
+    expect(await screen.findByText('This page is locked')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Mark as complete' })).toHaveLength(1)
   })
 
   it('says a hidden or missing page is unavailable, and asks nothing for an impossible address', async () => {

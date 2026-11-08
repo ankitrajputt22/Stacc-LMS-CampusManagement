@@ -60,6 +60,9 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     @MockitoBean
     private LmsContentManagementService contentManagement;
 
+    @MockitoBean
+    private com.stacc.backend.lms.content.LmsPageCompletionService completions;
+
     private final LmsCourse course = ContentFixtures.lmsCourse(7);
     private final LmsModule module = module(course, 12, 1, LmsContentStatus.DRAFT);
     private final LmsTopic topic = topic(module, 31, 1, LmsContentStatus.DRAFT);
@@ -109,14 +112,14 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void studentGetsThePublishedContentOfTheirCourse() throws Exception {
         when(studentContent.getPublishedContent(ACCOUNT_ID, 7L)).thenReturn(new LmsCourseContentResponse(List.of(
                 new LmsCourseModuleResponse(12L, "Introduction", null,
-                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two", List.of(), LmsTextFormat.PLAIN))))));
+                        List.of(new LmsCourseTopicResponse(31L, "Overview", "Line one\nLine two", List.of(), LmsTextFormat.PLAIN, false, false)), false, false, false, null))));
 
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/content").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.modules", hasSize(1)))
-                .andExpect(jsonPath("$.modules[0].*", hasSize(4)))
+                .andExpect(jsonPath("$.modules[0].*", hasSize(8)))
                 .andExpect(jsonPath("$.modules[0].title").value("Introduction"))
-                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(5)))
+                .andExpect(jsonPath("$.modules[0].topics[0].*", hasSize(7)))
                 .andExpect(jsonPath("$.modules[0].topics[0].contentFormat").value("PLAIN"))
                 .andExpect(jsonPath("$.modules[0].topics[0].materials", hasSize(0)))
                 .andExpect(jsonPath("$.modules[0].topics[0].content").value("Line one\nLine two"))
@@ -156,7 +159,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     @Test
     void studentOpensAPageForTheirOwnAccountAndAHiddenOneLooksMissing() throws Exception {
         when(studentContent.getPublishedPage(ACCOUNT_ID, 7L, 31L)).thenReturn(new LmsCoursePageResponse(31L, "Overview",
-                "## Hello", LmsTextFormat.FORMATTED, 12L, "Unit 1", List.of(), null, new LmsPageLink(32L, "Next", "Unit 1")));
+                "## Hello", LmsTextFormat.FORMATTED, 12L, "Unit 1", List.of(), null, new LmsPageLink(32L, "Next", "Unit 1"), false, false, false, null));
         when(studentContent.getPublishedPage(ACCOUNT_ID, 7L, 33L))
                 .thenThrow(new ApiException(HttpStatus.NOT_FOUND, "Page not found or unavailable."));
 
@@ -187,6 +190,46 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.lmsCourseStatus").value("PUBLISHED"));
         verify(studentContent).getPublishedFiles(ACCOUNT_ID, 7L);
         verify(facultyContent).getCourseFiles(ACCOUNT_ID, 7L);
+    }
+
+    @Test
+    void studentsReadTheirProgressAndCompletePagesAsThemselvesOnly() throws Exception {
+        when(studentContent.getProgress(ACCOUNT_ID, 7L)).thenReturn(new LmsCourseProgressResponse(2, 1,
+                new LmsPageLink(33L, "Arrays", "Unit 1")));
+
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/progress").param("accountId", "999")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completedRequiredPages").value(1))
+                .andExpect(jsonPath("$.next.id").value(33));
+        mockMvc.perform(as(studentToken(), post("/api/v1/lms/courses/7/pages/31/complete")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requiredPages").value(2));
+        verify(completions).complete(ACCOUNT_ID, 7L, 31L);
+
+        for (String token : List.of(tokenWith("ROLE_STUDENT"), facultyManageToken(), tokenWith("ROLE_ADMIN", "LMS_COURSE_VIEW"))) {
+            mockMvc.perform(as(token, get("/api/v1/lms/courses/7/progress"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, post("/api/v1/lms/courses/7/pages/31/complete"))).andExpect(status().isForbidden());
+        }
+        org.mockito.Mockito.verifyNoMoreInteractions(completions);
+    }
+
+    @Test
+    void facultyWithTheManagePermissionSetRequirements() throws Exception {
+        when(contentManagement.setTopicRequired(ACCOUNT_ID, 31L, true)).thenReturn(topic);
+        when(contentManagement.setModuleRequiresPrevious(ACCOUNT_ID, 12L, true)).thenReturn(module);
+
+        mockMvc.perform(as(facultyManageToken(), json(put("/api/v1/lms/faculty/topics/31/required"), "{\"required\":true}")))
+                .andExpect(status().isOk());
+        mockMvc.perform(as(facultyManageToken(), json(put("/api/v1/lms/faculty/modules/12/requires-previous"), "{\"required\":true}")))
+                .andExpect(status().isOk());
+        mockMvc.perform(as(facultyManageToken(), json(put("/api/v1/lms/faculty/topics/31/required"), "{}")))
+                .andExpect(status().isBadRequest());
+        for (String token : List.of(facultyViewToken(), studentToken())) {
+            mockMvc.perform(as(token, json(put("/api/v1/lms/faculty/topics/31/required"), "{\"required\":true}")))
+                    .andExpect(status().isForbidden());
+        }
+        verify(contentManagement).setTopicRequired(ACCOUNT_ID, 31L, true);
+        verify(contentManagement).setModuleRequiresPrevious(ACCOUNT_ID, 12L, true);
     }
 
     @Test
@@ -252,7 +295,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(12))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
-                .andExpect(jsonPath("$.*", hasSize(5)));
+                .andExpect(jsonPath("$.*", hasSize(6)));
 
         verify(contentManagement).createModule(ACCOUNT_ID, 7L, "Introduction", "Read this first.");
     }

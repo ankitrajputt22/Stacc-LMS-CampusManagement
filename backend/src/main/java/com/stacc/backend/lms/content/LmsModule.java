@@ -49,6 +49,10 @@ public class LmsModule {
     @Column(nullable = false)
     private int position;
 
+    // When true, students must complete the module before this one first (sequential learning).
+    @Column(name = "requires_previous", nullable = false)
+    private boolean requiresPrevious;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private LmsContentStatus status = LmsContentStatus.DRAFT;
@@ -115,6 +119,16 @@ public class LmsModule {
     }
 
     /** Places the module in its course's order. Positions start at 1. */
+    public boolean isRequiresPrevious() {
+        return requiresPrevious;
+    }
+
+    /** Whether students must complete the previous module first. An archived module can no longer be changed. */
+    public void requirePrevious(boolean requiresPrevious) {
+        requireNotArchived();
+        this.requiresPrevious = requiresPrevious;
+    }
+
     public void moveTo(int position) {
         this.position = Require.range(position, "position", 1, Integer.MAX_VALUE);
     }

@@ -60,6 +60,10 @@ export type LmsCourseTopic = {
   contentFormat: TextFormat
   /** Its published study materials. Often empty. */
   materials: LmsCourseMaterial[]
+  /** Whether the page counts towards its module's completion and the student's progress. */
+  required: boolean
+  /** Whether this student marked the page complete. */
+  completed: boolean
 }
 
 /** One published module with its published topics, as a student sees it. */
@@ -68,6 +72,14 @@ export type LmsCourseModule = {
   title: string
   description: string | null
   topics: LmsCourseTopic[]
+  /** Whether students must complete the module before this one first. */
+  requiresPrevious: boolean
+  /** Locked for this student: its pages come without text or files. */
+  locked: boolean
+  /** Every required page of the module is completed by this student. */
+  completed: boolean
+  /** The module to complete first, when locked. */
+  waitingFor: string | null
 }
 
 /** The published content of a course, from GET /api/v1/lms/courses/{lmsCourseId}/content. */
@@ -83,6 +95,8 @@ export type LmsFacultyTopic = {
   contentFormat: TextFormat
   position: number
   status: LmsContentStatus
+  /** Whether students must complete the page. */
+  required: boolean
 }
 
 /** One study material as faculty manage it. */
@@ -103,6 +117,8 @@ export type LmsFacultyModule = {
   description: string | null
   position: number
   status: LmsContentStatus
+  /** Whether students must complete the previous module first. */
+  requiresPrevious: boolean
 }
 
 /** One module with its topics that are not archived. */
@@ -382,6 +398,19 @@ export type LmsCoursePage = {
   moduleTitle: string
   materials: LmsCourseMaterial[]
   previous: LmsPageLink | null
+  next: LmsPageLink | null
+  required: boolean
+  completed: boolean
+  /** The page's module is locked for this student: then there is no text and there are no files. */
+  locked: boolean
+  waitingFor: string | null
+}
+
+/** A student's own progress in a course, from GET /api/v1/lms/courses/{lmsCourseId}/progress. Nothing is stored. */
+export type LmsCourseProgress = {
+  requiredPages: number
+  completedRequiredPages: number
+  /** The next required page to complete in an open module, or null when none is left. */
   next: LmsPageLink | null
 }
 

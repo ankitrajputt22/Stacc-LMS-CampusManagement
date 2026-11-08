@@ -12,6 +12,7 @@ import { creditsText, formatCredits } from '../courses/credits'
 import { CourseAnnouncements } from '../courses/CourseAnnouncements'
 import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
+import { CourseProgressCard } from '../courses/CourseProgressCard'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
@@ -123,6 +124,8 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
           Files
         </Link>
       </nav>
+
+      <CourseProgressCard lmsCourseId={course.lmsCourseId} />
 
       <section
         aria-labelledby="course-ai-heading"

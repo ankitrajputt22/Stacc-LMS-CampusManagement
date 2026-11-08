@@ -53,6 +53,10 @@ public class LmsTopic {
     @Column(nullable = false)
     private int position;
 
+    // A required page counts towards its module's completion and the student's progress.
+    @Column(nullable = false)
+    private boolean required;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private LmsContentStatus status = LmsContentStatus.DRAFT;
@@ -99,6 +103,16 @@ public class LmsTopic {
     public void changeContentFormat(LmsTextFormat format) {
         requireNotArchived();
         this.contentFormat = Require.notNull(format, "format");
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    /** Whether students must complete this page. An archived page can no longer be changed. */
+    public void markRequired(boolean required) {
+        requireNotArchived();
+        this.required = required;
     }
 
     public int getPosition() {

@@ -69,9 +69,9 @@ class LmsFacultyContentQueryServiceTest {
         assertEquals(new LmsFacultyCourseContentResponse(7L, "TST301", "Test Data Structures", new BigDecimal("4.00"), 3,
                 "BTECH", "2026-27", "DRAFT", List.of(
                         new LmsFacultyModuleContentResponse(11L, "Module 11", null, 1, LmsContentStatus.DRAFT, List.of(
-                                new LmsFacultyTopicContentResponse(31L, "Topic 31", "Text of topic 31", 1, LmsContentStatus.PUBLISHED, List.of(), LmsTextFormat.PLAIN),
-                                new LmsFacultyTopicContentResponse(32L, "Topic 32", "Text of topic 32", 2, LmsContentStatus.DRAFT, List.of(), LmsTextFormat.PLAIN))),
-                        new LmsFacultyModuleContentResponse(12L, "Module 12", null, 2, LmsContentStatus.PUBLISHED, List.of()))),
+                                new LmsFacultyTopicContentResponse(31L, "Topic 31", "Text of topic 31", 1, LmsContentStatus.PUBLISHED, List.of(), LmsTextFormat.PLAIN, false),
+                                new LmsFacultyTopicContentResponse(32L, "Topic 32", "Text of topic 32", 2, LmsContentStatus.DRAFT, List.of(), LmsTextFormat.PLAIN, false)), false),
+                        new LmsFacultyModuleContentResponse(12L, "Module 12", null, 2, LmsContentStatus.PUBLISHED, List.of(), false))),
                 content);
     }
 

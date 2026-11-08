@@ -28,11 +28,13 @@ public record LmsFacultyTopicContentResponse(
         @ArraySchema(arraySchema = @Schema(description = "The study materials that are not archived, in topic order."))
         List<LmsFacultyMaterialResponse> materials,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat contentFormat) {
+        LmsTextFormat contentFormat,
+        @Schema(description = "Whether the page counts towards its module's completion and students' progress.")
+        boolean required) {
 
     static LmsFacultyTopicContentResponse of(LmsTopic topic, List<LmsFacultyMaterialResponse> materials) {
         return new LmsFacultyTopicContentResponse(
                 topic.getId(), topic.getTitle(), topic.getContent(), topic.getPosition(), topic.getStatus(), materials,
-                topic.getContentFormat());
+                topic.getContentFormat(), topic.isRequired());
     }
 }

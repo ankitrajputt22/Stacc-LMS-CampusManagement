@@ -12,12 +12,15 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.access.LmsStudentAccessService;
 import com.stacc.backend.lms.content.ContentFixtures;
 import com.stacc.backend.lms.content.LmsContentPolicy;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsLearningPathService;
 import com.stacc.backend.lms.content.LmsModule;
 import com.stacc.backend.lms.content.LmsModuleRepository;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
@@ -43,14 +46,16 @@ class LmsStudentContentQueryServiceTest {
     private final LmsModuleRepository modules = mock(LmsModuleRepository.class);
     private final LmsTopicRepository topics = mock(LmsTopicRepository.class);
     private final LmsStudyMaterialRepository materials = mock(LmsStudyMaterialRepository.class);
+    private final LmsLearningPathService paths = mock(LmsLearningPathService.class);
+    private final CourseEnrollment enrollment = mock(CourseEnrollment.class);
     private final LmsStudentContentQueryService service =
-            new LmsStudentContentQueryService(accessService, modules, topics, materials);
+            new LmsStudentContentQueryService(accessService, modules, topics, materials, paths);
 
     private final LmsCourse course = ContentFixtures.lmsCourse(COURSE_ID);
 
     @BeforeEach
     void studentWhoMayUseTheCourse() {
-        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(true);
+        when(accessService.findAccessGrantingEnrollment(ACCOUNT_ID, COURSE_ID)).thenReturn(Optional.of(enrollment));
     }
 
     private void stored(List<LmsModule> storedModules, List<LmsTopic> storedTopics) {
@@ -75,7 +80,7 @@ class LmsStudentContentQueryServiceTest {
         LmsCourseContentResponse content = service.getPublishedContent(ACCOUNT_ID, COURSE_ID);
 
         assertEquals(new LmsCourseContentResponse(List.of(new LmsCourseModuleResponse(11L, "Module 11", null,
-                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31", List.of(), LmsTextFormat.PLAIN))))), content);
+                List.of(new LmsCourseTopicResponse(31L, "Topic 31", "Text of topic 31", List.of(), LmsTextFormat.PLAIN, false, false)), false, false, true, null))), content);
     }
 
     @Test
@@ -150,7 +155,7 @@ class LmsStudentContentQueryServiceTest {
 
     @Test
     void aPageOfACourseTheStudentMayNotUseIsUnavailable() {
-        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+        when(accessService.findAccessGrantingEnrollment(ACCOUNT_ID, COURSE_ID)).thenReturn(Optional.empty());
 
         assertEquals(HttpStatus.NOT_FOUND,
                 assertThrows(ApiException.class, () -> service.getPublishedPage(ACCOUNT_ID, COURSE_ID, 31L)).getStatus());
@@ -159,7 +164,7 @@ class LmsStudentContentQueryServiceTest {
 
     @Test
     void courseTheStudentMayNotUseIsUnavailableAndNothingIsRead() {
-        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+        when(accessService.findAccessGrantingEnrollment(ACCOUNT_ID, COURSE_ID)).thenReturn(Optional.empty());
 
         ApiException refused = assertThrows(ApiException.class, () -> service.getPublishedContent(ACCOUNT_ID, COURSE_ID));
 
@@ -218,7 +223,7 @@ class LmsStudentContentQueryServiceTest {
 
     @Test
     void theFilesOfACourseTheStudentMayNotUseAreUnavailable() {
-        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+        when(accessService.findAccessGrantingEnrollment(ACCOUNT_ID, COURSE_ID)).thenReturn(Optional.empty());
 
         assertEquals(HttpStatus.NOT_FOUND,
                 assertThrows(ApiException.class, () -> service.getPublishedFiles(ACCOUNT_ID, COURSE_ID)).getStatus());
