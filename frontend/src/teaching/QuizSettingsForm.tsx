@@ -2,9 +2,16 @@ import { type FormEvent, useId, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { localTimeZoneName } from '../courses/dates'
 import { FormattedTextField } from '../formatting/FormattedTextField'
-import type { LmsQuizSettingsInput, QuizType } from '../types/lms'
+import type { LmsQuizSettingsInput, QuizResultRelease, QuizType } from '../types/lms'
 import { Alert, Button, SelectField, TextField } from '../ui'
-import { checkSettings, QUIZ_INSTRUCTIONS_MAX, QUIZ_TITLE_MAX, QUIZ_TYPES, type QuizSettingsDraft } from './quizSettings'
+import {
+  checkSettings,
+  QUIZ_INSTRUCTIONS_MAX,
+  QUIZ_TITLE_MAX,
+  QUIZ_TYPES,
+  type QuizSettingsDraft,
+  RESULT_RELEASES,
+} from './quizSettings'
 
 export const QUIZ_FORBIDDEN =
   'You don’t have access to change this course’s quizzes. If your access changed recently, sign out and sign in again.'
@@ -187,6 +194,26 @@ export function QuizSettingsForm({ initial, published = false, submitLabel, onSu
           error={errors.negativeMarkPercent}
           onChange={(event) => update({ negativeMarkPercent: event.target.value })}
         />
+      </fieldset>
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-ink">Results</legend>
+        <SelectField
+          label="Students see their result"
+          className="max-w-sm"
+          value={draft.resultRelease}
+          hint="Only once every written answer is marked."
+          onChange={(event) => update({ resultRelease: event.target.value as QuizResultRelease })}
+        >
+          {RESULT_RELEASES.map((release) => (
+            <option key={release.value} value={release.value}>
+              {release.label}
+            </option>
+          ))}
+        </SelectField>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" checked={draft.showAnswers} onChange={(event) => update({ showAnswers: event.target.checked })} />
+          Show the correct answers and explanations with results
+        </label>
       </fieldset>
       {message && <Alert tone="error">{message}</Alert>}
       <div className="flex flex-wrap gap-2">

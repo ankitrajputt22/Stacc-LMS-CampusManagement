@@ -17,7 +17,9 @@ import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
+import { QuizAttemptMarking } from '../teaching/QuizAttemptMarking'
 import { QuizEditor } from '../teaching/QuizEditor'
+import { QuizResultsTable } from '../teaching/QuizResultsTable'
 import { QuizzesEditor } from '../teaching/QuizzesEditor'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
@@ -249,3 +251,34 @@ export function TeachingQuizPage() {
   )
 }
 
+/** /teaching/:lmsCourseId/quizzes/:quizId/results: every attempt at a quiz with its marks. */
+export function TeachingQuizResultsPage() {
+  const quizId = parseCourseId(useParams().quizId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Quiz results', heading: 'Quiz results', parent: { path: 'quizzes', label: 'Quizzes' } }}>
+      {(course) =>
+        quizId === null ? (
+          <p className="text-sm text-ink-muted">This quiz address is not valid.</p>
+        ) : (
+          <QuizResultsTable key={quizId} lmsCourseId={course.lmsCourseId} quizId={quizId} />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/quiz-attempts/:attemptId: one attempt for marking. */
+export function TeachingQuizAttemptPage() {
+  const attemptId = parseCourseId(useParams().attemptId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Mark attempt', heading: 'Mark attempt', parent: { path: 'quizzes', label: 'Quizzes' } }}>
+      {(course) =>
+        attemptId === null ? (
+          <p className="text-sm text-ink-muted">This attempt address is not valid.</p>
+        ) : (
+          <QuizAttemptMarking key={attemptId} lmsCourseId={course.lmsCourseId} attemptId={attemptId} />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}

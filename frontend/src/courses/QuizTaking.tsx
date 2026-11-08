@@ -8,7 +8,16 @@ import { FormattedText } from '../formatting/FormattedText'
 import type { QuizAttempt, QuizAttemptQuestion } from '../types/lms'
 import { Alert, Badge, Button, ButtonLink, Card, TextAreaField, TextField } from '../ui'
 import { formatDateTime } from './dates'
-import { type AnswerDraft, attemptStateLabel, clockText, draftOfQuestion, inputOfDraft, isAnswered } from './quizText'
+import {
+  type AnswerDraft,
+  attemptStateLabel,
+  clockText,
+  draftOfQuestion,
+  inputOfDraft,
+  isAnswered,
+  outcomeLabel,
+  resultWaitText,
+} from './quizText'
 
 type SaveState = 'saving' | 'saved' | 'failed'
 
@@ -34,8 +43,46 @@ function saveStateText(state: SaveState | undefined): string {
   }
 }
 
+type QuestionResult = NonNullable<QuizAttempt['result']>['questions'][number]
+
+/** A released result for one question: the outcome and marks, the teacher's feedback, and, if shown, the answer. */
+function QuestionResultPanel({ question, result }: { question: QuizAttemptQuestion; result: QuestionResult }) {
+  const correctChoices = (result.correctOptions ?? [])
+    .map((position) => question.options.find((option) => option.position === position)?.text)
+    .filter((text): text is string => Boolean(text))
+  return (
+    <div className="mt-3 space-y-1.5 rounded-panel border border-line bg-surface p-3 text-sm">
+      <p className="flex flex-wrap items-center gap-2">
+        <Badge tone={result.outcome === 'CORRECT' ? 'success' : result.outcome === 'INCORRECT' ? 'danger' : 'neutral'}>
+          {outcomeLabel(result.outcome)}
+        </Badge>
+        <span className="text-ink">
+          {result.marksAwarded} of {marksText(question.marks)}
+        </span>
+      </p>
+      {correctChoices.length > 0 && <p className="text-ink">Correct answer: {correctChoices.join(' · ')}</p>}
+      {result.acceptedAnswers && <p className="text-ink">Accepted answers: {result.acceptedAnswers.join(' · ')}</p>}
+      {result.trueFalseAnswer !== null && question.type === 'TRUE_FALSE' && (
+        <p className="text-ink">Correct answer: {result.trueFalseAnswer ? 'True' : 'False'}</p>
+      )}
+      {result.feedback && (
+        <p className="break-words whitespace-pre-line text-ink">
+          <span className="font-medium">Feedback:</span> {result.feedback}
+        </p>
+      )}
+      {result.explanation && (
+        <div className="text-ink-muted">
+          <p className="font-medium">Explanation</p>
+          <FormattedText text={result.explanation} format={question.textFormat} className="leading-6" headingLevel={4} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 type QuestionProps = {
   question: QuizAttemptQuestion
+  result?: QuestionResult
   draft: AnswerDraft
   open: boolean
   saveState: SaveState | undefined
@@ -45,7 +92,7 @@ type QuestionProps = {
 }
 
 /** One question with the inputs its type takes, disabled once the attempt no longer takes answers. */
-function QuizQuestion({ question, draft, open, saveState, onChoose, onType, onLeaveText }: QuestionProps) {
+function QuizQuestion({ question, result, draft, open, saveState, onChoose, onType, onLeaveText }: QuestionProps) {
   const id = useId()
   const name = `${id}-answer`
   const label = `Answer to question ${question.number}`
@@ -123,6 +170,7 @@ function QuizQuestion({ question, draft, open, saveState, onChoose, onType, onLe
           </Button>
         )}
       </fieldset>
+      {result && <QuestionResultPanel question={question} result={result} />}
       {open && saveState && (
         <p className={`mt-2 text-sm ${saveState === 'failed' ? 'text-danger' : 'text-ink-muted'}`}>{saveStateText(saveState)}</p>
       )}
@@ -323,11 +371,24 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
             {notice.text}
           </Alert>
         )}
+        {current.result && (
+          <div className="mt-4 rounded-panel border border-line p-4">
+            <p className="text-2xl font-bold text-portal-navy">
+              {current.result.score} / {current.result.totalMarks}
+            </p>
+            <p className="text-sm text-ink-muted">
+              {current.result.correct} correct · {current.result.incorrect} incorrect · {current.result.unanswered} not answered
+            </p>
+          </div>
+        )}
+        {!open && resultWaitText(current.resultStatus) && (
+          <p className="mt-4 text-sm text-ink-muted">{resultWaitText(current.resultStatus)}</p>
+        )}
         {!open && !notice && (
           <Alert tone="info" className="mt-4">
             {current.state === 'TIME_UP'
               ? 'Time is up for this attempt. The answers saved before the deadline count.'
-              : 'This attempt has been handed in. Your answers are shown below; results come once the quiz is marked.'}
+              : 'This attempt has been handed in. Your answers are shown below.'}
           </Alert>
         )}
       </Card>
@@ -338,6 +399,7 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
             <QuizQuestion
               key={question.quizQuestionId}
               question={question}
+              result={current.result?.questions.find((entry) => entry.quizQuestionId === question.quizQuestionId)}
               draft={drafts[question.quizQuestionId]}
               open={open}
               saveState={saveStates[question.quizQuestionId]}

@@ -17,6 +17,13 @@ public interface LmsQuizQuestionRepository extends JpaRepository<LmsQuizQuestion
             """)
     List<LmsQuizQuestion> findAllForQuiz(@Param("quizId") Long quizId);
 
+    /** The questions of several quizzes, each quiz's in order, with their bank questions and options. */
+    @Query("""
+            select distinct link from LmsQuizQuestion link join fetch link.question question left join fetch question.options
+            where link.quiz.id in :quizIds order by link.quiz.id, link.position
+            """)
+    List<LmsQuizQuestion> findAllForQuizzes(@Param("quizIds") Collection<Long> quizIds);
+
     /** The links of a quiz in order, without loading the bank questions. */
     List<LmsQuizQuestion> findAllByQuizIdOrderByPosition(Long quizId);
 

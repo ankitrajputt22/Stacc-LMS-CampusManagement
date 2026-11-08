@@ -88,6 +88,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `LMS_QUESTION_BANK_MANAGE` | `FACULTY` | Reading and changing the question bank of the LMS courses taught: adding, editing, reviewing, offering for practice, and archiving questions with their answers. Added by `V84`. |
 | `LMS_QUIZ_MANAGE` | `FACULTY` | Reading and changing the quizzes of the LMS courses taught: settings, questions from the bank, publishing, and archiving. Added by `V85`. |
 | `LMS_QUIZ_TAKE` | `STUDENT` | Taking the published quizzes of courses the student may use: starting attempts, saving answers, and handing in. Added by `V86`. |
+| `LMS_QUIZ_GRADE` | `FACULTY` | Reading the results of the quizzes of courses taught and marking answers: hand marks for written answers, regrades for others, and closing attempts whose time is up. Added by `V87`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided live by official enrollment (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 

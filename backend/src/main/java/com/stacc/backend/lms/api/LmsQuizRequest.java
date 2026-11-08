@@ -6,6 +6,7 @@ import java.time.Instant;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.quiz.LmsQuiz;
 import com.stacc.backend.lms.quiz.LmsQuizSettings;
+import com.stacc.backend.lms.quiz.QuizResultRelease;
 import com.stacc.backend.lms.quiz.QuizType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
@@ -70,10 +71,17 @@ public record LmsQuizRequest(
         @DecimalMin(value = "0", message = "Negative marking must be from 0 to 100 percent")
         @DecimalMax(value = "100", message = "Negative marking must be from 0 to 100 percent")
         @Digits(integer = 3, fraction = 2, message = "Negative marking can have at most 2 decimal places")
-        BigDecimal negativeMarkPercent) {
+        BigDecimal negativeMarkPercent,
+
+        @Schema(description = "When students see results of fully marked attempts: AFTER_MARKING (default) or AFTER_DUE_DATE.")
+        QuizResultRelease resultRelease,
+
+        @Schema(description = "Whether results come with the correct answers and explanations. Left out, they do not.")
+        Boolean showAnswers) {
 
     LmsQuizSettings settings() {
         return new LmsQuizSettings(title, instructions, instructionsFormat, type, timeLimitMinutes, availableFrom, dueAt,
-                availableUntil, maxAttempts, shuffleQuestions, shuffleOptions, negativeMarkPercent);
+                availableUntil, maxAttempts, shuffleQuestions, shuffleOptions, negativeMarkPercent, resultRelease,
+                Boolean.TRUE.equals(showAnswers));
     }
 }

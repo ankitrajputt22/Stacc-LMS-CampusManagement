@@ -612,7 +612,12 @@ export type LmsQuizSettingsInput = {
   shuffleQuestions: boolean
   shuffleOptions: boolean
   negativeMarkPercent: number
+  resultRelease: QuizResultRelease
+  showAnswers: boolean
 }
+
+/** When students see results of fully marked attempts. */
+export type QuizResultRelease = 'AFTER_MARKING' | 'AFTER_DUE_DATE'
 
 /** A quiz with its settings and questions, for the faculty who teach the course. */
 export type LmsQuiz = Omit<LmsQuizSettingsInput, 'instructions'> & {
@@ -638,6 +643,32 @@ export type QuizAttemptSummary = {
   deadlineAt: string | null
   submittedAt: string | null
   late: boolean
+  resultStatus: QuizResultStatus
+  /** The score once the result is released; null before. */
+  score: number | null
+}
+
+export type QuizResultStatus = 'NOT_HANDED_IN' | 'WAITING_FOR_MARKING' | 'WAITING_FOR_RELEASE' | 'RELEASED'
+
+export type QuizAnswerOutcome = 'CORRECT' | 'INCORRECT' | 'UNANSWERED' | 'NEEDS_MARKING' | 'MARKED'
+
+/** A released result. Correct options, accepted answers, the true or false answer, and explanations only when shown. */
+export type QuizResult = {
+  score: number
+  totalMarks: number
+  correct: number
+  incorrect: number
+  unanswered: number
+  questions: {
+    quizQuestionId: number
+    outcome: QuizAnswerOutcome
+    marksAwarded: number
+    feedback: string | null
+    correctOptions: number[] | null
+    acceptedAnswers: string[] | null
+    trueFalseAnswer: boolean | null
+    explanation: string | null
+  }[]
 }
 
 /** A published quiz as the signed-in student sees it, with their own attempts. Never its questions. */
@@ -700,6 +731,65 @@ export type QuizAttempt = {
   /** The server's time when the answer was made, so the timer can allow for the device's clock. */
   serverTime: string
   totalMarks: number
+  resultStatus: QuizResultStatus
+  result: QuizResult | null
   questions: QuizAttemptQuestion[]
+}
+
+/** The attempts at a quiz with their marks, for faculty. Students by college ID only. */
+export type QuizResults = {
+  quizId: number
+  title: string
+  totalMarks: number
+  attempts: {
+    attemptId: number
+    studentLoginId: string
+    attemptNumber: number
+    state: QuizAttemptState
+    startedAt: string
+    submittedAt: string | null
+    late: boolean
+    automaticMarks: number
+    teacherMarks: number
+    score: number | null
+    needsMarking: number
+  }[]
+}
+
+/** One attempt for marking, with every question's answers, the student's answer, and the marks. */
+export type QuizAttemptReview = {
+  attemptId: number
+  quizId: number
+  lmsCourseId: number
+  quizTitle: string
+  quizPublished: boolean
+  studentLoginId: string
+  attemptNumber: number
+  state: QuizAttemptState
+  startedAt: string
+  deadlineAt: string | null
+  submittedAt: string | null
+  late: boolean
+  negativeMarkPercent: number
+  totalMarks: number
+  automaticMarks: number
+  teacherMarks: number
+  score: number | null
+  questions: {
+    quizQuestionId: number
+    number: number
+    type: QuestionType
+    text: string
+    textFormat: TextFormat
+    marks: number
+    options: LmsQuestionOption[]
+    trueFalseAnswer: boolean | null
+    answerGuidance: string | null
+    explanation: string | null
+    answer: QuizAnswer | null
+    outcome: QuizAnswerOutcome
+    automaticMarks: number | null
+    mark: { marks: number; feedback: string | null; markedAt: string } | null
+  }[]
 }
 

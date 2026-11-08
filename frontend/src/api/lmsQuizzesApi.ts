@@ -1,4 +1,4 @@
-import type { LmsQuiz, LmsQuizSettingsInput, LmsQuizSummary } from '../types/lms'
+import type { LmsQuiz, LmsQuizSettingsInput, LmsQuizSummary, QuizAttemptReview, QuizResults } from '../types/lms'
 import { apiClient } from './apiClient'
 
 // The signed-in account is the one in the session; the backend checks on every request that it teaches the course.
@@ -47,4 +47,30 @@ export async function publishQuiz(quizId: number): Promise<LmsQuiz> {
 
 export async function archiveQuiz(quizId: number): Promise<LmsQuiz> {
   return (await apiClient.post<LmsQuiz>(`/lms/faculty/quizzes/${quizId}/archive`)).data
+}
+
+/** Every attempt at a published or archived quiz with its marks. */
+export async function getQuizResults(quizId: number, signal?: AbortSignal): Promise<QuizResults> {
+  return (await apiClient.get<QuizResults>(`/lms/faculty/quizzes/${quizId}/attempts`, { signal })).data
+}
+
+export async function getQuizAttemptReview(attemptId: number, signal?: AbortSignal): Promise<QuizAttemptReview> {
+  return (await apiClient.get<QuizAttemptReview>(`/lms/faculty/quiz-attempts/${attemptId}`, { signal })).data
+}
+
+/** Marks one answer, replacing an earlier mark; for an automatically marked answer this is a regrade. */
+export async function markQuizAnswer(
+  attemptId: number,
+  quizQuestionId: number,
+  marks: number,
+  feedback: string | null,
+): Promise<QuizAttemptReview> {
+  return (
+    await apiClient.put<QuizAttemptReview>(`/lms/faculty/quiz-attempts/${attemptId}/answers/${quizQuestionId}/mark`, { marks, feedback })
+  ).data
+}
+
+/** Hands in an attempt the student left open after its time ran out. */
+export async function closeQuizAttempt(attemptId: number): Promise<QuizAttemptReview> {
+  return (await apiClient.post<QuizAttemptReview>(`/lms/faculty/quiz-attempts/${attemptId}/close`)).data
 }

@@ -65,10 +65,11 @@ public class LmsQuizAttemptService {
     private final LmsQuizAnswerRepository answers;
     private final CourseEnrollmentRepository courseEnrollments;
     private final Clock clock;
+    private final QuizScores scores;
 
     public LmsQuizAttemptService(LmsStudentAccessService studentAccess, LmsQuizRepository quizzes,
             LmsQuizQuestionRepository quizQuestions, LmsQuizAttemptRepository attempts, LmsQuizAnswerRepository answers,
-            CourseEnrollmentRepository courseEnrollments, Clock clock) {
+            CourseEnrollmentRepository courseEnrollments, Clock clock, QuizScores scores) {
         this.studentAccess = studentAccess;
         this.quizzes = quizzes;
         this.quizQuestions = quizQuestions;
@@ -76,11 +77,22 @@ public class LmsQuizAttemptService {
         this.answers = answers;
         this.courseEnrollments = courseEnrollments;
         this.clock = clock;
+        this.scores = scores;
     }
 
     /** A published quiz as one student sees it: its size, and that student's attempts, newest first. */
     public record StudentQuiz(LmsQuiz quiz, long questionCount, BigDecimal totalMarks, List<LmsQuizAttempt> attempts,
-            Instant now) {
+            Map<Long, QuizScoring.AttemptScore> scores, Instant now) {
+
+        /** Whether the student may see this attempt's result now, and if not, why. */
+        public QuizResultStatus resultStatus(LmsQuizAttempt attempt) {
+            return QuizResultStatus.of(attempt, scores.get(attempt.getId()), now);
+        }
+
+        /** The attempt's score once its result is released; null before. */
+        public BigDecimal releasedScore(LmsQuizAttempt attempt) {
+            return resultStatus(attempt) == QuizResultStatus.RELEASED ? scores.get(attempt.getId()).score() : null;
+        }
 
         public QuizAvailability availability() {
             return quiz.availabilityAt(now);
@@ -106,7 +118,11 @@ public class LmsQuizAttemptService {
 
     /** An attempt with its quiz, its questions in the attempt's order, and the answers saved so far by question. */
     public record AttemptView(LmsQuizAttempt attempt, List<LmsQuizQuestion> questions, Map<Long, LmsQuizAnswer> answers,
-            Instant now) {
+            QuizScoring.AttemptScore score, Instant now) {
+
+        public QuizResultStatus resultStatus() {
+            return QuizResultStatus.of(attempt, score, now);
+        }
 
         public BigDecimal totalMarks() {
             return questions.stream().map(LmsQuizQuestion::getMarks).reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
@@ -249,7 +265,7 @@ public class LmsQuizAttemptService {
         Map<Long, LmsQuizAnswer> saved = answers.findAllByAttemptId(attempt.getId()).stream()
                 .collect(Collectors.toMap(answer -> answer.getQuizQuestion().getId(), Function.identity()));
         return new AttemptView(attempt, QuizAttemptOrder.questions(attempt.getId(), inQuizOrder, quiz.isShuffleQuestions()),
-                saved, now());
+                saved, scores.of(attempt), now());
     }
 
     // The attempt must have been made through the enrollment that gives this account the course now, for a quiz that
@@ -275,12 +291,13 @@ public class LmsQuizAttemptService {
         Map<Long, List<LmsQuizAttempt>> mine = attempts
                 .findAllByCourseEnrollmentIdAndQuizIdInOrderByAttemptNumberDesc(enrollment.getId(), quizIds).stream()
                 .collect(Collectors.groupingBy(attempt -> attempt.getQuiz().getId()));
+        Map<Long, QuizScoring.AttemptScore> scored = scores.of(mine.values().stream().flatMap(List::stream).toList());
         Instant now = now();
         return published.stream().map(quiz -> {
             LmsQuizQuestionRepository.QuizTotals total = totals.get(quiz.getId());
             return new StudentQuiz(quiz, total == null ? 0 : total.getQuestionCount(),
                     total == null ? BigDecimal.ZERO.setScale(2) : total.getTotalMarks(),
-                    mine.getOrDefault(quiz.getId(), List.of()), now);
+                    mine.getOrDefault(quiz.getId(), List.of()), scored, now);
         }).toList();
     }
 

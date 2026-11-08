@@ -14,6 +14,7 @@ import com.stacc.backend.lms.question.QuestionType;
 import com.stacc.backend.lms.quiz.LmsQuiz;
 import com.stacc.backend.lms.quiz.LmsQuizQuestion;
 import com.stacc.backend.lms.quiz.LmsQuizService;
+import com.stacc.backend.lms.quiz.QuizResultRelease;
 import com.stacc.backend.lms.quiz.QuizType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -34,6 +35,8 @@ public record LmsQuizResponse(
         boolean shuffleOptions,
         @Schema(example = "25.00")
         BigDecimal negativeMarkPercent,
+        QuizResultRelease resultRelease,
+        boolean showAnswers,
         LmsContentStatus status,
         Instant publishedAt,
         @Schema(description = "The marks of all its questions together.", example = "10.00")
@@ -65,7 +68,7 @@ public record LmsQuizResponse(
         return new LmsQuizResponse(quiz.getId(), quiz.getLmsCourse().getId(), quiz.getTitle(), quiz.getInstructions(),
                 quiz.getInstructionsFormat(), quiz.getType(), quiz.getTimeLimitMinutes(), quiz.getAvailableFrom(),
                 quiz.getDueAt(), quiz.getAvailableUntil(), quiz.getMaxAttempts(), quiz.isShuffleQuestions(),
-                quiz.isShuffleOptions(), quiz.getNegativeMarkPercent(), quiz.getStatus(), quiz.getPublishedAt(),
+                quiz.isShuffleOptions(), quiz.getNegativeMarkPercent(), quiz.getResultRelease(), quiz.isShowAnswers(), quiz.getStatus(), quiz.getPublishedAt(),
                 detail.totalMarks(), detail.questions().stream().map(LmsQuizResponse::question).toList());
     }
 
