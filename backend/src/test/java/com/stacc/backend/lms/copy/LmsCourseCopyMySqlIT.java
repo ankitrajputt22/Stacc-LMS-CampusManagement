@@ -36,7 +36,11 @@ class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
 
         var sources = service.sources(faculty2, target);
         assertThat(sources).singleElement().extracting(LmsCourse::getStatus).hasToString("ARCHIVED");
-        assertThat(service.sources(accounts.findByLoginId("faculty1").orElseThrow().getId(), target)).isEmpty();
+        // Someone who does not teach this course gets the same 404 as for a missing course, not a list.
+        Long faculty1 = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sources(faculty1, target))
+                .isInstanceOf(com.stacc.backend.common.error.ApiException.class)
+                .hasMessage(LmsCourseCopyService.COURSE_UNAVAILABLE);
 
         LmsCourseCopyService.CopyResult result = service.copy(faculty2, target, sources.getFirst().getId());
 
