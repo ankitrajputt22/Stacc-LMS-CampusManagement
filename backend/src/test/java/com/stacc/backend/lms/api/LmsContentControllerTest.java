@@ -137,6 +137,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 tokenWith("ROLE_ADMIN", "LMS_COURSE_VIEW"))) {
             mockMvc.perform(as(token, get("/api/v1/lms/courses/7/content"))).andExpect(status().isForbidden());
             mockMvc.perform(as(token, get("/api/v1/lms/courses/7/pages/31"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/courses/7/files"))).andExpect(status().isForbidden());
         }
 
         verifyNoInteractions(studentContent);
@@ -167,6 +168,25 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/pages/33")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Page not found or unavailable."));
+    }
+
+    @Test
+    void studentAndFacultyListTheFilesForTheAccountInTheToken() throws Exception {
+        when(studentContent.getPublishedFiles(ACCOUNT_ID, 7L)).thenReturn(List.of(new LmsCourseFileResponse(7L, "Notes",
+                null, "notes.pdf", "application/pdf", 10, null, 31L, "Overview", "Unit 1")));
+        when(facultyContent.getCourseFiles(ACCOUNT_ID, 7L)).thenReturn(new LmsFacultyCourseFilesResponse(7L, "TST301",
+                "Test", "PUBLISHED", List.of()));
+
+        mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/files").param("accountId", "999")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].pageId").value(31))
+                .andExpect(content().string(not(containsString("objectKey"))))
+                .andExpect(content().string(not(containsString("lms/"))));
+        mockMvc.perform(as(facultyViewToken(), get("/api/v1/lms/faculty/courses/7/files")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lmsCourseStatus").value("PUBLISHED"));
+        verify(studentContent).getPublishedFiles(ACCOUNT_ID, 7L);
+        verify(facultyContent).getCourseFiles(ACCOUNT_ID, 7L);
     }
 
     @Test
@@ -214,6 +234,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 tokenWith("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_CONTENT_MANAGE"))) {
             mockMvc.perform(as(token, get("/api/v1/lms/faculty/courses/7/content"))).andExpect(status().isForbidden());
             mockMvc.perform(as(token, get("/api/v1/lms/faculty/pages/31"))).andExpect(status().isForbidden());
+            mockMvc.perform(as(token, get("/api/v1/lms/faculty/courses/7/files"))).andExpect(status().isForbidden());
         }
 
         verifyNoInteractions(facultyContent);

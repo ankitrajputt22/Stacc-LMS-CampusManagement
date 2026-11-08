@@ -73,6 +73,18 @@ public class LmsFacultyContentController {
         return contentQueryService.getCourseContent(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
 
+    @GetMapping("/courses/{lmsCourseId}/files")
+    @PreAuthorize(VIEW)
+    @Operation(
+            summary = "List the files of a course the faculty member teaches",
+            description = "Returns every study material that is not archived, drafts included, in course order, with "
+                    + "the page and module it is on and their statuses. Archived files are kept but not listed.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The course and its files.")
+    public LmsFacultyCourseFilesResponse files(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
+        return contentQueryService.getCourseFiles(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
+    }
+
     @GetMapping("/pages/{pageId}")
     @PreAuthorize(VIEW)
     @Operation(

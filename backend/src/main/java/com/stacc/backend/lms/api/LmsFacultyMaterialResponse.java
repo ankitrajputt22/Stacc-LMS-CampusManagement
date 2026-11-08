@@ -1,5 +1,7 @@
 package com.stacc.backend.lms.api;
 
+import java.time.Instant;
+
 import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,11 +30,13 @@ public record LmsFacultyMaterialResponse(
         int position,
 
         @Schema(description = "DRAFT is hidden from students. PUBLISHED is shown once its topic and module are published.")
-        LmsContentStatus status) {
+        LmsContentStatus status,
+        @Schema(description = "When the file was uploaded.", example = "2026-10-14T09:30:00Z")
+        Instant uploadedAt) {
 
     static LmsFacultyMaterialResponse of(LmsStudyMaterial material) {
         return new LmsFacultyMaterialResponse(material.getId(), material.getTitle(), material.getDescription(),
                 material.getOriginalFileName(), material.getContentType(), material.getSizeBytes(),
-                material.getPosition(), material.getStatus());
+                material.getPosition(), material.getStatus(), material.getCreatedAt());
     }
 }

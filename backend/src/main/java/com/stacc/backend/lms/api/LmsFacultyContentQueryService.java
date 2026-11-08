@@ -148,6 +148,27 @@ public class LmsFacultyContentQueryService {
         throw pageUnavailable();
     }
 
+    /**
+     * Every file that is not archived, drafts included, of a course the faculty member may use, in course order, with
+     * the page and module it is on. It is taken from exactly what {@link #getCourseContent} lists.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    @Transactional(readOnly = true)
+    public LmsFacultyCourseFilesResponse getCourseFiles(Long userAccountId, Long lmsCourseId) {
+        LmsFacultyCourseContentResponse course = getCourseContent(userAccountId, lmsCourseId);
+        List<LmsFacultyCourseFileResponse> files = new ArrayList<>();
+        for (LmsFacultyModuleContentResponse module : course.modules()) {
+            for (LmsFacultyTopicContentResponse page : module.topics()) {
+                for (LmsFacultyMaterialResponse file : page.materials()) {
+                    files.add(LmsFacultyCourseFileResponse.of(file, page, module));
+                }
+            }
+        }
+        return new LmsFacultyCourseFilesResponse(course.lmsCourseId(), course.courseCode(), course.courseName(),
+                course.lmsCourseStatus(), files);
+    }
+
     private static LmsPageLink link(LmsFacultyTopicContentResponse page, LmsFacultyModuleContentResponse module) {
         return new LmsPageLink(page.id(), page.title(), module.title());
     }

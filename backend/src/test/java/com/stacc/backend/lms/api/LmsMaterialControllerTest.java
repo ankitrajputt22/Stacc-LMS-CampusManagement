@@ -122,7 +122,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.contentType").value("application/pdf"))
                 .andExpect(jsonPath("$.sizeBytes").value(1007))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
-                .andExpect(jsonPath("$.*", hasSize(8)))
+                .andExpect(jsonPath("$.*", hasSize(9)))
                 .andExpect(content().string(not(containsString("key"))))
                 .andExpect(content().string(not(containsString("bucket"))));
 

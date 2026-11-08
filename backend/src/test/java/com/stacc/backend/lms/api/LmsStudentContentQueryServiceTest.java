@@ -195,6 +195,37 @@ class LmsStudentContentQueryServiceTest {
     }
 
     @Test
+    void theFilesListHasEveryShownMaterialInCourseOrderWithItsPage() {
+        LmsModule first = module(course, 15, 1, LmsContentStatus.PUBLISHED);
+        LmsModule second = module(course, 9, 2, LmsContentStatus.PUBLISHED);
+        LmsTopic arrays = topic(first, 41, 1, LmsContentStatus.PUBLISHED);
+        LmsTopic hidden = topic(first, 42, 2, LmsContentStatus.DRAFT);
+        LmsTopic stacks = topic(second, 40, 1, LmsContentStatus.PUBLISHED);
+        stored(List.of(first, second), List.of(arrays, hidden, stacks));
+        when(materials.findAllInCourse(COURSE_ID, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
+                LmsContentPolicy.PUBLISHED_ONLY)).thenReturn(List.of(
+                        material(stacks, 3, 1, LmsContentStatus.PUBLISHED),
+                        material(arrays, 2, 1, LmsContentStatus.PUBLISHED),
+                        material(arrays, 4, 2, LmsContentStatus.DRAFT),
+                        material(hidden, 5, 1, LmsContentStatus.PUBLISHED)));
+
+        List<LmsCourseFileResponse> files = service.getPublishedFiles(ACCOUNT_ID, COURSE_ID);
+
+        assertEquals(List.of(2L, 3L), files.stream().map(LmsCourseFileResponse::id).toList());
+        assertEquals("Topic 41", files.get(0).pageTitle());
+        assertEquals("Module 9", files.get(1).moduleTitle());
+    }
+
+    @Test
+    void theFilesOfACourseTheStudentMayNotUseAreUnavailable() {
+        when(accessService.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(false);
+
+        assertEquals(HttpStatus.NOT_FOUND,
+                assertThrows(ApiException.class, () -> service.getPublishedFiles(ACCOUNT_ID, COURSE_ID)).getStatus());
+        verifyNoInteractions(modules, topics, materials);
+    }
+
+    @Test
     void publishedMaterialOfAPublishedTopicInAPublishedModuleIsShownWithItsFileDetails() {
         LmsModule module = module(course, 11, 1, LmsContentStatus.PUBLISHED);
         LmsTopic topic = topic(module, 31, 1, LmsContentStatus.PUBLISHED);
@@ -204,7 +235,7 @@ class LmsStudentContentQueryServiceTest {
 
         LmsCourseTopicResponse shown = service.getPublishedContent(ACCOUNT_ID, COURSE_ID).modules().get(0).topics().get(0);
 
-        assertEquals(List.of(new LmsCourseMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007)),
+        assertEquals(List.of(new LmsCourseMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007, null)),
                 shown.materials());
     }
 

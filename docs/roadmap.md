@@ -118,7 +118,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | --- | --- | --- |
 | ★ 0.6.1 | Safe formatting | The shared formatting set and an editor with preview (decision 10); existing plain text keeps working. Done: `V79` format per text for topics, announcements, and assignment instructions; `FormattedText` and `FormattedTextField` (see `text-formatting.md`). |
 | ★ 0.6.2 | Pages | Course pages inside modules, with draft and published states. Done: a module's topic is the page (one model); its own student page with previous and next, and a faculty preview (see `course-pages.md`). |
-| ★ 0.6.3 | Files | A course files area built on the existing private storage and upload checks. |
+| ★ 0.6.3 | Files | A course files area built on the existing private storage and upload checks. Done: Files lists for students and faculty over the existing study materials, upload to a chosen page, publish and archive (see `course-files.md`). |
 | ★ 0.6.4 | Syllabus | A syllabus page per course. |
 | 0.6.5 | Requirements and progress | Module prerequisites and requirements, and completion recorded once per student per item ("opened", "completed"). |
 | ★ 0.6.6 | Course home and navigation | A chosen course home and Canvas-style course navigation: Home, Modules, Pages, Files, Syllabus, Assignments, Grades. |
@@ -289,5 +289,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
-| v0.6 LMS core | In progress: 0.6.1 and 0.6.2 done |
+| v0.6 LMS core | In progress: 0.6.1 to 0.6.3 done |
 | v0.7 – v1.0 | Not started |

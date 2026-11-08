@@ -48,6 +48,8 @@ export type LmsCourseMaterial = {
   originalFileName: string
   contentType: string
   sizeBytes: number
+  /** When the file was uploaded. */
+  uploadedAt: string
 }
 
 /** One published topic, as a student sees it. The content is plain text, never HTML. */
@@ -400,4 +402,37 @@ export type LmsFacultyPage = {
   materials: LmsFacultyMaterial[]
   previous: LmsPageLink | null
   next: LmsPageLink | null
+}
+
+/** One published file of a course in its Files list: a study material with the page and module it is on. */
+export type LmsCourseFile = {
+  id: number
+  title: string
+  description: string | null
+  originalFileName: string
+  contentType: string
+  sizeBytes: number
+  uploadedAt: string
+  pageId: number
+  pageTitle: string
+  moduleTitle: string
+}
+
+/** One file of a course a faculty member teaches, drafts included, with its page's and module's statuses. */
+export type LmsFacultyCourseFile = Omit<LmsCourseFile, 'pageId' | 'pageTitle' | 'moduleTitle'> & {
+  status: LmsContentStatus
+  pageId: number
+  pageTitle: string
+  pageStatus: LmsContentStatus
+  moduleTitle: string
+  moduleStatus: LmsContentStatus
+}
+
+/** The Files list of a course a faculty member teaches. */
+export type LmsFacultyCourseFiles = {
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  lmsCourseStatus: 'DRAFT' | 'PUBLISHED'
+  files: LmsFacultyCourseFile[]
 }
