@@ -15,6 +15,7 @@ import { CourseContentEditor } from '../teaching/CourseContentEditor'
 import { CourseSettings } from '../teaching/CourseSettings'
 import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
+import { OutcomesEditor } from '../teaching/OutcomesEditor'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
 import { PageHeader } from '../ui'
@@ -186,6 +187,15 @@ export function TeachingAssignmentsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Assignments', heading: 'Assignments' }}>
       {(course) => <AssignmentsEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/outcomes: the course's learning outcomes. */
+export function TeachingOutcomesPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Outcomes', heading: 'Course outcomes' }}>
+      {(course) => <OutcomesEditor lmsCourseId={course.lmsCourseId} />}
     </TeachingCourseFrame>
   )
 }

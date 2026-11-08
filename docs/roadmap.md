@@ -129,7 +129,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.7.1 | Outcomes and Bloom levels | Course learning outcomes (CO1, CO2, …) and optional Bloom levels for questions and assessments. |
+| ★ 0.7.1 | Outcomes and Bloom levels | Course learning outcomes (CO1, CO2, …) and optional Bloom levels for questions and assessments. Done: `V83` outcomes numbered by the server, Bloom levels, and assignment alignment (see `course-outcomes.md`); questions use them from 0.7.2. |
 | ★ 0.7.2 | Question bank | Single and multiple choice, true/false, short answer, and descriptive questions, each with topic, difficulty, marks, a review status, and an "OK for practice" flag. |
 | ★ 0.7.3 | Quizzes | Built from the bank: time limit, attempts, availability, shuffling, negative marking. |
 | ★ 0.7.4 | Taking a quiz | Server-side timer, autosave, and submission under a lock; answers never sent early. |
@@ -290,4 +290,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
-| v0.7 – v1.0 | Not started |
+| v0.7 Assessment | In progress: 0.7.1 done |
+| v0.8 – v1.0 | Not started |

@@ -35,6 +35,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Modules | `/modules` | The content editor: modules, pages, requirements, and study materials; page previews open at `/pages/:pageId`. |
 | Announcements | `/announcements` | The announcement editor. |
 | Assignments | `/assignments` | The assignment editor; grading opens at `/assignments/:assignmentId/submissions`. |
+| Outcomes | `/outcomes` | See `course-outcomes.md`. |
 | Files | `/files` | See `course-files.md`. |
 | Syllabus | `/syllabus` | See `course-syllabus.md`. |
 | AI Tools | `/ai` | See `ai-learning.md`. "Use in assignment form" now opens the Assignments page. |

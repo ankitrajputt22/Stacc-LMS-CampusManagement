@@ -14,6 +14,7 @@ import { marksText } from '../courses/marks'
 import { PastDueLabel } from '../courses/PastDueLabel'
 import { useCourseAssignment } from '../courses/useCourseAssignment'
 import type { LmsCourseAssignmentDetail } from '../types/lms'
+import { bloomLabel } from '../courses/bloomText'
 import { FormattedText } from '../formatting/FormattedText'
 import { ButtonLink, Card, PageHeader } from '../ui'
 
@@ -106,6 +107,18 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
         <InformationRow term="Published">
           <time dateTime={assignment.publishedAt}>{formatDateTime(assignment.publishedAt)}</time>
         </InformationRow>
+        {assignment.outcomes.length > 0 && (
+          <InformationRow term="Course outcomes">
+            <span>
+              {assignment.outcomes.map((outcome) => (
+                <span key={outcome.id} className="block">
+                  <span className="font-semibold">{outcome.code}</span> {outcome.description}
+                </span>
+              ))}
+            </span>
+          </InformationRow>
+        )}
+        {assignment.bloomLevel && <InformationRow term="Bloom level">{bloomLabel(assignment.bloomLevel)}</InformationRow>}
       </dl>
 
       <Card title="Instructions" className="mt-6">

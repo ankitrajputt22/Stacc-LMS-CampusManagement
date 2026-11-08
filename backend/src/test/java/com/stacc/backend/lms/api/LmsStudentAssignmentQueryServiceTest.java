@@ -124,7 +124,7 @@ class LmsStudentAssignmentQueryServiceTest {
 
         assertEquals(new LmsCourseAssignmentDetailResponse(1L, COURSE_ID, "TST301", "Test Data Structures", "Assignment 1",
                         "Instructions 1", Instant.parse("2026-10-20T18:29:00Z"), new BigDecimal("20.00"),
-                        Instant.parse("2026-10-01T09:00:00Z"), LmsTextFormat.PLAIN),
+                        Instant.parse("2026-10-01T09:00:00Z"), LmsTextFormat.PLAIN, null, java.util.List.of()),
                 service.getPublishedAssignment(STUDENT_ID, COURSE_ID, 1L));
     }
 
