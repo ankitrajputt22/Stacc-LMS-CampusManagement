@@ -4,7 +4,7 @@ A course's **Files** area (v0.6.3) lists every file of the course in one place. 
 
 ## Students
 
-- `/courses/:lmsCourseId/files`, linked as **All files** from Course content on the course home: every published file in course order (modules, then pages, then files) with its type, size, upload date, page (a link to it) and module, and **Download**. **Search files** narrows the list on the page by title, file name, page, or module.
+- `/courses/:lmsCourseId/files`, linked as **Files** in the course home's tools: every published file in course order (modules, then pages, then files) with its type, size, upload date, page (a link to it) and module, and **Download**. **Search files** narrows the list on the page by title, file name, page, or module.
 - `GET /api/v1/lms/courses/{lmsCourseId}/files` needs `STUDENT` and `LMS_COURSE_VIEW`. It is built from exactly what `GET /courses/{lmsCourseId}/content` shows, so a file appears only when the student may use the course and the file, its page, and its module are all `PUBLISHED`. A course they may not use answers the same 404 as a missing one.
 
 ## Faculty

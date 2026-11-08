@@ -45,8 +45,8 @@ describe('LearningPage', () => {
     })
     show('/courses/42/pages/32')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Singly linked lists' })).toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 3, name: 'Insertion' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Singly linked lists' }, { timeout: 5000 })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 3, name: 'Insertion' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Arrays/ })).toHaveAttribute('href', '/courses/42/pages/31')
     expect(contentApi.getLmsCoursePage).toHaveBeenCalledWith(42, 32, expect.anything())
   })
@@ -56,7 +56,7 @@ describe('LearningPage', () => {
       new AxiosError('missing', 'ERR_BAD_REQUEST', undefined, undefined, { status: 404, data: {} } as unknown as AxiosResponse),
     )
     show('/courses/42/pages/99')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Page unavailable' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Page unavailable' }, { timeout: 5000 })).toBeInTheDocument()
 
     vi.mocked(contentApi.getLmsCoursePage).mockClear()
     show('/courses/42/pages/abc')

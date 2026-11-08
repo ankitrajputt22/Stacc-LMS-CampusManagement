@@ -29,7 +29,7 @@ test('a faculty member uploads and publishes a course file, and a student finds 
 
   await signIn(page, 'lms', 'student1')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
-  await page.getByRole('link', { name: 'All files' }).click()
+  await page.getByRole('navigation', { name: 'Course tools' }).getByRole('link', { name: 'Files' }).click()
   const studentFiles = page.getByRole('table', { name: 'Course files' })
   const studentRow = studentFiles.getByRole('row').filter({ hasText: FILE_TITLE })
   await expect(studentRow.getByRole('link', { name: 'Arrays and memory layout' })).toBeVisible()

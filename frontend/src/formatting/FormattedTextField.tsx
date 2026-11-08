@@ -18,6 +18,8 @@ type FormattedTextFieldProps = {
   maxLength: number
   error?: string
   textareaRef?: Ref<HTMLTextAreaElement>
+  /** False when the text is always formatted, such as a syllabus: the format choice is not offered. */
+  formatChoice?: boolean
 }
 
 /**
@@ -35,6 +37,7 @@ export function FormattedTextField({
   maxLength,
   error,
   textareaRef,
+  formatChoice = true,
 }: FormattedTextFieldProps) {
   const [view, setView] = useState<'write' | 'preview'>('write')
   const hint = format === 'FORMATTED' ? FORMATTING_HELP : 'Plain text. Line breaks are kept.'
@@ -60,6 +63,7 @@ export function FormattedTextField({
         <label htmlFor={id} className="block text-sm font-medium text-ink">
           {label}
         </label>
+        {formatChoice && (
         <label className="flex items-center gap-2 text-sm text-ink">
           <span>Text format</span>
           <select
@@ -74,6 +78,7 @@ export function FormattedTextField({
             <option value="PLAIN">Plain text</option>
           </select>
         </label>
+        )}
       </div>
       <p id={`${id}-hint`} className="mt-0.5 text-xs leading-5 text-ink-muted">
         {hint}
