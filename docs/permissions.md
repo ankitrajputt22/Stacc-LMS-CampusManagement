@@ -85,6 +85,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `ATTENDANCE_MANAGE` | `FACULTY` | Taking attendance: listing the course offerings taught, creating sessions, marking and correcting students, and finalizing sessions. Added by `V32`. |
 | `ATTENDANCE_VIEW` | `STUDENT` | Reading one's own finalized attendance and its summaries. Added by `V32`. |
 | `LMS_ASSIGNMENT_GRADE` | `FACULTY` | Reviewing students' submissions for published assignments, downloading their files, and saving or changing the grade and feedback of an attempt. Added by `V30`. |
+| `LMS_QUESTION_BANK_MANAGE` | `FACULTY` | Reading and changing the question bank of the LMS courses taught: adding, editing, reviewing, offering for practice, and archiving questions with their answers. Added by `V84`. |
 
 `LMS_COURSE_VIEW` opens the feature, not the courses. Which LMS courses a student actually gets is still decided live by official enrollment (see `lms-foundation.md`). `FACULTY` and `ADMIN` do not hold it. The authority name is exactly `LMS_COURSE_VIEW`, with no `ROLE_` or `SCOPE_` in front.
 

@@ -130,7 +130,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 0.7.1 | Outcomes and Bloom levels | Course learning outcomes (CO1, CO2, …) and optional Bloom levels for questions and assessments. Done: `V83` outcomes numbered by the server, Bloom levels, and assignment alignment (see `course-outcomes.md`); questions use them from 0.7.2. |
-| ★ 0.7.2 | Question bank | Single and multiple choice, true/false, short answer, and descriptive questions, each with topic, difficulty, marks, a review status, and an "OK for practice" flag. |
+| ★ 0.7.2 | Question bank | Single and multiple choice, true/false, short answer, and descriptive questions, each with topic, difficulty, marks, a review status, and an "OK for practice" flag. Done: `V84` questions with their answers, review and practice rules under the question row lock, and the faculty Question bank page (see `question-bank.md`). |
 | ★ 0.7.3 | Quizzes | Built from the bank: time limit, attempts, availability, shuffling, negative marking. |
 | ★ 0.7.4 | Taking a quiz | Server-side timer, autosave, and submission under a lock; answers never sent early. |
 | ★ 0.7.5 | Quiz grading | Automatic for objective questions, by hand for descriptive ones, with regrading. |

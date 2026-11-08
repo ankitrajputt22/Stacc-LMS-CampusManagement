@@ -1,6 +1,6 @@
 # Course Outcomes and Bloom Levels
 
-Course learning outcomes (CO1, CO2, …) and Bloom levels describe what a course teaches and what an assessment asks for (v0.7.1). They live in `lms.outcome`; the question bank (0.7.2) and quizzes will use them too.
+Course learning outcomes (CO1, CO2, …) and Bloom levels describe what a course teaches and what an assessment asks for (v0.7.1). They live in `lms.outcome`; questions in the question bank (`question-bank.md`) use them too, and quizzes will.
 
 ## Outcomes
 
