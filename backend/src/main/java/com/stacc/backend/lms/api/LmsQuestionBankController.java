@@ -1,10 +1,12 @@
 package com.stacc.backend.lms.api;
 
 import java.util.List;
+import java.util.Set;
 
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
+import com.stacc.backend.lms.question.LmsQuestion;
 import com.stacc.backend.lms.question.LmsQuestionBankService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +55,12 @@ public class LmsQuestionBankController {
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The questions. The list may be empty.")
     public List<LmsQuestionResponse> list(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt token) {
-        return bank.list(AuthenticatedAccount.idFrom(token), lmsCourseId).stream().map(LmsQuestionResponse::of).toList();
+        Long userAccountId = AuthenticatedAccount.idFrom(token);
+        List<LmsQuestion> questions = bank.list(userAccountId, lmsCourseId);
+        Set<Long> inPublishedQuizzes = bank.inPublishedQuizzes(userAccountId, lmsCourseId);
+        return questions.stream()
+                .map(question -> LmsQuestionResponse.of(question, inPublishedQuizzes.contains(question.getId())))
+                .toList();
     }
 
     @PostMapping("/courses/{lmsCourseId}/questions")
@@ -68,7 +75,7 @@ public class LmsQuestionBankController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsQuestionResponse add(@PathVariable Long lmsCourseId, @Valid @RequestBody LmsQuestionRequest request,
             @AuthenticationPrincipal Jwt token) {
-        return LmsQuestionResponse.of(bank.add(AuthenticatedAccount.idFrom(token), lmsCourseId, request.content(), request.outcomeId()));
+        return response(bank.add(AuthenticatedAccount.idFrom(token), lmsCourseId, request.content(), request.outcomeId()));
     }
 
     @PutMapping("/questions/{questionId}")
@@ -78,11 +85,11 @@ public class LmsQuestionBankController {
     @ApiResponse(responseCode = "200", description = "The question.")
     @ApiResponse(responseCode = "400", description = "The question or its answers do not fit its type.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(responseCode = "409", description = "The question is archived, or the outcome is not an active outcome of this course.",
+    @ApiResponse(responseCode = "409", description = "The question is archived or in a published quiz, or the outcome is not an active outcome of this course.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsQuestionResponse edit(@PathVariable Long questionId, @Valid @RequestBody LmsQuestionRequest request,
             @AuthenticationPrincipal Jwt token) {
-        return LmsQuestionResponse.of(bank.edit(AuthenticatedAccount.idFrom(token), questionId, request.content(), request.outcomeId()));
+        return response(bank.edit(AuthenticatedAccount.idFrom(token), questionId, request.content(), request.outcomeId()));
     }
 
     @PostMapping("/questions/{questionId}/review")
@@ -93,7 +100,7 @@ public class LmsQuestionBankController {
     @ApiResponse(responseCode = "409", description = "The question is archived.",
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsQuestionResponse review(@PathVariable Long questionId, @AuthenticationPrincipal Jwt token) {
-        return LmsQuestionResponse.of(bank.markReviewed(AuthenticatedAccount.idFrom(token), questionId));
+        return response(bank.markReviewed(AuthenticatedAccount.idFrom(token), questionId));
     }
 
     @PutMapping("/questions/{questionId}/practice")
@@ -105,7 +112,7 @@ public class LmsQuestionBankController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsQuestionResponse practice(@PathVariable Long questionId, @Valid @RequestBody LmsQuestionPracticeRequest request,
             @AuthenticationPrincipal Jwt token) {
-        return LmsQuestionResponse.of(bank.allowPractice(AuthenticatedAccount.idFrom(token), questionId, request.allowed()));
+        return response(bank.allowPractice(AuthenticatedAccount.idFrom(token), questionId, request.allowed()));
     }
 
     @PostMapping("/questions/{questionId}/archive")
@@ -114,6 +121,10 @@ public class LmsQuestionBankController {
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The question.")
     public LmsQuestionResponse archive(@PathVariable Long questionId, @AuthenticationPrincipal Jwt token) {
-        return LmsQuestionResponse.of(bank.archive(AuthenticatedAccount.idFrom(token), questionId));
+        return response(bank.archive(AuthenticatedAccount.idFrom(token), questionId));
+    }
+
+    private LmsQuestionResponse response(LmsQuestion question) {
+        return LmsQuestionResponse.of(question, bank.isInPublishedQuiz(question.getId()));
     }
 }

@@ -39,6 +39,14 @@ import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
 import com.stacc.backend.academic.responsibility.DepartmentHeadRepository;
 import com.stacc.backend.lms.syllabus.LmsSyllabusService;
+import com.stacc.backend.lms.question.LmsQuestion;
+import com.stacc.backend.lms.question.LmsQuestionBankService;
+import com.stacc.backend.lms.question.LmsQuestionContent;
+import com.stacc.backend.lms.question.QuestionDifficulty;
+import com.stacc.backend.lms.question.QuestionType;
+import com.stacc.backend.lms.quiz.LmsQuizService;
+import com.stacc.backend.lms.quiz.LmsQuizSettings;
+import com.stacc.backend.lms.quiz.QuizType;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
@@ -340,6 +348,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final PersonProfileService personProfiles;
         final DepartmentHeadService departmentHeads;
         final LmsSyllabusService syllabi;
+        final LmsQuestionBankService questionBank;
+        final LmsQuizService quizzes;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -352,7 +362,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
-                PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi) {
+                PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
+                LmsQuestionBankService questionBank, LmsQuizService quizzes) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -377,6 +388,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.personProfiles = personProfiles;
             this.departmentHeads = departmentHeads;
             this.syllabi = syllabi;
+            this.questionBank = questionBank;
+            this.quizzes = quizzes;
         }
     }
 
@@ -631,6 +644,27 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 LmsContentStatus.ARCHIVED);
         assignment(faculty2, lms302, "ER diagram exercise", "Draw the ER diagram for the library case study.",
                 deadline(today, 12), "25", LmsContentStatus.DRAFT);
+
+        // --- Question bank and quizzes (v0.7.2, v0.7.3): reviewed questions of every kind and a published graded quiz in
+        // CS301, so students have a quiz to take; a descriptive question waits for marking by hand.
+        Long stackOrder = question(faculty1, lms301, QuestionType.TRUE_FALSE,
+                "A stack removes the most recently added item first.", List.of(), true, null, "Stacks");
+        Long queueOrder = question(faculty1, lms301, QuestionType.SINGLE_CHOICE,
+                "Which structure serves items in the order they arrived?",
+                List.of(new LmsQuestionContent.Option("Stack", false), new LmsQuestionContent.Option("Queue", true),
+                        new LmsQuestionContent.Option("Binary tree", false)), null, null, "Queues");
+        Long arrayCosts = question(faculty1, lms301, QuestionType.MULTIPLE_CHOICE,
+                "Which operations take constant time on an array?",
+                List.of(new LmsQuestionContent.Option("Reading an item by its index", true),
+                        new LmsQuestionContent.Option("Writing an item at its index", true),
+                        new LmsQuestionContent.Option("Inserting at the front", false)), null, null, "Arrays");
+        Long whenLinked = question(faculty1, lms301, QuestionType.DESCRIPTIVE,
+                "Explain when a linked list is a better choice than an array.", List.of(), null,
+                "Frequent insertions and deletions in the middle; no need for access by index.", "Linked lists");
+        quiz(faculty1, lms301, "Stacks and queues check", new LmsQuizSettings("Stacks and queues check",
+                "Answer every question. Choice questions lose a quarter of their marks when answered wrongly.",
+                LmsTextFormat.PLAIN, QuizType.GRADED, 15, null, deadline(today, 7), null, 2, false, true,
+                new BigDecimal("25")), List.of(stackOrder, queueOrder, arrayCosts, whenLinked));
 
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
         submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
@@ -1253,6 +1287,34 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */
     private static HelpdeskActor supportTeam(UserAccount admin) {
         return new HelpdeskActor(admin == null ? null : admin.getId(), true, true, true, true, true, true);
+    }
+
+    /** A reviewed question of the course's bank, found by its text, added as the teacher would. */
+    private Long question(UserAccount faculty, Long lmsCourseId, QuestionType type, String text,
+            List<LmsQuestionContent.Option> options, Boolean trueFalseAnswer, String guidance, String topic) {
+        Optional<LmsQuestion> found = services.questionBank.list(faculty.getId(), lmsCourseId).stream()
+                .filter(question -> question.getText().equals(text))
+                .findFirst();
+        return findOrCreate(found, () -> {
+            LmsQuestion question = services.questionBank.add(faculty.getId(), lmsCourseId, new LmsQuestionContent(type,
+                    text, LmsTextFormat.PLAIN, null, options, trueFalseAnswer, guidance, topic, QuestionDifficulty.EASY,
+                    type == QuestionType.DESCRIPTIVE ? new BigDecimal("4") : new BigDecimal("2"), null, null), null);
+            services.questionBank.markReviewed(faculty.getId(), question.getId());
+            return question;
+        }).getId();
+    }
+
+    /** A published quiz with these bank questions in order, found by its title, built as the teacher would. */
+    private void quiz(UserAccount faculty, Long lmsCourseId, String title, LmsQuizSettings settings, List<Long> questionIds) {
+        boolean exists = services.quizzes.list(faculty.getId(), lmsCourseId).stream()
+                .anyMatch(summary -> summary.quiz().getTitle().equals(title));
+        createUnless(exists, () -> {
+            Long quizId = services.quizzes.create(faculty.getId(), lmsCourseId, settings).getId();
+            for (Long questionId : questionIds) {
+                services.quizzes.addQuestion(faculty.getId(), quizId, questionId, null);
+            }
+            services.quizzes.publish(faculty.getId(), quizId);
+        });
     }
 
     private void createUnless(boolean exists, Runnable create) {

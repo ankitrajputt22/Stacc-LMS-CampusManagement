@@ -17,6 +17,8 @@ import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
+import { QuizEditor } from '../teaching/QuizEditor'
+import { QuizzesEditor } from '../teaching/QuizzesEditor'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
 import { PageHeader } from '../ui'
@@ -61,7 +63,8 @@ function courseLine(course: LmsFacultyCourseContent): ReactNode {
   )
 }
 
-type Section = { title: string; heading: string }
+/** A page of the course: its title and heading, and for a page inside a section, that section (such as Quizzes). */
+type Section = { title: string; heading: string; parent?: { path: string; label: string } }
 
 /**
  * Loads the course the faculty member teaches once (from the shared cache) and shows its loading, missing, refused,
@@ -127,7 +130,17 @@ function TeachingCourseFrame({
           <PageHeader
             breadcrumb={
               <Breadcrumb
-                parent={section.heading === '' ? TEACHING : [TEACHING, { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName }]}
+                parent={
+                  section.heading === ''
+                    ? TEACHING
+                    : [
+                        TEACHING,
+                        { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName },
+                        ...(section.parent
+                          ? [{ to: `/teaching/${course.data.lmsCourseId}/${section.parent.path}`, label: section.parent.label }]
+                          : []),
+                      ]
+                }
                 current={section.heading === '' ? course.data.courseName : section.heading}
               />
             }
@@ -209,3 +222,30 @@ export function TeachingQuestionBankPage() {
     </TeachingCourseFrame>
   )
 }
+
+/** /teaching/:lmsCourseId/quizzes: the course's quizzes, with New quiz. */
+export function TeachingQuizzesPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Quizzes', heading: 'Quizzes' }}>
+      {(course) => <QuizzesEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/quizzes/:quizId: one quiz with its settings and questions. */
+export function TeachingQuizPage() {
+  const quizId = parseCourseId(useParams().quizId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Quiz', heading: 'Quiz', parent: { path: 'quizzes', label: 'Quizzes' } }}>
+      {(course) =>
+        quizId === null ? (
+          <p className="text-sm text-ink-muted">This quiz address is not valid.</p>
+        ) : (
+          // Keyed by the quiz, so moving to another quiz starts with its own state.
+          <QuizEditor key={quizId} lmsCourseId={course.lmsCourseId} quizId={quizId} />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}
+

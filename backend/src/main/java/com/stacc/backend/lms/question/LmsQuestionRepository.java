@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.question;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,33 @@ public interface LmsQuestionRepository extends JpaRepository<LmsQuestion, Long> 
             where question.id = :questionId
             """)
     Optional<LmsQuestion> findByIdForUpdate(@Param("questionId") Long questionId);
+
+    /**
+     * The status of every quiz that uses the question, read with a shared lock. An edit reads this before it locks the
+     * question, so a quiz being published waits for the edit, or the edit sees the published quiz and stops.
+     */
+    @Query(value = """
+            select quiz.status from lms_quiz_questions link join lms_quizzes quiz on quiz.id = link.lms_quiz_id
+            where link.lms_question_id = :questionId for share
+            """, nativeQuery = true)
+    List<String> findQuizStatusesForShare(@Param("questionId") Long questionId);
+
+    /** The questions of the course used by a quiz that is published or archived, which can no longer be edited. */
+    @Query(value = """
+            select distinct link.lms_question_id from lms_quiz_questions link join lms_quizzes quiz on quiz.id = link.lms_quiz_id
+            where quiz.lms_course_id = :lmsCourseId and quiz.status <> 'DRAFT'
+            """, nativeQuery = true)
+    List<Long> findIdsInPublishedQuizzes(@Param("lmsCourseId") Long lmsCourseId);
+
+    /** 1 when a quiz that is published or archived uses the question, otherwise 0. */
+    @Query(value = """
+            select exists (select 1 from lms_quiz_questions link join lms_quizzes quiz on quiz.id = link.lms_quiz_id
+            where link.lms_question_id = :questionId and quiz.status <> 'DRAFT')
+            """, nativeQuery = true)
+    long countPublishedQuizUses(@Param("questionId") Long questionId);
+
+    /** The questions, locked for reading in ID order, so their latest committed state is seen and kept while publishing. */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("select question from LmsQuestion question where question.id in :questionIds order by question.id")
+    List<LmsQuestion> findAllByIdForShare(@Param("questionIds") Collection<Long> questionIds);
 }

@@ -1,6 +1,8 @@
 package com.stacc.backend.lms.question;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -28,6 +30,8 @@ public class LmsQuestionBankService {
     public static final String QUESTION_ARCHIVED = "This question is archived and can no longer be changed.";
     public static final String NOT_REVIEWED = "Mark the question reviewed before offering it for practice.";
     public static final String OUTCOME_INVALID = "Choose an active outcome of this course.";
+    public static final String IN_PUBLISHED_QUIZ =
+            "This question is in a published quiz, so it can no longer be edited. Add a new question instead.";
 
     private final LmsQuestionRepository questions;
     private final LmsCourseRepository lmsCourses;
@@ -49,6 +53,19 @@ public class LmsQuestionBankService {
         return questions.findAllForCourse(lmsCourseId);
     }
 
+    /** The questions of the course that a published or archived quiz uses; they can no longer be edited. */
+    @Transactional(readOnly = true)
+    public Set<Long> inPublishedQuizzes(Long userAccountId, Long lmsCourseId) {
+        requireCourse(userAccountId, lmsCourseId);
+        return new HashSet<>(questions.findIdsInPublishedQuizzes(lmsCourseId));
+    }
+
+    /** Whether a published or archived quiz uses the question. For answers after a change the caller was allowed. */
+    @Transactional(readOnly = true)
+    public boolean isInPublishedQuiz(Long questionId) {
+        return questions.countPublishedQuizUses(questionId) > 0;
+    }
+
     @Transactional
     public LmsQuestion add(Long userAccountId, Long lmsCourseId, LmsQuestionContent written, Long outcomeId) {
         requireCourse(userAccountId, lmsCourseId);
@@ -59,10 +76,18 @@ public class LmsQuestionBankService {
         return questions.saveAndFlush(question);
     }
 
-    /** Replaces what the question says; it then needs a new review and is no longer offered for practice. */
+    /**
+     * Replaces what the question says; it then needs a new review and is no longer offered for practice. A question
+     * that a published or archived quiz uses keeps what students were asked (409). The quizzes using it are read with
+     * a shared lock before the question is locked, the same order publishing takes, so the two never miss each other.
+     */
     @Transactional
     public LmsQuestion edit(Long userAccountId, Long questionId, LmsQuestionContent written, Long outcomeId) {
-        LmsQuestion question = lockedActive(userAccountId, questionId);
+        requireQuestion(userAccountId, questionId);
+        if (questions.findQuizStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
+            throw new ApiException(HttpStatus.CONFLICT, IN_PUBLISHED_QUIZ);
+        }
+        LmsQuestion question = active(lockedAfterAccess(questionId));
         LmsQuestionContent content = written.withOutcome(
                 outcome(question.getLmsCourse().getId(), outcomeId, question.getOutcome()));
         change(question, current -> current.edit(content));
@@ -110,7 +135,10 @@ public class LmsQuestionBankService {
     }
 
     private LmsQuestion lockedActive(Long userAccountId, Long questionId) {
-        LmsQuestion question = locked(userAccountId, questionId);
+        return active(locked(userAccountId, questionId));
+    }
+
+    private static LmsQuestion active(LmsQuestion question) {
         if (!question.isActive()) {
             throw new ApiException(HttpStatus.CONFLICT, QUESTION_ARCHIVED);
         }
@@ -120,10 +148,18 @@ public class LmsQuestionBankService {
     // Checks access from the stored question's course before taking the lock. Only the course ID is read first, so the
     // locking read is the first to load the question and sees its latest committed state.
     private LmsQuestion locked(Long userAccountId, Long questionId) {
+        requireQuestion(userAccountId, questionId);
+        return lockedAfterAccess(questionId);
+    }
+
+    private void requireQuestion(Long userAccountId, Long questionId) {
         Long lmsCourseId = questionId == null ? null : questions.findLmsCourseIdById(questionId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE);
         }
+    }
+
+    private LmsQuestion lockedAfterAccess(Long questionId) {
         return questions.findByIdForUpdate(questionId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
     }
