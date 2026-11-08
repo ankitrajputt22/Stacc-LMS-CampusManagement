@@ -68,6 +68,7 @@ import {
   CoursePagesIndexPage,
 } from './pages/CourseSectionPages'
 import { TeachingCourseLayout } from './teaching/TeachingCourseLayout'
+import { CourseQuizPage, CourseQuizzesPage, QuizAttemptPage } from './pages/CourseQuizPages'
 
 function App() {
   return (
@@ -88,6 +89,9 @@ function App() {
             <Route path="pages/:pageId" element={<LearningPage />} />
             <Route path="assignments" element={<CourseAssignmentsPage />} />
             <Route path="assignments/:assignmentId" element={<CourseAssignmentPage />} />
+            <Route path="quizzes" element={<CourseQuizzesPage />} />
+            <Route path="quizzes/:quizId" element={<CourseQuizPage />} />
+            <Route path="quizzes/:quizId/attempts/:attemptId" element={<QuizAttemptPage />} />
             <Route path="announcements" element={<CourseAnnouncementsPage />} />
             <Route path="files" element={<CourseFilesPage />} />
             <Route path="syllabus" element={<CourseSyllabusPage />} />

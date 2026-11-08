@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,8 +46,9 @@ class LmsQuizServiceTest {
     private final LmsQuestionRepository questions = mock(LmsQuestionRepository.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final LmsFacultyAccessService facultyAccess = mock(LmsFacultyAccessService.class);
+    private final LmsQuizNotifications notifications = mock(LmsQuizNotifications.class);
     private final LmsQuizService service = new LmsQuizService(quizzes, links, questions, lmsCourses, facultyAccess,
-            Clock.fixed(NOW, ZoneOffset.UTC));
+            Clock.fixed(NOW, ZoneOffset.UTC), notifications);
     private final LmsCourse course = ContentFixtures.lmsCourse(COURSE_ID);
     private final List<LmsQuizQuestion> stored = new ArrayList<>();
     private LmsQuiz quiz;
@@ -175,6 +177,7 @@ class LmsQuizServiceTest {
     @Test
     void publishingNeedsQuestionsThatAreReviewedAndForPracticeQuizzesOfferedForPractice() {
         refusedWith(() -> service.publish(FACULTY, QUIZ_ID), HttpStatus.CONFLICT, LmsQuizService.NO_QUESTIONS);
+        verify(notifications, never()).published(any());
 
         LmsQuestion question = question(41, course);
         link(601, question);
@@ -192,6 +195,10 @@ class LmsQuizServiceTest {
         assertThat(published.quiz().getStatus()).isEqualTo(LmsContentStatus.PUBLISHED);
         assertThat(published.quiz().getPublishedAt()).isEqualTo(NOW);
         assertThat(published.totalMarks()).isEqualByComparingTo("2.00");
+        verify(notifications).published(quiz);
+
+        service.publish(FACULTY, QUIZ_ID);
+        verify(notifications, times(1)).published(quiz);
     }
 
     @Test

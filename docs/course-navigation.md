@@ -10,6 +10,7 @@ Every page of an LMS course shares one **course navigation** (v0.6.6): a left co
 | Modules | `/modules` | Your progress and the published modules with their pages. |
 | Pages | `/pages` | Every published page in course order, with its module and Required, Completed, Optional, or Locked. |
 | Assignments | `/assignments` | The published assignments; each opens at `/assignments/:assignmentId`. |
+| Quizzes | `/quizzes` | See `quizzes.md`; a quiz opens at `/quizzes/:quizId` and an attempt at `/quizzes/:quizId/attempts/:attemptId`. |
 | Announcements | `/announcements` | The published announcements, newest first. |
 | Files | `/files` | See `course-files.md`. |
 | Syllabus | `/syllabus` | See `course-syllabus.md`. |

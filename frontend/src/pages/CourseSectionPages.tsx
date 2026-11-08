@@ -28,7 +28,16 @@ const ASK_THE_COLLEGE = 'If you think you should, contact the college administra
  * One section of a course for the signed-in student, such as Modules: the course is loaded (from the shared cache) and
  * its states shown the same way on every section page, then the section's title and its own part.
  */
-function StudentCourseSection({ title, children }: { title: string; children: (course: LmsCourseDetail) => ReactNode }) {
+export function StudentCourseSection({
+  title,
+  parent,
+  children,
+}: {
+  title: string
+  /** The course section a page sits in, such as Quizzes, as a path under the course and its name. */
+  parent?: { path: string; label: string }
+  children: (course: LmsCourseDetail) => ReactNode
+}) {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
@@ -39,7 +48,15 @@ function StudentCourseSection({ title, children }: { title: string; children: (c
       title={title}
       breadcrumb={
         <Breadcrumb
-          parent={lmsCourseId === null ? COURSES : [COURSES, { to: `/courses/${lmsCourseId}`, label: courseName ?? 'Course' }]}
+          parent={
+            lmsCourseId === null
+              ? COURSES
+              : [
+                  COURSES,
+                  { to: `/courses/${lmsCourseId}`, label: courseName ?? 'Course' },
+                  ...(parent ? [{ to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }] : []),
+                ]
+          }
           current={title}
         />
       }

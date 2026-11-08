@@ -7,7 +7,7 @@ import { useLmsCourse } from './useLmsCourse'
 
 /**
  * Every student page of one course, under /courses/:lmsCourseId, with the course navigation: Home, Modules, Pages,
- * Assignments, Announcements, Files, Syllabus, and the AI Study Assistant. Each page still asks the backend for its own
+ * Assignments, Quizzes, Announcements, Files, Syllabus, and the AI Study Assistant. Each page still asks the backend for its own
  * data and shows its own states; the navigation appears once the course itself has loaded.
  */
 export function CourseLayout() {
@@ -30,6 +30,7 @@ export function CourseLayout() {
             { to: `${root}/modules`, label: 'Modules' },
             { to: `${root}/pages`, label: 'Pages' },
             { to: `${root}/assignments`, label: 'Assignments' },
+            { to: `${root}/quizzes`, label: 'Quizzes' },
             { to: `${root}/announcements`, label: 'Announcements' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },

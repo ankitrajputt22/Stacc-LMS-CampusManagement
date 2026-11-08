@@ -625,3 +625,81 @@ export type LmsQuiz = Omit<LmsQuizSettingsInput, 'instructions'> & {
   questions: LmsQuizQuestion[]
 }
 
+export type QuizAvailability = 'NOT_OPEN' | 'OPEN' | 'CLOSED'
+
+/** IN_PROGRESS, TIME_UP (still open but past its deadline: no more answers), SUBMITTED, or EXPIRED. */
+export type QuizAttemptState = 'IN_PROGRESS' | 'TIME_UP' | 'SUBMITTED' | 'EXPIRED'
+
+export type QuizAttemptSummary = {
+  id: number
+  attemptNumber: number
+  state: QuizAttemptState
+  startedAt: string
+  deadlineAt: string | null
+  submittedAt: string | null
+  late: boolean
+}
+
+/** A published quiz as the signed-in student sees it, with their own attempts. Never its questions. */
+export type StudentQuiz = {
+  id: number
+  title: string
+  instructions: string | null
+  instructionsFormat: TextFormat
+  type: QuizType
+  timeLimitMinutes: number | null
+  availableFrom: string | null
+  dueAt: string | null
+  availableUntil: string | null
+  maxAttempts: number | null
+  negativeMarkPercent: number
+  questionCount: number
+  totalMarks: number
+  availability: QuizAvailability
+  attemptsLeft: number | null
+  openAttemptId: number | null
+  startable: boolean
+  attempts: QuizAttemptSummary[]
+}
+
+export type QuizAnswer = {
+  quizQuestionId: number
+  selectedOptions: number[]
+  trueFalseAnswer: boolean | null
+  text: string | null
+  answeredAt: string
+}
+
+export type QuizAnswerInput = { selectedOptions: number[]; trueFalseAnswer: boolean | null; text: string | null }
+
+export type QuizAttemptQuestion = {
+  quizQuestionId: number
+  number: number
+  type: QuestionType
+  text: string
+  textFormat: TextFormat
+  marks: number
+  /** Choices of a single or multiple choice question, in this attempt's order. */
+  options: { position: number; text: string }[]
+  answer: QuizAnswer | null
+}
+
+/** One of the student's own attempts, with its questions and the answers saved so far. */
+export type QuizAttempt = {
+  id: number
+  quizId: number
+  lmsCourseId: number
+  quizTitle: string
+  quizType: QuizType
+  attemptNumber: number
+  state: QuizAttemptState
+  startedAt: string
+  deadlineAt: string | null
+  submittedAt: string | null
+  late: boolean
+  /** The server's time when the answer was made, so the timer can allow for the device's clock. */
+  serverTime: string
+  totalMarks: number
+  questions: QuizAttemptQuestion[]
+}
+

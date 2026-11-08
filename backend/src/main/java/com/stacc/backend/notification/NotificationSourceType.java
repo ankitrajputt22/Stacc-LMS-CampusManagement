@@ -7,6 +7,7 @@ package com.stacc.backend.notification;
 public enum NotificationSourceType {
     ASSIGNMENT,
     SUBMISSION_GRADE,
+    QUIZ,
     ACADEMIC_CALENDAR_EVENT,
     ATTENDANCE_RECORD,
     COURSE_RESULT,
