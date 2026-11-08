@@ -9,7 +9,7 @@ test('a faculty member adds a course outcome and aligns an assignment, and a stu
   await page.getByRole('button', { name: 'Add outcome' }).click()
   const outcomes = page.getByRole('region', { name: 'Course outcomes' })
   await expect(outcomes.getByText('Analyse the cost of common data structures.')).toBeVisible()
-  await expect(outcomes.getByText('CO1', { exact: true })).toBeVisible()
+  await expect(outcomes.getByRole('button', { name: 'Edit CO1' })).toBeVisible()
 
   await openCourseSection(page, 'Assignments')
   await page.getByRole('button', { name: new RegExp(`Edit alignment\\s*of assignment “${ASSIGNMENT_TITLE}”`) }).click()
