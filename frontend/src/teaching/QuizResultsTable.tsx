@@ -55,7 +55,7 @@ export function QuizResultsTable({ lmsCourseId, quizId }: { lmsCourseId: number;
             cell: (row) => (
               <Link to={`/teaching/${lmsCourseId}/quiz-attempts/${row.attemptId}`} className={textLinkClasses}>
                 {row.studentLoginId}
-                <span className="sr-only">, attempt {row.attemptNumber}: review</span>
+                <span className="sr-only">{`, attempt ${row.attemptNumber}: review`}</span>
               </Link>
             ),
           },

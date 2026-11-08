@@ -184,7 +184,7 @@ function QuizDetail({ course }: { course: LmsCourseDetail }) {
               primary: true,
               cell: (row) => (
                 <Link to={attemptPath(row.id)} className={textLinkClasses}>
-                  Attempt {row.attemptNumber}
+                  {`Attempt ${row.attemptNumber}`}
                 </Link>
               ),
             },

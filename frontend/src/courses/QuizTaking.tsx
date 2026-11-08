@@ -166,7 +166,7 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
         )}
         {open && (question.type === 'SINGLE_CHOICE' || question.type === 'TRUE_FALSE') && isAnswered(question, draft) && (
           <Button variant="secondary" size="sm" onClick={() => onChoose({ selected: [], trueFalse: null, text: '' })}>
-            Clear answer<span className="sr-only"> to question {question.number}</span>
+            Clear answer<span className="sr-only">{` to question ${question.number}`}</span>
           </Button>
         )}
       </fieldset>

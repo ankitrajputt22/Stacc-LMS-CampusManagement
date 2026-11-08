@@ -117,7 +117,7 @@ function MarkForm({ review, question, onSaved }: { review: QuizAttemptReview; qu
       />
       <Button type="submit" variant="secondary" disabled={busy}>
         {busy ? 'Saving…' : question.mark ? 'Update marks' : 'Save marks'}
-        <span className="sr-only"> for question {question.number}</span>
+        <span className="sr-only">{` for question ${question.number}`}</span>
       </Button>
     </form>
   )

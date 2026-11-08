@@ -78,5 +78,9 @@ class LmsQuizMarkingMySqlIT extends MySqlIntegrationTest {
                 """, BigDecimal.class, attemptId)).singleElement().satisfies(marks -> assertThat(marks).isIn(new BigDecimal("3.00"),
                 new BigDecimal("4.00")));
         assertThat(grading.review(faculty, attemptId).score().score()).isIn(new BigDecimal("3.00"), new BigDecimal("4.00"));
+        LmsQuizGradingService.QuizResults results = grading.results(faculty, quizId);
+        assertThat(results.attempts()).extracting(LmsQuizAttempt::getId).containsExactly(attemptId);
+        assertThat(results.attempts().getFirst().getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount()
+                .getLoginId()).isEqualTo("studentfaculty1");
     }
 }

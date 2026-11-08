@@ -103,15 +103,15 @@ function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question:
               onChange={(event) => setMarks(event.target.value)}
             />
             <Button type="submit" variant="secondary" size="sm" disabled={changes.busy}>
-              Save marks<span className="sr-only"> for question {question.position}</span>
+              Save marks<span className="sr-only">{` for question ${question.position}`}</span>
             </Button>
           </form>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" disabled={changes.busy || question.position === 1} onClick={() => move(-1)}>
-              Move up<span className="sr-only"> question {question.position}</span>
+              Move up<span className="sr-only">{` question ${question.position}`}</span>
             </Button>
             <Button variant="secondary" size="sm" disabled={changes.busy || question.position === count} onClick={() => move(1)}>
-              Move down<span className="sr-only"> question {question.position}</span>
+              Move down<span className="sr-only">{` question ${question.position}`}</span>
             </Button>
             <Button
               variant="secondary"
@@ -123,7 +123,7 @@ function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question:
                 })
               }
             >
-              Remove<span className="sr-only"> question {question.position} from the quiz</span>
+              Remove<span className="sr-only">{` question ${question.position} from the quiz`}</span>
             </Button>
           </div>
         </div>
@@ -203,7 +203,7 @@ function BankPicker({ quiz, bank, changes }: { quiz: LmsQuiz; bank: LmsQuestion[
                   })
                 }
               >
-                Add<span className="sr-only"> “{plainName(question.text)}” to the quiz</span>
+                Add<span className="sr-only">{` “${plainName(question.text)}” to the quiz`}</span>
               </Button>
             </li>
           ))}
