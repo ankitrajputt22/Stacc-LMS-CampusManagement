@@ -510,3 +510,52 @@ export type LmsOutcome = {
   description: string
   status: 'ACTIVE' | 'ARCHIVED'
 }
+
+/** The kinds of question in a course's question bank. */
+export type QuestionType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'DESCRIPTIVE'
+
+export type QuestionDifficulty = 'EASY' | 'MEDIUM' | 'HARD'
+
+/** A choice with whether it is correct, or an accepted short answer (always correct). Plain text. */
+export type LmsQuestionOption = {
+  text: string
+  correct: boolean
+}
+
+/** One question of the bank with its answers. Only faculty who teach the course receive it. */
+export type LmsQuestion = {
+  id: number
+  type: QuestionType
+  text: string
+  /** Covers the question text and the explanation. */
+  textFormat: TextFormat
+  explanation: string | null
+  options: LmsQuestionOption[]
+  trueFalseAnswer: boolean | null
+  answerGuidance: string | null
+  topic: string | null
+  difficulty: QuestionDifficulty
+  marks: number
+  bloomLevel: BloomLevel | null
+  outcome: LmsOutcome | null
+  reviewStatus: 'NEEDS_REVIEW' | 'REVIEWED'
+  practiceAllowed: boolean
+  status: 'ACTIVE' | 'ARCHIVED'
+  updatedAt: string
+}
+
+/** What a faculty member writes when adding or editing a question. */
+export type LmsQuestionInput = {
+  type: QuestionType
+  text: string
+  textFormat: TextFormat
+  explanation: string | null
+  options: LmsQuestionOption[]
+  trueFalseAnswer: boolean | null
+  answerGuidance: string | null
+  topic: string | null
+  difficulty: QuestionDifficulty
+  marks: number
+  bloomLevel: BloomLevel | null
+  outcomeId: number | null
+}

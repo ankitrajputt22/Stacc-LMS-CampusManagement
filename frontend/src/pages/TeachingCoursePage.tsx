@@ -16,6 +16,7 @@ import { CourseSettings } from '../teaching/CourseSettings'
 import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
+import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
 import { PageHeader } from '../ui'
@@ -196,6 +197,15 @@ export function TeachingOutcomesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Outcomes', heading: 'Course outcomes' }}>
       {(course) => <OutcomesEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/questions: the course's question bank. */
+export function TeachingQuestionBankPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Question bank', heading: 'Question bank' }}>
+      {(course) => <QuestionBankEditor lmsCourseId={course.lmsCourseId} />}
     </TeachingCourseFrame>
   )
 }
