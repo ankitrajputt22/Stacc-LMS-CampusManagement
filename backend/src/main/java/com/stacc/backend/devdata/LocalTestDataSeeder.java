@@ -44,6 +44,8 @@ import com.stacc.backend.lms.question.LmsQuestionBankService;
 import com.stacc.backend.lms.question.LmsQuestionContent;
 import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
+import com.stacc.backend.lms.gradebook.GradeItemType;
+import com.stacc.backend.lms.gradebook.LmsGradebookService;
 import com.stacc.backend.lms.quiz.LmsQuizService;
 import com.stacc.backend.lms.quiz.LmsQuizSettings;
 import com.stacc.backend.lms.quiz.QuizType;
@@ -350,6 +352,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final LmsSyllabusService syllabi;
         final LmsQuestionBankService questionBank;
         final LmsQuizService quizzes;
+        final LmsGradebookService gradebook;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -363,7 +366,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
                 PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
-                LmsQuestionBankService questionBank, LmsQuizService quizzes) {
+                LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -390,6 +393,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.syllabi = syllabi;
             this.questionBank = questionBank;
             this.quizzes = quizzes;
+            this.gradebook = gradebook;
         }
     }
 
@@ -669,6 +673,11 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
         submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
         grade(faculty1, warmUp, student1In301, 1, "17", "Good work. Problem 4 needs a tighter loop bound.");
+
+        // --- Gradebook (v0.7.6): the warm-up's grades are published, and a paper class test is a published manual item
+        // with student1's marks.
+        publishColumn(faculty1, lms301, GradeItemType.ASSIGNMENT, warmUp.getId());
+        manualGrade(faculty1, lms301, "Class test 1", "25", student1In301, "21", "Strong on arrays; revise linked lists.");
         submit(student1, lms301, linkedList, student1In301, "My linked list with insert, delete, and search.");
         submit(student2, lms301, linkedList, student2In301, "First version: insert and search work.",
                 "Second version: delete now handles the head node.");
@@ -1314,6 +1323,25 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 services.quizzes.addQuestion(faculty.getId(), quizId, questionId, null);
             }
             services.quizzes.publish(faculty.getId(), quizId);
+        });
+    }
+
+    /** Publishes a gradebook column, as the teacher would; publishing again changes nothing. */
+    private void publishColumn(UserAccount faculty, Long lmsCourseId, GradeItemType type, Long sourceId) {
+        boolean published = services.gradebook.gradebook(faculty.getId(), lmsCourseId).gradebook().columns().stream()
+                .anyMatch(column -> column.type() == type && column.sourceId().equals(sourceId) && column.published());
+        createUnless(published, () -> services.gradebook.publishColumn(faculty.getId(), lmsCourseId, type, sourceId));
+    }
+
+    /** A published manual gradebook item, found by its title, with one student's marks. */
+    private void manualGrade(UserAccount faculty, Long lmsCourseId, String title, String maxMarks, CourseEnrollment student,
+            String marks, String feedback) {
+        boolean exists = services.gradebook.gradebook(faculty.getId(), lmsCourseId).gradebook().columns().stream()
+                .anyMatch(column -> column.type() == GradeItemType.MANUAL && column.title().equals(title));
+        createUnless(exists, () -> {
+            Long itemId = services.gradebook.addManualItem(faculty.getId(), lmsCourseId, title, new BigDecimal(maxMarks)).getId();
+            services.gradebook.enterMarks(faculty.getId(), itemId, student.getId(), new BigDecimal(marks), feedback);
+            services.gradebook.publishColumn(faculty.getId(), lmsCourseId, GradeItemType.MANUAL, itemId);
         });
     }
 

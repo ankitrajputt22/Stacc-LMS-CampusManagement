@@ -12,6 +12,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsSubmissionGradeRepository extends JpaRepository<LmsSubmissionGrade, Long> {
 
+    /** The grades of the latest attempts of these enrollments' submissions for these assignments. */
+    @Query("""
+            select grade from LmsSubmissionGrade grade join fetch grade.attempt attempt join fetch attempt.submission submission
+            where submission.assignment.id in :assignmentIds and submission.courseEnrollment.id in :courseEnrollmentIds
+              and attempt.attemptNumber = submission.latestAttemptNumber
+            """)
+    List<LmsSubmissionGrade> findLatestAttemptGrades(@Param("assignmentIds") Collection<Long> assignmentIds,
+            @Param("courseEnrollmentIds") Collection<Long> courseEnrollmentIds);
+
     /** The grade of one attempt, if it has one. */
     Optional<LmsSubmissionGrade> findByAttemptId(Long attemptId);
 

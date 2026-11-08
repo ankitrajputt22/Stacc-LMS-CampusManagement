@@ -9,6 +9,7 @@ import { StatusConfirmation } from '../components/StatusConfirmation'
 import { EmptyState } from '../components/states/EmptyState'
 import { parseCourseId } from '../courses/courseRoute'
 import { formatDateTime } from '../courses/dates'
+import { CourseGrades } from '../courses/CourseGrades'
 import { QuizTaking } from '../courses/QuizTaking'
 import { attemptResultText, attemptStateLabel, attemptsText, quizStatusText } from '../courses/quizText'
 import { SectionState } from '../courses/SectionState'
@@ -240,3 +241,9 @@ export function QuizAttemptPage() {
     </StudentCourseSection>
   )
 }
+
+/** /courses/:lmsCourseId/grades: the student's own published grades. */
+export function CourseGradesPage() {
+  return <StudentCourseSection title="Grades">{(course) => <CourseGrades lmsCourseId={course.lmsCourseId} />}</StudentCourseSection>
+}
+

@@ -56,6 +56,8 @@ import {
   TeachingModulesPage,
   TeachingOutcomesPage,
   TeachingQuestionBankPage,
+  TeachingGradebookPage,
+  TeachingGradeItemPage,
   TeachingQuizAttemptPage,
   TeachingQuizPage,
   TeachingQuizResultsPage,
@@ -70,7 +72,7 @@ import {
   CoursePagesIndexPage,
 } from './pages/CourseSectionPages'
 import { TeachingCourseLayout } from './teaching/TeachingCourseLayout'
-import { CourseQuizPage, CourseQuizzesPage, QuizAttemptPage } from './pages/CourseQuizPages'
+import { CourseGradesPage, CourseQuizPage, CourseQuizzesPage, QuizAttemptPage } from './pages/CourseQuizPages'
 
 function App() {
   return (
@@ -94,6 +96,7 @@ function App() {
             <Route path="quizzes" element={<CourseQuizzesPage />} />
             <Route path="quizzes/:quizId" element={<CourseQuizPage />} />
             <Route path="quizzes/:quizId/attempts/:attemptId" element={<QuizAttemptPage />} />
+            <Route path="grades" element={<CourseGradesPage />} />
             <Route path="announcements" element={<CourseAnnouncementsPage />} />
             <Route path="files" element={<CourseFilesPage />} />
             <Route path="syllabus" element={<CourseSyllabusPage />} />
@@ -110,6 +113,8 @@ function App() {
             <Route path="quizzes/:quizId" element={<TeachingQuizPage />} />
             <Route path="quizzes/:quizId/results" element={<TeachingQuizResultsPage />} />
             <Route path="quiz-attempts/:attemptId" element={<TeachingQuizAttemptPage />} />
+            <Route path="gradebook" element={<TeachingGradebookPage />} />
+            <Route path="gradebook/items/:itemId" element={<TeachingGradeItemPage />} />
             <Route path="questions" element={<TeachingQuestionBankPage />} />
             <Route path="assignments/:assignmentId/submissions" element={<FacultyAssignmentSubmissionsPage />} />
             <Route path="pages/:pageId" element={<TeachingPagePreview />} />

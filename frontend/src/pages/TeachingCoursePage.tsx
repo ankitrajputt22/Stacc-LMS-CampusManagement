@@ -17,6 +17,8 @@ import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
+import { GradebookEditor } from '../teaching/GradebookEditor'
+import { ManualGradeItem } from '../teaching/ManualGradeItem'
 import { QuizAttemptMarking } from '../teaching/QuizAttemptMarking'
 import { QuizEditor } from '../teaching/QuizEditor'
 import { QuizResultsTable } from '../teaching/QuizResultsTable'
@@ -282,3 +284,29 @@ export function TeachingQuizAttemptPage() {
     </TeachingCourseFrame>
   )
 }
+
+/** /teaching/:lmsCourseId/gradebook: every current student's marks, with publishing and manual items. */
+export function TeachingGradebookPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Gradebook', heading: 'Gradebook' }}>
+      {(course) => <GradebookEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/gradebook/items/:itemId: a manual item's marks. */
+export function TeachingGradeItemPage() {
+  const itemId = parseCourseId(useParams().itemId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Grade item', heading: 'Grade item', parent: { path: 'gradebook', label: 'Gradebook' } }}>
+      {(course) =>
+        itemId === null ? (
+          <p className="text-sm text-ink-muted">This item address is not valid.</p>
+        ) : (
+          <ManualGradeItem key={itemId} lmsCourseId={course.lmsCourseId} itemId={itemId} />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}
+

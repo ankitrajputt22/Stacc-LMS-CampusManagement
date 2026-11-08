@@ -65,6 +65,9 @@ public interface LmsQuizAttemptRepository extends JpaRepository<LmsQuizAttempt, 
     @Query("select attempt.quiz.lmsCourse.id from LmsQuizAttempt attempt where attempt.id = :attemptId")
     Optional<Long> findLmsCourseIdById(@Param("attemptId") Long attemptId);
 
+    /** These enrollments' attempts at these quizzes. */
+    List<LmsQuizAttempt> findAllByQuizIdInAndCourseEnrollmentIdIn(Collection<Long> quizIds, Collection<Long> courseEnrollmentIds);
+
     /** One enrollment's attempts at these quizzes, newest first. */
     List<LmsQuizAttempt> findAllByCourseEnrollmentIdAndQuizIdInOrderByAttemptNumberDesc(Long courseEnrollmentId,
             Collection<Long> quizIds);
