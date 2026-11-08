@@ -7,7 +7,7 @@ test('a faculty member copies last session’s content into this year’s course
   await page.getByRole('link', { name: 'Open LMS course CS250' }).click()
   await openCourseSection(page, 'Modules')
 
-  const copyFrom = page.getByLabel('Copy from')
+  const copyFrom = page.getByLabel('Copy from', { exact: true })
   await copyFrom.selectOption({ index: 1 })
   await page.getByRole('button', { name: 'Copy content' }).click()
   await expect(page.getByText(/Copy content from .*, semester 2\?/)).toBeVisible()
