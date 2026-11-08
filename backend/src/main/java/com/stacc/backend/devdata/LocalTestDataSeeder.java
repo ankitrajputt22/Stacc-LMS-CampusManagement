@@ -38,6 +38,7 @@ import com.stacc.backend.academic.course.CourseType;
 import com.stacc.backend.academic.department.Department;
 import com.stacc.backend.academic.department.DepartmentRepository;
 import com.stacc.backend.academic.responsibility.DepartmentHeadRepository;
+import com.stacc.backend.lms.syllabus.LmsSyllabusService;
 import com.stacc.backend.academic.enrollment.CourseEnrollment;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.SemesterEnrollment;
@@ -338,6 +339,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final HostelAllocationService hostelAllocations;
         final PersonProfileService personProfiles;
         final DepartmentHeadService departmentHeads;
+        final LmsSyllabusService syllabi;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -350,7 +352,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelManagementService hostels, CampusServiceDefinitionService campusServices,
                 CampusNoticeService campusNotices, CampusServiceRequestService campusRequests,
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
-                PersonProfileService personProfiles, DepartmentHeadService departmentHeads) {
+                PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -374,6 +376,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.hostelAllocations = hostelAllocations;
             this.personProfiles = personProfiles;
             this.departmentHeads = departmentHeads;
+            this.syllabi = syllabi;
         }
     }
 
@@ -582,6 +585,34 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         topic(faculty1, unit2, "Stack operations", "Push, pop, and peek with arrays and lists.", false);
         Long relational = module(faculty2, lms302, "Unit 1: The Relational Model", "Tables, keys, and constraints.", false);
         topic(faculty2, relational, "Keys and constraints", "Primary keys, foreign keys, and uniqueness.", false);
+
+        // Course copy (v0.6.8): CS250 was taught by faculty2 last session (now archived, with content and a syllabus) and
+        // is planned again for semester 4 with an empty draft LMS course, so faculty2 can copy last year's content.
+        Course algorithmsLab = course(cse, "CS250", "Algorithms Lab", "2.00");
+        CourseOffering previousLab = offering(algorithmsLab, previousSecond, CourseOffering::close);
+        CourseOffering plannedLab = offering(algorithmsLab, fourth, offering -> { });
+        teaching(faculty2Profile, previousLab);
+        teaching(faculty2Profile, plannedLab);
+        Long previousLabCourse = lmsCourse(faculty2, previousLab, LmsCourseStatus.DRAFT);
+        boolean previousLabOpen = repositories.lmsCourses.findById(previousLabCourse)
+                .map(lmsCourse -> lmsCourse.getStatus() != LmsCourseStatus.ARCHIVED)
+                .orElse(false);
+        if (previousLabOpen) {
+            Long sorting = module(faculty2, previousLabCourse, "Week 1: Sorting", "Lab work on sorting algorithms.", true);
+            topic(faculty2, sorting, "Insertion sort lab", """
+                    ## Task
+
+                    Implement insertion sort and count the comparisons for $n = 10$, $100$, and $1000$.""",
+                    LmsTextFormat.FORMATTED, true);
+            topic(faculty2, sorting, "Merge sort lab", "Implement merge sort and compare it with insertion sort.", true);
+            if (services.syllabi.forFaculty(faculty2.getId(), previousLabCourse).isEmpty()) {
+                services.syllabi.saveDraft(faculty2.getId(), previousLabCourse,
+                        "## Course overview\n\nWeekly labs on sorting, searching, and graphs.");
+                services.syllabi.publish(faculty2.getId(), previousLabCourse);
+            }
+            services.lmsCourses.archive(faculty2.getId(), previousLabCourse);
+        }
+        lmsCourse(faculty2, plannedLab, LmsCourseStatus.DRAFT);
 
         announcement(faculty1, lms301, "Welcome to Data Structures",
                 "Labs start this week. Bring your laptop and read the course outline.", true);

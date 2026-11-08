@@ -34,6 +34,30 @@ public interface LmsCourseRepository extends JpaRepository<LmsCourse, Long> {
             """)
     Optional<LmsCourse> findWithAcademicContextById(@Param("lmsCourseId") Long lmsCourseId);
 
+    /**
+     * The LMS courses of the same catalog course in other offerings that this account taught (any teaching assignment,
+     * active or ended), whatever their LMS status, the latest term first: the courses faculty may copy content from.
+     */
+    @Query("""
+            select lmsCourse
+            from LmsCourse lmsCourse
+            join fetch lmsCourse.courseOffering courseOffering
+            join fetch courseOffering.course course
+            join fetch courseOffering.semester semester
+            join fetch semester.program
+            join fetch semester.academicSession academicSession
+            left join fetch courseOffering.section
+            where course.id = :courseId
+              and courseOffering.id <> :courseOfferingId
+              and exists (
+                  select assignment.id from TeachingAssignment assignment
+                  where assignment.courseOffering = courseOffering
+                    and assignment.facultyProfile.userAccount.id = :userAccountId)
+            order by academicSession.startDate desc, semester.semesterNumber desc, lmsCourse.id desc
+            """)
+    List<LmsCourse> findCopySources(@Param("courseId") Long courseId, @Param("courseOfferingId") Long courseOfferingId,
+            @Param("userAccountId") Long userAccountId);
+
     /** The LMS courses of these course offerings, each with the same academic details as one course page. */
     @Query("""
             select lmsCourse

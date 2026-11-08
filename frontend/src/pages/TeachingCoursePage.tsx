@@ -13,6 +13,7 @@ import { AnnouncementsEditor } from '../teaching/AnnouncementsEditor'
 import { AssignmentsEditor } from '../teaching/AssignmentsEditor'
 import { CourseContentEditor } from '../teaching/CourseContentEditor'
 import { CourseSettings } from '../teaching/CourseSettings'
+import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
@@ -161,7 +162,12 @@ export function TeachingCoursePage() {
 export function TeachingModulesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Modules', heading: 'Modules' }}>
-      {(course, reload) => <CourseContentEditor course={course} reload={reload} />}
+      {(course, reload) => (
+        <>
+          <CopyContentCard lmsCourseId={course.lmsCourseId} reload={reload} />
+          <CourseContentEditor course={course} reload={reload} />
+        </>
+      )}
     </TeachingCourseFrame>
   )
 }
