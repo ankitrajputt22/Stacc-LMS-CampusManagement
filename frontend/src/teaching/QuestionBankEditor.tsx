@@ -88,6 +88,7 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
           <Badge tone="warning">Needs review</Badge>
         )}
         {question.practiceAllowed && <Badge tone="info">OK for practice</Badge>}
+        {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
       </div>
       <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={4} />
       <Answers question={question} />
@@ -277,9 +278,12 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
                         <QuestionSummary question={question} />
                         {question.status === 'ACTIVE' && (
                           <div className="flex shrink-0 flex-wrap gap-2">
-                            <Button variant="secondary" size="sm" onClick={() => setEditing(question.id)}>
-                              Edit<span className="sr-only"> question “{name}”</span>
-                            </Button>
+                            {/* A published quiz keeps asking what it asked, so its questions are not edited. */}
+                            {!question.inPublishedQuiz && (
+                              <Button variant="secondary" size="sm" onClick={() => setEditing(question.id)}>
+                                Edit<span className="sr-only"> question “{name}”</span>
+                              </Button>
+                            )}
                             {question.reviewStatus === 'NEEDS_REVIEW' ? (
                               <Button
                                 variant="secondary"

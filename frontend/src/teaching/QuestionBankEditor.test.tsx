@@ -35,6 +35,7 @@ const question: LmsQuestion = {
   reviewStatus: 'NEEDS_REVIEW',
   practiceAllowed: false,
   status: 'ACTIVE',
+  inPublishedQuiz: false,
   updatedAt: '2026-11-08T10:00:00Z',
 }
 

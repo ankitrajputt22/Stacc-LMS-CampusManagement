@@ -1,6 +1,6 @@
 # Question Bank
 
-Each LMS course has a question bank (v0.7.2): reusable questions with their answers, written and kept by the faculty who teach the course. Quizzes (0.7.3) and exam papers will draw on it. It lives in `lms.question`.
+Each LMS course has a question bank (v0.7.2): reusable questions with their answers, written and kept by the faculty who teach the course. Quizzes draw on it (see `quizzes.md`), and exam papers will. It lives in `lms.question`.
 
 ## Questions
 
@@ -31,7 +31,8 @@ Options and accepted answers are plain text up to 500 characters, must differ fr
 - Every change locks the question row first, so an edit and a review or practice change never overwrite each other (`LmsQuestionBankMySqlIT`). Access is checked from the stored question's course before the lock.
 - An outcome must be an active outcome of the same course; one the question already has may stay after it is archived. Anything else answers 409.
 - Archiving is final: the question stays in the bank, readable under Archived, but can no longer change or be offered for practice. Nothing deletes or restores a question.
-- Students have no route to the bank: questions carry their answers. Quizzes will send students only what they may see.
+- A question that a published or archived quiz uses can no longer be edited (409), so the quiz keeps asking what it asked; it can still be reviewed, offered for practice, or archived. Answers carry `inPublishedQuiz`, and the page shows "In a published quiz" without Edit. See `quizzes.md` for how an edit and a publication never miss each other.
+- Students have no route to the bank: questions carry their answers. Quizzes send students only what they may see.
 
 ## API
 
@@ -41,7 +42,7 @@ Every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_QUESTION_BANK_MANAG
 | --- | --- |
 | `GET /api/v1/lms/faculty/courses/{lmsCourseId}/questions` | Every question with its answers, archived ones included, newest first. |
 | `POST /api/v1/lms/faculty/courses/{lmsCourseId}/questions` | Adds a question. |
-| `PUT /api/v1/lms/faculty/questions/{questionId}` | Edits it; 409 when archived. |
+| `PUT /api/v1/lms/faculty/questions/{questionId}` | Edits it; 409 when archived or in a published quiz. |
 | `POST /api/v1/lms/faculty/questions/{questionId}/review` | Marks it reviewed. |
 | `PUT /api/v1/lms/faculty/questions/{questionId}/practice` | `{ "allowed": true or false }`. |
 | `POST /api/v1/lms/faculty/questions/{questionId}/archive` | Archives it. |
@@ -55,4 +56,4 @@ A question is sent as `type`, `text`, `textFormat`, `explanation`, `options` (`t
 - **Add a question**: the type decides which parts the form shows (options with Correct marks, the true or false answer, accepted answers, or guidance), then topic, difficulty, marks, course outcome, and Bloom level. Obvious slips are caught before sending; the backend decides.
 - **Questions**: search the question text and filter by type, topic, difficulty, and status (Active by default), on the page over what the API sent. Each question shows its answers, facts, and badges (Needs review, Reviewed, OK for practice, Archived), with Edit, Mark reviewed, OK for practice or Not for practice, and Archive (confirmed first).
 
-Not in this phase: quizzes, "Used in" counts, question pools, import or export, or AI-generated questions (v0.14).
+Not in this phase: "Used in" counts, question pools, import or export, or AI-generated questions (v0.14).

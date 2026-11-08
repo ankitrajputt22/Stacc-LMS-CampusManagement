@@ -541,6 +541,8 @@ export type LmsQuestion = {
   reviewStatus: 'NEEDS_REVIEW' | 'REVIEWED'
   practiceAllowed: boolean
   status: 'ACTIVE' | 'ARCHIVED'
+  /** A published or archived quiz uses the question, so it can no longer be edited. */
+  inPublishedQuiz: boolean
   updatedAt: string
 }
 
@@ -559,3 +561,67 @@ export type LmsQuestionInput = {
   bloomLevel: BloomLevel | null
   outcomeId: number | null
 }
+
+export type QuizType = 'GRADED' | 'PRACTICE'
+
+/** One quiz in the faculty list of a course. */
+export type LmsQuizSummary = {
+  id: number
+  title: string
+  type: QuizType
+  status: LmsContentStatus
+  questionCount: number
+  totalMarks: number
+  timeLimitMinutes: number | null
+  availableFrom: string | null
+  dueAt: string | null
+  availableUntil: string | null
+  maxAttempts: number | null
+  publishedAt: string | null
+}
+
+/** One question of a quiz: its place and marks in the quiz, and what the bank says about it. */
+export type LmsQuizQuestion = {
+  /** The ID of this question in this quiz, used to re-mark, move, or remove it. */
+  id: number
+  position: number
+  marks: number
+  questionId: number
+  type: QuestionType
+  text: string
+  textFormat: TextFormat
+  topic: string | null
+  difficulty: QuestionDifficulty
+  bankMarks: number
+  reviewStatus: 'NEEDS_REVIEW' | 'REVIEWED'
+  practiceAllowed: boolean
+  status: 'ACTIVE' | 'ARCHIVED'
+}
+
+/** The settings faculty choose for a quiz; empty optional values mean no limit. */
+export type LmsQuizSettingsInput = {
+  title: string
+  instructions: string | null
+  instructionsFormat: TextFormat
+  type: QuizType
+  timeLimitMinutes: number | null
+  availableFrom: string | null
+  dueAt: string | null
+  availableUntil: string | null
+  maxAttempts: number | null
+  shuffleQuestions: boolean
+  shuffleOptions: boolean
+  negativeMarkPercent: number
+}
+
+/** A quiz with its settings and questions, for the faculty who teach the course. */
+export type LmsQuiz = Omit<LmsQuizSettingsInput, 'instructions'> & {
+  id: number
+  lmsCourseId: number
+  instructions: string | null
+  status: LmsContentStatus
+  publishedAt: string | null
+  totalMarks: number
+  questions: LmsQuizQuestion[]
+}
+

@@ -60,6 +60,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Course copy](course-copy.md)
 - [Course outcomes and Bloom levels](course-outcomes.md)
 - [Question bank](question-bank.md)
+- [Quizzes](quizzes.md)
 - [AI learning](ai-learning.md)
 
 ## Dashboards, reports, and search

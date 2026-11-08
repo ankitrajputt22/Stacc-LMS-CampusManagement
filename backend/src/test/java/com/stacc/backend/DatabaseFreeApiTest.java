@@ -21,6 +21,8 @@ import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.lms.content.LmsPageCompletionRepository;
 import com.stacc.backend.lms.outcome.LmsCourseOutcomeRepository;
 import com.stacc.backend.lms.question.LmsQuestionRepository;
+import com.stacc.backend.lms.quiz.LmsQuizQuestionRepository;
+import com.stacc.backend.lms.quiz.LmsQuizRepository;
 import com.stacc.backend.lms.syllabus.LmsSyllabusRepository;
 import com.stacc.backend.academic.section.SectionRepository;
 import com.stacc.backend.academic.semester.SemesterRepository;
@@ -139,7 +141,9 @@ import org.springframework.web.context.WebApplicationContext;
     LmsSyllabusRepository.class,
     LmsPageCompletionRepository.class,
     LmsCourseOutcomeRepository.class,
-    LmsQuestionRepository.class
+    LmsQuestionRepository.class,
+    LmsQuizRepository.class,
+    LmsQuizQuestionRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

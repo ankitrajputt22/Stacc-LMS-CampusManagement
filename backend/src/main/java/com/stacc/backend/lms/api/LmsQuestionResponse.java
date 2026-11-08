@@ -37,18 +37,21 @@ public record LmsQuestionResponse(
         @Schema(description = "Only a reviewed, active question can be offered for practice.")
         boolean practiceAllowed,
         QuestionStatus status,
+        @Schema(description = "A published or archived quiz uses the question, so it can no longer be edited.")
+        boolean inPublishedQuiz,
         Instant updatedAt) {
 
     public record Option(String text, boolean correct) {
     }
 
-    static LmsQuestionResponse of(LmsQuestion question) {
+    static LmsQuestionResponse of(LmsQuestion question, boolean inPublishedQuiz) {
         LmsCourseOutcome outcome = question.getOutcome();
         return new LmsQuestionResponse(question.getId(), question.getType(), question.getText(), question.getTextFormat(),
                 question.getExplanation(),
                 question.getOptions().stream().map(option -> new Option(option.getText(), option.isCorrect())).toList(),
                 question.getTrueFalseAnswer(), question.getAnswerGuidance(), question.getTopic(), question.getDifficulty(),
                 question.getMarks(), question.getBloomLevel(), outcome == null ? null : LmsOutcomeResponse.of(outcome),
-                question.getReviewStatus(), question.isPracticeAllowed(), question.getStatus(), question.getUpdatedAt());
+                question.getReviewStatus(), question.isPracticeAllowed(), question.getStatus(), inPublishedQuiz,
+                question.getUpdatedAt());
     }
 }

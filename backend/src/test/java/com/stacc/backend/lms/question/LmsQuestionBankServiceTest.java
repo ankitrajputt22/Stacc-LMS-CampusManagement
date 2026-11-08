@@ -146,4 +146,26 @@ class LmsQuestionBankServiceTest {
         }
         verify(questions, never()).findByIdForUpdate(any());
     }
+
+    @Test
+    void aQuestionInAPublishedOrArchivedQuizCanNoLongerBeEditedButOneInADraftQuizCan() {
+        when(questions.findQuizStatusesForShare(QUESTION_ID)).thenReturn(List.of("DRAFT", "PUBLISHED"));
+        refusedWith(() -> service.edit(FACULTY, QUESTION_ID, QuestionFixtures.singleChoice("New"), null),
+                HttpStatus.CONFLICT, LmsQuestionBankService.IN_PUBLISHED_QUIZ);
+        when(questions.findQuizStatusesForShare(QUESTION_ID)).thenReturn(List.of("ARCHIVED"));
+        refusedWith(() -> service.edit(FACULTY, QUESTION_ID, QuestionFixtures.singleChoice("New"), null),
+                HttpStatus.CONFLICT, LmsQuestionBankService.IN_PUBLISHED_QUIZ);
+        verify(questions, never()).findByIdForUpdate(QUESTION_ID);
+
+        when(questions.findQuizStatusesForShare(QUESTION_ID)).thenReturn(List.of("DRAFT"));
+        assertThat(service.edit(FACULTY, QUESTION_ID, QuestionFixtures.singleChoice("New"), null).getText()).isEqualTo("New");
+    }
+
+    @Test
+    void someoneWhoDoesNotTeachTheCourseCannotLearnWhetherAQuestionIsInAQuiz() {
+        refusedWith(() -> service.edit(OTHER, QUESTION_ID, QuestionFixtures.singleChoice("New"), null),
+                HttpStatus.NOT_FOUND, LmsQuestionBankService.QUESTION_UNAVAILABLE);
+        refusedWith(() -> service.inPublishedQuizzes(OTHER, COURSE_ID), HttpStatus.NOT_FOUND, LmsQuestionBankService.COURSE_UNAVAILABLE);
+        verify(questions, never()).findQuizStatusesForShare(any());
+    }
 }

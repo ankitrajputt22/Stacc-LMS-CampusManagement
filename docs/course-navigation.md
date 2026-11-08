@@ -35,6 +35,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Modules | `/modules` | The content editor: modules, pages, requirements, and study materials; page previews open at `/pages/:pageId`. |
 | Announcements | `/announcements` | The announcement editor. |
 | Assignments | `/assignments` | The assignment editor; grading opens at `/assignments/:assignmentId/submissions`. |
+| Quizzes | `/quizzes` | See `quizzes.md`; each quiz opens at `/quizzes/:quizId`. |
 | Outcomes | `/outcomes` | See `course-outcomes.md`. |
 | Question bank | `/questions` | See `question-bank.md`. |
 | Files | `/files` | See `course-files.md`. |
