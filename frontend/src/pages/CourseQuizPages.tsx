@@ -10,7 +10,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { parseCourseId } from '../courses/courseRoute'
 import { formatDateTime } from '../courses/dates'
 import { QuizTaking } from '../courses/QuizTaking'
-import { attemptStateLabel, attemptsText, quizStatusText } from '../courses/quizText'
+import { attemptResultText, attemptStateLabel, attemptsText, quizStatusText } from '../courses/quizText'
 import { SectionState } from '../courses/SectionState'
 import { FormattedText } from '../formatting/FormattedText'
 import type { LmsCourseDetail, QuizAttemptSummary, StudentQuiz } from '../types/lms'
@@ -184,7 +184,7 @@ function QuizDetail({ course }: { course: LmsCourseDetail }) {
               primary: true,
               cell: (row) => (
                 <Link to={attemptPath(row.id)} className={textLinkClasses}>
-                  Attempt {row.attemptNumber}
+                  {`Attempt ${row.attemptNumber}`}
                 </Link>
               ),
             },
@@ -195,6 +195,7 @@ function QuizDetail({ course }: { course: LmsCourseDetail }) {
               cell: (row) => (row.submittedAt ? `${formatDateTime(row.submittedAt)}${row.late ? ' (late)' : ''}` : '—'),
             },
             { key: 'state', header: 'Status', cell: (row) => attemptStateLabel(row.state) },
+            { key: 'result', header: 'Result', cell: (row) => attemptResultText(row, data.totalMarks) },
           ]}
         />
       </Card>

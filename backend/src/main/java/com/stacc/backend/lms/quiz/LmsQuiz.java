@@ -26,7 +26,8 @@ import org.hibernate.annotations.UpdateTimestamp;
  * A quiz of one LMS course: its title, instructions, type, and the rules students take it under. Its questions are
  * {@link LmsQuizQuestion} rows. A new quiz is a draft; publishing records the first publication; an archived quiz is
  * kept and can no longer change. After publishing, the type, shuffling, and negative marking stay as they are, and the
- * questions are fixed; the title, instructions, availability, time limit, and attempt limit may still be corrected.
+ * questions are fixed; the title, instructions, availability, time limit, attempt limit, and result settings may still
+ * be corrected.
  */
 @Entity
 @Table(name = "lms_quizzes")
@@ -91,6 +92,13 @@ public class LmsQuiz {
 
     @Column(name = "negative_mark_percent", nullable = false, precision = 5, scale = 2)
     private BigDecimal negativeMarkPercent = BigDecimal.ZERO.setScale(2);
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "result_release", nullable = false, length = 20)
+    private QuizResultRelease resultRelease = QuizResultRelease.AFTER_MARKING;
+
+    @Column(name = "show_answers", nullable = false)
+    private boolean showAnswers;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -208,6 +216,29 @@ public class LmsQuiz {
         this.shuffleQuestions = settings.shuffleQuestions();
         this.shuffleOptions = settings.shuffleOptions();
         this.negativeMarkPercent = validNegative;
+        this.resultRelease = settings.resultRelease() == null ? QuizResultRelease.AFTER_MARKING : settings.resultRelease();
+        this.showAnswers = settings.showAnswers();
+    }
+
+    /**
+     * Whether results of fully marked attempts may be shown now: at once after marking, or for {@code AFTER_DUE_DATE}
+     * from the due date (or the closing time without one; at once with neither).
+     */
+    public boolean resultsReleasedAt(Instant now) {
+        if (resultRelease == QuizResultRelease.AFTER_MARKING) {
+            return true;
+        }
+        Instant from = dueAt != null ? dueAt : availableUntil;
+        return from == null || !now.isBefore(from);
+    }
+
+    public QuizResultRelease getResultRelease() {
+        return resultRelease;
+    }
+
+    /** Whether results come with the correct answers and explanations. */
+    public boolean isShowAnswers() {
+        return showAnswers;
     }
 
     private static Integer optionalRange(Integer value, String name, int max, String unit) {

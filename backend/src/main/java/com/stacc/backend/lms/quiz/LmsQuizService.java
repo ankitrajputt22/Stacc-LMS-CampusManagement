@@ -27,9 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
  * first. Questions come only from the course's own bank and change only while the quiz is a draft.
  *
  * <p>Publishing needs at least one question, each active and reviewed (and, for a practice quiz, offered for
- * practice), and tells the students who may use the course, once. It reads the questions with a shared lock after locking the quiz, the same order a bank edit takes, so an
- * edit either finishes first, and publishing sees the question needs review again, or waits and then finds the quiz
- * published and stops.
+ * practice), and tells the students who may use the course, once. Every change locks the course row, then the quiz row;
+ * a bank edit locks the course row first too, so an edit either finishes first, and publishing sees the question needs
+ * review again, or waits and then finds the quiz published and stops. Reads after the locks are locking reads, so they
+ * see what the request before them committed.
  */
 @Service
 public class LmsQuizService {
@@ -134,7 +135,7 @@ public class LmsQuizService {
         if (question == null || !question.isActive() || !question.getLmsCourse().getId().equals(quiz.getLmsCourse().getId())) {
             throw new ApiException(HttpStatus.CONFLICT, QUESTION_INVALID);
         }
-        List<LmsQuizQuestion> current = links.findAllByQuizIdOrderByPosition(quizId);
+        List<LmsQuizQuestion> current = links.findAllForUpdate(quizId);
         if (current.stream().anyMatch(link -> link.getQuestion().getId().equals(questionId))) {
             throw new ApiException(HttpStatus.CONFLICT, ALREADY_IN_QUIZ);
         }
@@ -165,7 +166,7 @@ public class LmsQuizService {
         LmsQuizQuestion removed = linkOf(quizId, quizQuestionId);
         links.delete(removed);
         links.flush();
-        List<LmsQuizQuestion> remaining = links.findAllByQuizIdOrderByPosition(quizId);
+        List<LmsQuizQuestion> remaining = links.findAllForUpdate(quizId);
         for (int index = 0; index < remaining.size(); index++) {
             remaining.get(index).moveTo(index + 1);
         }
@@ -177,7 +178,7 @@ public class LmsQuizService {
     @Transactional
     public QuizDetail reorder(Long userAccountId, Long quizId, List<Long> quizQuestionIds) {
         LmsQuiz quiz = lockedDraft(userAccountId, quizId);
-        Map<Long, LmsQuizQuestion> current = links.findAllByQuizIdOrderByPosition(quizId).stream()
+        Map<Long, LmsQuizQuestion> current = links.findAllForUpdate(quizId).stream()
                 .collect(Collectors.toMap(LmsQuizQuestion::getId, Function.identity()));
         if (quizQuestionIds == null || quizQuestionIds.size() != current.size()
                 || new HashSet<>(quizQuestionIds).size() != quizQuestionIds.size()
@@ -201,7 +202,7 @@ public class LmsQuizService {
         if (!quiz.isDraft()) {
             return detailOf(quiz);
         }
-        List<LmsQuizQuestion> current = links.findAllByQuizIdOrderByPosition(quizId);
+        List<LmsQuizQuestion> current = links.findAllForUpdate(quizId);
         if (current.isEmpty()) {
             throw new ApiException(HttpStatus.CONFLICT, NO_QUESTIONS);
         }
@@ -266,18 +267,22 @@ public class LmsQuizService {
         return quiz;
     }
 
-    // Checks access from the stored quiz's course before taking the lock. Only the course ID is read first, so the
-    // locking read is the first to load the quiz and sees its latest committed state.
+    // Checks access from the stored quiz's course, then locks the course row and the quiz row, in that order. Every
+    // change to a quiz and every edit of a bank question locks the course row first, so they run one after another and
+    // never wait for each other's locks in opposite orders. Only the course ID is read first, so the locking read is
+    // the first to load the quiz and sees its latest committed state.
     private LmsQuiz locked(Long userAccountId, Long quizId) {
-        requireQuiz(userAccountId, quizId);
+        Long lmsCourseId = requireQuiz(userAccountId, quizId);
+        lmsCourses.findByIdForUpdate(lmsCourseId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUIZ_UNAVAILABLE));
         return quizzes.findByIdForUpdate(quizId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUIZ_UNAVAILABLE));
     }
 
-    private void requireQuiz(Long userAccountId, Long quizId) {
+    private Long requireQuiz(Long userAccountId, Long quizId) {
         Long lmsCourseId = quizId == null ? null : quizzes.findLmsCourseIdById(quizId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, QUIZ_UNAVAILABLE);
         }
+        return lmsCourseId;
     }
 
     private void requireCourse(Long userAccountId, Long lmsCourseId) {

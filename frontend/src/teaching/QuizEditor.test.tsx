@@ -54,6 +54,8 @@ const quiz: LmsQuiz = {
   shuffleQuestions: false,
   shuffleOptions: false,
   negativeMarkPercent: 0,
+  resultRelease: 'AFTER_MARKING',
+  showAnswers: false,
   status: 'DRAFT',
   publishedAt: null,
   totalMarks: 4,

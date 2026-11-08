@@ -1,6 +1,6 @@
 import { formatDateTime, fromLocalInputValue, toLocalInputValue } from '../courses/dates'
 import type { TextFormat } from '../formatting/textFormat'
-import type { LmsQuiz, LmsQuizSettingsInput, LmsQuizSummary, QuizType } from '../types/lms'
+import type { LmsQuiz, LmsQuizSettingsInput, LmsQuizSummary, QuizResultRelease, QuizType } from '../types/lms'
 
 export const QUIZ_TITLE_MAX = 200
 export const QUIZ_INSTRUCTIONS_MAX = 20_000
@@ -28,7 +28,14 @@ export type QuizSettingsDraft = {
   shuffleQuestions: boolean
   shuffleOptions: boolean
   negativeMarkPercent: string
+  resultRelease: QuizResultRelease
+  showAnswers: boolean
 }
+
+export const RESULT_RELEASES: readonly { value: QuizResultRelease; label: string }[] = [
+  { value: 'AFTER_MARKING', label: 'As soon as an attempt is marked' },
+  { value: 'AFTER_DUE_DATE', label: 'After the due date' },
+]
 
 export type QuizSettingsField = keyof QuizSettingsDraft
 
@@ -46,6 +53,8 @@ export function emptySettings(): QuizSettingsDraft {
     shuffleQuestions: false,
     shuffleOptions: false,
     negativeMarkPercent: '0',
+    resultRelease: 'AFTER_MARKING',
+    showAnswers: false,
   }
 }
 
@@ -63,6 +72,8 @@ export function settingsOf(quiz: LmsQuiz): QuizSettingsDraft {
     shuffleQuestions: quiz.shuffleQuestions,
     shuffleOptions: quiz.shuffleOptions,
     negativeMarkPercent: String(quiz.negativeMarkPercent),
+    resultRelease: quiz.resultRelease,
+    showAnswers: quiz.showAnswers,
   }
 }
 
@@ -151,6 +162,8 @@ export function checkSettings(draft: QuizSettingsDraft): Checked {
       shuffleQuestions: draft.shuffleQuestions,
       shuffleOptions: draft.shuffleOptions,
       negativeMarkPercent: Number(negative),
+      resultRelease: draft.resultRelease,
+      showAnswers: draft.showAnswers,
     },
   }
 }

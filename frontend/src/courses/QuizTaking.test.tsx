@@ -26,6 +26,8 @@ const attempt: QuizAttempt = {
   late: false,
   serverTime: now.toISOString(),
   totalMarks: 3,
+  resultStatus: 'NOT_HANDED_IN',
+  result: null,
   questions: [
     {
       quizQuestionId: 601,
@@ -110,5 +112,55 @@ describe('QuizTaking', () => {
     expect(screen.queryByRole('button', { name: 'Submit quiz' })).not.toBeInTheDocument()
     expect(screen.getByRole('radio', { name: 'True' })).toBeDisabled()
     expect(screen.queryByText(/Time left/)).not.toBeInTheDocument()
+  })
+
+  it('shows a released result with the score, outcomes, feedback, and the answers when the quiz shows them', () => {
+    renderTaking({
+      ...attempt,
+      state: 'SUBMITTED',
+      submittedAt: now.toISOString(),
+      resultStatus: 'RELEASED',
+      result: {
+        score: 1,
+        totalMarks: 3,
+        correct: 1,
+        incorrect: 1,
+        unanswered: 0,
+        questions: [
+          {
+            quizQuestionId: 601,
+            outcome: 'INCORRECT',
+            marksAwarded: 0,
+            feedback: 'Think about a ticket line.',
+            correctOptions: [2],
+            acceptedAnswers: null,
+            trueFalseAnswer: null,
+            explanation: null,
+          },
+          {
+            quizQuestionId: 602,
+            outcome: 'CORRECT',
+            marksAwarded: 1,
+            feedback: null,
+            correctOptions: null,
+            acceptedAnswers: null,
+            trueFalseAnswer: true,
+            explanation: 'Last in, first out.',
+          },
+        ],
+      },
+    })
+
+    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    expect(screen.getByText('1 correct · 1 incorrect · 0 not answered')).toBeInTheDocument()
+    expect(screen.getByText('Correct answer: Queue')).toBeInTheDocument()
+    expect(screen.getByText('Think about a ticket line.')).toBeInTheDocument()
+    expect(screen.getByText('Correct answer: True')).toBeInTheDocument()
+    expect(screen.getByText('Last in, first out.')).toBeInTheDocument()
+  })
+
+  it('says why a handed-in attempt has no result yet', () => {
+    renderTaking({ ...attempt, state: 'SUBMITTED', submittedAt: now.toISOString(), resultStatus: 'WAITING_FOR_MARKING' })
+    expect(screen.getByText('Your result appears once your teacher has marked the written answers.')).toBeInTheDocument()
   })
 })

@@ -77,8 +77,9 @@ class LmsQuizAttemptServiceTest {
     private final LmsQuizAnswerRepository answers = mock(LmsQuizAnswerRepository.class);
     private final CourseEnrollmentRepository courseEnrollments = mock(CourseEnrollmentRepository.class);
     private final TestClock clock = new TestClock();
+    private final LmsQuizAnswerMarkRepository marks = mock(LmsQuizAnswerMarkRepository.class);
     private final LmsQuizAttemptService service = new LmsQuizAttemptService(studentAccess, quizzes, quizQuestions, attempts,
-            answers, courseEnrollments, clock);
+            answers, courseEnrollments, clock, new QuizScores(quizQuestions, answers, marks));
     private final LmsCourse course = SubmissionFixtures.course(COURSE_ID);
     private final CourseEnrollment enrollment = SubmissionFixtures.enrollment(course, STUDENT, 41);
     private final List<LmsQuizAttempt> stored = new ArrayList<>();
@@ -144,8 +145,9 @@ class LmsQuizAttemptServiceTest {
             return attempt;
         });
         when(answers.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
-        when(answers.findByAttemptIdAndQuizQuestionId(anyLong(), anyLong())).thenReturn(Optional.empty());
+        when(answers.findForUpdate(anyLong(), anyLong())).thenReturn(Optional.empty());
         when(quizQuestions.findAllForQuiz(QUIZ_ID)).thenReturn(List.of(single, written));
+        when(quizQuestions.findAllForQuizzes(any())).thenReturn(List.of(single, written));
     }
 
     @Test

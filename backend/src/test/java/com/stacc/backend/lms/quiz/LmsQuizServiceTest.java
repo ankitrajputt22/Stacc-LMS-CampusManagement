@@ -81,11 +81,12 @@ class LmsQuizServiceTest {
         ReflectionTestUtils.setField(quiz, "id", QUIZ_ID);
         when(facultyAccess.canAccessCourse(FACULTY, COURSE_ID)).thenReturn(true);
         when(lmsCourses.findById(COURSE_ID)).thenReturn(Optional.of(course));
+        when(lmsCourses.findByIdForUpdate(COURSE_ID)).thenReturn(Optional.of(course));
         when(quizzes.findLmsCourseIdById(QUIZ_ID)).thenReturn(Optional.of(COURSE_ID));
         when(quizzes.findByIdForUpdate(QUIZ_ID)).thenReturn(Optional.of(quiz));
         when(quizzes.findById(QUIZ_ID)).thenReturn(Optional.of(quiz));
         when(quizzes.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
-        when(links.findAllByQuizIdOrderByPosition(QUIZ_ID)).thenAnswer(call -> List.copyOf(stored));
+        when(links.findAllForUpdate(QUIZ_ID)).thenAnswer(call -> List.copyOf(stored));
         when(links.findAllForQuiz(QUIZ_ID)).thenAnswer(call -> List.copyOf(stored));
         when(links.saveAndFlush(any())).thenAnswer(call -> {
             stored.add(call.getArgument(0));

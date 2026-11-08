@@ -2,6 +2,7 @@ package com.stacc.backend.lms.api;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -31,6 +32,7 @@ import com.stacc.backend.lms.quiz.LmsQuizQuestion;
 import com.stacc.backend.lms.quiz.QuizFixtures;
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAttempt;
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAttemptService;
+import com.stacc.backend.lms.quiz.attempt.QuizScoring;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -94,7 +96,8 @@ class LmsStudentQuizControllerTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(second, "id", 602L);
         LmsQuizAttempt attempt = new LmsQuizAttempt(quiz, SubmissionFixtures.enrollment(course, ACCOUNT_ID, 41), 1, NOW);
         ReflectionTestUtils.setField(attempt, "id", 9L);
-        when(service.attempt(ACCOUNT_ID, 9L)).thenReturn(new LmsQuizAttemptService.AttemptView(attempt, List.of(first, second), Map.of(), NOW));
+        when(service.attempt(ACCOUNT_ID, 9L)).thenReturn(new LmsQuizAttemptService.AttemptView(attempt, List.of(first, second), Map.of(),
+                QuizScoring.score(quiz, List.of(first, second), Map.of(), Map.of()), NOW));
 
         mockMvc.perform(as(token("ROLE_STUDENT", "LMS_COURSE_VIEW", "LMS_QUIZ_TAKE"), get("/api/v1/lms/quiz-attempts/9")))
                 .andExpect(status().isOk())
@@ -105,7 +108,9 @@ class LmsStudentQuizControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.questions[1].options.length()").value(0))
                 .andExpect(content().string(not(containsString("correct"))))
                 .andExpect(content().string(not(containsString("trueFalseAnswer\":true"))))
-                .andExpect(content().string(not(containsString("explanation"))));
+                .andExpect(jsonPath("$.resultStatus").value("NOT_HANDED_IN"))
+                .andExpect(jsonPath("$.result").value(nullValue()))
+                .andExpect(content().string(not(containsString("explanation\":\""))));
     }
 
     @Test

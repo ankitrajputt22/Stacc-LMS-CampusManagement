@@ -58,6 +58,7 @@ class LmsQuestionBankServiceTest {
         ReflectionTestUtils.setField(stored, "id", QUESTION_ID);
         when(facultyAccess.canAccessCourse(FACULTY, COURSE_ID)).thenReturn(true);
         when(lmsCourses.findById(COURSE_ID)).thenReturn(Optional.of(course));
+        when(lmsCourses.findByIdForUpdate(COURSE_ID)).thenReturn(Optional.of(course));
         when(questions.findLmsCourseIdById(QUESTION_ID)).thenReturn(Optional.of(COURSE_ID));
         when(questions.findByIdForUpdate(QUESTION_ID)).thenReturn(Optional.of(stored));
         when(questions.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));

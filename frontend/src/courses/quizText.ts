@@ -1,4 +1,12 @@
-import type { QuizAnswerInput, QuizAttemptQuestion, QuizAttemptState, StudentQuiz } from '../types/lms'
+import type {
+  QuizAnswerInput,
+  QuizAnswerOutcome,
+  QuizAttemptQuestion,
+  QuizAttemptState,
+  QuizAttemptSummary,
+  QuizResultStatus,
+  StudentQuiz,
+} from '../types/lms'
 import { formatDateTime } from './dates'
 
 export function attemptStateLabel(state: QuizAttemptState): string {
@@ -75,4 +83,45 @@ export function inputOfDraft(question: Pick<QuizAttemptQuestion, 'type'>, draft:
 export function isAnswered(question: Pick<QuizAttemptQuestion, 'type'>, draft: AnswerDraft): boolean {
   const input = inputOfDraft(question, draft)
   return input.selectedOptions.length > 0 || input.trueFalseAnswer !== null || input.text !== null
+}
+
+export function outcomeLabel(outcome: QuizAnswerOutcome): string {
+  switch (outcome) {
+    case 'CORRECT':
+      return 'Correct'
+    case 'INCORRECT':
+      return 'Incorrect'
+    case 'UNANSWERED':
+      return 'Not answered'
+    case 'NEEDS_MARKING':
+      return 'Waiting for marking'
+    default:
+      return 'Marked'
+  }
+}
+
+/** Why a handed-in attempt shows no result yet, in words; null once it is shown or before hand-in. */
+export function resultWaitText(status: QuizResultStatus): string | null {
+  switch (status) {
+    case 'WAITING_FOR_MARKING':
+      return 'Your result appears once your teacher has marked the written answers.'
+    case 'WAITING_FOR_RELEASE':
+      return 'Results for this quiz are shown after its due date.'
+    default:
+      return null
+  }
+}
+
+/** An attempt's result in the attempts list: the score, or why there is none yet. */
+export function attemptResultText(attempt: Pick<QuizAttemptSummary, 'resultStatus' | 'score'>, totalMarks: number): string {
+  switch (attempt.resultStatus) {
+    case 'RELEASED':
+      return `${attempt.score} / ${totalMarks}`
+    case 'WAITING_FOR_MARKING':
+      return 'Waiting for marking'
+    case 'WAITING_FOR_RELEASE':
+      return 'After the due date'
+    default:
+      return '—'
+  }
 }

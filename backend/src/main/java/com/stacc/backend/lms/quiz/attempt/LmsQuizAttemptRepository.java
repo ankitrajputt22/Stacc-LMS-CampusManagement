@@ -44,6 +44,27 @@ public interface LmsQuizAttemptRepository extends JpaRepository<LmsQuizAttempt, 
             """)
     List<LmsQuizAttempt> findAllForUpdate(@Param("quizId") Long quizId, @Param("courseEnrollmentId") Long courseEnrollmentId);
 
+    /** Every attempt at a quiz with the student's account, by student login ID and then attempt number. */
+    @Query("""
+            select attempt from LmsQuizAttempt attempt join fetch attempt.courseEnrollment enrollment
+            join fetch enrollment.semesterEnrollment semester join fetch semester.studentProfile student
+            join fetch student.userAccount account
+            where attempt.quiz.id = :quizId order by account.loginId, attempt.attemptNumber
+            """)
+    List<LmsQuizAttempt> findAllWithStudentByQuizId(@Param("quizId") Long quizId);
+
+    /** The attempt with the student's account. */
+    @Query("""
+            select attempt from LmsQuizAttempt attempt join fetch attempt.quiz join fetch attempt.courseEnrollment enrollment
+            join fetch enrollment.semesterEnrollment semester join fetch semester.studentProfile student
+            join fetch student.userAccount where attempt.id = :attemptId
+            """)
+    Optional<LmsQuizAttempt> findWithStudentById(@Param("attemptId") Long attemptId);
+
+    /** The course of the attempt's quiz, read without loading the attempt. */
+    @Query("select attempt.quiz.lmsCourse.id from LmsQuizAttempt attempt where attempt.id = :attemptId")
+    Optional<Long> findLmsCourseIdById(@Param("attemptId") Long attemptId);
+
     /** One enrollment's attempts at these quizzes, newest first. */
     List<LmsQuizAttempt> findAllByCourseEnrollmentIdAndQuizIdInOrderByAttemptNumberDesc(Long courseEnrollmentId,
             Collection<Long> quizIds);

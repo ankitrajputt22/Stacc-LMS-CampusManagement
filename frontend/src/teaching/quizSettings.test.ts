@@ -22,6 +22,8 @@ describe('checkSettings', () => {
       availableFrom: null,
       availableUntil: null,
       negativeMarkPercent: 0,
+      resultRelease: 'AFTER_MARKING',
+      showAnswers: false,
     })
     expect(input?.dueAt).toBe(new Date(2026, 10, 21, 23, 59).toISOString())
   })
@@ -74,6 +76,8 @@ describe('quiz settings', () => {
       shuffleQuestions: true,
       shuffleOptions: false,
       negativeMarkPercent: 25,
+      resultRelease: 'AFTER_DUE_DATE',
+      showAnswers: true,
     } as unknown as LmsQuiz
 
     expect(settingsOf(quiz)).toEqual({
@@ -85,6 +89,8 @@ describe('quiz settings', () => {
       maxAttempts: '',
       shuffleQuestions: true,
       negativeMarkPercent: '25',
+      resultRelease: 'AFTER_DUE_DATE',
+      showAnswers: true,
     })
   })
 

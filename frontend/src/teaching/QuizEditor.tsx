@@ -20,7 +20,7 @@ import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import { FormattedText } from '../formatting/FormattedText'
 import type { LmsQuestion, LmsQuiz, LmsQuizQuestion } from '../types/lms'
-import { Alert, Badge, Button, Card, SelectField, TextField } from '../ui'
+import { Alert, Badge, Button, ButtonLink, Card, SelectField, TextField } from '../ui'
 import { difficultyLabel, QUESTION_TYPES, questionTypeLabel } from './questionText'
 import { quizFacts, quizTypeLabel, quizWindow, settingsOf } from './quizSettings'
 import { QUIZ_FORBIDDEN, QuizSettingsForm } from './QuizSettingsForm'
@@ -103,15 +103,15 @@ function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question:
               onChange={(event) => setMarks(event.target.value)}
             />
             <Button type="submit" variant="secondary" size="sm" disabled={changes.busy}>
-              Save marks<span className="sr-only"> for question {question.position}</span>
+              Save marks<span className="sr-only">{` for question ${question.position}`}</span>
             </Button>
           </form>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" disabled={changes.busy || question.position === 1} onClick={() => move(-1)}>
-              Move up<span className="sr-only"> question {question.position}</span>
+              Move up<span className="sr-only">{` question ${question.position}`}</span>
             </Button>
             <Button variant="secondary" size="sm" disabled={changes.busy || question.position === count} onClick={() => move(1)}>
-              Move down<span className="sr-only"> question {question.position}</span>
+              Move down<span className="sr-only">{` question ${question.position}`}</span>
             </Button>
             <Button
               variant="secondary"
@@ -123,7 +123,7 @@ function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question:
                 })
               }
             >
-              Remove<span className="sr-only"> question {question.position} from the quiz</span>
+              Remove<span className="sr-only">{` question ${question.position} from the quiz`}</span>
             </Button>
           </div>
         </div>
@@ -203,7 +203,7 @@ function BankPicker({ quiz, bank, changes }: { quiz: LmsQuiz; bank: LmsQuestion[
                   })
                 }
               >
-                Add<span className="sr-only"> “{plainName(question.text)}” to the quiz</span>
+                Add<span className="sr-only">{` “${plainName(question.text)}” to the quiz`}</span>
               </Button>
             </li>
           ))}
@@ -225,6 +225,8 @@ function SettingsSummary({ quiz }: { quiz: LmsQuiz }) {
     ['Shuffle questions', quiz.shuffleQuestions ? 'Yes' : 'No'],
     ['Shuffle choices', quiz.shuffleOptions ? 'Yes' : 'No'],
     ['Negative marking', Number(quiz.negativeMarkPercent) === 0 ? 'None' : `${quiz.negativeMarkPercent}% of a question’s marks`],
+    ['Results', quiz.resultRelease === 'AFTER_DUE_DATE' ? 'After the due date, once marked' : 'Once marked'],
+    ['Correct answers with results', quiz.showAnswers ? 'Shown' : 'Not shown'],
   ]
   return (
     <div className="space-y-4">
@@ -289,8 +291,17 @@ export function QuizEditor({ lmsCourseId, quizId }: { lmsCourseId: number; quizI
       <Card
         title={data.title}
         action={
-          data.status === 'ARCHIVED' ? undefined : (
+          data.status === 'ARCHIVED' ? (
+            <ButtonLink to={`/teaching/${lmsCourseId}/quizzes/${data.id}/results`} variant="secondary" size="sm">
+              Results
+            </ButtonLink>
+          ) : (
             <div className="flex flex-wrap gap-2">
+              {data.status === 'PUBLISHED' && (
+                <ButtonLink to={`/teaching/${lmsCourseId}/quizzes/${data.id}/results`} variant="secondary" size="sm">
+                  Results
+                </ButtonLink>
+              )}
               {data.status === 'DRAFT' && (
                 <Button size="sm" onClick={() => setConfirming('publish')}>
                   Publish quiz

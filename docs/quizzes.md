@@ -1,6 +1,6 @@
 # Quizzes
 
-Faculty build quizzes from their course's question bank (v0.7.3). A quiz holds its settings and an ordered list of bank questions, each with the marks it carries in that quiz. It lives in `lms.quiz`. Students take published quizzes (v0.7.4, `lms.quiz.attempt`); marking comes in 0.7.5.
+Faculty build quizzes from their course's question bank (v0.7.3). A quiz holds its settings and an ordered list of bank questions, each with the marks it carries in that quiz. It lives in `lms.quiz`. Students take published quizzes (v0.7.4, `lms.quiz.attempt`), and attempts are marked automatically and by hand (v0.7.5).
 
 ## Quiz
 
@@ -16,6 +16,7 @@ Faculty build quizzes from their course's question bank (v0.7.3). A quiz holds i
 | Attempts | Optional, 1 to 100 per student. Empty means unlimited. |
 | Shuffling | Shuffle questions and shuffle choices, each attempt in its own order. |
 | Negative marking | 0 to 100 percent (two decimals) of a question's marks, taken off for a wrong objective answer. Unanswered questions lose nothing. |
+| Results | `AFTER_MARKING` (default) or `AFTER_DUE_DATE`, and whether results show the correct answers and explanations (`showAnswers`). Both can change after publishing. |
 
 A quiz uses `LmsContentStatus`: a new quiz is a `DRAFT`; publishing records `publishedAt` once; archiving keeps it for good. There is no unpublish, restore, or delete.
 
@@ -100,10 +101,32 @@ Student pages, under **Quizzes** in the course navigation:
 - `/courses/:lmsCourseId/quizzes/:quizId`: the instructions and rules, **Start quiz** (confirmed first, saying the time keeps running) or **Resume quiz**, and **Your attempts**.
 - `/courses/:lmsCourseId/quizzes/:quizId/attempts/:attemptId`: the questions with their inputs. Choices are saved at once and writing after a short pause or on leaving the field, one save at a time per question, each showing Saving…, Saved, or Not saved. The timer counts down to the server's deadline, allowing for the device's clock, and warns at five minutes and one minute. When it runs out the saved answers are handed in. **Submit quiz** is confirmed first and says how many questions are answered. A handed-in attempt shows its answers read-only, without marks until 0.7.5.
 
+## Marking and results (v0.7.5)
+
+Marks are worked out on every read by `QuizScoring` from the answers, the bank questions, and teachers' marks; no score is stored.
+
+- **Automatic:** a single or multiple choice answer is correct only when it chooses exactly the correct options; true/false when it matches; a short answer when it equals an accepted answer, ignoring case, surrounding spaces, and repeated spaces. Correct earns the question's marks in the quiz; wrong loses the quiz's negative-marking share of them (rounded to two decimals); unanswered earns nothing.
+- **By hand:** a descriptive answer needs a teacher's marks; an unanswered one scores zero and needs none.
+- **Teacher's marks** (`LmsQuizAnswerMark`, `lms_quiz_answer_marks`, `V87`, one per answer): 0 to the question's marks with two decimals, optional plain-text feedback up to 10,000 characters, and the marker and time from the server. For an objective answer they replace the automatic marks (a regrade). Marking again replaces them without history; only answered questions of handed-in attempts of published quizzes are marked, under the attempt row lock (`LmsQuizMarkingMySqlIT`).
+- **Score:** the sum of every question's marks, never below zero, once no answer waits for a teacher.
+- **Release:** a student sees an attempt's result once it is handed in and fully marked: at once (`AFTER_MARKING`), or from the due date, or the closing time without one (`AFTER_DUE_DATE`). Before that the attempt says why (`resultStatus`: `NOT_HANDED_IN`, `WAITING_FOR_MARKING`, `WAITING_FOR_RELEASE`, `RELEASED`). A released result has the score, counts of correct, incorrect, and unanswered questions, and each question's outcome, marks, and feedback; the correct options, accepted answers, true or false answer, and explanation only with `showAnswers`. Marking guidance is never sent to students.
+- **Closing:** an attempt a student left open after its time ran out can be closed by a teacher, as handing it in would, so it can be marked. There is no scheduler.
+
+Faculty routes need `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_QUIZ_GRADE` (`V87`) and the faculty access policy on the course of the stored quiz or attempt; results can be read for published and archived quizzes, and marks given for published ones:
+
+| Route | Does |
+| --- | --- |
+| `GET /api/v1/lms/faculty/quizzes/{quizId}/attempts` | Every attempt by student college ID with automatic marks, teachers' marks, the score once complete, and how many answers need marking. |
+| `GET /api/v1/lms/faculty/quiz-attempts/{attemptId}` | One attempt: each question with its answers, the student's answer, the outcome, and the marks. |
+| `PUT /api/v1/lms/faculty/quiz-attempts/{attemptId}/answers/{quizQuestionId}/mark` | `{ "marks", "feedback" }`. |
+| `POST /api/v1/lms/faculty/quiz-attempts/{attemptId}/close` | Closes an attempt whose time is up. |
+
+Pages: **Results** on a published or archived quiz opens `/teaching/:lmsCourseId/quizzes/:quizId/results` (attempts, Needs marking, Automatic, Teacher, Score), and each attempt opens `/teaching/:lmsCourseId/quiz-attempts/:attemptId` with the answers, the key, and Marks and Feedback per answered question (Save marks or Update marks), plus Close attempt when the time is up. Students see their score in **Your attempts** and on the attempt page, with each question's outcome, marks, feedback, and, if shown, the answers.
+
 ## Demo data
 
 `faculty1`'s CS301 has four reviewed questions (true/false, single choice, multiple choice, descriptive) and the published graded quiz "Stacks and queues check" (15 minutes, due in a week, 2 attempts, shuffled choices, 25% negative marking).
 
 `student1` and `student2` can take it (two attempts each).
 
-Not in this phase: marking and results (0.7.5), the gradebook (0.7.6), quizzes as module items, question pools or random selection, closing open attempts with a scheduler, extra time for individual students, and proctoring.
+Not in this phase: the gradebook (0.7.6), partial credit for multiple choice, AI marking, mark notifications, quizzes as module items, question pools or random selection, closing open attempts with a scheduler, extra time for individual students, and proctoring.

@@ -11,6 +11,7 @@ import com.stacc.backend.lms.quiz.QuizType;
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAttempt;
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAttemptService;
 import com.stacc.backend.lms.quiz.attempt.QuizAttemptState;
+import com.stacc.backend.lms.quiz.attempt.QuizResultStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /** A published quiz as the signed-in student sees it, with their own attempts. Never its questions or answers. */
@@ -41,11 +42,17 @@ public record LmsStudentQuizResponse(
         List<Attempt> attempts) {
 
     public record Attempt(Long id, int attemptNumber, QuizAttemptState state, Instant startedAt, Instant deadlineAt,
-            Instant submittedAt, boolean late) {
+            Instant submittedAt, boolean late,
+            @Schema(description = "NOT_HANDED_IN, WAITING_FOR_MARKING, WAITING_FOR_RELEASE, or RELEASED.")
+            QuizResultStatus resultStatus,
+            @Schema(description = "The score once the result is released; null before.")
+            BigDecimal score) {
 
-        static Attempt of(LmsQuizAttempt attempt, Instant now) {
+        static Attempt of(LmsQuizAttempt attempt, LmsQuizAttemptService.StudentQuiz studentQuiz) {
+            Instant now = studentQuiz.now();
             return new Attempt(attempt.getId(), attempt.getAttemptNumber(), attempt.stateAt(now), attempt.getStartedAt(),
-                    attempt.getDeadlineAt(), attempt.getSubmittedAt(), attempt.isLate());
+                    attempt.getDeadlineAt(), attempt.getSubmittedAt(), attempt.isLate(), studentQuiz.resultStatus(attempt),
+                    studentQuiz.releasedScore(attempt));
         }
     }
 
@@ -57,6 +64,6 @@ public record LmsStudentQuizResponse(
                 quiz.getMaxAttempts(), quiz.getNegativeMarkPercent(), studentQuiz.questionCount(), studentQuiz.totalMarks(),
                 studentQuiz.availability(), studentQuiz.attemptsLeft(), open == null ? null : open.getId(),
                 studentQuiz.startable(),
-                studentQuiz.attempts().stream().map(attempt -> Attempt.of(attempt, studentQuiz.now())).toList());
+                studentQuiz.attempts().stream().map(attempt -> Attempt.of(attempt, studentQuiz)).toList());
     }
 }
