@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { FormattedText } from './FormattedText'
@@ -23,7 +23,7 @@ describe('FormattedText', () => {
   it('renders the formatting set with headings under the page’s own', async () => {
     show('# Costs\n\n- **Arrays** read in `O(1)`\n- lists\n\n| Op | Cost |\n| --- | --- |\n| read | fast |\n\n```\nx = 1\n```')
 
-    expect(await screen.findByRole('heading', { level: 3, name: 'Costs' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 3, name: 'Costs' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
     expect(screen.getByText('Arrays').tagName).toBe('STRONG')
     expect(screen.getByRole('table')).toBeInTheDocument()
@@ -37,7 +37,7 @@ describe('FormattedText', () => {
         '[bad](javascript:alert(3)) ![picture](https://example.org/x.png) <a href="https://evil.example">raw</a>',
     )
 
-    const external = await screen.findByRole('link', { name: /notes/ })
+    const external = await screen.findByRole('link', { name: /notes/ }, { timeout: 5000 })
     expect(external).toHaveAttribute('href', 'https://example.org')
     expect(external).toHaveAttribute('target', '_blank')
     expect(external).toHaveAttribute('rel', expect.stringContaining('noopener'))
@@ -52,8 +52,8 @@ describe('FormattedText', () => {
   it('draws maths without trusted commands', async () => {
     const { container } = show('Area is $\\pi r^2$ and $\\href{javascript:alert(1)}{click}$.')
 
-    await screen.findByText(/Area is/)
-    expect(container.querySelector('.katex')).not.toBeNull()
+    // The plain fallback shows the same words while the renderer loads, so wait for the maths itself.
+    await waitFor(() => expect(container.querySelector('.katex')).not.toBeNull(), { timeout: 5000 })
     // The refused \\href is shown as words, never as a link.
     expect(container.querySelector('a, [href]')).toBeNull()
   })

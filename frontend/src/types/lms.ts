@@ -436,3 +436,19 @@ export type LmsFacultyCourseFiles = {
   lmsCourseStatus: 'DRAFT' | 'PUBLISHED'
   files: LmsFacultyCourseFile[]
 }
+
+/** The published syllabus of a course, as a student reads it. Both are null when none is published yet. */
+export type LmsCourseSyllabus = {
+  content: string | null
+  publishedAt: string | null
+}
+
+/** A course's syllabus as faculty manage it. Everything is null when none is saved yet. */
+export type LmsFacultySyllabus = {
+  draftContent: string | null
+  draftUpdatedAt: string | null
+  publishedContent: string | null
+  firstPublishedAt: string | null
+  lastPublishedAt: string | null
+  unpublishedChanges: boolean
+}

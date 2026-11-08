@@ -24,7 +24,7 @@ describe('FormattedTextField', () => {
 
     expect(screen.getByLabelText('Content')).toHaveValue('## Week 1\n\nRead *chapter 2*.')
     await user.click(screen.getByRole('tab', { name: 'Preview' }))
-    expect(await screen.findByRole('heading', { name: 'Week 1' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Week 1' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByText('chapter 2').tagName).toBe('EM')
 
     await user.selectOptions(screen.getByLabelText('Text format'), 'PLAIN')

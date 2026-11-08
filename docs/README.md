@@ -54,6 +54,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Text formatting](text-formatting.md)
 - [Course pages](course-pages.md)
 - [Course files](course-files.md)
+- [Course syllabus](course-syllabus.md)
 - [AI learning](ai-learning.md)
 
 ## Dashboards, reports, and search

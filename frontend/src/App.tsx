@@ -4,8 +4,10 @@ import { AppLayout } from './layouts/AppLayout'
 import { AcademicAdminPage } from './pages/AcademicAdminPage'
 import { AcademicProfilePage } from './pages/AcademicProfilePage'
 import { CourseFilesPage } from './pages/CourseFilesPage'
+import { CourseSyllabusPage } from './pages/CourseSyllabusPage'
 import { LearningPage } from './pages/LearningPage'
 import { TeachingFilesPage } from './pages/TeachingFilesPage'
+import { TeachingSyllabusPage } from './pages/TeachingSyllabusPage'
 import { TeachingPagePreview } from './pages/TeachingPagePreview'
 import { AdminCampusPage } from './pages/AdminCampusPage'
 import { AdminHostelPage } from './pages/AdminHostelPage'
@@ -66,11 +68,13 @@ function App() {
           <Route path="courses/:lmsCourseId/ai" element={<CourseAiPage />} />
           <Route path="courses/:lmsCourseId/pages/:pageId" element={<LearningPage />} />
           <Route path="courses/:lmsCourseId/files" element={<CourseFilesPage />} />
+          <Route path="courses/:lmsCourseId/syllabus" element={<CourseSyllabusPage />} />
           <Route path="teaching" element={<TeachingPage />} />
           <Route path="teaching/:lmsCourseId" element={<TeachingCoursePage />} />
           <Route path="teaching/:lmsCourseId/ai" element={<TeachingAiPage />} />
           <Route path="teaching/:lmsCourseId/pages/:pageId" element={<TeachingPagePreview />} />
           <Route path="teaching/:lmsCourseId/files" element={<TeachingFilesPage />} />
+          <Route path="teaching/:lmsCourseId/syllabus" element={<TeachingSyllabusPage />} />
           <Route
             path="teaching/:lmsCourseId/assignments/:assignmentId/submissions"
             element={<FacultyAssignmentSubmissionsPage />}

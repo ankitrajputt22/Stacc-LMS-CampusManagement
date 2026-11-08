@@ -10,7 +10,7 @@ Course texts can use Stacc's **small safe formatting set** (roadmap decision 10,
 | Announcement message (`LmsAnnouncement`) | `lms_announcements.message_format` | `messageFormat` |
 | Assignment instructions (`LmsAssignment`) | `lms_assignments.instructions_format` | `instructionsFormat` |
 
-Each format is `PLAIN` or `FORMATTED` (`LmsTextFormat`, `V79`). Every text written before v0.6.1 is `PLAIN` and keeps showing exactly as it did. In a request the field is optional: left out, a new text is `PLAIN` and an edited one keeps its current format. Module and material descriptions, submissions, feedback, results, and every non-LMS text stay plain text. Pages (0.6.2), the syllabus (0.6.4), and questions (v0.7) will use the same set.
+Each format is `PLAIN` or `FORMATTED` (`LmsTextFormat`, `V79`). Every text written before v0.6.1 is `PLAIN` and keeps showing exactly as it did. In a request the field is optional: left out, a new text is `PLAIN` and an edited one keeps its current format. Module and material descriptions, submissions, feedback, results, and every non-LMS text stay plain text. Pages (0.6.2) use it, the syllabus (0.6.4) is always formatted, and questions (v0.7) will use the same set.
 
 ## Where the safety comes from
 

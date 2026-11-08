@@ -115,6 +115,15 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
         </p>
       </header>
 
+      <nav aria-label="Course tools" className="mt-4 flex flex-wrap gap-2">
+        <Link to={`/courses/${course.lmsCourseId}/syllabus`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
+          Syllabus
+        </Link>
+        <Link to={`/courses/${course.lmsCourseId}/files`} className="inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-9">
+          Files
+        </Link>
+      </nav>
+
       <section
         aria-labelledby="course-ai-heading"
         className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5"
