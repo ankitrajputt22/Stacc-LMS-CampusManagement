@@ -6,6 +6,7 @@ import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.course.LmsCourseHomeView;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.course.LmsCourseStatus;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,6 +32,7 @@ public class LmsCourseManagementService {
     static final String COURSE_NOT_FOUND = "LMS course not found.";
     static final String ALREADY_EXISTS = "An LMS course already exists for this course offering.";
     static final String ARCHIVED_NOT_PUBLISHABLE = "An archived LMS course cannot be published.";
+    static final String ARCHIVED_NOT_CHANGEABLE = "An archived LMS course cannot be changed.";
 
     private final CourseOfferingRepository courseOfferings;
     private final LmsCourseRepository lmsCourses;
@@ -90,6 +92,19 @@ public class LmsCourseManagementService {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
         lmsCourse.archive();
         return changeOf(lmsCourse, null);
+    }
+
+    /**
+     * Chooses what the course home shows students and its optional welcome message. Official course details stay in the
+     * academic records. An archived course cannot change (409).
+     */
+    public LmsCourse changeHome(Long userAccountId, Long lmsCourseId, LmsCourseHomeView homeView, String welcomeMessage) {
+        LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
+        if (lmsCourse.getStatus() == LmsCourseStatus.ARCHIVED) {
+            throw new ApiException(HttpStatus.CONFLICT, ARCHIVED_NOT_CHANGEABLE);
+        }
+        lmsCourse.changeHome(homeView, welcomeMessage);
+        return lmsCourse;
     }
 
     // The course is locked first, so its status cannot change under a lifecycle step, then its offering decides who

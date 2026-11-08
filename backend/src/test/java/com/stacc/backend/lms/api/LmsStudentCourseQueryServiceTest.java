@@ -361,7 +361,7 @@ class LmsStudentCourseQueryServiceTest {
         assertEquals(
                 new LmsCourseDetailResponse(
                         LMS_COURSE_ID, "TST301", "Test Course One", new BigDecimal("4.00"),
-                        "TST", "Test Department", "BTECH", "Test Program", 3, "2026-27"),
+                        "TST", "Test Department", "BTECH", "Test Program", 3, "2026-27", null, java.util.List.of(), com.stacc.backend.lms.course.LmsCourseHomeView.OVERVIEW, null),
                 service.getAccessibleCourse(ACCOUNT_ID, LMS_COURSE_ID));
     }
 

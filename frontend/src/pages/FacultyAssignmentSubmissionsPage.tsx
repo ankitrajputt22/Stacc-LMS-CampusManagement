@@ -22,7 +22,7 @@ const TEACHING = { to: '/teaching', label: 'Teaching' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
 function coursePath(lmsCourseId: number): string {
-  return `/teaching/${lmsCourseId}`
+  return `/teaching/${lmsCourseId}/assignments`
 }
 
 /** A page state with the breadcrumb above it and a heading for screen readers. */

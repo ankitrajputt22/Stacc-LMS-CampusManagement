@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * Faculty management of the LMS courses of the course offerings they officially teach: list them, create a missing
@@ -111,6 +114,26 @@ public class LmsFacultyCourseManagementController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public LmsCourseManagementResponse publish(@AuthenticationPrincipal Jwt accessToken, @PathVariable Long lmsCourseId) {
         return LmsCourseManagementResponse.of(managementService.publish(AuthenticatedAccount.idFrom(accessToken), lmsCourseId));
+    }
+
+    @PutMapping("/courses/{lmsCourseId}/home")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Choose what the course home shows",
+            description = "Sets the course home to the overview, the modules, or the syllabus, and its optional welcome "
+                    + "message in formatted text. Official course details come from the academic records and cannot change here.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The course home.")
+    @ApiResponse(responseCode = "400", description = "The choice is missing or the message is too long.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "The LMS course does not exist, or the faculty member does not teach its offering.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The LMS course is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsCourseHomeResponse changeHome(@AuthenticationPrincipal Jwt accessToken, @PathVariable Long lmsCourseId,
+            @Valid @RequestBody LmsCourseHomeRequest request) {
+        return LmsCourseHomeResponse.of(managementService.changeHome(AuthenticatedAccount.idFrom(accessToken), lmsCourseId,
+                request.homeView(), request.welcomeMessage()));
     }
 
     @PostMapping("/courses/{lmsCourseId}/archive")

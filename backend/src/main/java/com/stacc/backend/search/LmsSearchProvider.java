@@ -142,7 +142,7 @@ public class LmsSearchProvider implements SearchProvider {
                     LmsCourseSummaryResponse course = courses.get(courseIdOf(announcement));
                     return new SearchResult(SearchResultType.ANNOUNCEMENT, announcement.getTitle(),
                             courseLabel(course.courseCode(), course.courseName()),
-                            SearchFormat.snippet(announcement.getMessage()), "/courses/" + course.lmsCourseId(),
+                            SearchFormat.snippet(announcement.getMessage()), "/courses/" + course.lmsCourseId() + "/announcements",
                             announcement.getPublishedAt());
                 });
     }
@@ -208,7 +208,7 @@ public class LmsSearchProvider implements SearchProvider {
                     return new SearchResult(SearchResultType.TEACHING_ASSIGNMENT, assignment.getTitle(),
                             SearchFormat.join(courseLabel(course.courseCode(), course.courseName()),
                                     SearchFormat.words(assignment.getStatus())),
-                            null, "/teaching/" + course.lmsCourseId(), assignment.getDueAt());
+                            null, "/teaching/" + course.lmsCourseId() + "/assignments", assignment.getDueAt());
                 });
     }
 
@@ -224,7 +224,7 @@ public class LmsSearchProvider implements SearchProvider {
                     return new SearchResult(SearchResultType.TEACHING_ANNOUNCEMENT, announcement.getTitle(),
                             SearchFormat.join(courseLabel(course.courseCode(), course.courseName()),
                                     SearchFormat.words(announcement.getStatus())),
-                            SearchFormat.snippet(announcement.getMessage()), "/teaching/" + course.lmsCourseId(),
+                            SearchFormat.snippet(announcement.getMessage()), "/teaching/" + course.lmsCourseId() + "/announcements",
                             announcement.getPublishedAt());
                 });
     }
@@ -241,7 +241,7 @@ public class LmsSearchProvider implements SearchProvider {
                     return new SearchResult(SearchResultType.TEACHING_MATERIAL, material.getTitle(),
                             SearchFormat.join(courseLabel(course.courseCode(), course.courseName()),
                                     material.getOriginalFileName(), SearchFormat.words(material.getStatus())),
-                            SearchFormat.snippet(material.getDescription()), "/teaching/" + course.lmsCourseId(), null);
+                            SearchFormat.snippet(material.getDescription()), "/teaching/" + course.lmsCourseId() + "/files", null);
                 });
     }
 

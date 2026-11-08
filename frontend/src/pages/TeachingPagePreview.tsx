@@ -115,8 +115,8 @@ export function TeachingPagePreview() {
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{data.title}</h1>
         </div>
-        <ButtonLink to={coursePath} variant="secondary">
-          Edit in course content
+        <ButtonLink to={`${coursePath}/modules`} variant="secondary">
+          Edit in Modules
         </ButtonLink>
       </header>
       <Alert tone={hidden ? 'warning' : 'success'} className="mt-4 max-w-3xl" title="Preview">

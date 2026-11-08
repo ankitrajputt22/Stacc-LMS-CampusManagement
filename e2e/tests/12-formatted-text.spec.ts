@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { COURSE_CODE, COURSE_NAME, signIn, signOut } from './support'
+import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './support'
 
 test('a student reads a formatted course page, and a faculty member saves formatted text and previews a draft page', async ({ page }) => {
   // The demo page "Complexity cheat sheet" is formatted: a heading, a table, a list, code, and maths. The course home
@@ -18,6 +18,7 @@ test('a student reads a formatted course page, and a faculty member saves format
 
   await signIn(page, 'lms', 'faculty1')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
+  await openCourseSection(page, 'Announcements')
   await page.getByRole('button', { name: 'Add announcement' }).click()
   const form = page.getByRole('form', { name: 'New announcement' })
   await form.getByLabel('Title').fill('Lab room change (formatted)')
@@ -33,6 +34,7 @@ test('a student reads a formatted course page, and a faculty member saves format
   await expect(saved.locator('script')).toHaveCount(0)
 
   // Faculty preview a page as students see it, drafts included, with whether students can see it yet.
+  await openCourseSection(page, 'Modules')
   await page.getByRole('link', { name: /Preview\s*page “Doubly linked lists”/ }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Doubly linked lists' })).toBeVisible()
   await expect(page.getByText(/They cannot see it yet: the page is a draft/)).toBeVisible()

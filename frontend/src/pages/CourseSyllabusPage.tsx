@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { getLmsCourse } from '../api/lmsCoursesApi'
-import { getCourseSyllabus } from '../api/lmsSyllabusApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
@@ -14,8 +13,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
 import { creditsText } from '../courses/credits'
-import { formatDateTime } from '../courses/dates'
-import { FormattedText } from '../formatting/FormattedText'
+import { SyllabusBody } from '../courses/SyllabusBody'
 import { Card, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -49,9 +47,6 @@ export function CourseSyllabusPage() {
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
   const ask = isStudent && lmsCourseId !== null
   const course = useApiQuery(ask ? queryKeys.lms.course(lmsCourseId) : null, (signal) => getLmsCourse(lmsCourseId ?? 0, signal))
-  const syllabus = useApiQuery(ask ? queryKeys.lms.syllabus(lmsCourseId) : null, (signal) =>
-    getCourseSyllabus(lmsCourseId ?? 0, signal),
-  )
 
   if (!isStudent) {
     return (
@@ -62,8 +57,8 @@ export function CourseSyllabusPage() {
       </Shell>
     )
   }
-  const failed = [course, syllabus].find((request) => request.status !== 'loaded' && request.status !== 'loading')
-  if (failed || course.status !== 'loaded' || syllabus.status !== 'loaded') {
+  const failed = course.status !== 'loaded' && course.status !== 'loading' ? course : undefined
+  if (failed || course.status !== 'loaded') {
     return (
       <Shell lmsCourseId={lmsCourseId}>
         <StatePanel>
@@ -81,7 +76,6 @@ export function CourseSyllabusPage() {
   }
 
   const details = course.data
-  const published = syllabus.data
   return (
     <Shell lmsCourseId={lmsCourseId} courseName={details.courseName}>
       <Card title="Course details">
@@ -101,20 +95,7 @@ export function CourseSyllabusPage() {
         </dl>
       </Card>
       <div className="mt-6">
-        {published.content === null ? (
-          <StatePanel>
-            <EmptyState title="No syllabus published yet." description="It appears here once your teachers publish it." />
-          </StatePanel>
-        ) : (
-          <Card>
-            <FormattedText text={published.content} format="FORMATTED" className="text-base leading-7 text-ink" headingLevel={2} />
-            {published.publishedAt && (
-              <p className="mt-6 border-t border-line pt-3 text-xs text-ink-muted">
-                Published <time dateTime={published.publishedAt}>{formatDateTime(published.publishedAt)}</time>
-              </p>
-            )}
-          </Card>
-        )}
+        <SyllabusBody lmsCourseId={details.lmsCourseId} />
       </div>
     </Shell>
   )

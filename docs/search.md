@@ -52,11 +52,11 @@ Only kinds that are implemented exist. The preview lists them in this order:
 | `COURSE` | `STUDENT` + `LMS_COURSE_VIEW` | course code and name, program code, session code | `/courses/{lmsCourseId}` |
 | `TEACHING_COURSE` | `FACULTY` + `FACULTY_COURSE_VIEW` + `LMS_COURSE_MANAGE` | the same | `/teaching/{lmsCourseId}` for a draft or published LMS course, otherwise `/teaching` |
 | `ASSIGNMENT` | `STUDENT` + `LMS_COURSE_VIEW` | title | `/courses/{lmsCourseId}/assignments/{assignmentId}` |
-| `TEACHING_ASSIGNMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | title | `/teaching/{lmsCourseId}` |
+| `TEACHING_ASSIGNMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | title | `/teaching/{lmsCourseId}/assignments` |
 | `STUDY_MATERIAL` | `STUDENT` + `LMS_COURSE_VIEW` | title, original file name, description | `/courses/{lmsCourseId}/pages/{pageId}` (the material's page) |
-| `TEACHING_MATERIAL` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}` |
-| `ANNOUNCEMENT` | `STUDENT` + `LMS_COURSE_VIEW` | title, message | `/courses/{lmsCourseId}` |
-| `TEACHING_ANNOUNCEMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}` |
+| `TEACHING_MATERIAL` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}/files` |
+| `ANNOUNCEMENT` | `STUDENT` + `LMS_COURSE_VIEW` | title, message | `/courses/{lmsCourseId}/announcements` |
+| `TEACHING_ANNOUNCEMENT` | `FACULTY` + `FACULTY_COURSE_VIEW` | the same | `/teaching/{lmsCourseId}/announcements` |
 | `ACADEMIC_CALENDAR_EVENT` | `ACADEMIC_CALENDAR_VIEW` with any of the three roles | title, description | `/calendar?month=YYYY-MM` (the event's first month) |
 | `CAMPUS_NOTICE` | `CAMPUS_NOTICE_VIEW` with any of the three roles | title, message | `/campus` |
 | `HELPDESK_TICKET` | any of the three roles with `HELPDESK_TICKET_VIEW_OWN` (own) or `ADMIN` + `HELPDESK_TICKET_VIEW_ALL` (all) | ticket number, subject, category code and name | `/support/tickets/{ticketId}` |

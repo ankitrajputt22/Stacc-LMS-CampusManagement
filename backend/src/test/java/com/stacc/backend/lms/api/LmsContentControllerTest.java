@@ -251,7 +251,7 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
     void facultyMemberGetsTheContentTheyManage() throws Exception {
         when(facultyContent.getCourseContent(ACCOUNT_ID, 7L)).thenReturn(new LmsFacultyCourseContentResponse(
                 7L, "TST301", "Test Data Structures", null, 3, "BTECH", "2026-27", "DRAFT", List.of(
-                        LmsFacultyModuleContentResponse.of(module, List.of(LmsFacultyTopicContentResponse.of(topic, List.of()))))));
+                        LmsFacultyModuleContentResponse.of(module, List.of(LmsFacultyTopicContentResponse.of(topic, List.of())))), com.stacc.backend.lms.course.LmsCourseHomeView.OVERVIEW, null));
 
         mockMvc.perform(as(facultyViewToken(), get("/api/v1/lms/faculty/courses/7/content").param("facultyProfileId", "9")))
                 .andExpect(status().isOk())

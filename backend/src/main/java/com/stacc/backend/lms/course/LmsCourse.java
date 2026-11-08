@@ -31,6 +31,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "lms_courses")
 public class LmsCourse {
 
+    public static final int MAX_WELCOME_LENGTH = 5_000;
+
     // No cascade: a course offering is official academic data and is never created or
     // deleted through its learning space.
     @Id
@@ -44,6 +46,14 @@ public class LmsCourse {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private LmsCourseStatus status = LmsCourseStatus.DRAFT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "home_view", nullable = false, length = 20)
+    private LmsCourseHomeView homeView = LmsCourseHomeView.OVERVIEW;
+
+    // Formatted text (Stacc's small formatting set), stored as written and never as HTML. Optional.
+    @Column(name = "welcome_message", columnDefinition = "MEDIUMTEXT")
+    private String welcomeMessage;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -80,6 +90,23 @@ public class LmsCourse {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public LmsCourseHomeView getHomeView() {
+        return homeView;
+    }
+
+    public String getWelcomeMessage() {
+        return welcomeMessage;
+    }
+
+    /** Chooses what the course home shows and its welcome message (blank removes it). An archived course cannot change. */
+    public void changeHome(LmsCourseHomeView homeView, String welcomeMessage) {
+        if (status == LmsCourseStatus.ARCHIVED) {
+            throw new IllegalStateException("An archived LMS course cannot be changed");
+        }
+        this.homeView = Require.notNull(homeView, "homeView");
+        this.welcomeMessage = Require.optionalText(welcomeMessage, "welcomeMessage", MAX_WELCOME_LENGTH);
     }
 
     public void publish() {

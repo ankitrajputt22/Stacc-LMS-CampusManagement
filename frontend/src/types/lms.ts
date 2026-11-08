@@ -35,6 +35,13 @@ export type LmsCourseDetail = {
   programName: string
   semesterNumber: number
   academicSessionCode: string
+  /** The section, or null when the offering is for the whole semester. */
+  sectionCode: string | null
+  /** The names of the active faculty teaching the offering. */
+  faculty: string[]
+  homeView: LmsCourseHomeView
+  /** Formatted text, or null. */
+  welcomeMessage: string | null
 }
 
 /** Where a module or topic is in its life. Students only ever receive published content. */
@@ -138,7 +145,12 @@ export type LmsFacultyCourseContent = {
   academicSessionCode: string
   lmsCourseStatus: LmsFacultyCourseStatus
   modules: LmsFacultyModuleContent[]
+  homeView: LmsCourseHomeView
+  welcomeMessage: string | null
 }
+
+/** What a course's home shows students. */
+export type LmsCourseHomeView = 'OVERVIEW' | 'MODULES' | 'SYLLABUS'
 
 /** The text of a module, for adding or editing one. */
 export type LmsModuleInput = {

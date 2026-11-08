@@ -104,7 +104,9 @@ public class LmsFacultyContentQueryService {
                 semester.getProgram().getCode(),
                 semester.getAcademicSession().getCode(),
                 lmsCourse.getStatus().name(),
-                moduleContent);
+                moduleContent,
+                lmsCourse.getHomeView(),
+                lmsCourse.getWelcomeMessage());
     }
 
     /**
