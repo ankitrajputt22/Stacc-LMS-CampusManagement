@@ -149,7 +149,8 @@ export function TeachingCoursePage() {
       {(course, reload) => (
         <>
           <CourseSettings course={course} reload={reload} />
-          <CourseHomeSettings key={`${course.homeView}|${course.welcomeMessage ?? ''}`} course={course} />
+          {/* Not keyed by the saved values: a save reloads the course, and remounting would drop "Course home saved." */}
+          <CourseHomeSettings course={course} />
         </>
       )}
     </TeachingCourseFrame>
