@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.api;
 
+import java.time.Clock;
 import java.util.List;
 
 import com.stacc.backend.common.error.ApiException;
@@ -27,7 +28,11 @@ public class LmsStudentAssignmentQueryService {
     private final LmsStudentAccessService studentAccess;
     private final LmsAssignmentRepository assignments;
 
-    public LmsStudentAssignmentQueryService(LmsStudentAccessService studentAccess, LmsAssignmentRepository assignments) {
+    private final Clock clock;
+
+    public LmsStudentAssignmentQueryService(LmsStudentAccessService studentAccess, LmsAssignmentRepository assignments,
+            Clock clock) {
+        this.clock = clock;
         this.studentAccess = studentAccess;
         this.assignments = assignments;
     }
@@ -63,7 +68,7 @@ public class LmsStudentAssignmentQueryService {
         }
         return assignments.findWithCourseByIdAndLmsCourseId(assignmentId, lmsCourseId)
                 .filter(assignment -> isVisibleInCourse(assignment, lmsCourseId))
-                .map(LmsCourseAssignmentDetailResponse::of)
+                .map(assignment -> LmsCourseAssignmentDetailResponse.of(assignment, clock.instant()))
                 .orElseThrow(LmsStudentAssignmentQueryService::assignmentUnavailable);
     }
 

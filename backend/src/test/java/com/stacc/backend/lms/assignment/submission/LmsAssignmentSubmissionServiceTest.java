@@ -458,4 +458,34 @@ class LmsAssignmentSubmissionServiceTest {
 
         assertEquals(1, service.submit(STUDENT_A, 7L, 5L, null, withNull).attachments().size());
     }
+
+    // --- submission rules (v0.7.8) -------------------------------------------------------------------------
+
+    @Test
+    void workIsTakenOnlyFromTheOpeningTimeAndLateOnlyWhenAllowedAndBeforeTheClosingTime() {
+        published.changeSubmissionRules(BEFORE_DUE.plusSeconds(60), null, true, null);
+        assertRefused(HttpStatus.CONFLICT, LmsAssignmentSubmissionService.NOT_OPEN, () -> service.submit(STUDENT_A, 7L, 5L, "Early", null));
+
+        published.changeSubmissionRules(null, null, false, null);
+        assertRefused(HttpStatus.CONFLICT, LmsAssignmentSubmissionService.CLOSED,
+                () -> serviceAt(AFTER_DUE).submit(STUDENT_A, 7L, 5L, "Late", null));
+
+        published.changeSubmissionRules(null, SubmissionFixtures.DUE.plusSeconds(7200), true, null);
+        assertTrue(serviceAt(AFTER_DUE).submit(STUDENT_A, 7L, 5L, "Late", null).attempt().isLate());
+        assertRefused(HttpStatus.CONFLICT, LmsAssignmentSubmissionService.CLOSED,
+                () -> serviceAt(SubmissionFixtures.DUE.plusSeconds(7201)).submit(STUDENT_A, 7L, 5L, "Too late", null));
+        verifyNoInteractions(storage);
+    }
+
+    @Test
+    void theAttemptLimitIsCountedUnderTheLocks() {
+        published.changeSubmissionRules(null, null, true, 2);
+        service.submit(STUDENT_A, 7L, 5L, "First", null);
+        service.submit(STUDENT_A, 7L, 5L, "Second", null);
+
+        assertRefused(HttpStatus.CONFLICT, LmsAssignmentSubmissionService.NO_ATTEMPTS_LEFT,
+                () -> service.submit(STUDENT_A, 7L, 5L, "Third", null));
+        assertEquals(1, service.submit(STUDENT_B, 7L, 5L, "Other student", null).attempt().getAttemptNumber());
+    }
 }
+

@@ -3,6 +3,7 @@ package com.stacc.backend.lms.assignment.submission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +51,9 @@ public class LmsAssignmentSubmissionService {
     static final String TEXT_TOO_LONG = "The text response must be at most 20,000 characters.";
     static final String STORAGE_UNAVAILABLE = "File storage is not available right now. Try again later.";
     static final String UNREADABLE = "The file could not be read.";
+    static final String NOT_OPEN = "This assignment does not take work yet.";
+    static final String CLOSED = "This assignment no longer takes work.";
+    static final String NO_ATTEMPTS_LEFT = "You have used every attempt this assignment allows.";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LmsAssignmentSubmissionService.class);
 
@@ -122,6 +126,8 @@ public class LmsAssignmentSubmissionService {
                 .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
         LmsAssignment assignment = visibleAssignment(lmsCourseId, assignmentId);
 
+        // Checked before any file is stored, and again with the attempt's own time once the locks are held.
+        requireOpen(assignment, clock.instant());
         String text = validText(textContent);
         List<MultipartFile> chosen = chosenFiles(files);
         if (chosen.size() > maxFiles) {
@@ -142,11 +148,17 @@ public class LmsAssignmentSubmissionService {
             LmsAssignmentSubmission submission = submissions.findForUpdate(assignment.getId(), courseEnrollmentId)
                     .orElseGet(() -> submissions.saveAndFlush(
                             new LmsAssignmentSubmission(assignment, enrollment)));
-            int attemptNumber = submission.takeNextAttemptNumber();
+            // The attempt limit is counted under the locks, so two hand-ins at once never pass it together.
+            if (assignment.getMaxAttempts() != null && submission.getLatestAttemptNumber() >= assignment.getMaxAttempts()) {
+                throw new ApiException(HttpStatus.CONFLICT, NO_ATTEMPTS_LEFT);
+            }
             // Accepted now, by the server's clock, at the precision the database keeps, so the answer shows
             // exactly what every later read shows. The deadline that applies now is kept with the attempt.
+            Instant acceptedAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
+            requireOpen(assignment, acceptedAt);
+            int attemptNumber = submission.takeNextAttemptNumber();
             LmsSubmissionAttempt attempt = attempts.saveAndFlush(new LmsSubmissionAttempt(submission, attemptNumber, text,
-                    clock.instant().truncatedTo(ChronoUnit.MICROS), assignment.getDueAt()));
+                    acceptedAt, assignment.getDueAt()));
 
             List<LmsSubmissionAttachment> saved = new ArrayList<>();
             for (int index = 0; index < checked.size(); index++) {
@@ -213,6 +225,14 @@ public class LmsAssignmentSubmissionService {
                 && studentAccess.findAccessGrantingEnrollment(userAccountId, assignment.getLmsCourse().getId())
                         .map(enrollment -> enrollment.getId().equals(submission.getCourseEnrollment().getId()))
                         .orElse(false);
+    }
+
+    private static void requireOpen(LmsAssignment assignment, Instant at) {
+        switch (assignment.submissionWindowAt(at)) {
+            case NOT_OPEN -> throw new ApiException(HttpStatus.CONFLICT, NOT_OPEN);
+            case CLOSED -> throw new ApiException(HttpStatus.CONFLICT, CLOSED);
+            default -> { }
+        }
     }
 
     // The assignment must be published and belong to the course in the request. The course is checked from

@@ -47,13 +47,22 @@ public record LmsFacultyAssignmentResponse(
         @Schema(description = "The course outcomes it assesses, by code.")
         List<LmsOutcomeResponse> outcomes,
         @Schema(description = "The rubric it is graded with, or null.")
-        LmsRubricResponse rubric) {
+        LmsRubricResponse rubric,
+        @Schema(description = "When it starts taking work; null means from publication.")
+        Instant availableFrom,
+        @Schema(description = "After this no work is taken; null means no final closing time.")
+        Instant availableUntil,
+        @Schema(description = "Whether work handed in after the due date is taken (and marked late).")
+        boolean allowLateSubmissions,
+        @Schema(description = "Attempts each student may make; null means unlimited.")
+        Integer maxAttempts) {
 
     static LmsFacultyAssignmentResponse of(LmsAssignment assignment) {
         return new LmsFacultyAssignmentResponse(assignment.getId(), assignment.getTitle(), assignment.getInstructions(),
                 assignment.getDueAt(), assignment.getMaxMarks(), assignment.getStatus(), assignment.getPublishedAt(),
                 assignment.getCreatedAt(), assignment.getUpdatedAt(), assignment.getInstructionsFormat(),
                 assignment.getBloomLevel(), assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList(),
-                LmsRubricResponse.ofNullable(assignment.getRubric()));
+                LmsRubricResponse.ofNullable(assignment.getRubric()), assignment.getAvailableFrom(),
+                assignment.getAvailableUntil(), assignment.isAllowLateSubmissions(), assignment.getMaxAttempts());
     }
 }

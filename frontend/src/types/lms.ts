@@ -238,6 +238,16 @@ export type LmsCourseAssignmentDetail = {
   outcomes: LmsOutcome[]
   /** The rubric it is graded with, or null. */
   rubric: LmsRubric | null
+  /** When it starts taking work; null means from publication. */
+  availableFrom: string | null
+  /** After this no work is taken; null means no final closing time. */
+  availableUntil: string | null
+  /** Whether work handed in after the due date is taken (and marked late). */
+  allowLateSubmissions: boolean
+  /** Attempts each student may make; null means unlimited. */
+  maxAttempts: number | null
+  /** Whether a new attempt is taken now, by the server's clock when the page loaded. */
+  submissionWindow: 'NOT_OPEN' | 'OPEN' | 'CLOSED'
 }
 
 /** One assignment as faculty manage it. Archived assignments are not sent. */
@@ -259,6 +269,10 @@ export type LmsFacultyAssignment = {
   outcomes: LmsOutcome[]
   /** The rubric it is graded with, or null. */
   rubric: LmsRubric | null
+  availableFrom: string | null
+  availableUntil: string | null
+  allowLateSubmissions: boolean
+  maxAttempts: number | null
 }
 
 /** One assignment in a faculty member's list across their courses, from GET /api/v1/lms/faculty/my-assignments. */
