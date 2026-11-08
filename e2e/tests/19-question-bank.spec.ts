@@ -16,7 +16,7 @@ test('a faculty member adds a question to the bank, reviews it, offers it for pr
   await form.getByRole('button', { name: 'Add question' }).click()
 
   const bank = page.getByRole('region', { name: 'Questions' })
-  await expect(bank.getByText('A primary key may contain null values.')).toBeVisible()
+  await expect(bank.getByText('A primary key may contain null values.', { exact: true })).toBeVisible()
   await expect(bank.getByText('Answer: False')).toBeVisible()
   await expect(bank.getByText('Needs review')).toBeVisible()
 
@@ -29,6 +29,6 @@ test('a faculty member adds a question to the bank, reviews it, offers it for pr
   await page.getByRole('button', { name: 'Archive question', exact: true }).click()
   await expect(bank.getByText('No questions match these filters.')).toBeVisible()
   await bank.getByLabel('Status').selectOption('ARCHIVED')
-  await expect(bank.getByText('A primary key may contain null values.')).toBeVisible()
+  await expect(bank.getByText('A primary key may contain null values.', { exact: true })).toBeVisible()
   await expect(bank.getByText('Archived', { exact: true })).toBeVisible()
 })
