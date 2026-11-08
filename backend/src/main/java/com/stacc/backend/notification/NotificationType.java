@@ -4,6 +4,8 @@ package com.stacc.backend.notification;
 public enum NotificationType {
     /** An assignment was published for the first time. */
     ASSIGNMENT_PUBLISHED,
+    /** A quiz was published for the first time. */
+    QUIZ_PUBLISHED,
     /** An attempt got its first grade, or its grade or feedback changed. */
     ASSIGNMENT_GRADED,
     /** An official calendar event was published for the first time. */

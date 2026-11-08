@@ -150,6 +150,17 @@ public class LmsQuiz {
         this.status = LmsContentStatus.ARCHIVED;
     }
 
+    /** Whether an attempt may start now: from the opening time (or publication) until the closing time. */
+    public QuizAvailability availabilityAt(Instant now) {
+        if (availableFrom != null && now.isBefore(availableFrom)) {
+            return QuizAvailability.NOT_OPEN;
+        }
+        if (availableUntil != null && !now.isBefore(availableUntil)) {
+            return QuizAvailability.CLOSED;
+        }
+        return QuizAvailability.OPEN;
+    }
+
     public boolean isDraft() {
         return status == LmsContentStatus.DRAFT;
     }

@@ -32,6 +32,7 @@ const SIGN_IN_AGAIN =
 const ACTION_LABELS: Record<NotificationType, string> = {
   ASSIGNMENT_PUBLISHED: 'View assignment',
   ASSIGNMENT_GRADED: 'View assignment',
+  QUIZ_PUBLISHED: 'View quiz',
   ACADEMIC_CALENDAR_PUBLISHED: 'View calendar',
   ACADEMIC_CALENDAR_CANCELLED: 'View calendar',
   ATTENDANCE_UPDATED: 'View attendance',

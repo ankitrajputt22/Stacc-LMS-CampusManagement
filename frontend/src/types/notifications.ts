@@ -3,6 +3,7 @@
 export type NotificationType =
   | 'ASSIGNMENT_PUBLISHED'
   | 'ASSIGNMENT_GRADED'
+  | 'QUIZ_PUBLISHED'
   | 'ACADEMIC_CALENDAR_PUBLISHED'
   | 'ACADEMIC_CALENDAR_CANCELLED'
   | 'ATTENDANCE_UPDATED'
@@ -23,6 +24,7 @@ export type NotificationType =
 export type NotificationSourceType =
   | 'ASSIGNMENT'
   | 'SUBMISSION_GRADE'
+  | 'QUIZ'
   | 'ACADEMIC_CALENDAR_EVENT'
   | 'ATTENDANCE_RECORD'
   | 'COURSE_RESULT'

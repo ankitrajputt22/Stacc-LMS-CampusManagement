@@ -1,6 +1,6 @@
 # Quizzes
 
-Faculty build quizzes from their course's question bank (v0.7.3). A quiz holds its settings and an ordered list of bank questions, each with the marks it carries in that quiz. It lives in `lms.quiz`. Students take published quizzes from 0.7.4; marking comes in 0.7.5.
+Faculty build quizzes from their course's question bank (v0.7.3). A quiz holds its settings and an ordered list of bank questions, each with the marks it carries in that quiz. It lives in `lms.quiz`. Students take published quizzes (v0.7.4, `lms.quiz.attempt`); marking comes in 0.7.5.
 
 ## Quiz
 
@@ -55,7 +55,7 @@ Every route needs `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_QUIZ_MANAGE` (`V85`
 | `POST /api/v1/lms/faculty/quizzes/{quizId}/publish` | Publishes a draft; again changes nothing. |
 | `POST /api/v1/lms/faculty/quizzes/{quizId}/archive` | Archives it; again changes nothing. |
 
-The faculty quiz answer lists each question with its quiz ID, position, marks, and what the bank says (type, text, topic, difficulty, bank marks, review and practice state, status), but not its answers: those stay on the Question bank page. Students have no route here.
+The faculty quiz answer lists each question with its quiz ID, position, marks, and what the bank says (type, text, topic, difficulty, bank marks, review and practice state, status), but not its answers: those stay on the Question bank page. Students use their own routes (below), which never send answers.
 
 ## Pages
 
@@ -66,8 +66,44 @@ The faculty quiz answer lists each question with its quiz ID, position, marks, a
 
 Times are entered and shown in the browser's own time zone.
 
+## Taking a quiz (v0.7.4)
+
+`LmsQuizAttempt` (`lms_quiz_attempts`, `V86`) is one student's attempt at a published quiz, through their official `CourseEnrollment` (never an account or profile). It keeps its number (1, 2, …), `startedAt`, and two values fixed at the start: `deadlineAt`, the earlier of the time limit from the start and the quiz's closing time (none when neither is set), and `dueAtSnapshot`. Later changes to the quiz never move an attempt's deadline. Stored statuses are `IN_PROGRESS`, `SUBMITTED`, and `EXPIRED`; an open attempt whose deadline has passed is shown as `TIME_UP`, worked out on every read and never stored. `late` compares the hand-in time with the due date snapshot.
+
+Answers (`LmsQuizAnswer`, `lms_quiz_answers`, one per attempt and quiz question) keep the chosen options by their position in the question (`lms_quiz_answer_options`), a true or false answer, or plain text (up to 500 characters for a short answer, 20,000 for a descriptive one). Saving again replaces the answer; an empty answer leaves the question unanswered. Parts a question's type does not take, unknown positions, and two choices for a single-choice question answer 400.
+
+Rules:
+
+- **Who:** the student comes from the access token; the enrollment is found with `LmsStudentAccessService.findAccessGrantingEnrollment`. An attempt made through another enrollment, of a quiz that is no longer published, or in a course the student can no longer use, is the same 404 as a missing one.
+- **Starting** needs the quiz open (after `availableFrom`, before `availableUntil`) and an attempt left (409 otherwise). It locks the course enrollment (still `ENROLLED`) and then the enrollment's attempts at the quiz with a locking read: an attempt still open is returned instead (Resume), one left open past its deadline is closed first, and the next number follows the highest. A unique key on the number and a unique generated column allowing one `IN_PROGRESS` attempt per quiz and enrollment back this up (`LmsQuizAttemptMySqlIT`).
+- **Saving** locks the attempt row and takes the answer only while the attempt is in progress and the server's clock is at most 15 seconds past the deadline (for answers already on their way); after that it answers 409.
+- **Handing in** locks the attempt row: before the deadline (and its grace) it is `SUBMITTED` at that moment; after it, `EXPIRED` at the deadline. Handing in again changes nothing. An answer racing a hand-in is either saved before it or refused.
+- **Reading never changes data**, so an attempt left open past its deadline stays stored as in progress (shown as time up) until it is handed in or the next attempt starts.
+- **Order:** with shuffling on, each attempt shows questions, and choices, in its own order, worked out from the attempt's ID with `java.util.Random` (`QuizAttemptOrder`), the same on every read; nothing is stored.
+- **Nothing gives answers away:** an attempt sends each question's text, type, marks, and, for single and multiple choice only, the choices as `position` and `text`. Never which choices are correct, accepted short answers, the true or false answer, guidance, or explanations.
+- The first publication of a quiz notifies every student who may use the course now (`QUIZ_PUBLISHED`, linking to the quiz page).
+
+Student routes need `STUDENT`, `LMS_COURSE_VIEW`, and `LMS_QUIZ_TAKE` (`V86`):
+
+| Route | Does |
+| --- | --- |
+| `GET /api/v1/lms/courses/{lmsCourseId}/quizzes` | The published quizzes, newest first, each with availability, attempts left, the open attempt, whether it can start, and the student's attempts. |
+| `GET /api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}` | One of them, with its instructions. |
+| `POST /api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}/attempts` | Starts an attempt, or returns the open one, with its questions. |
+| `GET /api/v1/lms/quiz-attempts/{attemptId}` | One of the student's attempts, with `serverTime` for the timer. |
+| `PUT /api/v1/lms/quiz-attempts/{attemptId}/answers/{quizQuestionId}` | `{ "selectedOptions", "trueFalseAnswer", "text" }`. |
+| `POST /api/v1/lms/quiz-attempts/{attemptId}/submit` | Hands the attempt in. |
+
+Student pages, under **Quizzes** in the course navigation:
+
+- `/courses/:lmsCourseId/quizzes`: each published quiz with its type, size, time limit, due date, attempts used, and whether it can start now.
+- `/courses/:lmsCourseId/quizzes/:quizId`: the instructions and rules, **Start quiz** (confirmed first, saying the time keeps running) or **Resume quiz**, and **Your attempts**.
+- `/courses/:lmsCourseId/quizzes/:quizId/attempts/:attemptId`: the questions with their inputs. Choices are saved at once and writing after a short pause or on leaving the field, one save at a time per question, each showing Saving…, Saved, or Not saved. The timer counts down to the server's deadline, allowing for the device's clock, and warns at five minutes and one minute. When it runs out the saved answers are handed in. **Submit quiz** is confirmed first and says how many questions are answered. A handed-in attempt shows its answers read-only, without marks until 0.7.5.
+
 ## Demo data
 
 `faculty1`'s CS301 has four reviewed questions (true/false, single choice, multiple choice, descriptive) and the published graded quiz "Stacks and queues check" (15 minutes, due in a week, 2 attempts, shuffled choices, 25% negative marking).
 
-Not in this phase: taking quizzes, timers and answers (0.7.4), marking and results (0.7.5), the gradebook (0.7.6), quizzes as module items, question pools or random selection, and notifications.
+`student1` and `student2` can take it (two attempts each).
+
+Not in this phase: marking and results (0.7.5), the gradebook (0.7.6), quizzes as module items, question pools or random selection, closing open attempts with a scheduler, extra time for individual students, and proctoring.

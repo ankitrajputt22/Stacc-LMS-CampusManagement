@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
  * first. Questions come only from the course's own bank and change only while the quiz is a draft.
  *
  * <p>Publishing needs at least one question, each active and reviewed (and, for a practice quiz, offered for
- * practice). It reads the questions with a shared lock after locking the quiz, the same order a bank edit takes, so an
+ * practice), and tells the students who may use the course, once. It reads the questions with a shared lock after locking the quiz, the same order a bank edit takes, so an
  * edit either finishes first, and publishing sees the question needs review again, or waits and then finds the quiz
  * published and stops.
  */
@@ -51,15 +51,18 @@ public class LmsQuizService {
     private final LmsCourseRepository lmsCourses;
     private final LmsFacultyAccessService facultyAccess;
     private final Clock clock;
+    private final LmsQuizNotifications notifications;
 
     public LmsQuizService(LmsQuizRepository quizzes, LmsQuizQuestionRepository links, LmsQuestionRepository questions,
-            LmsCourseRepository lmsCourses, LmsFacultyAccessService facultyAccess, Clock clock) {
+            LmsCourseRepository lmsCourses, LmsFacultyAccessService facultyAccess, Clock clock,
+            LmsQuizNotifications notifications) {
         this.quizzes = quizzes;
         this.links = links;
         this.questions = questions;
         this.lmsCourses = lmsCourses;
         this.facultyAccess = facultyAccess;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /** A quiz with how many questions it has and the marks they carry together. */
@@ -224,6 +227,7 @@ public class LmsQuizService {
         // The database keeps microseconds, so this answer shows the same moment as every later read.
         quiz.publish(clock.instant().truncatedTo(ChronoUnit.MICROS));
         quizzes.saveAndFlush(quiz);
+        notifications.published(quiz);
         return detailOf(quiz);
     }
 
