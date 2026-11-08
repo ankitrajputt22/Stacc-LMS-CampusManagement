@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -26,12 +26,10 @@ import type {
   LmsCourseContent,
   LmsCourseDetail,
 } from '../types/lms'
+import { ButtonLink, PageHeader } from '../ui'
 
 const COURSES_PATH = '/courses'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-
-const backLinkClasses =
-  'inline-flex min-h-11 items-center rounded-control font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0'
 
 /** "Courses / Course name": the way back to the list, and where the student is. */
 function CourseBreadcrumb({ courseName }: { courseName?: string }) {
@@ -43,11 +41,8 @@ function CourseState({ children }: { children: ReactNode }) {
   return (
     <>
       <title>Course · Stacc</title>
-      <CourseBreadcrumb />
-      <h1 className="sr-only">Course</h1>
-      <div className="mt-4">
-        <StatePanel>{children}</StatePanel>
-      </div>
+      <PageHeader breadcrumb={<CourseBreadcrumb />} title="Course" />
+      <StatePanel>{children}</StatePanel>
     </>
   )
 }
@@ -56,16 +51,16 @@ function CourseUnavailable() {
   return (
     <>
       <title>Course unavailable · Stacc</title>
-      <CourseBreadcrumb />
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">
-        Course unavailable
-      </h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        This LMS course could not be found or is not available to your account.
-      </p>
-      <Link to={COURSES_PATH} className={`mt-4 text-sm ${backLinkClasses}`}>
-        Back to Courses
-      </Link>
+      <PageHeader
+        breadcrumb={<CourseBreadcrumb />}
+        title="Course unavailable"
+        description="This LMS course could not be found or is not available to your account."
+        actions={
+          <ButtonLink to={COURSES_PATH} variant="secondary">
+            Back to Courses
+          </ButtonLink>
+        }
+      />
     </>
   )
 }
@@ -99,18 +94,15 @@ const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction
 function CourseHome({ course, announcements, assignments, content }: CourseHomeProps) {
   const teaching = teachingLine(course)
   return (
-    <>
+    <div className="max-w-3xl">
       <title>{`${course.courseName} · Stacc`}</title>
-      <CourseBreadcrumb courseName={course.courseName} />
-
-      <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
-          {course.courseCode}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">
-          {course.courseName}
-        </h1>
-        <p className="mt-2 text-sm leading-6 break-words text-ink-muted">
+      <PageHeader
+        breadcrumb={<CourseBreadcrumb courseName={course.courseName} />}
+        eyebrow={course.courseCode}
+        title={course.courseName}
+        description={
+          <>
+        <p className="break-words">
           <span className="sr-only">Program </span>
           {course.programCode}
           <span aria-hidden="true"> · </span>
@@ -123,11 +115,13 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
           <span className="sr-only">, </span>
           {creditsText(course.credits)}
         </p>
-        {teaching && <p className="mt-1 text-sm leading-6 break-words text-ink">{teaching}</p>}
-      </header>
+        {teaching && <p className="mt-1 break-words text-ink">{teaching}</p>}
+          </>
+        }
+      />
 
       {course.homeView === 'SYLLABUS' && (
-        <section aria-labelledby="course-home-syllabus" className="mt-6 max-w-3xl">
+        <section aria-labelledby="course-home-syllabus">
           <h2 id="course-home-syllabus" className="mb-3 text-base font-semibold text-ink">
             Syllabus
           </h2>
@@ -145,7 +139,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
       {course.homeView === 'OVERVIEW' && (
         <>
           {course.welcomeMessage && (
-            <section aria-label="Welcome" className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
+            <section aria-label="Welcome" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
               <FormattedText text={course.welcomeMessage} format="FORMATTED" className="text-sm leading-6 text-ink" headingLevel={2} />
             </section>
           )}
@@ -155,7 +149,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
           <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
         </>
       )}
-    </>
+    </div>
   )
 }
 

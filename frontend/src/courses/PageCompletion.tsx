@@ -42,7 +42,7 @@ export function PageCompletion({ lmsCourseId, pageId, required, completed }: Pag
   }
 
   return (
-    <section aria-label="Your progress on this page" className="mt-6 max-w-3xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-6">
+    <section aria-label="Your progress on this page" className="mt-6 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-ink">
           {required ? 'This page is required for your progress in the course.' : 'This page is optional.'}

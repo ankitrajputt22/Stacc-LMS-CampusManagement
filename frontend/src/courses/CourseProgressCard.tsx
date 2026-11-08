@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { getCourseProgress } from '../api/lmsContentApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
+import { Card } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 /**
@@ -17,11 +18,8 @@ export function CourseProgressCard({ lmsCourseId }: { lmsCourseId: number }) {
   const { requiredPages, completedRequiredPages, next } = progress.data
   const percent = Math.round((completedRequiredPages / requiredPages) * 100)
   return (
-    <section aria-labelledby="course-progress-heading" className="mt-6 max-w-2xl rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
-      <h2 id="course-progress-heading" className="text-base font-semibold text-ink">
-        Your progress
-      </h2>
-      <p className="mt-1 text-sm text-ink">
+    <Card title="Your progress" className="mt-6">
+      <p className="text-sm text-ink">
         {completedRequiredPages} of {requiredPages} required {requiredPages === 1 ? 'page' : 'pages'} completed
       </p>
       <div
@@ -46,6 +44,6 @@ export function CourseProgressCard({ lmsCourseId }: { lmsCourseId: number }) {
       ) : (
         completedRequiredPages === requiredPages && <p className="mt-2 text-sm text-ink-muted">Every required page is completed.</p>
       )}
-    </section>
+    </Card>
   )
 }

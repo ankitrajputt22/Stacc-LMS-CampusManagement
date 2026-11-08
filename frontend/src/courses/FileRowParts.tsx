@@ -1,4 +1,4 @@
-import { ActionButton } from '../components/ActionButton'
+import { Button } from '../ui'
 import { formatDateTime } from './dates'
 import { fileTypeLabel, formatFileSize } from './materials'
 import type { useMaterialDownload } from './useMaterialDownload'
@@ -29,10 +29,10 @@ export function DownloadButton({ file, downloads }: { file: { id: number; title:
   const failed = downloads.failure?.fileId === file.id ? downloads.failure.message : null
   return (
     <div>
-      <ActionButton aria-disabled={busy || undefined} onClick={() => void downloads.download(file)}>
+      <Button variant="secondary" size="sm" aria-disabled={busy || undefined} onClick={() => void downloads.download(file)}>
         {busy ? 'Downloading…' : 'Download'}
         <span className="sr-only"> {file.title}</span>
-      </ActionButton>
+      </Button>
       <div role="alert">{failed && <p className="mt-1 text-sm text-danger">{failed}</p>}</div>
     </div>
   )

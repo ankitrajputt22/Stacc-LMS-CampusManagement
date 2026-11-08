@@ -1,11 +1,11 @@
 import type { ApiRequestState } from '../api/useApiRequest'
-import { ErrorState } from '../components/states/ErrorState'
-import { LoadingState } from '../components/states/LoadingState'
+import { EmptyState } from '../components/states/EmptyState'
 import { StatePanel } from '../components/states/StatePanel'
 import { Link } from 'react-router'
 import type { LmsCourseContent, LmsCourseModule } from '../types/lms'
 import { Badge } from '../ui'
 import { textLinkClasses } from '../ui/styles'
+import { SectionState } from './SectionState'
 
 type CourseContentProps = {
   lmsCourseId: number
@@ -97,42 +97,21 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
  */
 export function CourseContent({ lmsCourseId, content }: CourseContentProps) {
   return (
-    <section aria-labelledby={HEADING_ID} className="mt-8 max-w-2xl">
+    <section aria-labelledby={HEADING_ID} className="mt-6">
       <h2 id={HEADING_ID} className="text-base font-semibold text-ink">
         Course content
       </h2>
 
       <div className="mt-3">
-        {content.status === 'loading' && (
+        {content.status !== 'loaded' ? (
           <StatePanel>
-            <LoadingState label="Loading course content…" />
+            <SectionState request={content} what="course content" />
           </StatePanel>
-        )}
-
-        {content.status === 'failed' && (
+        ) : content.data.modules.length === 0 ? (
           <StatePanel>
-            <ErrorState
-              title="Couldn’t load the course content"
-              message="Check your connection and try again."
-              onRetry={content.retry}
-            />
+            <EmptyState title="No course content published yet." description="Modules appear here once your teachers publish them." />
           </StatePanel>
-        )}
-
-        {/* The course itself loaded, so a refusal here means access ended in the meantime. */}
-        {(content.status === 'notFound' || content.status === 'denied') && (
-          <p className="text-sm leading-6 text-ink-muted">
-            The course content is not available to your account.
-          </p>
-        )}
-
-        {content.status === 'loaded' && content.data.modules.length === 0 && (
-          <p className="rounded-panel border border-line bg-surface px-4 py-3 text-sm text-ink-muted sm:px-5">
-            No course content published yet.
-          </p>
-        )}
-
-        {content.status === 'loaded' && content.data.modules.length > 0 && (
+        ) : (
           <ol className="space-y-3">
             {content.data.modules.map((module, index) => (
               <li key={module.id}>

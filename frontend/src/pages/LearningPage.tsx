@@ -13,7 +13,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId, parseRouteId } from '../courses/courseRoute'
 import { PageBody } from '../courses/PageBody'
 import { PageCompletion } from '../courses/PageCompletion'
-import { Alert } from '../ui'
+import { Alert, PageHeader } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -97,15 +97,15 @@ export function LearningPage() {
 
   const data = page.data
   return (
-    <>
+    <div className="max-w-3xl">
       <title>{`${data.title} · Stacc`}</title>
-      <Breadcrumb parent={crumbs(lmsCourseId)} current={data.title} />
-      <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">{data.moduleTitle}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{data.title}</h1>
-      </header>
+      <PageHeader
+        breadcrumb={<Breadcrumb parent={crumbs(lmsCourseId)} current={data.title} />}
+        eyebrow={data.moduleTitle}
+        title={data.title}
+      />
       {data.locked ? (
-        <Alert tone="info" className="mt-6 max-w-3xl" title="This page is locked">
+        <Alert tone="info" title="This page is locked">
           Complete the required pages of “{data.waitingFor}” first. Then this module opens.
         </Alert>
       ) : (
@@ -132,6 +132,6 @@ export function LearningPage() {
         pathTo={(id) => `/courses/${lmsCourseId}/pages/${id}`}
         neighboursOnly
       />
-    </>
+    </div>
   )
 }

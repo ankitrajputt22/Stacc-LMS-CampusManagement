@@ -40,3 +40,11 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | AI Tools | `/ai` | See `ai-learning.md`. "Use in assignment form" now opens the Assignments page. |
 
 Links that used to land on the single teaching page now open the right section: calendar teaching deadlines and faculty assignment search results open Assignments, announcement results Announcements, material results Files, and student announcement results the student's Announcements page.
+
+## Design (v0.6.7)
+
+Every course page is built from the shared components in `src/ui` (`docs/ui-design.md`), phone first:
+
+- Each page starts with `PageHeader`: breadcrumb, the course code (or module) as the eyebrow, the title, and the course's official line or a short description; "unavailable" pages put their way back in the header's actions.
+- Each part of a page is a `Card`: Your progress, Announcements, Assignments, a page's text and Study materials, the assignment's Instructions, and Your submission. A part that is loading, failed, or unavailable shows the shared states (`SectionState`), so every part behaves the same while it is not ready.
+- Content is one readable column (`max-w-3xl`) beside the course navigation on wide screens and full width on phones; buttons are full width on phones and 44 px tall to tap. Hand-written link and panel class lists on these pages were replaced by `Button`, `ButtonLink`, `Card`, and `Badge`.

@@ -1,5 +1,5 @@
 import { type ReactNode, useMemo } from 'react'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AiMessage } from '../ai/AiMessage'
@@ -16,24 +16,20 @@ import { parseCourseId } from '../courses/courseRoute'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseContent, LmsCourseDetail } from '../types/lms'
+import { ButtonLink, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-
-const backLinkClasses =
-  'inline-flex min-h-11 items-center rounded-control font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0'
 
 function AiState({ lmsCourseId, children }: { lmsCourseId: number | null; children: ReactNode }) {
   return (
     <>
       <title>AI Study Assistant · Stacc</title>
-      <Breadcrumb
-        parent={lmsCourseId === null ? COURSES : [COURSES, { to: `/courses/${lmsCourseId}`, label: 'Course' }]}
+      <PageHeader
+        breadcrumb={<Breadcrumb parent={lmsCourseId === null ? COURSES : [COURSES, { to: `/courses/${lmsCourseId}`, label: 'Course' }]} />}
+        title="AI Study Assistant"
       />
-      <h1 className="sr-only">AI Study Assistant</h1>
-      <div className="mt-4">
-        <StatePanel>{children}</StatePanel>
-      </div>
+      <StatePanel>{children}</StatePanel>
     </>
   )
 }
@@ -48,36 +44,35 @@ function publishedTopics(content: LmsCourseContent): CourseTopicChoice[] {
 function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsCourseContent }) {
   const topics = useMemo(() => publishedTopics(content), [content])
   return (
-    <>
+    <div className="max-w-3xl">
       <title>{`AI Study Assistant · ${course.courseName} · Stacc`}</title>
-      <Breadcrumb
-        parent={[COURSES, { to: `/courses/${course.lmsCourseId}`, label: course.courseName }]}
-        current="AI Study Assistant"
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb
+            parent={[COURSES, { to: `/courses/${course.lmsCourseId}`, label: course.courseName }]}
+            current="AI Study Assistant"
+          />
+        }
+        eyebrow={
+          <>
+            {course.courseCode}
+            <span aria-hidden="true"> · </span>
+            <span className="sr-only">, </span>
+            {course.courseName}
+          </>
+        }
+        title="AI Study Assistant"
+        description="Ask questions based on your published course materials."
       />
-      <header className="mt-4 max-w-3xl">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
-          {course.courseCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          {course.courseName}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-portal-navy">AI Study Assistant</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          Ask questions based on your published course materials.
-        </p>
-      </header>
-      <div className="max-w-3xl">
-        <AiMessage tone="warning" className="mt-4">
+      <div>
+        <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
         <AskPanel lmsCourseId={course.lmsCourseId} />
         <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
-        <Link to={`/courses/${course.lmsCourseId}`} className={`mt-6 text-sm ${backLinkClasses}`}>
-          Back to Course
-        </Link>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -89,14 +84,16 @@ function StudentAssistant({ lmsCourseId }: { lmsCourseId: number | null }) {
     return (
       <>
         <title>Course unavailable · Stacc</title>
-        <Breadcrumb parent={COURSES} />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-portal-navy">Course unavailable</h1>
-        <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-          This course could not be found or is not available to your account.
-        </p>
-        <Link to={COURSES.to} className={`mt-4 text-sm ${backLinkClasses}`}>
-          Back to Courses
-        </Link>
+        <PageHeader
+          breadcrumb={<Breadcrumb parent={COURSES} />}
+          title="Course unavailable"
+          description="This course could not be found or is not available to your account."
+          actions={
+            <ButtonLink to={COURSES.to} variant="secondary">
+              Back to Courses
+            </ButtonLink>
+          }
+        />
       </>
     )
   }
