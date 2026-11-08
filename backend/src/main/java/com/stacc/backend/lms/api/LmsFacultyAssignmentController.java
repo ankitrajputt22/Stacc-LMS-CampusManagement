@@ -1,5 +1,6 @@
 package com.stacc.backend.lms.api;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.stacc.backend.auth.security.AuthenticatedAccount;
@@ -13,6 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -193,5 +197,40 @@ public class LmsFacultyAssignmentController {
             @Valid @RequestBody LmsAssignmentAlignmentRequest request, @AuthenticationPrincipal Jwt accessToken) {
         return LmsFacultyAssignmentResponse.of(managementService.align(AuthenticatedAccount.idFrom(accessToken), assignmentId,
                 request.bloomLevel(), request.outcomeIds()));
+    }
+
+    /** When an assignment takes work. */
+    public record SubmissionRulesRequest(
+            @Schema(description = "When it starts taking work, not after the due date; null for from publication.",
+                    example = "2026-11-10T03:30:00Z")
+            Instant availableFrom,
+            @Schema(description = "After this no work is taken, not before the due date; null for no final closing time.",
+                    example = "2026-11-22T18:29:00Z")
+            Instant availableUntil,
+            @Schema(description = "Whether work handed in after the due date is taken and marked late.")
+            @NotNull(message = "Choose whether late work is accepted")
+            Boolean allowLateSubmissions,
+            @Schema(description = "Attempts each student may make, 1 to 100; null for unlimited.", example = "2")
+            @Min(value = 1, message = "The attempt limit must be at least 1")
+            @Max(value = 100, message = "The attempt limit must be at most 100")
+            Integer maxAttempts) {
+    }
+
+    @PutMapping("/assignments/{assignmentId}/submission-rules")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Set when an assignment takes work",
+            description = "Opening and closing times around the due date, whether late work is accepted, and an attempt "
+                    + "limit. Attempts already handed in stay; the rules apply to new ones.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The assignment.")
+    @ApiResponse(responseCode = "400", description = "A time is on the wrong side of the due date, or the limit is out of range.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The assignment is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsFacultyAssignmentResponse submissionRules(@PathVariable Long assignmentId,
+            @Valid @RequestBody SubmissionRulesRequest request, @AuthenticationPrincipal Jwt accessToken) {
+        return LmsFacultyAssignmentResponse.of(managementService.changeSubmissionRules(AuthenticatedAccount.idFrom(accessToken),
+                assignmentId, request.availableFrom(), request.availableUntil(), request.allowLateSubmissions(), request.maxAttempts()));
     }
 }

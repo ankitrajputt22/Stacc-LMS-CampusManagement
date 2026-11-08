@@ -49,6 +49,9 @@ public class LmsAssignment {
     /** The largest value the max_marks column holds, DECIMAL(8,2). */
     public static final BigDecimal MAX_MARKS = new BigDecimal("999999.99");
     /** The range of deadlines accepted: wide enough for any real course, and storable in MySQL. */
+    public static final int MAX_ATTEMPTS = 100;
+    public static final String DUE_OUTSIDE_WINDOW =
+            "The due date must be between the opening time and the closing time. Change those first.";
     public static final String RUBRIC_TOTAL_FIXED =
             "The maximum marks must equal the rubric's total. Remove the rubric first to change them.";
     public static final Instant EARLIEST_DUE_AT = Instant.parse("2000-01-01T00:00:00Z");
@@ -82,6 +85,20 @@ public class LmsAssignment {
     // An absolute moment, stored in UTC. Each browser shows it in its own time zone.
     @Column(name = "due_at", nullable = false)
     private Instant dueAt;
+
+    // When work is taken: opens at availableFrom (none: from publication), late work only when allowed and never after
+    // availableUntil (none: no final closing time), and at most maxAttempts attempts per student (none: unlimited).
+    @Column(name = "available_from")
+    private Instant availableFrom;
+
+    @Column(name = "available_until")
+    private Instant availableUntil;
+
+    @Column(name = "allow_late_submissions", nullable = false)
+    private boolean allowLateSubmissions = true;
+
+    @Column(name = "max_attempts")
+    private Integer maxAttempts;
 
     @Column(name = "max_marks", nullable = false, precision = 8, scale = MARK_DECIMAL_PLACES)
     private BigDecimal maxMarks;
@@ -181,6 +198,59 @@ public class LmsAssignment {
         return dueAt != null && !dueAt.isBefore(EARLIEST_DUE_AT) && !dueAt.isAfter(LATEST_DUE_AT);
     }
 
+    /**
+     * Sets when the assignment takes work: an optional opening time not after the due date, whether late work is
+     * accepted, an optional final closing time not before the due date, and an optional attempt limit (1 to 100). An
+     * archived assignment can no longer change.
+     */
+    public void changeSubmissionRules(Instant opens, Instant closes, boolean allowLate, Integer attempts) {
+        requireNotArchived();
+        if (opens != null && opens.isAfter(dueAt)) {
+            throw new IllegalArgumentException("The opening time cannot be after the due date.");
+        }
+        if (closes != null && closes.isBefore(dueAt)) {
+            throw new IllegalArgumentException("The closing time cannot be before the due date.");
+        }
+        if (attempts != null && (attempts < 1 || attempts > MAX_ATTEMPTS)) {
+            throw new IllegalArgumentException("The attempt limit must be between 1 and " + MAX_ATTEMPTS + ".");
+        }
+        if (opens != null && !isSupportedDueAt(opens) || closes != null && !isSupportedDueAt(closes)) {
+            throw new IllegalArgumentException("Choose times between the years 2000 and 9999.");
+        }
+        this.availableFrom = opens;
+        this.availableUntil = closes;
+        this.allowLateSubmissions = allowLate;
+        this.maxAttempts = attempts;
+    }
+
+    /** Whether a new attempt is taken now. */
+    public AssignmentSubmissionWindow submissionWindowAt(Instant now) {
+        if (availableFrom != null && now.isBefore(availableFrom)) {
+            return AssignmentSubmissionWindow.NOT_OPEN;
+        }
+        boolean pastDue = now.isAfter(dueAt);
+        if (pastDue && !allowLateSubmissions || availableUntil != null && now.isAfter(availableUntil)) {
+            return AssignmentSubmissionWindow.CLOSED;
+        }
+        return AssignmentSubmissionWindow.OPEN;
+    }
+
+    public Instant getAvailableFrom() {
+        return availableFrom;
+    }
+
+    public Instant getAvailableUntil() {
+        return availableUntil;
+    }
+
+    public boolean isAllowLateSubmissions() {
+        return allowLateSubmissions;
+    }
+
+    public Integer getMaxAttempts() {
+        return maxAttempts;
+    }
+
     public LmsRubric getRubric() {
         return rubric;
     }
@@ -226,6 +296,9 @@ public class LmsAssignment {
         BigDecimal validMaxMarks = validMaxMarks(maxMarks);
         if (rubric != null && validMaxMarks.compareTo(rubric.getTotalPoints()) != 0) {
             throw new IllegalStateException(RUBRIC_TOTAL_FIXED);
+        }
+        if (availableFrom != null && validDueAt.isBefore(availableFrom) || availableUntil != null && validDueAt.isAfter(availableUntil)) {
+            throw new IllegalStateException(DUE_OUTSIDE_WINDOW);
         }
         this.title = validTitle;
         this.instructions = validInstructions;

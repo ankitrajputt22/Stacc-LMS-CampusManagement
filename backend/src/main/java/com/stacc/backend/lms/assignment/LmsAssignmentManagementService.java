@@ -100,6 +100,10 @@ public class LmsAssignmentManagementService {
         if (assignment.getRubric() != null && maxMarks != null && assignment.getRubric().getTotalPoints().compareTo(maxMarks) != 0) {
             throw new ApiException(HttpStatus.CONFLICT, LmsAssignment.RUBRIC_TOTAL_FIXED);
         }
+        if (dueAt != null && (assignment.getAvailableFrom() != null && dueAt.isBefore(assignment.getAvailableFrom())
+                || assignment.getAvailableUntil() != null && dueAt.isAfter(assignment.getAvailableUntil()))) {
+            throw new ApiException(HttpStatus.CONFLICT, LmsAssignment.DUE_OUTSIDE_WINDOW);
+        }
         assignment.edit(title, instructions, dueAt, maxMarks);
         assignment.changeInstructionsFormat(LmsTextFormat.orKeep(format, assignment.getInstructionsFormat()));
         return assignment;
@@ -172,6 +176,21 @@ public class LmsAssignmentManagementService {
             assignment.useRubric(rubric);
         } catch (IllegalStateException | IllegalArgumentException refused) {
             throw new ApiException(HttpStatus.CONFLICT, refused.getMessage());
+        }
+        return assignment;
+    }
+
+    /**
+     * Sets when the assignment takes work: opening and closing times around the due date, whether late work is accepted,
+     * and an attempt limit. Attempts already handed in stay; the rules apply to new ones.
+     */
+    public LmsAssignment changeSubmissionRules(Long userAccountId, Long assignmentId, Instant opens, Instant closes,
+            boolean allowLate, Integer attempts) {
+        LmsAssignment assignment = changeable(userAccountId, assignmentId);
+        try {
+            assignment.changeSubmissionRules(opens, closes, allowLate, attempts);
+        } catch (IllegalArgumentException invalid) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, invalid.getMessage());
         }
         return assignment;
     }

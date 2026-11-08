@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.stacc.backend.academic.course.Course;
+import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,9 +50,19 @@ public record LmsCourseAssignmentDetailResponse(
         @Schema(description = "The course outcomes it assesses, by code.")
         List<LmsOutcomeResponse> outcomes,
         @Schema(description = "The rubric it is graded with, or null.")
-        LmsRubricResponse rubric) {
+        LmsRubricResponse rubric,
+        @Schema(description = "When it starts taking work; null means from publication.")
+        Instant availableFrom,
+        @Schema(description = "After this no work is taken; null means no final closing time.")
+        Instant availableUntil,
+        @Schema(description = "Whether work handed in after the due date is taken (and marked late).")
+        boolean allowLateSubmissions,
+        @Schema(description = "Attempts each student may make; null means unlimited.")
+        Integer maxAttempts,
+        @Schema(description = "NOT_OPEN, OPEN, or CLOSED, by the server's clock now.")
+        AssignmentSubmissionWindow submissionWindow) {
 
-    static LmsCourseAssignmentDetailResponse of(LmsAssignment assignment) {
+    static LmsCourseAssignmentDetailResponse of(LmsAssignment assignment, Instant now) {
         Course course = assignment.getLmsCourse().getCourseOffering().getCourse();
         return new LmsCourseAssignmentDetailResponse(
                 assignment.getId(),
@@ -66,6 +77,11 @@ public record LmsCourseAssignmentDetailResponse(
                 assignment.getInstructionsFormat(),
                 assignment.getBloomLevel(),
                 assignment.getOutcomes().stream().map(LmsOutcomeResponse::of).toList(),
-                LmsRubricResponse.ofNullable(assignment.getRubric()));
+                LmsRubricResponse.ofNullable(assignment.getRubric()),
+                assignment.getAvailableFrom(),
+                assignment.getAvailableUntil(),
+                assignment.isAllowLateSubmissions(),
+                assignment.getMaxAttempts(),
+                assignment.submissionWindowAt(now));
     }
 }

@@ -7,6 +7,7 @@ import type { LmsSubmissionAttempt } from '../types/lms'
 import { AttemptFiles, GradeSummary, TimingTag } from './AttemptParts'
 import { formatDateTime, isPast } from './dates'
 import { SubmissionForm, type SubmitOutcome } from './SubmissionForm'
+import { submissionClosedReason } from './submissionRules'
 import { useFileDownload } from './useFileDownload'
 import { useMySubmissions } from './useMySubmissions'
 
@@ -15,7 +16,14 @@ type AssignmentSubmissionProps = {
   assignmentId: number
   /** The assignment's current deadline, for the warning before submitting. Past attempts use their own result. */
   dueAt: string
+  /** Whether a new attempt is taken now, as the backend said when the page loaded; it decides again on hand-in. */
+  submissionWindow?: 'NOT_OPEN' | 'OPEN' | 'CLOSED'
+  /** When work is first taken, to say so before it opens. */
+  availableFrom?: string | null
+  /** Attempts each student may make; null means unlimited. */
+  maxAttempts?: number | null
 }
+
 
 const NOT_CHANGED = 'Your previous submissions have not been changed.'
 
@@ -78,7 +86,14 @@ function AttemptItem({ attempt, isLatest, downloads }: AttemptItemProps) {
  * its text, files, and whether it was on time. Each hand-in is a new attempt; nothing earlier is replaced.
  * This section loads on its own: if it fails, the assignment above stays as it is.
  */
-export function AssignmentSubmission({ lmsCourseId, assignmentId, dueAt }: AssignmentSubmissionProps) {
+export function AssignmentSubmission({
+  lmsCourseId,
+  assignmentId,
+  dueAt,
+  submissionWindow = 'OPEN',
+  availableFrom = null,
+  maxAttempts = null,
+}: AssignmentSubmissionProps) {
   const history = useMySubmissions(lmsCourseId, assignmentId)
   const downloads = useFileDownload(downloadSubmissionAttachment)
   const sectionRef = useRef<HTMLElement>(null)
@@ -127,6 +142,7 @@ export function AssignmentSubmission({ lmsCourseId, assignmentId, dueAt }: Assig
   }
 
   const pastDue = isPast(dueAt, now)
+  const closedReason = attempts === null ? null : submissionClosedReason(submissionWindow, availableFrom, maxAttempts, attempts.length)
 
   return (
     <section ref={sectionRef} aria-labelledby="your-submission-heading" className="mt-6 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
@@ -165,7 +181,11 @@ export function AssignmentSubmission({ lmsCourseId, assignmentId, dueAt }: Assig
         {attempts !== null && attempts.length === 0 && (
           <>
             <p className="text-sm text-ink-muted">No submission yet.</p>
-            <SubmissionForm isResubmission={false} isPastDue={pastDue} onSubmit={submit} />
+            {closedReason ? (
+              <p className="text-sm text-ink">{closedReason}</p>
+            ) : (
+              <SubmissionForm isResubmission={false} isPastDue={pastDue} onSubmit={submit} />
+            )}
           </>
         )}
 
@@ -176,7 +196,9 @@ export function AssignmentSubmission({ lmsCourseId, assignmentId, dueAt }: Assig
               <time dateTime={latest.submittedAt}>{formatDateTime(latest.submittedAt)}</time>,{' '}
               {latest.late ? 'late' : 'on time'}.
             </p>
-            {formOpen ? (
+            {closedReason ? (
+              <p className="text-sm text-ink">{closedReason}</p>
+            ) : formOpen ? (
               <SubmissionForm
                 isResubmission
                 isPastDue={pastDue}

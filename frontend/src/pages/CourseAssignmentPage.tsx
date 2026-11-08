@@ -120,6 +120,19 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           </InformationRow>
         )}
         {assignment.bloomLevel && <InformationRow term="Bloom level">{bloomLabel(assignment.bloomLevel)}</InformationRow>}
+        {assignment.availableFrom && (
+          <InformationRow term="Opens">
+            <time dateTime={assignment.availableFrom}>{formatDateTime(assignment.availableFrom)}</time>
+          </InformationRow>
+        )}
+        <InformationRow term="Late work">
+          {!assignment.allowLateSubmissions
+            ? 'Not accepted after the due date'
+            : assignment.availableUntil
+              ? `Accepted until ${formatDateTime(assignment.availableUntil)}, marked late`
+              : 'Accepted, marked late'}
+        </InformationRow>
+        <InformationRow term="Attempts">{assignment.maxAttempts === null ? 'Unlimited' : String(assignment.maxAttempts)}</InformationRow>
       </dl>
 
       <Card title="Instructions" className="mt-6">
@@ -140,7 +153,14 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
         </Card>
       )}
 
-      <AssignmentSubmission lmsCourseId={assignment.lmsCourseId} assignmentId={assignment.id} dueAt={assignment.dueAt} />
+      <AssignmentSubmission
+        lmsCourseId={assignment.lmsCourseId}
+        assignmentId={assignment.id}
+        dueAt={assignment.dueAt}
+        submissionWindow={assignment.submissionWindow}
+        availableFrom={assignment.availableFrom}
+        maxAttempts={assignment.maxAttempts}
+      />
 
       <div className="mt-6">
         <BackToCourse lmsCourseId={assignment.lmsCourseId} />

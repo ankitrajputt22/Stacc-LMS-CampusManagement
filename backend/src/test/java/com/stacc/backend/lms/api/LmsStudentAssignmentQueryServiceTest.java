@@ -40,7 +40,8 @@ class LmsStudentAssignmentQueryServiceTest {
 
     private final LmsStudentAccessService studentAccess = mock(LmsStudentAccessService.class);
     private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
-    private final LmsStudentAssignmentQueryService service = new LmsStudentAssignmentQueryService(studentAccess, assignments);
+    private final LmsStudentAssignmentQueryService service = new LmsStudentAssignmentQueryService(studentAccess, assignments,
+            java.time.Clock.fixed(java.time.Instant.parse("2026-10-15T00:00:00Z"), java.time.ZoneOffset.UTC));
 
     private final LmsCourse course = ContentFixtures.lmsCourse(COURSE_ID);
     private final LmsCourse otherCourse = ContentFixtures.lmsCourse(8);
@@ -124,7 +125,8 @@ class LmsStudentAssignmentQueryServiceTest {
 
         assertEquals(new LmsCourseAssignmentDetailResponse(1L, COURSE_ID, "TST301", "Test Data Structures", "Assignment 1",
                         "Instructions 1", Instant.parse("2026-10-20T18:29:00Z"), new BigDecimal("20.00"),
-                        Instant.parse("2026-10-01T09:00:00Z"), LmsTextFormat.PLAIN, null, java.util.List.of(), null),
+                        Instant.parse("2026-10-01T09:00:00Z"), LmsTextFormat.PLAIN, null, java.util.List.of(), null, null, null, true, null,
+                        com.stacc.backend.lms.assignment.AssignmentSubmissionWindow.OPEN),
                 service.getPublishedAssignment(STUDENT_ID, COURSE_ID, 1L));
     }
 

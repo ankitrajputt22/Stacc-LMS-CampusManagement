@@ -127,11 +127,12 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
     void studentOpensOnePublishedAssignmentWithItsCourse() throws Exception {
         when(studentQueries.getPublishedAssignment(ACCOUNT_ID, 7L, 9L)).thenReturn(new LmsCourseAssignmentDetailResponse(
                 9L, 7L, "TST301", "Test Data Structures", "Arrays practice", "Solve 1 to 5.\nShow working.", DUE,
-                new BigDecimal("12.50"), Instant.parse("2026-10-14T09:30:00Z"), LmsTextFormat.PLAIN, null, java.util.List.of(), null));
+                new BigDecimal("12.50"), Instant.parse("2026-10-14T09:30:00Z"), LmsTextFormat.PLAIN, null, java.util.List.of(), null, null, null, true, null,
+                com.stacc.backend.lms.assignment.AssignmentSubmissionWindow.OPEN));
 
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/assignments/9")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(13)))
+                .andExpect(jsonPath("$.*", hasSize(18)))
                 .andExpect(jsonPath("$.courseCode").value("TST301"))
                 .andExpect(jsonPath("$.instructions").value("Solve 1 to 5.\nShow working."))
                 .andExpect(jsonPath("$.dueAt").value("2026-10-20T18:29:00Z"))
@@ -179,7 +180,7 @@ class LmsAssignmentControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$[0].publishedAt").doesNotExist())
                 .andExpect(jsonPath("$[0].dueAt").value("2026-10-20T18:29:00Z"))
-                .andExpect(jsonPath("$[0].*", hasSize(13)));
+                .andExpect(jsonPath("$[0].*", hasSize(17)));
         mockMvc.perform(as(facultyReaderToken(), get("/api/v1/lms/faculty/my-assignments")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].*", hasSize(8)))
