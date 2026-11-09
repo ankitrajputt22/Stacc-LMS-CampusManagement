@@ -277,8 +277,8 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 1.0.5 | Final UI pass | Consistency, phones, keyboard use, and screen readers across every area. Done: smoke-tested in the browser on demo data, including phone width; no new UI defects found in the checked flows. |
 | ★ 1.0.6 | Documentation | README, architecture, security, AI, testing, deployment, student, faculty, and admin guides, demo guide, changelog, known limitations. Done: README, `user-guide.md`, `demo-guide.md`, `changelog.md`, `known-limitations.md`, and the security, recovery, and analytics guides. |
 | ★ 1.0.7 | Demo | Complete demo data and a rehearsed demo story with a fallback recording. Done: `LocalDemoExtrasSeeder` (staff accounts, warden, clubs, facilities, event, placement) and the demo story in `demo-guide.md`. |
-| ★ 1.0.8 | Release candidate | `v1.0.0-rc.1`, full regression, blocker fixes. |
-| ★ 1.0.9 | Release | Merge into `main` and tag `v1.0.0`, with the project owner's approval. |
+| ★ 1.0.8 | Release candidate | `v1.0.0-rc.1`, full regression, blocker fixes. Done: `v1.0.0-rc.1` tagged on `development` after the full regression (CI and every MySQL integration test) passed; the one blocker found, the rubric deadlock, was fixed first. |
+| ★ 1.0.9 | Release | Merge into `main` and tag `v1.0.0`, with the project owner's approval. Done: `development` merged into `main` and tagged `v1.0.0`, with the project owner's approval (2026-11-11). |
 
 ## Progress
 
@@ -297,5 +297,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
 | v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
-| v1.0 Stable release | 1.0.1 to 1.0.7 done; 1.0.8 (release candidate tag) and 1.0.9 (merge to `main`) wait for the project owner |
+| v1.0 Stable release | Done: released as `v1.0.0` |
 | v0.13 – v0.15 AI | Later, after the core phases |

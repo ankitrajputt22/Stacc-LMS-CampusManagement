@@ -1,6 +1,8 @@
 # Changelog
 
-## v1.0.0 (release candidate)
+## v1.0.0 (2026-11-11)
+
+First stable release, after release candidate `v1.0.0-rc.1`. Fixed during the candidate: editing a rubric while grading with it could deadlock; both now take the rubric row lock first, and a grade against criteria that just changed is refused cleanly.
 
 The versions below were built in phases; `docs/roadmap.md` lists every phase with what it delivered.
 
