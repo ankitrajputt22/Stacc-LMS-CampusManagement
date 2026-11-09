@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class NotificationSettingsController {
 
-    private static final String ACCESS = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('NOTIFICATION_VIEW')";
+    private static final String ACCESS = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')";
 
     @Schema(description = "One category's choice.")
     public record ChoiceBody(@NotNull NotificationCategory category, boolean inApp, @NotNull EmailDelivery email) {

@@ -14,6 +14,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { formatDateTime } from '../courses/dates'
 import { TicketActivity } from '../support/TicketActivity'
 import { TicketConversation } from '../support/TicketConversation'
+import { TicketNoteForm, TicketRequesterActions } from '../support/TicketExtras'
 import { TicketManagement } from '../support/TicketManagement'
 import { TicketPriorityTag, TicketStatusTag } from '../support/TicketTags'
 import { idParam } from '../support/filters'
@@ -29,6 +30,10 @@ function TicketFacts({ ticket, showRequester }: { ticket: HelpdeskTicketDetail; 
     { label: 'Status', value: statusLabel(ticket.status) },
     ...(showRequester ? [{ label: 'Raised by', value: ticket.requesterLoginId }] : []),
     { label: 'Assigned to', value: ticket.assignedToLoginId ?? 'Unassigned' },
+    ...(ticket.teamName ? [{ label: 'Team', value: ticket.teamName }] : []),
+    ...(ticket.firstResponseAt
+      ? [{ label: 'First response', value: formatDateTime(ticket.firstResponseAt), time: ticket.firstResponseAt }]
+      : []),
     { label: 'Created', value: formatDateTime(ticket.createdAt), time: ticket.createdAt },
     { label: 'Updated', value: formatDateTime(ticket.updatedAt), time: ticket.updatedAt },
     ...(ticket.resolvedAt ? [{ label: 'Resolved', value: formatDateTime(ticket.resolvedAt), time: ticket.resolvedAt }] : []),
@@ -148,7 +153,7 @@ export function SupportTicketPage() {
             </p>
           )}
         </div>
-        <TicketFacts ticket={ticket} showRequester={isAdmin} />
+        <TicketFacts ticket={ticket} showRequester={ticket.supportSide} />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           <div className="min-w-0 lg:col-span-2">
@@ -163,7 +168,7 @@ export function SupportTicketPage() {
           </div>
           <div className="min-w-0 space-y-6">
             {/* For the interface only: every change is checked by the backend. A closed ticket has no controls. */}
-            {isAdmin && !closed && (
+            {ticket.supportSide && !closed && (
               <TicketManagement
                 ticket={ticket}
                 myLoginId={account?.loginId ?? null}
@@ -172,6 +177,8 @@ export function SupportTicketPage() {
                 onStale={stale}
               />
             )}
+            {ticket.supportSide && !closed && <TicketNoteForm ticket={ticket} onChanged={() => request.refresh()} />}
+            {!ticket.supportSide && <TicketRequesterActions ticket={ticket} onUpdated={updated} />}
             <TicketActivity history={ticket.history} />
           </div>
         </div>

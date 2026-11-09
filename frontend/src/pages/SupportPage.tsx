@@ -148,6 +148,9 @@ export function SupportPage() {
               <Link to="/support/admin/categories" className={`${actionLinkClasses} justify-center`}>
                 Manage categories
               </Link>
+              <Link to="/support/admin/teams" className={`${actionLinkClasses} justify-center`}>
+                Manage teams
+              </Link>
             </>
           )}
         </div>

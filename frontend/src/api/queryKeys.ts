@@ -11,6 +11,10 @@ export const queryKeys = {
     todo: () => ['me', 'todo'] as const,
     notificationSettings: () => ['me', 'notification-settings'] as const,
   },
+  helpdesk: {
+    teams: () => ['helpdesk', 'teams'] as const,
+    teamQueue: (status: string, page: number) => ['helpdesk', 'team-queue', status, page] as const,
+  },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
   },

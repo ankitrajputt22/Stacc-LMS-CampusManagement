@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class NotificationController {
 
-    static final String ACCESS = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('NOTIFICATION_VIEW')";
+    static final String ACCESS = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')";
 
     private final NotificationInboxService inbox;
 

@@ -348,11 +348,12 @@
 - Category codes are unique, uppercase, and fixed after creation. Make a category inactive instead of deleting it; an inactive category keeps its tickets but takes no new ones.
 - The requester, every author, and every actor come from the access token; never accept an account, requester, author, or actor ID from a client. Ticket numbers (`STC-%06d`), `resolvedAt`, and `closedAt` are set by the server.
 - Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only active accounts holding `ADMIN` can be assigned, and `GET /api/v1/helpdesk/admin/assignees` lists exactly those, by login ID only.
-- Statuses only move forward: `OPEN` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `RESOLVED` or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. A `CLOSED` ticket refuses every change, and nothing reopens a ticket. A reply never changes the status.
+- Statuses: `OPEN` to `IN_PROGRESS`, `WAITING_ON_REQUESTER`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `WAITING_ON_REQUESTER`, `RESOLVED`, or `CLOSED`; `WAITING_ON_REQUESTER` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. Only the requester's reply moves a waiting ticket back to `IN_PROGRESS`, and only the requester reopens a `RESOLVED` ticket, within 7 days. A `CLOSED` ticket refuses every change and never reopens. Any other reply never changes the status.
 - Messages and history are append-only. Write history only for real changes, through the command service's single recorder, and lock the ticket row before every change. Never add delete routes for tickets, messages, history, or categories.
 - Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
 - Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves, linking to `/support/tickets/{ticketId}`. Do not rewrite old notification rows.
-- Do not add attachments, email, SMS, push, SLAs or escalation, reopening, internal notes, or helpdesk analytics without their own phase.
+- Support teams (`HelpdeskTeam`, made inactive never deleted) take the tickets of the categories routed to them; their members (admins or staff with `HELPDESK_TEAM_WORK`) work only their teams' tickets, decided by `HelpdeskAccessService.worksOnTeam`. Internal notes are seen only by the support side and notify nobody. Ratings are given once by the requester; `firstResponseAt` is set once by the first visible support reply. See `docs/helpdesk.md`.
+- Do not add SMS, push, SLAs or escalation, or helpdesk analytics without their own phase.
 
 ## Approval Workflow Engine
 

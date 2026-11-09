@@ -2,7 +2,7 @@ import type { HelpdeskTicketHistory, HelpdeskTicketPriority, HelpdeskTicketStatu
 
 // The one place helpdesk codes become words. Pages never show a raw code.
 
-export const TICKET_STATUSES: readonly HelpdeskTicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
+export const TICKET_STATUSES: readonly HelpdeskTicketStatus[] = ['OPEN', 'IN_PROGRESS', 'WAITING_ON_REQUESTER', 'RESOLVED', 'CLOSED']
 export const TICKET_PRIORITIES: readonly HelpdeskTicketPriority[] = ['LOW', 'NORMAL', 'HIGH', 'URGENT']
 /** What a requester may choose. Urgent is set only by the support team; the backend refuses it anyway. */
 export const REQUESTER_PRIORITIES = ['LOW', 'NORMAL', 'HIGH'] as const
@@ -18,6 +18,7 @@ export const CATEGORY_DESCRIPTION_MAX = 1000
 const STATUS_LABELS: Record<HelpdeskTicketStatus, string> = {
   OPEN: 'Open',
   IN_PROGRESS: 'In Progress',
+  WAITING_ON_REQUESTER: 'Waiting on Requester',
   RESOLVED: 'Resolved',
   CLOSED: 'Closed',
 }
@@ -38,15 +39,17 @@ export function priorityLabel(priority: string): string {
 }
 
 /**
- * The statuses a ticket may move to next, as the backend's lifecycle allows: forward only, and nothing after Closed.
+ * The statuses a ticket may move to next, as the backend's lifecycle allows; nothing after Closed.
  * Only these are offered; the backend checks the move again.
  */
 export function nextStatuses(status: HelpdeskTicketStatus): HelpdeskTicketStatus[] {
   switch (status) {
     case 'OPEN':
-      return ['IN_PROGRESS', 'RESOLVED', 'CLOSED']
+      return ['IN_PROGRESS', 'WAITING_ON_REQUESTER', 'RESOLVED', 'CLOSED']
     case 'IN_PROGRESS':
-      return ['RESOLVED', 'CLOSED']
+      return ['WAITING_ON_REQUESTER', 'RESOLVED', 'CLOSED']
+    case 'WAITING_ON_REQUESTER':
+      return ['IN_PROGRESS', 'RESOLVED', 'CLOSED']
     case 'RESOLVED':
       return ['CLOSED']
     case 'CLOSED':
@@ -69,6 +72,14 @@ export function historyText(entry: HelpdeskTicketHistory): string {
       return `Assigned to ${entry.toValue}.`
     case 'UNASSIGNED':
       return 'Ticket unassigned.'
+    case 'NOTE_ADDED':
+      return 'Internal note added.'
+    case 'REOPENED':
+      return 'Reopened by the requester.'
+    case 'RATED':
+      return `Rated ${entry.toValue} out of 5.`
+    case 'TEAM_CHANGED':
+      return entry.toValue ? `Moved to the ${entry.toValue} team.` : 'Removed from its team.'
     default:
       return 'Ticket updated.'
   }

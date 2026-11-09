@@ -93,8 +93,9 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
         ) : (
           <ol className="mt-3 divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
             {ticket.messages.map((entry) => (
-              <li key={entry.messageId} className="px-4 py-3 sm:px-5">
+              <li key={entry.messageId} className={`px-4 py-3 sm:px-5 ${entry.internal ? 'bg-amber-50' : ''}`}>
                 <p className="text-sm">
+                  {entry.internal && <span className="mr-2 rounded-sm border border-amber-200 px-1.5 py-0.5 text-xs font-medium text-warning">Internal note</span>}
                   <span className="font-semibold text-ink">{entry.authorLoginId}</span>
                   {entry.authorLoginId === ticket.requesterLoginId && <span className="text-ink-muted"> (requester)</span>}
                   <span className="text-ink-muted">

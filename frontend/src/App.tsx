@@ -48,6 +48,8 @@ import { ClassListPage, ClassListsPage } from './pages/ClassListsPage'
 import { SupportCategoriesPage } from './pages/SupportCategoriesPage'
 import { SupportNewTicketPage } from './pages/SupportNewTicketPage'
 import { SupportPage } from './pages/SupportPage'
+import { SupportTeamQueuePage } from './pages/SupportTeamQueuePage'
+import { SupportTeamsPage } from './pages/SupportTeamsPage'
 import { SupportQueuePage } from './pages/SupportQueuePage'
 import { SupportTicketPage } from './pages/SupportTicketPage'
 import { TeachingAiPage } from './pages/TeachingAiPage'
@@ -177,6 +179,8 @@ function App() {
           <Route path="support/tickets/:ticketId" element={<SupportTicketPage />} />
           <Route path="support/admin" element={<SupportQueuePage />} />
           <Route path="support/admin/categories" element={<SupportCategoriesPage />} />
+          <Route path="support/admin/teams" element={<SupportTeamsPage />} />
+          <Route path="support/team" element={<SupportTeamQueuePage />} />
           {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />

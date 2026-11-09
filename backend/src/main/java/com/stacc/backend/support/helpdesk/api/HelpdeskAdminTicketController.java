@@ -82,7 +82,7 @@ public class HelpdeskAdminTicketController {
     }
 
     @PutMapping("/{ticketId}/assignment")
-    @PreAuthorize(HelpdeskAccess.MANAGE)
+    @PreAuthorize(HelpdeskAccess.WORK)
     @Operation(
             summary = "Assign a helpdesk ticket",
             description = "Assigns the ticket to an admin account by login ID, or unassigns it with null. The same assignee changes nothing. The assigned admin is told in their Inbox, unless they assigned it themselves.",
@@ -101,7 +101,7 @@ public class HelpdeskAdminTicketController {
     }
 
     @PutMapping("/{ticketId}/priority")
-    @PreAuthorize(HelpdeskAccess.MANAGE)
+    @PreAuthorize(HelpdeskAccess.WORK)
     @Operation(
             summary = "Change a ticket's priority",
             description = "Sets LOW, NORMAL, HIGH, or URGENT. The same priority changes nothing.",
@@ -120,10 +120,10 @@ public class HelpdeskAdminTicketController {
     }
 
     @PutMapping("/{ticketId}/status")
-    @PreAuthorize(HelpdeskAccess.MANAGE)
+    @PreAuthorize(HelpdeskAccess.WORK)
     @Operation(
             summary = "Change a ticket's status",
-            description = "Moves the ticket forward: OPEN to IN_PROGRESS, RESOLVED, or CLOSED; IN_PROGRESS to RESOLVED or CLOSED; RESOLVED to CLOSED. The same status changes nothing. A real change tells the requester in their Inbox. There is no reopening.",
+            description = "Moves the ticket: OPEN to IN_PROGRESS, WAITING_ON_REQUESTER, RESOLVED, or CLOSED; IN_PROGRESS to WAITING_ON_REQUESTER, RESOLVED, or CLOSED; WAITING_ON_REQUESTER to IN_PROGRESS, RESOLVED, or CLOSED; RESOLVED to CLOSED. Admins with MANAGE or members of the ticket's team. The same status changes nothing. A real change tells the requester in their Inbox. Only the requester reopens, within 7 days of resolution.",
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The ticket.")
     @ApiResponse(responseCode = "400", description = "The status is missing or not valid.",

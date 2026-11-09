@@ -33,9 +33,12 @@ public class HelpdeskTicketQueryService {
     private final HelpdeskTicketHistoryRepository history;
     private final HelpdeskAccessService access;
     private final UserAccountRepository accounts;
+    private final HelpdeskTeamMemberRepository members;
 
     public HelpdeskTicketQueryService(HelpdeskTicketRepository tickets, HelpdeskTicketMessageRepository messages,
-            HelpdeskTicketHistoryRepository history, HelpdeskAccessService access, UserAccountRepository accounts) {
+            HelpdeskTicketHistoryRepository history, HelpdeskAccessService access, UserAccountRepository accounts,
+            HelpdeskTeamMemberRepository members) {
+        this.members = members;
         this.tickets = tickets;
         this.messages = messages;
         this.history = history;
@@ -82,7 +85,21 @@ public class HelpdeskTicketQueryService {
             throw HelpdeskTicketCommandService.notFound();
         }
         return HelpdeskTicketDetail.of(ticket, messages.findAllWithAuthorByTicketId(ticketId),
-                history.findAllWithActorByTicketId(ticketId));
+                history.findAllWithActorByTicketId(ticketId), access.isSupportSide(actor, ticket), access.owns(actor, ticket),
+                java.time.Instant.now());
+    }
+
+    /** The tickets of the acting staff member's active teams, newest first. */
+    public HelpdeskTicketPage teamQueue(HelpdeskActor actor, HelpdeskTicketStatus status, int page, int size) {
+        if (!actor.teamWork()) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You do not work on a support team.");
+        }
+        PageRequest request = pageOf(page, size);
+        List<Long> teamIds = members.findActiveTeamIds(actor.accountId());
+        if (teamIds.isEmpty()) {
+            return new HelpdeskTicketPage(List.of(), request.getPageNumber(), request.getPageSize(), 0, 0);
+        }
+        return pageOf(tickets.findTeamQueue(teamIds, status, request), request);
     }
 
     private static PageRequest pageOf(int page, int size) {

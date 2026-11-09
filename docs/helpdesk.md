@@ -193,3 +193,17 @@ Loading says "Loading your tickets…", "Loading ticket…", "Loading support qu
 ## Not built yet
 
 Attachments, email, SMS, or push, service-level targets and escalation, reopening tickets, internal notes, canned replies, satisfaction ratings, deleting anything, and module-specific ticket engines.
+
+## Helpdesk upgrade (v0.9.5)
+
+- **Teams and routing.** `HelpdeskTeam` rows (uppercase code, fixed; made inactive, never deleted) have members (`helpdesk_team_members`): active accounts holding `ADMIN` or a role with `HELPDESK_TEAM_WORK`. A category may name a default team; new tickets of that category are routed to it. Admins with `HELPDESK_TICKET_MANAGE` manage teams, members, and routing at `/support/admin/teams`, and can move a ticket to another team.
+- **Staff roles.**
+  - `HELPDESK_TEAM_WORK` (`V96`) goes to `MAINTENANCE`, `WARDEN`, and `LIBRARIAN`.
+  - A member of a ticket's active team can see, reply to, add notes to, assign within the team, prioritise, and change the status of that ticket, and of no other. `HelpdeskAccessService.worksOnTeam` is the one rule.
+  - Staff read their teams' tickets at `/support/team` (`GET /api/v1/helpdesk/team/tickets`) and get the Inbox for their notices.
+- **Internal notes.** `POST /api/v1/helpdesk/tickets/{id}/notes` adds a message marked `internal`. Only the support side (admins with every ticket, and the ticket's team) ever receives notes or their history entries. A note notifies nobody.
+- **Waiting on the requester.** `WAITING_ON_REQUESTER` can be set from `OPEN` or `IN_PROGRESS`, and the requester's next reply moves the ticket back to `IN_PROGRESS`, recorded in the history.
+- **Reopening.** The requester may reopen a `RESOLVED` ticket within 7 days of its resolution (`POST /{id}/reopen`). It returns to `IN_PROGRESS`, and `REOPENED` is recorded. A `CLOSED` ticket never reopens.
+- **Ratings.** The requester rates a `RESOLVED` or `CLOSED` ticket once, 1 to 5, with an optional plain-text comment (`POST /{id}/rating`).
+- **Response time.** `firstResponseAt` is set by the first visible reply from anyone other than the requester. Lists and the ticket page show it.
+- **Attachments** on tickets are not part of this upgrade; they will use `LmsAttachmentStore`'s pattern once it moves to a shared module.

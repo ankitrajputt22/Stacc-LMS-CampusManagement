@@ -75,6 +75,23 @@ public class HelpdeskTicket {
     @Column(name = "closed_at")
     private Instant closedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private HelpdeskTeam team;
+
+    // When someone other than the requester first replied visibly, for response times.
+    @Column(name = "first_response_at")
+    private Instant firstResponseAt;
+
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Column(name = "rating_comment", length = 1000)
+    private String ratingComment;
+
+    @Column(name = "rated_at")
+    private Instant ratedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -146,6 +163,57 @@ public class HelpdeskTicket {
         }
         this.status = target;
     }
+
+    /** How long a resolved ticket may still be reopened by its requester. */
+    public static final java.time.Duration REOPEN_WINDOW = java.time.Duration.ofDays(7);
+
+    public void routeTo(HelpdeskTeam team) {
+        requireNotClosed();
+        this.team = team;
+    }
+
+    /** Records the first visible reply by the support side, once. */
+    public void responded(Instant at) {
+        if (firstResponseAt == null) {
+            this.firstResponseAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
+        }
+    }
+
+    /** Whether the requester may still reopen it: resolved, not closed, and resolved within the window. */
+    public boolean canReopenAt(Instant at) {
+        return status == HelpdeskTicketStatus.RESOLVED && resolvedAt != null && !at.isAfter(resolvedAt.plus(REOPEN_WINDOW));
+    }
+
+    /** Back to IN_PROGRESS from RESOLVED, by the requester within the window; the resolution time is cleared. */
+    public void reopen(Instant at) {
+        if (!canReopenAt(at)) {
+            throw new IllegalStateException("This ticket can no longer be reopened");
+        }
+        this.status = HelpdeskTicketStatus.IN_PROGRESS;
+        this.resolvedAt = null;
+    }
+
+    /** The requester's rating of a resolved or closed ticket, 1 to 5, given once. */
+    public void rate(int stars, String comment, Instant at) {
+        if (status != HelpdeskTicketStatus.RESOLVED && status != HelpdeskTicketStatus.CLOSED) {
+            throw new IllegalStateException("Only a resolved or closed ticket can be rated");
+        }
+        if (rating != null) {
+            throw new IllegalStateException("This ticket has already been rated");
+        }
+        if (stars < 1 || stars > 5) {
+            throw new IllegalArgumentException("A rating is 1 to 5");
+        }
+        this.rating = stars;
+        this.ratingComment = Require.optionalText(comment, "comment", 1000);
+        this.ratedAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
+    }
+
+    public HelpdeskTeam getTeam() { return team; }
+    public Instant getFirstResponseAt() { return firstResponseAt; }
+    public Integer getRating() { return rating; }
+    public String getRatingComment() { return ratingComment; }
+    public Instant getRatedAt() { return ratedAt; }
 
     private void requireNotClosed() {
         if (isClosed()) {

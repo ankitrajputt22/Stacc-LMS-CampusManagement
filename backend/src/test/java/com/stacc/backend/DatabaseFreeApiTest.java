@@ -9,6 +9,8 @@ import com.stacc.backend.calendar.personal.CalendarFeedLinkRepository;
 import com.stacc.backend.calendar.personal.PersonalCalendarEventRepository;
 import com.stacc.backend.notification.NotificationDigestItemRepository;
 import com.stacc.backend.notification.NotificationPreferenceRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.todo.TodoAssignmentQueries;
 import com.stacc.backend.todo.TodoDismissalRepository;
 import static org.mockito.ArgumentMatchers.any;
@@ -177,7 +179,9 @@ import org.springframework.web.context.WebApplicationContext;
     PersonalCalendarEventRepository.class,
     CalendarFeedLinkRepository.class,
     NotificationPreferenceRepository.class,
-    NotificationDigestItemRepository.class
+    NotificationDigestItemRepository.class,
+    HelpdeskTeamRepository.class,
+    HelpdeskTeamMemberRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

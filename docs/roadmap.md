@@ -160,7 +160,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.9.2 | To-Do | Worked out live from the sources (unsubmitted work, pending approvals, tasks), with dismissing and a dashboard part. Done: `todo` module, `TODO_VIEW` (`V92`), `/todo` and the dashboard part. |
 | ★ 0.9.3 | Calendar upgrade | Personal events, a month view, and a private, revocable subscription link that only reads that calendar. Done: `calendar.personal`, `CALENDAR_PERSONAL_USE` (`V93`), Month view, `.ics` feed. |
 | ★ 0.9.4 | Approvers by relationship | Workflow steps can name a relationship ("student's HOD", "student's mentor", "hostel warden") instead of only a role. Done: `ApproverRelationship` with `STUDENT_DEPARTMENT_HEAD` (`V95`); the warden relationship comes with wardens in 0.10.1, and mentors have no model yet. |
-| ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. |
+| ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. Done (`V96`) except ticket attachments: teams and routing, `HELPDESK_TEAM_WORK` staff, notes, waiting, 7-day reopening, ratings, first response time. |
 | 0.9.6 | Help articles | Short self-help articles per category, suggested while a ticket is written. |
 | 0.9.7 | Service request upgrade | "Being processed" and "ready" states, and an issued document attached when a request is completed. |
 | ★ 0.9.8 | Shared timeline and pages | One timeline component for every history, and the support, approval, and campus pages redesigned. |

@@ -242,7 +242,7 @@ class HelpdeskTicketCommandServiceTest {
         secondAdmin.setStatus(AccountStatus.DISABLED);
 
         assertThatThrownBy(() -> service.assign(adminActor, 42L, "facultyadmin1"))
-                .hasMessage("Tickets can only be assigned to active admin accounts.");
+                .hasMessage("Tickets can only be assigned to active admin accounts or members of the ticket's team.");
         assertThat(ticket.getAssignedTo()).isNull();
         verifyNoInteractions(notifications);
     }
@@ -327,5 +327,41 @@ class HelpdeskTicketCommandServiceTest {
     void aMissingTicketIs404() {
         assertRefused(() -> service.changeStatus(adminActor, 404L, HelpdeskTicketStatus.CLOSED), HttpStatus.NOT_FOUND);
         assertRefused(() -> service.assign(adminActor, null, "admin1"), HttpStatus.NOT_FOUND);
+    }
+
+    // v0.9.5: waiting on the requester, notes, reopening, and ratings
+
+    @Test
+    void theRequestersReplyToATicketWaitingOnThemMovesItBackToInProgress() {
+        service.changeStatus(adminActor, 42L, HelpdeskTicketStatus.WAITING_ON_REQUESTER);
+        service.addMessage(studentActor, 42L, "Here is the screenshot.");
+        assertThat(ticket.getStatus()).isEqualTo(HelpdeskTicketStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void anInternalNoteIsNeverShownToTheRequesterAndRecordsNoResponse() {
+        service.addMessage(adminActor, 42L, "Checked the logs.", true);
+        assertThat(ticket.getFirstResponseAt()).isNull();
+        assertRefused(() -> service.addMessage(studentActor, 42L, "Sneaky", true), HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void aSupportReplyRecordsTheFirstResponseOnce() {
+        service.addMessage(adminActor, 42L, "Looking into it.");
+        assertThat(ticket.getFirstResponseAt()).isEqualTo(NOW.truncatedTo(java.time.temporal.ChronoUnit.MICROS));
+    }
+
+    @Test
+    void theRequesterReopensAResolvedTicketAndRatesItOnce() {
+        service.changeStatus(adminActor, 42L, HelpdeskTicketStatus.RESOLVED);
+        service.reopen(studentActor, 42L);
+        assertThat(ticket.getStatus()).isEqualTo(HelpdeskTicketStatus.IN_PROGRESS);
+        assertRefused(() -> service.reopen(adminActor, 42L), HttpStatus.FORBIDDEN);
+
+        service.changeStatus(adminActor, 42L, HelpdeskTicketStatus.CLOSED);
+        assertRefused(() -> service.reopen(studentActor, 42L), HttpStatus.CONFLICT);
+        service.rate(studentActor, 42L, 4, "Quick fix");
+        assertThat(ticket.getRating()).isEqualTo(4);
+        assertRefused(() -> service.rate(studentActor, 42L, 5, null), HttpStatus.CONFLICT);
     }
 }

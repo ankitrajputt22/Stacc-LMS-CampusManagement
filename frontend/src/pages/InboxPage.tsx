@@ -120,7 +120,7 @@ function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
  */
 export function InboxPage() {
   const { account } = useAuth()
-  const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])
+  const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'])
   const { unreadCount, refresh: refreshCount } = useUnreadCount()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)

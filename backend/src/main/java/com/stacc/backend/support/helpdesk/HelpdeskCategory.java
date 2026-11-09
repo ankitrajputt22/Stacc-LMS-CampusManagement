@@ -46,6 +46,19 @@ public class HelpdeskCategory {
     @Column(nullable = false)
     private boolean active = true;
 
+    // The team new tickets of this category go to; null leaves them with the admin queue only.
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "default_team_id")
+    private HelpdeskTeam defaultTeam;
+
+    public HelpdeskTeam getDefaultTeam() {
+        return defaultTeam;
+    }
+
+    public void routeTo(HelpdeskTeam team) {
+        this.defaultTeam = team;
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

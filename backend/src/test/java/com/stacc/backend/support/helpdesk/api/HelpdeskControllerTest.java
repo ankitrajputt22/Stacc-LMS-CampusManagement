@@ -249,7 +249,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
     @Test
     void aReplyAnswers201WithTheMessage() throws Exception {
         when(commands.addMessage(any(), eq(42L), eq("Hello")))
-                .thenReturn(new HelpdeskMessageResponse(7L, "student1", "Hello", Instant.parse("2026-10-25T09:00:00Z")));
+                .thenReturn(new HelpdeskMessageResponse(7L, "student1", "Hello", Instant.parse("2026-10-25T09:00:00Z"), false));
 
         mockMvc.perform(json(post(TICKETS + "/42/messages"), "{\"message\":\"Hello\",\"authorId\":1}")
                         .header(HttpHeaders.AUTHORIZATION, student()))
