@@ -68,6 +68,9 @@ public class SecurityConfig {
                         // Public: private calendar subscription feeds, because calendar apps cannot sign in. The secret
                         // in the path reads only that one account's calendar, and the owner can revoke it at any time.
                         .requestMatchers(HttpMethod.GET, "/api/v1/calendar/feeds/*").permitAll()
+                        // Public: checking a document's verification code, because the people checking (such as
+                        // employers) have no account. It reveals only whether the document is authentic.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/public/documents/verify/*").permitAll()
                         // Public during development: the API documentation. It only describes the API.
                         .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                         .permitAll()

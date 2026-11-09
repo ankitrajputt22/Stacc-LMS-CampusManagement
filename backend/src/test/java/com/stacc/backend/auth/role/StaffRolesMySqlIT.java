@@ -27,11 +27,11 @@ class StaffRolesMySqlIT extends MySqlIntegrationTest {
 
         Map<String, List<String>> granted = Map.of(
                 "HOD", List.of("APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE"),
-                "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "HOSTEL_WARDEN_VIEW", "APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE"),
+                "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "HOSTEL_WARDEN_VIEW", "APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE", "ID_CARD_VERIFY"),
                 "MAINTENANCE", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
-                "LIBRARIAN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
-                "SECURITY", List.of("GATE_PASS_VERIFY"),
-                "PLACEMENT_OFFICER", List.of());
+                "LIBRARIAN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "ID_CARD_VERIFY"),
+                "SECURITY", List.of("GATE_PASS_VERIFY", "ID_CARD_VERIFY"),
+                "PLACEMENT_OFFICER", List.of("CAREER_MANAGE"));
         granted.forEach((staff, extra) -> {
             List<String> expected = new java.util.ArrayList<>(List.of("PERSON_PROFILE_VIEW_OWN", "PERSON_PROFILE_EDIT_OWN"));
             expected.addAll(extra);

@@ -12,6 +12,16 @@ import com.stacc.backend.notification.NotificationPreferenceRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
+import com.stacc.backend.documents.VaultDocumentRepository;
+import com.stacc.backend.documents.CertificateRequestRepository;
+import com.stacc.backend.career.CareerProfileRepository;
+import com.stacc.backend.career.CareerResumeRepository;
+import com.stacc.backend.career.CareerCompanyRepository;
+import com.stacc.backend.career.CareerOpportunityRepository;
+import com.stacc.backend.career.CareerRoundRepository;
+import com.stacc.backend.career.CareerApplicationRepository;
+import com.stacc.backend.career.CareerOfferRepository;
+import com.stacc.backend.career.CareerPolicyRepository;
 import com.stacc.backend.engagement.groups.CampusGroupRepository;
 import com.stacc.backend.engagement.groups.CampusGroupOfficerRepository;
 import com.stacc.backend.engagement.groups.CampusGroupMembershipRepository;
@@ -207,7 +217,17 @@ import org.springframework.web.context.WebApplicationContext;
     CampusFacilityClosureRepository.class,
     CampusBookingRepository.class,
     CampusEventRepository.class,
-    CampusEventRegistrationRepository.class
+    CampusEventRegistrationRepository.class,
+    VaultDocumentRepository.class,
+    CertificateRequestRepository.class,
+    CareerProfileRepository.class,
+    CareerResumeRepository.class,
+    CareerCompanyRepository.class,
+    CareerOpportunityRepository.class,
+    CareerRoundRepository.class,
+    CareerApplicationRepository.class,
+    CareerOfferRepository.class,
+    CareerPolicyRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

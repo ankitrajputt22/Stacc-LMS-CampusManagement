@@ -98,6 +98,13 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Team tickets', to: '/support/team', roles: ['MAINTENANCE', 'WARDEN', 'LIBRARIAN'], icon: 'support' },
       // A warden's own hostels: the backend lists only those they are assigned to.
       { label: 'Warden', to: '/warden', roles: ['WARDEN'], icon: 'campus' },
+      // One digital ID per account, whatever roles it holds.
+      { label: 'ID card', to: '/id-card', roles: ['STUDENT', 'FACULTY', 'ADMIN', 'HOD', 'WARDEN', 'SECURITY', 'MAINTENANCE', 'LIBRARIAN', 'PLACEMENT_OFFICER'], icon: 'account' },
+      { label: 'Check an ID', to: '/verify-id', roles: ['ADMIN', 'SECURITY', 'LIBRARIAN', 'WARDEN'], icon: 'account' },
+      { label: 'Documents', to: '/documents', roles: ['STUDENT', 'FACULTY'], icon: 'inbox' },
+      { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
+      { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
+      { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },
       // The security desk: pass checks and the gate's movement log.
       { label: 'Gate', to: '/gate', roles: ['SECURITY'], icon: 'campus' },
       // One Campus page per account: services and requests for students and faculty, notices for every role.

@@ -201,14 +201,14 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.12.1 | Digital ID | An in-app ID card with a QR code that refreshes every minute, and a staff verification page. |
-| ★ 0.12.2 | Documents and certificates | A vault of college-issued and student-uploaded documents; certificate requests that issue into it; a public verification code page that confirms only authenticity. |
+| ★ 0.12.1 | Digital ID | An in-app ID card with a QR code that refreshes every minute, and a staff verification page. Done (`V100`): `/id-card` with a minute-by-minute QR code from the pass service, `/verify-id` for staff. |
+| ★ 0.12.2 | Documents and certificates | A vault of college-issued and student-uploaded documents; certificate requests that issue into it; a public verification code page that confirms only authenticity. Done: the vault, certificate requests issued into it, and the public `/verify-document` check. |
 | 0.12.3 | Grievances | Committees per category, confidential cases only their committee can open, appeals, and response deadlines. |
 | 0.12.4 | Mentoring | Mentor assignments, meetings with shared and private notes, action items on the To-Do list. |
 | 0.12.5 | Academic bookings | Classrooms, labs, and equipment on the facilities engine, with class hours closed. |
-| ★ 0.12.6 | Career profile | Skills, links, and resumes, with the resume kept as it was at each application. |
-| ★ 0.12.7 | Opportunities | One engine for placements, internships, research openings, and scholarships: eligibility, applications, and stages. |
-| ★ 0.12.8 | Placement | Companies, rounds on the calendar, offers, the college's placement policy, and applicant export with consent. |
+| ★ 0.12.6 | Career profile | Skills, links, and resumes, with the resume kept as it was at each application. Done: headline, skills, links, and never-changed resume versions. |
+| ★ 0.12.7 | Opportunities | One engine for placements, internships, research openings, and scholarships: eligibility, applications, and stages. Done: one engine with eligibility reasons, stages, rounds, and applications with consent. |
+| ★ 0.12.8 | Placement | Companies, rounds on the calendar, offers, the college's placement policy, and applicant export with consent. Done: companies, scheduled rounds, offers, the one-placement policy, and the consent-based CSV export. |
 | 0.12.9 | Portfolio | Verified items read live from their records, self-entered items, and verification. |
 | 0.12.10 | Projects | One team model for projects with join requests and faculty mentors. |
 | 0.12.11 | Innovation | Idea submission and review. |
@@ -295,4 +295,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
 | v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
-| v0.12 – v1.0 | Not started |
+| v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
+| v0.16 Analytics, v1.0 | Not started (v0.13 to v0.15 AI later) |

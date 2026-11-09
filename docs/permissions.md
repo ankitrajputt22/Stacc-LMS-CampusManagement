@@ -99,6 +99,11 @@ A permission is added by a new migration only when the real feature it protects 
 | `GATE_PASS_VERIFY` | `SECURITY` | Checking pass codes, recording gate movements, and looking students' outings up. Added by `V98`. |
 | `CAMPUS_ENGAGEMENT_USE` | `STUDENT`, `FACULTY` | Joining groups, registering for events, and booking facilities; officers and organizers manage their own groups' members and events. Added by `V99`. |
 | `CAMPUS_ENGAGEMENT_MANAGE` | `ADMIN` | Setting up groups, officers, facilities, and closures, and organizing any event. Added by `V99`. |
+| `ID_CARD_VERIFY` | `ADMIN`, `SECURITY`, `LIBRARIAN`, `WARDEN` | Checking a digital ID code. Added by `V100`. |
+| `DOCUMENT_VAULT_USE` | `STUDENT`, `FACULTY` | One's own document vault and certificate requests. Added by `V100`. |
+| `DOCUMENT_ISSUE` | `ADMIN` | Issuing or refusing certificates and withdrawing issued documents. Added by `V100`. |
+| `CAREER_USE` | `STUDENT` | One's own career profile, resumes, applications, and offers. Added by `V100`. |
+| `CAREER_MANAGE` | `ADMIN`, `PLACEMENT_OFFICER` | Companies, opportunities, rounds, applicants, offers, the placement policy, and the consent-based export. Added by `V100`. |
 | `LMS_GRADEBOOK_MANAGE` | `FACULTY` | Reading the gradebook of the LMS courses taught, adding and changing manual items, entering their marks, and publishing columns. Added by `V88`. |
 | `LMS_GRADE_VIEW` | `STUDENT` | Reading one's own published grades in a course the student may use. Added by `V88`. |
 
