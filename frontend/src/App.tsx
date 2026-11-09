@@ -30,6 +30,13 @@ import { InboxPage } from './pages/InboxPage'
 import { TodoPage } from './pages/TodoPage'
 import { WardenPage } from './pages/WardenPage'
 import { GatePage } from './pages/GatePage'
+import { IdCardPage } from './pages/IdCardPage'
+import { VerifyIdPage } from './pages/VerifyIdPage'
+import { VerifyDocumentPage } from './pages/VerifyDocumentPage'
+import { DocumentsPage } from './pages/DocumentsPage'
+import { CertificateDeskPage } from './pages/CertificateDeskPage'
+import { CareerPage } from './pages/CareerPage'
+import { PlacementPage } from './pages/PlacementPage'
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -96,6 +103,8 @@ function App() {
     <Routes>
       {/* Public: the sign-in page has its own simple layout, without the app shell. */}
       <Route path={LOGIN_PATH} element={<LoginPage />} />
+      {/* Public: anyone given a verification code can check a document is authentic. */}
+      <Route path="verify-document" element={<VerifyDocumentPage />} />
 
       {/* Everything else, including unknown addresses, is inside the app and needs a signed-in user. */}
       <Route element={<RequireAuth />}>
@@ -174,6 +183,12 @@ function App() {
           <Route path="todo" element={<TodoPage />} />
           <Route path="warden" element={<WardenPage />} />
           <Route path="gate" element={<GatePage />} />
+          <Route path="id-card" element={<IdCardPage />} />
+          <Route path="verify-id" element={<VerifyIdPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="admin/certificates" element={<CertificateDeskPage />} />
+          <Route path="career" element={<CareerPage />} />
+          <Route path="placement" element={<PlacementPage />} />
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />
           <Route path="account" element={<AccountSettingsPage />} />
           <Route path="account/password" element={<ChangePasswordPage />} />

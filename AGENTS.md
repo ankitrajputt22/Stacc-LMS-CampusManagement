@@ -403,6 +403,12 @@
 - Approvals go through the engine only: `FACILITY_BOOKING` for facilities that need it, `GROUP_EVENT` (the `GROUP_ADVISOR` relationship) for group events. Booking and event status follow their approvals on read and are never copied.
 - Eligibility is decided on the server with reasons in words; the frontend shows them and never decides.
 
+## Digital ID, Documents, and Career
+
+- The digital ID code comes only from `pass.PassService` (`ID_CARD`, 90 seconds); `/id-card` is the one page that refreshes on a timer. ID checks (`ID_CARD_VERIFY`) never show contact details. See `docs/student-services-and-career.md`.
+- Vault files live in private storage through `LmsAttachmentStore`; only owners download their own. Issued documents carry an HMAC-derived verification code whose fingerprint is stored; the public check reveals only authenticity, title, and issue date. Documents are withdrawn, never deleted.
+- Career eligibility is decided on the server with reasons; resume versions are never changed so applications keep theirs; the applicant export contains only consenting applicants, built per request and never stored. Placement managers hold `CAREER_MANAGE`; students `CAREER_USE`.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.
