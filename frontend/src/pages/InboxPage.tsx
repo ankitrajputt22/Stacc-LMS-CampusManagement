@@ -338,6 +338,11 @@ export function InboxPage() {
         Inbox
       </h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Updates from your courses and academic activity.</p>
+      <p className="mt-2">
+        <Link to="/inbox/settings" className="text-sm font-medium text-stacc-primary underline-offset-4 hover:underline">
+          Notification settings
+        </Link>
+      </p>
       <p role="status" className="sr-only">
         {announcement}
       </p>

@@ -339,7 +339,8 @@
 - Notify only on real transitions: compare the state before and after, so repeated or no-op calls never notify twice. Resolve recipients with the feature's existing rules (student access policy, calendar relevance, the enrollment's own student), and deduplicate accounts.
 - Store only a plain-text title and message, a loose `sourceType`/`sourceId`, and a safe internal `actionPath` (one leading `/`, never `//`, a scheme, or a host). Never copy source records, and never let a source ID or path bypass the destination's own authorization.
 - The Inbox is per `UserAccount`, never per role, and never uses `roles[0]`. Its routes need `NOTIFICATION_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN` and take the account from the token; another account's row answers 404. There is no deletion.
-- The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add email, SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
+- The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
+- Each person chooses per category (`NotificationCategory`) whether notifications reach the Inbox and whether they are emailed at once or in a daily digest (`/inbox/settings`, `NOTIFICATION_VIEW`). Email is off unless `MAIL_ENABLED=true`, goes only after commit to the college-recorded address of an `ACTIVE` account, is plain text with a link from `MAIL_LINK_BASE_URL`, and never stores or logs an address or content. The digest marks its rows sent under a row lock before sending. See `docs/notification-settings.md`.
 
 ## Helpdesk
 
@@ -360,6 +361,7 @@
 - Workflows are ordered, sequential, role-based steps (1 to 10), each naming an existing `Role` that holds `APPROVAL_TASK_DECIDE`, never an account. Codes are uppercase and fixed; deactivate workflows instead of deleting them.
 - A request copies its workflow's steps when it starts; editing a workflow affects future requests only. A PENDING request has exactly one PENDING step and `currentStepOrder` pointing at it.
 - A step is decided only by an account with `APPROVAL_TASK_DECIDE` that holds the step's role in its token and in the database and is not the requester. There is no admin pass, and never use `roles[0]`.
+- A step may also name an `ApproverRelationship` (such as `STUDENT_DEPARTMENT_HEAD` with `HOD`), resolved once at start through the owning module's `ApproverRelationshipResolver` to one assigned account; then only that account decides it, and it alone sees and is notified of the task. No approver found means nothing starts (409). Never resolve a relationship again or let the engine import a business module.
 - Rejecting needs a comment, rejects the request, and skips later steps. Finished requests never change; deciding an already decided step answers 409. Lock the request row before every decision or cancellation.
 - History is append-only and written only by the engine's single recorder. Notifications go to the step's role holders and the requester, with no link until a module adds pages.
 - Do not add parallel or conditional steps, quorum, delegation, escalation, deadlines, attachments, form builders, or a generic approval UI without their own phase.

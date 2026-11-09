@@ -9,6 +9,7 @@ export const queryKeys = {
     photo: () => ['me', 'photo'] as const,
     sessions: () => ['me', 'sessions'] as const,
     todo: () => ['me', 'todo'] as const,
+    notificationSettings: () => ['me', 'notification-settings'] as const,
   },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,

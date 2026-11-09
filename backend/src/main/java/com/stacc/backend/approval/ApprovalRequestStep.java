@@ -45,6 +45,16 @@ public class ApprovalRequestStep {
     @Column(name = "required_role_code", nullable = false, updatable = false, length = 50)
     private String requiredRoleCode;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @Column(name = "approver_relationship", length = 40, updatable = false)
+    private ApproverRelationship approverRelationship;
+
+    // The one account that decides this step, resolved from the relationship when the request started; null for a
+    // step any holder of the role may decide.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_approver_user_account_id")
+    private UserAccount assignedApprover;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ApprovalRequestStepStatus status;
@@ -78,6 +88,19 @@ public class ApprovalRequestStep {
         this.stepName = Require.text(stepName, "stepName", ApprovalWorkflowDefinition.MAX_NAME_LENGTH);
         this.requiredRoleCode = Require.text(requiredRoleCode, "requiredRoleCode", 50);
         this.status = Require.notNull(status, "status");
+    }
+
+    void assign(ApproverRelationship relationship, UserAccount approver) {
+        this.approverRelationship = Require.notNull(relationship, "relationship");
+        this.assignedApprover = Require.notNull(approver, "approver");
+    }
+
+    public ApproverRelationship getApproverRelationship() {
+        return approverRelationship;
+    }
+
+    public UserAccount getAssignedApprover() {
+        return assignedApprover;
     }
 
     void activate() {

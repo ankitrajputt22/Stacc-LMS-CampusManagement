@@ -39,6 +39,7 @@ public interface ApprovalRequestStepRepository extends JpaRepository<ApprovalReq
             where step.status = com.stacc.backend.approval.ApprovalRequestStepStatus.PENDING
               and request.status = com.stacc.backend.approval.ApprovalRequestStatus.PENDING
               and step.requiredRoleCode in :roleCodes
+              and (step.assignedApprover is null or step.assignedApprover.id = :approverId)
               and requester.id <> :approverId
             order by step.createdAt asc, step.id asc
             """,
@@ -48,6 +49,7 @@ public interface ApprovalRequestStepRepository extends JpaRepository<ApprovalReq
             where step.status = com.stacc.backend.approval.ApprovalRequestStepStatus.PENDING
               and step.approvalRequest.status = com.stacc.backend.approval.ApprovalRequestStatus.PENDING
               and step.requiredRoleCode in :roleCodes
+              and (step.assignedApprover is null or step.assignedApprover.id = :approverId)
               and step.approvalRequest.requester.id <> :approverId
             """)
     Page<ApprovalRequestStep> findTasks(@Param("roleCodes") Collection<String> roleCodes,

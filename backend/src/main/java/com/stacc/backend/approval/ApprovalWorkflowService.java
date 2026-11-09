@@ -2,6 +2,7 @@ package com.stacc.backend.approval;
 
 import java.time.Clock;
 import java.util.Locale;
+import java.util.List;
 import java.util.Optional;
 
 import com.stacc.backend.approval.ApprovalCommands.ApprovalRequestOutcome;
@@ -35,6 +36,7 @@ public class ApprovalWorkflowService {
     static final String STEP_DECIDED = "This step has already been decided.";
     static final String STEP_NOT_ACTIVE = "This step is not waiting for a decision yet.";
     static final String COMMENT_REQUIRED = "A comment is required to reject.";
+    public static final String NO_APPROVER = "Nobody can approve this request right now: the approver it needs is not set up. Contact the college administration.";
 
     private final ApprovalWorkflowDefinitionRepository workflows;
     private final ApprovalRequestRepository requests;
@@ -44,11 +46,12 @@ public class ApprovalWorkflowService {
     private final ApprovalAccessService access;
     private final ApprovalNotifications notifications;
     private final Clock clock;
+    private final List<ApproverRelationshipResolver> relationshipResolvers;
 
     public ApprovalWorkflowService(ApprovalWorkflowDefinitionRepository workflows, ApprovalRequestRepository requests,
             ApprovalRequestStepRepository steps, ApprovalRequestHistoryRepository history,
             UserAccountRepository accounts, ApprovalAccessService access, ApprovalNotifications notifications,
-            Clock clock) {
+            Clock clock, List<ApproverRelationshipResolver> relationshipResolvers) {
         this.workflows = workflows;
         this.requests = requests;
         this.steps = steps;
@@ -57,6 +60,7 @@ public class ApprovalWorkflowService {
         this.access = access;
         this.notifications = notifications;
         this.clock = clock;
+        this.relationshipResolvers = List.copyOf(relationshipResolvers);
     }
 
     /**
@@ -85,12 +89,30 @@ public class ApprovalWorkflowService {
         } catch (IllegalArgumentException invalid) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "The approval request is not valid: " + invalid.getMessage() + ".");
         }
+        assignRelationships(workflow, request, requester);
         request = requests.saveAndFlush(request);
         ApprovalRequestStep first = request.currentStep().orElseThrow();
         record(request, requester, ApprovalRequestHistoryAction.REQUEST_CREATED, null, null);
         record(request, null, ApprovalRequestHistoryAction.STEP_ACTIVATED, first.getStepOrder(), null);
         notifications.actionRequired(request, first);
         return new ApprovalStartResult(request.getId(), request.getStatus());
+    }
+
+    // Each step that names a relationship gets its one approver now; editing the relationship later changes nothing here.
+    private void assignRelationships(ApprovalWorkflowDefinition workflow, ApprovalRequest request, UserAccount requester) {
+        for (ApprovalWorkflowStepDefinition definition : workflow.getSteps()) {
+            ApproverRelationship relationship = definition.getApproverRelationship();
+            if (relationship == null) {
+                continue;
+            }
+            Long approverId = relationshipResolvers.stream().filter(resolver -> resolver.relationship() == relationship)
+                    .findFirst().flatMap(resolver -> resolver.approverFor(requester.getId()))
+                    .filter(id -> !id.equals(requester.getId()))
+                    .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, NO_APPROVER));
+            ApprovalRequestStep step = request.getSteps().stream()
+                    .filter(candidate -> candidate.getStepOrder() == definition.getStepOrder()).findFirst().orElseThrow();
+            step.assign(relationship, accounts.getReferenceById(approverId));
+        }
     }
 
     /**

@@ -99,9 +99,9 @@ public class ApprovalWorkflowDefinition {
         for (int index = 0; index < newSteps.size(); index++) {
             StepSpec spec = Require.notNull(newSteps.get(index), "step");
             if (index < steps.size()) {
-                steps.get(index).change(spec.name(), spec.approverRole());
+                steps.get(index).change(spec.name(), spec.approverRole(), spec.relationship());
             } else {
-                steps.add(new ApprovalWorkflowStepDefinition(this, index + 1, spec.name(), spec.approverRole()));
+                steps.add(new ApprovalWorkflowStepDefinition(this, index + 1, spec.name(), spec.approverRole(), spec.relationship()));
             }
         }
         while (steps.size() > newSteps.size()) {
@@ -110,7 +110,11 @@ public class ApprovalWorkflowDefinition {
     }
 
     /** One step as an admin describes it: a name and the role that decides it. Its number is its place in the list. */
-    public record StepSpec(String name, Role approverRole) {
+    public record StepSpec(String name, Role approverRole, ApproverRelationship relationship) {
+
+        public StepSpec(String name, Role approverRole) {
+            this(name, approverRole, null);
+        }
     }
 
     public Long getId() {

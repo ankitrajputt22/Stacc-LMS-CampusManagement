@@ -22,6 +22,7 @@ Start-up stops, listing every problem at once and never printing a value, when:
 - `FRONTEND_ORIGIN` lists anything but `https` origins of real hosts (no `http`, no `localhost`);
 - `STACC_SESSION_SECURE_COOKIE` is not `true`;
 - `AI_ENABLED=true` without a `STACC_AI_INTERNAL_TOKEN` of at least 32 characters.
+- `MAIL_ENABLED=true` with a `MAIL_LINK_BASE_URL` that is not https.
 
 These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, session lengths outside their ranges, a wildcard or path in `FRONTEND_ORIGIN`, and a missing storage endpoint or bucket.
 
@@ -60,6 +61,13 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, s
 | `STACC_AI_INTERNAL_TOKEN` | empty | if AI is on, 32+ characters | **yes** | The shared secret between the backend and the AI service. |
 | `AI_CONNECT_TIMEOUT`, `AI_READ_TIMEOUT`, `AI_SYNC_READ_TIMEOUT` | `3s`, `120s`, `15m` | | | How long the backend waits for the AI service. |
 | `AI_MAX_SYNC_SOURCES`, `AI_MAX_SYNC_BYTES`, `AI_BUILDING_TIMEOUT` | `100`, `40MB`, `30m` | | | Limits of one knowledge refresh. See `ai-learning.md`. |
+| `MAIL_ENABLED` | `false` | | | Emails notifications to people who chose email. See `notification-settings.md`. |
+| `MAIL_FROM` | empty | if mail is on | | The sender address of notification emails. |
+| `MAIL_LINK_BASE_URL` | `http://localhost:5173` | https if mail is on | | The frontend address that links in emails start with. |
+| `MAIL_DIGEST_CRON` | `0 0 7 * * *` | | | When the daily digest is sent, in UTC. |
+| `MAIL_HOST`, `MAIL_PORT` | `localhost`, `25` | if mail is on | | The SMTP server. |
+| `MAIL_USERNAME`, `MAIL_PASSWORD` | empty | | **yes** (password) | The SMTP account, if the server needs one. |
+| `MAIL_STARTTLS` | `true` | | | Whether to upgrade the SMTP connection to TLS. |
 
 ## AI service
 

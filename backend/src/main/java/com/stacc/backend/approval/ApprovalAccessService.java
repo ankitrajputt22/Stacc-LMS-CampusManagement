@@ -40,6 +40,9 @@ public class ApprovalAccessService {
         if (account.getId().equals(request.getRequester().getId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, OWN_REQUEST);
         }
+        if (step.getAssignedApprover() != null && !step.getAssignedApprover().getId().equals(account.getId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "This step must be decided by the approver assigned to it.");
+        }
         String role = step.getRequiredRoleCode();
         if (!holdsRole(actor, role) || account.getStatus() != AccountStatus.ACTIVE || !accountHolds(account, role)) {
             throw new ApiException(HttpStatus.FORBIDDEN,

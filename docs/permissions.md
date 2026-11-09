@@ -59,8 +59,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `HELPDESK_TICKET_MANAGE` | `ADMIN` | Assigning tickets to admins, changing their priority and status, and managing helpdesk categories. Nothing can delete them. Added by `V46`. |
 | `HELPDESK_TICKET_REPLY_ALL` | `ADMIN` | Replying to every helpdesk ticket. Added by `V46`. |
 | `APPROVAL_REQUEST_VIEW_OWN` | `STUDENT`, `FACULTY`, `ADMIN` | Reading one's own approval requests, with their steps and history. Added by `V49`. |
-| `APPROVAL_TASK_VIEW` | `FACULTY`, `ADMIN` | Seeing the approval steps waiting for a role the account holds. Added by `V49`. |
-| `APPROVAL_TASK_DECIDE` | `FACULTY`, `ADMIN` | Approving or rejecting such a step, only when the account holds the role the step requires. Added by `V49`. |
+| `APPROVAL_TASK_VIEW` | `FACULTY`, `ADMIN`, `HOD` | Seeing the approval steps waiting for a role the account holds (only one's own, for a relationship step). Added by `V49`; `HOD` by `V95`. |
+| `APPROVAL_TASK_DECIDE` | `FACULTY`, `ADMIN`, `HOD` | Approving or rejecting such a step, only when the account holds the role the step requires (and is its assigned approver, for a relationship step). Added by `V49`; `HOD` by `V95`. |
 | `APPROVAL_WORKFLOW_MANAGE` | `ADMIN` | Creating, editing, and deactivating approval workflows. Nothing can delete them. Added by `V49`. |
 | `HOSTEL_APPLICATION_CREATE` | `STUDENT` | Seeing the sessions one may apply for and applying for hostel, as oneself. Added by `V52`. |
 | `HOSTEL_APPLICATION_VIEW_OWN` | `STUDENT` | Reading one's own hostel applications, their approval progress, and allocations. Added by `V52`. |
