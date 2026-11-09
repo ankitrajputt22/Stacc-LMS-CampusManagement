@@ -137,3 +137,15 @@ The backend's MySQL tests (`*MySqlIT`, see `testing.md`) start a throwaway MySQL
 ## Starting over
 
 The data lives in your local database. To start from an empty database with Docker, remove the stack's volumes with `docker compose down -v`. This deletes **all** local data, not only the demo data. Then start again with the profile.
+
+## Staff accounts and demo extras (v1.0.7)
+
+`LocalDemoExtrasSeeder` runs after the main seeder, under the same profile and password. It adds:
+
+- **Staff accounts:** `warden1` (warden of the Main Hostel), `security1`, `maintenance1` (with `warden1` on the `MAINTENANCE` support team), `librarian1`, and `placement1`.
+- **Clubs and sports:** the Coding Club (joins on approval; advisor `faculty1`, president `student1`) and the Cricket Team (open; coach `faculty2`).
+- **Facilities:** a Seminar Hall that needs approval, and an open Badminton Court.
+- **An event:** Open Source Day, published a week ahead.
+- **A placement:** Acme Software's open Graduate Software Engineer placement.
+
+It only finds or creates, through the feature services, like the main seeder.

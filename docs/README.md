@@ -2,6 +2,14 @@
 
 Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it, and the progress.
 
+## Release v1.0
+
+- [Demo guide](demo-guide.md)
+- [User guide](user-guide.md)
+- [Changelog](changelog.md)
+- [Known limitations](known-limitations.md)
+- [Integration review](integration-review.md)
+
 ## Project
 
 - [Roadmap](roadmap.md)
