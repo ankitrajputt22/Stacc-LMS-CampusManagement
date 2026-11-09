@@ -22,11 +22,13 @@ public final class ApprovalResponses {
     public record ApprovalWorkflowStepResponse(
             @Schema(example = "1") int stepOrder,
             @Schema(example = "Faculty review") String name,
-            @Schema(example = "FACULTY") String approverRoleCode) {
+            @Schema(example = "FACULTY") String approverRoleCode,
+            @Schema(nullable = true, description = "A relationship that names the one approver, or null for any holder of the role.",
+                    example = "STUDENT_DEPARTMENT_HEAD") ApproverRelationship approverRelationship) {
 
         static ApprovalWorkflowStepResponse of(ApprovalWorkflowStepDefinition step) {
             return new ApprovalWorkflowStepResponse(step.getStepOrder(), step.getName(),
-                    step.getApproverRole().getName().name());
+                    step.getApproverRole().getName().name(), step.getApproverRelationship());
         }
     }
 

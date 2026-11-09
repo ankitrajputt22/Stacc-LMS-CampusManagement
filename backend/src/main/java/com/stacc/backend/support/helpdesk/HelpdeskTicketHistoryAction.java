@@ -7,5 +7,9 @@ public enum HelpdeskTicketHistoryAction {
     STATUS_CHANGED,
     PRIORITY_CHANGED,
     ASSIGNED,
-    UNASSIGNED
+    UNASSIGNED,
+    NOTE_ADDED,
+    REOPENED,
+    RATED,
+    TEAM_CHANGED
 }

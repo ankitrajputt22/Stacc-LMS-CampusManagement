@@ -91,9 +91,11 @@ const navigationSections: readonly NavigationSection[] = [
       // One To-Do list per account, worked out by the backend from every role the account holds.
       { label: 'To-Do', to: '/todo', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'todo' },
       // One Inbox per account, whatever roles it holds: notifications are sent to accounts, not to roles.
-      { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications', icon: 'inbox' },
+      { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'], badge: 'unreadNotifications', icon: 'inbox' },
       // One Support area per account: tickets belong to accounts, and admins manage the queue from the same place.
       { label: 'Support', to: '/support', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'support' },
+      // Staff who work support tickets see the tickets routed to their teams; the backend checks each team.
+      { label: 'Team tickets', to: '/support/team', roles: ['MAINTENANCE', 'WARDEN', 'LIBRARIAN'], icon: 'support' },
       // One Campus page per account: services and requests for students and faculty, notices for every role.
       { label: 'Campus', to: '/campus', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'campus' },
       // One search page for every account; the backend decides what each account may find.

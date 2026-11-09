@@ -1,6 +1,13 @@
 package com.stacc.backend.notification;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -23,12 +30,21 @@ public class NotificationService {
     private final NotificationRepository notifications;
     private final NotificationRecipientRepository recipients;
     private final UserAccountRepository accounts;
+    private final NotificationPreferenceRepository preferences;
+    private final NotificationDigestItemRepository digestItems;
+    private final NotificationMailer mailer;
+    private final Clock clock;
 
     public NotificationService(NotificationRepository notifications, NotificationRecipientRepository recipients,
-            UserAccountRepository accounts) {
+            UserAccountRepository accounts, NotificationPreferenceRepository preferences,
+            NotificationDigestItemRepository digestItems, NotificationMailer mailer, Clock clock) {
         this.notifications = notifications;
         this.recipients = recipients;
         this.accounts = accounts;
+        this.preferences = preferences;
+        this.digestItems = digestItems;
+        this.mailer = mailer;
+        this.clock = clock;
     }
 
     /** Notifies one account. Nothing is created without an account. */
@@ -49,10 +65,32 @@ public class NotificationService {
         }
         Notification notification = notifications.save(new Notification(message.type(), message.title(),
                 message.message(), message.sourceType(), message.sourceId(), message.actionPath()));
+        // Each person's choice for this category; without a row, the Inbox is on and nothing is emailed.
+        Map<Long, NotificationPreference> chosen = preferences
+                .findAllByCategoryAndUserAccountIdIn(NotificationCategory.of(message.type()), unique).stream()
+                .collect(Collectors.toMap(NotificationPreference::getUserAccountId, Function.identity()));
+        List<Long> inbox = new ArrayList<>();
+        List<Long> instant = new ArrayList<>();
+        List<Long> daily = new ArrayList<>();
+        for (Long accountId : unique) {
+            NotificationPreference preference = chosen.get(accountId);
+            if (preference == null || preference.isInApp()) {
+                inbox.add(accountId);
+            }
+            EmailDelivery email = preference == null ? EmailDelivery.OFF : preference.getEmail();
+            if (email == EmailDelivery.INSTANT) {
+                instant.add(accountId);
+            } else if (email == EmailDelivery.DAILY && mailer.enabled()) {
+                daily.add(accountId);
+            }
+        }
         // References only: the accounts themselves are never loaded or changed.
-        recipients.saveAll(unique.stream()
+        recipients.saveAll(inbox.stream()
                 .map(accountId -> new NotificationRecipient(notification, accounts.getReferenceById(accountId)))
                 .toList());
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        digestItems.saveAll(daily.stream().map(accountId -> new NotificationDigestItem(accountId, notification, now)).toList());
+        mailer.sendAfterCommit(mailer.mailOf(notification), instant);
         return Optional.of(notification);
     }
 }

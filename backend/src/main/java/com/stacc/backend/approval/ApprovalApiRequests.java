@@ -26,7 +26,16 @@ public final class ApprovalApiRequests {
             @Schema(description = "The code of an existing role whose holders decide this step.", example = "FACULTY")
             @NotBlank(message = "Approver role is required")
             @Size(max = 50, message = "Approver role must be at most 50 characters")
-            String approverRoleCode) {
+            String approverRoleCode,
+
+            @Schema(description = "Optional: a relationship to the requester that names the one approver, such as "
+                    + "STUDENT_DEPARTMENT_HEAD (with the HOD role). Empty means any holder of the role.")
+            ApproverRelationship approverRelationship) {
+
+        /** A step any holder of the role may decide. */
+        public ApprovalWorkflowStepRequest(String name, String approverRoleCode) {
+            this(name, approverRoleCode, null);
+        }
     }
 
     public record CreateApprovalWorkflowRequest(

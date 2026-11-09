@@ -26,7 +26,10 @@ class NotificationServiceTest {
     private final NotificationRepository notifications = mock(NotificationRepository.class);
     private final NotificationRecipientRepository recipients = mock(NotificationRecipientRepository.class);
     private final UserAccountRepository accounts = mock(UserAccountRepository.class);
-    private final NotificationService service = new NotificationService(notifications, recipients, accounts);
+    private final NotificationPreferenceRepository preferences = mock(NotificationPreferenceRepository.class);
+    private final NotificationMailer mailer = mock(NotificationMailer.class);
+    private final NotificationService service = new NotificationService(notifications, recipients, accounts, preferences,
+            mock(NotificationDigestItemRepository.class), mailer, java.time.Clock.systemUTC());
 
     @SuppressWarnings("unchecked")
     private List<NotificationRecipient> savedRecipients() {
@@ -74,5 +77,18 @@ class NotificationServiceTest {
         service.notifyUser(MESSAGE, 5L);
 
         assertThat(savedRecipients()).hasSize(1);
+    }
+
+    @Test
+    void aPersonWhoTurnedTheInboxOffForTheCategoryGetsNoInboxRowButStillAnInstantEmail() {
+        accountsExist();
+        NotificationPreference off = new NotificationPreference(2L, NotificationCategory.CALENDAR);
+        off.choose(false, EmailDelivery.INSTANT, java.time.Instant.now());
+        when(preferences.findAllByCategoryAndUserAccountIdIn(any(), any())).thenReturn(List.of(off));
+
+        service.notifyUsers(MESSAGE, List.of(1L, 2L));
+
+        assertThat(savedRecipients()).hasSize(1);
+        verify(mailer).sendAfterCommit(any(), org.mockito.ArgumentMatchers.eq(List.of(2L)));
     }
 }

@@ -59,6 +59,10 @@ public class ProductionSettingsCheck {
             problems.add("AI_ENABLED is true, so STACC_AI_INTERNAL_TOKEN must be at least "
                     + MIN_AI_TOKEN_LENGTH + " characters.");
         }
+        if (Boolean.parseBoolean(trimmed(environment.getProperty("stacc.mail.enabled")))
+                && !trimmed(environment.getProperty("stacc.mail.link-base-url")).startsWith("https://")) {
+            problems.add("MAIL_ENABLED is true, so MAIL_LINK_BASE_URL must be the https address of the frontend.");
+        }
         return problems;
     }
 

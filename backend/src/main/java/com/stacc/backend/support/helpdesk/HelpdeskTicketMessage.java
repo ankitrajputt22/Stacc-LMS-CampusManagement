@@ -37,12 +37,25 @@ public class HelpdeskTicketMessage {
     @Column(nullable = false, updatable = false, columnDefinition = "TEXT")
     private String message;
 
+    // An internal note: seen only by the support side, never by the requester.
+    @Column(nullable = false, updatable = false)
+    private boolean internal;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     protected HelpdeskTicketMessage() {
         // Required by JPA.
+    }
+
+    public HelpdeskTicketMessage(HelpdeskTicket ticket, UserAccount author, String message, boolean internal) {
+        this(ticket, author, message);
+        this.internal = internal;
+    }
+
+    public boolean isInternal() {
+        return internal;
     }
 
     public HelpdeskTicketMessage(HelpdeskTicket ticket, UserAccount author, String message) {

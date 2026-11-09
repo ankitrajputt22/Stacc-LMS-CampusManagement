@@ -1,7 +1,7 @@
 // The helpdesk exactly as the backend sends it (HelpdeskResponses and HelpdeskRequests in
 // com.stacc.backend.support.helpdesk). People appear by login ID only.
 
-export type HelpdeskTicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+export type HelpdeskTicketStatus = 'OPEN' | 'IN_PROGRESS' | 'WAITING_ON_REQUESTER' | 'RESOLVED' | 'CLOSED'
 
 export type HelpdeskTicketPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
 
@@ -12,6 +12,10 @@ export type HelpdeskHistoryAction =
   | 'PRIORITY_CHANGED'
   | 'ASSIGNED'
   | 'UNASSIGNED'
+  | 'NOTE_ADDED'
+  | 'REOPENED'
+  | 'RATED'
+  | 'TEAM_CHANGED'
 
 /** A category that can be chosen for a new ticket. */
 export type HelpdeskCategory = {
@@ -41,6 +45,10 @@ export type HelpdeskTicketSummary = {
   assignedToLoginId: string | null
   createdAt: string
   updatedAt: string
+  teamName: string | null
+  /** When the support side first replied visibly. */
+  firstResponseAt: string | null
+  rating: number | null
 }
 
 export type HelpdeskTicketPage = {
@@ -57,6 +65,8 @@ export type HelpdeskTicketMessage = {
   /** Plain text. */
   message: string
   createdAt: string
+  /** An internal note: only the support side ever receives these. */
+  internal: boolean
 }
 
 export type HelpdeskTicketHistory = {
@@ -87,6 +97,26 @@ export type HelpdeskTicketDetail = {
   updatedAt: string
   messages: HelpdeskTicketMessage[]
   history: HelpdeskTicketHistory[]
+  teamCode: string | null
+  teamName: string | null
+  firstResponseAt: string | null
+  rating: number | null
+  ratingComment: string | null
+  /** Whether the signed-in account works this ticket (admin or its team): notes and status changes. */
+  supportSide: boolean
+  /** Whether the signed-in requester may reopen it now. */
+  canReopen: boolean
+  /** Whether the signed-in requester may rate it now. */
+  canRate: boolean
+}
+
+/** A support team as admins manage it. */
+export type HelpdeskTeam = {
+  teamId: number
+  code: string
+  name: string
+  active: boolean
+  memberLoginIds: string[]
 }
 
 /** An active admin account a ticket can be assigned to. */

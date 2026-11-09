@@ -11,7 +11,7 @@ import { UnreadCountContext } from './unreadCount'
  */
 export function UnreadCountProvider({ children }: { children: ReactNode }) {
   const { account } = useAuth()
-  const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])
+  const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'])
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [requests, setRequests] = useState(0)
   const refresh = useCallback(() => setRequests((previous) => previous + 1), [])

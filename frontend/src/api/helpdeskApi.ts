@@ -6,6 +6,7 @@ import type {
   HelpdeskCategory,
   HelpdeskTicketDetail,
   HelpdeskTicketMessage,
+  HelpdeskTeam,
   HelpdeskTicketPage,
   HelpdeskTicketPriority,
   HelpdeskTicketStatus,
@@ -81,4 +82,44 @@ export async function createHelpdeskCategory(request: CreateHelpdeskCategoryRequ
 export async function updateHelpdeskCategory(categoryId: number, request: UpdateHelpdeskCategoryRequest) {
   const response = await apiClient.put<AdminHelpdeskCategory>(`/helpdesk/admin/categories/${categoryId}`, request)
   return response.data
+}
+
+/** An internal note, seen only by the support side. */
+export async function addHelpdeskNote(ticketId: number, message: string) {
+  await apiClient.post(`/helpdesk/tickets/${ticketId}/notes`, { message })
+}
+
+/** The requester reopens a resolved ticket within 7 days. */
+export async function reopenHelpdeskTicket(ticketId: number) {
+  return (await apiClient.post<HelpdeskTicketDetail>(`/helpdesk/tickets/${ticketId}/reopen`)).data
+}
+
+/** The requester rates a resolved or closed ticket once. */
+export async function rateHelpdeskTicket(ticketId: number, rating: number, comment: string | null) {
+  return (await apiClient.post<HelpdeskTicketDetail>(`/helpdesk/tickets/${ticketId}/rating`, { rating, comment })).data
+}
+
+/** The tickets of the signed-in staff member's teams. */
+export async function getTeamHelpdeskTickets(query: { status?: string; page: number; size: number }, signal?: AbortSignal) {
+  return (await apiClient.get<HelpdeskTicketPage>('/helpdesk/team/tickets', { params: query, signal })).data
+}
+
+export async function getHelpdeskTeams(signal?: AbortSignal) {
+  return (await apiClient.get<HelpdeskTeam[]>('/helpdesk/admin/teams', { signal })).data
+}
+
+export async function createHelpdeskTeam(code: string, name: string) {
+  return (await apiClient.post<HelpdeskTeam>('/helpdesk/admin/teams', { code, name })).data
+}
+
+export async function updateHelpdeskTeam(teamId: number, name: string, active: boolean) {
+  return (await apiClient.put<HelpdeskTeam>(`/helpdesk/admin/teams/${teamId}`, { name, active })).data
+}
+
+export async function setHelpdeskTeamMembers(teamId: number, loginIds: string[]) {
+  return (await apiClient.put<HelpdeskTeam>(`/helpdesk/admin/teams/${teamId}/members`, { loginIds })).data
+}
+
+export async function routeHelpdeskCategory(categoryId: number, teamId: number | null) {
+  await apiClient.put(`/helpdesk/admin/categories/${categoryId}/team`, { teamId })
 }

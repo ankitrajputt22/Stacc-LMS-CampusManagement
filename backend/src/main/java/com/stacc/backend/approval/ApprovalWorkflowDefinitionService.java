@@ -87,7 +87,13 @@ public class ApprovalWorkflowDefinitionService {
         }
         List<StepSpec> steps = new ArrayList<>();
         for (ApprovalWorkflowStepRequest step : requested) {
-            steps.add(new StepSpec(step.name(), roleOf(step.approverRoleCode())));
+            Role role = roleOf(step.approverRoleCode());
+            ApproverRelationship relationship = step.approverRelationship();
+            if (relationship != null && !relationship.roleCode().equals(role.getName().name())) {
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "A " + relationship + " step must use the " + relationship.roleCode() + " role.");
+            }
+            steps.add(new StepSpec(step.name(), role, relationship));
         }
         return steps;
     }

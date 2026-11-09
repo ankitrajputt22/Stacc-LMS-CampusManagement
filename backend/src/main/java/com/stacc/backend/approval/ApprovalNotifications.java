@@ -38,6 +38,11 @@ public class ApprovalNotifications {
             return;
         }
         Long requesterId = request.getRequester().getId();
+        if (step.getAssignedApprover() != null) {
+            notifications.notifyUser(message(request, NotificationType.APPROVAL_ACTION_REQUIRED, "Approval required",
+                    "An approval request requires your review: " + request.getSubject() + "."), step.getAssignedApprover().getId());
+            return;
+        }
         List<Long> approvers = accounts.findIdsByRoleNameAndStatus(role, AccountStatus.ACTIVE).stream()
                 .filter(accountId -> !accountId.equals(requesterId))
                 .toList();

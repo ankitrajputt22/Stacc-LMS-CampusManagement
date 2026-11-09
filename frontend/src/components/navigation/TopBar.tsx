@@ -45,7 +45,9 @@ function InboxLink() {
  */
 export function TopBar({ menuId, isMenuOpen, onOpenMenu, menuButtonRef }: TopBarProps) {
   const { account } = useAuth()
-  const member = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])
+  const roles = account?.roles ?? []
+  const member = hasAnyRole(roles, ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'])
+  const searches = hasAnyRole(roles, ['STUDENT', 'FACULTY', 'ADMIN'])
 
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-portal-navy px-2 text-white sm:px-4 lg:hidden">
@@ -71,9 +73,11 @@ export function TopBar({ menuId, isMenuOpen, onOpenMenu, menuButtonRef }: TopBar
 
       {member && (
         <div className="ml-auto flex items-center gap-1">
-          <Link to="/search" aria-label="Search" title="Search" className={iconLinkClasses}>
-            <SearchIcon />
-          </Link>
+          {searches && (
+            <Link to="/search" aria-label="Search" title="Search" className={iconLinkClasses}>
+              <SearchIcon />
+            </Link>
+          )}
           <InboxLink />
         </div>
       )}

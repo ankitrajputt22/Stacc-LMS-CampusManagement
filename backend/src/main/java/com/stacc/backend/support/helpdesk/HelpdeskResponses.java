@@ -56,17 +56,21 @@ public final class HelpdeskResponses {
             @Schema(example = "LMS and courses") String categoryName,
             @Schema(example = "Cannot open my CS302 course") String subject,
             @Schema(allowableValues = {"LOW", "NORMAL", "HIGH", "URGENT"}) String priority,
-            @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"}) String status,
+            @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "WAITING_ON_REQUESTER", "RESOLVED", "CLOSED"}) String status,
             @Schema(example = "student1") String requesterLoginId,
             @Schema(nullable = true, example = "admin1") String assignedToLoginId,
             Instant createdAt,
-            Instant updatedAt) {
+            Instant updatedAt,
+            @Schema(nullable = true, example = "Maintenance") String teamName,
+            @Schema(nullable = true, description = "When the support side first replied.") Instant firstResponseAt,
+            @Schema(nullable = true, example = "4") Integer rating) {
 
         static HelpdeskTicketSummary of(HelpdeskTicket ticket) {
             return new HelpdeskTicketSummary(ticket.getId(), ticket.getTicketNumber(), ticket.getCategory().getCode(),
                     ticket.getCategory().getName(), ticket.getSubject(), ticket.getPriority().name(),
                     ticket.getStatus().name(), loginIdOf(ticket.getRequester()), loginIdOf(ticket.getAssignedTo()),
-                    ticket.getCreatedAt(), ticket.getUpdatedAt());
+                    ticket.getCreatedAt(), ticket.getUpdatedAt(), ticket.getTeam() == null ? null : ticket.getTeam().getName(),
+                    ticket.getFirstResponseAt(), ticket.getRating());
         }
     }
 
@@ -88,11 +92,12 @@ public final class HelpdeskResponses {
             @Schema(example = "7") Long messageId,
             @Schema(example = "admin1") String authorLoginId,
             @Schema(description = "Plain text.") String message,
-            Instant createdAt) {
+            Instant createdAt,
+            @Schema(description = "An internal note, seen only by the support side.") boolean internal) {
 
         static HelpdeskMessageResponse of(HelpdeskTicketMessage message) {
             return new HelpdeskMessageResponse(message.getId(), loginIdOf(message.getAuthor()), message.getMessage(),
-                    message.getCreatedAt());
+                    message.getCreatedAt(), message.isInternal());
         }
     }
 
@@ -121,7 +126,7 @@ public final class HelpdeskResponses {
             String subject,
             @Schema(description = "Plain text, the original description.") String description,
             @Schema(allowableValues = {"LOW", "NORMAL", "HIGH", "URGENT"}) String priority,
-            @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"}) String status,
+            @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "WAITING_ON_REQUESTER", "RESOLVED", "CLOSED"}) String status,
             @Schema(example = "student1") String requesterLoginId,
             @Schema(nullable = true, example = "admin1") String assignedToLoginId,
             @Schema(nullable = true) Instant resolvedAt,
@@ -129,18 +134,35 @@ public final class HelpdeskResponses {
             Instant createdAt,
             Instant updatedAt,
             List<HelpdeskMessageResponse> messages,
-            List<HelpdeskHistoryResponse> history) {
+            List<HelpdeskHistoryResponse> history,
+            @Schema(nullable = true) String teamCode,
+            @Schema(nullable = true) String teamName,
+            @Schema(nullable = true) Instant firstResponseAt,
+            @Schema(nullable = true) Integer rating,
+            @Schema(nullable = true, description = "Plain text.") String ratingComment,
+            @Schema(description = "Whether the caller works this ticket: sees notes, changes status and assignment.") boolean supportSide,
+            @Schema(description = "Whether the caller, as its requester, may reopen it now.") boolean canReopen,
+            @Schema(description = "Whether the caller, as its requester, may rate it now.") boolean canRate) {
 
+        /** The ticket as this caller may see it: internal notes only for the support side. */
         static HelpdeskTicketDetail of(HelpdeskTicket ticket, List<HelpdeskTicketMessage> messages,
-                List<HelpdeskTicketHistory> history) {
+                List<HelpdeskTicketHistory> history, boolean supportSide, boolean owner, Instant now) {
             HelpdeskCategory category = ticket.getCategory();
+            boolean rateable = ticket.getRating() == null && (ticket.getStatus() == HelpdeskTicketStatus.RESOLVED
+                    || ticket.getStatus() == HelpdeskTicketStatus.CLOSED);
             return new HelpdeskTicketDetail(ticket.getId(), ticket.getTicketNumber(), category.getCode(),
                     category.getName(), category.isActive(), ticket.getSubject(), ticket.getDescription(),
                     ticket.getPriority().name(), ticket.getStatus().name(), loginIdOf(ticket.getRequester()),
                     loginIdOf(ticket.getAssignedTo()), ticket.getResolvedAt(), ticket.getClosedAt(),
                     ticket.getCreatedAt(), ticket.getUpdatedAt(),
-                    messages.stream().map(HelpdeskMessageResponse::of).toList(),
-                    history.stream().map(HelpdeskHistoryResponse::of).toList());
+                    messages.stream().filter(message -> supportSide || !message.isInternal())
+                            .map(HelpdeskMessageResponse::of).toList(),
+                    history.stream().filter(entry -> supportSide || entry.getAction() != HelpdeskTicketHistoryAction.NOTE_ADDED)
+                            .map(HelpdeskHistoryResponse::of).toList(),
+                    ticket.getTeam() == null ? null : ticket.getTeam().getCode(),
+                    ticket.getTeam() == null ? null : ticket.getTeam().getName(),
+                    ticket.getFirstResponseAt(), ticket.getRating(), ticket.getRatingComment(), supportSide,
+                    owner && ticket.canReopenAt(now), owner && rateable);
         }
     }
 }

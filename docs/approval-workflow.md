@@ -220,3 +220,15 @@ The `dev-seed` profile creates one clearly labelled demo workflow, `DEMO_TWO_STE
 ## Not built yet
 
 Parallel approvals, conditional branches, quorum or voting, delegation, escalation, deadlines and reminders, attachments, a generic approval UI or task page, a workflow builder UI, and dynamic forms. Real approval workflows such as Hostel and Campus services arrive with their own modules.
+
+## Approvers by relationship (v0.9.4)
+
+- **The setting:** a workflow step may name a relationship to the requester (`ApproverRelationship`) beside its role, such as `STUDENT_DEPARTMENT_HEAD` with the `HOD` role.
+- **Who owns each relationship:** its module implements `ApproverRelationshipResolver`. For example, `academic.responsibility.StudentDepartmentHeadApprover` asks `DepartmentHeadResolver`. The engine never depends on business modules.
+- **Resolved once:** when a request starts, the relationship is resolved to one account and copied onto the request's step (`assigned_approver_user_account_id`). Editing the workflow later changes no running request.
+- **No approver found:** if nobody can be found, or the only one found is the requester, nothing starts (409).
+- **Deciding:** only the assigned account decides that step. It must still hold the step's role, `APPROVAL_TASK_DECIDE`, and an `ACTIVE` account.
+  - The task list shows the step only to that account.
+  - The "approval required" notice goes only to them.
+  - Steps without a relationship work as before.
+- **Permissions:** `V95` gives `HOD` the `APPROVAL_TASK_VIEW` and `APPROVAL_TASK_DECIDE` permissions for these steps.

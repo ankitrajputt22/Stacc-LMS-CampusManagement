@@ -30,7 +30,8 @@ class HelpdeskTicketQueryServiceTest {
     private final HelpdeskTicketHistoryRepository history = mock(HelpdeskTicketHistoryRepository.class);
     private final UserAccountRepository accounts = mock(UserAccountRepository.class);
     private final HelpdeskTicketQueryService service =
-            new HelpdeskTicketQueryService(tickets, messages, history, new HelpdeskAccessService(), accounts);
+            new HelpdeskTicketQueryService(tickets, messages, history, new HelpdeskAccessService(), accounts,
+                    mock(HelpdeskTeamMemberRepository.class));
 
     private final HelpdeskTicket ticket = HelpdeskFixtures.ticket(42,
             HelpdeskFixtures.account(70, "student1", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));

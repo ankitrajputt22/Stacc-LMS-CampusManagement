@@ -33,8 +33,9 @@ public class HelpdeskTicketCommandService {
     static final String CANNOT_REPLY = "You cannot reply to this ticket.";
     static final String CLOSED = "This ticket is closed and can no longer be changed.";
     static final String ASSIGNEE_UNKNOWN = "The selected account does not exist.";
-    static final String ASSIGNEE_NOT_ADMIN = "Tickets can only be assigned to active admin accounts.";
+    static final String ASSIGNEE_NOT_ADMIN = "Tickets can only be assigned to active admin accounts or members of the ticket's team.";
     static final String NOT_MANAGER = "You cannot manage helpdesk tickets.";
+    static final String REOPEN_CLOSED = "This ticket can no longer be reopened. Raise a new ticket instead.";
 
     private final HelpdeskTicketRepository tickets;
     private final HelpdeskCategoryRepository categories;
@@ -71,30 +72,118 @@ public class HelpdeskTicketCommandService {
             throw new ApiException(HttpStatus.BAD_REQUEST, URGENT_NOT_ALLOWED);
         }
         UserAccount requester = accounts.getReferenceById(actor.accountId());
-        HelpdeskTicket ticket = tickets.saveAndFlush(
-                new HelpdeskTicket(requester, category, request.subject(), request.description(), priority));
+        HelpdeskTicket created = new HelpdeskTicket(requester, category, request.subject(), request.description(), priority);
+        // Routing: the category's active team takes the ticket; admins with every ticket see it too.
+        if (category.getDefaultTeam() != null && category.getDefaultTeam().isActive()) {
+            created.routeTo(category.getDefaultTeam());
+        }
+        HelpdeskTicket ticket = tickets.saveAndFlush(created);
         // The number comes from the generated ID, in the same transaction, so it is unique and never missing.
         ticket.assignNumber();
         tickets.saveAndFlush(ticket);
         record(ticket, requester, HelpdeskTicketHistoryAction.CREATED, null, ticket.getStatus().name());
-        return detailOf(ticket);
+        return detailOf(actor, ticket);
     }
 
     /** Adds a message as the acting account: the requester, or an admin allowed to reply to every ticket. */
     public HelpdeskMessageResponse addMessage(HelpdeskActor actor, Long ticketId, String text) {
+        return addMessage(actor, ticketId, text, false);
+    }
+
+    /**
+     * Adds a reply, or with {@code internal} a note only the support side sees (no notification). A requester's reply
+     * to a ticket waiting on them moves it back to IN_PROGRESS; the first visible reply from the support side is
+     * recorded for response times.
+     */
+    public HelpdeskMessageResponse addMessage(HelpdeskActor actor, Long ticketId, String text, boolean internal) {
         HelpdeskTicket ticket = locked(ticketId);
         if (!access.canView(actor, ticket)) {
             throw notFound();
         }
-        if (!access.canReply(actor, ticket)) {
+        if (internal ? !access.isSupportSide(actor, ticket) : !access.canReply(actor, ticket)) {
             throw new ApiException(HttpStatus.FORBIDDEN, CANNOT_REPLY);
         }
         requireOpen(ticket);
         UserAccount author = accounts.getReferenceById(actor.accountId());
-        HelpdeskTicketMessage message = messages.saveAndFlush(new HelpdeskTicketMessage(ticket, author, text));
+        HelpdeskTicketMessage message = messages.saveAndFlush(new HelpdeskTicketMessage(ticket, author, text, internal));
+        if (internal) {
+            record(ticket, author, HelpdeskTicketHistoryAction.NOTE_ADDED, null, null);
+            return HelpdeskMessageResponse.of(message);
+        }
         record(ticket, author, HelpdeskTicketHistoryAction.MESSAGE_ADDED, null, null);
+        if (access.owns(actor, ticket)) {
+            if (ticket.getStatus() == HelpdeskTicketStatus.WAITING_ON_REQUESTER) {
+                ticket.moveTo(HelpdeskTicketStatus.IN_PROGRESS, clock.instant());
+                record(ticket, author, HelpdeskTicketHistoryAction.STATUS_CHANGED,
+                        HelpdeskTicketStatus.WAITING_ON_REQUESTER.name(), HelpdeskTicketStatus.IN_PROGRESS.name());
+            }
+        } else {
+            ticket.responded(clock.instant());
+        }
+        tickets.saveAndFlush(ticket);
         notifications.replied(ticket, actor.accountId());
         return HelpdeskMessageResponse.of(message);
+    }
+
+    /** The requester reopens a resolved ticket within the reopening window; afterwards it is 409. */
+    public HelpdeskTicketDetail reopen(HelpdeskActor actor, Long ticketId) {
+        HelpdeskTicket ticket = locked(ticketId);
+        if (!access.canView(actor, ticket)) {
+            throw notFound();
+        }
+        if (!access.owns(actor, ticket)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only the person who raised a ticket can reopen it.");
+        }
+        if (!ticket.canReopenAt(clock.instant())) {
+            throw new ApiException(HttpStatus.CONFLICT, REOPEN_CLOSED);
+        }
+        ticket.reopen(clock.instant());
+        tickets.saveAndFlush(ticket);
+        record(ticket, accounts.getReferenceById(actor.accountId()), HelpdeskTicketHistoryAction.REOPENED,
+                HelpdeskTicketStatus.RESOLVED.name(), HelpdeskTicketStatus.IN_PROGRESS.name());
+        notifications.replied(ticket, actor.accountId());
+        return detailOf(actor, ticket);
+    }
+
+    /** The requester rates a resolved or closed ticket once, 1 to 5, with an optional comment. */
+    public HelpdeskTicketDetail rate(HelpdeskActor actor, Long ticketId, int stars, String comment) {
+        HelpdeskTicket ticket = locked(ticketId);
+        if (!access.canView(actor, ticket)) {
+            throw notFound();
+        }
+        if (!access.owns(actor, ticket)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only the person who raised a ticket can rate it.");
+        }
+        try {
+            ticket.rate(stars, comment, clock.instant());
+        } catch (IllegalStateException refused) {
+            throw new ApiException(HttpStatus.CONFLICT, refused.getMessage() + ".");
+        } catch (IllegalArgumentException invalid) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, invalid.getMessage() + ".");
+        }
+        tickets.saveAndFlush(ticket);
+        record(ticket, accounts.getReferenceById(actor.accountId()), HelpdeskTicketHistoryAction.RATED, null, String.valueOf(stars));
+        return detailOf(actor, ticket);
+    }
+
+    /** An admin with MANAGE moves a ticket to another team, or to none. The same team changes nothing. */
+    public HelpdeskTicketDetail changeTeam(HelpdeskActor actor, Long ticketId, HelpdeskTeam team) {
+        if (!access.canManage(actor)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, NOT_MANAGER);
+        }
+        HelpdeskTicket ticket = locked(ticketId);
+        requireOpen(ticket);
+        Long current = ticket.getTeam() == null ? null : ticket.getTeam().getId();
+        Long target = team == null ? null : team.getId();
+        if (current == null ? target == null : current.equals(target)) {
+            return detailOf(actor, ticket);
+        }
+        String from = ticket.getTeam() == null ? null : ticket.getTeam().getCode();
+        ticket.routeTo(team);
+        tickets.saveAndFlush(ticket);
+        record(ticket, accounts.getReferenceById(actor.accountId()), HelpdeskTicketHistoryAction.TEAM_CHANGED, from,
+                team == null ? null : team.getCode());
+        return detailOf(actor, ticket);
     }
 
     /**
@@ -107,7 +196,7 @@ public class HelpdeskTicketCommandService {
         if (assigneeLoginId != null && !assigneeLoginId.isBlank()) {
             assignee = accounts.findByLoginId(assigneeLoginId.strip())
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, ASSIGNEE_UNKNOWN));
-            if (!isAssignable(assignee)) {
+            if (!isAssignable(assignee) && !isTeamMember(ticket, assignee)) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, ASSIGNEE_NOT_ADMIN);
             }
         }
@@ -115,7 +204,7 @@ public class HelpdeskTicketCommandService {
         Long currentId = current == null ? null : current.getId();
         Long targetId = assignee == null ? null : assignee.getId();
         if (currentId == null ? targetId == null : currentId.equals(targetId)) {
-            return detailOf(ticket);
+            return detailOf(actor, ticket);
         }
         String from = current == null ? null : current.getLoginId();
         ticket.assignTo(assignee);
@@ -124,7 +213,7 @@ public class HelpdeskTicketCommandService {
                 assignee == null ? HelpdeskTicketHistoryAction.UNASSIGNED : HelpdeskTicketHistoryAction.ASSIGNED,
                 from, assignee == null ? null : assignee.getLoginId());
         notifications.assigned(ticket, actor.accountId());
-        return detailOf(ticket);
+        return detailOf(actor, ticket);
     }
 
     /** Sets any priority, URGENT included. The same priority changes nothing. */
@@ -137,7 +226,7 @@ public class HelpdeskTicketCommandService {
             record(ticket, accounts.getReferenceById(actor.accountId()), HelpdeskTicketHistoryAction.PRIORITY_CHANGED,
                     from, priority.name());
         }
-        return detailOf(ticket);
+        return detailOf(actor, ticket);
     }
 
     /**
@@ -148,7 +237,7 @@ public class HelpdeskTicketCommandService {
         HelpdeskTicket ticket = lockedForManager(actor, ticketId);
         HelpdeskTicketStatus from = ticket.getStatus();
         if (from == target) {
-            return detailOf(ticket);
+            return detailOf(actor, ticket);
         }
         if (!from.canMoveTo(target)) {
             throw new ApiException(HttpStatus.CONFLICT, from == HelpdeskTicketStatus.CLOSED ? CLOSED
@@ -159,7 +248,13 @@ public class HelpdeskTicketCommandService {
         record(ticket, accounts.getReferenceById(actor.accountId()), HelpdeskTicketHistoryAction.STATUS_CHANGED,
                 from.name(), target.name());
         notifications.statusChanged(ticket, actor.accountId());
-        return detailOf(ticket);
+        return detailOf(actor, ticket);
+    }
+
+    // A member of the ticket's own active team may also take it, while their account is active.
+    private boolean isTeamMember(HelpdeskTicket ticket, UserAccount account) {
+        return ticket.getTeam() != null && account.getStatus() == AccountStatus.ACTIVE
+                && access.worksOnTeam(new HelpdeskActor(account.getId(), false, false, false, false, false, false, true), ticket);
     }
 
     /** Whether tickets can be assigned to the account: an active account holding ADMIN, as the assignee list shows. */
@@ -179,11 +274,19 @@ public class HelpdeskTicketCommandService {
         return ticket;
     }
 
+    // An admin with MANAGE, or a member of the ticket's team. A ticket the caller cannot see is the same 404.
     private HelpdeskTicket lockedForManager(HelpdeskActor actor, Long ticketId) {
-        if (!access.canManage(actor)) {
+        if (!access.canManage(actor) && !actor.teamWork()) {
             throw new ApiException(HttpStatus.FORBIDDEN, NOT_MANAGER);
         }
-        return locked(ticketId);
+        HelpdeskTicket ticket = locked(ticketId);
+        if (!access.canWork(actor, ticket)) {
+            if (!access.canView(actor, ticket)) {
+                throw notFound();
+            }
+            throw new ApiException(HttpStatus.FORBIDDEN, NOT_MANAGER);
+        }
+        return ticket;
     }
 
     private HelpdeskTicket locked(Long ticketId) {
@@ -199,10 +302,11 @@ public class HelpdeskTicketCommandService {
         }
     }
 
-    private HelpdeskTicketDetail detailOf(HelpdeskTicket ticket) {
+    private HelpdeskTicketDetail detailOf(HelpdeskActor actor, HelpdeskTicket ticket) {
         List<HelpdeskTicketMessage> conversation = messages.findAllWithAuthorByTicketId(ticket.getId());
         List<HelpdeskTicketHistory> trail = history.findAllWithActorByTicketId(ticket.getId());
-        return HelpdeskTicketDetail.of(ticket, conversation, trail);
+        return HelpdeskTicketDetail.of(ticket, conversation, trail, access.isSupportSide(actor, ticket),
+                access.owns(actor, ticket), clock.instant());
     }
 
     static ApiException notFound() {

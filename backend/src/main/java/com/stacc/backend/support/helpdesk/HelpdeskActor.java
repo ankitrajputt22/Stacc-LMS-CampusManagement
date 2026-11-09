@@ -11,7 +11,14 @@ import org.springframework.security.core.authority.AuthorityUtils;
  * permissions it has. It is read from the token only, never from anything the client sends.
  */
 public record HelpdeskActor(Long accountId, boolean admin, boolean viewOwn, boolean replyOwn, boolean viewAll,
-        boolean replyAll, boolean manage) {
+        boolean replyAll, boolean manage, boolean teamWork) {
+
+    public static final String TEAM_WORK = "HELPDESK_TEAM_WORK";
+
+    public HelpdeskActor(Long accountId, boolean admin, boolean viewOwn, boolean replyOwn, boolean viewAll,
+            boolean replyAll, boolean manage) {
+        this(accountId, admin, viewOwn, replyOwn, viewAll, replyAll, manage, false);
+    }
 
     public static final String CREATE = "HELPDESK_TICKET_CREATE";
     public static final String VIEW_OWN = "HELPDESK_TICKET_VIEW_OWN";
@@ -23,6 +30,7 @@ public record HelpdeskActor(Long accountId, boolean admin, boolean viewOwn, bool
     public static HelpdeskActor of(Long accountId, Collection<? extends GrantedAuthority> authorities) {
         Set<String> names = AuthorityUtils.authorityListToSet(authorities);
         return new HelpdeskActor(accountId, names.contains("ROLE_ADMIN"), names.contains(VIEW_OWN),
-                names.contains(REPLY_OWN), names.contains(VIEW_ALL), names.contains(REPLY_ALL), names.contains(MANAGE));
+                names.contains(REPLY_OWN), names.contains(VIEW_ALL), names.contains(REPLY_ALL), names.contains(MANAGE),
+                names.contains(TEAM_WORK));
     }
 }

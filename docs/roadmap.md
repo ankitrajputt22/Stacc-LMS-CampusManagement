@@ -156,14 +156,14 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.9.1 | Notification settings and email | Per-person choices of what to receive and how (in-app, email, daily digest); mail server settings from configuration. |
+| ★ 0.9.1 | Notification settings and email | Per-person choices of what to receive and how (in-app, email, daily digest); mail server settings from configuration. Done: per-category Inbox and email choices (`V94`), instant email after commit, daily digest, `MAIL_*` settings, `/inbox/settings`. |
 | ★ 0.9.2 | To-Do | Worked out live from the sources (unsubmitted work, pending approvals, tasks), with dismissing and a dashboard part. Done: `todo` module, `TODO_VIEW` (`V92`), `/todo` and the dashboard part. |
 | ★ 0.9.3 | Calendar upgrade | Personal events, a month view, and a private, revocable subscription link that only reads that calendar. Done: `calendar.personal`, `CALENDAR_PERSONAL_USE` (`V93`), Month view, `.ics` feed. |
-| ★ 0.9.4 | Approvers by relationship | Workflow steps can name a relationship ("student's HOD", "student's mentor", "hostel warden") instead of only a role. |
-| ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. |
+| ★ 0.9.4 | Approvers by relationship | Workflow steps can name a relationship ("student's HOD", "student's mentor", "hostel warden") instead of only a role. Done: `ApproverRelationship` with `STUDENT_DEPARTMENT_HEAD` (`V95`); the warden relationship comes with wardens in 0.10.1, and mentors have no model yet. |
+| ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. Done (`V96`) except ticket attachments: teams and routing, `HELPDESK_TEAM_WORK` staff, notes, waiting, 7-day reopening, ratings, first response time. |
 | 0.9.6 | Help articles | Short self-help articles per category, suggested while a ticket is written. |
 | 0.9.7 | Service request upgrade | "Being processed" and "ready" states, and an issued document attached when a request is completed. |
-| ★ 0.9.8 | Shared timeline and pages | One timeline component for every history, and the support, approval, and campus pages redesigned. |
+| ★ 0.9.8 | Shared timeline and pages | One timeline component for every history, and the support, approval, and campus pages redesigned. Done: `Timeline` in `src/ui`, used by ticket activity and every approval step list (campus, hostel, and their admin reviews). |
 
 ## v0.10 Hostel
 
@@ -292,4 +292,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
 | v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 come after the core phases) |
 | v0.8 Communication | Core done (0.8.1, 0.8.2, 0.8.4, 0.8.6); 0.8.3 and 0.8.5 come after the core phases |
-| v0.9 – v1.0 | Not started |
+| v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
+| v0.10 – v1.0 | Not started |

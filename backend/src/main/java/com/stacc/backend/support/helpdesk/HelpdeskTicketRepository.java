@@ -1,6 +1,7 @@
 package com.stacc.backend.support.helpdesk;
 
 import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
@@ -152,4 +153,23 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
 
         Long getTotal();
     }
+
+    /** The tickets routed to these teams, newest first, for their members. */
+    @Query(value = """
+            select ticket
+            from HelpdeskTicket ticket
+            join fetch ticket.category category
+            join fetch ticket.requester requester
+            left join fetch ticket.assignedTo assignee
+            left join fetch ticket.team team
+            where team.id in :teamIds
+              and (:status is null or ticket.status = :status)
+            order by ticket.createdAt desc, ticket.id desc
+            """,
+            countQuery = """
+            select count(ticket) from HelpdeskTicket ticket
+            where ticket.team.id in :teamIds and (:status is null or ticket.status = :status)
+            """)
+    Page<HelpdeskTicket> findTeamQueue(@Param("teamIds") Collection<Long> teamIds,
+            @Param("status") HelpdeskTicketStatus status, Pageable pageable);
 }

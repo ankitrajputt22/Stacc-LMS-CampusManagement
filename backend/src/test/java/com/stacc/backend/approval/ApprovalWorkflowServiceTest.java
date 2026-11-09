@@ -53,8 +53,21 @@ class ApprovalWorkflowServiceTest {
     private final ApprovalRequestHistoryRepository history = mock(ApprovalRequestHistoryRepository.class);
     private final UserAccountRepository accounts = mock(UserAccountRepository.class);
     private final ApprovalNotifications notifications = mock(ApprovalNotifications.class);
+    private final Map<Long, Long> heads = new HashMap<>();
+    private final ApproverRelationshipResolver headResolver = new ApproverRelationshipResolver() {
+        @Override
+        public ApproverRelationship relationship() {
+            return ApproverRelationship.STUDENT_DEPARTMENT_HEAD;
+        }
+
+        @Override
+        public Optional<Long> approverFor(Long requesterAccountId) {
+            return Optional.ofNullable(heads.get(requesterAccountId));
+        }
+    };
     private final ApprovalWorkflowService service = new ApprovalWorkflowService(workflows, requests, steps, history,
-            accounts, new ApprovalAccessService(), notifications, Clock.fixed(ApprovalFixtures.NOW, ZoneOffset.UTC));
+            accounts, new ApprovalAccessService(), notifications, Clock.fixed(ApprovalFixtures.NOW, ZoneOffset.UTC),
+            List.of(headResolver));
 
     private final List<ApprovalRequestHistory> trail = new ArrayList<>();
     private final Map<Long, ApprovalRequest> stored = new HashMap<>();
@@ -384,5 +397,38 @@ class ApprovalWorkflowServiceTest {
         assertThat(actions()).containsExactly(REQUEST_CANCELLED);
         assertThat(trail.get(0).getActor()).isSameAs(student);
         verify(notifications).cancelled(request, 70L);
+    }
+
+    // Approvers by relationship
+
+    private void headStepWorkflow() {
+        ApprovalWorkflowDefinition headStep = ApprovalFixtures.withId(new ApprovalWorkflowDefinition("HEAD_STEP", "Head step", null,
+                List.of(new StepSpec("Head of department", ApprovalFixtures.role(RoleName.HOD), ApproverRelationship.STUDENT_DEPARTMENT_HEAD))), 9);
+        when(workflows.findWithStepsByCode("HEAD_STEP")).thenReturn(Optional.of(headStep));
+    }
+
+    @Test
+    void aRelationshipStepIsAssignedToTheStudentsHeadAndOnlyTheyDecideIt() {
+        headStepWorkflow();
+        UserAccount head = ApprovalFixtures.account(90, "hod1", RoleName.HOD);
+        UserAccount otherHead = ApprovalFixtures.account(91, "hod2", RoleName.HOD);
+        heads.put(student.getId(), head.getId());
+        when(accounts.getReferenceById(90L)).thenReturn(head);
+        when(accounts.findById(90L)).thenReturn(Optional.of(head));
+        when(accounts.findById(91L)).thenReturn(Optional.of(otherHead));
+
+        ApprovalRequest request = start("HEAD_STEP", student);
+        assertThat(request.getSteps().get(0).getAssignedApprover()).isSameAs(head);
+
+        assertRefused(() -> service.approveStep(ApprovalFixtures.approver(91, RoleName.HOD), stepId(request, 1), null), HttpStatus.FORBIDDEN);
+        assertThat(service.approveStep(ApprovalFixtures.approver(90, RoleName.HOD), stepId(request, 1), null).requestStatus())
+                .isEqualTo("APPROVED");
+    }
+
+    @Test
+    void withoutAnApproverForTheRelationshipNothingStarts() {
+        headStepWorkflow();
+        assertRefused(() -> start("HEAD_STEP", student), HttpStatus.CONFLICT);
+        assertThat(stored).isEmpty();
     }
 }

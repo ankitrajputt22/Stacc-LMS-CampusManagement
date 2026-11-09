@@ -62,6 +62,7 @@ public class HelpdeskNotifications {
         return switch (status) {
             case OPEN -> "open";
             case IN_PROGRESS -> "in progress";
+            case WAITING_ON_REQUESTER -> "waiting for your reply";
             case RESOLVED -> "resolved";
             case CLOSED -> "closed";
         };

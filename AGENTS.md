@@ -56,7 +56,7 @@
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
 - Frontend pages reuse the shared `AppLayout`. Do not create separate global navigation for each module.
 - Reuse `LoadingState`, `EmptyState`, and `ErrorState` for page states.
-- Build pages from the shared components in `frontend/src/ui` (`PageHeader`, `Card`, `Button`, `ButtonLink`, `TextField`, `TextAreaField`, `SelectField`, `Badge`, `Alert`, `LinkTabs`, `Tabs`, `DataTable`, `Pagination`) and the class lists in `ui/styles.ts`, instead of writing new class lists per page. See `docs/ui-design.md`.
+- Build pages from the shared components in `frontend/src/ui` (`PageHeader`, `Card`, `Button`, `ButtonLink`, `TextField`, `TextAreaField`, `SelectField`, `Badge`, `Alert`, `LinkTabs`, `Tabs`, `DataTable`, `Pagination`, `Timeline` for every history or step list) and the class lists in `ui/styles.ts`, instead of writing new class lists per page. See `docs/ui-design.md`.
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
 - Tests that need real MySQL (migrations, constraints, row locks, races) extend `MySqlIntegrationTest`, are named `*MySqlIT`, and run in `mvn verify` on a throwaway Testcontainers MySQL seeded with the demo data. Each works on demo records no other test changes. Every new row-lock or capacity rule gets one, using `Concurrently.run`. See `docs/testing.md`.
@@ -339,7 +339,8 @@
 - Notify only on real transitions: compare the state before and after, so repeated or no-op calls never notify twice. Resolve recipients with the feature's existing rules (student access policy, calendar relevance, the enrollment's own student), and deduplicate accounts.
 - Store only a plain-text title and message, a loose `sourceType`/`sourceId`, and a safe internal `actionPath` (one leading `/`, never `//`, a scheme, or a host). Never copy source records, and never let a source ID or path bypass the destination's own authorization.
 - The Inbox is per `UserAccount`, never per role, and never uses `roles[0]`. Its routes need `NOTIFICATION_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN` and take the account from the token; another account's row answers 404. There is no deletion.
-- The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add email, SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
+- The frontend has one `/inbox` page and one shared unread count for the navigation badge and the bell. Loading the Inbox marks nothing read, and there is no polling. Do not add SMS, push, WebSocket, Server-Sent Events, Kafka, or Redis without their own phase.
+- Each person chooses per category (`NotificationCategory`) whether notifications reach the Inbox and whether they are emailed at once or in a daily digest (`/inbox/settings`, `NOTIFICATION_VIEW`). Email is off unless `MAIL_ENABLED=true`, goes only after commit to the college-recorded address of an `ACTIVE` account, is plain text with a link from `MAIL_LINK_BASE_URL`, and never stores or logs an address or content. The digest marks its rows sent under a row lock before sending. See `docs/notification-settings.md`.
 
 ## Helpdesk
 
@@ -347,11 +348,12 @@
 - Category codes are unique, uppercase, and fixed after creation. Make a category inactive instead of deleting it; an inactive category keeps its tickets but takes no new ones.
 - The requester, every author, and every actor come from the access token; never accept an account, requester, author, or actor ID from a client. Ticket numbers (`STC-%06d`), `resolvedAt`, and `closedAt` are set by the server.
 - Requesters choose `LOW`, `NORMAL`, or `HIGH`; only the support team sets `URGENT`. Only active accounts holding `ADMIN` can be assigned, and `GET /api/v1/helpdesk/admin/assignees` lists exactly those, by login ID only.
-- Statuses only move forward: `OPEN` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `RESOLVED` or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. A `CLOSED` ticket refuses every change, and nothing reopens a ticket. A reply never changes the status.
+- Statuses: `OPEN` to `IN_PROGRESS`, `WAITING_ON_REQUESTER`, `RESOLVED`, or `CLOSED`; `IN_PROGRESS` to `WAITING_ON_REQUESTER`, `RESOLVED`, or `CLOSED`; `WAITING_ON_REQUESTER` to `IN_PROGRESS`, `RESOLVED`, or `CLOSED`; `RESOLVED` to `CLOSED`. The same value is a no-op; anything else is 409. Only the requester's reply moves a waiting ticket back to `IN_PROGRESS`, and only the requester reopens a `RESOLVED` ticket, within 7 days. A `CLOSED` ticket refuses every change and never reopens. Any other reply never changes the status.
 - Messages and history are append-only. Write history only for real changes, through the command service's single recorder, and lock the ticket row before every change. Never add delete routes for tickets, messages, history, or categories.
 - Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
 - Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves, linking to `/support/tickets/{ticketId}`. Do not rewrite old notification rows.
-- Do not add attachments, email, SMS, push, SLAs or escalation, reopening, internal notes, or helpdesk analytics without their own phase.
+- Support teams (`HelpdeskTeam`, made inactive never deleted) take the tickets of the categories routed to them; their members (admins or staff with `HELPDESK_TEAM_WORK`) work only their teams' tickets, decided by `HelpdeskAccessService.worksOnTeam`. Internal notes are seen only by the support side and notify nobody. Ratings are given once by the requester; `firstResponseAt` is set once by the first visible support reply. See `docs/helpdesk.md`.
+- Do not add SMS, push, SLAs or escalation, or helpdesk analytics without their own phase.
 
 ## Approval Workflow Engine
 
@@ -360,6 +362,7 @@
 - Workflows are ordered, sequential, role-based steps (1 to 10), each naming an existing `Role` that holds `APPROVAL_TASK_DECIDE`, never an account. Codes are uppercase and fixed; deactivate workflows instead of deleting them.
 - A request copies its workflow's steps when it starts; editing a workflow affects future requests only. A PENDING request has exactly one PENDING step and `currentStepOrder` pointing at it.
 - A step is decided only by an account with `APPROVAL_TASK_DECIDE` that holds the step's role in its token and in the database and is not the requester. There is no admin pass, and never use `roles[0]`.
+- A step may also name an `ApproverRelationship` (such as `STUDENT_DEPARTMENT_HEAD` with `HOD`), resolved once at start through the owning module's `ApproverRelationshipResolver` to one assigned account; then only that account decides it, and it alone sees and is notified of the task. No approver found means nothing starts (409). Never resolve a relationship again or let the engine import a business module.
 - Rejecting needs a comment, rejects the request, and skips later steps. Finished requests never change; deciding an already decided step answers 409. Lock the request row before every decision or cancellation.
 - History is append-only and written only by the engine's single recorder. Notifications go to the step's role holders and the requester, with no link until a module adds pages.
 - Do not add parallel or conditional steps, quorum, delegation, escalation, deadlines, attachments, form builders, or a generic approval UI without their own phase.
