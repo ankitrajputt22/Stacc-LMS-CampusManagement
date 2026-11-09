@@ -92,6 +92,8 @@ public class LmsRubricService {
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, RUBRIC_UNAVAILABLE);
         }
+        // The rubric row first, alone; only then its criteria (see LmsRubricRepository#lockRowForUpdate).
+        rubrics.lockRowForUpdate(rubricId);
         return rubrics.findByIdForUpdate(rubricId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, RUBRIC_UNAVAILABLE));
     }
 

@@ -34,6 +34,7 @@ import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.assignment.LmsAssignmentNotifications;
 import com.stacc.backend.lms.assignment.rubric.LmsRubric;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricCriterion;
 import com.stacc.backend.lms.assignment.rubric.LmsRubricRepository;
 import com.stacc.backend.lms.assignment.rubric.RubricFixtures;
 import com.stacc.backend.lms.content.LmsContentStatus;
@@ -307,6 +308,8 @@ class LmsAssignmentGradingServiceTest {
         LmsRubric rubric = RubricFixtures.rubric(course, 4, "12", "8");
         assignment.useRubric(rubric);
         when(rubrics.findByIdForShare(4L)).thenReturn(Optional.of(rubric));
+        when(rubrics.findCurrentCriterionIdsForShare(rubric.getId()))
+                .thenReturn(rubric.getCriteria().stream().map(LmsRubricCriterion::getId).toList());
 
         LmsSubmissionGrade graded = service.gradeWithRubric(FACULTY_A, 301L, List.of(
                 new LmsAssignmentGradingService.RubricScoreInput(40L, new BigDecimal("10.5"), " Clear diagram "),
@@ -324,6 +327,8 @@ class LmsAssignmentGradingServiceTest {
         LmsRubric rubric = RubricFixtures.rubric(course, 4, "12", "8");
         assignment.useRubric(rubric);
         when(rubrics.findByIdForShare(4L)).thenReturn(Optional.of(rubric));
+        when(rubrics.findCurrentCriterionIdsForShare(rubric.getId()))
+                .thenReturn(rubric.getCriteria().stream().map(LmsRubricCriterion::getId).toList());
 
         assertRefused(HttpStatus.BAD_REQUEST, LmsAssignmentGradingService.SCORES_INVALID, () -> service.gradeWithRubric(FACULTY_A, 301L,
                 List.of(new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null)), null));

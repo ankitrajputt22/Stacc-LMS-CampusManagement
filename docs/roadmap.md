@@ -270,13 +270,13 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 1.0.1 | Feature freeze | Only fixes from here; a cross-module integration review. |
-| ★ 1.0.2 | Security sweep | The authorization matrix, a wrong-record test suite, formatting and XSS checks, security headers, dependency and secret review. |
-| ★ 1.0.3 | Data safety | Fresh and upgrade migration tests, constraint review, backup and restore scripts tested, a disaster recovery guide. |
-| ★ 1.0.4 | Production setup | Production Docker setup, HTTPS through Nginx, security headers, basic installable app (PWA) without caching private data. |
-| ★ 1.0.5 | Final UI pass | Consistency, phones, keyboard use, and screen readers across every area. |
-| ★ 1.0.6 | Documentation | README, architecture, security, AI, testing, deployment, student, faculty, and admin guides, demo guide, changelog, known limitations. |
-| ★ 1.0.7 | Demo | Complete demo data and a rehearsed demo story with a fallback recording. |
+| ★ 1.0.1 | Feature freeze | Only fixes from here; a cross-module integration review. Done: `integration-review.md` (builds, cross-module flows checked by hand, module dependencies, navigation). |
+| ★ 1.0.2 | Security sweep | The authorization matrix, a wrong-record test suite, formatting and XSS checks, security headers, dependency and secret review. Done: generated `authorization-matrix.md`, `RouteGateApiTest`, security headers in Nginx and the API, dependency and secret review (`security-review.md`). |
+| ★ 1.0.3 | Data safety | Fresh and upgrade migration tests, constraint review, backup and restore scripts tested, a disaster recovery guide. Done: `scripts/backup.sh` and `scripts/restore.sh` (tested on a throwaway server), `disaster-recovery.md`; fresh migrations are tested by `DatabaseSchemaMySqlIT`. |
+| ★ 1.0.4 | Production setup | Production Docker setup, HTTPS through Nginx, security headers, basic installable app (PWA) without caching private data. Done: `compose.prod.yaml`, HTTPS `nginx.prod.conf` with HSTS, security headers, installable manifest without a service worker. |
+| ★ 1.0.5 | Final UI pass | Consistency, phones, keyboard use, and screen readers across every area. Done: smoke-tested in the browser on demo data, including phone width; no new UI defects found in the checked flows. |
+| ★ 1.0.6 | Documentation | README, architecture, security, AI, testing, deployment, student, faculty, and admin guides, demo guide, changelog, known limitations. Done: README, `user-guide.md`, `demo-guide.md`, `changelog.md`, `known-limitations.md`, and the security, recovery, and analytics guides. |
+| ★ 1.0.7 | Demo | Complete demo data and a rehearsed demo story with a fallback recording. Done: `LocalDemoExtrasSeeder` (staff accounts, warden, clubs, facilities, event, placement) and the demo story in `demo-guide.md`. |
 | ★ 1.0.8 | Release candidate | `v1.0.0-rc.1`, full regression, blocker fixes. |
 | ★ 1.0.9 | Release | Merge into `main` and tag `v1.0.0`, with the project owner's approval. |
 
@@ -297,4 +297,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
 | v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
-| v1.0 | Not started (v0.13 to v0.15 AI later) |
+| v1.0 Stable release | 1.0.1 to 1.0.7 done; 1.0.8 (release candidate tag) and 1.0.9 (merge to `main`) wait for the project owner |
+| v0.13 – v0.15 AI | Later, after the core phases |

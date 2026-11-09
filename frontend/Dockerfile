@@ -17,6 +17,7 @@ RUN npm run build
 # Runtime stage: Nginx serves the built files. No Node, no source code, no development server.
 FROM nginx:1.28-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /build/dist /usr/share/nginx/html
 
 EXPOSE 80

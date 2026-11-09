@@ -179,6 +179,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Component
 @Profile(LocalTestDataSeeder.PROFILE)
+@org.springframework.core.annotation.Order(0)
 public class LocalTestDataSeeder implements ApplicationRunner {
 
     public static final String PROFILE = "dev-seed";

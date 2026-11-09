@@ -112,7 +112,15 @@ public class LmsAssignmentGradingService {
             throw new ApiException(HttpStatus.CONFLICT, NO_RUBRIC);
         }
         attempts.findByIdForUpdate(attempt.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
+        // The rubric row first, alone, as an edit does; only then its criteria (see LmsRubricRepository#lockRowForShare).
+        rubrics.lockRowForShare(chosen.getId());
         LmsRubric rubric = rubrics.findByIdForShare(chosen.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
+        // An edit that won the rubric lock may have replaced the criteria this request loaded earlier: compare with the
+        // stored ones and refuse cleanly instead of saving scores for criteria that no longer exist.
+        java.util.Set<Long> stored = new java.util.HashSet<>(rubrics.findCurrentCriterionIdsForShare(rubric.getId()));
+        if (!stored.equals(rubric.getCriteria().stream().map(LmsRubricCriterion::getId).collect(java.util.stream.Collectors.toSet()))) {
+            throw new ApiException(HttpStatus.CONFLICT, "The rubric changed while you were grading. Reload the page and grade again.");
+        }
         Map<Long, RubricScoreInput> byCriterion = new HashMap<>();
         for (RubricScoreInput score : scores == null ? List.<RubricScoreInput>of() : scores) {
             if (score == null || score.criterionId() == null || byCriterion.put(score.criterionId(), score) != null) {

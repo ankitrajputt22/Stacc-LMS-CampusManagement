@@ -1,0 +1,38 @@
+# Production on one host: docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+# Only Nginx is reachable from outside, on 80 (redirect) and 443 (HTTPS). The database, storage, and backend publish no
+# ports. The backend runs the "prod" profile, whose startup check refuses unsafe settings (see docs/configuration.md).
+# Never use the dev-seed profile or STACC_TEST_PASSWORD here.
+services:
+  mysql:
+    ports: !reset []
+
+  minio:
+    ports: !reset []
+
+  backend:
+    ports: !reset []
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      STACC_TEST_PASSWORD: ""
+      STACC_SESSION_SECURE_COOKIE: "true"
+      # The site's own https address, for example https://stacc.your-college.example
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN to the site's https address}
+      COLLEGE_TIME_ZONE: ${COLLEGE_TIME_ZONE:-Asia/Kolkata}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_LINK_BASE_URL: ${FRONTEND_ORIGIN}
+      MAIL_HOST: ${MAIL_HOST:-localhost}
+      MAIL_PORT: ${MAIL_PORT:-25}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+
+  frontend:
+    ports: !reset
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      # A folder on the host with fullchain.pem and privkey.pem, for example from Let's Encrypt.
+      - ${STACC_TLS_DIR:?Set STACC_TLS_DIR to the folder holding fullchain.pem and privkey.pem}:/etc/nginx/tls:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "--no-check-certificate", "https://127.0.0.1/"]
