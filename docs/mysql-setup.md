@@ -1,0 +1,49 @@
+# MySQL Setup
+
+Stacc uses MySQL as its primary database. The local development defaults are:
+
+- **Host:** `localhost`
+- **Port:** `3306`
+- **Database:** `stacc`
+- **Character set:** `utf8mb4`
+
+A MySQL installed on the machine is one way to get this database. The Docker stack is another: it starts MySQL 8.4 in a container and creates the database and its user by itself (see `docker.md`).
+
+Keep real database credentials in local environment configuration. Never commit usernames, passwords, or other secrets. The repository's `.env.example` lists the supported placeholders, while a real `.env` file remains ignored by Git.
+
+The Spring Boot application connects to MySQL using these environment variables. Flyway manages versioned schema migrations; Phase 7 adds only the migration baseline and no application tables.
+
+## Useful commands
+
+Check the installed MySQL version:
+
+```bash
+mysql --version
+```
+
+Open MySQL with a valid local account:
+
+```bash
+mysql -u <username> -p
+```
+
+Create the development database from the MySQL prompt:
+
+```sql
+CREATE DATABASE IF NOT EXISTS stacc
+CHARACTER SET utf8mb4;
+```
+
+List available databases:
+
+```sql
+SHOW DATABASES;
+```
+
+Select the Stacc database:
+
+```sql
+USE stacc;
+```
+
+The MySQL server must be running before these commands can connect. Use the service-management method provided by the local MySQL installation, then authenticate with a valid account. Do not place the password directly in a command or documentation.

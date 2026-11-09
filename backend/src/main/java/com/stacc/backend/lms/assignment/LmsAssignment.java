@@ -1,0 +1,382 @@
+package com.stacc.backend.lms.assignment;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.stacc.backend.common.validation.Require;
+import com.stacc.backend.lms.assignment.rubric.LmsRubric;
+import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.content.LmsTextFormat;
+import com.stacc.backend.lms.course.LmsCourse;
+import com.stacc.backend.lms.outcome.BloomLevel;
+import com.stacc.backend.lms.outcome.LmsCourseOutcome;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+/**
+ * The definition of a piece of work set in one LMS course: a title, plain-text instructions, a deadline,
+ * and the maximum marks. It belongs to the course itself, not to a module or topic. It says what must be
+ * done; what students hand in and the marks they get are not part of it.
+ *
+ * <p>A new assignment is a draft. Publishing shows it to students and records when that first happened.
+ * It stays visible after its deadline. An assignment that is no longer wanted is archived, never deleted.
+ */
+@Entity
+@Table(name = "lms_assignments")
+public class LmsAssignment {
+
+    public static final int MAX_TITLE_LENGTH = 200;
+    public static final int MAX_INSTRUCTIONS_LENGTH = 20_000;
+    public static final int MARK_DECIMAL_PLACES = 2;
+    /** The largest value the max_marks column holds, DECIMAL(8,2). */
+    public static final BigDecimal MAX_MARKS = new BigDecimal("999999.99");
+    /** The range of deadlines accepted: wide enough for any real course, and storable in MySQL. */
+    public static final int MAX_ATTEMPTS = 100;
+    public static final String DUE_OUTSIDE_WINDOW =
+            "The due date must be between the opening time and the closing time. Change those first.";
+    public static final String RUBRIC_TOTAL_FIXED =
+            "The maximum marks must equal the rubric's total. Remove the rubric first to change them.";
+    public static final Instant EARLIEST_DUE_AT = Instant.parse("2000-01-01T00:00:00Z");
+    public static final Instant LATEST_DUE_AT = Instant.parse("9999-12-31T00:00:00Z");
+
+    /** How assignments are listed everywhere: earliest deadline first, then in the order they were added. */
+    public static final Comparator<LmsAssignment> BY_DUE_AT =
+            Comparator.comparing(LmsAssignment::getDueAt).thenComparing(LmsAssignment::getId);
+
+    // No cascade: the LMS course is never created or deleted through one of its assignments.
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
+    private LmsCourse lmsCourse;
+
+    @Column(nullable = false, length = MAX_TITLE_LENGTH)
+    private String title;
+
+    // Plain text, line breaks kept. It is never treated as HTML.
+    @Column(nullable = false, columnDefinition = "MEDIUMTEXT")
+    private String instructions;
+
+    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "instructions_format", nullable = false, length = 20)
+    private LmsTextFormat instructionsFormat = LmsTextFormat.PLAIN;
+
+    // An absolute moment, stored in UTC. Each browser shows it in its own time zone.
+    @Column(name = "due_at", nullable = false)
+    private Instant dueAt;
+
+    // When work is taken: opens at availableFrom (none: from publication), late work only when allowed and never after
+    // availableUntil (none: no final closing time), and at most maxAttempts attempts per student (none: unlimited).
+    @Column(name = "available_from")
+    private Instant availableFrom;
+
+    @Column(name = "available_until")
+    private Instant availableUntil;
+
+    @Column(name = "allow_late_submissions", nullable = false)
+    private boolean allowLateSubmissions = true;
+
+    @Column(name = "max_attempts")
+    private Integer maxAttempts;
+
+    @Column(name = "max_marks", nullable = false, precision = 8, scale = MARK_DECIMAL_PLACES)
+    private BigDecimal maxMarks;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private LmsContentStatus status = LmsContentStatus.DRAFT;
+
+    // When the assignment was first published. It never changes afterwards, not even when the assignment
+    // is edited or archived.
+    @Column(name = "published_at")
+    private Instant publishedAt;
+
+    // Optional alignment: the Bloom level the assignment works at and the course outcomes it assesses.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bloom_level", length = 20)
+    private BloomLevel bloomLevel;
+
+    // No cascade: outcomes belong to the course and are never created or deleted through an assignment. Loaded with
+    // the assignment (a few rows at most), because answers are built after the transaction.
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "lms_assignment_outcomes",
+            joinColumns = @JoinColumn(name = "lms_assignment_id"),
+            inverseJoinColumns = @JoinColumn(name = "lms_course_outcome_id"))
+    private Set<LmsCourseOutcome> outcomes = new HashSet<>();
+
+    // The rubric it is graded with, if any: one of the same course whose total equals the maximum marks.
+    // Loaded with the assignment (one row and its few criteria), because answers are built after the transaction.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lms_rubric_id")
+    private LmsRubric rubric;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    protected LmsAssignment() {
+        // Required by JPA.
+    }
+
+    public LmsAssignment(LmsCourse lmsCourse, String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
+        this.lmsCourse = Require.notNull(lmsCourse, "lmsCourse");
+        edit(title, instructions, dueAt, maxMarks);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public LmsCourse getLmsCourse() {
+        return lmsCourse;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public Instant getDueAt() {
+        return dueAt;
+    }
+
+    /** The maximum marks, always with two decimal places. */
+    public BigDecimal getMaxMarks() {
+        return maxMarks;
+    }
+
+    public LmsContentStatus getStatus() {
+        return status;
+    }
+
+    public Instant getPublishedAt() {
+        return publishedAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public boolean isArchived() {
+        return status == LmsContentStatus.ARCHIVED;
+    }
+
+    /** Whether this deadline can be set: within {@link #EARLIEST_DUE_AT} and {@link #LATEST_DUE_AT}. */
+    public static boolean isSupportedDueAt(Instant dueAt) {
+        return dueAt != null && !dueAt.isBefore(EARLIEST_DUE_AT) && !dueAt.isAfter(LATEST_DUE_AT);
+    }
+
+    /**
+     * Sets when the assignment takes work: an optional opening time not after the due date, whether late work is
+     * accepted, an optional final closing time not before the due date, and an optional attempt limit (1 to 100). An
+     * archived assignment can no longer change.
+     */
+    public void changeSubmissionRules(Instant opens, Instant closes, boolean allowLate, Integer attempts) {
+        requireNotArchived();
+        if (opens != null && opens.isAfter(dueAt)) {
+            throw new IllegalArgumentException("The opening time cannot be after the due date.");
+        }
+        if (closes != null && closes.isBefore(dueAt)) {
+            throw new IllegalArgumentException("The closing time cannot be before the due date.");
+        }
+        if (attempts != null && (attempts < 1 || attempts > MAX_ATTEMPTS)) {
+            throw new IllegalArgumentException("The attempt limit must be between 1 and " + MAX_ATTEMPTS + ".");
+        }
+        if (opens != null && !isSupportedDueAt(opens) || closes != null && !isSupportedDueAt(closes)) {
+            throw new IllegalArgumentException("Choose times between the years 2000 and 9999.");
+        }
+        this.availableFrom = opens;
+        this.availableUntil = closes;
+        this.allowLateSubmissions = allowLate;
+        this.maxAttempts = attempts;
+    }
+
+    /** Whether a new attempt is taken now. */
+    public AssignmentSubmissionWindow submissionWindowAt(Instant now) {
+        if (availableFrom != null && now.isBefore(availableFrom)) {
+            return AssignmentSubmissionWindow.NOT_OPEN;
+        }
+        boolean pastDue = now.isAfter(dueAt);
+        if (pastDue && !allowLateSubmissions || availableUntil != null && now.isAfter(availableUntil)) {
+            return AssignmentSubmissionWindow.CLOSED;
+        }
+        return AssignmentSubmissionWindow.OPEN;
+    }
+
+    public Instant getAvailableFrom() {
+        return availableFrom;
+    }
+
+    public Instant getAvailableUntil() {
+        return availableUntil;
+    }
+
+    public boolean isAllowLateSubmissions() {
+        return allowLateSubmissions;
+    }
+
+    public Integer getMaxAttempts() {
+        return maxAttempts;
+    }
+
+    public LmsRubric getRubric() {
+        return rubric;
+    }
+
+    /**
+     * Grades with this rubric from now on, or without one. The rubric must belong to the same course and its total must
+     * equal the maximum marks; an archived assignment can no longer change.
+     */
+    public void useRubric(LmsRubric chosen) {
+        requireNotArchived();
+        if (chosen != null) {
+            if (!chosen.getLmsCourse().getId().equals(lmsCourse.getId())) {
+                throw new IllegalArgumentException("A rubric of another course cannot be used.");
+            }
+            if (chosen.getTotalPoints().compareTo(maxMarks) != 0) {
+                throw new IllegalStateException("The rubric's total (" + chosen.getTotalPoints().stripTrailingZeros().toPlainString()
+                        + ") must equal the assignment's maximum marks (" + maxMarks.stripTrailingZeros().toPlainString() + ").");
+            }
+        }
+        this.rubric = chosen;
+    }
+
+    public LmsTextFormat getInstructionsFormat() {
+        return instructionsFormat;
+    }
+
+    /** Says how the instructions are shown. An archived assignment can no longer be changed. */
+    public void changeInstructionsFormat(LmsTextFormat format) {
+        requireNotArchived();
+        this.instructionsFormat = Require.notNull(format, "format");
+    }
+
+    /**
+     * Changes the definition, as a draft or a correction after publishing, such as a moved deadline. A
+     * published assignment stays published and keeps its publication time. An archived one can no longer
+     * be changed.
+     */
+    public void edit(String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
+        requireNotArchived();
+        String validTitle = Require.text(title, "title", MAX_TITLE_LENGTH);
+        String validInstructions = Require.text(instructions, "instructions", MAX_INSTRUCTIONS_LENGTH);
+        Instant validDueAt = validDueAt(dueAt);
+        BigDecimal validMaxMarks = validMaxMarks(maxMarks);
+        if (rubric != null && validMaxMarks.compareTo(rubric.getTotalPoints()) != 0) {
+            throw new IllegalStateException(RUBRIC_TOTAL_FIXED);
+        }
+        if (availableFrom != null && validDueAt.isBefore(availableFrom) || availableUntil != null && validDueAt.isAfter(availableUntil)) {
+            throw new IllegalStateException(DUE_OUTSIDE_WINDOW);
+        }
+        this.title = validTitle;
+        this.instructions = validInstructions;
+        this.dueAt = validDueAt;
+        this.maxMarks = validMaxMarks;
+    }
+
+    /**
+     * Shows the assignment to students. The first publication records the time; publishing an already
+     * published assignment changes nothing. An archived assignment cannot be published again.
+     */
+    public void publish(Instant at) {
+        requireNotArchived();
+        if (status != LmsContentStatus.PUBLISHED) {
+            Require.notNull(at, "at");
+            this.status = LmsContentStatus.PUBLISHED;
+            if (publishedAt == null) {
+                this.publishedAt = at;
+            }
+        }
+    }
+
+    /** Hides the assignment for good and keeps it, with its publication time. Archiving again changes nothing. */
+    public void archive() {
+        this.status = LmsContentStatus.ARCHIVED;
+    }
+
+    public BloomLevel getBloomLevel() {
+        return bloomLevel;
+    }
+
+    /** The aligned outcomes, by number. */
+    public List<LmsCourseOutcome> getOutcomes() {
+        return outcomes.stream().sorted(Comparator.comparingInt(LmsCourseOutcome::getNumber)).toList();
+    }
+
+    /**
+     * Sets the Bloom level (or none) and the outcomes the assignment assesses. Every outcome must belong to the
+     * assignment's own course; the service checks they may be used. An archived assignment can no longer change.
+     */
+    public void align(BloomLevel bloomLevel, Collection<LmsCourseOutcome> outcomes) {
+        requireNotArchived();
+        for (LmsCourseOutcome outcome : outcomes) {
+            if (!outcome.getLmsCourse().getId().equals(lmsCourse.getId())) {
+                throw new IllegalArgumentException("An outcome of another course cannot be aligned");
+            }
+        }
+        this.bloomLevel = bloomLevel;
+        this.outcomes = new HashSet<>(outcomes);
+    }
+
+    private void requireNotArchived() {
+        if (isArchived()) {
+            throw new IllegalStateException("An archived assignment cannot be changed");
+        }
+    }
+
+    private static Instant validDueAt(Instant dueAt) {
+        Require.notNull(dueAt, "dueAt");
+        if (!isSupportedDueAt(dueAt)) {
+            throw new IllegalArgumentException("dueAt must be between " + EARLIEST_DUE_AT + " and " + LATEST_DUE_AT);
+        }
+        return dueAt;
+    }
+
+    // Marks may be fractional, such as 12.5. A value with more decimal places than can be stored is
+    // rejected, never rounded.
+    private static BigDecimal validMaxMarks(BigDecimal maxMarks) {
+        Require.notNull(maxMarks, "maxMarks");
+        if (maxMarks.signum() <= 0) {
+            throw new IllegalArgumentException("maxMarks must be greater than zero");
+        }
+        if (maxMarks.compareTo(MAX_MARKS) > 0) {
+            throw new IllegalArgumentException("maxMarks must be at most " + MAX_MARKS);
+        }
+        if (maxMarks.stripTrailingZeros().scale() > MARK_DECIMAL_PLACES) {
+            throw new IllegalArgumentException("maxMarks must have at most " + MARK_DECIMAL_PLACES + " decimal places");
+        }
+        return maxMarks.setScale(MARK_DECIMAL_PLACES);
+    }
+}

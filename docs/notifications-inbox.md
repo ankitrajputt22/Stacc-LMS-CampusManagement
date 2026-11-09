@@ -1,0 +1,145 @@
+# Notifications and Inbox
+
+Stacc tells people about real changes that concern them, in an **in-app Inbox only**. There is no email, SMS, push notification, WebSocket, Server-Sent Events, Kafka, or Redis. A notification appears the next time the Inbox or the unread count is loaded.
+
+```text
+Feature service (a real change: publish, grade, correction)
+      |
+      v
+NotificationService          (internal, same transaction)
+      |
+      v
+Notification ------< NotificationRecipient >------ UserAccount
+                              |
+                              v
+                     GET /api/v1/notifications  ->  /inbox
+```
+
+The code is in `com.stacc.backend.notification`, a shared module that features call into. It depends only on accounts; it knows nothing about courses, results, or the calendar. Each feature decides when a change is real and who should hear about it, and words the message itself:
+- `LmsAssignmentNotifications` covers assignments and grades;
+- `AcademicCalendarNotifications` covers calendar events;
+- `HelpdeskNotifications` covers helpdesk tickets;
+- `ApprovalNotifications` covers approval requests;
+- `HostelNotifications` covers hostel allocations;
+- `CampusNotifications` covers campus notices and completed campus service requests;
+- the result and attendance services cover their own changes.
+
+## The source of truth
+
+The feature that sent a notification stays authoritative: the assignment, the grade, the result, the attendance record, or the calendar event. A notification only says what happened, in plain text, with a loose reference and a link. Nothing from the source record is copied beyond that text. If the source changes later, the old notification stays as it was written.
+
+## Model
+
+**`Notification`** (table `notifications`) is one logical event, written once and never changed or deleted.
+
+| Field | Meaning |
+| --- | --- |
+| `type` | What happened (below), stored as text. |
+| `title` | Required plain text, at most 200 characters. |
+| `message` | Required plain text, at most 2,000 characters, shown as text and never as HTML. |
+| `sourceType`, `sourceId` | Optional, and given together: the kind of record and its ID. There is no foreign key and no lookup by them; they are history, not a way past the source feature's access rules. |
+| `actionPath` | Optional path inside the application, such as `/calendar`. |
+| `createdAt` | Set by the server. |
+
+**`NotificationRecipient`** (table `notification_recipients`) is one account's copy of the notification in its Inbox.
+
+| Field | Meaning |
+| --- | --- |
+| `notification` | Required. |
+| `userAccount` | Required. The Inbox belongs to the account, not to a role. |
+| `readAt` | Empty while unread. Set to the server's time when the account first marks it read; marking read again keeps that time. Marking unread empties it again. No history of these changes is kept. |
+| `createdAt` | Set by the server. |
+
+`(notification_id, user_account_id)` is unique, so an account receives a logical notification once. Foreign keys go to `notifications` and `user_accounts` with no cascade, so deleting nothing anywhere can take Inbox history with it. Indexes cover an account's rows by read state and by time.
+
+### Types and sources
+
+| Type | Sent when | To | Source | Link |
+| --- | --- | --- | --- | --- |
+| `ASSIGNMENT_PUBLISHED` | A draft assignment is published for the first time. | Every student who may use the LMS course now, under `LmsStudentAccessPolicy`. | `ASSIGNMENT` | `/courses/{lmsCourseId}/assignments/{assignmentId}` |
+| `QUIZ_PUBLISHED` | A draft quiz is published for the first time. | Every student who may use the LMS course now. | `QUIZ` | `/courses/{lmsCourseId}/quizzes/{quizId}` |
+| `ASSIGNMENT_GRADED` | An attempt gets its first grade, or its marks or feedback really change. | The student who handed in the attempt. | `SUBMISSION_GRADE` | the same assignment page |
+| `RESULT_PUBLISHED` | A draft official result is published. | The student of the result's course enrollment. | `COURSE_RESULT` | `/academic/results` |
+| `RESULT_UPDATED` | A published result's marks, maximum, grade, or remarks really change. | The same student. | `COURSE_RESULT` | `/academic/results` |
+| `ATTENDANCE_UPDATED` | A finalized attendance record is corrected between present and absent. | That record's student. | `ATTENDANCE_RECORD` | `/academic/attendance` |
+| `ACADEMIC_CALENDAR_PUBLISHED` | A draft calendar event is published. | Everyone who will see it on their calendar (below). | `ACADEMIC_CALENDAR_EVENT` | `/calendar` |
+| `ACADEMIC_CALENDAR_CANCELLED` | A published calendar event is cancelled. | Everyone who saw it. | `ACADEMIC_CALENDAR_EVENT` | `/calendar` |
+| `HELPDESK_REPLY` | Someone other than the requester replies to a ticket. | The ticket's requester. | `HELPDESK_TICKET` | `/support/tickets/{ticketId}` |
+| `HELPDESK_STATUS_CHANGED` | A ticket's status really changes. | The ticket's requester. | `HELPDESK_TICKET` | `/support/tickets/{ticketId}` |
+| `HELPDESK_ASSIGNED` | A ticket is assigned to an admin by someone else. | That admin. | `HELPDESK_TICKET` | `/support/tickets/{ticketId}` |
+| `APPROVAL_ACTION_REQUIRED` | An approval step becomes the current step. | Every active account holding the step's role, except the requester. | `APPROVAL_REQUEST` | none |
+| `APPROVAL_APPROVED` | An approval request is approved at its last step. | The requester. | `APPROVAL_REQUEST` | none |
+| `APPROVAL_REJECTED` | An approval request is rejected. The reason is not in the message. | The requester. | `APPROVAL_REQUEST` | none |
+| `APPROVAL_CANCELLED` | A business module cancels an approval request. | The requester, unless they cancelled it. | `APPROVAL_REQUEST` | none |
+| `HOSTEL_ALLOCATED` | A hostel bed is allocated to an approved application. | The student. | `HOSTEL_ALLOCATION` | `/hostel` |
+| `HOSTEL_VACATED` | An active hostel allocation is vacated. | The student. | `HOSTEL_ALLOCATION` | `/hostel` |
+| `CAMPUS_NOTICE_PUBLISHED` | A campus notice is published for the first time. | Every active account holding a role the notice is visible to, once each. | `CAMPUS_NOTICE` | `/campus` |
+| `CAMPUS_SERVICE_COMPLETED` | A campus service request is marked completed. | The requester. | `CAMPUS_SERVICE_REQUEST` | `/campus/requests/{requestId}` |
+
+There is no free-form or custom type: every notification is generated by the backend from a real change. Announcements, LMS course creation or publication, ordinary attendance marking, finalizing a session, raising a helpdesk ticket, and changing its priority send nothing. Helpdesk notifications link to the shared ticket page, `/support/tickets/{ticketId}`, with **View ticket**; those sent before Phase 41 have no link and are not rewritten (see `helpdesk.md`). `V47` widened the type check of `notifications` for the three helpdesk types. Approval notifications have no link, because there is no approval page in Phase 42; the modules that use a workflow add their own. `V50` widened the type check for the four approval types (see `approval-workflow.md`). Hostel allocations link to `/hostel`; `V54` widened the check for the two hostel types, and the approval notifications of hostel applications are the approval engine's own, not repeated (see `hostel-management.md`). Campus notices link to `/campus` with **View campus notices** and completed service requests to their request page with **View request**; `V58` widened the check for the two campus types. Drafts, edits, repeated publishes, archiving, and new requests notify nobody, and approval-required requests keep the engine's own approval notifications (see `campus-services.md`).
+
+**Calendar recipients** follow the Phase 38 calendar rule turned around:
+- students with an `ENROLLED` or `COMPLETED` semester enrollment in the event's semester (for a session-wide event, in any semester of its session);
+- faculty with a current teaching assignment there (an active faculty profile and an active assignment, with no LMS course needed);
+- every account holding `ADMIN`.
+
+An account found through several roles, such as a student who also teaches, is told once.
+
+## Only real changes notify
+
+The services compare the state before and after a change, so repeated or empty calls never create a second notification:
+- publishing a published assignment, result, or event;
+- cancelling a cancelled event;
+- saving a result or a grade with the same values (`82` and `82.00` are the same);
+- marking a finalized record with the status it already has;
+- marking an open session at all;
+- setting a ticket's status or assignee to the one it already has;
+- a second decision on an approval step that was already decided;
+- vacating a hostel allocation that is already vacated;
+- publishing a published campus notice, or completing a completed service request.
+
+Cancelling a draft event notifies nobody, because nobody ever saw it. Notifications are written in the same transaction as the change, so a change that fails leaves no notification behind. There is no event bus or outbox.
+
+## The internal service
+
+`NotificationService.notifyUser(message, accountId)` and `notifyUsers(message, accountIds)` create one notification and one recipient row per distinct account. Repeated and missing IDs are dropped first; the unique constraint is the last protection. With nobody to tell, nothing is created at all. Recipient IDs always come from the feature's own server-side lookup, never from a client, and there is **no REST endpoint that creates, sends, edits, or deletes a notification**.
+
+`actionPath` must be a path inside the application: one leading `/`, never `//` or `/\`, no scheme, host, backslash, whitespace, or `..`, at most 300 characters. A full address such as `https://…` is refused, so a notification can never become an open redirect. The database checks the leading slash too. The link is only a convenience: the page it opens checks access as always, so a notification about an assignment that has since been archived leads to the usual "unavailable" page.
+
+## Inbox API
+
+Every route needs `NOTIFICATION_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`, and works only on the rows of the account in the access token. No account ID is ever accepted.
+
+| Route | What it does |
+| --- | --- |
+| `GET /api/v1/notifications?page=0&size=20&unreadOnly=false` | One page of the account's notifications, newest first (notification time, then row ID). `page` is from 0, `size` from 1 to 100 (default 20), and `unreadOnly` keeps only unread ones. Anything else is 400. The answer is `items`, `page`, `size`, `totalElements`, `totalPages`; each item has its recipient and notification IDs, type, title, message, source, action path, `readAt`, and `createdAt`, never an account ID. Loading it marks nothing read. |
+| `GET /api/v1/notifications/unread-count` | `{ "unreadCount": 3 }`, counted in the database. |
+| `POST /api/v1/notifications/{notificationRecipientId}/read` | Marks one of the account's notifications read. Already read is fine and keeps the first time. |
+| `POST /api/v1/notifications/{notificationRecipientId}/unread` | Marks it unread again. Already unread is fine. |
+| `POST /api/v1/notifications/read-all` | Marks every unread notification of the account read in one update and says how many: `{ "markedRead": 8, "unreadCount": 0 }`. Other accounts are never touched. |
+
+Another account's row answers the same 404 "Notification not found." as one that does not exist. There is no delete: Inbox history is kept, and only read state changes.
+
+The list is one query with the notification fetched alongside, plus a count; the unread count is one count query. Creating a notification writes one notification row and one row per recipient in the same transaction.
+
+## Permission
+
+`NOTIFICATION_VIEW` (`V44`) belongs to `STUDENT`, `FACULTY`, and `ADMIN`. It opens one's own Inbox only. Accounts signed in before `V44` must sign in again; until then the Inbox says that access is missing. The tables are created by `V43`.
+
+## Frontend
+
+- **Inbox** in the Common navigation section opens `/inbox` for any account holding `STUDENT`, `FACULTY`, or `ADMIN`: one Inbox per account, however many roles it has. On small screens the bell in the top bar opens it too.
+- Both show the unread count from `GET /api/v1/notifications/unread-count`: hidden at 0, "99+" from 100, and read out as "Inbox, 3 unread". The count is shared app-wide, so the badge and the Inbox never disagree. It is asked for when the app shell appears, whenever the Inbox loads a page, and after every read-state change. There is no polling and no live connection.
+- The Inbox page has **All** and **Unread**, newest first, 20 per page with Previous and Next. Each row shows the title, plain-text message, local time, and **Unread** or **Read** in words. It also has a link to the page concerned (View assignment, View calendar, View results, View attendance, View ticket, or View hostel) and **Mark as read** or **Mark as unread**.
+- Following a link marks the notification read without waiting, so navigation never blocks on it. **Mark all as read** appears while anything is unread.
+- Only paths inside the app are followed, through React Router.
+
+See `frontend-authentication.md` for the page details.
+
+## Local test data
+
+On a fresh local database, the `dev-seed` profile creates its demo data through the same services, so the test accounts start with real notifications: published assignments, grades, published results, and calendar events (see `local-test-data.md`). A database seeded before Phase 39 gets none for its existing records.
+
+## Not built yet
+
+Email, SMS, browser or mobile push, real-time delivery (WebSocket, Server-Sent Events), notification preferences or muting, digests, deleting or archiving notifications, announcement notifications, and messages written by users.

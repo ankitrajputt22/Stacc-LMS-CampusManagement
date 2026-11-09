@@ -1,0 +1,22 @@
+# Changelog
+
+## v1.0.0 (2026-11-11)
+
+First stable release, after release candidate `v1.0.0-rc.1`. Fixed during the candidate: editing a rubric while grading with it could deadlock; both now take the rubric row lock first, and a grade against criteria that just changed is refused cleanly.
+
+The versions below were built in phases; `docs/roadmap.md` lists every phase with what it delivered.
+
+- **v0.1 Foundation:** CI, MySQL integration tests, frontend unit tests, Playwright journeys, `/api/v1`, request IDs and health, configuration profiles.
+- **v0.2 Accounts:** person profiles, server sessions with CSRF, the password lifecycle, staff roles, the audit log, user management, scoped heads of department.
+- **v0.3 ERP core:** catalog details, sections, section offerings and faculty assignments, academic profiles, navigation groups.
+- **v0.4 Registration:** registration periods and capacity, student self-registration, the enrollment monitor and class lists.
+- **v0.5 ERP to LMS access:** live access from official enrollment, the student and faculty course pages.
+- **v0.6 LMS core:** safe formatting, course navigation, pages, files, syllabus, learning progress, course copy.
+- **v0.7 Assessment:** outcomes, the question bank, quizzes (taking and marking), the gradebook, rubrics, assignment submission rules, the grading view.
+- **v0.8 Communication:** the attachments pattern, course discussions, messages to faculty, communication pages.
+- **v0.9 Shared engines:** notification settings and email, To-Do, the calendar upgrade, approvers by relationship, the helpdesk upgrade, the shared timeline.
+- **v0.10 Hostel:** structure and wardens, allocation upgrades, the pass service, gate passes and the security page, leave, complaints, dashboards.
+- **v0.11 Campus:** groups and officers, the campus hub, facility bookings, events.
+- **v0.12 Services and career:** digital ID, the document vault, career profiles, opportunities, placement.
+- **v0.16 Analytics:** analytics rules, student and course analytics, background exports, the performance review, load tests.
+- **v1.0:** security sweep, backups and recovery, production setup, documentation, demo data.

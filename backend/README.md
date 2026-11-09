@@ -1,0 +1,130 @@
+# Stacc Backend
+
+The Stacc backend uses Java 21, Spring Boot, and Maven. It follows modular-monolith principles so that future business domains remain clearly separated within one application.
+
+## Module structure
+
+The single Spring Boot application is organized into logical modules under `com.stacc.backend`, including `auth`, `identity`, `academic`, `lms`, and the other domains described in `../docs/backend-architecture.md`. Each module owns its business logic, while the `common` module is reserved for small, genuinely shared technical code.
+
+## MySQL connection
+
+The backend includes Spring Data JPA and MySQL Connector/J. Its connection configuration reads these environment variables:
+
+- `MYSQL_HOST` (defaults to `localhost`)
+- `MYSQL_PORT` (defaults to `3306`)
+- `MYSQL_DATABASE` (defaults to `stacc`)
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+
+Set the username and password in the local environment before running the application. Never commit real credentials.
+
+The backend can also run in Docker together with MySQL and the frontend. `backend/Dockerfile` builds the image, and the root `compose.yaml` supplies these variables. See `../docs/docker.md`.
+
+Flyway manages database schema changes. Versioned migrations live in `src/main/resources/db/migration` and must use names such as `V1__baseline.sql`. Do not make schema changes manually or edit migrations already applied to a shared database; add a new migration instead.
+
+Hibernate automatic schema management remains disabled.
+
+## User accounts
+
+The `auth.account` package holds the first persistent model: `UserAccount`, stored in the `user_accounts` table. It keeps a unique login ID, a password hash, and an account status. See `../docs/user-accounts.md`.
+
+The `auth.role` package holds the `Role` model. An account can hold several roles through the `user_account_roles` table, and the initial roles are `STUDENT`, `FACULTY`, and `ADMIN`. See `../docs/account-roles.md`.
+
+The `auth.permission` package holds the `Permission` model, stored in the `permissions` table. A role can hold several permissions through the `role_permissions` table. The first real permissions are `LMS_COURSE_VIEW`, held by `STUDENT`, and `FACULTY_COURSE_VIEW`, held by `FACULTY`. See `../docs/permissions.md`.
+
+## Security
+
+Spring Security is set up in `auth.security.SecurityConfig`. Everything under `/api/` requires a valid access token, except `POST /api/v1/auth/login`; the Swagger documentation is public during development. Spring's built-in login page and HTTP Basic are switched off, and the API is stateless. See `../docs/api-security.md`. Operations can require a role with `@PreAuthorize("hasRole('ADMIN')")` or a permission with `hasAuthority(...)`; a signed-in account without it gets HTTP 403. See `../docs/authorization.md`.
+
+A browser page on another origin may call the API only if its origin is listed in `FRONTEND_ORIGIN` (default `http://localhost:5173`, the frontend dev server). Wildcards are refused at startup. See `../docs/frontend-authentication.md`.
+
+Passwords are hashed with the shared `PasswordEncoder` bean from `SecurityConfig`. See `../docs/password-security.md`.
+
+Accounts are connected to Spring Security through `StaccUserDetailsService` and `StaccUserPrincipal`, and `SecurityConfig` provides the `AuthenticationManager`. See `../docs/authentication-foundation.md`.
+
+The college login is `POST /api/v1/auth/login` in `auth.api.AuthController`. It checks a login ID and password, starts a session in `user_sessions`, and sets the session's token in an HttpOnly cookie. See `../docs/authentication.md` and `../docs/access-tokens.md`.
+
+The backend needs two more environment variables for tokens:
+
+- `JWT_SECRET` — required. Base64 text for at least 32 random bytes, for example from `openssl rand -base64 48`. The backend does not start without it.
+- `STACC_SESSION_MAX_DURATION` (defaults to `12h`), `STACC_SESSION_IDLE_TIMEOUT` (`2h`), and `STACC_SESSION_SECURE_COOKIE` (`false`; `true` in production)
+
+Browsers send the token back in that cookie; API clients may send it as `Authorization: Bearer <token>`.
+
+## Academic structure
+
+The `academic` module holds the college's academic master data. So far it contains `Department`, `Program` (each program belongs to one department), the college-wide `AcademicSession`, `Semester` (one numbered semester of a program in a session), `Course` (the permanent course catalog), and `CourseOffering` (one course offered in one semester). The `identity` module holds `StudentProfile`, which links a student's `UserAccount` to a program and to the session of admission, and `FacultyProfile`, which links a faculty member's `UserAccount` to their primary department. In the `academic` module, `SemesterEnrollment` records a student's official participation in a semester, `CourseEnrollment` records participation in a course offering, and `TeachingAssignment` records that a faculty member teaches a course offering. There is no API for them yet. See `../docs/academic-structure.md`.
+
+The `academic.attendance` package holds official class attendance. An `AttendanceSession` is one class meeting of a `CourseOffering`, never of an LMS course; creating one snapshots the offering's currently enrolled students as `UNMARKED` `AttendanceRecord` rows. `AttendanceManagementService` creates, marks, finalizes, and corrects sessions after `FacultyTeachingAccessService` (in `academic.teaching`) confirms an active teaching assignment, and the query services in `academic.attendance.api` serve the faculty pages and the student's own finalized attendance. Faculty use `/api/v1/attendance/faculty/...` with `ATTENDANCE_MANAGE`, and students `GET /api/v1/attendance/student/me` with `ATTENDANCE_VIEW`. See `../docs/attendance.md`.
+
+The `academic.result` package holds official course results. A `CourseResult` is the one result of a `CourseEnrollment`: marks obtained and maximum marks (`BigDecimal`), an optional grade code kept as entered, optional plain-text remarks, `DRAFT` or `PUBLISHED`, and the faculty profile that recorded it last. It is never calculated from LMS grades or attendance and needs no LMS course. `CourseResultManagementService` saves and publishes results after `FacultyTeachingAccessService` confirms an active teaching assignment and the enrollment is found to belong to the offering; corrections keep a published result published. Faculty use `/api/v1/results/faculty/...` with `ACADEMIC_RESULT_MANAGE`, and students `GET /api/v1/results/student/me` with `ACADEMIC_RESULT_VIEW`. See `../docs/results.md`.
+
+The `academic.admin` package lets admins list, create, and edit the academic masters under `/api/v1/admin/academic/...`, one controller and management service per master with explicit request and response records. Parents are loaded on the server by ID, codes and parents never change after creation, unique clashes answer 409 even when the database catches them, and nothing can be deleted. Reading needs `ADMIN` and `ACADEMIC_MASTER_VIEW`, changing also `ACADEMIC_MASTER_MANAGE`, and `SecurityConfig` keeps all of `/api/v1/admin/**` to `ADMIN`. The same package lets admins create course offerings and move them through their status (`ACADEMIC_OFFERING_VIEW`, `ACADEMIC_OFFERING_MANAGE`), find students, enroll them in semesters and same-semester offerings, end those enrollments without any cascade, and read an offering's roster (`ACADEMIC_ENROLLMENT_VIEW`, `ACADEMIC_ENROLLMENT_MANAGE`). A new course enrollment gets LMS membership through `CourseEnrollmentLmsPort` only after it is committed, and only when the offering already has an LMS course. See `../docs/admin-academic.md`.
+
+The `academic.calendar` package holds the official academic calendar. An `AcademicCalendarEvent` belongs to one `AcademicSession` and, optionally, one `Semester` of that session; it has a plain-text title and description, a category, and plain start and end dates. It starts `DRAFT`, is published and cancelled by admins, and is never deleted; a cancelled event that was published stays visible as cancelled. Admins manage events under `/api/v1/admin/academic/calendar/events` (`ACADEMIC_CALENDAR_VIEW`, `ACADEMIC_CALENDAR_MANAGE`). The `calendar` module serves `GET /api/v1/calendar/me` (`ACADEMIC_CALENDAR_VIEW` with `STUDENT`, `FACULTY`, or `ADMIN`): the official events that apply to the account and, per role, assignment deadlines read straight from `LmsAssignment`, for a range of at most 366 days in a given IANA time zone. It stores nothing. See `../docs/academic-calendar.md`.
+
+## LMS
+
+The `dashboard` module serves `GET /api/v1/dashboard/student` (`STUDENT` and `STUDENT_DASHBOARD_VIEW`): previews of the student's current LMS courses, upcoming published assignments, recent published announcements, finalized attendance, and published results, read from the services that own them. It stores nothing. See `../docs/student-dashboard.md`. It also serves `GET /api/v1/dashboard/faculty` (`FACULTY` and `FACULTY_DASHBOARD_VIEW`): the offerings a faculty member teaches with their LMS state, upcoming draft or published assignments, submissions whose latest attempt has no grade, and open attendance sessions. See `../docs/faculty-dashboard.md`. `GET /api/v1/dashboard/admin` (`ADMIN` and `ADMIN_DASHBOARD_VIEW`) counts the academic masters, course offerings, and `ENROLLED` semester and course enrollments, with a five-row preview of the admin offering list. See `../docs/admin-dashboard.md`.
+
+The `lms` module holds `LmsCourse`, the learning space for one official course offering, and `LmsStudentMembership`, the LMS-side membership for one official course enrollment. Later LMS features will build on them. `LmsStudentMembershipProvisioningService` creates a membership from an official course enrollment that is still enrolled, and can make one inactive. It is called explicitly; nothing runs it automatically. `LmsStudentAccessService` decides on the backend whether a signed-in student may currently use an LMS course, from official ERP enrollment and LMS state. `GET /api/v1/lms/my-courses` and `GET /api/v1/lms/courses/{lmsCourseId}` return the signed-in student's current LMS courses under that same policy; they need the `STUDENT` role and the `LMS_COURSE_VIEW` permission. `LmsFacultyAccessService` decides faculty access from official teaching assignments, with no separate faculty membership, and `GET /api/v1/lms/faculty/my-courses` returns the courses a faculty member teaches; it needs the `FACULTY` role and the `FACULTY_COURSE_VIEW` permission. The `lms.management` package lets faculty with `LMS_COURSE_MANAGE` list every offering they teach (`GET /api/v1/lms/faculty/managed-courses`), create its draft LMS course, synchronize its students' memberships, publish it, and archive it, with ownership from `FacultyTeachingAccessService`; there is no restore and no delete. The `lms.content` package holds course content: `LmsModule` and `LmsTopic`, with a draft, published, and archived lifecycle and no deletion. Students read published content through `GET /api/v1/lms/courses/{lmsCourseId}/content`; faculty manage it through the `/api/v1/lms/faculty/...` content routes with the `LMS_CONTENT_MANAGE` permission, and `LmsContentManagementService` checks their access for every change. See `../docs/lms-foundation.md`.
+
+Topics can hold study materials (`LmsStudyMaterial`). Their details are stored in MySQL and the files in private object storage, behind `ObjectStorageService` in `common.storage`; `MinioObjectStorageService` implements it for MinIO. Uploads are checked against an allow-list of academic file types and a 25 MB limit, and downloads go through `GET /api/v1/lms/materials/{materialId}/download`, which checks access and always sends an attachment. Set `STACC_STORAGE_ENDPOINT`, `STACC_STORAGE_ACCESS_KEY`, `STACC_STORAGE_SECRET_KEY`, and `STACC_STORAGE_BUCKET` to use them; the backend starts without storage, but uploads and downloads then answer that storage is unavailable. See `../docs/lms-foundation.md` and `../docs/docker.md`.
+
+The `lms.announcement` package holds `LmsAnnouncement`, a course-wide plain-text update with the same draft, published, and archived lifecycle and no deletion. Students read the published ones through `GET /api/v1/lms/courses/{lmsCourseId}/announcements`; faculty manage them through the `/api/v1/lms/faculty/...` announcement routes with the existing `LMS_CONTENT_MANAGE` permission, and `LmsAnnouncementManagementService` checks their access for every change. See `../docs/lms-foundation.md`.
+
+The `lms.assignment` package holds `LmsAssignment`, the definition of a piece of work in one LMS course: a title, plain-text instructions, a UTC deadline (`Instant`), and maximum marks (`BigDecimal`), with the same lifecycle and no deletion. Published assignments stay visible after their deadline. Students read them through `GET /api/v1/lms/courses/{lmsCourseId}/assignments` and `/assignments/{assignmentId}`; faculty read them per course and across their courses (`GET /api/v1/lms/faculty/my-assignments`), and change them through `LmsAssignmentManagementService` with the new `LMS_ASSIGNMENT_MANAGE` permission. See `../docs/lms-foundation.md`.
+
+The `lms.assignment.submission` package holds students' work. `LmsAssignmentSubmission` is one student's record for one assignment, through their official `CourseEnrollment`; each hand-in is an `LmsSubmissionAttempt` that never changes, with optional plain text and up to 3 files as `LmsSubmissionAttachment` (details in MySQL, bytes in private storage). Each attempt keeps the deadline that applied, so late stays late. `LmsAssignmentSubmissionService` finds the student's enrollment through the student access rule, stores files before reserving the attempt number under a row lock, and cleans up stored files if saving fails. Students use `POST .../assignments/{id}/submissions`, `GET .../submissions/me`, and `GET /api/v1/lms/submission-attachments/{id}/download` with the new `LMS_ASSIGNMENT_SUBMIT` permission. See `../docs/lms-foundation.md`.
+
+The same package holds grading. `LmsSubmissionGrade` is the one grade of an attempt: marks (`BigDecimal`), the maximum it was first graded out of, optional plain-text feedback, when it was saved, and the faculty profile that saved it last. `LmsAssignmentGradingService` checks the faculty access rule for the course behind the stored attempt, and locks the attempt before creating or replacing its grade. `LmsFacultySubmissionQueryService` in `lms.api` lists and shows submissions for faculty and streams their files. Faculty use the `/api/v1/lms/faculty/assignments/{id}/submissions`, `/api/v1/lms/faculty/submission-attachments/{id}/download`, and `PUT /api/v1/lms/faculty/submission-attempts/{id}/grade` routes with the new `LMS_ASSIGNMENT_GRADE` permission; students see each attempt's grade in their own history. See `../docs/lms-foundation.md`.
+
+## Notifications
+
+The `notification` module holds in-app notifications. A `Notification` is one event (type, plain-text title and message, a loose source reference, and an internal action path); a `NotificationRecipient` is one account's copy with its `readAt`. Feature services create them through `NotificationService` in the same transaction as a real change: assignment publication and grading, result publication and correction, attendance correction, calendar publication and cancellation, and helpdesk replies, status changes, and assignments. Accounts read their own Inbox at `/api/v1/notifications` with `NOTIFICATION_VIEW`. Nothing creates notifications over HTTP, and nothing deletes them. See `../docs/notifications-inbox.md`.
+
+## Helpdesk
+
+The `support.helpdesk` package is the one helpdesk ticket engine. Admins configure `HelpdeskCategory` rows; any student, faculty, or admin account raises a `HelpdeskTicket` (numbered `STC-000042`) as itself and follows its append-only messages and history; admins work through the queue, assign tickets to admin accounts, set the priority, and move them from `OPEN` through `IN_PROGRESS` and `RESOLVED` to `CLOSED`, never back. Routes are under `/api/v1/helpdesk`, with six `HELPDESK_TICKET_*` permissions. Replies, status changes, and assignments notify through the Inbox. Nothing is deleted. See `../docs/helpdesk.md`.
+
+## Approvals
+
+The `approval` package is the reusable approval workflow engine. Admins define `ApprovalWorkflowDefinition`s with 1 to 10 ordered steps, each decided by one role. Business modules start and cancel `ApprovalRequest`s for their own records through `ApprovalWorkflowService` (there is no REST route for that); each request copies the workflow's steps, so later edits affect new requests only. Approvers holding a step's role decide it at `/api/v1/approvals/tasks`, with no admin pass; requesters read their own at `/api/v1/approvals/me`. Decisions lock the request row, history is append-only, and the Inbox tells approvers and requesters. See `../docs/approval-workflow.md`.
+
+## Hostel
+
+The `hostel` package manages hostels, rooms, and beds, students' applications for an academic session, and bed allocations. An application starts a request with the `HOSTEL_APPLICATION` approval workflow (one ADMIN step, created by `V53`) and reads its status from it; admins decide on the approval task routes. Approved students are allocated a bed under row locks, so a bed, an application, and a student each have at most one active allocation; vacating keeps history. Student routes are under `/api/v1/hostel/student`, admin routes under `/api/v1/hostel/admin`. See `../docs/hostel-management.md`.
+
+## Campus
+
+The `campus` package holds the campus service catalog (`campus.services`), service requests, and campus notices (`campus.notices`). A request for a service that needs approval starts a request with the service's approval workflow (such as `CAMPUS_SERVICE_REQUEST`, created by `V57`) and keeps its own business status, which follows the engine's outcome; a service without approval accepts requests as approved. Admins complete approved requests and publish notices to roles; the Inbox is told on a notice's first publication and on completion. Requester and notice routes are under `/api/v1/campus`, admin routes under `/api/v1/campus/admin`. A service request is not a helpdesk ticket and has no messages. See `../docs/campus-services.md`.
+
+## Search
+
+The `search` package answers `GET /api/v1/search` (up to 5 results per kind, grouped) and `GET /api/v1/search/results` (one kind, paged) for accounts with `GLOBAL_SEARCH_USE`. `GlobalSearchService` composes providers (LMS, calendar, campus, helpdesk, hostel, academic), each of which reuses its domain's access services and role and permission rules and runs bounded `LIKE` queries in that domain's repository, with the text bound as an escaped parameter. Search is MySQL only: no index table, no history, and no external engine. See `../docs/search.md`.
+
+## Reports
+
+The `report` package answers the faculty reports (`/api/v1/reports/faculty/my-courses` and `/course-offerings/{courseOfferingId}`, with `FACULTY` and `FACULTY_REPORT_VIEW`, the latter only for an offering taught through an active teaching assignment) and the admin reports (`/api/v1/reports/admin/overview`, `/enrollments`, and `/enrollments/export.csv`, with `ADMIN` and `ADMIN_REPORT_VIEW`). Every figure is a live grouped count in the owning module's repository; nothing is stored or cached, and there are no averages, percentages, ranks, or pass or fail. Operational sections of the admin overview appear only with their domain permission. See `../docs/reports-analytics.md`.
+
+## AI learning
+
+The `lms.ai` package adds AI learning on published LMS content: `GET /api/v1/lms/faculty/courses/{lmsCourseId}/ai/status`, `POST .../ai/sync`, and `POST .../ai/assessment-draft` for faculty, and `POST /api/v1/lms/courses/{lmsCourseId}/ai/ask`, `.../ai/topics/{topicId}/summary`, and `.../ai/practice` for students. Access always comes from the LMS access services; the internal Python AI service (`../ai-service`) is reached only through `HttpAiServiceClient` with the shared internal token and timeouts. AI is off unless `AI_ENABLED=true`; then the routes answer 503 when the AI service is unavailable, and nothing else is affected. MySQL keeps only `ai_course_knowledge_indexes` metadata. See `../docs/ai-learning.md`.
+
+## Local test data
+
+The `devdata` package fills a local development database with test accounts and connected demo data for every finished feature, but only under the `dev-seed` profile and with `STACC_TEST_PASSWORD` set: `SPRING_PROFILES_ACTIVE=dev-seed mvn spring-boot:run`. It only adds what is missing, so it is safe to repeat. See `../docs/local-test-data.md`.
+
+## API validation and errors
+
+The `common.error` package provides shared exception handling and a consistent API error response. Request DTOs should use Jakarta Validation annotations for input validation.
+
+## API documentation
+
+OpenAPI documentation is configured for the backend. During local development, Swagger UI is available at `http://localhost:8080/swagger-ui/index.html`, and the OpenAPI JSON is available at `http://localhost:8080/v3/api-docs`.
+
+Run the backend tests with:
+
+```bash
+mvn test
+```

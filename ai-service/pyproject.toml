@@ -1,0 +1,26 @@
+[project]
+name = "stacc-ai-service"
+version = "0.1.0"
+description = "Internal AI learning service for Stacc: local models, course-grounded answers."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Starlette suggests a newer HTTP client for its test client; the tests do not depend on it.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+# B008: FastAPI declares parameters with Header(...) by design. S101: tests use assert.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "helpers"]

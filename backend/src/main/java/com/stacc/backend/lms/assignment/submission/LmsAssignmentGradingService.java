@@ -1,0 +1,228 @@
+package com.stacc.backend.lms.assignment.submission;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
+
+import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.identity.faculty.FacultyProfile;
+import com.stacc.backend.identity.faculty.FacultyProfileRepository;
+import com.stacc.backend.identity.faculty.FacultyProfileStatus;
+import com.stacc.backend.lms.access.LmsFacultyAccessService;
+import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.assignment.LmsAssignmentNotifications;
+import com.stacc.backend.lms.assignment.rubric.LmsRubric;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricCriterion;
+import com.stacc.backend.lms.assignment.rubric.LmsRubricRepository;
+import com.stacc.backend.lms.content.LmsContentStatus;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Faculty grade one attempt at a time. The attempt's course is found from the stored attempt, never from the
+ * request, and {@link LmsFacultyAccessService} must allow the signed-in account to use it; the grader is that
+ * account's own faculty profile. An attempt that does not exist, one of an assignment that is not published,
+ * and one in a course the caller does not teach all get the same 404.
+ *
+ * <p>The first grade keeps the assignment's maximum marks at that moment; a revision keeps that maximum and
+ * replaces only the marks and feedback, recording the latest grader and time. Lateness never changes the
+ * marks: faculty decide them.
+ */
+@Service
+@Transactional
+public class LmsAssignmentGradingService {
+
+    static final String ATTEMPT_UNAVAILABLE = "Attempt not found or unavailable.";
+    static final String NEGATIVE_MARKS = "Marks cannot be negative.";
+    static final String FEEDBACK_TOO_LONG = "Feedback must be at most 10,000 characters.";
+    static final String NO_RUBRIC = "This assignment is not graded with a rubric.";
+    static final String SCORES_INVALID = "Give points for every criterion of the rubric exactly once.";
+
+    private final LmsSubmissionAttemptRepository attempts;
+    private final LmsSubmissionGradeRepository grades;
+    private final LmsFacultyAccessService facultyAccess;
+    private final FacultyProfileRepository facultyProfiles;
+    private final Clock clock;
+    private final LmsAssignmentNotifications notifications;
+    private final LmsRubricRepository rubrics;
+
+    public LmsAssignmentGradingService(
+            LmsSubmissionAttemptRepository attempts,
+            LmsSubmissionGradeRepository grades,
+            LmsFacultyAccessService facultyAccess,
+            FacultyProfileRepository facultyProfiles,
+            Clock clock,
+            LmsAssignmentNotifications notifications,
+            LmsRubricRepository rubrics) {
+        this.attempts = attempts;
+        this.grades = grades;
+        this.facultyAccess = facultyAccess;
+        this.facultyProfiles = facultyProfiles;
+        this.clock = clock;
+        this.notifications = notifications;
+        this.rubrics = rubrics;
+    }
+
+    /**
+     * Grades the attempt, or revises its grade. The marks must be from zero up to the maximum: the
+     * assignment's maximum now for a first grade, the grade's own maximum for a revision.
+     *
+     * <p>The attempt row is locked first and the grade is read with a lock, so two graders of the same attempt
+     * take turns and its first grade is created once; a unique constraint backs this up.
+     *
+     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
+     */
+    public LmsSubmissionGrade grade(Long userAccountId, Long attemptId, BigDecimal marksAwarded, String feedback) {
+        LmsSubmissionAttempt attempt = gradable(userAccountId, attemptId);
+        FacultyProfile grader = grader(userAccountId);
+        if (marksAwarded == null || marksAwarded.signum() < 0) {
+            throw badRequest(NEGATIVE_MARKS);
+        }
+        String validFeedback = validFeedback(feedback);
+        attempts.findByIdForUpdate(attempt.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
+        // Marks given without the rubric replace any rubric scores, so the marks always match what is kept.
+        return save(attempt, grader, marksAwarded, validFeedback, LmsSubmissionGrade::clearRubric);
+    }
+
+    /** Points for one rubric criterion, with an optional comment. */
+    public record RubricScoreInput(Long criterionId, BigDecimal points, String comment) {
+    }
+
+    /**
+     * Grades the attempt, or revises its grade, with the assignment's rubric: points for every criterion exactly once,
+     * from 0 to its maximum, with optional comments. The marks are the sum of the points. After the attempt row, the
+     * rubric is read with a shared lock, so it cannot change while the scores are kept.
+     */
+    public LmsSubmissionGrade gradeWithRubric(Long userAccountId, Long attemptId, List<RubricScoreInput> scores, String feedback) {
+        LmsSubmissionAttempt attempt = gradable(userAccountId, attemptId);
+        FacultyProfile grader = grader(userAccountId);
+        String validFeedback = validFeedback(feedback);
+        LmsRubric chosen = attempt.getSubmission().getAssignment().getRubric();
+        if (chosen == null) {
+            throw new ApiException(HttpStatus.CONFLICT, NO_RUBRIC);
+        }
+        attempts.findByIdForUpdate(attempt.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
+        // The rubric row first, alone, as an edit does; only then its criteria (see LmsRubricRepository#lockRowForShare).
+        rubrics.lockRowForShare(chosen.getId());
+        LmsRubric rubric = rubrics.findByIdForShare(chosen.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
+        // An edit that won the rubric lock may have replaced the criteria this request loaded earlier: compare with the
+        // stored ones and refuse cleanly instead of saving scores for criteria that no longer exist.
+        java.util.Set<Long> stored = new java.util.HashSet<>(rubrics.findCurrentCriterionIdsForShare(rubric.getId()));
+        if (!stored.equals(rubric.getCriteria().stream().map(LmsRubricCriterion::getId).collect(java.util.stream.Collectors.toSet()))) {
+            throw new ApiException(HttpStatus.CONFLICT, "The rubric changed while you were grading. Reload the page and grade again.");
+        }
+        Map<Long, RubricScoreInput> byCriterion = new HashMap<>();
+        for (RubricScoreInput score : scores == null ? List.<RubricScoreInput>of() : scores) {
+            if (score == null || score.criterionId() == null || byCriterion.put(score.criterionId(), score) != null) {
+                throw badRequest(SCORES_INVALID);
+            }
+        }
+        List<LmsRubricCriterion> criteria = rubric.getCriteria();
+        if (byCriterion.size() != criteria.size()
+                || !criteria.stream().map(LmsRubricCriterion::getId).allMatch(byCriterion::containsKey)) {
+            throw badRequest(SCORES_INVALID);
+        }
+        List<LmsRubricScore> made = new ArrayList<>();
+        BigDecimal marks = BigDecimal.ZERO.setScale(2);
+        for (LmsRubricCriterion criterion : criteria) {
+            RubricScoreInput score = byCriterion.get(criterion.getId());
+            BigDecimal points = score.points();
+            if (points == null || points.signum() < 0 || points.compareTo(criterion.getMaxPoints()) > 0
+                    || points.stripTrailingZeros().scale() > 2) {
+                throw badRequest(criterion.getTitle() + ": points must be from 0 to "
+                        + criterion.getMaxPoints().stripTrailingZeros().toPlainString() + ", with at most 2 decimal places.");
+            }
+            String comment = score.comment() == null || score.comment().isBlank() ? null : score.comment().strip();
+            if (comment != null && comment.length() > LmsRubricScore.MAX_COMMENT_LENGTH) {
+                throw badRequest(criterion.getTitle() + ": the comment must be at most 2,000 characters.");
+            }
+            BigDecimal kept = points.setScale(2, RoundingMode.UNNECESSARY);
+            made.add(new LmsRubricScore(criterion.getPosition(), criterion.getId(), criterion.getTitle(), criterion.getMaxPoints(),
+                    kept, comment));
+            marks = marks.add(kept);
+        }
+        return save(attempt, grader, marks, validFeedback, grade -> grade.useRubric(made));
+    }
+
+    // Creates the attempt's grade or revises it, with the attempt row already locked; the grade is read with a lock.
+    private LmsSubmissionGrade save(LmsSubmissionAttempt attempt, FacultyProfile grader, BigDecimal marksAwarded,
+            String validFeedback, Consumer<LmsSubmissionGrade> rubricScores) {
+        // The database keeps microseconds, so the answer shows the same moment as every later read.
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        Optional<LmsSubmissionGrade> existing = grades.findForUpdateByAttemptId(attempt.getId());
+        if (existing.isPresent()) {
+            LmsSubmissionGrade grade = existing.get();
+            requireWithin(marksAwarded, grade.getMaxMarksSnapshot());
+            // The student hears about a revision only when the marks or the feedback really changed.
+            boolean changed = grade.getMarksAwarded().compareTo(marksAwarded) != 0
+                    || !Objects.equals(grade.getFeedback(), validFeedback);
+            grade.revise(grader, marksAwarded, validFeedback, now);
+            rubricScores.accept(grade);
+            LmsSubmissionGrade saved = grades.saveAndFlush(grade);
+            if (changed) {
+                notifications.graded(saved, false);
+            }
+            return saved;
+        }
+        BigDecimal maxMarks = attempt.getSubmission().getAssignment().getMaxMarks();
+        requireWithin(marksAwarded, maxMarks);
+        LmsSubmissionGrade grade = new LmsSubmissionGrade(attempt, grader, marksAwarded, maxMarks, validFeedback, now);
+        rubricScores.accept(grade);
+        LmsSubmissionGrade saved = grades.saveAndFlush(grade);
+        notifications.graded(saved, true);
+        return saved;
+    }
+
+    private LmsSubmissionAttempt gradable(Long userAccountId, Long attemptId) {
+        LmsSubmissionAttempt attempt = attemptId == null ? null : attempts.findWithAssignmentById(attemptId).orElse(null);
+        if (attempt == null || !isGradable(userAccountId, attempt)) {
+            throw notFound();
+        }
+        return attempt;
+    }
+
+    // The same active profile the access rule just accepted for this account.
+    private FacultyProfile grader(Long userAccountId) {
+        return facultyProfiles.findByUserAccountId(userAccountId)
+                .filter(profile -> profile.getStatus() == FacultyProfileStatus.ACTIVE)
+                .orElseThrow(LmsAssignmentGradingService::notFound);
+    }
+
+    // Grading is part of the normal workflow of a published assignment in a course the caller teaches now.
+    private boolean isGradable(Long userAccountId, LmsSubmissionAttempt attempt) {
+        LmsAssignment assignment = attempt.getSubmission().getAssignment();
+        return assignment.getStatus() == LmsContentStatus.PUBLISHED
+                && facultyAccess.canAccessCourse(userAccountId, assignment.getLmsCourse().getId());
+    }
+
+    private static void requireWithin(BigDecimal marksAwarded, BigDecimal maxMarks) {
+        if (marksAwarded.compareTo(maxMarks) > 0) {
+            throw badRequest("Marks cannot exceed " + maxMarks.stripTrailingZeros().toPlainString() + ".");
+        }
+    }
+
+    private static String validFeedback(String feedback) {
+        if (feedback != null && feedback.length() > LmsSubmissionGrade.MAX_FEEDBACK_LENGTH) {
+            throw badRequest(FEEDBACK_TOO_LONG);
+        }
+        return LmsSubmissionGrade.feedbackOrNull(feedback);
+    }
+
+    private static ApiException notFound() {
+        return new ApiException(HttpStatus.NOT_FOUND, ATTEMPT_UNAVAILABLE);
+    }
+
+    private static ApiException badRequest(String message) {
+        return new ApiException(HttpStatus.BAD_REQUEST, message);
+    }
+}

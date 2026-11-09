@@ -1,0 +1,164 @@
+# The complete Stacc development stack: MySQL, MinIO object storage, the Spring Boot backend, and
+# the React frontend served by Nginx. Values come from a local .env file (copy .env.example).
+# See docs/docker.md.
+#
+#   Browser -> frontend (Nginx) -> /api -> backend (Spring Boot) -> mysql
+#                                                                -> minio (private file storage)
+#
+# Ports are published on this machine only (127.0.0.1), not on the local network.
+#
+# Optional AI learning features (docs/ai-learning.md) run only with the "ai" profile:
+#   docker compose --profile ai up
+#   backend -> ai-service (internal, no published port) -> ollama (local models, no published port)
+# Without the profile, Stacc starts and works as before, and its AI routes answer 503.
+name: stacc
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-stacc}
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # Asked over TCP on purpose. While MySQL is still creating the database and user it does
+      # not listen on TCP, so it is reported healthy only once it is really ready. A ping needs
+      # no password.
+      test: ["CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+      start_interval: 3s
+
+  minio:
+    # MinIO stopped publishing official images in 2025. This is the community-maintained build that
+    # follows its releases, pinned to one release.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      # The storage API, for a backend run with Maven, and the web console. Browsers never fetch
+      # files from here: every download goes through the backend, which checks access.
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      # MinIO's own liveness address, which needs no login. curl is part of this image.
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      start_interval: 2s
+
+  backend:
+    build: ./backend
+    environment:
+      # Inside Docker the database is reached by its service name, on its own port.
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-stacc}
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env, for example with - openssl rand -base64 48}
+      STACC_SESSION_MAX_DURATION: ${STACC_SESSION_MAX_DURATION:-12h}
+      STACC_SESSION_IDLE_TIMEOUT: ${STACC_SESSION_IDLE_TIMEOUT:-2h}
+      # Sign-in throttling reads the client address from the frontend proxy's X-Real-IP. The backend port is published
+      # on 127.0.0.1 only, so no outside caller can set that header itself.
+      STACC_SIGN_IN_TRUST_PROXY: ${STACC_SIGN_IN_TRUST_PROXY:-true}
+      # Only for a frontend dev server on this machine that calls this backend directly. The
+      # Docker frontend needs no such permission: its page and the API share one address.
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      # Inside Docker the storage is reached by its service name. The backend uses the MinIO account
+      # and creates its private bucket on the first upload.
+      STACC_STORAGE_ENDPOINT: http://minio:9000
+      STACC_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      STACC_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+      STACC_STORAGE_BUCKET: ${STACC_STORAGE_BUCKET:-stacc-materials}
+      # Off unless set. "dev-seed" fills a local database with the demo data and test accounts of
+      # docs/local-test-data.md, all with the password in STACC_TEST_PASSWORD. Never use it for real data.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      STACC_TEST_PASSWORD: ${STACC_TEST_PASSWORD:-}
+      # AI learning features stay off unless AI_ENABLED=true and the "ai" profile runs. The backend reaches the AI
+      # service by its service name, with the shared internal token; browsers never reach it.
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_SERVICE_URL: http://ai-service:8000
+      STACC_AI_INTERNAL_TOKEN: ${STACC_AI_INTERNAL_TOKEN:-}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      # Readiness answers UP only after Spring Boot has fully started, including the Flyway migrations, and while the
+      # database answers. File storage and AI are not part of it (see docs/operations.md).
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+      start_interval: 5s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+      start_interval: 2s
+
+  # --- Optional AI learning features: only with "docker compose --profile ai up" ---
+  ai-service:
+    build: ./ai-service
+    profiles: ["ai"]
+    environment:
+      # "ollama" for real use. "fake" quotes course text without a model and is for testing the wiring only.
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Local models of your choice, pulled into Ollama once (see docs/ai-learning.md). No default on purpose.
+      AI_CHAT_MODEL: ${AI_CHAT_MODEL:-}
+      AI_EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:-}
+      # The service refuses to start without a token of at least 32 characters; the backend must use the same one.
+      STACC_AI_INTERNAL_TOKEN: ${STACC_AI_INTERNAL_TOKEN:-}
+      AI_INDEX_DIR: /data/indexes
+    volumes:
+      - ai-index-data:/data/indexes
+    # No published port: only the backend calls it, over the private Docker network.
+
+  ollama:
+    image: ollama/ollama:0.13.0
+    profiles: ["ai"]
+    volumes:
+      - ollama-data:/root/.ollama
+    # No published port: only the AI service calls it. Models are pulled once with
+    #   docker compose --profile ai exec ollama ollama pull <model>
+
+volumes:
+  # The database files and the stored files. Both survive "docker compose down" and are
+  # removed only by "docker compose down -v".
+  mysql-data:
+  minio-data:
+  # AI learning (profile "ai"): the course vector indexes, and the downloaded local models.
+  ai-index-data:
+  ollama-data:

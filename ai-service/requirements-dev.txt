@@ -1,0 +1,4 @@
+# Tests and lint. No model, GPU, or network is needed: the tests use the deterministic fake providers.
+-r requirements.txt
+pytest==9.1.1
+ruff==0.17.2

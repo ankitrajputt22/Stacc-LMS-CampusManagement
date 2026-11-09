@@ -1,0 +1,301 @@
+# Stacc Roadmap (v0.1 to v1.0)
+
+This is the plan for taking Stacc from what exists today to the first stable release, `v1.0.0`. It follows the version roadmap (v0.1 Foundation to v1.0 Stable Release) and the improvements agreed while reviewing each version's specification.
+
+Stacc is not restarted from an empty repository. The work done so far (the earlier Phases 1–47: academic structure, enrollment, LMS courses, content, assignments, grading, attendance, results, calendar, Inbox, helpdesk, approvals, hostel, campus services, reports, search, and the first AI features) stays and is improved version by version. Those old phase numbers remain in the Git history and are never renumbered.
+
+## How the work is organised
+
+- **Versions** are the milestones: v0.1, v0.2, … v0.16, v1.0.
+- **Phases** are the units of work inside a version, numbered `version.phase`, for example **0.1.3** is the third phase of v0.1. Each phase is one branch, one commit, and one merge.
+- Branch names: `v0.1-phase-03-mysql-tests`.
+- Each version ends with a **checkpoint**: the full test suite, the Playwright journeys, a Docker check, and a short review of what changed. A version tag or a merge into `main` happens only when the project owner approves it.
+
+### Every phase includes
+
+1. A short brief before work starts: goal, what is in and out, database changes, API changes, UI changes.
+2. Backend code, Flyway migrations (never editing an old one), and tests.
+3. The redesign of every page the phase touches, built from the shared components in `frontend/src/ui` (see `ui-design.md`).
+4. At least one Playwright journey for any new user-facing flow (from 0.1.5 on).
+5. Demo data in the `dev-seed` profile for anything new.
+6. Updated docs and `AGENTS.md` rules.
+7. Security checks for the phase's routes: wrong role, wrong record, and missing permission.
+8. The commit message, chosen by the project owner, then the merge into `development`.
+
+### Definition of done for a phase
+
+Backend tests, AI tests (when touched), the frontend build and lint, and the Playwright journeys pass; the changed pages work on a phone and with a keyboard; docs match the code; nothing secret is committed.
+
+## Decisions
+
+These were settled while reviewing the specifications. Each takes effect in the phase named.
+
+| # | Decision | Phase |
+| --- | --- | --- |
+| 1 | Sign-in moves from browser-stored tokens to **server sessions**: every sign-in is a `user_sessions` row checked on each request, and browsers carry its signed token in a secure HttpOnly cookie with CSRF protection, so logout, disabling an account, and forced password changes take effect at once. | 0.2.2 |
+| 2 | Every public route moves under **`/api/v1`**; the internal AI service uses `/internal/v1`. | 0.1.6 |
+| 3 | Names, photos, and contact details live on a **person profile** per account, separate from the login account and from the academic student and faculty profiles. | 0.2.1 |
+| 4 | One dashboard with a part per role the account holds. Staff roles (Security, Maintenance) get their own focused pages. | 0.2.10 |
+| 5 | LMS student access is **worked out live** from official enrollment and the course's state, with no synchronised membership copy that can drift. | 0.5.1 |
+| 6 | AI keeps **no automatic conversation history**. Follow-ups work within the open page; students save what they choose, and can delete it for good. | 0.15.1 |
+| 7 | Reports and analytics may show **percentages and averages** for class-level and personal views, never rankings of students, and only for groups of at least five students. | 0.16.1 |
+| 8 | Files are never served through signed links straight from storage; every download goes through the backend with an access check. | — |
+| 9 | Navigation moves from Student, Faculty, and Admin trays to **Academics, Campus, Services, Career**, plus **Teaching** and **Manage** trays for staff. | 0.3.6 and as areas arrive |
+| 10 | Text that needs formatting (pages, announcements, questions) uses a **small safe formatting set**: headings, lists, links, code blocks, tables, and simple maths. Never raw HTML. | 0.6.1 |
+
+Other design rules agreed in the reviews (scoped assignments instead of global coordinator roles, values worked out from history instead of stored statuses, one engine per concept) are written into each phase below.
+
+## Core path
+
+If time runs short, these phases make the full v1.0 demo story work (registration → course → assignment and quiz → discussion → gate pass → event → placement → Teacher AI → Student AI → analytics). Phases marked ★ below are on the core path; the rest can move to v1.1 or later without breaking anything.
+
+---
+
+## v0.1 Foundation — the safety net
+
+Goal: make every later change safe to make. No new features.
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.1.1 | Baseline | This roadmap, an accurate README and docs index, and a check that nothing secret is tracked. |
+| ★ 0.1.2 | Continuous integration | GitHub Actions on pushes and pull requests to `development`: backend tests, frontend lint and build, AI service lint and tests. |
+| ★ 0.1.3 | Tests on real MySQL | Testcontainers MySQL for the backend: every migration from an empty database, constraints, and the row-lock rules (bed allocation, attempt numbers, approval decisions) under concurrent requests. |
+| ★ 0.1.4 | Frontend unit tests | Vitest and React Testing Library, with first tests for the sign-in portal choice, role reading, navigation, and the 401/403 handling in `apiClient`. |
+| ★ 0.1.5 | End-to-end tests | Playwright against the Docker stack with demo data: sign-in through both portals, a student opening a course and submitting, a faculty member grading. |
+| ★ 0.1.6 | API version | All public routes move to `/api/v1/v1` (backend, `SecurityConfig`, Nginx, frontend API modules, docs); the AI service moves to `/internal/v1/v1`. |
+| ★ 0.1.7 | Request IDs and health | An `X-Request-ID` on every request, in logs and in the error format; Actuator health with readiness and liveness (database, file storage, AI), reachable only internally. |
+| ★ 0.1.8 | Configuration profiles | Separate development, test, and production settings; production refuses to start with unsafe defaults or missing secrets; one reference of every environment variable. |
+| 0.1.9 | Frontend data layer | TanStack Query with shared query keys; a few pages converted as the pattern, the rest during their redesign. |
+
+## v0.2 Accounts, roles, and audit
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.2.1 | Person profiles | Name, preferred name, photo, and contact details per account, kept apart from `UserAccount`; photos in private storage. |
+| ★ 0.2.2 | Server sessions | Session cookie (HttpOnly, Secure in production, SameSite), CSRF protection, sessions stored in MySQL, logout and "sign out everywhere"; the frontend stops storing tokens. |
+| ★ 0.2.3 | Password lifecycle | Change password, temporary passwords that expire, forced change on first sign-in, a sensible password policy. |
+| ★ 0.2.4 | Sign-in protection | Growing delays after failed attempts per account and per address, without locking accounts; session timeout. Done. |
+| ★ 0.2.5 | Audit log | One append-only `AuditService` for sensitive actions (role and status changes first), with a read-only, filtered admin view. Done. |
+| ★ 0.2.6 | User management | Admins find, create, disable, and re-enable accounts, reset passwords, assign roles, and create student and faculty profiles. Done. |
+| 0.2.7 | Bulk import | CSV import of students and faculty with a dry-run preview and per-row errors. Done. |
+| ★ 0.2.8 | Staff roles | Reference roles for HOD, Warden, Security, Maintenance, Librarian, and Placement Officer, each with only the permissions its feature needs (added with those features). Done: `V77`; every role holds the own-profile permissions, assignable on the Users pages and in CSV imports. |
+| ★ 0.2.9 | Scoped assignments | Explicit "who is responsible for what" records, starting with the head of a department; a resolver that later lets approvals go to "the student's HOD", "the student's warden", or "the student's mentor". Done: `V78` department head terms, `DepartmentHeadResolver`, Academic Admin → Department Heads, and the head shown on the academic profile; wardens and mentors come with 0.10.1 and 0.12.4. |
+| ★ 0.2.10 | Account pages | Account settings (profile, photo, password, active sessions) and the admin People pages, redesigned. Done: `/account`, official photos, own sessions; the admin account pages are the Users pages of 0.2.6. |
+
+## v0.3 ERP core
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.3.1 | Catalog details | Department descriptions, program degree types, course short names, descriptions, and types, one current academic session, and inactive or closed parents taking no new children; Activate and Deactivate in the admin lists. |
+| ★ 0.3.2 | Sections | Student sections (A, B, …) of each semester with capacity, and each student placed in a section through their semester enrollment. |
+| ★ 0.3.3 | Section offerings and faculty assignments | Course offerings per section with capacity and a registration status (no registration yet), and admins assigning primary and co-faculty to offerings with history kept. |
+| ★ 0.3.4 | Academic profiles | Roll numbers, the admin's student and faculty academic pages, and the student's own academic profile and semester-by-semester record. |
+| ★ 0.3.5 | ERP redesign | Every academic admin page rebuilt with `DataTable`, filters, paging, and the shared forms; the attendance, results, and calendar pages moved onto the shared components and the query cache. Done first, at the project owner's request. |
+| ★ 0.3.6 | Navigation groups | The rail moves to Academics, Campus, Services, and Career trays, with Teaching and Manage trays for staff (decision 9). |
+
+## v0.4 Course registration
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.4.1 | Registration periods | A registration period and drop deadline per semester, and an optional credit limit per program. Done. |
+| ★ 0.4.2 | Self-registration and drop | Students see the offerings open to their semester and section, register for several at once (all or nothing, capacity and credit limit held under row locks), and drop before the deadline; dropped enrollments stay as history. Done. |
+| ★ 0.4.3 | Enrollment monitor | Admins search and filter every course enrollment; faculty see the students registered in offerings they teach. Done. |
+| 0.4.4 | Registration load test | A k6 test of many students registering at once, with the result recorded. |
+
+The v0.4 specification keeps prerequisites, curriculum rules, elective groups, minimum credits, and withdrawal approval for later phases.
+
+## v0.5 ERP to LMS access
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.5.1 | Live student access | Course access worked out from official enrollment and the course's state (decision 5); dropping a course removes access everywhere, including AI. Done: the membership copy, provisioning, and sync actions are gone. |
+| ★ 0.5.2 | Instructor access | Teaching assignments per section give course access; removing one removes it. Done: access was already live from active teaching assignments; the course lists now carry the section, faculty names, teaching role, and enrolled count. |
+| ★ 0.5.3 | Course lists | The student Courses and faculty Teaching pages redesigned around terms and course cards. Done. |
+
+## v0.6 LMS core — the course space
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.6.1 | Safe formatting | The shared formatting set and an editor with preview (decision 10); existing plain text keeps working. Done: `V79` format per text for topics, announcements, and assignment instructions; `FormattedText` and `FormattedTextField` (see `text-formatting.md`). |
+| ★ 0.6.2 | Pages | Course pages inside modules, with draft and published states. Done: a module's topic is the page (one model); its own student page with previous and next, and a faculty preview (see `course-pages.md`). |
+| ★ 0.6.3 | Files | A course files area built on the existing private storage and upload checks. Done: Files lists for students and faculty over the existing study materials, upload to a chosen page, publish and archive (see `course-files.md`). |
+| ★ 0.6.4 | Syllabus | A syllabus page per course. Done: `V80` one formatted syllabus per course with a draft and a published version (see `course-syllabus.md`). |
+| 0.6.5 | Requirements and progress | Module prerequisites and requirements, and completion recorded once per student per item ("opened", "completed"). Done: `V81` required pages, modules that wait for the previous one, completions recorded once per enrollment and page on Mark as complete (opening records nothing, since read pages never change data), and the student's own progress (see `learning-progress.md`). |
+| ★ 0.6.6 | Course home and navigation | A chosen course home and Canvas-style course navigation: Home, Modules, Pages, Files, Syllabus, Assignments, Grades. Done: one course navigation for students and faculty, the home chosen by faculty (overview, modules, or syllabus) with a welcome message (`V82`); Grades waits for v0.7 (see `course-navigation.md`). |
+| ★ 0.6.7 | Course space redesign | Every course page rebuilt on the shared components, phone-first for students. Done: `PageHeader`, `Card`, and shared states on every course page (see `course-navigation.md`). |
+| 0.6.8 | Course copy | Faculty copy content from a previous offering of the same course. Done: modules, pages, files, and the syllabus text as drafts from an offering they taught (see `course-copy.md`). |
+
+## v0.7 Assessment
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.7.1 | Outcomes and Bloom levels | Course learning outcomes (CO1, CO2, …) and optional Bloom levels for questions and assessments. Done: `V83` outcomes numbered by the server, Bloom levels, and assignment alignment (see `course-outcomes.md`); questions use them from 0.7.2. |
+| ★ 0.7.2 | Question bank | Single and multiple choice, true/false, short answer, and descriptive questions, each with topic, difficulty, marks, a review status, and an "OK for practice" flag. Done: `V84` questions with their answers, review and practice rules under the question row lock, and the faculty Question bank page (see `question-bank.md`). |
+| ★ 0.7.3 | Quizzes | Built from the bank: time limit, attempts, availability, shuffling, negative marking. Done: `V85` quizzes with ordered bank questions and their own marks, publishing only reviewed questions, published quizzes fixing their questions (and those questions in the bank), and the faculty Quizzes pages (see `quizzes.md`). |
+| ★ 0.7.4 | Taking a quiz | Server-side timer, autosave, and submission under a lock; answers never sent early. Done: `V86` attempts per course enrollment with deadlines fixed at the start, answers saved under the attempt row lock, hand-in as submitted or expired, per-attempt shuffling, and the student Quizzes pages with a timer and autosave (see `quizzes.md`). |
+| ★ 0.7.5 | Quiz grading | Automatic for objective questions, by hand for descriptive ones, with regrading. Done: scores worked out on every read, `V87` teachers' marks per answer under the attempt row lock, result release and answer settings, closing attempts whose time is up, and the faculty Results and marking pages (see `quizzes.md`). |
+| ★ 0.7.6 | Gradebook | Assignments, quizzes, and manual items in one gradebook, with publishing rules; students see only published grades. Done: assignment and quiz columns read live from their own marks, `V88` manual items and entries, column publishing under the course row lock, the faculty Gradebook and the student Grades pages (see `gradebook.md`). |
+| 0.7.7 | Rubrics | Rubrics attached to assignments, used while grading, with totals matching the marks. Done: `V89` rubrics with criteria and levels, an assignment rubric whose total equals its marks, grading by criterion with the sum as marks and the scores kept with the grade, and the Rubrics page (see `rubrics.md`). |
+| 0.7.8 | Assignment upgrades | Availability windows, attempt limits, and cut-off times. Done: `V90` opening and closing times, late work on or off, and attempt limits, checked on every hand-in under the enrollment lock, with the faculty Submission rules and what students see (see `assignment-rules.md`). |
+| 0.7.9 | Blueprints and papers | Exam blueprints and a paper builder from the question bank (no AI), with a print view and DOCX export. Later: after the core phases. |
+| ★ 0.7.10 | Grading view | One grading screen per submission or attempt, with rubric, feedback, and next/previous student. Done: the assignment and quiz grading screens move to the previous or next student in the list's order (`StudentStepper`). |
+| 0.7.11 | Quiz load test | Many students submitting at once, with answers and scores checked. Later: after the core phases. |
+
+## v0.8 Communication
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.8.1 | Attachments pattern | One shared way for features to keep their own attachment records on the private storage, each download checked against its parent. Done: `LmsAttachmentStore`, first used for message files (`V91`). |
+| ★ 0.8.2 | Course discussions | Questions and replies per course, accepted answers, pinned posts. Done: `lms.discussion`, `LMS_DISCUSSION_USE` (`V91`), see `course-communication.md`. |
+| 0.8.3 | Moderation | Hide, lock, and report, by course staff. |
+| ★ 0.8.4 | Messages to faculty | Private conversations between a student and the course's faculty. Done: `lms.message`, `LMS_MESSAGE_USE` (`V91`), with files. |
+| 0.8.5 | Announcement upgrades | Formatting, attachments, and notifications. |
+| ★ 0.8.6 | Communication pages | Discussions, messages, and announcements redesigned. Done: Discussions and Messages pages in both course navigations, built from `src/ui`. |
+
+## v0.9 Shared engines
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.9.1 | Notification settings and email | Per-person choices of what to receive and how (in-app, email, daily digest); mail server settings from configuration. Done: per-category Inbox and email choices (`V94`), instant email after commit, daily digest, `MAIL_*` settings, `/inbox/settings`. |
+| ★ 0.9.2 | To-Do | Worked out live from the sources (unsubmitted work, pending approvals, tasks), with dismissing and a dashboard part. Done: `todo` module, `TODO_VIEW` (`V92`), `/todo` and the dashboard part. |
+| ★ 0.9.3 | Calendar upgrade | Personal events, a month view, and a private, revocable subscription link that only reads that calendar. Done: `calendar.personal`, `CALENDAR_PERSONAL_USE` (`V93`), Month view, `.ics` feed. |
+| ★ 0.9.4 | Approvers by relationship | Workflow steps can name a relationship ("student's HOD", "student's mentor", "hostel warden") instead of only a role. Done: `ApproverRelationship` with `STUDENT_DEPARTMENT_HEAD` (`V95`); the warden relationship comes with wardens in 0.10.1, and mentors have no model yet. |
+| ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. Done (`V96`) except ticket attachments: teams and routing, `HELPDESK_TEAM_WORK` staff, notes, waiting, 7-day reopening, ratings, first response time. |
+| 0.9.6 | Help articles | Short self-help articles per category, suggested while a ticket is written. |
+| 0.9.7 | Service request upgrade | "Being processed" and "ready" states, and an issued document attached when a request is completed. |
+| ★ 0.9.8 | Shared timeline and pages | One timeline component for every history, and the support, approval, and campus pages redesigned. Done: `Timeline` in `src/ui`, used by ticket activity and every approval step list (campus, hostel, and their admin reviews). |
+
+## v0.10 Hostel
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. Done (`V97`): room details, beds under maintenance, `HostelWarden`, `HOSTEL_WARDEN_VIEW`, `STUDENT_HOSTEL_WARDEN` approver. |
+| ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. Done: preferences, queue position, bed map, check-in, condition note on vacating. |
+| 0.10.3 | Room change | Requests and mutual swaps through the approval engine. |
+| ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. Done (`V98`): `PassService`, gate passes with a QR view. |
+| ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. Done: `/gate` with camera scan where supported, typed codes, manual lookup, the movement log, and inside or outside from it. |
+| ★ 0.10.6 | Leave | Leave and extensions, overdue alerts to the warden, and approved leave on the calendar. Done: leave and extensions through the warden, overdue list for wardens; approved leave is not yet on the calendar. |
+| 0.10.7 | Night roll call | A sheet per block pre-filled from movements; nothing starts as Absent. |
+| ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. Done: `HOSTEL` helpdesk category routed to the `MAINTENANCE` team with the room attached; confirmation and rating through the helpdesk. |
+| 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. |
+| 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. |
+| 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. |
+| ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. Done: the student hostel page with queue place, the warden dashboard at `/warden`, and occupancy for the office. |
+
+## v0.11 Campus engagement (new `engagement` module)
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.11.1 | Groups and officers | Clubs and sports groups as one group model with officers (faculty advisor, student officers, coach) and join policies. Done (`V99`): `CampusGroup` with officers, memberships, and join policies. |
+| 0.11.2 | Group sessions and announcements | Meetings and practices on members' calendars, group announcements. |
+| ★ 0.11.3 | Campus hub | One Campus area with Happening, Clubs, Events, Sports, Services, and Notices tabs, and search for clubs, events, and sports. Done: `/campus/:tab` with Happening, Clubs, Sports, Events, Facilities, Services, and Notices, and search for clubs, sports, and events. |
+| ★ 0.11.4 | Facilities and bookings | One catalog of rooms, labs, halls, and courts with opening hours, closed periods, overlap-safe bookings, and approval where needed. Done: facilities, closures, overlap-safe bookings, `FACILITY_BOOKING` approval. |
+| ★ 0.11.5 | Events | Organizer, eligibility with reasons, capacity, registration window, waitlist with automatic promotion, and advisor approval for group events. Done: events with eligibility reasons, capacity, waitlist promotion, and `GROUP_EVENT` advisor approval. |
+| 0.11.6 | Event attendance | Manual and QR check-in through the pass service; certificate eligibility worked out from attendance. |
+| 0.11.7 | Fests and volunteers | Fests with a schedule, volunteer applications and shifts. |
+| 0.11.8 | Trials | Trials as events with a Selected / Not selected outcome. |
+| 0.11.9 | Teams | Teams and rosters, captains, seasons. |
+| 0.11.10 | Tournaments | Tournaments and fixtures (our teams or external opponents), text scores, results, standings worked out from fixtures. |
+
+## v0.12 Student services and career
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.12.1 | Digital ID | An in-app ID card with a QR code that refreshes every minute, and a staff verification page. Done (`V100`): `/id-card` with a minute-by-minute QR code from the pass service, `/verify-id` for staff. |
+| ★ 0.12.2 | Documents and certificates | A vault of college-issued and student-uploaded documents; certificate requests that issue into it; a public verification code page that confirms only authenticity. Done: the vault, certificate requests issued into it, and the public `/verify-document` check. |
+| 0.12.3 | Grievances | Committees per category, confidential cases only their committee can open, appeals, and response deadlines. |
+| 0.12.4 | Mentoring | Mentor assignments, meetings with shared and private notes, action items on the To-Do list. |
+| 0.12.5 | Academic bookings | Classrooms, labs, and equipment on the facilities engine, with class hours closed. |
+| ★ 0.12.6 | Career profile | Skills, links, and resumes, with the resume kept as it was at each application. Done: headline, skills, links, and never-changed resume versions. |
+| ★ 0.12.7 | Opportunities | One engine for placements, internships, research openings, and scholarships: eligibility, applications, and stages. Done: one engine with eligibility reasons, stages, rounds, and applications with consent. |
+| ★ 0.12.8 | Placement | Companies, rounds on the calendar, offers, the college's placement policy, and applicant export with consent. Done: companies, scheduled rounds, offers, the one-placement policy, and the consent-based CSV export. |
+| 0.12.9 | Portfolio | Verified items read live from their records, self-entered items, and verification. |
+| 0.12.10 | Projects | One team model for projects with join requests and faculty mentors. |
+| 0.12.11 | Innovation | Idea submission and review. |
+| 0.12.12 | Hackathons | Events with teams, submissions, and judging with hidden scores until results. |
+| 0.12.13 | Library | Catalog, copies, loans, holds, and digital resources (or showing data from existing library software, if the college has it). |
+
+## v0.13 AI foundation upgrade
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.13.1 | AI jobs | Database-backed background jobs replace the long synchronous refresh; pages check status only while work runs. |
+| ★ 0.13.2 | Separate indexes | One index per course for student-visible content, one per course for teacher-only content, one per student for notes; every question also carries the currently allowed document list. |
+| 0.13.3 | Better extraction | Heading- and slide-aware chunks measured in tokens, header and footer cleaning, and "Exclude from AI" on materials. |
+| 0.13.4 | Hybrid search | Keyword matching alongside semantic search, so terms like "3NF" and `GROUP BY` are found. |
+| 0.13.5 | Teacher-only documents | Faculty add drafts and notes for Teacher AI only. |
+| ★ 0.13.6 | Student notes | Private notes per student with a quota, "Course + my notes" mode, labelled citations, true deletion. |
+| ★ 0.13.7 | Controls and limits | A per-course switch, one question at a time per student with a queue, a request log without content, and AI health for admins. |
+| ★ 0.13.8 | Evaluation | A question set with expected sources, a retrieval check, and leakage tests that run with the fake model. |
+| ★ 0.13.9 | Ask My Course | The ask page redesigned with modes, module scope, and source cards. |
+
+## v0.14 Teacher AI
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.14.1 | Generate into the bank | AI questions go into the question bank as "Needs review" with sources; multiple-choice keys are self-checked. |
+| ★ 0.14.2 | Quality checks | Duplicates, previous papers, and out-of-syllabus flags from code and embeddings; difficulty and Bloom suggestions labelled as suggestions. |
+| ★ 0.14.3 | Quiz drafts | Quizzes filled from reviewed bank questions first, AI only for gaps, created as normal draft quizzes. |
+| 0.14.4 | Exam papers | Blueprints planned by code into slots, filled from the bank and then AI; multiple sets. |
+| 0.14.5 | Answers and rubrics | Model answers per question on request; rubric suggestions. |
+| ★ 0.14.6 | Teacher AI pages | One Teacher AI area per course, replacing today's assessment draft panel. |
+
+## v0.15 Student AI
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.15.1 | Saving and follow-ups | Explicit saving, follow-ups within the page, "Explain simpler" and "Give an example" (decision 6). |
+| 0.15.2 | Summaries | Module, topic, and document summaries in a few styles. |
+| 0.15.3 | Flashcards | Generated sets with spaced-repetition review. |
+| ★ 0.15.4 | Practice | One practice model for practice, mock exams, and viva, with scoring, mistake explanations, hint-only mode for open assignments, and AI off during an official quiz. |
+| ★ 0.15.5 | Mastery | Learning evidence stored; mastery and confidence worked out from it; a mastery view. |
+| 0.15.6 | Adaptive practice and recommendations | Practice weighted to weaker topics, and rule-based recommendations that say why. |
+| 0.15.7 | Study planner | Plans scheduled by code around deadlines and the calendar, added to the calendar and To-Do on request. |
+| ★ 0.15.8 | Student AI home | One study area per course and an overall AI study page. |
+
+## v0.16 Analytics and operations
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 0.16.1 | Analytics rules and student view | The aggregation rules (decision 7) and a student's own analytics. Done (`V101`): `AnalyticsRules` and `/academic/analytics`. |
+| ★ 0.16.2 | Course analytics | Class attendance, assessment and question analysis, topic performance, completion. Done: `/teaching/:id/analytics` with attendance, assignments, quiz questions, and required pages. |
+| 0.16.3 | Department analytics | The HOD's department view, scoped by assignment. |
+| 0.16.4 | Area analytics | Hostel, helpdesk, campus, placement, library, and AI usage. |
+| ★ 0.16.5 | Report service | XLSX export, background exports with expiring downloads, and export auditing. Done: background XLSX exports with expiring, owner-only, audited downloads. |
+| ★ 0.16.6 | Performance review | Indexes, repeated queries, and paging checked across the app. Done: query review and two missing indexes (`V101`); findings in `analytics.md`. |
+| 0.16.7 | Monitoring | Metrics, an optional monitoring Docker profile, and a system health page. |
+| ★ 0.16.8 | Load tests | The k6 suite and a recorded performance baseline. Done: the k6 suite in `load/`; the first baseline is still to be recorded. |
+
+## v1.0 Stable release
+
+| Phase | Name | Work |
+| --- | --- | --- |
+| ★ 1.0.1 | Feature freeze | Only fixes from here; a cross-module integration review. Done: `integration-review.md` (builds, cross-module flows checked by hand, module dependencies, navigation). |
+| ★ 1.0.2 | Security sweep | The authorization matrix, a wrong-record test suite, formatting and XSS checks, security headers, dependency and secret review. Done: generated `authorization-matrix.md`, `RouteGateApiTest`, security headers in Nginx and the API, dependency and secret review (`security-review.md`). |
+| ★ 1.0.3 | Data safety | Fresh and upgrade migration tests, constraint review, backup and restore scripts tested, a disaster recovery guide. Done: `scripts/backup.sh` and `scripts/restore.sh` (tested on a throwaway server), `disaster-recovery.md`; fresh migrations are tested by `DatabaseSchemaMySqlIT`. |
+| ★ 1.0.4 | Production setup | Production Docker setup, HTTPS through Nginx, security headers, basic installable app (PWA) without caching private data. Done: `compose.prod.yaml`, HTTPS `nginx.prod.conf` with HSTS, security headers, installable manifest without a service worker. |
+| ★ 1.0.5 | Final UI pass | Consistency, phones, keyboard use, and screen readers across every area. Done: smoke-tested in the browser on demo data, including phone width; no new UI defects found in the checked flows. |
+| ★ 1.0.6 | Documentation | README, architecture, security, AI, testing, deployment, student, faculty, and admin guides, demo guide, changelog, known limitations. Done: README, `user-guide.md`, `demo-guide.md`, `changelog.md`, `known-limitations.md`, and the security, recovery, and analytics guides. |
+| ★ 1.0.7 | Demo | Complete demo data and a rehearsed demo story with a fallback recording. Done: `LocalDemoExtrasSeeder` (staff accounts, warden, clubs, facilities, event, placement) and the demo story in `demo-guide.md`. |
+| ★ 1.0.8 | Release candidate | `v1.0.0-rc.1`, full regression, blocker fixes. Done: `v1.0.0-rc.1` tagged on `development` after the full regression (CI and every MySQL integration test) passed; the one blocker found, the rubric deadlock, was fixed first. |
+| ★ 1.0.9 | Release | Merge into `main` and tag `v1.0.0`, with the project owner's approval. Done: `development` merged into `main` and tagged `v1.0.0`, with the project owner's approval (2026-11-11). |
+
+## Progress
+
+| Version | Status |
+| --- | --- |
+| v0.1 Foundation | Done (0.1.1 to 0.1.9) |
+| v0.2 Accounts, roles, and audit | Done (0.2.1 to 0.2.10) |
+| v0.3 ERP core | Done (0.3.1 to 0.3.6) |
+| v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
+| v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
+| v0.6 LMS core | Done (0.6.1 to 0.6.8) |
+| v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 come after the core phases) |
+| v0.8 Communication | Core done (0.8.1, 0.8.2, 0.8.4, 0.8.6); 0.8.3 and 0.8.5 come after the core phases |
+| v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
+| v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
+| v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
+| v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
+| v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
+| v1.0 Stable release | Done: released as `v1.0.0` |
+| v0.13 – v0.15 AI | Later, after the core phases |
