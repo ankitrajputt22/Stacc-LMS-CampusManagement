@@ -173,6 +173,19 @@ jobs:
       - name: Run the journeys
         run: npm test
 
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      # Many registrations for one offering at once on the same throwaway stack; only the demo password and the
+      # backend port are read from its settings file, and nothing is printed from it.
+      - name: Load-test course registration
+        working-directory: load
+        run: |
+          settings="$RUNNER_TEMP/stacc-e2e.env"
+          export STACC_TEST_PASSWORD="$(sed -n 's/^STACC_TEST_PASSWORD=//p' "$settings")"
+          export BASE_URL="http://localhost:$(sed -n 's/^BACKEND_PORT=//p' "$settings")"
+          k6 run --quiet course-registration-burst.js
+
       - name: Keep the backend log when something fails
         if: failure()
         run: ./stack.sh logs backend > backend.log 2>&1 || true
