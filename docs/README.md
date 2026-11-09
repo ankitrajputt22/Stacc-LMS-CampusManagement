@@ -62,6 +62,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [To-Do and personal calendar](todo-and-personal-calendar.md)
 - [Notification settings and email](notification-settings.md)
 - [Passes, outings, and the gate](passes-and-gate.md)
+- [Campus engagement](campus-engagement.md)
 - [Course outcomes and Bloom levels](course-outcomes.md)
 - [Question bank](question-bank.md)
 - [Quizzes](quizzes.md)

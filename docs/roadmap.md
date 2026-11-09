@@ -186,11 +186,11 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.11.1 | Groups and officers | Clubs and sports groups as one group model with officers (faculty advisor, student officers, coach) and join policies. |
+| ★ 0.11.1 | Groups and officers | Clubs and sports groups as one group model with officers (faculty advisor, student officers, coach) and join policies. Done (`V99`): `CampusGroup` with officers, memberships, and join policies. |
 | 0.11.2 | Group sessions and announcements | Meetings and practices on members' calendars, group announcements. |
-| ★ 0.11.3 | Campus hub | One Campus area with Happening, Clubs, Events, Sports, Services, and Notices tabs, and search for clubs, events, and sports. |
-| ★ 0.11.4 | Facilities and bookings | One catalog of rooms, labs, halls, and courts with opening hours, closed periods, overlap-safe bookings, and approval where needed. |
-| ★ 0.11.5 | Events | Organizer, eligibility with reasons, capacity, registration window, waitlist with automatic promotion, and advisor approval for group events. |
+| ★ 0.11.3 | Campus hub | One Campus area with Happening, Clubs, Events, Sports, Services, and Notices tabs, and search for clubs, events, and sports. Done: `/campus/:tab` with Happening, Clubs, Sports, Events, Facilities, Services, and Notices, and search for clubs, sports, and events. |
+| ★ 0.11.4 | Facilities and bookings | One catalog of rooms, labs, halls, and courts with opening hours, closed periods, overlap-safe bookings, and approval where needed. Done: facilities, closures, overlap-safe bookings, `FACILITY_BOOKING` approval. |
+| ★ 0.11.5 | Events | Organizer, eligibility with reasons, capacity, registration window, waitlist with automatic promotion, and advisor approval for group events. Done: events with eligibility reasons, capacity, waitlist promotion, and `GROUP_EVENT` advisor approval. |
 | 0.11.6 | Event attendance | Manual and QR check-in through the pass service; certificate eligibility worked out from attendance. |
 | 0.11.7 | Fests and volunteers | Fests with a schedule, volunteer applications and shifts. |
 | 0.11.8 | Trials | Trials as events with a Selected / Not selected outcome. |
@@ -294,4 +294,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.8 Communication | Core done (0.8.1, 0.8.2, 0.8.4, 0.8.6); 0.8.3 and 0.8.5 come after the core phases |
 | v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
 | v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
-| v0.11 – v1.0 | Not started |
+| v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
+| v0.12 – v1.0 | Not started |

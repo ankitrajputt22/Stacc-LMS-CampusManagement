@@ -195,6 +195,7 @@ function App() {
           <Route path="admin/hostel/applications/:applicationId" element={<AdminHostelPage review />} />
           {/* Campus: one page for every role, a request page for its requester, and Campus Management for admins. */}
           <Route path="campus" element={<CampusPage />} />
+          <Route path="campus/:tab" element={<CampusPage />} />
           <Route path="campus/requests/:requestId" element={<CampusRequestPage />} />
           <Route path="admin/campus" element={<Navigate to="/admin/campus/services" replace />} />
           <Route path="admin/campus/:section" element={<AdminCampusPage />} />

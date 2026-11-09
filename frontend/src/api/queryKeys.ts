@@ -25,6 +25,17 @@ export const queryKeys = {
     tasks: () => ['hostel', 'approval-tasks'] as const,
     movements: () => ['hostel', 'gate-movements'] as const,
   },
+  engagement: {
+    all: ['engagement'] as const,
+    groups: () => ['engagement', 'groups'] as const,
+    members: (groupId: number) => ['engagement', 'members', groupId] as const,
+    facilities: () => ['engagement', 'facilities'] as const,
+    facilityBookings: (facilityId: number) => ['engagement', 'facility-bookings', facilityId] as const,
+    myBookings: () => ['engagement', 'my-bookings'] as const,
+    events: () => ['engagement', 'events'] as const,
+    managedEvents: () => ['engagement', 'managed-events'] as const,
+    attendees: (eventId: number) => ['engagement', 'attendees', eventId] as const,
+  },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
   },

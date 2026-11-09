@@ -8,7 +8,9 @@ public enum ApproverRelationship {
     /** The current head of the department of the requesting student's program. Decided with the HOD role. */
     STUDENT_DEPARTMENT_HEAD("HOD"),
     /** The warden of the requesting student's current hostel (their room's block first). Decided with the WARDEN role. */
-    STUDENT_HOSTEL_WARDEN("WARDEN");
+    STUDENT_HOSTEL_WARDEN("WARDEN"),
+    /** The faculty advisor of the campus group the request is about (an event of the group). Decided with FACULTY. */
+    GROUP_ADVISOR("FACULTY");
 
     private final String roleCode;
 

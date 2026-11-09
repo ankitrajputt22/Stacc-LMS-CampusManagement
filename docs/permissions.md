@@ -97,6 +97,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `HOSTEL_WARDEN_VIEW` | `WARDEN` | The occupancy and bed map of one's own hostels, and checking students in there. Added by `V97`. |
 | `HOSTEL_OUTING_REQUEST` | `STUDENT` | Asking for gate passes, leave, and extensions while living in a hostel, and opening one's own pass. Added by `V98`. |
 | `GATE_PASS_VERIFY` | `SECURITY` | Checking pass codes, recording gate movements, and looking students' outings up. Added by `V98`. |
+| `CAMPUS_ENGAGEMENT_USE` | `STUDENT`, `FACULTY` | Joining groups, registering for events, and booking facilities; officers and organizers manage their own groups' members and events. Added by `V99`. |
+| `CAMPUS_ENGAGEMENT_MANAGE` | `ADMIN` | Setting up groups, officers, facilities, and closures, and organizing any event. Added by `V99`. |
 | `LMS_GRADEBOOK_MANAGE` | `FACULTY` | Reading the gradebook of the LMS courses taught, adding and changing manual items, entering their marks, and publishing columns. Added by `V88`. |
 | `LMS_GRADE_VIEW` | `STUDENT` | Reading one's own published grades in a course the student may use. Added by `V88`. |
 

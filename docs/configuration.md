@@ -68,6 +68,7 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, s
 | `MAIL_HOST`, `MAIL_PORT` | `localhost`, `25` | if mail is on | | The SMTP server. |
 | `MAIL_USERNAME`, `MAIL_PASSWORD` | empty | | **yes** (password) | The SMTP account, if the server needs one. |
 | `MAIL_STARTTLS` | `true` | | | Whether to upgrade the SMTP connection to TLS. |
+| `COLLEGE_TIME_ZONE` | `Asia/Kolkata` | | | The college's IANA time zone: facility opening hours and closed days are read in it. |
 
 ## AI service
 
