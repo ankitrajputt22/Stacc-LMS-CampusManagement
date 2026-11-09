@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { closeQuizAttempt, getQuizAttemptReview, markQuizAnswer } from '../api/lmsQuizzesApi'
+import { closeQuizAttempt, getQuizAttemptReview, getQuizResults, markQuizAnswer } from '../api/lmsQuizzesApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { EmptyState } from '../components/states/EmptyState'
@@ -12,6 +12,7 @@ import { FormattedText } from '../formatting/FormattedText'
 import type { QuizAttemptReview } from '../types/lms'
 import { Alert, Badge, Button, ButtonLink, Card, TextAreaField, TextField } from '../ui'
 import { questionTypeLabel } from './questionText'
+import { StudentStepper } from './StudentStepper'
 
 type ReviewQuestion = QuizAttemptReview['questions'][number]
 
@@ -131,6 +132,10 @@ function MarkForm({ review, question, onSaved }: { review: QuizAttemptReview; qu
 export function QuizAttemptMarking({ lmsCourseId, attemptId }: { lmsCourseId: number; attemptId: number }) {
   const queryClient = useQueryClient()
   const review = useApiQuery(queryKeys.lms.quizAttemptReview(attemptId), (signal) => getQuizAttemptReview(attemptId, signal))
+  const quizId = review.status === 'loaded' ? review.data.quizId : null
+  const results = useApiQuery(quizId === null ? null : queryKeys.lms.quizResults(quizId), (signal) =>
+    getQuizResults(quizId ?? 0, signal),
+  )
   const [announcement, setAnnouncement] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -168,6 +173,17 @@ export function QuizAttemptMarking({ lmsCourseId, attemptId }: { lmsCourseId: nu
       <p role="status" className="sr-only">
         {announcement}
       </p>
+      {results.status === 'loaded' && (
+        <StudentStepper
+          what="attempts"
+          currentKey={data.attemptId}
+          entries={results.data.attempts.map((attempt) => ({
+            key: attempt.attemptId,
+            label: `${attempt.studentLoginId}, attempt ${attempt.attemptNumber}`,
+            to: `/teaching/${lmsCourseId}/quiz-attempts/${attempt.attemptId}`,
+          }))}
+        />
+      )}
       <Card
         title={`${data.quizTitle}: ${data.studentLoginId}, attempt ${data.attemptNumber}`}
         action={
