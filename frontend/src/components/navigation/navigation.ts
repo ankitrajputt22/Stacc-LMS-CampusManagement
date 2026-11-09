@@ -98,6 +98,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Team tickets', to: '/support/team', roles: ['MAINTENANCE', 'WARDEN', 'LIBRARIAN'], icon: 'support' },
       // A warden's own hostels: the backend lists only those they are assigned to.
       { label: 'Warden', to: '/warden', roles: ['WARDEN'], icon: 'campus' },
+      // The security desk: pass checks and the gate's movement log.
+      { label: 'Gate', to: '/gate', roles: ['SECURITY'], icon: 'campus' },
       // One Campus page per account: services and requests for students and faculty, notices for every role.
       { label: 'Campus', to: '/campus', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'campus' },
       // One search page for every account; the backend decides what each account may find.

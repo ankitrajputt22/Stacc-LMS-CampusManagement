@@ -20,6 +20,10 @@ export const queryKeys = {
     bedMap: (side: string, hostelId: number) => ['hostel', side, 'bed-map', hostelId] as const,
     wardens: (hostelId: number) => ['hostel', 'wardens', hostelId] as const,
     queue: (applicationId: number) => ['hostel', 'queue', applicationId] as const,
+    outings: () => ['hostel', 'outings'] as const,
+    overdue: () => ['hostel', 'overdue'] as const,
+    tasks: () => ['hostel', 'approval-tasks'] as const,
+    movements: () => ['hostel', 'gate-movements'] as const,
   },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,

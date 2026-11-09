@@ -6,6 +6,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import { BedMap } from '../hostel/shared/BedMap'
 import { OccupancyTable } from '../hostel/shared/OccupancyTable'
+import { WardenOutings } from '../hostel/outings/WardenOutings'
 import { Card, PageHeader } from '../ui'
 
 /**
@@ -20,6 +21,7 @@ export function WardenPage() {
       <title>Warden · Stacc</title>
       <PageHeader title="Warden dashboard" description="Your hostels, their occupancy, and who is still to check in." />
       <div className="mt-6 space-y-6">
+        <WardenOutings />
         {occupancy.status !== 'loaded' ? (
           <Card title="Your hostels">
             <SectionState request={occupancy} what="your hostels" />

@@ -29,6 +29,7 @@ import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmi
 import { InboxPage } from './pages/InboxPage'
 import { TodoPage } from './pages/TodoPage'
 import { WardenPage } from './pages/WardenPage'
+import { GatePage } from './pages/GatePage'
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -172,6 +173,7 @@ function App() {
           <Route path="inbox" element={<InboxPage />} />
           <Route path="todo" element={<TodoPage />} />
           <Route path="warden" element={<WardenPage />} />
+          <Route path="gate" element={<GatePage />} />
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />
           <Route path="account" element={<AccountSettingsPage />} />
           <Route path="account/password" element={<ChangePasswordPage />} />

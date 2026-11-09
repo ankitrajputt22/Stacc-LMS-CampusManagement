@@ -59,8 +59,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `HELPDESK_TICKET_MANAGE` | `ADMIN` | Assigning tickets to admins, changing their priority and status, and managing helpdesk categories. Nothing can delete them. Added by `V46`. |
 | `HELPDESK_TICKET_REPLY_ALL` | `ADMIN` | Replying to every helpdesk ticket. Added by `V46`. |
 | `APPROVAL_REQUEST_VIEW_OWN` | `STUDENT`, `FACULTY`, `ADMIN` | Reading one's own approval requests, with their steps and history. Added by `V49`. |
-| `APPROVAL_TASK_VIEW` | `FACULTY`, `ADMIN`, `HOD` | Seeing the approval steps waiting for a role the account holds (only one's own, for a relationship step). Added by `V49`; `HOD` by `V95`. |
-| `APPROVAL_TASK_DECIDE` | `FACULTY`, `ADMIN`, `HOD` | Approving or rejecting such a step, only when the account holds the role the step requires (and is its assigned approver, for a relationship step). Added by `V49`; `HOD` by `V95`. |
+| `APPROVAL_TASK_VIEW` | `FACULTY`, `ADMIN`, `HOD`, `WARDEN` | Seeing the approval steps waiting for a role the account holds (only one's own, for a relationship step). Added by `V49`; `HOD` by `V95`. |
+| `APPROVAL_TASK_DECIDE` | `FACULTY`, `ADMIN`, `HOD`, `WARDEN` | Approving or rejecting such a step, only when the account holds the role the step requires (and is its assigned approver, for a relationship step). Added by `V49`; `HOD` by `V95`. |
 | `APPROVAL_WORKFLOW_MANAGE` | `ADMIN` | Creating, editing, and deactivating approval workflows. Nothing can delete them. Added by `V49`. |
 | `HOSTEL_APPLICATION_CREATE` | `STUDENT` | Seeing the sessions one may apply for and applying for hostel, as oneself. Added by `V52`. |
 | `HOSTEL_APPLICATION_VIEW_OWN` | `STUDENT` | Reading one's own hostel applications, their approval progress, and allocations. Added by `V52`. |
@@ -95,6 +95,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `CALENDAR_PERSONAL_USE` | `STUDENT`, `FACULTY`, `ADMIN` | One's own personal calendar entries and private subscription link. Added by `V93`. |
 | `HELPDESK_TEAM_WORK` | `MAINTENANCE`, `WARDEN`, `LIBRARIAN` | Working the helpdesk tickets routed to one's own support teams, and no others. Added by `V96`, with `NOTIFICATION_VIEW` for these roles. |
 | `HOSTEL_WARDEN_VIEW` | `WARDEN` | The occupancy and bed map of one's own hostels, and checking students in there. Added by `V97`. |
+| `HOSTEL_OUTING_REQUEST` | `STUDENT` | Asking for gate passes, leave, and extensions while living in a hostel, and opening one's own pass. Added by `V98`. |
+| `GATE_PASS_VERIFY` | `SECURITY` | Checking pass codes, recording gate movements, and looking students' outings up. Added by `V98`. |
 | `LMS_GRADEBOOK_MANAGE` | `FACULTY` | Reading the gradebook of the LMS courses taught, adding and changing manual items, entering their marks, and publishing columns. Added by `V88`. |
 | `LMS_GRADE_VIEW` | `STUDENT` | Reading one's own published grades in a course the student may use. Added by `V88`. |
 
