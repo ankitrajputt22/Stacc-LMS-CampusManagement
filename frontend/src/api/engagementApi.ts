@@ -1,0 +1,65 @@
+import type {
+  CampusEvent,
+  CampusFacility,
+  CampusGroup,
+  EventAttendee,
+  EventInput,
+  FacilityBooking,
+  FacilityKind,
+  GroupKind,
+  GroupMember,
+  JoinPolicy,
+  OfficerTitle,
+} from '../types/engagement'
+import { apiClient } from './apiClient'
+
+// The signed-in account is the one in the session. The backend checks officers, organizers, and bookers per record.
+const BASE = '/engagement'
+
+export const getGroups = async (signal?: AbortSignal) => (await apiClient.get<CampusGroup[]>(`${BASE}/groups`, { signal })).data
+export const joinGroup = async (groupId: number) => (await apiClient.post<CampusGroup>(`${BASE}/groups/${groupId}/join`)).data
+export const leaveGroup = async (groupId: number) => (await apiClient.post<CampusGroup>(`${BASE}/groups/${groupId}/leave`)).data
+export const getGroupMembers = async (groupId: number, signal?: AbortSignal) =>
+  (await apiClient.get<GroupMember[]>(`${BASE}/groups/${groupId}/members`, { signal })).data
+export const decideMembership = async (membershipId: number, accept: boolean) =>
+  (await apiClient.post<GroupMember[]>(`${BASE}/memberships/${membershipId}/decision`, { accept })).data
+export const createGroup = async (body: { code: string; name: string; kind: GroupKind; description: string | null; joinPolicy: JoinPolicy }) =>
+  (await apiClient.post<CampusGroup>(`${BASE}/admin/groups`, body)).data
+export const updateGroup = async (
+  groupId: number,
+  body: { name: string; kind: GroupKind; description: string | null; joinPolicy: JoinPolicy; active: boolean },
+) => (await apiClient.put<CampusGroup>(`${BASE}/admin/groups/${groupId}`, body)).data
+export const addOfficer = async (groupId: number, loginId: string, title: OfficerTitle) =>
+  (await apiClient.post<CampusGroup>(`${BASE}/admin/groups/${groupId}/officers`, { loginId, title })).data
+export const endOfficer = async (officerId: number) => (await apiClient.post<CampusGroup>(`${BASE}/admin/officers/${officerId}/end`)).data
+
+export const getFacilities = async (signal?: AbortSignal) => (await apiClient.get<CampusFacility[]>(`${BASE}/facilities`, { signal })).data
+export const getFacilityBookings = async (facilityId: number, signal?: AbortSignal) =>
+  (await apiClient.get<FacilityBooking[]>(`${BASE}/facilities/${facilityId}/bookings`, { signal })).data
+export const bookFacility = async (facilityId: number, body: { startsAt: string; endsAt: string; purpose: string }) =>
+  (await apiClient.post<FacilityBooking>(`${BASE}/facilities/${facilityId}/bookings`, body)).data
+export const getMyBookings = async (signal?: AbortSignal) => (await apiClient.get<FacilityBooking[]>(`${BASE}/bookings/mine`, { signal })).data
+export const cancelBooking = async (bookingId: number) => (await apiClient.post<FacilityBooking>(`${BASE}/bookings/${bookingId}/cancel`)).data
+export const createFacility = async (body: {
+  code: string
+  name: string
+  kind: FacilityKind
+  location: string | null
+  capacity: number | null
+  opensAt: string
+  closesAt: string
+  needsApproval: boolean
+}) => (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities`, body)).data
+export const closeFacility = async (facilityId: number, body: { startDate: string; endDate: string; reason: string }) =>
+  (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities/${facilityId}/closures`, body)).data
+
+export const getEvents = async (signal?: AbortSignal) => (await apiClient.get<CampusEvent[]>(`${BASE}/events`, { signal })).data
+export const getManagedEvents = async (signal?: AbortSignal) => (await apiClient.get<CampusEvent[]>(`${BASE}/events/managed`, { signal })).data
+export const getEventAttendees = async (eventId: number, signal?: AbortSignal) =>
+  (await apiClient.get<EventAttendee[]>(`${BASE}/events/${eventId}/attendees`, { signal })).data
+export const createEvent = async (body: EventInput) => (await apiClient.post<CampusEvent>(`${BASE}/events`, body)).data
+export const publishEvent = async (eventId: number) => (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/publish`)).data
+export const cancelEvent = async (eventId: number) => (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/cancel`)).data
+export const registerForEvent = async (eventId: number) => (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration`)).data
+export const unregisterFromEvent = async (eventId: number) =>
+  (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration/cancel`)).data

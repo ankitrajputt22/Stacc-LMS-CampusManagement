@@ -106,7 +106,7 @@ public class ApprovalWorkflowService {
                 continue;
             }
             Long approverId = relationshipResolvers.stream().filter(resolver -> resolver.relationship() == relationship)
-                    .findFirst().flatMap(resolver -> resolver.approverFor(requester.getId()))
+                    .findFirst().flatMap(resolver -> resolver.approverFor(requester.getId(), request.getSourceType(), request.getSourceId()))
                     .filter(id -> !id.equals(requester.getId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, NO_APPROVER));
             ApprovalRequestStep step = request.getSteps().stream()

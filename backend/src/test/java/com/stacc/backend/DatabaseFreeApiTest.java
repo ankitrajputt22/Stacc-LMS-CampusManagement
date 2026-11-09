@@ -12,6 +12,14 @@ import com.stacc.backend.notification.NotificationPreferenceRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
+import com.stacc.backend.engagement.groups.CampusGroupRepository;
+import com.stacc.backend.engagement.groups.CampusGroupOfficerRepository;
+import com.stacc.backend.engagement.groups.CampusGroupMembershipRepository;
+import com.stacc.backend.engagement.facilities.CampusFacilityRepository;
+import com.stacc.backend.engagement.facilities.CampusFacilityClosureRepository;
+import com.stacc.backend.engagement.facilities.CampusBookingRepository;
+import com.stacc.backend.engagement.events.CampusEventRepository;
+import com.stacc.backend.engagement.events.CampusEventRegistrationRepository;
 import com.stacc.backend.hostel.outing.GateMovementRepository;
 import com.stacc.backend.hostel.outing.HostelOutingExtensionRepository;
 import com.stacc.backend.hostel.outing.HostelOutingRepository;
@@ -191,7 +199,15 @@ import org.springframework.web.context.WebApplicationContext;
     PassRepository.class,
     HostelOutingRepository.class,
     HostelOutingExtensionRepository.class,
-    GateMovementRepository.class
+    GateMovementRepository.class,
+    CampusGroupRepository.class,
+    CampusGroupOfficerRepository.class,
+    CampusGroupMembershipRepository.class,
+    CampusFacilityRepository.class,
+    CampusFacilityClosureRepository.class,
+    CampusBookingRepository.class,
+    CampusEventRepository.class,
+    CampusEventRegistrationRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

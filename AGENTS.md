@@ -396,6 +396,13 @@
 - Only a notice's first publication (to active accounts of its roles, deduplicated) and a completed request (to its requester) notify, through `CampusNotifications`. Do not repeat the engine's approval notifications.
 - Do not build transport, library, ID-card inventory, or other domain subsystems inside the catalog without their own phase.
 
+## Campus Engagement
+
+- Clubs and sports groups, facilities, and events live in `engagement` (`docs/campus-engagement.md`). Groups and facilities are made inactive, events cancelled, officers' terms ended; nothing is deleted, and memberships, bookings, and registrations keep their history.
+- Facility hours and closures are read in `COLLEGE_TIME_ZONE`. Booking locks the facility row before reading overlapping bookings; registering locks the event row before reading its places with a locking read. Both have a `*MySqlIT` with `Concurrently.run`; keep them.
+- Approvals go through the engine only: `FACILITY_BOOKING` for facilities that need it, `GROUP_EVENT` (the `GROUP_ADVISOR` relationship) for group events. Booking and event status follow their approvals on read and are never copied.
+- Eligibility is decided on the server with reasons in words; the frontend shows them and never decides.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.
