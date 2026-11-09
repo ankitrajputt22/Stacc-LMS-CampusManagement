@@ -306,7 +306,8 @@
 
 ## Reports
 
-- Reports (`com.stacc.backend.report`) are read-only, live `COUNT`/`GROUP BY` queries over other modules' repositories. Never add report or analytics tables, snapshots, caches, saved or scheduled reports, or PDF export. See `docs/reports-analytics.md`.
+- Reports (`com.stacc.backend.report`) are read-only, live `COUNT`/`GROUP BY` queries over other modules' repositories. Never add report or analytics tables, snapshots, caches, saved or scheduled reports, or PDF export; the only stored thing is a background export job (`report_exports`) and its private XLSX file, owner-only, audited, and expiring after a day. See `docs/reports-analytics.md` and `docs/analytics.md`.
+- Analytics (`com.stacc.backend.analytics`) follow `AnalyticsRules` (decision 7): percentages and averages only for one's own view or class groups of at least five, never rankings, GPA, or students named in class views; worked out live, never stored.
 - Show counts only: never GPA, SGPA, CGPA, ranks, toppers, pass or fail, percentages, averages, trends, predictions, or performance scores.
 - Faculty routes need `FACULTY` and `FACULTY_REPORT_VIEW`, take the faculty member from the access token, and open a course report only through `FacultyTeachingAccessService` for the offering in the route; anything else is the same 404. No admin pass.
 - Assignment counts exclude archived assignments and need an open LMS course; needs grading uses the latest attempt only. Attendance counts present and absent records of finalized sessions only.

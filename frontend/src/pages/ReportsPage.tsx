@@ -3,6 +3,7 @@ import { hasAnyRole } from '../auth/roles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { StatePanel } from '../components/states/StatePanel'
 import { AdminReportsSection } from '../reports/AdminReportsSection'
+import { ExportsPanel } from '../analytics/ExportsPanel'
 import { FacultyReportsSection } from '../reports/FacultyReportsSection'
 
 /**
@@ -30,6 +31,7 @@ export function ReportsPage() {
           <div className="mt-6 space-y-10">
             {faculty && <FacultyReportsSection />}
             {admin && <AdminReportsSection />}
+            {admin && <ExportsPanel kind="ADMIN_ENROLLMENTS" parameter={null} label="Export all enrollments (Excel)" />}
           </div>
         </>
       ) : (

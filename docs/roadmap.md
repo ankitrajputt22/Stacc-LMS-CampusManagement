@@ -257,14 +257,14 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.16.1 | Analytics rules and student view | The aggregation rules (decision 7) and a student's own analytics. |
-| ★ 0.16.2 | Course analytics | Class attendance, assessment and question analysis, topic performance, completion. |
+| ★ 0.16.1 | Analytics rules and student view | The aggregation rules (decision 7) and a student's own analytics. Done (`V101`): `AnalyticsRules` and `/academic/analytics`. |
+| ★ 0.16.2 | Course analytics | Class attendance, assessment and question analysis, topic performance, completion. Done: `/teaching/:id/analytics` with attendance, assignments, quiz questions, and required pages. |
 | 0.16.3 | Department analytics | The HOD's department view, scoped by assignment. |
 | 0.16.4 | Area analytics | Hostel, helpdesk, campus, placement, library, and AI usage. |
-| ★ 0.16.5 | Report service | XLSX export, background exports with expiring downloads, and export auditing. |
-| ★ 0.16.6 | Performance review | Indexes, repeated queries, and paging checked across the app. |
+| ★ 0.16.5 | Report service | XLSX export, background exports with expiring downloads, and export auditing. Done: background XLSX exports with expiring, owner-only, audited downloads. |
+| ★ 0.16.6 | Performance review | Indexes, repeated queries, and paging checked across the app. Done: query review and two missing indexes (`V101`); findings in `analytics.md`. |
 | 0.16.7 | Monitoring | Metrics, an optional monitoring Docker profile, and a system health page. |
-| ★ 0.16.8 | Load tests | The k6 suite and a recorded performance baseline. |
+| ★ 0.16.8 | Load tests | The k6 suite and a recorded performance baseline. Done: the k6 suite in `load/`; the first baseline is still to be recorded. |
 
 ## v1.0 Stable release
 
@@ -296,4 +296,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
 | v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
-| v0.16 Analytics, v1.0 | Not started (v0.13 to v0.15 AI later) |
+| v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
+| v1.0 | Not started (v0.13 to v0.15 AI later) |

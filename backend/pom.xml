@@ -47,6 +47,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <dependency>
+            <!-- Writes XLSX report exports; small and without Apache POI. -->
+            <groupId>org.dhatim</groupId>
+            <artifactId>fastexcel</artifactId>
+            <version>0.19.0</version>
+        </dependency>
         <!-- Health checks (readiness and liveness) for Docker and operations. Only health is exposed; see docs/operations.md. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

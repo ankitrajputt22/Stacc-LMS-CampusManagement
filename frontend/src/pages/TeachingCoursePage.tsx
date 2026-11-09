@@ -16,6 +16,7 @@ import { CourseSettings } from '../teaching/CourseSettings'
 import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
+import { CourseAnalyticsView } from '../analytics/CourseAnalyticsView'
 import { DiscussionBoard, DiscussionThreadView } from '../communication/Discussions'
 import { ConversationList, ConversationView } from '../communication/Messages'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
@@ -381,6 +382,15 @@ export function TeachingConversationPage() {
           />
         )
       }
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/analytics: class analytics of the course, with an Excel export. */
+export function TeachingAnalyticsPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Analytics', heading: 'Course analytics' }}>
+      {(course) => <CourseAnalyticsView lmsCourseId={course.lmsCourseId} />}
     </TeachingCourseFrame>
   )
 }

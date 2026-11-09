@@ -49,6 +49,11 @@ export const queryKeys = {
     applicants: (opportunityId: number) => ['career', 'applicants', opportunityId] as const,
     policy: () => ['career', 'policy'] as const,
   },
+  analytics: {
+    mine: () => ['analytics', 'me'] as const,
+    course: (lmsCourseId: number) => ['analytics', 'course', lmsCourseId] as const,
+    exports: () => ['analytics', 'exports'] as const,
+  },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
   },
