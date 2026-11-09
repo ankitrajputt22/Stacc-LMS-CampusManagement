@@ -54,11 +54,13 @@ public class HostelApplicationService {
     private final ApprovalRequestRepository approvalRequests;
     private final HostelQueryService queries;
     private final Clock clock;
+    private final HostelRepository hostels;
 
     public HostelApplicationService(HostelApplicationRepository applications, HostelAllocationRepository allocations,
             StudentProfileRepository studentProfiles, SemesterEnrollmentRepository semesterEnrollments,
             AcademicSessionRepository sessions, ApprovalWorkflowService approvals,
-            ApprovalRequestRepository approvalRequests, HostelQueryService queries, Clock clock) {
+            ApprovalRequestRepository approvalRequests, HostelQueryService queries, Clock clock, HostelRepository hostels) {
+        this.hostels = hostels;
         this.applications = applications;
         this.allocations = allocations;
         this.studentProfiles = studentProfiles;
@@ -113,6 +115,12 @@ public class HostelApplicationService {
         HostelApplication application;
         try {
             application = new HostelApplication(profile, session, request.note(), clock.instant());
+            if (request.preferredHostelId() != null || request.preferenceNote() != null) {
+                Hostel preferred = request.preferredHostelId() == null ? null : hostels.findById(request.preferredHostelId())
+                        .filter(Hostel::isActive)
+                        .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Choose an active hostel as your preference."));
+                application.prefer(preferred, request.preferenceNote());
+            }
         } catch (IllegalArgumentException invalid) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "The application is not valid: " + invalid.getMessage() + ".");
         }

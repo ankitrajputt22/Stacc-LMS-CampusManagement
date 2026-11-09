@@ -53,7 +53,7 @@ public final class HostelResponses {
             @Schema(example = "B1") String bedNumber,
             boolean active,
             @Schema(description = "Derived: OCCUPIED with an active allocation, INACTIVE when the bed, its room, or its hostel is inactive, otherwise AVAILABLE.",
-                    allowableValues = {"AVAILABLE", "OCCUPIED", "INACTIVE"}) String occupancy,
+                    allowableValues = {"AVAILABLE", "OCCUPIED", "MAINTENANCE", "INACTIVE"}) String occupancy,
             @Schema(description = "True once the bed was ever allocated: its number can no longer change.") boolean numberLocked) {
     }
 

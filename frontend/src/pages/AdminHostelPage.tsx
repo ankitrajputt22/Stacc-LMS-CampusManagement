@@ -7,12 +7,16 @@ import { AllocationsSection } from '../hostel/admin/AllocationsSection'
 import { ApplicationReview } from '../hostel/admin/ApplicationReview'
 import { ApplicationsSection } from '../hostel/admin/ApplicationsSection'
 import { InventorySection } from '../hostel/admin/InventorySection'
+import { OccupancySection } from '../hostel/admin/OccupancySection'
+import { WardensSection } from '../hostel/admin/WardensSection'
 import { NotFoundPage } from './NotFoundPage'
 
 const SECTIONS = [
   { path: 'applications', label: 'Applications', Section: ApplicationsSection },
   { path: 'hostels', label: 'Hostels & Rooms', Section: InventorySection },
   { path: 'allocations', label: 'Allocations', Section: AllocationsSection },
+  { path: 'occupancy', label: 'Occupancy & Bed Map', Section: OccupancySection },
+  { path: 'wardens', label: 'Wardens', Section: WardensSection },
 ] as const
 
 /**

@@ -14,7 +14,12 @@ export {
   stepStatusLabel,
 } from '../approvals/approvalText'
 
-const OCCUPANCY: Record<BedOccupancy, string> = { AVAILABLE: 'Available', OCCUPIED: 'Occupied', INACTIVE: 'Inactive' }
+const OCCUPANCY: Record<BedOccupancy, string> = {
+  AVAILABLE: 'Available',
+  OCCUPIED: 'Occupied',
+  MAINTENANCE: 'Under maintenance',
+  INACTIVE: 'Inactive',
+}
 const ALLOCATION: Record<HostelAllocationStatus, string> = { ACTIVE: 'Active', VACATED: 'Vacated' }
 
 export const occupancyLabel = (occupancy: string) => OCCUPANCY[occupancy as BedOccupancy] ?? occupancy

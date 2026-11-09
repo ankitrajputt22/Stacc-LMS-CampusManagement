@@ -113,15 +113,42 @@ public class HostelAllocationService {
 
     /** Ends an ACTIVE allocation, keeping it as history; the bed is available again. Vacating again changes nothing. */
     public HostelAllocationResponse vacate(Long adminAccountId, Long allocationId) {
+        return vacate(adminAccountId, allocationId, null);
+    }
+
+    /** As {@link #vacate(Long, Long)}, recording the room's condition the student left it in. */
+    public HostelAllocationResponse vacate(Long adminAccountId, Long allocationId, String conditionNote) {
         HostelAllocation allocation = (allocationId == null ? null : allocations.findByIdForUpdate(allocationId).orElse(null));
         if (allocation == null) {
             throw new ApiException(HttpStatus.NOT_FOUND, ALLOCATION_NOT_FOUND);
         }
         if (allocation.isActive()) {
+            allocation.conditionOnVacating(conditionNote);
             allocation.vacate(accounts.getReferenceById(adminAccountId), clock.instant());
             allocations.saveAndFlush(allocation);
             notifications.vacated(allocation);
         }
+        return HostelAllocationResponse.of(allocations.findWithContextById(allocationId).orElseThrow());
+    }
+
+    /**
+     * Records that the student moved in, with an optional note, by an admin with HOSTEL_MANAGE or a warden of the
+     * allocation's hostel (checked by the caller). Checking in again changes nothing.
+     */
+    public HostelAllocationResponse checkIn(Long allocationId, String note) {
+        HostelAllocation allocation = (allocationId == null ? null : allocations.findByIdForUpdate(allocationId).orElse(null));
+        if (allocation == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, ALLOCATION_NOT_FOUND);
+        }
+        if (!allocation.isActive()) {
+            throw new ApiException(HttpStatus.CONFLICT, "Only a current allocation can be checked in.");
+        }
+        try {
+            allocation.checkIn(clock.instant(), note);
+        } catch (IllegalArgumentException invalid) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, invalid.getMessage() + ".");
+        }
+        allocations.saveAndFlush(allocation);
         return HostelAllocationResponse.of(allocations.findWithContextById(allocationId).orElseThrow());
     }
 }

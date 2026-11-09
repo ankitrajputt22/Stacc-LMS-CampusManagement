@@ -57,6 +57,22 @@ public class HostelApplication {
     @Column(length = MAX_NOTE_LENGTH)
     private String note;
 
+    // A wish only: the hostel office still chooses the hostel, room, and bed.
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "preferred_hostel_id")
+    private Hostel preferredHostel;
+
+    @Column(name = "preference_note", length = 500)
+    private String preferenceNote;
+
+    public void prefer(Hostel hostel, String preferenceNote) {
+        this.preferredHostel = hostel;
+        this.preferenceNote = Require.optionalText(preferenceNote, "preference note", 500);
+    }
+
+    public Hostel getPreferredHostel() { return preferredHostel; }
+    public String getPreferenceNote() { return preferenceNote; }
+
     @Column(name = "submitted_at", nullable = false, updatable = false)
     private Instant submittedAt;
 

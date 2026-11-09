@@ -88,7 +88,18 @@ public final class HostelRequests {
 
             @Schema(description = "Optional plain text for the hostel office.", nullable = true)
             @Size(max = HostelApplication.MAX_NOTE_LENGTH, message = "Note must be at most 3000 characters")
-            String note) {
+            String note,
+
+            @Schema(description = "Optional: an active hostel the student would prefer. A wish only; the office allocates.", nullable = true)
+            Long preferredHostelId,
+
+            @Schema(description = "Optional plain text about the preference, such as a ground floor.", nullable = true)
+            @Size(max = 500, message = "Preference note must be at most 500 characters")
+            String preferenceNote) {
+
+        public CreateHostelApplicationRequest(Long academicSessionId, String note) {
+            this(academicSessionId, note, null, null);
+        }
     }
 
     public record CreateHostelAllocationRequest(

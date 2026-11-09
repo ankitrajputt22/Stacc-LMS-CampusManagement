@@ -39,6 +39,18 @@ public class HostelBed {
     @Column(nullable = false)
     private boolean active = true;
 
+    // A bed under maintenance takes no new allocation; it can only be set while the bed is free.
+    @Column(name = "under_maintenance", nullable = false)
+    private boolean underMaintenance;
+
+    public void maintenance(boolean underMaintenance) {
+        this.underMaintenance = underMaintenance;
+    }
+
+    public boolean isUnderMaintenance() {
+        return underMaintenance;
+    }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -64,7 +76,7 @@ public class HostelBed {
 
     /** Whether a new allocation may use this bed: the bed, its room, and its hostel are all active. */
     public boolean isAllocatable() {
-        return active && room.isActive() && room.getHostel().isActive();
+        return !underMaintenance && (active && room.isActive() && room.getHostel().isActive());
     }
 
     public Long getId() {

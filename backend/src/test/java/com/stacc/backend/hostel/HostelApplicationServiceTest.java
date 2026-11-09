@@ -48,7 +48,7 @@ class HostelApplicationServiceTest {
     private final HostelQueryService queries = mock(HostelQueryService.class);
     private final HostelApplicationService service = new HostelApplicationService(applications, allocations,
             studentProfiles, enrollments, sessions, approvals, approvalRequests, queries,
-            Clock.fixed(HostelFixtures.NOW, ZoneOffset.UTC));
+            Clock.fixed(HostelFixtures.NOW, ZoneOffset.UTC), org.mockito.Mockito.mock(HostelRepository.class));
 
     private final UserAccount account = HostelFixtures.account(70, "student1", RoleName.STUDENT);
     private final StudentProfile student = HostelFixtures.student(5, account);

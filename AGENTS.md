@@ -375,7 +375,8 @@
 - Students never choose a hostel, room, or bed. Only APPROVED applications are allocated, by an admin from the token.
 - Occupancy is derived from ACTIVE `HostelAllocation`s; never store an occupied flag or room capacity. A bed, an application, and a student each have at most one ACTIVE allocation, enforced under the fixed lock order student, application, hostel and room (shared), bed.
 - Vacating keeps history and allows reallocation. Never hard-delete hostels, rooms, beds, applications, or allocations. Do not deactivate what holds an active allocation, and fix room and bed numbers once they have allocation history.
-- Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, maintenance, or campus services without their own phase. Never use `roles[0]`.
+- Wardens are `HostelWarden` assignments (hostel, optional block; ended, never deleted); `HostelWardenService.isWardenOf` alone decides a warden's access (`WARDEN` with `HOSTEL_WARDEN_VIEW`), and other hostels answer 404. A student's preference is a wish only. Beds under maintenance take no allocation and an occupied bed cannot go under maintenance. Occupancy, bed maps, and queue positions are worked out live, never stored. See `docs/hostel-management.md`.
+- Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, or campus services without their own phase. Never use `roles[0]`.
 
 ## Campus Services and Notices
 

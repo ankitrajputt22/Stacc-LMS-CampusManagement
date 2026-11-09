@@ -159,7 +159,8 @@ public class HostelManagementService {
         boolean roomUsable = room.isActive() && room.getHostel().isActive();
         return beds.findAllByRoomIdOrderByBedNumberAscIdAsc(roomId).stream()
                 .map(bed -> new HostelBedResponse(bed.getId(), roomId, bed.getBedNumber(), bed.isActive(),
-                        occupied.contains(bed.getId()) ? "OCCUPIED" : bed.isActive() && roomUsable ? "AVAILABLE" : "INACTIVE",
+                        occupied.contains(bed.getId()) ? "OCCUPIED" : bed.isUnderMaintenance() ? "MAINTENANCE"
+                                : bed.isActive() && roomUsable ? "AVAILABLE" : "INACTIVE",
                         locked.contains(bed.getId())))
                 .toList();
     }
@@ -244,5 +245,35 @@ public class HostelManagementService {
         } catch (DataIntegrityViolationException clash) {
             throw new ApiException(HttpStatus.CONFLICT, conflict);
         }
+    }
+
+    /** Block, floor, type, and notes of a room; they describe it and decide nothing. */
+    public HostelRoomResponse describeRoom(Long roomId, String block, Integer floorNumber, String roomType, String notes) {
+        HostelRoom room = (roomId == null ? null : rooms.findByIdForUpdate(roomId).orElse(null));
+        if (room == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, ROOM_NOT_FOUND);
+        }
+        valid(() -> {
+            room.describe(block, floorNumber, roomType, notes);
+            return room;
+        });
+        rooms.saveAndFlush(room);
+        Long hostelId = room.getHostel().getId();
+        return rooms(hostelId).stream().filter(row -> row.roomId().equals(roomId)).findFirst().orElseThrow();
+    }
+
+    /** Puts a free bed under maintenance, or back into use. An occupied bed cannot go under maintenance (409). */
+    public HostelBedResponse setMaintenance(Long bedId, boolean underMaintenance) {
+        HostelBed bed = (bedId == null ? null : beds.findByIdForUpdate(bedId).orElse(null));
+        if (bed == null) {
+            throw new ApiException(HttpStatus.NOT_FOUND, BED_NOT_FOUND);
+        }
+        if (underMaintenance && !bed.isUnderMaintenance() && allocations.existsActiveForBed(bedId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "An occupied bed cannot go under maintenance. Vacate it first.");
+        }
+        bed.maintenance(underMaintenance);
+        beds.saveAndFlush(bed);
+        Long roomId = bed.getRoom().getId();
+        return beds(roomId).stream().filter(row -> row.bedId().equals(bedId)).findFirst().orElseThrow();
     }
 }

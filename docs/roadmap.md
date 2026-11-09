@@ -169,8 +169,8 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. |
-| ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. |
+| ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. Done (`V97`): room details, beds under maintenance, `HostelWarden`, `HOSTEL_WARDEN_VIEW`, `STUDENT_HOSTEL_WARDEN` approver. |
+| ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. Done: preferences, queue position, bed map, check-in, condition note on vacating. |
 | 0.10.3 | Room change | Requests and mutual swaps through the approval engine. |
 | ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. |
 | ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. |
@@ -180,7 +180,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. |
 | 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. |
 | 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. |
-| ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. |
+| ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. Done: the student hostel page with queue place, the warden dashboard at `/warden`, and occupancy for the office. |
 
 ## v0.11 Campus engagement (new `engagement` module)
 

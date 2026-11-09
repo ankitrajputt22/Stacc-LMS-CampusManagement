@@ -61,7 +61,7 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
             from HostelBed bed
             join fetch bed.room room
             join fetch room.hostel hostel
-            where bed.active = true and room.active = true and hostel.active = true
+            where bed.active = true and bed.underMaintenance = false and room.active = true and hostel.active = true
               and (:hostelId is null or hostel.id = :hostelId)
               and (:roomId is null or room.id = :roomId)
               and not exists (
@@ -71,4 +71,26 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
             order by hostel.code asc, room.roomNumber asc, bed.bedNumber asc, bed.id asc
             """)
     List<HostelBed> findAvailable(@Param("hostelId") Long hostelId, @Param("roomId") Long roomId);
+
+    /** Every bed of a hostel with its room, by block, floor, room, and bed. */
+    @Query("""
+            select bed from HostelBed bed join fetch bed.room room
+            where room.hostel.id = :hostelId
+            order by room.block asc, room.floorNumber asc, room.roomNumber asc, bed.bedNumber asc, bed.id asc
+            """)
+    List<HostelBed> findAllInHostel(@Param("hostelId") Long hostelId);
+
+    /** Per hostel: active beds in active rooms, and how many of them are under maintenance. */
+    interface HostelBedCount {
+        Long getHostelId();
+        long getBeds();
+        long getMaintenance();
+    }
+
+    @Query("""
+            select bed.room.hostel.id as hostelId, count(bed) as beds,
+                   sum(case when bed.underMaintenance = true then 1 else 0 end) as maintenance
+            from HostelBed bed where bed.active = true and bed.room.active = true group by bed.room.hostel.id
+            """)
+    List<HostelBedCount> countBedsByHostel();
 }

@@ -10,7 +10,11 @@ import type {
   HostelApplicationDetail,
   HostelApplicationSummary,
   HostelBed,
+  HostelBedMap,
+  HostelOccupancy,
+  HostelQueuePlace,
   HostelRoom,
+  HostelWardenAssignment,
   Page,
 } from '../types/hostel'
 import { apiClient } from './apiClient'
@@ -32,7 +36,12 @@ export async function getMyHostelApplication(applicationId: number, signal?: Abo
   return (await apiClient.get<HostelApplicationDetail>(`/hostel/student/applications/${applicationId}`, { signal })).data
 }
 
-export async function applyForHostel(request: { academicSessionId: number; note: string | null }) {
+export async function applyForHostel(request: {
+  academicSessionId: number
+  note: string | null
+  preferredHostelId?: number | null
+  preferenceNote?: string | null
+}) {
   return (await apiClient.post<HostelApplicationDetail>('/hostel/student/applications', request)).data
 }
 
@@ -102,4 +111,49 @@ export async function getHostelAllocations(query: AllocationQuery, signal?: Abor
 
 export async function vacateAllocation(allocationId: number) {
   return (await apiClient.post<HostelAllocation>(`/hostel/admin/allocations/${allocationId}/vacate`)).data
+}
+
+// Structure, wardens, occupancy, bed map, check-in (v0.10.1, v0.10.2, v0.10.12).
+
+export async function getHostelOccupancy(side: 'admin' | 'warden', signal?: AbortSignal) {
+  return (await apiClient.get<HostelOccupancy[]>(side === 'admin' ? '/hostel/admin/occupancy' : '/hostel/warden/occupancy', { signal })).data
+}
+
+export async function getHostelBedMap(side: 'admin' | 'warden', hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<HostelBedMap>(`/hostel/${side}/hostels/${hostelId}/bed-map`, { signal })).data
+}
+
+export async function checkInAllocation(side: 'admin' | 'warden', allocationId: number, note: string | null) {
+  await apiClient.post(`/hostel/${side}/allocations/${allocationId}/check-in`, { note })
+}
+
+export async function vacateAllocationWithNote(allocationId: number, note: string | null) {
+  await apiClient.post(`/hostel/admin/allocations/${allocationId}/vacate-with-note`, { note })
+}
+
+export async function setBedMaintenance(bedId: number, underMaintenance: boolean) {
+  await apiClient.put(`/hostel/admin/beds/${bedId}/maintenance`, { underMaintenance })
+}
+
+export async function describeHostelRoom(
+  roomId: number,
+  details: { block: string | null; floorNumber: number | null; roomType: string | null; notes: string | null },
+) {
+  await apiClient.put(`/hostel/admin/rooms/${roomId}/details`, details)
+}
+
+export async function getHostelWardens(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<HostelWardenAssignment[]>(`/hostel/admin/hostels/${hostelId}/wardens`, { signal })).data
+}
+
+export async function assignHostelWarden(hostelId: number, loginId: string, block: string | null) {
+  return (await apiClient.post<HostelWardenAssignment>(`/hostel/admin/hostels/${hostelId}/wardens`, { loginId, block })).data
+}
+
+export async function endHostelWarden(assignmentId: number) {
+  return (await apiClient.post<HostelWardenAssignment>(`/hostel/admin/wardens/${assignmentId}/end`)).data
+}
+
+export async function getHostelQueuePlace(applicationId: number, signal?: AbortSignal) {
+  return (await apiClient.get<HostelQueuePlace>(`/hostel/student/applications/${applicationId}/queue`, { signal })).data
 }

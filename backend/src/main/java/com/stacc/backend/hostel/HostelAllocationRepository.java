@@ -164,4 +164,35 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
 
         Long getTotal();
     }
+
+    /** The student's current allocation, with its bed, room, and hostel, by the student's account. */
+    @Query("""
+            select allocation from HostelAllocation allocation
+            join fetch allocation.bed bed join fetch bed.room room join fetch room.hostel
+            join allocation.hostelApplication application
+            where application.studentProfile.userAccount.id = :accountId
+              and allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE
+            """)
+    Optional<HostelAllocation> findActiveForStudentAccount(@Param("accountId") Long accountId);
+
+    /** Per hostel: occupied beds now. */
+    interface HostelCount {
+        Long getHostelId();
+        long getCount();
+    }
+
+    @Query("""
+            select bed.room.hostel.id as hostelId, count(allocation) as count from HostelAllocation allocation join allocation.bed bed
+            where allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE group by bed.room.hostel.id
+            """)
+    List<HostelCount> countOccupiedByHostel();
+
+    /** The current allocations of a hostel, with bed, room, and the student's account. */
+    @Query("""
+            select allocation from HostelAllocation allocation
+            join fetch allocation.bed bed join fetch bed.room room
+            join fetch allocation.hostelApplication application join fetch application.studentProfile profile join fetch profile.userAccount
+            where room.hostel.id = :hostelId and allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE
+            """)
+    List<HostelAllocation> findActiveInHostel(@Param("hostelId") Long hostelId);
 }

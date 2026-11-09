@@ -6,7 +6,9 @@ package com.stacc.backend.approval;
  */
 public enum ApproverRelationship {
     /** The current head of the department of the requesting student's program. Decided with the HOD role. */
-    STUDENT_DEPARTMENT_HEAD("HOD");
+    STUDENT_DEPARTMENT_HEAD("HOD"),
+    /** The warden of the requesting student's current hostel (their room's block first). Decided with the WARDEN role. */
+    STUDENT_HOSTEL_WARDEN("WARDEN");
 
     private final String roleCode;
 

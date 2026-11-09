@@ -4,7 +4,7 @@
 import type { ApprovalHistoryEntry, ApprovalStatus, ApprovalStep } from './approvals'
 
 export type HostelAllocationStatus = 'ACTIVE' | 'VACATED'
-export type BedOccupancy = 'AVAILABLE' | 'OCCUPIED' | 'INACTIVE'
+export type BedOccupancy = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'INACTIVE'
 
 export type EligibleHostelSession = {
   academicSessionId: number
@@ -163,3 +163,49 @@ export type AllocationQuery = {
   page: number
   size: number
 }
+
+/** Occupancy of one hostel, worked out live: active beds, those occupied, under maintenance, and free. */
+export type HostelOccupancy = {
+  hostelId: number
+  code: string
+  name: string
+  active: boolean
+  beds: number
+  occupied: number
+  maintenance: number
+  available: number
+}
+
+export type BedMapCell = {
+  bedId: number
+  bedNumber: string
+  state: BedOccupancy
+  /** The student's login ID while occupied; nothing else about them. */
+  studentLoginId: string | null
+  allocationId: number | null
+  checkedIn: boolean
+}
+
+export type BedMapRoom = {
+  roomId: number
+  roomNumber: string
+  block: string | null
+  floorNumber: number | null
+  roomType: string | null
+  active: boolean
+  beds: BedMapCell[]
+}
+
+export type HostelBedMap = { hostelId: number; code: string; name: string; rooms: BedMapRoom[] }
+
+export type HostelWardenAssignment = {
+  wardenAssignmentId: number
+  hostelId: number
+  loginId: string
+  block: string | null
+  assignedAt: string
+  endedAt: string | null
+}
+
+/** A waiting student's place in the queue for a bed: 1 is next; null when not waiting. */
+export type HostelQueuePlace = { position: number | null; waiting: number }

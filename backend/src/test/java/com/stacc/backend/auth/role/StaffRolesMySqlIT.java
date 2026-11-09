@@ -27,7 +27,7 @@ class StaffRolesMySqlIT extends MySqlIntegrationTest {
 
         Map<String, List<String>> granted = Map.of(
                 "HOD", List.of("APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE"),
-                "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
+                "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "HOSTEL_WARDEN_VIEW"),
                 "MAINTENANCE", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
                 "LIBRARIAN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
                 "SECURITY", List.of(),
