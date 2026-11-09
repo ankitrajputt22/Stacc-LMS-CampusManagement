@@ -8,6 +8,7 @@ export const queryKeys = {
     profile: () => ['me', 'profile'] as const,
     photo: () => ['me', 'photo'] as const,
     sessions: () => ['me', 'sessions'] as const,
+    todo: () => ['me', 'todo'] as const,
   },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
@@ -70,6 +71,8 @@ export const queryKeys = {
   },
   calendar: {
     mine: (range: { from: string; to: string; timeZone: string }) => ['calendar', 'me', range] as const,
+    personal: (range: { from: string; to: string }) => ['calendar', 'personal', range] as const,
+    feed: () => ['calendar', 'feed'] as const,
   },
   lms: {
     all: ['lms'] as const,

@@ -27,6 +27,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { FacultyCourseReportPage } from './pages/FacultyCourseReportPage'
 import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmissionsPage'
 import { InboxPage } from './pages/InboxPage'
+import { TodoPage } from './pages/TodoPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -165,6 +166,7 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/faculty/course-offerings/:courseOfferingId" element={<FacultyCourseReportPage />} />
           <Route path="inbox" element={<InboxPage />} />
+          <Route path="todo" element={<TodoPage />} />
           <Route path="account" element={<AccountSettingsPage />} />
           <Route path="account/password" element={<ChangePasswordPage />} />
           {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}

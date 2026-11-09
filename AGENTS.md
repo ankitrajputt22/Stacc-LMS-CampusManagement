@@ -326,6 +326,11 @@
 - No commercial AI APIs: providers sit behind `ModelProvider` and `EmbeddingProvider`, with Ollama for real use and the deterministic fake for tests. Tests never need a network, GPU, or model, and no model is downloaded in a build.
 - AI is off unless `AI_ENABLED=true`; then failures answer 503 (502 for unusable output) and never affect other features. Do not add chat history, OCR, automatic grading, predictions, rankings, plagiarism detection, or proctoring without their own phase.
 
+## To-Do and Personal Calendar
+
+- The To-Do list (`todo` module, `GET /api/v1/me/todo`, `TODO_VIEW`) is worked out live from other modules' own rules, one part per role and permission held; only dismissals are stored. Never copy source records into it or let it grant access. See `docs/todo-and-personal-calendar.md`.
+- Personal calendar entries (`calendar.personal`) belong to the account in the token and are seen only by it; the owner may delete them. The subscription link stores only the SHA-256 fingerprint of its secret, one active link per account, revocable at once; its public `.ics` route reads only that account's calendar with the signed-in calendar's rules and answers 404 for anything else. `CALENDAR_PERSONAL_USE` guards both.
+
 ## Notifications and Inbox
 
 - Notifications (`com.stacc.backend.notification`) are shared infrastructure for in-app delivery only. It depends on no feature module. See `docs/notifications-inbox.md`.

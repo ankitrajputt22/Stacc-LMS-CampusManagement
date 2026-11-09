@@ -1,10 +1,12 @@
 import { useSearchParams } from 'react-router'
-import { getMyCalendar } from '../api/calendarApi'
+import { getMyCalendar, getPersonalEvents } from '../api/calendarApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { CalendarAgenda } from '../calendar/CalendarAgenda'
+import { MonthGrid } from '../calendar/MonthGrid'
+import { CalendarSubscription, PersonalEntries } from '../calendar/PersonalCalendar'
 import {
   addMonths,
   browserTimeZone,
@@ -22,7 +24,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
-import { Button, ButtonLink, PageHeader } from '../ui'
+import { Button, ButtonLink, PageHeader, Tabs } from '../ui'
 
 function MonthControls({ month, onChange }: { month: CalendarMonth; onChange: (month: CalendarMonth | null) => void }) {
   const previous = addMonths(month, -1)
@@ -47,12 +49,26 @@ function MonthControls({ month, onChange }: { month: CalendarMonth; onChange: (m
   )
 }
 
-function MonthAgenda({ month, alsoTeaches, adminOnly }: { month: CalendarMonth; alsoTeaches: boolean; adminOnly: boolean }) {
+type View = 'agenda' | 'month'
+
+function MonthAgenda({
+  month,
+  view,
+  alsoTeaches,
+  adminOnly,
+}: {
+  month: CalendarMonth
+  view: View
+  alsoTeaches: boolean
+  adminOnly: boolean
+}) {
   const key = monthKey(month)
   // One month at a time, in the browser's own time zone: the zone only decides which deadlines fall on these days.
   const { from, to } = monthRange(parseMonth(key) ?? currentMonth())
   const range = { from, to, timeZone: browserTimeZone() }
   const request = useApiQuery(queryKeys.calendar.mine(range), (signal) => getMyCalendar(range, signal))
+  const personal = useApiQuery(queryKeys.calendar.personal({ from, to }), (signal) => getPersonalEvents({ from, to }, signal))
+  const personalEvents = personal.status === 'loaded' ? personal.data : []
 
   if (request.status === 'loading') {
     return (
@@ -85,6 +101,14 @@ function MonthAgenda({ month, alsoTeaches, adminOnly }: { month: CalendarMonth; 
     calendar.academicEvents.length +
     calendar.studentAssignmentDeadlines.length +
     calendar.facultyAssignmentDeadlines.length
+  if (view === 'month') {
+    return (
+      <div className="space-y-6">
+        <MonthGrid month={month} calendar={calendar} personal={personalEvents} />
+        <PersonalEntries key={from} events={personalEvents} monthStart={from} />
+      </div>
+    )
+  }
   return (
     <>
       <p role="status" className="sr-only">
@@ -99,6 +123,9 @@ function MonthAgenda({ month, alsoTeaches, adminOnly }: { month: CalendarMonth; 
       ) : (
         <CalendarAgenda calendar={calendar} alsoTeaches={alsoTeaches} />
       )}
+      <div className="mt-6">
+        <PersonalEntries key={from} events={personalEvents} monthStart={from} />
+      </div>
     </>
   )
 }
@@ -117,12 +144,25 @@ export function CalendarPage() {
   const isAdmin = hasAnyRole(roles, ['ADMIN'])
   const [searchParams, setSearchParams] = useSearchParams()
   const month = parseMonth(searchParams.get('month')) ?? currentMonth()
+  const view: View = searchParams.get('view') === 'month' ? 'month' : 'agenda'
+
+  function changeView(target: View) {
+    const next = new URLSearchParams(searchParams)
+    if (target === 'month') {
+      next.set('view', 'month')
+    } else {
+      next.delete('view')
+    }
+    setSearchParams(next, { replace: true })
+  }
 
   function changeMonth(target: CalendarMonth | null) {
     // Today, or the current month, needs no parameter.
-    setSearchParams(target === null || sameMonth(target, currentMonth()) ? {} : { month: monthKey(target) }, {
-      replace: true,
-    })
+    const next = new URLSearchParams(view === 'month' ? { view: 'month' } : {})
+    if (target !== null && !sameMonth(target, currentMonth())) {
+      next.set('month', monthKey(target))
+    }
+    setSearchParams(next, { replace: true })
   }
 
   return (
@@ -148,7 +188,27 @@ export function CalendarPage() {
         <>
           <MonthControls month={month} onChange={changeMonth} />
           <div className="mt-4">
-            <MonthAgenda month={month} alsoTeaches={isStudent && isFaculty} adminOnly={isAdmin && !isStudent && !isFaculty} />
+            <Tabs
+              label="Calendar view"
+              tabs={[
+                { value: 'agenda', label: 'Agenda' },
+                { value: 'month', label: 'Month' },
+              ]}
+              selected={view}
+              onSelect={changeView}
+            >
+              <div className="mt-4">
+                <MonthAgenda
+                  month={month}
+                  view={view}
+                  alsoTeaches={isStudent && isFaculty}
+                  adminOnly={isAdmin && !isStudent && !isFaculty}
+                />
+              </div>
+            </Tabs>
+          </div>
+          <div className="mt-6">
+            <CalendarSubscription />
           </div>
         </>
       ) : (

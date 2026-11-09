@@ -85,3 +85,24 @@ export type CalendarEventFilters = {
   semesterId?: number
   status?: CalendarEventStatus
 }
+
+/** A person's own calendar entry, seen only by them. Dates such as 2026-11-12; the end date is included. */
+export type PersonalCalendarEvent = {
+  eventId: number
+  title: string
+  notes: string | null
+  startDate: string
+  endDate: string
+}
+
+export type PersonalCalendarEventRequest = {
+  title: string
+  notes: string | null
+  startDate: string
+  endDate: string
+}
+
+export type CalendarFeedStatus = { active: boolean; createdAt: string | null }
+
+/** A new subscription link's path, holding its secret. It is shown only once. */
+export type NewCalendarFeed = { feedPath: string; createdAt: string }

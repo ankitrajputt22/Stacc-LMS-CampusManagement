@@ -88,6 +88,8 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       // One calendar for every role: the backend decides which events and deadlines each account gets.
       { label: 'Calendar', to: '/calendar', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'calendar' },
+      // One To-Do list per account, worked out by the backend from every role the account holds.
+      { label: 'To-Do', to: '/todo', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'todo' },
       // One Inbox per account, whatever roles it holds: notifications are sent to accounts, not to roles.
       { label: 'Inbox', to: '/inbox', roles: ['STUDENT', 'FACULTY', 'ADMIN'], badge: 'unreadNotifications', icon: 'inbox' },
       // One Support area per account: tickets belong to accounts, and admins manage the queue from the same place.
