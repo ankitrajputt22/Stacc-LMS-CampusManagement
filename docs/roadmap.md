@@ -137,20 +137,20 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.7.6 | Gradebook | Assignments, quizzes, and manual items in one gradebook, with publishing rules; students see only published grades. Done: assignment and quiz columns read live from their own marks, `V88` manual items and entries, column publishing under the course row lock, the faculty Gradebook and the student Grades pages (see `gradebook.md`). |
 | 0.7.7 | Rubrics | Rubrics attached to assignments, used while grading, with totals matching the marks. Done: `V89` rubrics with criteria and levels, an assignment rubric whose total equals its marks, grading by criterion with the sum as marks and the scores kept with the grade, and the Rubrics page (see `rubrics.md`). |
 | 0.7.8 | Assignment upgrades | Availability windows, attempt limits, and cut-off times. Done: `V90` opening and closing times, late work on or off, and attempt limits, checked on every hand-in under the enrollment lock, with the faculty Submission rules and what students see (see `assignment-rules.md`). |
-| 0.7.9 | Blueprints and papers | Exam blueprints and a paper builder from the question bank (no AI), with a print view and DOCX export. Moved to v1.1 for the 16 November submission. |
+| 0.7.9 | Blueprints and papers | Exam blueprints and a paper builder from the question bank (no AI), with a print view and DOCX export. Later: after the core phases. |
 | ★ 0.7.10 | Grading view | One grading screen per submission or attempt, with rubric, feedback, and next/previous student. Done: the assignment and quiz grading screens move to the previous or next student in the list's order (`StudentStepper`). |
-| 0.7.11 | Quiz load test | Many students submitting at once, with answers and scores checked. Moved to v1.1 for the 16 November submission. |
+| 0.7.11 | Quiz load test | Many students submitting at once, with answers and scores checked. Later: after the core phases. |
 
 ## v0.8 Communication
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.8.1 | Attachments pattern | One shared way for features to keep their own attachment records on the private storage, each download checked against its parent. |
-| ★ 0.8.2 | Course discussions | Questions and replies per course, accepted answers, pinned posts. |
+| ★ 0.8.1 | Attachments pattern | One shared way for features to keep their own attachment records on the private storage, each download checked against its parent. Done: `LmsAttachmentStore`, first used for message files (`V91`). |
+| ★ 0.8.2 | Course discussions | Questions and replies per course, accepted answers, pinned posts. Done: `lms.discussion`, `LMS_DISCUSSION_USE` (`V91`), see `course-communication.md`. |
 | 0.8.3 | Moderation | Hide, lock, and report, by course staff. |
-| ★ 0.8.4 | Messages to faculty | Private conversations between a student and the course's faculty. |
+| ★ 0.8.4 | Messages to faculty | Private conversations between a student and the course's faculty. Done: `lms.message`, `LMS_MESSAGE_USE` (`V91`), with files. |
 | 0.8.5 | Announcement upgrades | Formatting, attachments, and notifications. |
-| ★ 0.8.6 | Communication pages | Discussions, messages, and announcements redesigned. |
+| ★ 0.8.6 | Communication pages | Discussions, messages, and announcements redesigned. Done: Discussions and Messages pages in both course navigations, built from `src/ui`. |
 
 ## v0.9 Shared engines
 
@@ -290,5 +290,6 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
-| v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 moved to v1.1) |
-| v0.8 – v1.0 | Not started |
+| v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 come after the core phases) |
+| v0.8 Communication | Core done (0.8.1, 0.8.2, 0.8.4, 0.8.6); 0.8.3 and 0.8.5 come after the core phases |
+| v0.9 – v1.0 | Not started |

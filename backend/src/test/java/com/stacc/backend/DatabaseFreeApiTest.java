@@ -1,5 +1,10 @@
 package com.stacc.backend;
 
+import com.stacc.backend.lms.discussion.LmsDiscussionReplyRepository;
+import com.stacc.backend.lms.discussion.LmsDiscussionThreadRepository;
+import com.stacc.backend.lms.message.LmsConversationMessageRepository;
+import com.stacc.backend.lms.message.LmsConversationRepository;
+import com.stacc.backend.lms.message.LmsMessageAttachmentRepository;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -155,7 +160,12 @@ import org.springframework.web.context.WebApplicationContext;
     LmsQuizAnswerMarkRepository.class,
     LmsGradeItemRepository.class,
     LmsGradeEntryRepository.class,
-    LmsRubricRepository.class
+    LmsRubricRepository.class,
+    LmsDiscussionThreadRepository.class,
+    LmsDiscussionReplyRepository.class,
+    LmsConversationRepository.class,
+    LmsConversationMessageRepository.class,
+    LmsMessageAttachmentRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

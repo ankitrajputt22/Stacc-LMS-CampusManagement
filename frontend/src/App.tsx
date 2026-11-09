@@ -63,9 +63,19 @@ import {
   TeachingQuizResultsPage,
   TeachingQuizzesPage,
   TeachingRubricsPage,
+  TeachingDiscussionsPage,
+  TeachingDiscussionPage,
+  TeachingMessagesPage,
+  TeachingConversationPage,
 } from './pages/TeachingCoursePage'
 import { TeachingPage } from './pages/TeachingPage'
 import { CourseLayout } from './courses/CourseLayout'
+import {
+  CourseConversationPage,
+  CourseDiscussionPage,
+  CourseDiscussionsPage,
+  CourseMessagesPage,
+} from './pages/CourseCommunicationPages'
 import {
   CourseAnnouncementsPage,
   CourseAssignmentsPage,
@@ -99,6 +109,10 @@ function App() {
             <Route path="quizzes/:quizId/attempts/:attemptId" element={<QuizAttemptPage />} />
             <Route path="grades" element={<CourseGradesPage />} />
             <Route path="announcements" element={<CourseAnnouncementsPage />} />
+            <Route path="discussions" element={<CourseDiscussionsPage />} />
+            <Route path="discussions/:threadId" element={<CourseDiscussionPage />} />
+            <Route path="messages" element={<CourseMessagesPage />} />
+            <Route path="messages/:conversationId" element={<CourseConversationPage />} />
             <Route path="files" element={<CourseFilesPage />} />
             <Route path="syllabus" element={<CourseSyllabusPage />} />
             <Route path="ai" element={<CourseAiPage />} />
@@ -108,6 +122,10 @@ function App() {
             <Route index element={<TeachingCoursePage />} />
             <Route path="modules" element={<TeachingModulesPage />} />
             <Route path="announcements" element={<TeachingAnnouncementsPage />} />
+            <Route path="discussions" element={<TeachingDiscussionsPage />} />
+            <Route path="discussions/:threadId" element={<TeachingDiscussionPage />} />
+            <Route path="messages" element={<TeachingMessagesPage />} />
+            <Route path="messages/:conversationId" element={<TeachingConversationPage />} />
             <Route path="assignments" element={<TeachingAssignmentsPage />} />
             <Route path="outcomes" element={<TeachingOutcomesPage />} />
             <Route path="quizzes" element={<TeachingQuizzesPage />} />

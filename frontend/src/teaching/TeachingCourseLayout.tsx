@@ -29,6 +29,8 @@ export function TeachingCourseLayout() {
             { to: root, label: 'Home', end: true },
             { to: `${root}/modules`, label: 'Modules' },
             { to: `${root}/announcements`, label: 'Announcements' },
+            { to: `${root}/discussions`, label: 'Discussions' },
+            { to: `${root}/messages`, label: 'Messages' },
             { to: `${root}/assignments`, label: 'Assignments' },
             { to: `${root}/rubrics`, label: 'Rubrics' },
             { to: `${root}/quizzes`, label: 'Quizzes' },
