@@ -214,3 +214,15 @@ The `dev-seed` profile adds hostel `MAIN` with rooms `A-101` and `A-102`, each w
 ## Not built yet
 
 Payments and fees, mess, visitors, maintenance requests, room preferences or student bed choice, room transfers requested by students, gender or other eligibility attributes, bulk allocation, waitlists, and deadlines. Campus Services come in their own phase.
+
+## Structure, wardens, allocation upgrades, and dashboards (v0.10.1, v0.10.2, v0.10.12)
+
+- **Room details.** Rooms have an optional block, floor (-5 to 200), type, and notes (`PUT /api/v1/hostel/admin/rooms/{id}/details`). They describe the room and decide nothing.
+- **Beds under maintenance.** A free bed can go under maintenance (`PUT /beds/{id}/maintenance`); an occupied bed cannot (409). Such a bed is not allocatable and shows as `MAINTENANCE`.
+- **Wardens.** Admins with `HOSTEL_MANAGE` assign an active account holding `WARDEN` to a hostel, or to one block of it, and end assignments; nothing is deleted. `HostelWardenService.isWardenOf` is the one rule.
+  - A warden (`WARDEN` with `HOSTEL_WARDEN_VIEW`, `V97`) sees the occupancy and bed map of their own hostels at `/warden` and checks students in there. Any other hostel answers 404.
+- **Warden as approver.** `STUDENT_HOSTEL_WARDEN` is an approver relationship, resolved by `HostelWardenApprover`: the warden of the requesting student's current hostel, preferring their room's block.
+- **Preferences.** A student may add a plain-text preference to an application, or name an active hostel through the API. It is a wish only: students still never choose a hostel, room, or bed.
+- **Queue position.** An approved application without a bed shows its place in the session's queue (`GET /api/v1/hostel/student/applications/{id}/queue`): approved, unallocated applications by submission time. It is worked out live and never stored.
+- **Check-in and vacating.** An active allocation records its check-in once, with an optional note (admins, or the hostel's warden). Vacating may record the room's condition (`POST /allocations/{id}/vacate-with-note`).
+- **Occupancy and bed map.** Both are worked out live from beds and `ACTIVE` allocations (Hostel Management → Occupancy & Bed Map). Only a student's login ID is shown on an occupied bed.

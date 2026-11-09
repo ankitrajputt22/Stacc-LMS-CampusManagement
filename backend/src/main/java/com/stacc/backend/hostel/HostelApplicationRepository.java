@@ -166,4 +166,16 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             """)
     Page<HostelApplication> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
+
+    /** The approved applications of a session still waiting for a bed, in the order they were submitted. */
+    @Query("""
+            select application.id from HostelApplication application join application.approvalRequest request
+            where application.academicSession.id = :sessionId
+              and request.status = com.stacc.backend.approval.ApprovalRequestStatus.APPROVED
+              and not exists (select allocation.id from HostelAllocation allocation
+                              where allocation.hostelApplication = application
+                                and allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE)
+            order by application.submittedAt asc, application.id asc
+            """)
+    List<Long> findWaitingForBed(@Param("sessionId") Long sessionId);
 }

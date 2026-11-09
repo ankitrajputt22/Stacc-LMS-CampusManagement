@@ -15,6 +15,16 @@ export const queryKeys = {
     teams: () => ['helpdesk', 'teams'] as const,
     teamQueue: (status: string, page: number) => ['helpdesk', 'team-queue', status, page] as const,
   },
+  hostel: {
+    occupancy: (side: string) => ['hostel', side, 'occupancy'] as const,
+    bedMap: (side: string, hostelId: number) => ['hostel', side, 'bed-map', hostelId] as const,
+    wardens: (hostelId: number) => ['hostel', 'wardens', hostelId] as const,
+    queue: (applicationId: number) => ['hostel', 'queue', applicationId] as const,
+    outings: () => ['hostel', 'outings'] as const,
+    overdue: () => ['hostel', 'overdue'] as const,
+    tasks: () => ['hostel', 'approval-tasks'] as const,
+    movements: () => ['hostel', 'gate-movements'] as const,
+  },
   audit: {
     events: (filters: object) => ['admin', 'audit', filters] as const,
   },

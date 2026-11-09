@@ -39,6 +39,35 @@ public class HostelRoom {
     @Column(nullable = false)
     private boolean active = true;
 
+    // Details for finding and describing the room; none of them decides anything.
+    @Column(length = 50)
+    private String block;
+
+    @Column(name = "floor_number")
+    private Integer floorNumber;
+
+    @Column(name = "room_type", length = 50)
+    private String roomType;
+
+    @Column(length = 500)
+    private String notes;
+
+    /** Block, floor, type, and notes: plain text, each optional. */
+    public void describe(String block, Integer floorNumber, String roomType, String notes) {
+        if (floorNumber != null && (floorNumber < -5 || floorNumber > 200)) {
+            throw new IllegalArgumentException("the floor must be between -5 and 200");
+        }
+        this.block = Require.optionalText(block, "block", 50);
+        this.floorNumber = floorNumber;
+        this.roomType = Require.optionalText(roomType, "room type", 50);
+        this.notes = Require.optionalText(notes, "notes", 500);
+    }
+
+    public String getBlock() { return block; }
+    public Integer getFloorNumber() { return floorNumber; }
+    public String getRoomType() { return roomType; }
+    public String getNotes() { return notes; }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

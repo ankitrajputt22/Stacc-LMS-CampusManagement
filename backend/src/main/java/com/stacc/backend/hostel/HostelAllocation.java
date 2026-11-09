@@ -57,6 +57,38 @@ public class HostelAllocation {
     @Column(name = "vacated_at")
     private Instant vacatedAt;
 
+    @Column(name = "checked_in_at")
+    private Instant checkedInAt;
+
+    @Column(name = "check_in_note", length = 500)
+    private String checkInNote;
+
+    @Column(name = "vacate_condition_note", length = 500)
+    private String vacateConditionNote;
+
+    /** Records the student moving in, once, while the allocation is active. */
+    public void checkIn(Instant at, String note) {
+        if (status != HostelAllocationStatus.ACTIVE) {
+            throw new IllegalStateException("Only an active allocation can be checked in");
+        }
+        if (checkedInAt != null) {
+            return;
+        }
+        this.checkedInAt = Require.notNull(at, "at").truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        this.checkInNote = Require.optionalText(note, "note", 500);
+    }
+
+    /** The room's condition when the student left; set together with vacating. */
+    public void conditionOnVacating(String note) {
+        if (vacateConditionNote == null) {
+            this.vacateConditionNote = Require.optionalText(note, "condition note", 500);
+        }
+    }
+
+    public Instant getCheckedInAt() { return checkedInAt; }
+    public String getCheckInNote() { return checkInNote; }
+    public String getVacateConditionNote() { return vacateConditionNote; }
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

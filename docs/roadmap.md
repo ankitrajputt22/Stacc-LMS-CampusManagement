@@ -169,18 +169,18 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. |
-| ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. |
+| ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. Done (`V97`): room details, beds under maintenance, `HostelWarden`, `HOSTEL_WARDEN_VIEW`, `STUDENT_HOSTEL_WARDEN` approver. |
+| ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. Done: preferences, queue position, bed map, check-in, condition note on vacating. |
 | 0.10.3 | Room change | Requests and mutual swaps through the approval engine. |
-| ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. |
-| ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. |
-| ★ 0.10.6 | Leave | Leave and extensions, overdue alerts to the warden, and approved leave on the calendar. |
+| ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. Done (`V98`): `PassService`, gate passes with a QR view. |
+| ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. Done: `/gate` with camera scan where supported, typed codes, manual lookup, the movement log, and inside or outside from it. |
+| ★ 0.10.6 | Leave | Leave and extensions, overdue alerts to the warden, and approved leave on the calendar. Done: leave and extensions through the warden, overdue list for wardens; approved leave is not yet on the calendar. |
 | 0.10.7 | Night roll call | A sheet per block pre-filled from movements; nothing starts as Absent. |
-| ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. |
+| ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. Done: `HOSTEL` helpdesk category routed to the `MAINTENANCE` team with the room attached; confirmation and rating through the helpdesk. |
 | 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. |
 | 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. |
 | 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. |
-| ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. |
+| ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. Done: the student hostel page with queue place, the warden dashboard at `/warden`, and occupancy for the office. |
 
 ## v0.11 Campus engagement (new `engagement` module)
 
@@ -293,4 +293,5 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 come after the core phases) |
 | v0.8 Communication | Core done (0.8.1, 0.8.2, 0.8.4, 0.8.6); 0.8.3 and 0.8.5 come after the core phases |
 | v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
-| v0.10 – v1.0 | Not started |
+| v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
+| v0.11 – v1.0 | Not started |

@@ -375,7 +375,14 @@
 - Students never choose a hostel, room, or bed. Only APPROVED applications are allocated, by an admin from the token.
 - Occupancy is derived from ACTIVE `HostelAllocation`s; never store an occupied flag or room capacity. A bed, an application, and a student each have at most one ACTIVE allocation, enforced under the fixed lock order student, application, hostel and room (shared), bed.
 - Vacating keeps history and allows reallocation. Never hard-delete hostels, rooms, beds, applications, or allocations. Do not deactivate what holds an active allocation, and fix room and bed numbers once they have allocation history.
-- Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, maintenance, or campus services without their own phase. Never use `roles[0]`.
+- Wardens are `HostelWarden` assignments (hostel, optional block; ended, never deleted); `HostelWardenService.isWardenOf` alone decides a warden's access (`WARDEN` with `HOSTEL_WARDEN_VIEW`), and other hostels answer 404. A student's preference is a wish only. Beds under maintenance take no allocation and an occupied bed cannot go under maintenance. Occupancy, bed maps, and queue positions are worked out live, never stored. See `docs/hostel-management.md`.
+- Do not invent gender or other eligibility attributes. Do not add payments, mess, visitors, or campus services without their own phase. Never use `roles[0]`.
+
+## Passes, Outings, and the Gate
+
+- Every pass goes through the one `pass.PassService`: a random code shown once to its holder, only its SHA-256 fingerprint stored, a time window, one purpose and source, revoked never deleted; a new pass for a source revokes the old ones. Never store or log a code. See `docs/passes-and-gate.md`.
+- Hostel outings (gate passes and leave, and leave extensions) are approved only through the `HOSTEL_OUTING` workflow by the student's hostel warden; never copy approval state. The gate's movement log is append-only and decides whether a student is outside; overdue is worked out on read. Security (`SECURITY` with `GATE_PASS_VERIFY`) only checks codes, records movements, and looks students up.
+- Hostel complaints are ordinary helpdesk tickets of the `HOSTEL` category with the room attached; never build a second ticket engine.
 
 ## Campus Services and Notices
 

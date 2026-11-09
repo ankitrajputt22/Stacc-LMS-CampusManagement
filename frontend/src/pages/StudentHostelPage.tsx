@@ -3,11 +3,14 @@ import { useSearchParams } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import {
   applyForHostel,
+  getHostelQueuePlace,
   cancelHostelApplication,
   getEligibleHostelSessions,
   getMyHostelApplication,
   getMyHostelApplications,
 } from '../api/hostelApi'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
@@ -32,12 +35,15 @@ import {
 } from '../hostel/hostelText'
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { EligibleHostelSession, HostelApplicationDetail, StudentHostelAllocation } from '../types/hostel'
+import { TextField } from '../ui'
+import { StudentOutings } from '../hostel/outings/StudentOutings'
 
 function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[]; onApplied: (applicationId: number) => void }) {
   const open = sessions.filter((session) => !session.hasCurrentApplication)
   const busyRef = useRef(false)
   const [sessionId, setSessionId] = useState('')
   const [note, setNote] = useState('')
+  const [preference, setPreference] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,9 +73,14 @@ function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[];
     setError(null)
     try {
       // Only the session and note are sent: the student is the account in the access token.
-      const created = await applyForHostel({ academicSessionId: Number(sessionId), note: note.trim() === '' ? null : note.trim() })
+      const created = await applyForHostel({
+        academicSessionId: Number(sessionId),
+        note: note.trim() === '' ? null : note.trim(),
+        preferenceNote: preference.trim() === '' ? null : preference.trim(),
+      })
       setSessionId('')
       setNote('')
+      setPreference('')
       onApplied(created.applicationId)
     } catch (failure) {
       const status = getHttpStatus(failure)
@@ -123,6 +134,15 @@ function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[];
           Anything the hostel office should know. Plain text.
         </p>
       </div>
+      <div className="sm:col-span-2">
+        <TextField
+          label="Preference (optional)"
+          hint="Such as a hostel or a ground-floor room. A wish only: the hostel office allocates beds."
+          value={preference}
+          maxLength={500}
+          onChange={(event) => setPreference(event.target.value)}
+        />
+      </div>
       <div role="alert" className="sm:col-span-2 empty:hidden">
         {error && <p className="rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm text-danger">{error}</p>}
       </div>
@@ -164,6 +184,18 @@ function AllocationFacts({ allocation }: { allocation: StudentHostelAllocation }
   )
 }
 
+/** An approved student's place in the queue for a bed, as the backend works it out. */
+function QueueText({ applicationId }: { applicationId: number }) {
+  const place = useApiQuery(queryKeys.hostel.queue(applicationId), (signal) => getHostelQueuePlace(applicationId, signal))
+  const position = place.status === 'loaded' ? place.data.position : null
+  return (
+    <p className="text-sm text-ink">
+      Waiting for hostel allocation.
+      {position !== null && place.status === 'loaded' && ` You are number ${position} of ${place.data.waiting} in the queue.`}
+    </p>
+  )
+}
+
 function ApplicationPanel({ detail, onChanged }: { detail: HostelApplicationDetail; onChanged: () => void }) {
   const [confirming, setConfirming] = useState(false)
   return (
@@ -192,7 +224,7 @@ function ApplicationPanel({ detail, onChanged }: { detail: HostelApplicationDeta
         {detail.activeAllocation ? (
           <AllocationFacts allocation={detail.activeAllocation} />
         ) : detail.approvalStatus === 'APPROVED' ? (
-          <p className="text-sm text-ink">Waiting for hostel allocation.</p>
+          <QueueText applicationId={detail.applicationId} />
         ) : (
           <p className="text-sm text-ink-muted">A bed is allocated by the hostel office after approval.</p>
         )}
@@ -383,6 +415,11 @@ export function StudentHostelPage() {
       <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Hostel</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">View and manage your hostel application and allocation.</p>
       <div className="mt-6">{content}</div>
+      {isStudent && (
+        <section aria-label="Outings and room problems" className="mt-10 border-t border-line pt-6">
+          <StudentOutings />
+        </section>
+      )}
     </>
   )
 }

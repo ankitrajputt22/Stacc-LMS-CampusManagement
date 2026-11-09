@@ -11,6 +11,11 @@ import com.stacc.backend.notification.NotificationDigestItemRepository;
 import com.stacc.backend.notification.NotificationPreferenceRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
+import com.stacc.backend.hostel.HostelWardenRepository;
+import com.stacc.backend.hostel.outing.GateMovementRepository;
+import com.stacc.backend.hostel.outing.HostelOutingExtensionRepository;
+import com.stacc.backend.hostel.outing.HostelOutingRepository;
+import com.stacc.backend.pass.PassRepository;
 import com.stacc.backend.todo.TodoAssignmentQueries;
 import com.stacc.backend.todo.TodoDismissalRepository;
 import static org.mockito.ArgumentMatchers.any;
@@ -181,7 +186,12 @@ import org.springframework.web.context.WebApplicationContext;
     NotificationPreferenceRepository.class,
     NotificationDigestItemRepository.class,
     HelpdeskTeamRepository.class,
-    HelpdeskTeamMemberRepository.class
+    HelpdeskTeamMemberRepository.class,
+    HostelWardenRepository.class,
+    PassRepository.class,
+    HostelOutingRepository.class,
+    HostelOutingExtensionRepository.class,
+    GateMovementRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

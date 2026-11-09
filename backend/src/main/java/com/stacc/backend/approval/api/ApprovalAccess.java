@@ -14,8 +14,10 @@ final class ApprovalAccess {
     private static final String ANY_ROLE = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN')";
 
     static final String VIEW_OWN = ANY_ROLE + " and hasAuthority('APPROVAL_REQUEST_VIEW_OWN')";
-    static final String TASK_VIEW = ANY_ROLE + " and hasAuthority('APPROVAL_TASK_VIEW')";
-    static final String TASK_DECIDE = ANY_ROLE + " and hasAuthority('APPROVAL_TASK_DECIDE')";
+    /** Approvers: the three main roles, and the staff roles that decide steps assigned to them (HOD, WARDEN). */
+    private static final String APPROVER_ROLE = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'HOD', 'WARDEN')";
+    static final String TASK_VIEW = APPROVER_ROLE + " and hasAuthority('APPROVAL_TASK_VIEW')";
+    static final String TASK_DECIDE = APPROVER_ROLE + " and hasAuthority('APPROVAL_TASK_DECIDE')";
     static final String WORKFLOW_MANAGE = "hasRole('ADMIN') and hasAuthority('APPROVAL_WORKFLOW_MANAGE')";
 
     private ApprovalAccess() {
