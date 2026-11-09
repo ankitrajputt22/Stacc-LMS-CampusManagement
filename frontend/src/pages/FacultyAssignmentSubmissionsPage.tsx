@@ -16,6 +16,7 @@ import { ASSIGNMENTS_SECTION_ID } from '../teaching/editorState'
 import { backLinkClasses, GRADING_DENIED, SIGN_IN_AGAIN, SubmissionReview } from '../teaching/SubmissionReview'
 import { useFacultySubmissions } from '../teaching/useFacultySubmissions'
 import { useMyFacultyAssignments } from '../teaching/useMyFacultyAssignments'
+import { StudentStepper } from '../teaching/StudentStepper'
 import type { LmsFacultyAssignmentOverview, LmsFacultySubmissionSummary } from '../types/lms'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
@@ -169,13 +170,26 @@ function AssignmentSubmissions({ assignment, submissions, open, onGraded }: Load
         </section>
       ) : (
         // A new review for each submission, so nothing chosen or typed carries over to another student.
-        <SubmissionReview
+        <>
+          <div className="mt-6">
+            <StudentStepper
+              what="submissions"
+              currentKey={open.id}
+              entries={submissions.map((submission) => ({
+                key: submission.submissionId,
+                label: submission.studentLoginId,
+                to: { search: `?submission=${submission.submissionId}` },
+              }))}
+            />
+          </div>
+          <SubmissionReview
           key={open.id}
           assignmentId={assignment.assignmentId}
           submissionId={open.id}
           listPath={pathname}
           onGraded={onGraded}
-        />
+          />
+        </>
       )}
     </>
   )
