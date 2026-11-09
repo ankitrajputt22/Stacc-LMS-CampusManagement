@@ -16,6 +16,8 @@ import { CourseSettings } from '../teaching/CourseSettings'
 import { CopyContentCard } from '../teaching/CopyContentCard'
 import { CourseHomeSettings } from '../teaching/CourseHomeSettings'
 import { OutcomesEditor } from '../teaching/OutcomesEditor'
+import { DiscussionBoard, DiscussionThreadView } from '../communication/Discussions'
+import { ConversationList, ConversationView } from '../communication/Messages'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
 import { GradebookEditor } from '../teaching/GradebookEditor'
 import { ManualGradeItem } from '../teaching/ManualGradeItem'
@@ -320,3 +322,65 @@ export function TeachingRubricsPage() {
   )
 }
 
+
+/** /teaching/:lmsCourseId/discussions: the course's discussions, where faculty also pin and accept answers. */
+export function TeachingDiscussionsPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Discussions', heading: 'Discussions' }}>
+      {(course) => <DiscussionBoard side="faculty" lmsCourseId={course.lmsCourseId} basePath={`/teaching/${course.lmsCourseId}/discussions`} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/discussions/:threadId */
+export function TeachingDiscussionPage() {
+  const threadId = parseCourseId(useParams().threadId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Discussion', heading: 'Discussion', parent: { path: 'discussions', label: 'Discussions' } }}>
+      {(course) =>
+        threadId === null ? (
+          <p className="text-sm text-ink-muted">This discussion address is not valid.</p>
+        ) : (
+          <DiscussionThreadView
+            key={threadId}
+            side="faculty"
+            lmsCourseId={course.lmsCourseId}
+            threadId={threadId}
+            basePath={`/teaching/${course.lmsCourseId}/discussions`}
+          />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/messages: every student's private conversation with the course's faculty. */
+export function TeachingMessagesPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Messages', heading: 'Messages' }}>
+      {(course) => <ConversationList side="faculty" lmsCourseId={course.lmsCourseId} basePath={`/teaching/${course.lmsCourseId}/messages`} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/messages/:conversationId */
+export function TeachingConversationPage() {
+  const conversationId = parseCourseId(useParams().conversationId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Conversation', heading: 'Conversation', parent: { path: 'messages', label: 'Messages' } }}>
+      {(course) =>
+        conversationId === null ? (
+          <p className="text-sm text-ink-muted">This conversation address is not valid.</p>
+        ) : (
+          <ConversationView
+            key={conversationId}
+            side="faculty"
+            lmsCourseId={course.lmsCourseId}
+            conversationId={conversationId}
+            basePath={`/teaching/${course.lmsCourseId}/messages`}
+          />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}

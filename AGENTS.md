@@ -224,6 +224,7 @@
 - `LmsCourse` stays one-to-one with `CourseOffering` and starts `DRAFT`. Publish only a draft, archive a draft or published course, and never restore, delete, or add course settings fields without their own phase.
 - The faculty management list starts from teaching assignments, so offerings without an `LmsCourse` and archived courses always appear. Do not loosen `LmsFacultyAccessPolicy` to show archived courses.
 - Faculty never manage course offerings, enrollments, or teaching assignments. Academic data stays the source of truth.
+- Course discussions (`lms.discussion`) and messages (`lms.message`) are append-only and never deleted. Course access for both goes only through `LmsCourseParticipation` (student or faculty policy, kind from the route); faculty pin, the asker or faculty accept an answer, and a student sees only their own conversations. Show people by login ID only. Files on records go through `lms.attachment.LmsAttachmentStore`; the feature owns the table and checks every download against its parent. See `docs/course-communication.md`.
 - Add LMS content models only in their own feature phases.
 
 ## Frontend Authentication

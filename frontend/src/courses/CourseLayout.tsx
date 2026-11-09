@@ -33,6 +33,8 @@ export function CourseLayout() {
             { to: `${root}/quizzes`, label: 'Quizzes' },
             { to: `${root}/grades`, label: 'Grades' },
             { to: `${root}/announcements`, label: 'Announcements' },
+            { to: `${root}/discussions`, label: 'Discussions' },
+            { to: `${root}/messages`, label: 'Messages' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },
             { to: `${root}/ai`, label: 'AI Study Assistant' },

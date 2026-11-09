@@ -58,6 +58,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Learning requirements and progress](learning-progress.md)
 - [Course home and navigation](course-navigation.md)
 - [Course copy](course-copy.md)
+- [Course discussions and messages](course-communication.md)
 - [Course outcomes and Bloom levels](course-outcomes.md)
 - [Question bank](question-bank.md)
 - [Quizzes](quizzes.md)
