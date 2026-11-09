@@ -56,7 +56,7 @@
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
 - Frontend pages reuse the shared `AppLayout`. Do not create separate global navigation for each module.
 - Reuse `LoadingState`, `EmptyState`, and `ErrorState` for page states.
-- Build pages from the shared components in `frontend/src/ui` (`PageHeader`, `Card`, `Button`, `ButtonLink`, `TextField`, `TextAreaField`, `SelectField`, `Badge`, `Alert`, `LinkTabs`, `Tabs`, `DataTable`, `Pagination`) and the class lists in `ui/styles.ts`, instead of writing new class lists per page. See `docs/ui-design.md`.
+- Build pages from the shared components in `frontend/src/ui` (`PageHeader`, `Card`, `Button`, `ButtonLink`, `TextField`, `TextAreaField`, `SelectField`, `Badge`, `Alert`, `LinkTabs`, `Tabs`, `DataTable`, `Pagination`, `Timeline` for every history or step list) and the class lists in `ui/styles.ts`, instead of writing new class lists per page. See `docs/ui-design.md`.
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
 - Tests that need real MySQL (migrations, constraints, row locks, races) extend `MySqlIntegrationTest`, are named `*MySqlIT`, and run in `mvn verify` on a throwaway Testcontainers MySQL seeded with the demo data. Each works on demo records no other test changes. Every new row-lock or capacity rule gets one, using `Concurrently.run`. See `docs/testing.md`.

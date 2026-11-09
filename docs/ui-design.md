@@ -27,6 +27,7 @@ Stacc's interface is built from a small set of shared components in `frontend/sr
 | `Tabs` | In-page tabs following the ARIA tabs pattern (arrow keys, Home, End). |
 | `DataTable` | Lists of records: a real table with column and row headers from the `md` breakpoint, stacked records on phones. |
 | `Pagination` | "Showing 21–40 of 75 courses" with Previous and Next, under a long `DataTable`. Hidden when everything fits on one page. |
+| `Timeline` | Every history or sequence of steps (ticket activity, approval steps): one marker per entry, oldest first, with words, who, and when; colour only repeats the words. |
 | `LoadingState`, `EmptyState`, `ErrorState`, `AccessDeniedState`, `StatePanel` | Page states (`components/states`), unchanged. |
 
 The class lists behind them are in `ui/styles.ts` (`buttonClasses`, `controlClasses`, `controlBorder`, `textLinkClasses`, `focusRing`). Older helpers (`components/Button`, `components/actionStyles.ts`, `teaching/formStyles.ts`, `ai/AiMessage`, `dashboard/DashboardSection`) now use these, so pages not yet redesigned already share the same styles.
