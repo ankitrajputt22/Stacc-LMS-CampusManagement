@@ -12,6 +12,8 @@ import com.stacc.backend.notification.NotificationPreferenceRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
+import com.stacc.backend.analytics.AnalyticsQueries;
+import com.stacc.backend.report.export.ReportExportRepository;
 import com.stacc.backend.documents.VaultDocumentRepository;
 import com.stacc.backend.documents.CertificateRequestRepository;
 import com.stacc.backend.career.CareerProfileRepository;
@@ -227,7 +229,9 @@ import org.springframework.web.context.WebApplicationContext;
     CareerRoundRepository.class,
     CareerApplicationRepository.class,
     CareerOfferRepository.class,
-    CareerPolicyRepository.class
+    CareerPolicyRepository.class,
+    AnalyticsQueries.class,
+    ReportExportRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

@@ -47,6 +47,7 @@ const navigationSections: readonly NavigationSection[] = [
       // The student's academic records: one real link each, no separate menu.
       { label: 'Attendance', to: '/academic/attendance' },
       { label: 'Results', to: '/academic/results' },
+      { label: 'My progress', to: '/academic/analytics' },
       // Hostel applications and allocation.
       { label: 'Hostel', to: '/hostel' },
     ],

@@ -153,6 +153,16 @@ public class AdminReportQueryService {
 
     /** Every row of the enrollment report, as CSV, under exactly the screen's filters. No IDs are written. */
     public String enrollmentCsv(AdminReportFilters filters) {
+        return ReportCsv.write(CSV_HEADER, enrollmentRows(filters));
+    }
+
+    /** The column names of the enrollment report export. */
+    public List<String> enrollmentHeader() {
+        return CSV_HEADER;
+    }
+
+    /** Every row of the enrollment report under the filters, as text cells, for the CSV and XLSX exports. */
+    public List<List<String>> enrollmentRows(AdminReportFilters filters) {
         List<CourseOffering> all = offeringsOf(filters, Pageable.unpaged());
         List<List<String>> lines = new ArrayList<>();
         for (int from = 0; from < all.size(); from += CSV_BATCH) {
@@ -162,7 +172,7 @@ public class AdminReportQueryService {
                         String.valueOf(row.completedCount()), String.valueOf(row.withdrawnCount())));
             }
         }
-        return ReportCsv.write(CSV_HEADER, lines);
+        return lines;
     }
 
     private List<CourseOffering> offeringsOf(AdminReportFilters filters, Pageable page) {

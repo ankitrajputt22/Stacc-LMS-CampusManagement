@@ -28,6 +28,7 @@ import { FacultyCourseReportPage } from './pages/FacultyCourseReportPage'
 import { FacultyAssignmentSubmissionsPage } from './pages/FacultyAssignmentSubmissionsPage'
 import { InboxPage } from './pages/InboxPage'
 import { TodoPage } from './pages/TodoPage'
+import { StudentAnalyticsPage } from './pages/StudentAnalyticsPage'
 import { WardenPage } from './pages/WardenPage'
 import { GatePage } from './pages/GatePage'
 import { IdCardPage } from './pages/IdCardPage'
@@ -76,6 +77,7 @@ import {
   TeachingQuizResultsPage,
   TeachingQuizzesPage,
   TeachingRubricsPage,
+  TeachingAnalyticsPage,
   TeachingDiscussionsPage,
   TeachingDiscussionPage,
   TeachingMessagesPage,
@@ -148,6 +150,7 @@ function App() {
             <Route path="quizzes/:quizId/results" element={<TeachingQuizResultsPage />} />
             <Route path="quiz-attempts/:attemptId" element={<TeachingQuizAttemptPage />} />
             <Route path="gradebook" element={<TeachingGradebookPage />} />
+            <Route path="analytics" element={<TeachingAnalyticsPage />} />
             <Route path="rubrics" element={<TeachingRubricsPage />} />
             <Route path="gradebook/items/:itemId" element={<TeachingGradeItemPage />} />
             <Route path="questions" element={<TeachingQuestionBankPage />} />
@@ -162,6 +165,7 @@ function App() {
           <Route path="attendance/:courseOfferingId" element={<CourseAttendancePage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />
+          <Route path="academic/analytics" element={<StudentAnalyticsPage />} />
           <Route path="academic/registration" element={<CourseRegistrationPage />} />
           <Route path="academic/profile" element={<AcademicProfilePage />} />
           <Route path="results" element={<ResultsPage />} />

@@ -104,6 +104,9 @@ A permission is added by a new migration only when the real feature it protects 
 | `DOCUMENT_ISSUE` | `ADMIN` | Issuing or refusing certificates and withdrawing issued documents. Added by `V100`. |
 | `CAREER_USE` | `STUDENT` | One's own career profile, resumes, applications, and offers. Added by `V100`. |
 | `CAREER_MANAGE` | `ADMIN`, `PLACEMENT_OFFICER` | Companies, opportunities, rounds, applicants, offers, the placement policy, and the consent-based export. Added by `V100`. |
+| `ANALYTICS_VIEW_OWN` | `STUDENT` | One's own analytics. Added by `V101`. |
+| `COURSE_ANALYTICS_VIEW` | `FACULTY` | Class analytics of courses taught, under the faculty access policy. Added by `V101`. |
+| `REPORT_EXPORT` | `FACULTY`, `ADMIN` | Background XLSX exports of reports one may already read. Added by `V101`. |
 | `LMS_GRADEBOOK_MANAGE` | `FACULTY` | Reading the gradebook of the LMS courses taught, adding and changing manual items, entering their marks, and publishing columns. Added by `V88`. |
 | `LMS_GRADE_VIEW` | `STUDENT` | Reading one's own published grades in a course the student may use. Added by `V88`. |
 

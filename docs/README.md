@@ -64,6 +64,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Passes, outings, and the gate](passes-and-gate.md)
 - [Campus engagement](campus-engagement.md)
 - [Digital ID, documents, and career](student-services-and-career.md)
+- [Analytics and exports](analytics.md)
 - [Course outcomes and Bloom levels](course-outcomes.md)
 - [Question bank](question-bank.md)
 - [Quizzes](quizzes.md)

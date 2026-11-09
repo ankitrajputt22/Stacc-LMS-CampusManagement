@@ -35,6 +35,7 @@ export function TeachingCourseLayout() {
             { to: `${root}/rubrics`, label: 'Rubrics' },
             { to: `${root}/quizzes`, label: 'Quizzes' },
             { to: `${root}/gradebook`, label: 'Gradebook' },
+            { to: `${root}/analytics`, label: 'Analytics' },
             { to: `${root}/outcomes`, label: 'Outcomes' },
             { to: `${root}/questions`, label: 'Question bank' },
             { to: `${root}/files`, label: 'Files' },
