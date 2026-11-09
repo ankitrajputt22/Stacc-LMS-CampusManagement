@@ -26,6 +26,10 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     @EntityGraph(attributePaths = {"roles", "roles.permissions"})
     Optional<UserAccount> findWithRolesAndPermissionsByLoginId(String loginId);
 
+    /** Loads the account together with its roles and their permissions, for a feature that acts for it without a token. */
+    @EntityGraph(attributePaths = {"roles", "roles.permissions"})
+    Optional<UserAccount> findWithRolesAndPermissionsById(Long id);
+
     /** The IDs of every account that holds the role. */
     @Query("select account.id from UserAccount account join account.roles role where role.name = :roleName")
     List<Long> findIdsByRoleName(@Param("roleName") RoleName roleName);

@@ -7,6 +7,7 @@ import { LoadingState } from '../components/states/LoadingState'
 import { AdminDashboard } from '../dashboard/AdminDashboard'
 import { FacultyDashboard } from '../dashboard/FacultyDashboard'
 import { StudentDashboard } from '../dashboard/StudentDashboard'
+import { TodoList } from '../todo/TodoList'
 import { PageHeader } from '../ui/PageHeader'
 
 type PreviewState = 'empty' | 'loading' | 'error'
@@ -60,6 +61,9 @@ export function DashboardPage() {
       <>
         <title>Dashboard · Stacc</title>
         <PageHeader title={title} description={summary} />
+        <div className="mb-6">
+          <TodoList limit={5} />
+        </div>
         <Part />
       </>
     )
@@ -68,6 +72,9 @@ export function DashboardPage() {
     <>
       <title>Dashboard · Stacc</title>
       <PageHeader title="Dashboard" description="An overview for each of your roles." />
+      <div className="mb-8">
+        <TodoList limit={5} />
+      </div>
       {parts.map(({ role, title, summary, Part }, index) => (
         <section
           key={role}

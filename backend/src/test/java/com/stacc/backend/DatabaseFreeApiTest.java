@@ -5,6 +5,10 @@ import com.stacc.backend.lms.discussion.LmsDiscussionThreadRepository;
 import com.stacc.backend.lms.message.LmsConversationMessageRepository;
 import com.stacc.backend.lms.message.LmsConversationRepository;
 import com.stacc.backend.lms.message.LmsMessageAttachmentRepository;
+import com.stacc.backend.calendar.personal.CalendarFeedLinkRepository;
+import com.stacc.backend.calendar.personal.PersonalCalendarEventRepository;
+import com.stacc.backend.todo.TodoAssignmentQueries;
+import com.stacc.backend.todo.TodoDismissalRepository;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -165,7 +169,11 @@ import org.springframework.web.context.WebApplicationContext;
     LmsDiscussionReplyRepository.class,
     LmsConversationRepository.class,
     LmsConversationMessageRepository.class,
-    LmsMessageAttachmentRepository.class
+    LmsMessageAttachmentRepository.class,
+    TodoDismissalRepository.class,
+    TodoAssignmentQueries.class,
+    PersonalCalendarEventRepository.class,
+    CalendarFeedLinkRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

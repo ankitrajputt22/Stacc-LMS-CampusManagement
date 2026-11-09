@@ -66,6 +66,7 @@ export type RailIconName =
   | 'faculty'
   | 'admin'
   | 'calendar'
+  | 'todo'
   | 'inbox'
   | 'support'
   | 'campus'
@@ -107,6 +108,12 @@ const RAIL_PATHS: Record<RailIconName, ReactNode> = {
       <rect x="3.5" y="5" width="17" height="15" rx="1.5" />
       <path d="M3.5 9.5h17M8 3v4M16 3v4" />
       <path d="M8 13h2M12 13h2M16 13h0M8 16.5h2M12 16.5h2" />
+    </>
+  ),
+  todo: (
+    <>
+      <path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5" />
+      <path d="M11 7h9M11 13h9M11 19h9" />
     </>
   ),
   inbox: (

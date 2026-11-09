@@ -157,8 +157,8 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 0.9.1 | Notification settings and email | Per-person choices of what to receive and how (in-app, email, daily digest); mail server settings from configuration. |
-| ★ 0.9.2 | To-Do | Worked out live from the sources (unsubmitted work, pending approvals, tasks), with dismissing and a dashboard part. |
-| ★ 0.9.3 | Calendar upgrade | Personal events, a month view, and a private, revocable subscription link that only reads that calendar. |
+| ★ 0.9.2 | To-Do | Worked out live from the sources (unsubmitted work, pending approvals, tasks), with dismissing and a dashboard part. Done: `todo` module, `TODO_VIEW` (`V92`), `/todo` and the dashboard part. |
+| ★ 0.9.3 | Calendar upgrade | Personal events, a month view, and a private, revocable subscription link that only reads that calendar. Done: `calendar.personal`, `CALENDAR_PERSONAL_USE` (`V93`), Month view, `.ics` feed. |
 | ★ 0.9.4 | Approvers by relationship | Workflow steps can name a relationship ("student's HOD", "student's mentor", "hostel warden") instead of only a role. |
 | ★ 0.9.5 | Helpdesk upgrade | Support teams and routing, staff roles beyond Admin, internal notes, attachments, "waiting on requester", reopening within a set time, ratings, response times. |
 | 0.9.6 | Help articles | Short self-help articles per category, suggested while a ticket is written. |

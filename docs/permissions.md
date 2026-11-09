@@ -91,6 +91,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `LMS_QUIZ_GRADE` | `FACULTY` | Reading the results of the quizzes of courses taught and marking answers: hand marks for written answers, regrades for others, and closing attempts whose time is up. Added by `V87`. |
 | `LMS_DISCUSSION_USE` | `STUDENT`, `FACULTY` | Reading and posting in the discussions of a course the account may open as a student or teaches; faculty also pin, and the asker or faculty accept an answer. Added by `V91`. |
 | `LMS_MESSAGE_USE` | `STUDENT`, `FACULTY` | Private conversations between a student and the faculty of a course. Added by `V91`. |
+| `TODO_VIEW` | `STUDENT`, `FACULTY`, `ADMIN` | Reading and dismissing one's own To-Do list; each part still needs its own feature's role and permission. Added by `V92`. |
+| `CALENDAR_PERSONAL_USE` | `STUDENT`, `FACULTY`, `ADMIN` | One's own personal calendar entries and private subscription link. Added by `V93`. |
 | `LMS_GRADEBOOK_MANAGE` | `FACULTY` | Reading the gradebook of the LMS courses taught, adding and changing manual items, entering their marks, and publishing columns. Added by `V88`. |
 | `LMS_GRADE_VIEW` | `STUDENT` | Reading one's own published grades in a course the student may use. Added by `V88`. |
 

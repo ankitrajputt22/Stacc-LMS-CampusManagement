@@ -2,7 +2,11 @@ import type {
   AdminCalendarEvent,
   CalendarEventFilters,
   CalendarEventRequest,
+  CalendarFeedStatus,
   MyCalendarResponse,
+  NewCalendarFeed,
+  PersonalCalendarEvent,
+  PersonalCalendarEventRequest,
 } from '../types/calendar'
 import { apiClient } from './apiClient'
 
@@ -45,4 +49,31 @@ export async function publishCalendarEvent(eventId: number) {
 export async function cancelCalendarEvent(eventId: number) {
   const response = await apiClient.post<AdminCalendarEvent>(`${EVENTS}/${eventId}/cancel`)
   return response.data
+}
+
+// A person's own calendar entries and subscription link. Who is asking always comes from the session.
+const PERSONAL = '/calendar/me/personal-events'
+
+export async function getPersonalEvents(range: { from: string; to: string }, signal?: AbortSignal) {
+  return (await apiClient.get<PersonalCalendarEvent[]>(PERSONAL, { params: range, signal })).data
+}
+
+export async function createPersonalEvent(body: PersonalCalendarEventRequest) {
+  return (await apiClient.post<PersonalCalendarEvent>(PERSONAL, body)).data
+}
+
+export async function deletePersonalEvent(eventId: number) {
+  await apiClient.delete(`${PERSONAL}/${eventId}`)
+}
+
+export async function getCalendarFeed(signal?: AbortSignal) {
+  return (await apiClient.get<CalendarFeedStatus>('/calendar/me/feed', { signal })).data
+}
+
+export async function createCalendarFeed() {
+  return (await apiClient.post<NewCalendarFeed>('/calendar/me/feed')).data
+}
+
+export async function revokeCalendarFeed() {
+  await apiClient.post('/calendar/me/feed/revoke')
 }
