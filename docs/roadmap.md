@@ -271,9 +271,9 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 1.0.1 | Feature freeze | Only fixes from here; a cross-module integration review. |
-| ★ 1.0.2 | Security sweep | The authorization matrix, a wrong-record test suite, formatting and XSS checks, security headers, dependency and secret review. |
-| ★ 1.0.3 | Data safety | Fresh and upgrade migration tests, constraint review, backup and restore scripts tested, a disaster recovery guide. |
-| ★ 1.0.4 | Production setup | Production Docker setup, HTTPS through Nginx, security headers, basic installable app (PWA) without caching private data. |
+| ★ 1.0.2 | Security sweep | The authorization matrix, a wrong-record test suite, formatting and XSS checks, security headers, dependency and secret review. Done: generated `authorization-matrix.md`, `RouteGateApiTest`, security headers in Nginx and the API, dependency and secret review (`security-review.md`). |
+| ★ 1.0.3 | Data safety | Fresh and upgrade migration tests, constraint review, backup and restore scripts tested, a disaster recovery guide. Done: `scripts/backup.sh` and `scripts/restore.sh` (tested on a throwaway server), `disaster-recovery.md`; fresh migrations are tested by `DatabaseSchemaMySqlIT`. |
+| ★ 1.0.4 | Production setup | Production Docker setup, HTTPS through Nginx, security headers, basic installable app (PWA) without caching private data. Done: `compose.prod.yaml`, HTTPS `nginx.prod.conf` with HSTS, security headers, installable manifest without a service worker. |
 | ★ 1.0.5 | Final UI pass | Consistency, phones, keyboard use, and screen readers across every area. |
 | ★ 1.0.6 | Documentation | README, architecture, security, AI, testing, deployment, student, faculty, and admin guides, demo guide, changelog, known limitations. |
 | ★ 1.0.7 | Demo | Complete demo data and a rehearsed demo story with a fallback recording. |

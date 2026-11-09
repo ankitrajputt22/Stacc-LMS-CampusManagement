@@ -156,3 +156,18 @@ The backend starts without storage. Only uploading and downloading files need it
 ## Not included
 
 This is a development and demo stack. It has no domain name, no HTTPS, no production secret handling, and no CI/CD. Redis, Kafka, Kubernetes, and similar tools are not part of it, because nothing in Stacc needs them yet.
+
+## Production (v1.0.4)
+
+`compose.prod.yaml` layers production settings over `compose.yaml`:
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+- **Ports:** only Nginx is reachable, on 80 (which only redirects) and 443. MySQL, MinIO, and the backend publish no ports.
+- **HTTPS:** Nginx serves HTTPS with `frontend/nginx.prod.conf` and the certificates in `STACC_TLS_DIR` (`fullchain.pem` and `privkey.pem`), adding HSTS to the security headers of `frontend/security-headers.conf`.
+- **Backend:** runs the `prod` profile with secure cookies. Its startup check refuses unsafe settings such as a root database user, a test password, or a non-https `FRONTEND_ORIGIN`.
+- **Required settings:** besides the usual `.env` values, set `FRONTEND_ORIGIN` (the site's https address) and `STACC_TLS_DIR`. Mail settings are optional.
+- **Installing as an app:** the page offers itself as an installable app through `public/manifest.webmanifest`. There is no service worker, so nothing private is cached on the device.
+- **Backups:** see `docs/disaster-recovery.md`.

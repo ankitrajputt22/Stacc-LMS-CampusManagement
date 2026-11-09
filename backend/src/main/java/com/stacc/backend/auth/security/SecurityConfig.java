@@ -87,6 +87,11 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // API answers are data, never pages: no framing, no type sniffing (both Spring defaults), and no
+                // referrer sent onward.
+                .headers(headers -> headers
+                        .referrerPolicy(referrer -> referrer.policy(
+                                org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
                 // An API client signs in with an "Authorization: Bearer" header; a browser with the HttpOnly session
                 // cookie, read by SessionCookieAuthenticationFilter after the CSRF check. Either way the token's session
                 // must still be open and its account active. A missing or unacceptable token gets 401.
