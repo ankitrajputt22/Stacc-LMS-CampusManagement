@@ -276,3 +276,22 @@ export type HostelNotice = {
   publishedAt: string | null
   updatedAt: string
 }
+
+export type Meal = 'BREAKFAST' | 'LUNCH' | 'SNACKS' | 'DINNER'
+export type MealLine = { meal: Meal; items: string; changed: boolean; note: string | null }
+export type DayMenu = { date: string; meals: MealLine[] }
+export type RatedMeal = { date: string; meal: Meal; rating: number }
+/** Without a hostel bed: no hostel name and an empty week. */
+export type ResidentMess = { hostelName: string | null; week: DayMenu[]; rated: RatedMeal[] }
+export type MessTemplateLine = { dayOfWeek: number; meal: Meal; items: string }
+/** A meal's ratings of the last month; the average only for at least five ratings. */
+export type MealSummary = { meal: Meal; ratings: number; average: number | null }
+export type MealComment = { date: string; meal: Meal; rating: number; comment: string }
+export type ManagerMess = {
+  hostelId: number
+  hostelName: string
+  template: MessTemplateLine[]
+  week: DayMenu[]
+  lastMonth: MealSummary[]
+  comments: MealComment[]
+}

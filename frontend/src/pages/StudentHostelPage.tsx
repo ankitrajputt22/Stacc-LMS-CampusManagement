@@ -37,6 +37,7 @@ import { border, fieldClasses } from '../teaching/formStyles'
 import type { EligibleHostelSession, HostelApplicationDetail, StudentHostelAllocation } from '../types/hostel'
 import { TextField } from '../ui'
 import { StudentOutings } from '../hostel/outings/StudentOutings'
+import { ResidentMessCard } from '../hostel/mess/Mess'
 import { ResidentHostelNotices } from '../hostel/notices/HostelNotices'
 import { StudentRoomChanges } from '../hostel/rooms/RoomChanges'
 
@@ -420,6 +421,7 @@ export function StudentHostelPage() {
       {isStudent && (
         <div className="mt-10 space-y-6 border-t border-line pt-6">
           <ResidentHostelNotices />
+          <ResidentMessCard />
           <StudentRoomChanges />
         </div>
       )}

@@ -178,7 +178,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | 0.10.7 | Night roll call | A sheet per block pre-filled from movements; nothing starts as Absent. Done (`V108`): warden sheets per hostel or block and night, finalized once. |
 | ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. Done: `HOSTEL` helpdesk category routed to the `MAINTENANCE` team with the room attached; confirmation and rating through the helpdesk. |
 | 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. Done (`V109`): hostel notices for the office and wardens, with emergency Inbox notices. |
-| 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. |
+| 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. Done (`V110`): weekly menus, day changes, and anonymous meal ratings. |
 | 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. |
 | ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. Done: the student hostel page with queue place, the warden dashboard at `/warden`, and occupancy for the office. |
 
