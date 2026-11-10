@@ -57,6 +57,7 @@ The feature that sent a notification stays authoritative: the assignment, the gr
 | Type | Sent when | To | Source | Link |
 | --- | --- | --- | --- | --- |
 | `ASSIGNMENT_PUBLISHED` | A draft assignment is published for the first time. | Every student who may use the LMS course now, under `LmsStudentAccessPolicy`. | `ASSIGNMENT` | `/courses/{lmsCourseId}/assignments/{assignmentId}` |
+| `ANNOUNCEMENT_PUBLISHED` | A draft announcement is published for the first time (under the announcement row lock, so once). | Every student who may use the LMS course now. | `ANNOUNCEMENT` | `/courses/{lmsCourseId}/announcements` |
 | `QUIZ_PUBLISHED` | A draft quiz is published for the first time. | Every student who may use the LMS course now. | `QUIZ` | `/courses/{lmsCourseId}/quizzes/{quizId}` |
 | `ASSIGNMENT_GRADED` | An attempt gets its first grade, or its marks or feedback really change. | The student who handed in the attempt. | `SUBMISSION_GRADE` | the same assignment page |
 | `RESULT_PUBLISHED` | A draft official result is published. | The student of the result's course enrollment. | `COURSE_RESULT` | `/academic/results` |

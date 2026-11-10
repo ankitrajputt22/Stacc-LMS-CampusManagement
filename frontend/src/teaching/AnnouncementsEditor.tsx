@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react'
 import {
+  addAnnouncementFiles,
   archiveAnnouncement,
   createAnnouncement,
+  downloadFacultyAnnouncementFile,
   publishAnnouncement,
+  removeAnnouncementFile,
   updateAnnouncement,
 } from '../api/lmsAnnouncementsApi'
+import { AnnouncementFiles } from '../courses/AnnouncementFiles'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
 import { formatDateTime } from '../courses/dates'
@@ -39,6 +43,53 @@ type AnnouncementItemProps = {
   setOpenForm: (form: AnnouncementForm | null) => void
   setConfirming: (id: number | null) => void
   changes: Changes
+}
+
+/** Add files: up to 5 at once, checked again by the backend (type, size, and at most 10 on an announcement). */
+function AddFilesForm({ announcementId, name, changes }: { announcementId: number; name: string; changes: Changes }) {
+  const input = useRef<HTMLInputElement>(null)
+  const [chosen, setChosen] = useState<File[]>([])
+  const id = `announcement-${announcementId}-files`
+  return (
+    <form
+      className="mt-2 flex flex-wrap items-end gap-2"
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (chosen.length === 0) {
+          return
+        }
+        void changes
+          .run(() => addAnnouncementFiles(announcementId, chosen), {
+            done: `Added ${chosen.length === 1 ? 'a file' : `${chosen.length} files`} to ${name}.`,
+          })
+          .then((result) => {
+            if (result?.ok) {
+              setChosen([])
+              if (input.current) {
+                input.current.value = ''
+              }
+            }
+          })
+      }}
+    >
+      <div>
+        <label htmlFor={id} className="block text-xs font-medium text-ink-muted">
+          Add files to {name}
+        </label>
+        <input
+          ref={input}
+          id={id}
+          type="file"
+          multiple
+          onChange={(event) => setChosen(Array.from(event.target.files ?? []).slice(0, 5))}
+          className="mt-1 text-sm file:mr-3 file:rounded-control file:border file:border-line-strong file:bg-surface-muted file:px-3 file:py-1 file:text-sm file:font-medium file:text-ink"
+        />
+      </div>
+      <Button type="submit" variant="secondary" size="sm" disabled={chosen.length === 0 || changes.busy}>
+        Upload<span className="sr-only">{` files to ${name}`}</span>
+      </Button>
+    </form>
+  )
 }
 
 function AnnouncementItem({
@@ -117,6 +168,18 @@ function AnnouncementItem({
         className="mt-1.5 text-sm leading-6 text-ink"
         headingLevel={4}
       />
+      <AnnouncementFiles
+        files={announcement.files}
+        title={announcement.title}
+        download={(fileId) => downloadFacultyAnnouncementFile(announcement.id, fileId)}
+        onRemove={(file) =>
+          void changes.run(() => removeAnnouncementFile(announcement.id, file.id), {
+            done: `Removed ${file.fileName}. Students no longer see it.`,
+            focus: () => [`${key}-heading`],
+          })
+        }
+      />
+      <AddFilesForm announcementId={announcement.id} name={name} changes={changes} />
 
       {isConfirming ? (
         <ArchiveConfirmation

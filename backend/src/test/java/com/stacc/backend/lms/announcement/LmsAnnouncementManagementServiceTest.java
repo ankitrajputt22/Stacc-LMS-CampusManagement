@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,8 +42,9 @@ class LmsAnnouncementManagementServiceTest {
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private final LmsAnnouncementRepository announcements = mock(LmsAnnouncementRepository.class);
     private final LmsFacultyAccessService facultyAccess = mock(LmsFacultyAccessService.class);
+    private final LmsAnnouncementNotifications notifications = mock(LmsAnnouncementNotifications.class);
     private final LmsAnnouncementManagementService service = new LmsAnnouncementManagementService(
-            lmsCourses, announcements, facultyAccess, Clock.fixed(NOW, ZoneOffset.UTC));
+            lmsCourses, announcements, facultyAccess, Clock.fixed(NOW, ZoneOffset.UTC), notifications);
 
     private final LmsCourse course = ContentFixtures.lmsCourse(7);
     private final LmsAnnouncement draft = announcement(course, 5);
@@ -60,6 +62,10 @@ class LmsAnnouncementManagementServiceTest {
         when(lmsCourses.findById(7L)).thenReturn(Optional.of(course));
         when(announcements.findById(5L)).thenReturn(Optional.of(draft));
         when(announcements.findById(6L)).thenReturn(Optional.of(foreign));
+        when(announcements.findLmsCourseIdById(5L)).thenReturn(Optional.of(7L));
+        when(announcements.findLmsCourseIdById(6L)).thenReturn(Optional.of(8L));
+        when(announcements.findByIdForUpdate(5L)).thenReturn(Optional.of(draft));
+        when(announcements.findByIdForUpdate(6L)).thenReturn(Optional.of(foreign));
         when(announcements.save(any(LmsAnnouncement.class))).thenAnswer(call -> call.getArgument(0));
     }
 
@@ -115,6 +121,8 @@ class LmsAnnouncementManagementServiceTest {
 
         assertEquals(LmsContentStatus.PUBLISHED, again.getStatus());
         assertEquals(NOW, again.getPublishedAt());
+        // Only the first publication tells the students.
+        verify(notifications, times(1)).published(draft);
     }
 
     @Test

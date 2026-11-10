@@ -144,7 +144,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
             </section>
           )}
           <CourseProgressCard lmsCourseId={course.lmsCourseId} />
-          <CourseAnnouncements announcements={announcements} />
+          <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} />
           <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
           <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
         </>

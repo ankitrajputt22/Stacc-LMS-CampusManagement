@@ -8,6 +8,7 @@ public enum NotificationSourceType {
     ASSIGNMENT,
     SUBMISSION_GRADE,
     QUIZ,
+    ANNOUNCEMENT,
     ACADEMIC_CALENDAR_EVENT,
     ATTENDANCE_RECORD,
     COURSE_RESULT,

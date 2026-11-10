@@ -252,6 +252,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/announcements` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/courses/{lmsCourseId}/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentAssignmentController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
@@ -272,6 +273,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/syllabus` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/announcements/{announcementId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}/remove` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/publish` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}/alignment` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |
@@ -294,6 +298,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/conversations` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_MESSAGE_USE')` | LmsMessageController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/copy` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsCourseCopyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/copy-sources` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsCourseCopyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/discussion-reports` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/discussion-reports/{reportId}/resolve` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-blueprints` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
@@ -386,11 +392,15 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/{conversationId}/messages` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_MESSAGE_USE')` | LmsMessageController |
 | `/api/v1/lms/{threadId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/hide` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/lock` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/pin` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies/{replyId}/accept` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies/{replyId}/accept` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/replies/{replyId}/hide` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/reports` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/me/certificate-requests` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |
 | `/api/v1/me/certificate-requests` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |
 | `/api/v1/me/certificate-requests/{requestId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |

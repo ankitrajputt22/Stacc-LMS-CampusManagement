@@ -1,8 +1,10 @@
+import { downloadCourseAnnouncementFile } from '../api/lmsAnnouncementsApi'
 import type { ApiRequestState } from '../api/useApiRequest'
 import { EmptyState } from '../components/states/EmptyState'
 import { FormattedText } from '../formatting/FormattedText'
 import type { LmsCourseAnnouncement } from '../types/lms'
 import { Card } from '../ui'
+import { AnnouncementFiles } from './AnnouncementFiles'
 import { formatDateTime } from './dates'
 import { SectionState } from './SectionState'
 
@@ -10,13 +12,15 @@ type CourseAnnouncementsProps = {
   /** On the section's own page, whose title already names it: a plain card without its own heading. */
   standalone?: boolean
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
+  /** The course, for downloading announcement files. */
+  lmsCourseId: number
 }
 
 /**
  * The course's published announcements, newest first, each shown as its format says, never as HTML. This part loads
  * on its own: if it fails, the rest of the course page stays as it is.
  */
-export function CourseAnnouncements({ announcements, standalone = false }: CourseAnnouncementsProps) {
+export function CourseAnnouncements({ announcements, lmsCourseId, standalone = false }: CourseAnnouncementsProps) {
   return (
     <Card title={standalone ? undefined : 'Announcements'} padding="none" className={standalone ? '' : 'mt-6'}>
       {announcements.status !== 'loaded' ? (
@@ -39,6 +43,11 @@ export function CourseAnnouncements({ announcements, standalone = false }: Cours
                   format={announcement.messageFormat}
                   className="mt-2 text-sm leading-6 text-ink"
                   headingLevel={4}
+                />
+                <AnnouncementFiles
+                  files={announcement.files}
+                  title={announcement.title}
+                  download={(fileId) => downloadCourseAnnouncementFile(lmsCourseId, announcement.id, fileId)}
                 />
               </article>
             </li>

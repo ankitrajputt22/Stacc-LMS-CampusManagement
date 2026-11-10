@@ -14,15 +14,20 @@ export type DiscussionThreadSummary = {
   replyCount: number
   createdAt: string
   lastActivityAt: string
+  locked: boolean
+  /** Only faculty receive hidden threads. */
+  hidden: boolean
 }
 
+/** A hidden reply reaches students without its author or text. */
 export type DiscussionReply = {
   replyId: number
-  authorLoginId: string
-  authorKind: AuthorKind
-  body: string
+  authorLoginId: string | null
+  authorKind: AuthorKind | null
+  body: string | null
   createdAt: string
   accepted: boolean
+  hidden: boolean
 }
 
 export type DiscussionThread = {
@@ -37,6 +42,23 @@ export type DiscussionThread = {
   canAccept: boolean
   canPin: boolean
   replies: DiscussionReply[]
+  locked: boolean
+  hidden: boolean
+  canModerate: boolean
+  canReport: boolean
+}
+
+/** An open report for the course's faculty; reporters are not shown. */
+export type DiscussionReport = {
+  reportId: number
+  threadId: number
+  threadTitle: string
+  replyId: number | null
+  postAuthorLoginId: string
+  excerpt: string
+  reason: string
+  reportedAt: string
+  postHidden: boolean
 }
 
 export type ConversationSummary = {
