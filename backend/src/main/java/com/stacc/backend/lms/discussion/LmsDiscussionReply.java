@@ -16,7 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A reply in a discussion thread. Replies are never edited or deleted. */
+/** A reply in a discussion thread. Replies are never edited or deleted; faculty may hide one, and students then see only that it was hidden. */
 @Entity
 @Table(name = "lms_discussion_replies")
 public class LmsDiscussionReply {
@@ -43,6 +43,12 @@ public class LmsDiscussionReply {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "hidden_at")
+    private Instant hiddenAt;
+
+    @Column(name = "hidden_by_account_id")
+    private Long hiddenByAccountId;
+
     protected LmsDiscussionReply() {
         // Required by JPA.
     }
@@ -53,6 +59,23 @@ public class LmsDiscussionReply {
         this.authorKind = Require.notNull(authorKind, "authorKind");
         this.body = Require.text(body, "body", LmsDiscussionThread.MAX_BODY_LENGTH);
         this.createdAt = Require.notNull(now, "now");
+    }
+
+    /** Hides the reply from students; hiding again keeps the first time and moderator. */
+    public void hide(Long byAccountId, Instant at) {
+        if (hiddenAt == null) {
+            this.hiddenAt = Require.notNull(at, "at");
+            this.hiddenByAccountId = Require.notNull(byAccountId, "byAccountId");
+        }
+    }
+
+    public void unhide() {
+        this.hiddenAt = null;
+        this.hiddenByAccountId = null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
     }
 
     public Long getId() { return id; }
