@@ -16,7 +16,7 @@ These k6 scripts load-test Stacc's busiest reads and its locked writes, against 
 | Script | What it does | Targets |
 | --- | --- | --- |
 | `reads.js` | 50 students sign in, then open the dashboard, courses, To-Do, calendar, and Inbox for 2 minutes. | p95 under 800 ms, under 1% errors |
-| `quiz-burst.js` | Many students start and save a practice quiz at once (locked writes). | no 5xx; every start gets one attempt |
+| `quiz-burst.js` | Builds and publishes a one-attempt graded quiz from CS301's reviewed objective questions as `faculty1`, then 30 requests at once, 10 per demo student, each starting or resuming the attempt, saving the correct answers, and handing it in. Runs in CI on the end-to-end stack. | only 200 or 409; afterwards each student holds exactly one handed-in attempt with full marks; p95 under 3 s |
 | `course-registration-burst.js` | 30 registrations for one course offering at once, 10 from each demo student (`COURSE_CODE`, default `CS305`; `STUDENTS`; `REQUESTS_PER_STUDENT`). Runs in CI on the end-to-end stack. | only 201 or 409; at most one 201 and one enrollment per student; every eligible student gets a place up to the free places; free places go down by exactly the new enrollments; p95 under 3 s |
 | `event-registration-burst.js` | Students register for the same event at once (capacity under a row lock). | no 5xx; capacity never exceeded |
 
