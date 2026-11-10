@@ -6,6 +6,7 @@
 - **0.7.9:** exam blueprints and a paper builder from the question bank, with a print view and Word export.
 - **0.7.11:** a k6 load test of quiz submissions in CI, and fixes for two races it found (an answer saved twice at once, and two students starting at once).
 - **0.8.3:** discussion moderation: faculty hide and lock, students report posts.
+- **0.8.5:** files on announcements and an Inbox notice when one is first published.
 
 ## v1.0.0 (2026-11-11)
 

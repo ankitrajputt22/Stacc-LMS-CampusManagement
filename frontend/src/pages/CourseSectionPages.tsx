@@ -189,7 +189,7 @@ export function CourseAssignmentsPage() {
 
 function Announcements({ course }: { course: LmsCourseDetail }) {
   const announcements = useCourseAnnouncements(course.lmsCourseId)
-  return <CourseAnnouncements announcements={announcements} standalone />
+  return <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} standalone />
 }
 
 /** /courses/:lmsCourseId/announcements: the course's published announcements, newest first. */

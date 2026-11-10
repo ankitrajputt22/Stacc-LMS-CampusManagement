@@ -149,7 +149,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.8.2 | Course discussions | Questions and replies per course, accepted answers, pinned posts. Done: `lms.discussion`, `LMS_DISCUSSION_USE` (`V91`), see `course-communication.md`. |
 | 0.8.3 | Moderation | Hide, lock, and report, by course staff. Done (`V103`): hidden threads and replies, locked threads, and student reports resolved by the faculty. |
 | ★ 0.8.4 | Messages to faculty | Private conversations between a student and the course's faculty. Done: `lms.message`, `LMS_MESSAGE_USE` (`V91`), with files. |
-| 0.8.5 | Announcement upgrades | Formatting, attachments, and notifications. |
+| 0.8.5 | Announcement upgrades | Formatting, attachments, and notifications. Done (`V104`): formatting from v0.6, files on announcements, and an Inbox notice on first publication. |
 | ★ 0.8.6 | Communication pages | Discussions, messages, and announcements redesigned. Done: Discussions and Messages pages in both course navigations, built from `src/ui`. |
 
 ## v0.9 Shared engines
@@ -291,7 +291,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
 | v0.7 Assessment | Done (0.7.1 to 0.7.11) |
-| v0.8 Communication | Core done (0.8.1 to 0.8.4, 0.8.6); 0.8.5 comes after the core phases |
+| v0.8 Communication | Done (0.8.1 to 0.8.6) |
 | v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
 | v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |

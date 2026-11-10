@@ -528,6 +528,12 @@ Announcements use the same `LmsContentStatus` as course content:
 - A course or announcement the caller may not use answers 404, the same as one that does not exist. Editing or publishing an archived announcement answers 409. A missing or too-long title or message answers 400 with field errors. No token answers 401, and a token without the route's role and permission, an admin's included, answers 403.
 - The reads are side-effect free. Nothing is sent to anyone when an announcement is published.
 
+### Files and notifications (v0.8.5)
+
+- Faculty add files to a draft or published announcement (`POST /api/v1/lms/faculty/announcements/{id}/files`, `multipart/form-data`, up to 5 at once and 10 listed in all) and remove them (`POST …/files/{fileId}/remove`), with `FACULTY` and `LMS_CONTENT_MANAGE`. Files follow the study-material rules through `LmsAttachmentStore`, live in private storage under server-made keys, and are never deleted: a removed file stops being listed or downloaded but keeps its bytes (`lms_announcement_attachments`).
+- Students download a file only from a published announcement of a course the student access policy allows (`GET /api/v1/lms/courses/{id}/announcements/{announcementId}/files/{fileId}`); faculty through `GET /api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}`. Downloads are always attachments; anything else answers the same 404.
+- The first publication tells every student who may use the course through the Inbox (`ANNOUNCEMENT_PUBLISHED`, in the Courses category). Publishing locks the announcement row and reads it fresh, so two publications at once notify once (`LmsAnnouncementPublishMySqlIT`). Corrections notify nobody.
+
 ## Assignments
 
 An assignment defines a piece of work in one LMS course: what to do, by when, and for how many marks. The code is `LmsAssignment` and `LmsAssignmentManagementService` in `com.stacc.backend.lms.assignment`, and the table is `lms_assignments`.
