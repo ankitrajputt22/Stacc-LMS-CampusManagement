@@ -247,3 +247,9 @@ Payments and fees, mess, visitors, maintenance requests, room preferences or stu
 - The hostel office manages notices of every hostel (Hostel Management, Notices) and a warden those of their own hostels (the Hostel notices card on `/warden`), through `/api/v1/hostel/notices/manage` with `ADMIN` or `WARDEN` and `HOSTEL_NOTICE_MANAGE`. Another hostel's notice answers the same 404 as a missing one.
 - Residents see the published notices of their current hostel that reach their block, emergencies first, on `/hostel` (`GET /api/v1/hostel/student/notices`).
 - Publishing an emergency notice for the first time tells every resident it reaches through the Inbox (`HOSTEL_EMERGENCY`, Campus category), under the notice's row lock, so two publications at once notify once (`HostelNoticeMySqlIT`).
+
+## Mess (v0.10.10)
+
+- Each hostel has a weekly menu: one line of items per day of the week and meal (`MessMenuItem`; breakfast, lunch, snacks, dinner). A change for one meal on one date (`MessMenuChange`, with an optional note such as "Festival") replaces the weekly line on that date only; setting it again replaces it (`V110`).
+- Residents see their current hostel's next seven days on `/hostel` (`GET /api/v1/hostel/student/mess`; without a bed the answer is empty) and rate meals of today or the last seven days from 1 to 5 with an optional comment, once per meal (`POST …/mess/feedback`, a unique key per student, date, and meal).
+- The hostel office (Hostel Management, Mess) and the hostel's wardens (the Mess card on `/warden`) manage the menu and read the last 30 days' feedback through `/api/v1/hostel/mess/manage` with `ADMIN` or `WARDEN` and `HOSTEL_MESS_MANAGE`; another hostel answers 404. Feedback is shown without who gave it, and a meal's average only for at least five ratings (`AnalyticsRules.MIN_GROUP`). "Today" is the date in `COLLEGE_TIME_ZONE`.

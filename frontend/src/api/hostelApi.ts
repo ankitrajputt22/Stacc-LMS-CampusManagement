@@ -16,7 +16,12 @@ import type {
   HostelQueuePlace,
   HostelRoom,
   HostelWardenAssignment,
+  ManagerMess,
+  Meal,
+  MessTemplateLine,
   Page,
+  RatedMeal,
+  ResidentMess,
   RollCallDetail,
   RollCallMark,
   RollCallSummary,
@@ -240,4 +245,27 @@ export async function archiveHostelNotice(noticeId: number) {
 
 export async function getMyHostelNotices(signal?: AbortSignal) {
   return (await apiClient.get<HostelNotice[]>('/hostel/student/notices', { signal })).data
+}
+
+// --- Mess
+
+export async function getMyMess(signal?: AbortSignal) {
+  return (await apiClient.get<ResidentMess>('/hostel/student/mess', { signal })).data
+}
+
+/** Rates a meal of today or the last seven days, once. */
+export async function rateMeal(date: string, meal: Meal, rating: number, comment: string | null) {
+  return (await apiClient.post<RatedMeal>('/hostel/student/mess/feedback', { date, meal, rating, comment })).data
+}
+
+export async function getManagedMess(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<ManagerMess>('/hostel/mess/manage', { params: { hostelId }, signal })).data
+}
+
+export async function setMessTemplate(hostelId: number, lines: MessTemplateLine[]) {
+  await apiClient.put('/hostel/mess/manage/template', { hostelId, lines })
+}
+
+export async function setMessChange(hostelId: number, date: string, meal: Meal, items: string, note: string | null) {
+  await apiClient.put('/hostel/mess/manage/changes', { hostelId, date, meal, items, note })
 }

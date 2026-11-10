@@ -12,6 +12,7 @@
 - **0.10.3:** hostel room moves and bed swaps, decided by the warden and carried out by the hostel office.
 - **0.10.7:** night roll calls for wardens, pre-filled from the gate log.
 - **0.10.9:** hostel and block notices, with emergency notices sent to every affected resident.
+- **0.10.10:** the hostel mess: weekly menus, changes for single days, and meal ratings.
 
 ## v1.0.0 (2026-11-11)
 
