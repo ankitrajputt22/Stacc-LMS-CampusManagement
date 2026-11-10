@@ -102,6 +102,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `GRIEVANCE_SUBMIT` | `STUDENT`, `FACULTY` | Raising grievances and following, appealing, and accepting one's own. Added by `V118`. |
 | `GRIEVANCE_COMMITTEE_WORK` | `FACULTY`, `ADMIN` | Working the cases of the grievance committees one is named on; the committee membership decides which. Added by `V118`. |
 | `GRIEVANCE_MANAGE` | `ADMIN` | Managing grievance categories and committees, never reading cases. Added by `V118`. |
+| `MENTORING_USE` | `STUDENT`, `FACULTY` | Reading one's own mentoring pairings; mentors record meetings and action items, and either of the pair completes items. Added by `V119`. |
+| `MENTORING_MANAGE` | `ADMIN` | Pairing mentors with students and ending pairings, never reading meetings. Added by `V119`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |

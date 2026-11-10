@@ -32,6 +32,7 @@ import com.stacc.backend.hostel.HostelWardenRepository;
 import com.stacc.backend.hostel.HostelWardenService;
 import com.stacc.backend.identity.person.PersonProfileRepository;
 import com.stacc.backend.identity.person.PersonProfileService;
+import com.stacc.backend.mentoring.MentoringService;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamService;
 import org.slf4j.Logger;
@@ -82,6 +83,7 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
     private final CareerService career;
     private final GrievanceCategoryRepository grievanceCategories;
     private final GrievanceAdminService grievanceAdmin;
+    private final MentoringService mentoring;
     private final Clock clock;
 
     public LocalDemoExtrasSeeder(Environment environment, TransactionTemplate transaction, PasswordEncoder passwordEncoder,
@@ -90,7 +92,8 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
             HelpdeskTeamService teamService, CampusGroupRepository groups, CampusGroupService groupService, CampusFacilityRepository facilities,
             CampusFacilityService facilityService, CampusEventRepository events, CampusEventService eventService,
             CareerCompanyRepository companies, CareerOpportunityRepository opportunities, CareerService career,
-            GrievanceCategoryRepository grievanceCategories, GrievanceAdminService grievanceAdmin, Clock clock) {
+            GrievanceCategoryRepository grievanceCategories, GrievanceAdminService grievanceAdmin, MentoringService mentoring,
+            Clock clock) {
         this.environment = environment;
         this.transaction = transaction;
         this.passwordEncoder = passwordEncoder;
@@ -114,6 +117,7 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
         this.career = career;
         this.grievanceCategories = grievanceCategories;
         this.grievanceAdmin = grievanceAdmin;
+        this.mentoring = mentoring;
         this.clock = clock;
     }
 
@@ -186,6 +190,10 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
             Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
             Long categoryId = grievanceAdmin.create("ACADEMIC", "Academic matters", 14).categoryId();
             grievanceAdmin.addMember(admin, categoryId, "faculty1");
+        }
+        if (mentoring.allPairings().stream().noneMatch(pairing -> pairing.mentorLoginId().equals("faculty1")
+                && pairing.menteeLoginId().equals("student1"))) {
+            mentoring.pair("faculty1", "student1");
         }
     }
 

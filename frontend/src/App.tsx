@@ -36,6 +36,8 @@ import { VerifyIdPage } from './pages/VerifyIdPage'
 import { VerifyDocumentPage } from './pages/VerifyDocumentPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { GrievancesPage } from './pages/GrievancesPage'
+import { MentoringPage } from './pages/MentoringPage'
+import { AdminMentoringPage } from './pages/AdminMentoringPage'
 import { AdminGrievancesPage } from './pages/AdminGrievancesPage'
 import { CertificateDeskPage } from './pages/CertificateDeskPage'
 import { CareerPage } from './pages/CareerPage'
@@ -201,6 +203,8 @@ function App() {
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="grievances" element={<GrievancesPage />} />
           <Route path="admin/grievances" element={<AdminGrievancesPage />} />
+          <Route path="mentoring" element={<MentoringPage />} />
+          <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />
           <Route path="placement" element={<PlacementPage />} />

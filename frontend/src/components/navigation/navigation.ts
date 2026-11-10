@@ -80,6 +80,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Users', to: '/admin/users' },
       // Categories and committees only; cases stay with their committees.
       { label: 'Grievance committees', to: '/admin/grievances' },
+      { label: 'Mentoring', to: '/admin/mentoring' },
       // Read-only record of sensitive changes; the backend checks AUDIT_LOG_VIEW.
       { label: 'Audit log', to: '/admin/audit' },
       { label: 'Reports', to: '/reports' },
@@ -107,6 +108,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Documents', to: '/documents', roles: ['STUDENT', 'FACULTY'], icon: 'inbox' },
       // Raising grievances (students, faculty) and committee cases (faculty, admins on a committee); the backend checks each case.
       { label: 'Grievances', to: '/grievances', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'support' },
+      // Mentors and their students; the backend opens only one's own pairings.
+      { label: 'Mentoring', to: '/mentoring', roles: ['STUDENT', 'FACULTY'], icon: 'student' },
       { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
       { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },

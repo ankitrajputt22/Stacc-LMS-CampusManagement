@@ -1,4 +1,4 @@
-export type TodoKind = 'ASSIGNMENT' | 'GRADING' | 'ATTENDANCE' | 'APPROVAL'
+export type TodoKind = 'ASSIGNMENT' | 'GRADING' | 'ATTENDANCE' | 'APPROVAL' | 'MENTORING'
 
 /** One To-Do item as the API sends it, worked out live. */
 export type TodoItem = {
