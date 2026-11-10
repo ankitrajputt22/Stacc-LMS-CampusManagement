@@ -175,7 +175,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. Done (`V98`): `PassService`, gate passes with a QR view. |
 | ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. Done: `/gate` with camera scan where supported, typed codes, manual lookup, the movement log, and inside or outside from it. |
 | ★ 0.10.6 | Leave | Leave and extensions, overdue alerts to the warden, and approved leave on the calendar. Done: leave and extensions through the warden, overdue list for wardens; approved leave is not yet on the calendar. |
-| 0.10.7 | Night roll call | A sheet per block pre-filled from movements; nothing starts as Absent. |
+| 0.10.7 | Night roll call | A sheet per block pre-filled from movements; nothing starts as Absent. Done (`V108`): warden sheets per hostel or block and night, finalized once. |
 | ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. Done: `HOSTEL` helpdesk category routed to the `MAINTENANCE` team with the room attached; confirmation and rating through the helpdesk. |
 | 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. |
 | 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. |

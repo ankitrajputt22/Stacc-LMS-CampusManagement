@@ -239,8 +239,13 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/student/room-changes` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
 | `/api/v1/hostel/warden/allocations/{allocationId}/check-in` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/hostels/{hostelId}/bed-map` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
+| `/api/v1/hostel/warden/hostels/{hostelId}/roll-calls` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/hostels/{hostelId}/roll-calls` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/hostel/warden/occupancy` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/overdue` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelOutingController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}/finalize` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}/marks` | PUT | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/id-cards/check` | POST | `hasAnyRole('ADMIN', 'SECURITY', 'LIBRARIAN', 'WARDEN') and hasAuthority('ID_CARD_VERIFY')` | IdCardController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |

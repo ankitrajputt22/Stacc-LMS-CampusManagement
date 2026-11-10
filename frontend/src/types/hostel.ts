@@ -231,3 +231,34 @@ export type RoomChange = {
   canAnswer: boolean
   canComplete: boolean
 }
+
+export type RollCallStatus = 'OPEN' | 'FINALIZED'
+export type RollCallMark = 'UNMARKED' | 'PRESENT' | 'ABSENT' | 'OUT'
+
+/** A night's roll call sheet with its counts. */
+export type RollCallSummary = {
+  rollCallId: number
+  hostelId: number
+  hostelName: string
+  block: string | null
+  rollDate: string
+  status: RollCallStatus
+  residents: number
+  present: number
+  absent: number
+  out: number
+  unmarked: number
+  finalizedAt: string | null
+}
+
+/** One resident on a sheet; prefilledOut says the gate log showed them going out. */
+export type RollCallEntry = {
+  entryId: number
+  studentLoginId: string
+  room: string
+  bed: string
+  status: RollCallMark
+  prefilledOut: boolean
+}
+
+export type RollCallDetail = { summary: RollCallSummary; entries: RollCallEntry[] }
