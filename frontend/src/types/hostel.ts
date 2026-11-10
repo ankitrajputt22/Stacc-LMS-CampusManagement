@@ -262,3 +262,17 @@ export type RollCallEntry = {
 }
 
 export type RollCallDetail = { summary: RollCallSummary; entries: RollCallEntry[] }
+
+/** A plain-text notice for one hostel or block. */
+export type HostelNotice = {
+  noticeId: number
+  hostelId: number
+  hostelName: string
+  block: string | null
+  title: string
+  message: string
+  emergency: boolean
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  publishedAt: string | null
+  updatedAt: string
+}

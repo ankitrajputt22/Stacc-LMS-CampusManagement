@@ -11,6 +11,7 @@ import type {
   HostelApplicationSummary,
   HostelBed,
   HostelBedMap,
+  HostelNotice,
   HostelOccupancy,
   HostelQueuePlace,
   HostelRoom,
@@ -216,4 +217,27 @@ export async function markRollCall(rollCallId: number, marks: { entryId: number;
 
 export async function finalizeRollCall(rollCallId: number) {
   return (await apiClient.post<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}/finalize`)).data
+}
+
+// --- Hostel notices
+
+export async function getManagedHostelNotices(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<HostelNotice[]>('/hostel/notices/manage', { params: { hostelId }, signal })).data
+}
+
+export async function addHostelNotice(input: { hostelId: number; block: string | null; title: string; message: string; emergency: boolean }) {
+  return (await apiClient.post<HostelNotice>('/hostel/notices/manage', input)).data
+}
+
+/** Publishes; an emergency notice also tells every resident it reaches, the first time. */
+export async function publishHostelNotice(noticeId: number) {
+  return (await apiClient.post<HostelNotice>(`/hostel/notices/manage/${noticeId}/publish`)).data
+}
+
+export async function archiveHostelNotice(noticeId: number) {
+  return (await apiClient.post<HostelNotice>(`/hostel/notices/manage/${noticeId}/archive`)).data
+}
+
+export async function getMyHostelNotices(signal?: AbortSignal) {
+  return (await apiClient.get<HostelNotice[]>('/hostel/student/notices', { signal })).data
 }

@@ -75,6 +75,7 @@ The feature that sent a notification stays authoritative: the assignment, the gr
 | `HOSTEL_ALLOCATED` | A hostel bed is allocated to an approved application. | The student. | `HOSTEL_ALLOCATION` | `/hostel` |
 | `HOSTEL_VACATED` | An active hostel allocation is vacated. | The student. | `HOSTEL_ALLOCATION` | `/hostel` |
 | `CAMPUS_NOTICE_PUBLISHED` | A campus notice is published for the first time. | Every active account holding a role the notice is visible to, once each. | `CAMPUS_NOTICE` | `/campus` |
+| `HOSTEL_EMERGENCY` | An emergency hostel notice is published for the first time. | Every resident of the hostel, or block, it reaches. | `HOSTEL_NOTICE` | `/hostel` |
 | `CAMPUS_SERVICE_READY` | An accepted campus service request is marked ready for the first time. | The requester. | `CAMPUS_SERVICE_REQUEST` | `/campus/requests/{requestId}` |
 | `CAMPUS_SERVICE_COMPLETED` | A campus service request is marked completed. | The requester. | `CAMPUS_SERVICE_REQUEST` | `/campus/requests/{requestId}` |
 

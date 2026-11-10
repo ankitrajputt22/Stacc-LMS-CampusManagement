@@ -37,6 +37,7 @@ import { border, fieldClasses } from '../teaching/formStyles'
 import type { EligibleHostelSession, HostelApplicationDetail, StudentHostelAllocation } from '../types/hostel'
 import { TextField } from '../ui'
 import { StudentOutings } from '../hostel/outings/StudentOutings'
+import { ResidentHostelNotices } from '../hostel/notices/HostelNotices'
 import { StudentRoomChanges } from '../hostel/rooms/RoomChanges'
 
 function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[]; onApplied: (applicationId: number) => void }) {
@@ -417,7 +418,8 @@ export function StudentHostelPage() {
       <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">View and manage your hostel application and allocation.</p>
       <div className="mt-6">{content}</div>
       {isStudent && (
-        <div className="mt-10 border-t border-line pt-6">
+        <div className="mt-10 space-y-6 border-t border-line pt-6">
+          <ResidentHostelNotices />
           <StudentRoomChanges />
         </div>
       )}
