@@ -9,6 +9,7 @@ import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { StatePanel } from '../components/states/StatePanel'
 import { NotFoundPage } from './NotFoundPage'
 
+import { FestsAdmin } from '../engagement/admin/FestsAdmin'
 import { FacilitiesAdmin } from '../engagement/admin/FacilitiesAdmin'
 import { GroupsAdmin } from '../engagement/admin/GroupsAdmin'
 import { EventOrganizer } from '../engagement/EventsSection'
@@ -24,6 +25,7 @@ const SECTIONS = [
   { path: 'groups', label: 'Clubs & Sports', Section: GroupsAdmin },
   { path: 'facilities', label: 'Facilities', Section: FacilitiesAdmin },
   { path: 'events', label: 'Events', Section: AdminEvents },
+  { path: 'fests', label: 'Fests', Section: FestsAdmin },
 ] as const
 
 /**

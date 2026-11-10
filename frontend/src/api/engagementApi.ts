@@ -1,6 +1,9 @@
 import type {
   CampusEvent,
   CampusFacility,
+  CampusFest,
+  FestApplication,
+  FestInput,
   CampusGroup,
   EventAttendanceRow,
   EventAttendee,
@@ -114,3 +117,27 @@ export async function getEventAttendance(eventId: number, signal?: AbortSignal) 
 export async function checkInEventAttendee(eventId: number, input: { code?: string; loginId?: string }) {
   return (await apiClient.post<EventCheckIn>(`${BASE}/events/${eventId}/check-ins`, input)).data
 }
+
+// --- Fests
+
+export const getFests = async (signal?: AbortSignal) => (await apiClient.get<CampusFest[]>(`${BASE}/fests`, { signal })).data
+/** Applies to volunteer for a shift; the campus office accepts or declines. */
+export const applyForFestShift = async (shiftId: number, note: string | null) =>
+  (await apiClient.post<CampusFest>(`${BASE}/fests/shifts/${shiftId}/apply`, { note })).data
+export const withdrawFestApplication = async (applicationId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/fests/applications/${applicationId}/withdraw`)).data
+
+export const getAllFests = async (signal?: AbortSignal) => (await apiClient.get<CampusFest[]>(`${BASE}/admin/fests`, { signal })).data
+export const createFest = async (input: FestInput) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests`, input)).data
+export const publishFest = async (festId: number) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/publish`)).data
+export const archiveFest = async (festId: number) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/archive`)).data
+export const scheduleFestEvent = async (festId: number, eventId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/schedule`, { eventId })).data
+export const unscheduleFestEvent = async (festId: number, eventId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/unschedule`, { eventId })).data
+export const addFestShift = async (festId: number, input: { roleTitle: string; startsAt: string; endsAt: string; places: number }) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/shifts`, input)).data
+export const getFestApplications = async (festId: number, signal?: AbortSignal) =>
+  (await apiClient.get<FestApplication[]>(`${BASE}/admin/fests/${festId}/applications`, { signal })).data
+export const decideFestApplication = async (applicationId: number, accept: boolean) =>
+  (await apiClient.post<FestApplication>(`${BASE}/admin/fests/applications/${applicationId}/decision`, { accept })).data

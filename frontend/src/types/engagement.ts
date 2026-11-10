@@ -119,3 +119,45 @@ export type EventAttendanceRow = {
   certificateEligible: boolean
 }
 export type EventCheckIn = { loginId: string; attendedAt: string; alreadyCheckedIn: boolean }
+
+// --- Fests (FestService views)
+
+export type FestStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type VolunteerStatus = 'APPLIED' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN'
+
+export type FestScheduleItem = { eventId: number; title: string; venue: string | null; startsAt: string; endsAt: string; status: string }
+
+export type FestShift = {
+  shiftId: number
+  roleTitle: string
+  startsAt: string
+  endsAt: string
+  places: number
+  accepted: number
+  myApplicationId: number | null
+  myApplication: VolunteerStatus | null
+}
+
+export type CampusFest = {
+  festId: number
+  name: string
+  /** Plain text. */
+  description: string | null
+  startsOn: string
+  endsOn: string
+  status: FestStatus
+  schedule: FestScheduleItem[]
+  shifts: FestShift[]
+}
+
+export type FestInput = { name: string; description: string | null; startsOn: string; endsOn: string }
+
+export type FestApplication = {
+  applicationId: number
+  shiftId: number
+  roleTitle: string
+  loginId: string
+  note: string | null
+  status: VolunteerStatus
+  appliedAt: string
+}

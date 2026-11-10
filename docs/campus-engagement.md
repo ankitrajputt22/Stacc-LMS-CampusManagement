@@ -44,3 +44,10 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - A registered attendee (not waitlisted) gets a check-in code from the pass service (`EVENT_CHECK_IN`, valid from an hour before the event until it ends; a new code revokes the earlier one) and shows it as a QR code with the code in words (`POST /api/v1/engagement/events/{id}/check-in-code`). Only the code's fingerprint is stored.
 - The event's managers check attendees in by that code (typed or scanned) or by college ID, in the same window (`POST …/check-ins`); attending is recorded once on the registration (`attended_at`, how, and by whom; `V113`) under its row lock. Checking in again changes nothing.
 - Certificate eligibility is worked out on read: an attendee who checked in is due a participation certificate once the event has ended. The organizer's list (`GET …/attendance`) and the attendee's own view (`GET …/my-attendance`) show it; nothing about it is stored.
+
+## Fests and volunteers (v0.11.7)
+
+- A fest (`CampusFest`, `V114`) has a name, plain-text description, and first and last day. The campus office (`ADMIN` with `CAMPUS_ENGAGEMENT_MANAGE`, at Campus Management → Fests) adds it as a draft, publishes it, and archives it; nothing is deleted, and an archived fest no longer changes.
+- Its schedule links existing campus events; an event is on at most one fest (unique), and taking it off the schedule keeps the event itself.
+- Volunteer shifts have a role, a start and end, and a number of places. Students and faculty (`CAMPUS_ENGAGEMENT_USE`, the Fests tab at `/campus/fests`) apply before a shift starts, with an optional note, and may withdraw while the application is open or accepted. Each account has at most one open or accepted application per shift (a unique generated column); after a withdrawal or a decline it may apply again.
+- The campus office accepts or declines each application once. Accepting locks the shift row and counts accepted volunteers with a locking read, so a shift never takes more than its places (`FestVolunteerMySqlIT`).

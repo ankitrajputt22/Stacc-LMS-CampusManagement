@@ -141,6 +141,16 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/admin/facilities` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}/closures` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/fests` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/applications/{applicationId}/decision` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/applications` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/schedule` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/shifts` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/unschedule` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
 | `/api/v1/engagement/admin/groups` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/groups/{groupId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/groups/{groupId}/officers` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
@@ -164,6 +174,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/facilities` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
+| `/api/v1/engagement/fests` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
+| `/api/v1/engagement/fests/applications/{applicationId}/withdraw` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
+| `/api/v1/engagement/fests/shifts/{shiftId}/apply` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
 | `/api/v1/engagement/groups` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/groups/{groupId}/activity` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
 | `/api/v1/engagement/groups/{groupId}/announcements` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |

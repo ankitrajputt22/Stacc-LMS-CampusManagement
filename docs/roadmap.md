@@ -192,7 +192,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.11.4 | Facilities and bookings | One catalog of rooms, labs, halls, and courts with opening hours, closed periods, overlap-safe bookings, and approval where needed. Done: facilities, closures, overlap-safe bookings, `FACILITY_BOOKING` approval. |
 | ★ 0.11.5 | Events | Organizer, eligibility with reasons, capacity, registration window, waitlist with automatic promotion, and advisor approval for group events. Done: events with eligibility reasons, capacity, waitlist promotion, and `GROUP_EVENT` advisor approval. |
 | 0.11.6 | Event attendance | Manual and QR check-in through the pass service; certificate eligibility worked out from attendance. Done (`V113`): check-in codes, manual and code check-in, and live certificate eligibility. |
-| 0.11.7 | Fests and volunteers | Fests with a schedule, volunteer applications and shifts. |
+| 0.11.7 | Fests and volunteers | Fests with a schedule, volunteer applications and shifts. Done (`V114`): fests built from campus events, volunteer shifts with places, and the campus office's decisions. |
 | 0.11.8 | Trials | Trials as events with a Selected / Not selected outcome. |
 | 0.11.9 | Teams | Teams and rosters, captains, seasons. |
 | 0.11.10 | Tournaments | Tournaments and fixtures (our teams or external opponents), text scores, results, standings worked out from fixtures. |

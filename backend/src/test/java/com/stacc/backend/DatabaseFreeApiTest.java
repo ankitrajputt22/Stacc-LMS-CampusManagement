@@ -113,6 +113,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.stacc.backend.hostel.HostelRoomChangeRepository;
+import com.stacc.backend.engagement.fests.CampusFestRepository;
+import com.stacc.backend.engagement.fests.FestShiftRepository;
+import com.stacc.backend.engagement.fests.FestVolunteerRepository;
 import com.stacc.backend.engagement.groups.GroupAnnouncementRepository;
 import com.stacc.backend.engagement.groups.GroupSessionRepository;
 import com.stacc.backend.hostel.visitor.HostelVisitRepository;
@@ -251,6 +254,9 @@ import org.springframework.web.context.WebApplicationContext;
     AnalyticsQueries.class,
     ReportExportRepository.class,
     HostelRoomChangeRepository.class,
+    CampusFestRepository.class,
+    FestShiftRepository.class,
+    FestVolunteerRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,
