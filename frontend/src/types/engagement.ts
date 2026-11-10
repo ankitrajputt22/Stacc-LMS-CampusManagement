@@ -172,3 +172,35 @@ export type TeamRole = 'PLAYER' | 'CAPTAIN' | 'VICE_CAPTAIN'
 export type TeamPlayer = { playerId: number; loginId: string; role: TeamRole; joinedAt: string }
 export type CampusTeam = { teamId: number; name: string; season: string; active: boolean; players: TeamPlayer[] }
 export type GroupTeams = { canManage: boolean; teams: CampusTeam[] }
+
+// --- Tournaments (TournamentService views)
+
+export type TournamentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type FixtureStatus = 'SCHEDULED' | 'PLAYED' | 'CANCELLED'
+export type FixtureResult = 'HOME_WIN' | 'AWAY_WIN' | 'DRAW'
+export type FixtureSide = { teamId: number | null; name: string; ours: boolean }
+export type Fixture = {
+  fixtureId: number
+  home: FixtureSide
+  away: FixtureSide
+  startsAt: string
+  venue: string | null
+  status: FixtureStatus
+  /** Scores are text as recorded, such as "152/6". */
+  homeScore: string | null
+  awayScore: string | null
+  result: FixtureResult | null
+}
+export type Standing = { side: string; ours: boolean; played: number; won: number; drawn: number; lost: number; points: number }
+export type Tournament = {
+  tournamentId: number
+  name: string
+  sport: string
+  season: string
+  status: TournamentStatus
+  fixtures: Fixture[]
+  /** Worked out from played matches by the backend: 3 points for a win, 1 for a draw. */
+  standings: Standing[]
+}
+export type TeamOption = { teamId: number; name: string; season: string; groupName: string }
+export type FixtureInput = { homeTeamId: number | null; homeName: string | null; awayTeamId: number | null; awayName: string | null; startsAt: string; venue: string | null }

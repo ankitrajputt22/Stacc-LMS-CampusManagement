@@ -19,6 +19,7 @@
 - **0.11.7:** fests with a schedule of campus events, and volunteer shifts.
 - **0.11.8:** trials: events marked as trials with Selected or Not selected outcomes.
 - **0.11.9:** sports teams by season with rosters, a captain, and a vice-captain.
+- **0.11.10:** tournaments with matches, text scores, results, and standings worked out from them.
 
 ## v1.0.0 (2026-11-11)
 

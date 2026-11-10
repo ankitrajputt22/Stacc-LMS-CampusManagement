@@ -155,6 +155,14 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/admin/groups/{groupId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/groups/{groupId}/officers` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/officers/{officerId}/end` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/tournaments` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/fixtures/{fixtureId}/cancel` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/fixtures/{fixtureId}/result` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/teams` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/fixtures` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
 | `/api/v1/engagement/bookings/mine` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/bookings/{bookingId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/events` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
@@ -195,6 +203,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/teams/players/{playerId}/role` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
 | `/api/v1/engagement/teams/{teamId}/deactivate` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
 | `/api/v1/engagement/teams/{teamId}/players` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/tournaments` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | TournamentController |
 | `/api/v1/exports` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports/{exportId}/download` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |

@@ -14,6 +14,9 @@ public interface CampusTeamRepository extends JpaRepository<CampusTeam, Long> {
     @Query("select t from CampusTeam t where t.group.id = :groupId order by t.active desc, t.season desc, t.name, t.id")
     List<CampusTeam> findForGroup(@Param("groupId") Long groupId);
 
+    @Query("select t from CampusTeam t join fetch t.group where t.active = true order by t.group.name, t.season desc, t.name, t.id")
+    List<CampusTeam> findActiveWithGroup();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from CampusTeam t join fetch t.group where t.id = :id")
     Optional<CampusTeam> findByIdForUpdate(@Param("id") Long id);

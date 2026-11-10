@@ -4,6 +4,8 @@ import type {
   CampusFest,
   FestApplication,
   FestInput,
+  FixtureInput,
+  FixtureResult,
   CampusGroup,
   CampusTeam,
   EventAttendanceRow,
@@ -22,7 +24,9 @@ import type {
   JoinPolicy,
   MyEventAttendance,
   OfficerTitle,
+  TeamOption,
   TeamRole,
+  Tournament,
   TrialOutcome,
 } from '../types/engagement'
 import { apiClient } from './apiClient'
@@ -171,3 +175,18 @@ export const addTeamPlayer = async (teamId: number, loginId: string, role: TeamR
 export const changeTeamRole = async (playerId: number, role: TeamRole) =>
   (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/role`, { role })).data
 export const removeTeamPlayer = async (playerId: number) => (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/remove`)).data
+
+// --- Tournaments
+
+export const getTournaments = async (signal?: AbortSignal) => (await apiClient.get<Tournament[]>(`${BASE}/tournaments`, { signal })).data
+export const getAllTournaments = async (signal?: AbortSignal) => (await apiClient.get<Tournament[]>(`${BASE}/admin/tournaments`, { signal })).data
+export const getTournamentTeams = async (signal?: AbortSignal) => (await apiClient.get<TeamOption[]>(`${BASE}/admin/tournaments/teams`, { signal })).data
+export const createTournament = async (input: { name: string; sport: string; season: string }) =>
+  (await apiClient.post<Tournament>(`${BASE}/admin/tournaments`, input)).data
+export const publishTournament = async (tournamentId: number) => (await apiClient.post<Tournament>(`${BASE}/admin/tournaments/${tournamentId}/publish`)).data
+export const archiveTournament = async (tournamentId: number) => (await apiClient.post<Tournament>(`${BASE}/admin/tournaments/${tournamentId}/archive`)).data
+export const addFixture = async (tournamentId: number, input: FixtureInput) =>
+  (await apiClient.post<Tournament>(`${BASE}/admin/tournaments/${tournamentId}/fixtures`, input)).data
+export const recordFixtureResult = async (fixtureId: number, input: { homeScore: string; awayScore: string; result: FixtureResult }) =>
+  (await apiClient.post<Tournament>(`${BASE}/admin/tournaments/fixtures/${fixtureId}/result`, input)).data
+export const cancelFixture = async (fixtureId: number) => (await apiClient.post<Tournament>(`${BASE}/admin/tournaments/fixtures/${fixtureId}/cancel`)).data
