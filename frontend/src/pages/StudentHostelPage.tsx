@@ -38,6 +38,7 @@ import type { EligibleHostelSession, HostelApplicationDetail, StudentHostelAlloc
 import { TextField } from '../ui'
 import { StudentOutings } from '../hostel/outings/StudentOutings'
 import { ResidentMessCard } from '../hostel/mess/Mess'
+import { ResidentVisitors } from '../hostel/visitors/Visitors'
 import { ResidentHostelNotices } from '../hostel/notices/HostelNotices'
 import { StudentRoomChanges } from '../hostel/rooms/RoomChanges'
 
@@ -422,6 +423,7 @@ export function StudentHostelPage() {
         <div className="mt-10 space-y-6 border-t border-line pt-6">
           <ResidentHostelNotices />
           <ResidentMessCard />
+          <ResidentVisitors />
           <StudentRoomChanges />
         </div>
       )}

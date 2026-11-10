@@ -10,6 +10,7 @@ import { InventorySection } from '../hostel/admin/InventorySection'
 import { OccupancySection } from '../hostel/admin/OccupancySection'
 import { WardensSection } from '../hostel/admin/WardensSection'
 import { MessSection } from '../hostel/mess/MessSection'
+import { VisitingHoursSection } from '../hostel/visitors/Visitors'
 import { NoticesSection } from '../hostel/notices/NoticesSection'
 import { RoomChangesSection } from '../hostel/rooms/RoomChanges'
 import { NotFoundPage } from './NotFoundPage'
@@ -23,6 +24,7 @@ const SECTIONS = [
   { path: 'room-changes', label: 'Room changes', Section: RoomChangesSection },
   { path: 'notices', label: 'Notices', Section: NoticesSection },
   { path: 'mess', label: 'Mess', Section: MessSection },
+  { path: 'visitors', label: 'Visitors', Section: VisitingHoursSection },
 ] as const
 
 /**

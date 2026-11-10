@@ -15,6 +15,7 @@ import type {
   HostelOccupancy,
   HostelQueuePlace,
   HostelRoom,
+  HostelVisit,
   HostelWardenAssignment,
   ManagerMess,
   Meal,
@@ -26,6 +27,7 @@ import type {
   RollCallMark,
   RollCallSummary,
   RoomChange,
+  VisitingHours,
 } from '../types/hostel'
 import { apiClient } from './apiClient'
 
@@ -268,4 +270,44 @@ export async function setMessTemplate(hostelId: number, lines: MessTemplateLine[
 
 export async function setMessChange(hostelId: number, date: string, meal: Meal, items: string, note: string | null) {
   await apiClient.put('/hostel/mess/manage/changes', { hostelId, date, meal, items, note })
+}
+
+// --- Visitors
+
+export async function getMyVisitors(signal?: AbortSignal) {
+  return (await apiClient.get<HostelVisit[]>('/hostel/student/visitors', { signal })).data
+}
+
+export async function registerVisitor(visitorName: string, relation: string, expectedOn: string) {
+  return (await apiClient.post<HostelVisit>('/hostel/student/visitors', { visitorName, relation, expectedOn })).data
+}
+
+export async function cancelVisitor(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/hostel/student/visitors/${visitId}/cancel`)).data
+}
+
+export async function getTodaysVisitors(signal?: AbortSignal) {
+  return (await apiClient.get<HostelVisit[]>('/gate/visitors', { signal })).data
+}
+
+export async function recordVisitorArrival(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/gate/visitors/${visitId}/arrive`)).data
+}
+
+export async function recordVisitorLeaving(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/gate/visitors/${visitId}/leave`)).data
+}
+
+export async function recordWalkInVisitor(residentLoginId: string, visitorName: string, relation: string) {
+  return (await apiClient.post<HostelVisit>('/gate/visitors/walk-in', { residentLoginId, visitorName, relation })).data
+}
+
+/** The hostel's visiting hours, or null when none are set (it takes no visitors). */
+export async function getVisitingHours(hostelId: number, signal?: AbortSignal) {
+  const response = await apiClient.get<VisitingHours>(`/hostel/admin/hostels/${hostelId}/visiting-hours`, { signal })
+  return response.status === 204 ? null : response.data
+}
+
+export async function setVisitingHours(hostelId: number, opensAt: string, closesAt: string) {
+  return (await apiClient.put<VisitingHours>(`/hostel/admin/hostels/${hostelId}/visiting-hours`, { opensAt, closesAt })).data
 }

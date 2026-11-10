@@ -30,7 +30,7 @@ class StaffRolesMySqlIT extends MySqlIntegrationTest {
                 "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "HOSTEL_WARDEN_VIEW", "APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE", "ID_CARD_VERIFY", "HOSTEL_ROLL_CALL", "HOSTEL_NOTICE_MANAGE", "HOSTEL_MESS_MANAGE"),
                 "MAINTENANCE", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
                 "LIBRARIAN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "ID_CARD_VERIFY"),
-                "SECURITY", List.of("GATE_PASS_VERIFY", "ID_CARD_VERIFY"),
+                "SECURITY", List.of("GATE_PASS_VERIFY", "ID_CARD_VERIFY", "HOSTEL_VISITOR_DESK"),
                 "PLACEMENT_OFFICER", List.of("CAREER_MANAGE"));
         granted.forEach((staff, extra) -> {
             List<String> expected = new java.util.ArrayList<>(List.of("PERSON_PROFILE_VIEW_OWN", "PERSON_PROFILE_EDIT_OWN"));

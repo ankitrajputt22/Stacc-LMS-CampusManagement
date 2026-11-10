@@ -173,6 +173,10 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/gate/movements` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/movements` | POST | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/students/{loginId}/outings` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
+| `/api/v1/gate/visitors` | GET | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/walk-in` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/{visitId}/arrive` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/{visitId}/leave` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
 | `/api/v1/helpdesk/admin/articles` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles/{articleId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
@@ -214,6 +218,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/admin/hostels/{hostelId}/bed-map` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/rooms` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/rooms` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
+| `/api/v1/hostel/admin/hostels/{hostelId}/visiting-hours` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelVisitorController |
+| `/api/v1/hostel/admin/hostels/{hostelId}/visiting-hours` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelVisitorController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/occupancy` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
@@ -243,6 +249,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/student/outings/{outingId}/extensions` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/pass` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/room-changes` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/api/v1/hostel/student/visitors` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
+| `/api/v1/hostel/student/visitors` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
+| `/api/v1/hostel/student/visitors/{visitId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
 | `/api/v1/hostel/warden/allocations/{allocationId}/check-in` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/hostels/{hostelId}/bed-map` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/hostels/{hostelId}/roll-calls` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |

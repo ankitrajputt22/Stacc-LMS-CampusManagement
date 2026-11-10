@@ -179,7 +179,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.10.8 | Hostel complaints | Through the helpdesk with room details attached, a maintenance queue, confirmation and rating. Done: `HOSTEL` helpdesk category routed to the `MAINTENANCE` team with the room attached; confirmation and rating through the helpdesk. |
 | 0.10.9 | Notices and emergencies | Notices targeted at a hostel or block, and emergency notices that notify every affected resident. Done (`V109`): hostel notices for the office and wardens, with emergency Inbox notices. |
 | 0.10.10 | Mess | A weekly menu template with changes for single days, and meal feedback. Done (`V110`): weekly menus, day changes, and anonymous meal ratings. |
-| 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. |
+| 0.10.11 | Visitors | Pre-registered and walk-in visitors, visiting hours. Done (`V111`): resident registration, the security desk, and visiting hours. |
 | ★ 0.10.12 | Hostel dashboards | Student hostel home, warden dashboard, occupancy and reports. Done: the student hostel page with queue place, the warden dashboard at `/warden`, and occupancy for the office. |
 
 ## v0.11 Campus engagement (new `engagement` module)
@@ -293,7 +293,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.7 Assessment | Done (0.7.1 to 0.7.11) |
 | v0.8 Communication | Done (0.8.1 to 0.8.6) |
 | v0.9 Shared engines | Done (0.9.1 to 0.9.8) |
-| v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
+| v0.10 Hostel | Done (0.10.1 to 0.10.12) |
 | v0.11 Campus engagement | Core done (0.11.1, 0.11.3 to 0.11.5); the rest come after the core phases |
 | v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
