@@ -290,7 +290,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.4 Course registration | Done (0.4.1 to 0.4.4) |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
-| v0.7 Assessment | Done for the submission (0.7.1 to 0.7.10; 0.7.11 comes after the core phases) |
+| v0.7 Assessment | Done (0.7.1 to 0.7.11) |
 | v0.8 Communication | Core done (0.8.1 to 0.8.4, 0.8.6); 0.8.5 comes after the core phases |
 | v0.9 Shared engines | Core done (0.9.1 to 0.9.5, 0.9.8); 0.9.6 and 0.9.7 come after the core phases |
 | v0.10 Hostel | Core done (0.10.1, 0.10.2, 0.10.4 to 0.10.6, 0.10.8, 0.10.12); the rest come after the core phases |
