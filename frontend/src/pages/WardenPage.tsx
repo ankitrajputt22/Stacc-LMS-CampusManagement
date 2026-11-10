@@ -7,6 +7,7 @@ import { SectionState } from '../courses/SectionState'
 import { BedMap } from '../hostel/shared/BedMap'
 import { OccupancyTable } from '../hostel/shared/OccupancyTable'
 import { WardenOutings } from '../hostel/outings/WardenOutings'
+import { HostelNoticeManager } from '../hostel/notices/HostelNotices'
 import { WardenRollCall } from '../hostel/rollcall/WardenRollCall'
 import { Card, PageHeader } from '../ui'
 
@@ -34,6 +35,7 @@ export function WardenPage() {
         ) : (
           <>
             <WardenRollCall hostels={occupancy.data} />
+            <HostelNoticeManager hostels={occupancy.data} />
             <OccupancyTable rows={occupancy.data} selected={selected} onSelect={setSelected} />
             {selected !== null && <BedMap key={selected} side="warden" hostelId={selected} />}
           </>

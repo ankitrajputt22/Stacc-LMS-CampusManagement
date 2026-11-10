@@ -240,3 +240,10 @@ Payments and fees, mess, visitors, maintenance requests, room preferences or stu
 - The warden marks residents `PRESENT`, `ABSENT`, or `OUT` (never back to unmarked) while the sheet is open, under its row lock, and finalizes it once every resident is marked. A finalized sheet no longer changes; nothing is deleted.
 - Only wardens of the hostel reach its sheets (`HostelWardenService.isWardenOf`), through `/api/v1/hostel/warden/hostels/{id}/roll-calls` and `/api/v1/hostel/warden/roll-calls/{id}` with `WARDEN` and `HOSTEL_ROLL_CALL` (`V108`); another hostel's sheet answers the same 404 as a missing one. The Night roll call card is on `/warden`.
 - `HostelRollCallMySqlIT` opens the same sheet twice at once: one wins, the other gets 409.
+
+## Notices and emergencies (v0.10.9)
+
+- `HostelNotice` (`hostel.notice`, `V109`) is a plain-text notice for one hostel or one block of it: draft, published (with `publishedAt` set once), or archived; never deleted. A published notice can be corrected but stays an emergency or not.
+- The hostel office manages notices of every hostel (Hostel Management, Notices) and a warden those of their own hostels (the Hostel notices card on `/warden`), through `/api/v1/hostel/notices/manage` with `ADMIN` or `WARDEN` and `HOSTEL_NOTICE_MANAGE`. Another hostel's notice answers the same 404 as a missing one.
+- Residents see the published notices of their current hostel that reach their block, emergencies first, on `/hostel` (`GET /api/v1/hostel/student/notices`).
+- Publishing an emergency notice for the first time tells every resident it reaches through the Inbox (`HOSTEL_EMERGENCY`, Campus category), under the notice's row lock, so two publications at once notify once (`HostelNoticeMySqlIT`).

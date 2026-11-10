@@ -224,6 +224,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/admin/rooms/{roomId}/beds` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/wardens/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
+| `/api/v1/hostel/notices/manage` | GET | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/api/v1/hostel/notices/manage` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
 | `/api/v1/hostel/student/applications` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStudentController |
 | `/api/v1/hostel/student/applications` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_CREATE')` | HostelStudentController |
 | `/api/v1/hostel/student/applications/{applicationId}` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStudentController |
@@ -231,6 +233,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/student/applications/{applicationId}/queue` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStructureController |
 | `/api/v1/hostel/student/complaints` | POST | `hasRole('STUDENT') and hasAuthority('HELPDESK_TICKET_CREATE')` | HostelOutingController |
 | `/api/v1/hostel/student/eligible-sessions` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_CREATE')` | HostelStudentController |
+| `/api/v1/hostel/student/notices` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelNoticeController |
 | `/api/v1/hostel/student/outings` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
@@ -434,3 +437,6 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/swap` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
 | `/{changeId}/answer` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
 | `/{changeId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/{noticeId}` | PUT | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/{noticeId}/archive` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/{noticeId}/publish` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
