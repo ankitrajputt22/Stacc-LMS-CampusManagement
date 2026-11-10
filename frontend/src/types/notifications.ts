@@ -20,6 +20,7 @@ export type NotificationType =
   | 'HOSTEL_ALLOCATED'
   | 'HOSTEL_VACATED'
   | 'CAMPUS_NOTICE_PUBLISHED'
+  | 'CAMPUS_SERVICE_READY'
   | 'CAMPUS_SERVICE_COMPLETED'
 
 export type NotificationSourceType =

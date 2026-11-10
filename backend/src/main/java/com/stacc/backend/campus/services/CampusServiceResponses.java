@@ -64,7 +64,7 @@ public final class CampusServiceResponses {
             String serviceCode,
             String serviceName,
             String subject,
-            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
+            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "IN_PROGRESS", "READY", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
             @Schema(nullable = true, description = "The approval engine's status; empty when the service needs no approval.",
                     allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}) String approvalStatus,
             Instant submittedAt,
@@ -91,7 +91,7 @@ public final class CampusServiceResponses {
             String serviceName,
             String subject,
             @Schema(description = "Plain text.") String details,
-            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
+            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "IN_PROGRESS", "READY", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
             @Schema(nullable = true, allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}) String approvalStatus,
             @Schema(nullable = true, description = "The comment the approver gave when rejecting, exactly as written.")
             String rejectionComment,
@@ -99,7 +99,11 @@ public final class CampusServiceResponses {
             Instant submittedAt,
             @Schema(nullable = true) Instant completedAt,
             @Schema(description = "The approval steps, in order; empty when the service needs no approval.")
-            List<ApprovalRequestStepResponse> approvalSteps) {
+            List<ApprovalRequestStepResponse> approvalSteps,
+            @Schema(nullable = true, description = "When the campus office started processing it.") Instant processingAt,
+            @Schema(nullable = true, description = "When it became ready.") Instant readyAt,
+            @Schema(nullable = true, description = "The title of the document issued with it, kept in the requester's vault.")
+            String issuedDocumentTitle) {
     }
 
     /** One request in the admin queue. */
@@ -111,7 +115,7 @@ public final class CampusServiceResponses {
             String serviceCode,
             String serviceName,
             String subject,
-            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
+            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "IN_PROGRESS", "READY", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
             @Schema(nullable = true, allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}) String approvalStatus,
             Instant submittedAt,
             @Schema(nullable = true) Instant completedAt) {
@@ -142,7 +146,7 @@ public final class CampusServiceResponses {
             String serviceName,
             String subject,
             String details,
-            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
+            @Schema(allowableValues = {"SUBMITTED", "APPROVED", "IN_PROGRESS", "READY", "REJECTED", "CANCELLED", "COMPLETED"}) String status,
             @Schema(nullable = true, allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}) String approvalStatus,
             @Schema(nullable = true) String rejectionComment,
             Instant submittedAt,
@@ -153,7 +157,12 @@ public final class CampusServiceResponses {
             CurrentApprovalStep currentApprovalStep,
             @Schema(description = "Whether the signed-in admin may decide the current step: they hold its role and APPROVAL_TASK_DECIDE, and are not the requester.")
             boolean canDecide,
-            @Schema(description = "Whether the request is approved and can be marked completed.") boolean canComplete) {
+            @Schema(description = "Whether the request is approved, being processed, or ready, and can be completed.") boolean canComplete,
+            @Schema(nullable = true) Instant processingAt,
+            @Schema(nullable = true) Instant readyAt,
+            @Schema(nullable = true, description = "The title of the document issued with it.") String issuedDocumentTitle,
+            @Schema(description = "Whether it is approved and can be marked as being processed.") boolean canProcess,
+            @Schema(description = "Whether it is approved or being processed and can be marked ready.") boolean canMarkReady) {
     }
 
     static String nameOf(ApprovalRequestStatus status) {

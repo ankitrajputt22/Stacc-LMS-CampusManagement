@@ -98,6 +98,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/campus/admin/requests` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/requests/{requestId}` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/requests/{requestId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/mark-ready` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/start-processing` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services/{serviceId}` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |

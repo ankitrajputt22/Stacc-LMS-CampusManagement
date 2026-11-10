@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **0.9.6:** help articles per helpdesk category, suggested while a ticket is written.
+- **0.9.7:** campus service requests show "being processed" and "ready", and can be completed with an issued document.
 - **0.4.4:** a k6 load test of course registration, run in CI on the end-to-end stack.
 - **0.7.9:** exam blueprints and a paper builder from the question bank, with a print view and Word export.
 - **0.7.11:** a k6 load test of quiz submissions in CI, and fixes for two races it found (an answer saved twice at once, and two students starting at once).

@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { getApiError, getHttpStatus } from '../../api/apiError'
-import { completeCampusRequest, getAdminCampusRequest } from '../../api/campusApi'
+import {
+  completeCampusRequest,
+  completeCampusRequestWithDocument,
+  getAdminCampusRequest,
+  markCampusRequestReady,
+  startProcessingCampusRequest,
+} from '../../api/campusApi'
 import { useApiRequest } from '../../api/useApiRequest'
 import { ApprovalSteps } from '../../approvals/ApprovalSteps'
 import { approvalStatusLabel, refusalText, SIGN_IN_AGAIN } from '../../approvals/approvalText'
@@ -50,6 +56,82 @@ function CompleteButton({ detail, onChanged }: { detail: AdminCampusRequestDetai
       }}
       describeRefusal={(status, message) => refusalText(status, message, 'complete the request')}
     />
+  )
+}
+
+/** Being processed and Ready: steps forward only, each telling the page what happened. */
+function ProgressButtons({ detail, onChanged }: { detail: AdminCampusRequestDetail; onChanged: Notify }) {
+  const [busy, setBusy] = useState(false)
+  async function step(action: () => Promise<unknown>, done: string, what: string) {
+    setBusy(true)
+    try {
+      await action()
+      onChanged(done)
+    } catch (failure) {
+      onChanged(refusalText(getHttpStatus(failure), getApiError(failure)?.message ?? null, what), 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <>
+      {detail.canProcess && (
+        <ActionButton disabled={busy} onClick={() => void step(() => startProcessingCampusRequest(detail.requestId), 'Marked as being processed.', 'update the request')}>
+          Mark being processed
+        </ActionButton>
+      )}
+      {detail.canMarkReady && (
+        <ActionButton
+          disabled={busy}
+          onClick={() => void step(() => markCampusRequestReady(detail.requestId), `Marked ready. ${detail.requesterLoginId} was told in their Inbox.`, 'update the request')}
+        >
+          Mark ready
+        </ActionButton>
+      )}
+    </>
+  )
+}
+
+/** Complete with an issued document: a title and one file, placed in the requester's document vault. */
+function CompleteWithDocument({ detail, onChanged }: { detail: AdminCampusRequestDetail; onChanged: Notify }) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  if (!open) {
+    return <ActionButton onClick={() => setOpen(true)}>Complete with a document</ActionButton>
+  }
+  return (
+    <form
+      className="mt-3 w-full space-y-3 rounded-control border border-line p-3"
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (title.trim() === '' || file === null) {
+          setError('Enter a title and choose the file.')
+          return
+        }
+        setBusy(true)
+        setError(null)
+        void completeCampusRequestWithDocument(detail.requestId, title.trim(), file)
+          .then(() => onChanged(`Request completed. The document is in ${detail.requesterLoginId}’s document vault.`))
+          .catch((failure) => {
+            setError(refusalText(getHttpStatus(failure), getApiError(failure)?.message ?? null, 'complete the request'))
+            setBusy(false)
+          })
+      }}
+    >
+      <p className="text-sm text-ink-muted">The document goes into the requester’s document vault with a verification code, and the request is completed. This cannot be undone.</p>
+      <label className="block text-sm font-medium text-ink" htmlFor="campus-document-title">Document title</label>
+      <input id="campus-document-title" className="h-10 w-full rounded-control border border-line-strong px-3 text-sm" maxLength={200} value={title} onChange={(event) => setTitle(event.target.value)} />
+      <label className="block text-sm font-medium text-ink" htmlFor="campus-document-file">Document file</label>
+      <input id="campus-document-file" type="file" className="text-sm" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+      <div className="flex flex-wrap gap-2">
+        <ActionButton type="submit" disabled={busy}>{busy ? 'Completing…' : 'Complete with this document'}</ActionButton>
+        <ActionButton onClick={() => setOpen(false)}>Cancel</ActionButton>
+      </div>
+    </form>
   )
 }
 
@@ -106,12 +188,20 @@ function Review({ detail, onChanged }: { detail: AdminCampusRequestDetail; onCha
         </section>
       )}
 
+      {detail.issuedDocumentTitle && (
+        <p className="mt-4 text-sm text-ink">Issued document: {detail.issuedDocumentTitle}</p>
+      )}
+
       {detail.canComplete && (
         <section aria-labelledby="campus-review-handling" className="mt-4 rounded-panel border border-line bg-surface p-4">
           <h3 id="campus-review-handling" className="text-sm font-semibold text-ink">Handling</h3>
-          <p className="mt-1 text-sm text-ink-muted">Mark the request completed once the service has been provided.</p>
-          <div className="mt-3">
+          <p className="mt-1 text-sm text-ink-muted">
+            Show the requester how it is going, then mark it completed once the service has been provided, with a document if one was issued.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <ProgressButtons detail={detail} onChanged={onChanged} />
             <CompleteButton detail={detail} onChanged={onChanged} />
+            <CompleteWithDocument detail={detail} onChanged={onChanged} />
           </div>
         </section>
       )}

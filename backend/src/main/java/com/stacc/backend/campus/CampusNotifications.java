@@ -53,6 +53,16 @@ public class CampusNotifications {
                 recipients);
     }
 
+    /** Tells the requester that the request is ready, for example to collect. */
+    public void serviceReady(CampusServiceRequest request) {
+        notifications.notifyUser(new NotificationMessage(NotificationType.CAMPUS_SERVICE_READY,
+                "Service request ready",
+                "Your request " + request.getRequestNumber() + " (" + request.getServiceDefinition().getName()
+                        + ") is ready.",
+                NotificationSourceType.CAMPUS_SERVICE_REQUEST, request.getId(), "/campus/requests/" + request.getId()),
+                request.getRequester().getId());
+    }
+
     public void serviceCompleted(CampusServiceRequest request) {
         notifications.notifyUser(new NotificationMessage(NotificationType.CAMPUS_SERVICE_COMPLETED,
                 "Service request completed",

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { cancelCampusRequest, getMyCampusRequest } from '../api/campusApi'
 import { useApiRequest } from '../api/useApiRequest'
@@ -37,6 +37,12 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
           <dt className="text-xs font-medium text-ink-muted">Submitted</dt>
           <dd className="text-ink"><time dateTime={detail.submittedAt}>{formatDateTime(detail.submittedAt)}</time></dd>
         </div>
+        {detail.readyAt && !detail.completedAt && (
+          <div>
+            <dt className="text-xs font-medium text-ink-muted">Ready since</dt>
+            <dd className="text-ink"><time dateTime={detail.readyAt}>{formatDateTime(detail.readyAt)}</time></dd>
+          </div>
+        )}
         {detail.completedAt && (
           <div>
             <dt className="text-xs font-medium text-ink-muted">Completed</dt>
@@ -44,6 +50,15 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
           </div>
         )}
       </dl>
+      {detail.issuedDocumentTitle && (
+        <p className="mt-4 rounded-panel border border-line bg-surface p-4 text-sm text-ink">
+          Issued document: <span className="font-medium">{detail.issuedDocumentTitle}</span>. It is in your{' '}
+          <Link to="/documents" className="text-stacc-primary underline-offset-4 hover:underline">
+            documents
+          </Link>
+          , with its verification code.
+        </p>
+      )}
 
       <section aria-labelledby="campus-request-subject" className="mt-4 rounded-panel border border-line bg-surface p-4">
         <h2 id="campus-request-subject" className="text-sm font-semibold break-words text-ink">{detail.subject}</h2>

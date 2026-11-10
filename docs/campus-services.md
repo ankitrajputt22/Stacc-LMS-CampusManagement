@@ -155,3 +155,10 @@ Under the `dev-seed` profile only (`docs/local-test-data.md`): services `ID_CARD
 ## Not in this phase
 
 No helpdesk duplication or request conversation, no second approval engine, no dynamic form builder, no attachments, no notice scheduling, expiry, comments, or reactions, and no transport, library, or ID-card inventory subsystems.
+
+## Progress and issued documents (v0.9.7)
+
+- After approval (or straight away when no approval is needed) the campus office shows how a request is going: `IN_PROGRESS` ("Being processed", `processingAt`) and `READY` ("Ready", `readyAt`). Both are set once and move forward only; the requester is told in the Inbox when it is ready (`CAMPUS_SERVICE_READY`). Admins use Mark being processed and Mark ready on the review page (`POST /api/v1/campus/admin/requests/{id}/start-processing` and `/mark-ready`, `CAMPUS_SERVICE_MANAGE`).
+- A request that is approved, being processed, or ready can be completed, plainly or with an issued document: `POST …/complete` as `multipart/form-data` with `documentTitle` and `file`. The document goes into the requester's document vault as an issued document with its verification code (`DocumentVaultService.issueFile`), is linked to the request (`issued_document_id`), and is named on both request pages. Requests and documents are never deleted.
+- Cancelling stays limited to submitted and approved requests: once the office is working on a request, the requester asks through Support instead.
+- `CampusRequestProgressService` takes each step under the request row lock, after taking any approval outcome into account (`V106`).
