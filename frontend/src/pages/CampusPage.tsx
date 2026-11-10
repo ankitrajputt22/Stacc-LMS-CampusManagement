@@ -6,6 +6,7 @@ import { NoticesSection } from '../campus/NoticesSection'
 import { ServicesSection } from '../campus/ServicesSection'
 import { EventOrganizer, EventsSection } from '../engagement/EventsSection'
 import { FestsSection } from '../engagement/FestsSection'
+import { TournamentsSection } from '../engagement/TournamentsSection'
 import { FacilitiesSection } from '../engagement/FacilitiesSection'
 import { GroupsSection } from '../engagement/GroupsSection'
 import { LinkTabs, PageHeader } from '../ui'
@@ -54,7 +55,12 @@ export function CampusPage() {
             </>
           )}
           {current === 'clubs' && <GroupsSection kind="CLUB" canJoin={member} />}
-          {current === 'sports' && <GroupsSection kind="SPORT" canJoin={member} />}
+          {current === 'sports' && (
+            <>
+              <GroupsSection kind="SPORT" canJoin={member} />
+              {member && <TournamentsSection />}
+            </>
+          )}
           {current === 'events' && (
             <>
               <EventsSection canRegister={member} />

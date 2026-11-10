@@ -195,7 +195,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | 0.11.7 | Fests and volunteers | Fests with a schedule, volunteer applications and shifts. Done (`V114`): fests built from campus events, volunteer shifts with places, and the campus office's decisions. |
 | 0.11.8 | Trials | Trials as events with a Selected / Not selected outcome. Done (`V115`): events marked as trials and outcomes on registrations. |
 | 0.11.9 | Teams | Teams and rosters, captains, seasons. Done (`V116`): teams per sports group and season, rosters of members, a captain and a vice-captain. |
-| 0.11.10 | Tournaments | Tournaments and fixtures (our teams or external opponents), text scores, results, standings worked out from fixtures. |
+| 0.11.10 | Tournaments | Tournaments and fixtures (our teams or external opponents), text scores, results, standings worked out from fixtures. Done (`V117`): tournaments, matches, results, and live standings. |
 
 ## v0.12 Student services and career
 
@@ -294,7 +294,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.8 Communication | Done (0.8.1 to 0.8.6) |
 | v0.9 Shared engines | Done (0.9.1 to 0.9.8) |
 | v0.10 Hostel | Done (0.10.1 to 0.10.12) |
-| v0.11 Campus engagement | 0.11.1 to 0.11.9 done; 0.11.10 comes after the core phases |
+| v0.11 Campus engagement | Done (0.11.1 to 0.11.10) |
 | v0.12 Student services and career | Core done (0.12.1, 0.12.2, 0.12.6 to 0.12.8); the rest come after the core phases |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
 | v1.0 Stable release | Done: released as `v1.0.0` |

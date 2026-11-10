@@ -64,3 +64,10 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - Its roster holds active members of the group, by college ID, as players. At most one current captain and one current vice-captain (unique generated columns): naming a new one makes the previous holder a player. Players are taken off the roster with a leaving time, never deleted.
 - Every roster change takes the team row lock (after checking the manager from the team's stored group), then reads the roster with a locking read (`TeamCaptainMySqlIT`).
 - Active members, officers, and the campus office read a group's teams (`GET /api/v1/engagement/groups/{id}/teams`) from the Teams button on the sports group; anyone else gets the same 404 as for a missing group.
+
+## Tournaments (v0.11.10)
+
+- The campus office (`ADMIN` with `CAMPUS_ENGAGEMENT_MANAGE`, at Campus Management → Tournaments) adds tournaments (name, sport, season; `V117`) as drafts, publishes them, and archives them; nothing is deleted, and an archived tournament no longer changes.
+- A match (`CampusFixture`) is between two different sides, each one of our active teams or an external opponent named in text, with a start and an optional venue. The office records text scores (such as `152/6`) and the result (home win, away win, or draw) and may correct them; a scheduled match may be cancelled and stays listed, a played one cannot be cancelled.
+- Standings (played, won, drawn, lost, and points at 3 for a win and 1 for a draw, ordered by points, then wins, then name) are worked out from played matches on every read and never stored.
+- Changes take the tournament row lock, then the match's (`TournamentResultMySqlIT`). Students and faculty see published tournaments on the campus Sports tab (`GET /api/v1/engagement/tournaments`).
