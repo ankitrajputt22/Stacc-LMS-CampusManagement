@@ -13,6 +13,8 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   await expect(card.getByRole('status')).toHaveText(/Roll call opened with \d+ residents\./)
 
   const sheet = card.getByRole('listitem').filter({ hasText: night })
+  // The sheet loads after the list; wait for it before collecting its residents.
+  await expect(sheet.getByRole('button', { name: 'Save marks' })).toBeVisible()
   for (const present of await sheet.getByRole('radio', { name: 'Present' }).all()) {
     await present.check()
   }
