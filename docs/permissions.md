@@ -99,6 +99,9 @@ A permission is added by a new migration only when the real feature it protects 
 | `HOSTEL_WARDEN_VIEW` | `WARDEN` | The occupancy and bed map of one's own hostels, and checking students in there. Added by `V97`. |
 | `HOSTEL_VISITOR_REGISTER` | `STUDENT` | Registering and cancelling one's own hostel visitors. Added by `V111`. |
 | `HOSTEL_VISITOR_DESK` | `SECURITY` | Seeing today's hostel visitors and recording arrivals within visiting hours, departures, and walk-ins. Added by `V111`. |
+| `GRIEVANCE_SUBMIT` | `STUDENT`, `FACULTY` | Raising grievances and following, appealing, and accepting one's own. Added by `V118`. |
+| `GRIEVANCE_COMMITTEE_WORK` | `FACULTY`, `ADMIN` | Working the cases of the grievance committees one is named on; the committee membership decides which. Added by `V118`. |
+| `GRIEVANCE_MANAGE` | `ADMIN` | Managing grievance categories and committees, never reading cases. Added by `V118`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |

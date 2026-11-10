@@ -35,6 +35,8 @@ import { IdCardPage } from './pages/IdCardPage'
 import { VerifyIdPage } from './pages/VerifyIdPage'
 import { VerifyDocumentPage } from './pages/VerifyDocumentPage'
 import { DocumentsPage } from './pages/DocumentsPage'
+import { GrievancesPage } from './pages/GrievancesPage'
+import { AdminGrievancesPage } from './pages/AdminGrievancesPage'
 import { CertificateDeskPage } from './pages/CertificateDeskPage'
 import { CareerPage } from './pages/CareerPage'
 import { PlacementPage } from './pages/PlacementPage'
@@ -197,6 +199,8 @@ function App() {
           <Route path="id-card" element={<IdCardPage />} />
           <Route path="verify-id" element={<VerifyIdPage />} />
           <Route path="documents" element={<DocumentsPage />} />
+          <Route path="grievances" element={<GrievancesPage />} />
+          <Route path="admin/grievances" element={<AdminGrievancesPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />
           <Route path="placement" element={<PlacementPage />} />
