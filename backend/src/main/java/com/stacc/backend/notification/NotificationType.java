@@ -6,6 +6,8 @@ public enum NotificationType {
     ASSIGNMENT_PUBLISHED,
     /** A quiz was published for the first time. */
     QUIZ_PUBLISHED,
+    /** A course announcement was published for the first time. */
+    ANNOUNCEMENT_PUBLISHED,
     /** An attempt got its first grade, or its grade or feedback changed. */
     ASSIGNMENT_GRADED,
     /** An official calendar event was published for the first time. */

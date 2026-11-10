@@ -4,6 +4,7 @@
 
 - **0.4.4:** a k6 load test of course registration, run in CI on the end-to-end stack.
 - **0.7.9:** exam blueprints and a paper builder from the question bank, with a print view and Word export.
+- **0.8.5:** files on announcements and an Inbox notice when one is first published.
 
 ## v1.0.0 (2026-11-11)
 

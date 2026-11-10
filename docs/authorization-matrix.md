@@ -234,6 +234,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/announcements` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/courses/{lmsCourseId}/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentAssignmentController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
@@ -254,6 +255,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/syllabus` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/announcements/{announcementId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}/remove` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/publish` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}/alignment` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |

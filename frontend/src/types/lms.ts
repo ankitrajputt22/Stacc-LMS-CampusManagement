@@ -179,6 +179,14 @@ export type LmsTopicInput = {
   contentFormat?: TextFormat
 }
 
+/** A file on an announcement, downloaded through its announcement's route. */
+export type LmsAnnouncementFile = {
+  id: number
+  fileName: string
+  contentType: string
+  sizeBytes: number
+}
+
 /** One published announcement of a course, as a student sees it. The message is plain text. */
 export type LmsCourseAnnouncement = {
   id: number
@@ -187,6 +195,7 @@ export type LmsCourseAnnouncement = {
   messageFormat: TextFormat
   /** When it was first published, as an ISO 8601 time in UTC. */
   publishedAt: string
+  files?: LmsAnnouncementFile[]
 }
 
 /** One announcement as faculty manage it. Archived announcements are not sent. */
@@ -200,6 +209,7 @@ export type LmsFacultyAnnouncement = {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+  files?: LmsAnnouncementFile[]
 }
 
 /** The title and message of an announcement, for adding or editing one. */
