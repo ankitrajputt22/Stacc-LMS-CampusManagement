@@ -5,9 +5,9 @@ test('a student requests a campus service and sees it move to ready as the offic
   const subject = `Bonafide letter ${Date.now()}`
 
   await signIn(page, 'erp', 'student1')
-  await page.goto('/campus')
+  await page.goto('/campus/services')
   const service = page.getByRole('list', { name: 'Campus services' }).getByRole('listitem').filter({ hasText: 'General administrative request' })
-  await service.getByRole('button').first().click()
+  await service.getByRole('button', { name: /^Request service/ }).click()
   const form = page.getByRole('form', { name: 'Request General administrative request' })
   await form.getByLabel('Subject').fill(subject)
   await form.getByLabel('Details').fill('A bonafide letter for my scholarship application.')
