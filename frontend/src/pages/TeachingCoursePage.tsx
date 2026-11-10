@@ -20,6 +20,9 @@ import { CourseAnalyticsView } from '../analytics/CourseAnalyticsView'
 import { DiscussionBoard, DiscussionThreadView } from '../communication/Discussions'
 import { ConversationList, ConversationView } from '../communication/Messages'
 import { QuestionBankEditor } from '../teaching/QuestionBankEditor'
+import { ExamPaperEditor } from '../teaching/ExamPaperEditor'
+import { ExamPaperPrint } from '../teaching/ExamPaperPrint'
+import { ExamPapersEditor } from '../teaching/ExamPapersEditor'
 import { GradebookEditor } from '../teaching/GradebookEditor'
 import { ManualGradeItem } from '../teaching/ManualGradeItem'
 import { QuizAttemptMarking } from '../teaching/QuizAttemptMarking'
@@ -227,6 +230,47 @@ export function TeachingQuestionBankPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Question bank', heading: 'Question bank' }}>
       {(course) => <QuestionBankEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/papers: the course's exam blueprints and papers. */
+export function TeachingExamPapersPage() {
+  return (
+    <TeachingCourseFrame section={{ title: 'Exam papers', heading: 'Exam papers' }}>
+      {(course) => <ExamPapersEditor lmsCourseId={course.lmsCourseId} />}
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/papers/:paperId: one exam paper with its builder. */
+export function TeachingExamPaperPage() {
+  const paperId = parseCourseId(useParams().paperId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Exam paper', heading: 'Exam paper', parent: { path: 'papers', label: 'Exam papers' } }}>
+      {(course) =>
+        paperId === null ? (
+          <p className="text-sm text-ink-muted">This paper address is not valid.</p>
+        ) : (
+          <ExamPaperEditor key={paperId} lmsCourseId={course.lmsCourseId} paperId={paperId} />
+        )
+      }
+    </TeachingCourseFrame>
+  )
+}
+
+/** /teaching/:lmsCourseId/papers/:paperId/print: the paper as it is printed. */
+export function TeachingExamPaperPrintPage() {
+  const paperId = parseCourseId(useParams().paperId)
+  return (
+    <TeachingCourseFrame section={{ title: 'Print exam paper', heading: 'Print exam paper', parent: { path: 'papers', label: 'Exam papers' } }}>
+      {(course) =>
+        paperId === null ? (
+          <p className="text-sm text-ink-muted">This paper address is not valid.</p>
+        ) : (
+          <ExamPaperPrint key={paperId} lmsCourseId={course.lmsCourseId} paperId={paperId} />
+        )
+      }
     </TeachingCourseFrame>
   )
 }

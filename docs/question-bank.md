@@ -32,6 +32,7 @@ Options and accepted answers are plain text up to 500 characters, must differ fr
 - An outcome must be an active outcome of the same course; one the question already has may stay after it is archived. Anything else answers 409.
 - Archiving is final: the question stays in the bank, readable under Archived, but can no longer change or be offered for practice. Nothing deletes or restores a question.
 - A question that a published or archived quiz uses can no longer be edited (409), so the quiz keeps asking what it asked; it can still be reviewed, offered for practice, or archived. Answers carry `inPublishedQuiz`, and the page shows "In a published quiz" without Edit. See `quizzes.md` for how an edit and a publication never miss each other.
+- A question in a final exam paper can no longer be edited either (409); see `exam-papers.md`.
 - Students have no route to the bank: questions carry their answers. Quizzes send students only what they may see.
 
 ## API

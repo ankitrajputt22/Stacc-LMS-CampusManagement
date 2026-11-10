@@ -38,6 +38,7 @@ export function TeachingCourseLayout() {
             { to: `${root}/analytics`, label: 'Analytics' },
             { to: `${root}/outcomes`, label: 'Outcomes' },
             { to: `${root}/questions`, label: 'Question bank' },
+            { to: `${root}/papers`, label: 'Exam papers' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },
             { to: `${root}/ai`, label: 'AI Tools' },

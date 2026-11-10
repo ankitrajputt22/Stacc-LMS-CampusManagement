@@ -42,6 +42,7 @@ import com.stacc.backend.lms.syllabus.LmsSyllabusService;
 import com.stacc.backend.lms.question.LmsQuestion;
 import com.stacc.backend.lms.question.LmsQuestionBankService;
 import com.stacc.backend.lms.question.LmsQuestionContent;
+import com.stacc.backend.lms.paper.LmsExamPaperService;
 import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
 import com.stacc.backend.lms.assignment.rubric.LmsRubricService;
@@ -357,6 +358,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final LmsQuizService quizzes;
         final LmsGradebookService gradebook;
         final LmsRubricService rubrics;
+        final LmsExamPaperService examPapers;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -371,7 +373,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
                 PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
                 LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook,
-                LmsRubricService rubrics) {
+                LmsRubricService rubrics, LmsExamPaperService examPapers) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -400,6 +402,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.quizzes = quizzes;
             this.gradebook = gradebook;
             this.rubrics = rubrics;
+            this.examPapers = examPapers;
         }
     }
 
@@ -675,6 +678,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 "Answer every question. Choice questions lose a quarter of their marks when answered wrongly.",
                 LmsTextFormat.PLAIN, QuizType.GRADED, 15, null, deadline(today, 7), null, 2, false, true,
                 new BigDecimal("25")), List.of(stackOrder, queueOrder, arrayCosts, whenLinked));
+
+        // --- Exam papers (v0.7.9): a blueprint for a short unit test in CS301 and a draft paper built from it.
+        examPaper(faculty1, lms301);
 
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
         submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
@@ -1368,6 +1374,23 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         createUnless(exists, () -> {
             Long rubricId = services.rubrics.create(faculty.getId(), lmsCourseId, content).getId();
             services.assignments.useRubric(faculty.getId(), assignment.getId(), rubricId);
+        });
+    }
+
+    /** A blueprint with one row per kind of demo question and a draft paper built from it, found by the blueprint's title. */
+    private void examPaper(UserAccount faculty, Long lmsCourseId) {
+        String title = "Unit 1 test blueprint";
+        boolean exists = services.examPapers.blueprints(faculty.getId(), lmsCourseId).stream()
+                .anyMatch(blueprint -> blueprint.getTitle().equals(title));
+        createUnless(exists, () -> {
+            String shortQuestions = "Section A: short questions";
+            Long blueprintId = services.examPapers.addBlueprint(faculty.getId(), lmsCourseId, title, List.of(
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.TRUE_FALSE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.SINGLE_CHOICE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.MULTIPLE_CHOICE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput("Section B: long answer", QuestionType.DESCRIPTIVE, null, null, null, null, 1,
+                            new BigDecimal("8")))).getId();
+            services.examPapers.buildPaper(faculty.getId(), blueprintId, "Unit 1 test", "Answer every question. Write clearly.", 45);
         });
     }
 

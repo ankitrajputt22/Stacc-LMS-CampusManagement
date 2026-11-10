@@ -149,6 +149,9 @@ export const queryKeys = {
     myGrades: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'grades'] as const,
     facultyQuizzes: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'quizzes'] as const,
     facultyQuiz: (quizId: number) => ['lms', 'faculty-quizzes', quizId] as const,
+    examBlueprints: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'exam-blueprints'] as const,
+    examPapers: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'exam-papers'] as const,
+    examPaper: (paperId: number) => ['lms', 'exam-papers', paperId] as const,
     facultySyllabus: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'syllabus'] as const,
   },
 } as const
