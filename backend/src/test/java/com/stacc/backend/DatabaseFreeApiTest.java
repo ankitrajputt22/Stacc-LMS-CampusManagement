@@ -1,6 +1,7 @@
 package com.stacc.backend;
 
 import com.stacc.backend.lms.discussion.LmsDiscussionReplyRepository;
+import com.stacc.backend.lms.discussion.LmsDiscussionReportRepository;
 import com.stacc.backend.lms.discussion.LmsDiscussionThreadRepository;
 import com.stacc.backend.lms.message.LmsConversationMessageRepository;
 import com.stacc.backend.lms.message.LmsConversationRepository;
@@ -203,6 +204,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsConversationRepository.class,
     LmsConversationMessageRepository.class,
     LmsMessageAttachmentRepository.class,
+    LmsDiscussionReportRepository.class,
     TodoDismissalRepository.class,
     TodoAssignmentQueries.class,
     PersonalCalendarEventRepository.class,

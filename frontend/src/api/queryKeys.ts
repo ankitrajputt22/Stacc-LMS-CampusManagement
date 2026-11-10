@@ -134,6 +134,7 @@ export const queryKeys = {
     outcomes: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'outcomes'] as const,
     discussions: (side: string, lmsCourseId: number) => ['lms', side, lmsCourseId, 'discussions'] as const,
     discussion: (side: string, lmsCourseId: number, threadId: number) => ['lms', side, lmsCourseId, 'discussions', threadId] as const,
+    discussionReports: (lmsCourseId: number) => ['lms', 'faculty', lmsCourseId, 'discussions', 'reports'] as const,
     conversations: (side: string, lmsCourseId: number) => ['lms', side, lmsCourseId, 'conversations'] as const,
     conversation: (side: string, lmsCourseId: number, conversationId: number) =>
       ['lms', side, lmsCourseId, 'conversations', conversationId] as const,
