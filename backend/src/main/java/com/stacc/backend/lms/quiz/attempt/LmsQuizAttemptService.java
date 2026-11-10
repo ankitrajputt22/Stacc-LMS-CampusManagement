@@ -29,6 +29,7 @@ import com.stacc.backend.lms.quiz.LmsQuizRepository;
 import com.stacc.backend.lms.quiz.QuizAvailability;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -161,8 +162,12 @@ public class LmsQuizAttemptService {
     /**
      * Starts a new attempt, or returns the one still open. The quiz must be open, and the student must have an attempt
      * left. An attempt left open past its deadline is closed as expired first.
+     *
+     * <p>Runs at READ COMMITTED: the course enrollment row lock already makes one student's starts wait for each other
+     * (and a unique key keeps one open attempt), so the gap locks REPEATABLE READ would add to the locking read of the
+     * attempts only made two students starting at once deadlock on the shared index.
      */
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public LmsQuizAttempt start(Long userAccountId, Long lmsCourseId, Long quizId) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
                 .orElseThrow(() -> notFound(QUIZ_UNAVAILABLE));
@@ -205,8 +210,13 @@ public class LmsQuizAttemptService {
     /**
      * Saves the answer to one question while the attempt is open, replacing an earlier one. Times are the server's:
      * after the deadline (and its short grace) the answer is refused.
+     *
+     * <p>Runs at READ COMMITTED: the access check reads before the attempt row is locked, and at MySQL's usual
+     * REPEATABLE READ every later plain read, such as loading an answer's chosen options, would come from that earlier
+     * snapshot. Two saves at once would then both insert the same options. After the lock every read sees what the
+     * save before it committed.
      */
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public LmsQuizAnswer saveAnswer(Long userAccountId, Long attemptId, Long quizQuestionId, AnswerInput input) {
         requireOwn(userAccountId, attemptId);
         LmsQuizAttempt attempt = attempts.findByIdForUpdate(attemptId).orElseThrow(() -> notFound(ATTEMPT_UNAVAILABLE));

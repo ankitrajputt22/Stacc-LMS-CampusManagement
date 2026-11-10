@@ -139,7 +139,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | 0.7.8 | Assignment upgrades | Availability windows, attempt limits, and cut-off times. Done: `V90` opening and closing times, late work on or off, and attempt limits, checked on every hand-in under the enrollment lock, with the faculty Submission rules and what students see (see `assignment-rules.md`). |
 | 0.7.9 | Blueprints and papers | Exam blueprints and a paper builder from the question bank (no AI), with a print view and DOCX export. Done (`V102`): `lms.paper`, `/teaching/:id/papers`, print view, and Word export. |
 | ★ 0.7.10 | Grading view | One grading screen per submission or attempt, with rubric, feedback, and next/previous student. Done: the assignment and quiz grading screens move to the previous or next student in the list's order (`StudentStepper`). |
-| 0.7.11 | Quiz load test | Many students submitting at once, with answers and scores checked. Later: after the core phases. |
+| 0.7.11 | Quiz load test | Many students submitting at once, with answers and scores checked. Done: `load/quiz-burst.js` in CI; it found and led to fixing two races in quiz attempts. |
 
 ## v0.8 Communication
 
