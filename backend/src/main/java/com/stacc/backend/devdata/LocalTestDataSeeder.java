@@ -146,6 +146,7 @@ import com.stacc.backend.lms.course.LmsCourseStatus;
 import com.stacc.backend.lms.management.LmsCourseManagementService;
 import com.stacc.backend.support.helpdesk.HelpdeskActor;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskArticleService;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryService;
 import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskCategoryRequest;
 import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskTicketRequest;
@@ -341,6 +342,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final CourseResultManagementService results;
         final AcademicCalendarManagementService calendar;
         final HelpdeskCategoryService helpdeskCategories;
+        final HelpdeskArticleService helpArticles;
         final HelpdeskTicketCommandService helpdeskTickets;
         final ApprovalWorkflowDefinitionService approvalWorkflows;
         final ApprovalWorkflowService approvals;
@@ -373,7 +375,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
                 PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
                 LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook,
-                LmsRubricService rubrics, LmsExamPaperService examPapers) {
+                LmsRubricService rubrics, LmsExamPaperService examPapers, HelpdeskArticleService helpArticles) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -403,6 +405,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.gradebook = gradebook;
             this.rubrics = rubrics;
             this.examPapers = examPapers;
+            this.helpArticles = helpArticles;
         }
     }
 
@@ -748,6 +751,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         Long lms = helpdeskCategory("LMS", "LMS and courses", "Course access, content, assignments, and submissions.");
         Long technical = helpdeskCategory("TECHNICAL", "Technical issues",
                 "Sign-in, devices, classrooms, and the campus network.");
+        // --- Help articles (v0.9.6): published answers suggested while a ticket is written.
+        helpArticle(admin1, technical, "Campus Wi-Fi keeps disconnecting",
+                "Forget the campus network on your device, then join it again with your college ID and password.\n"
+                        + "If it still drops, note the building and the time and create a ticket.");
+        helpArticle(admin1, lms, "A course is missing from my courses",
+                "Courses appear once your enrollment in the course is recorded and the course is published.\n"
+                        + "Check Registration under Academics first. If the course is listed there but not under Courses, "
+                        + "create a ticket with the course code.");
         ticket(student1, lms, "CS302 is missing from my courses",
                 "CS302 is on my enrollment but it does not appear under Courses.", HelpdeskTicketPriority.NORMAL,
                 List.of(), null, null, HelpdeskTicketStatus.OPEN);
@@ -1171,6 +1182,15 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             if (target == AcademicCalendarEventStatus.CANCELLED) {
                 services.calendar.cancel(eventId);
             }
+        });
+    }
+
+    /** A published help article, found by its title. */
+    private void helpArticle(UserAccount admin, Long categoryId, String title, String body) {
+        boolean exists = services.helpArticles.all().stream().anyMatch(article -> article.getTitle().equals(title));
+        createUnless(exists, () -> {
+            Long articleId = services.helpArticles.add(admin.getId(), categoryId, title, body).getId();
+            services.helpArticles.publish(admin.getId(), articleId);
         });
     }
 

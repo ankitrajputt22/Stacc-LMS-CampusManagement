@@ -13,6 +13,8 @@ export const queryKeys = {
   },
   helpdesk: {
     teams: () => ['helpdesk', 'teams'] as const,
+    helpArticles: (categoryId: number, q: string) => ['helpdesk', 'articles', categoryId, q] as const,
+    adminArticles: () => ['helpdesk', 'admin-articles'] as const,
     teamQueue: (status: string, page: number) => ['helpdesk', 'team-queue', status, page] as const,
   },
   hostel: {

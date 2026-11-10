@@ -355,6 +355,7 @@
 - Access is decided once, in `HelpdeskAccessService`: own tickets need the `_OWN` permissions; every ticket needs `ADMIN` with the `_ALL` permissions, and changes `ADMIN` with `HELPDESK_TICKET_MANAGE`. The role alone is no pass. A ticket the caller may not see answers the same 404 as a missing one.
 - Admin replies, real status changes, and assignments notify through `HelpdeskNotifications` and the Inbox, never the actor themselves, linking to `/support/tickets/{ticketId}`. Do not rewrite old notification rows.
 - Support teams (`HelpdeskTeam`, made inactive never deleted) take the tickets of the categories routed to them; their members (admins or staff with `HELPDESK_TEAM_WORK`) work only their teams' tickets, decided by `HelpdeskAccessService.worksOnTeam`. Internal notes are seen only by the support side and notify nobody. Ratings are given once by the requester; `firstResponseAt` is set once by the first visible support reply. See `docs/helpdesk.md`.
+- Help articles (`HelpdeskArticle`) are plain-text answers per category, managed by admins with `HELPDESK_TICKET_MANAGE` (draft, published, archived; never deleted) and suggested on the new-ticket form from `GET /api/v1/helpdesk/articles` (`HELPDESK_TICKET_CREATE`), published and active-category only, asked on category change and when the subject is left, never per keystroke. See `docs/helpdesk.md`.
 - Do not add SMS, push, SLAs or escalation, or helpdesk analytics without their own phase.
 
 ## Approval Workflow Engine

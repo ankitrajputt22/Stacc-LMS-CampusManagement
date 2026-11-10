@@ -207,3 +207,10 @@ Attachments, email, SMS, or push, service-level targets and escalation, reopenin
 - **Ratings.** The requester rates a `RESOLVED` or `CLOSED` ticket once, 1 to 5, with an optional plain-text comment (`POST /{id}/rating`).
 - **Response time.** `firstResponseAt` is set by the first visible reply from anyone other than the requester. Lists and the ticket page show it.
 - **Attachments** on tickets are not part of this upgrade; they will use `LmsAttachmentStore`'s pattern once it moves to a shared module.
+
+## Help articles (v0.9.6)
+
+- `HelpdeskArticle` (`helpdesk_articles`, `V105`) is a short plain-text answer in one helpdesk category: a title (up to 200 characters) and text (up to 10,000), `DRAFT`, `PUBLISHED` (with `publishedAt` set once), or `ARCHIVED`. Articles are archived, never deleted, and an archived one no longer changes.
+- Admins manage them at `/support/admin/articles` (Help articles on the Support page) through `/api/v1/helpdesk/admin/articles` (list, add as a draft, edit, publish, archive), with `ADMIN` and `HELPDESK_TICKET_MANAGE`, the same rule as categories.
+- Someone writing a ticket sees "These articles might solve it" under the subject: `GET /api/v1/helpdesk/articles?categoryId=&q=` (`HELPDESK_TICKET_CREATE`) returns at most 5 published articles of the chosen category while it is active. With `q` (the subject) only articles sharing a word of at least three letters with it are returned, the most shared first; common words are ignored. The form asks when the category changes and when the subject field is left, never per keystroke, and the request only reads. `GET /api/v1/helpdesk/articles/{id}` reads one published article.
+- Demo data: "Campus Wi-Fi keeps disconnecting" (Technical issues) and "A course is missing from my courses" (LMS and courses), both published.

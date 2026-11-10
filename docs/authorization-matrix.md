@@ -170,6 +170,11 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/gate/movements` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/movements` | POST | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/students/{loginId}/outings` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
+| `/api/v1/helpdesk/admin/articles` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskAdminCategoryController |
 | `/api/v1/helpdesk/admin/categories/{categoryId}/team` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
 | `/api/v1/helpdesk/admin/teams` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
@@ -180,6 +185,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/priority` | PUT | `(hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskAdminTicketController |
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/status` | PUT | `(hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskAdminTicketController |
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/team` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
+| `/api/v1/helpdesk/articles` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('HELPDESK_TICKET_CREATE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/articles/{articleId}` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('HELPDESK_TICKET_CREATE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/team/tickets` | GET | `hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK')` | HelpdeskTeamController |
 | `/api/v1/helpdesk/tickets/me` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HelpdeskTicketController |
 | `/api/v1/helpdesk/tickets/{ticketId}` | GET | `(hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and (hasAuthority('HELPDESK_TICKET_VIEW_OWN') or (hasRole('ADMIN') and hasAuthority('HELPDESK_TICKET_VIEW_ALL')))) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskTicketController |
