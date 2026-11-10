@@ -165,3 +165,10 @@ export type FestApplication = {
   status: VolunteerStatus
   appliedAt: string
 }
+
+// --- Teams (TeamService views)
+
+export type TeamRole = 'PLAYER' | 'CAPTAIN' | 'VICE_CAPTAIN'
+export type TeamPlayer = { playerId: number; loginId: string; role: TeamRole; joinedAt: string }
+export type CampusTeam = { teamId: number; name: string; season: string; active: boolean; players: TeamPlayer[] }
+export type GroupTeams = { canManage: boolean; teams: CampusTeam[] }

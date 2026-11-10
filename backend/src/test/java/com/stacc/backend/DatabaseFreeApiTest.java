@@ -117,6 +117,8 @@ import com.stacc.backend.hostel.HostelRoomChangeRepository;
 import com.stacc.backend.engagement.fests.CampusFestRepository;
 import com.stacc.backend.engagement.fests.FestShiftRepository;
 import com.stacc.backend.engagement.fests.FestVolunteerRepository;
+import com.stacc.backend.engagement.teams.CampusTeamMemberRepository;
+import com.stacc.backend.engagement.teams.CampusTeamRepository;
 import com.stacc.backend.engagement.groups.GroupAnnouncementRepository;
 import com.stacc.backend.engagement.groups.GroupSessionRepository;
 import com.stacc.backend.hostel.visitor.HostelVisitRepository;
@@ -258,6 +260,8 @@ import org.springframework.web.context.WebApplicationContext;
     CampusFestRepository.class,
     FestShiftRepository.class,
     FestVolunteerRepository.class,
+    CampusTeamRepository.class,
+    CampusTeamMemberRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

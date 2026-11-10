@@ -5,6 +5,7 @@ import type {
   FestApplication,
   FestInput,
   CampusGroup,
+  CampusTeam,
   EventAttendanceRow,
   EventAttendee,
   EventCheckIn,
@@ -16,10 +17,12 @@ import type {
   GroupAnnouncement,
   GroupKind,
   GroupMember,
+  GroupTeams,
   GroupSession,
   JoinPolicy,
   MyEventAttendance,
   OfficerTitle,
+  TeamRole,
   TrialOutcome,
 } from '../types/engagement'
 import { apiClient } from './apiClient'
@@ -154,3 +157,17 @@ export const getFestApplications = async (festId: number, signal?: AbortSignal) 
   (await apiClient.get<FestApplication[]>(`${BASE}/admin/fests/${festId}/applications`, { signal })).data
 export const decideFestApplication = async (applicationId: number, accept: boolean) =>
   (await apiClient.post<FestApplication>(`${BASE}/admin/fests/applications/${applicationId}/decision`, { accept })).data
+
+// --- Teams
+
+export const getGroupTeams = async (groupId: number, signal?: AbortSignal) =>
+  (await apiClient.get<GroupTeams>(`${BASE}/groups/${groupId}/teams`, { signal })).data
+export const createTeam = async (groupId: number, name: string, season: string) =>
+  (await apiClient.post<CampusTeam>(`${BASE}/groups/${groupId}/teams`, { name, season })).data
+export const deactivateTeam = async (teamId: number) => (await apiClient.post<CampusTeam>(`${BASE}/teams/${teamId}/deactivate`)).data
+/** Adds an active member of the group by college ID; a new captain or vice-captain takes over that role. */
+export const addTeamPlayer = async (teamId: number, loginId: string, role: TeamRole) =>
+  (await apiClient.post<CampusTeam>(`${BASE}/teams/${teamId}/players`, { loginId, role })).data
+export const changeTeamRole = async (playerId: number, role: TeamRole) =>
+  (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/role`, { role })).data
+export const removeTeamPlayer = async (playerId: number) => (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/remove`)).data
