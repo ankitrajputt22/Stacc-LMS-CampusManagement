@@ -217,6 +217,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/occupancy` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
+| `/api/v1/hostel/admin/room-changes` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelRoomChangeController |
+| `/api/v1/hostel/admin/room-changes/{changeId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelRoomChangeController |
 | `/api/v1/hostel/admin/rooms/{roomId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/beds` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/beds` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
@@ -234,6 +236,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/student/outings/{outingId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/extensions` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/pass` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
+| `/api/v1/hostel/student/room-changes` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
 | `/api/v1/hostel/warden/allocations/{allocationId}/check-in` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/hostels/{hostelId}/bed-map` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/occupancy` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
@@ -422,3 +425,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/students/me/course-enrollments/{courseEnrollmentId}/drop` | POST | `hasRole('STUDENT') and hasAuthority('COURSE_DROP')` | StudentRegistrationController |
 | `/api/v1/students/me/course-registration` | GET | `hasRole('STUDENT') and hasAuthority('COURSE_REGISTRATION_VIEW')` | StudentRegistrationController |
 | `/api/v1/students/me/course-registration` | POST | `hasRole('STUDENT') and hasAuthority('COURSE_REGISTER')` | StudentRegistrationController |
+| `/move` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/swap` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/{changeId}/answer` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/{changeId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |

@@ -97,6 +97,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `CALENDAR_PERSONAL_USE` | `STUDENT`, `FACULTY`, `ADMIN` | One's own personal calendar entries and private subscription link. Added by `V93`. |
 | `HELPDESK_TEAM_WORK` | `MAINTENANCE`, `WARDEN`, `LIBRARIAN` | Working the helpdesk tickets routed to one's own support teams, and no others. Added by `V96`, with `NOTIFICATION_VIEW` for these roles. |
 | `HOSTEL_WARDEN_VIEW` | `WARDEN` | The occupancy and bed map of one's own hostels, and checking students in there. Added by `V97`. |
+| `HOSTEL_ROOM_CHANGE_REQUEST` | `STUDENT` | Asking to move to another hostel bed, proposing a bed swap with another resident, and answering swaps proposed to oneself. Added by `V107`. |
 | `HOSTEL_OUTING_REQUEST` | `STUDENT` | Asking for gate passes, leave, and extensions while living in a hostel, and opening one's own pass. Added by `V98`. |
 | `GATE_PASS_VERIFY` | `SECURITY` | Checking pass codes, recording gate movements, and looking students' outings up. Added by `V98`. |
 | `CAMPUS_ENGAGEMENT_USE` | `STUDENT`, `FACULTY` | Joining groups, registering for events, and booking facilities; officers and organizers manage their own groups' members and events. Added by `V99`. |

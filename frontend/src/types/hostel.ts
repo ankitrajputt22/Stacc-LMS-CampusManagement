@@ -209,3 +209,25 @@ export type HostelWardenAssignment = {
 
 /** A waiting student's place in the queue for a bed: 1 is next; null when not waiting. */
 export type HostelQueuePlace = { position: number | null; waiting: number }
+
+/** One side of a room change: a resident and their bed. */
+export type RoomChangeSide = { loginId: string; hostel: string; room: string; bed: string }
+
+/** A room move or a proposed bed swap. The approval status is the warden's decision, as the approval engine has it. */
+export type RoomChange = {
+  changeId: number
+  kind: 'MOVE' | 'SWAP'
+  requester: RoomChangeSide
+  partner: RoomChangeSide | null
+  partnerResponse: 'PENDING' | 'ACCEPTED' | 'DECLINED' | null
+  reason: string
+  preference: string | null
+  status: 'OPEN' | 'COMPLETED' | 'CANCELLED' | 'DECLINED'
+  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | null
+  createdAt: string
+  completedAt: string | null
+  mine: boolean
+  canCancel: boolean
+  canAnswer: boolean
+  canComplete: boolean
+}
