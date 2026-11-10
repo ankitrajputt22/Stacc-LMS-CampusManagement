@@ -19,7 +19,10 @@ export type CampusGroup = {
 
 export type GroupMember = { membershipId: number; loginId: string; status: 'PENDING' | 'ACTIVE'; requestedAt: string }
 
-export type FacilityKind = 'ROOM' | 'LAB' | 'HALL' | 'COURT' | 'GROUND' | 'OTHER'
+export type FacilityKind = 'ROOM' | 'CLASSROOM' | 'LAB' | 'EQUIPMENT' | 'HALL' | 'COURT' | 'GROUND' | 'OTHER'
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
+/** Weekly class hours in the college's time zone; no booking overlaps them. */
+export type ClassHour = { classHourId: number; dayOfWeek: DayOfWeek; startsAt: string; endsAt: string; label: string }
 
 export type CampusFacility = {
   facilityId: number
@@ -34,6 +37,7 @@ export type CampusFacility = {
   needsApproval: boolean
   active: boolean
   closures: { closureId: number; startDate: string; endDate: string; reason: string }[]
+  classHours: ClassHour[]
 }
 
 export type FacilityBooking = {

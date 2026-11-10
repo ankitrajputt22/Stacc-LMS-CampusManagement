@@ -408,6 +408,7 @@
 
 - Clubs and sports groups, facilities, and events live in `engagement` (`docs/campus-engagement.md`). Groups and facilities are made inactive, events cancelled, officers' terms ended; nothing is deleted, and memberships, bookings, and registrations keep their history.
 - Facility hours and closures are read in `COLLEGE_TIME_ZONE`. Booking locks the facility row before reading overlapping bookings; registering locks the event row before reading its places with a locking read. Both have a `*MySqlIT` with `Concurrently.run`; keep them.
+- Academic bookings (v0.12.5) use the same facilities engine: classrooms and equipment are facility kinds, and weekly class hours (college time zone, removed never deleted, under the facility row lock) refuse overlapping new bookings. Never build a second booking engine.
 - Approvals go through the engine only: `FACILITY_BOOKING` for facilities that need it, `GROUP_EVENT` (the `GROUP_ADVISOR` relationship) for group events. Booking and event status follow their approvals on read and are never copied.
 - Eligibility is decided on the server with reasons in words; the frontend shows them and never decides.
 - Event check-in uses only `PassService` codes (`EVENT_CHECK_IN`) or the organizer's manual check-in by college ID, within an hour before the event until it ends, recorded once on the registration; certificate eligibility (attended and the event ended) is worked out on read, never stored.

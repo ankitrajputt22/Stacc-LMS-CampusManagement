@@ -71,3 +71,9 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - A match (`CampusFixture`) is between two different sides, each one of our active teams or an external opponent named in text, with a start and an optional venue. The office records text scores (such as `152/6`) and the result (home win, away win, or draw) and may correct them; a scheduled match may be cancelled and stays listed, a played one cannot be cancelled.
 - Standings (played, won, drawn, lost, and points at 3 for a win and 1 for a draw, ordered by points, then wins, then name) are worked out from played matches on every read and never stored.
 - Changes take the tournament row lock, then the match's (`TournamentResultMySqlIT`). Students and faculty see published tournaments on the campus Sports tab (`GET /api/v1/engagement/tournaments`).
+
+## Academic bookings (v0.12.5)
+
+- Facilities may also be classrooms and equipment (`CLASSROOM`, `EQUIPMENT`; `V120`), booked through the same engine with the same hours, closures, approvals, and overlap rule.
+- The campus office sets weekly class hours per facility (day, start and end in the college's time zone, and a label such as `CS101 lecture`) at Campus Management → Facilities. A new booking that overlaps class hours on their day is refused with the class named; bookings made before the class hours were added stay. Class hours are removed with a time and kept, never deleted, and they take the facility row lock like bookings (`CampusEngagementMySqlIT`).
+- Bookers see each facility's class hours on the campus Facilities tab.

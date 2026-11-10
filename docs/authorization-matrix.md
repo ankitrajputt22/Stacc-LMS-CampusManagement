@@ -147,7 +147,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/dashboard/faculty` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_DASHBOARD_VIEW')` | FacultyDashboardController |
 | `/api/v1/dashboard/student` | GET | `hasRole('STUDENT') and hasAuthority('STUDENT_DASHBOARD_VIEW')` | StudentDashboardController |
 | `/api/v1/engagement/admin/facilities` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/facilities/class-hours/{classHourId}/remove` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/facilities/{facilityId}/class-hours` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}/closures` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/fests` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
 | `/api/v1/engagement/admin/fests` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |

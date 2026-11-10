@@ -21,7 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "campus_facilities")
 public class CampusFacility {
 
-    public enum Kind { ROOM, LAB, HALL, COURT, GROUND, OTHER }
+    public enum Kind { ROOM, CLASSROOM, LAB, EQUIPMENT, HALL, COURT, GROUND, OTHER }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
