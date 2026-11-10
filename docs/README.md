@@ -79,6 +79,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Course outcomes and Bloom levels](course-outcomes.md)
 - [Question bank](question-bank.md)
 - [Quizzes](quizzes.md)
+- [Exam blueprints and papers](exam-papers.md)
 - [Gradebook](gradebook.md)
 - [Rubrics](rubrics.md)
 - [Assignment submission rules](assignment-rules.md)

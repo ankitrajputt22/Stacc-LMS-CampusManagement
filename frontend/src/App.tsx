@@ -70,6 +70,9 @@ import {
   TeachingModulesPage,
   TeachingOutcomesPage,
   TeachingQuestionBankPage,
+  TeachingExamPaperPage,
+  TeachingExamPaperPrintPage,
+  TeachingExamPapersPage,
   TeachingGradebookPage,
   TeachingGradeItemPage,
   TeachingQuizAttemptPage,
@@ -154,6 +157,9 @@ function App() {
             <Route path="rubrics" element={<TeachingRubricsPage />} />
             <Route path="gradebook/items/:itemId" element={<TeachingGradeItemPage />} />
             <Route path="questions" element={<TeachingQuestionBankPage />} />
+            <Route path="papers" element={<TeachingExamPapersPage />} />
+            <Route path="papers/:paperId" element={<TeachingExamPaperPage />} />
+            <Route path="papers/:paperId/print" element={<TeachingExamPaperPrintPage />} />
             <Route path="assignments/:assignmentId/submissions" element={<FacultyAssignmentSubmissionsPage />} />
             <Route path="pages/:pageId" element={<TeachingPagePreview />} />
             <Route path="files" element={<TeachingFilesPage />} />

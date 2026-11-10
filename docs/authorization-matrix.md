@@ -278,6 +278,10 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/copy-sources` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsCourseCopyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-blueprints` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-blueprints` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-papers` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-papers` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/files` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsFacultyContentController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/gradebook` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/gradebook/items` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
@@ -297,6 +301,15 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus/publish` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsSyllabusController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/papers` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/document` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/finalize` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/questions` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
 | `/api/v1/lms/faculty/gradebook/items/{itemId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/gradebook/items/{itemId}/entries/{courseEnrollmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/managed-courses` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |

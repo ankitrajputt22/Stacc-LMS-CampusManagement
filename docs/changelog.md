@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **0.4.4:** a k6 load test of course registration, run in CI on the end-to-end stack.
+- **0.7.9:** exam blueprints and a paper builder from the question bank, with a print view and Word export.
+
 ## v1.0.0 (2026-11-11)
 
 First stable release, after release candidate `v1.0.0-rc.1`. Fixed during the candidate: editing a rubric while grading with it could deadlock; both now take the rubric row lock first, and a grade against criteria that just changed is refused cleanly.

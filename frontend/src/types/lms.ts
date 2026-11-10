@@ -889,3 +889,91 @@ export type LmsRubricInput = {
   }[]
 }
 
+
+/** One row of an exam blueprint: how many bank questions a section takes, which ones, and the marks each carries. */
+export type ExamBlueprintRow = {
+  position: number
+  sectionTitle: string | null
+  questionType: QuestionType | null
+  difficulty: QuestionDifficulty | null
+  bloomLevel: BloomLevel | null
+  outcomeId: number | null
+  topic: string | null
+  questionCount: number
+  marksEach: number
+}
+
+export type ExamBlueprintRowInput = Omit<ExamBlueprintRow, 'position'>
+
+export type ExamBlueprint = {
+  id: number
+  title: string
+  status: 'ACTIVE' | 'ARCHIVED'
+  rows: ExamBlueprintRow[]
+  questionCount: number
+  totalMarks: number
+  updatedAt: string
+}
+
+export type ExamPaperStatus = 'DRAFT' | 'FINAL' | 'ARCHIVED'
+
+export type ExamPaperSummary = {
+  id: number
+  title: string
+  status: ExamPaperStatus
+  blueprintId: number | null
+  durationMinutes: number | null
+  questionCount: number
+  totalMarks: number
+  finalizedAt: string | null
+  updatedAt: string
+}
+
+/** One bank question in a paper, with its answers: only faculty who teach the course receive it. */
+export type ExamPaperQuestion = {
+  id: number
+  questionId: number
+  position: number
+  sectionTitle: string | null
+  marks: number
+  type: QuestionType
+  text: string
+  textFormat: TextFormat
+  explanation: string | null
+  options: LmsQuestionOption[]
+  trueFalseAnswer: boolean | null
+  answerGuidance: string | null
+  topic: string | null
+  difficulty: QuestionDifficulty
+  bloomLevel: BloomLevel | null
+  outcomeCode: string | null
+  reviewStatus: 'NEEDS_REVIEW' | 'REVIEWED'
+  status: 'ACTIVE' | 'ARCHIVED'
+}
+
+export type ExamPaper = {
+  id: number
+  title: string
+  instructions: string | null
+  durationMinutes: number | null
+  status: ExamPaperStatus
+  blueprintId: number | null
+  courseCode: string
+  courseName: string
+  totalMarks: number
+  finalizedAt: string | null
+  updatedAt: string
+  questions: ExamPaperQuestion[]
+}
+
+export type ExamPaperDetailsInput = {
+  title: string | null
+  instructions: string | null
+  durationMinutes: number | null
+}
+
+export type ExamPaperQuestionInput = {
+  questionId: number
+  sectionTitle: string | null
+  marks: number
+}

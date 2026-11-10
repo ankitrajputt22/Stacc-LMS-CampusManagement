@@ -42,6 +42,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Gradebook | `/gradebook` | See `gradebook.md`; a manual item opens at `/gradebook/items/:itemId`. |
 | Outcomes | `/outcomes` | See `course-outcomes.md`. |
 | Question bank | `/questions` | See `question-bank.md`. |
+| Exam papers | `/papers` | Blueprints, the paper builder, and the print view. See `exam-papers.md`. |
 | Files | `/files` | See `course-files.md`. |
 | Syllabus | `/syllabus` | See `course-syllabus.md`. |
 | AI Tools | `/ai` | See `ai-learning.md`. "Use in assignment form" now opens the Assignments page. |

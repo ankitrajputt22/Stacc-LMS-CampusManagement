@@ -42,6 +42,16 @@ public interface LmsQuestionRepository extends JpaRepository<LmsQuestion, Long> 
             """, nativeQuery = true)
     List<String> findQuizStatusesForShare(@Param("questionId") Long questionId);
 
+    /**
+     * The status of every exam paper that uses the question, read with a shared lock. A paper is made final under the
+     * course row lock, which an edit holds first, so the edit sees every paper made final before it.
+     */
+    @Query(value = """
+            select paper.status from lms_exam_paper_questions link join lms_exam_papers paper on paper.id = link.lms_exam_paper_id
+            where link.lms_question_id = :questionId for share
+            """, nativeQuery = true)
+    List<String> findPaperStatusesForShare(@Param("questionId") Long questionId);
+
     /** The questions of the course used by a quiz that is published or archived, which can no longer be edited. */
     @Query(value = """
             select distinct link.lms_question_id from lms_quiz_questions link join lms_quizzes quiz on quiz.id = link.lms_quiz_id

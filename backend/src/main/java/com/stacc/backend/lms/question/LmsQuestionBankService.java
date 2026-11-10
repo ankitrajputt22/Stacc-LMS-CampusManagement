@@ -32,6 +32,8 @@ public class LmsQuestionBankService {
     public static final String OUTCOME_INVALID = "Choose an active outcome of this course.";
     public static final String IN_PUBLISHED_QUIZ =
             "This question is in a published quiz, so it can no longer be edited. Add a new question instead.";
+    public static final String IN_FINAL_PAPER =
+            "This question is in a final exam paper, so it can no longer be edited. Add a new question instead.";
 
     private final LmsQuestionRepository questions;
     private final LmsCourseRepository lmsCourses;
@@ -87,6 +89,9 @@ public class LmsQuestionBankService {
         lmsCourses.findByIdForUpdate(lmsCourseId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
         if (questions.findQuizStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
             throw new ApiException(HttpStatus.CONFLICT, IN_PUBLISHED_QUIZ);
+        }
+        if (questions.findPaperStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
+            throw new ApiException(HttpStatus.CONFLICT, IN_FINAL_PAPER);
         }
         LmsQuestion question = active(lockedAfterAccess(questionId));
         LmsQuestionContent content = written.withOutcome(

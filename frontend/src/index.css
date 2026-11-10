@@ -54,3 +54,21 @@
     font: inherit;
   }
 }
+
+/* Printing an exam paper's print view prints only the paper, not the navigation or the controls around it. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+  }
+}
