@@ -42,6 +42,8 @@ public enum NotificationType {
     HOSTEL_EMERGENCY,
     /** A campus notice was published for the first time. */
     CAMPUS_NOTICE_PUBLISHED,
+    /** A club or sports group the account belongs to posted an announcement. */
+    GROUP_ANNOUNCEMENT,
     /** A campus service request is ready for its requester. */
     CAMPUS_SERVICE_READY,
     /** A campus service request was completed. */

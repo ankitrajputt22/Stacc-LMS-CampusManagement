@@ -161,10 +161,15 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/groups` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/groups/{groupId}/activity` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
+| `/api/v1/engagement/groups/{groupId}/announcements` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
 | `/api/v1/engagement/groups/{groupId}/join` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/groups/{groupId}/leave` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/groups/{groupId}/members` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/groups/{groupId}/sessions` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
+| `/api/v1/engagement/me/sessions` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | GroupActivityController |
 | `/api/v1/engagement/memberships/{membershipId}/decision` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/sessions/{sessionId}/cancel` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
 | `/api/v1/exports` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports/{exportId}/download` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |

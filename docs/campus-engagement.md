@@ -31,3 +31,10 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - `CAMPUS_ENGAGEMENT_USE` (`STUDENT`, `FACULTY`): joining, registering, and booking.
 - `CAMPUS_ENGAGEMENT_MANAGE` (`ADMIN`): setting everything up.
 - Officers, organizers, and bookers are checked per record. Anything the caller may not manage answers 404.
+
+## Group sessions and announcements (v0.11.2)
+
+- A club or sports group's officers, and the campus office, schedule meetings and practices (`GroupSession`: kind, title, optional location, start and end moments) and cancel them (kept, marked cancelled), and post plain-text announcements (`GroupAnnouncement`, kept as written) (`V112`).
+- Active members, officers, and the campus office read a group's sessions and latest announcements (`GET /api/v1/engagement/groups/{id}/activity`); anyone else gets 404. The "Sessions and announcements" panel opens on each group the account belongs to or leads.
+- Scheduled sessions of the account's groups appear on its calendar (`GET /api/v1/engagement/me/sessions`, ranges up to 62 days; the month view shows them).
+- Posting an announcement tells every active member except its author through the Inbox (`GROUP_ANNOUNCEMENT`, Campus category).

@@ -43,6 +43,8 @@ export const queryKeys = {
     all: ['engagement'] as const,
     groups: () => ['engagement', 'groups'] as const,
     members: (groupId: number) => ['engagement', 'members', groupId] as const,
+    activity: (groupId: number) => ['engagement', 'activity', groupId] as const,
+    mySessions: (from: string) => ['engagement', 'my-sessions', from] as const,
     facilities: () => ['engagement', 'facilities'] as const,
     facilityBookings: (facilityId: number) => ['engagement', 'facility-bookings', facilityId] as const,
     myBookings: () => ['engagement', 'my-bookings'] as const,

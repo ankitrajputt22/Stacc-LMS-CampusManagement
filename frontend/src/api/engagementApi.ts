@@ -6,8 +6,11 @@ import type {
   EventInput,
   FacilityBooking,
   FacilityKind,
+  GroupActivity,
+  GroupAnnouncement,
   GroupKind,
   GroupMember,
+  GroupSession,
   JoinPolicy,
   OfficerTitle,
 } from '../types/engagement'
@@ -63,3 +66,27 @@ export const cancelEvent = async (eventId: number) => (await apiClient.post<Camp
 export const registerForEvent = async (eventId: number) => (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration`)).data
 export const unregisterFromEvent = async (eventId: number) =>
   (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration/cancel`)).data
+
+// --- Group sessions and announcements
+
+export async function getGroupActivity(groupId: number, signal?: AbortSignal) {
+  return (await apiClient.get<GroupActivity>(`${BASE}/groups/${groupId}/activity`, { signal })).data
+}
+
+export async function addGroupSession(groupId: number, input: { kind: GroupSession['kind']; title: string; location: string | null; startsAt: string; endsAt: string }) {
+  return (await apiClient.post<GroupSession>(`${BASE}/groups/${groupId}/sessions`, input)).data
+}
+
+export async function cancelGroupSession(sessionId: number) {
+  return (await apiClient.post<GroupSession>(`${BASE}/sessions/${sessionId}/cancel`)).data
+}
+
+/** Posts an announcement; active members are told in their Inbox. */
+export async function postGroupAnnouncement(groupId: number, title: string, message: string) {
+  return (await apiClient.post<GroupAnnouncement>(`${BASE}/groups/${groupId}/announcements`, { title, message })).data
+}
+
+/** Scheduled sessions of the account's groups overlapping the range (moments in UTC). */
+export async function getMyGroupSessions(from: string, to: string, signal?: AbortSignal) {
+  return (await apiClient.get<GroupSession[]>(`${BASE}/me/sessions`, { params: { from, to }, signal })).data
+}

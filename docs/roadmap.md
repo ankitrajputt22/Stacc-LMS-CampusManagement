@@ -187,7 +187,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | Phase | Name | Work |
 | --- | --- | --- |
 | ★ 0.11.1 | Groups and officers | Clubs and sports groups as one group model with officers (faculty advisor, student officers, coach) and join policies. Done (`V99`): `CampusGroup` with officers, memberships, and join policies. |
-| 0.11.2 | Group sessions and announcements | Meetings and practices on members' calendars, group announcements. |
+| 0.11.2 | Group sessions and announcements | Meetings and practices on members' calendars, group announcements. Done (`V112`): sessions on members' calendars and announcements to their Inboxes. |
 | ★ 0.11.3 | Campus hub | One Campus area with Happening, Clubs, Events, Sports, Services, and Notices tabs, and search for clubs, events, and sports. Done: `/campus/:tab` with Happening, Clubs, Sports, Events, Facilities, Services, and Notices, and search for clubs, sports, and events. |
 | ★ 0.11.4 | Facilities and bookings | One catalog of rooms, labs, halls, and courts with opening hours, closed periods, overlap-safe bookings, and approval where needed. Done: facilities, closures, overlap-safe bookings, `FACILITY_BOOKING` approval. |
 | ★ 0.11.5 | Events | Organizer, eligibility with reasons, capacity, registration window, waitlist with automatic promotion, and advisor approval for group events. Done: events with eligibility reasons, capacity, waitlist promotion, and `GROUP_EVENT` advisor approval. |

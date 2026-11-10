@@ -89,3 +89,20 @@ export type EventInput = {
 }
 
 export type EventAttendee = { loginId: string; status: 'REGISTERED' | 'WAITLISTED'; registeredAt: string }
+
+export type GroupSession = {
+  sessionId: number
+  groupId: number
+  groupName: string
+  kind: 'MEETING' | 'PRACTICE'
+  title: string
+  location: string | null
+  startsAt: string
+  endsAt: string
+  status: 'SCHEDULED' | 'CANCELLED'
+}
+
+export type GroupAnnouncement = { announcementId: number; title: string; message: string; createdAt: string }
+
+/** A group's sessions and announcements; canManage when the account may add them (officers, the campus office). */
+export type GroupActivity = { canManage: boolean; sessions: GroupSession[]; announcements: GroupAnnouncement[] }

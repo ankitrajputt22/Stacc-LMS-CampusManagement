@@ -25,6 +25,7 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { Button, ButtonLink, PageHeader, Tabs } from '../ui'
+import { getMyGroupSessions } from '../api/engagementApi'
 
 function MonthControls({ month, onChange }: { month: CalendarMonth; onChange: (month: CalendarMonth | null) => void }) {
   const previous = addMonths(month, -1)
@@ -69,6 +70,12 @@ function MonthAgenda({
   const request = useApiQuery(queryKeys.calendar.mine(range), (signal) => getMyCalendar(range, signal))
   const personal = useApiQuery(queryKeys.calendar.personal({ from, to }), (signal) => getPersonalEvents({ from, to }, signal))
   const personalEvents = personal.status === 'loaded' ? personal.data : []
+  // Club and sports sessions only for students and faculty, the members of groups; the range is the month's local days.
+  const sessionRange = { from: new Date(`${from}T00:00:00`).toISOString(), to: new Date(`${to}T23:59:59`).toISOString() }
+  const sessions = useApiQuery(adminOnly ? null : queryKeys.engagement.mySessions(sessionRange.from), (signal) =>
+    getMyGroupSessions(sessionRange.from, sessionRange.to, signal),
+  )
+  const groupSessions = sessions.status === 'loaded' ? sessions.data : []
 
   if (request.status === 'loading') {
     return (
@@ -104,7 +111,7 @@ function MonthAgenda({
   if (view === 'month') {
     return (
       <div className="space-y-6">
-        <MonthGrid month={month} calendar={calendar} personal={personalEvents} />
+        <MonthGrid month={month} calendar={calendar} personal={personalEvents} sessions={groupSessions} />
         <PersonalEntries key={from} events={personalEvents} monthStart={from} />
       </div>
     )
