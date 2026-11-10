@@ -24,7 +24,7 @@ test('a faculty member posts an announcement with a file and a student downloads
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Announcements')
   const posted = page.getByRole('article', { name: title })
-  await expect(posted.getByText('lab-plan.txt')).toBeVisible()
+  await expect(posted.getByRole('list', { name: `Files of ${title}` })).toContainText('lab-plan.txt')
   const download = page.waitForEvent('download')
   await posted.getByRole('button', { name: /^Download/ }).click()
   expect((await download).suggestedFilename()).toBe('lab-plan.txt')
