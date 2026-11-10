@@ -386,6 +386,7 @@
 - Every pass goes through the one `pass.PassService`: a random code shown once to its holder, only its SHA-256 fingerprint stored, a time window, one purpose and source, revoked never deleted; a new pass for a source revokes the old ones. Never store or log a code. See `docs/passes-and-gate.md`.
 - Hostel outings (gate passes and leave, and leave extensions) are approved only through the `HOSTEL_OUTING` workflow by the student's hostel warden; never copy approval state. The gate's movement log is append-only and decides whether a student is outside; overdue is worked out on read. Security (`SECURITY` with `GATE_PASS_VERIFY`) only checks codes, records movements, and looks students up.
 - Hostel complaints are ordinary helpdesk tickets of the `HOSTEL` category with the room attached; never build a second ticket engine.
+- Room changes (`HostelRoomChange`) are moves or two-sided swaps decided by the resident's warden through the `HOSTEL_ROOM_CHANGE` workflow, one open change per bed under the student row locks; the hostel office carries out approved ones through `HostelAllocationService` (vacate, then allocate; history kept), and students never choose a bed. See `docs/hostel-management.md`.
 
 ## Campus Services and Notices
 

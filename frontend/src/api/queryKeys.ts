@@ -18,6 +18,9 @@ export const queryKeys = {
     teamQueue: (status: string, page: number) => ['helpdesk', 'team-queue', status, page] as const,
   },
   hostel: {
+    myRoomChanges: () => ['hostel', 'room-changes', 'mine'] as const,
+    openRoomChanges: () => ['hostel', 'room-changes', 'open'] as const,
+    availableBeds: () => ['hostel', 'available-beds'] as const,
     occupancy: (side: string) => ['hostel', side, 'occupancy'] as const,
     bedMap: (side: string, hostelId: number) => ['hostel', side, 'bed-map', hostelId] as const,
     wardens: (hostelId: number) => ['hostel', 'wardens', hostelId] as const,

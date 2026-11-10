@@ -111,6 +111,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.stacc.backend.hostel.HostelRoomChangeRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskArticleRepository;
 import com.stacc.backend.lms.paper.LmsExamBlueprintRepository;
 import com.stacc.backend.lms.paper.LmsExamPaperQuestionRepository;
@@ -236,6 +237,7 @@ import org.springframework.web.context.WebApplicationContext;
     CareerPolicyRepository.class,
     AnalyticsQueries.class,
     ReportExportRepository.class,
+    HostelRoomChangeRepository.class,
     HelpdeskArticleRepository.class,
     LmsExamBlueprintRepository.class,
     LmsExamPaperRepository.class,

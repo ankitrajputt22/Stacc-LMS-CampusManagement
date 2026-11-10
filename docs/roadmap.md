@@ -171,7 +171,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | --- | --- | --- |
 | ★ 0.10.1 | Structure and wardens | Blocks, floor numbers on rooms, room details, beds under maintenance, and wardens assigned to a hostel or block. Done (`V97`): room details, beds under maintenance, `HostelWarden`, `HOSTEL_WARDEN_VIEW`, `STUDENT_HOSTEL_WARDEN` approver. |
 | ★ 0.10.2 | Applications and allocation | Preferences, a visible queue position for approved applicants, a bed map for allocation, check-in and vacating with a condition note. Done: preferences, queue position, bed map, check-in, condition note on vacating. |
-| 0.10.3 | Room change | Requests and mutual swaps through the approval engine. |
+| 0.10.3 | Room change | Requests and mutual swaps through the approval engine. Done (`V107`): moves and swaps decided by the warden, carried out by the hostel office. |
 | ★ 0.10.4 | Pass service and gate passes | One secure pass service (random code, only its fingerprint stored, time window, revocable, tied to its purpose) and gate passes with a QR view. Done (`V98`): `PassService`, gate passes with a QR view. |
 | ★ 0.10.5 | Security page | A phone-first scan page using the camera, manual lookup, the movement log, and inside/outside status worked out from it. Done: `/gate` with camera scan where supported, typed codes, manual lookup, the movement log, and inside or outside from it. |
 | ★ 0.10.6 | Leave | Leave and extensions, overdue alerts to the warden, and approved leave on the calendar. Done: leave and extensions through the warden, overdue list for wardens; approved leave is not yet on the calendar. |

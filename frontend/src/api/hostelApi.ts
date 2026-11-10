@@ -16,6 +16,7 @@ import type {
   HostelRoom,
   HostelWardenAssignment,
   Page,
+  RoomChange,
 } from '../types/hostel'
 import { apiClient } from './apiClient'
 
@@ -156,4 +157,37 @@ export async function endHostelWarden(assignmentId: number) {
 
 export async function getHostelQueuePlace(applicationId: number, signal?: AbortSignal) {
   return (await apiClient.get<HostelQueuePlace>(`/hostel/student/applications/${applicationId}/queue`, { signal })).data
+}
+
+// --- Room changes
+
+export async function getMyRoomChanges(signal?: AbortSignal) {
+  return (await apiClient.get<RoomChange[]>('/hostel/student/room-changes', { signal })).data
+}
+
+/** Asks to move; the warden decides, then the hostel office chooses the bed. */
+export async function requestRoomMove(reason: string, preference: string | null) {
+  return (await apiClient.post<RoomChange>('/hostel/student/room-changes/move', { reason, preference })).data
+}
+
+/** Proposes a bed swap with the resident whose college ID is given; they answer first. */
+export async function proposeRoomSwap(partnerLoginId: string, reason: string) {
+  return (await apiClient.post<RoomChange>('/hostel/student/room-changes/swap', { partnerLoginId, reason })).data
+}
+
+export async function answerRoomSwap(changeId: number, accept: boolean) {
+  return (await apiClient.post<RoomChange>(`/hostel/student/room-changes/${changeId}/answer`, { accept })).data
+}
+
+export async function cancelRoomChange(changeId: number) {
+  return (await apiClient.post<RoomChange>(`/hostel/student/room-changes/${changeId}/cancel`)).data
+}
+
+export async function getOpenRoomChanges(signal?: AbortSignal) {
+  return (await apiClient.get<RoomChange[]>('/hostel/admin/room-changes', { signal })).data
+}
+
+/** Carries out an approved change: a move to the chosen bed, or a swap of both beds. */
+export async function completeRoomChange(changeId: number, bedId: number | null) {
+  return (await apiClient.post<RoomChange>(`/hostel/admin/room-changes/${changeId}/complete`, { bedId })).data
 }
