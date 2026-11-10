@@ -19,6 +19,8 @@ export const queryKeys = {
   },
   hostel: {
     myRoomChanges: () => ['hostel', 'room-changes', 'mine'] as const,
+    rollCalls: (hostelId: number) => ['hostel', 'roll-calls', hostelId] as const,
+    rollCall: (rollCallId: number) => ['hostel', 'roll-call', rollCallId] as const,
     openRoomChanges: () => ['hostel', 'room-changes', 'open'] as const,
     availableBeds: () => ['hostel', 'available-beds'] as const,
     occupancy: (side: string) => ['hostel', side, 'occupancy'] as const,

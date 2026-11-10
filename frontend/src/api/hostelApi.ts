@@ -16,6 +16,9 @@ import type {
   HostelRoom,
   HostelWardenAssignment,
   Page,
+  RollCallDetail,
+  RollCallMark,
+  RollCallSummary,
   RoomChange,
 } from '../types/hostel'
 import { apiClient } from './apiClient'
@@ -190,4 +193,27 @@ export async function getOpenRoomChanges(signal?: AbortSignal) {
 /** Carries out an approved change: a move to the chosen bed, or a swap of both beds. */
 export async function completeRoomChange(changeId: number, bedId: number | null) {
   return (await apiClient.post<RoomChange>(`/hostel/admin/room-changes/${changeId}/complete`, { bedId })).data
+}
+
+// --- Night roll calls (wardens)
+
+export async function getRollCalls(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<RollCallSummary[]>(`/hostel/warden/hostels/${hostelId}/roll-calls`, { signal })).data
+}
+
+/** Opens a night's sheet; residents whose last gate movement was going out start as out, nobody as absent. */
+export async function openRollCall(hostelId: number, block: string | null, night: string | null) {
+  return (await apiClient.post<RollCallDetail>(`/hostel/warden/hostels/${hostelId}/roll-calls`, { block, night })).data
+}
+
+export async function getRollCall(rollCallId: number, signal?: AbortSignal) {
+  return (await apiClient.get<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}`, { signal })).data
+}
+
+export async function markRollCall(rollCallId: number, marks: { entryId: number; status: RollCallMark }[]) {
+  return (await apiClient.put<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}/marks`, { marks })).data
+}
+
+export async function finalizeRollCall(rollCallId: number) {
+  return (await apiClient.post<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}/finalize`)).data
 }

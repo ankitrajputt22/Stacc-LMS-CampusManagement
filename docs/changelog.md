@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **0.9.6:** help articles per helpdesk category, suggested while a ticket is written.
+- **0.10.7:** night roll calls for wardens, pre-filled from the gate log.
 - **0.10.3:** hostel room moves and bed swaps, decided by the warden and carried out by the hostel office.
 - **0.9.7:** campus service requests show "being processed" and "ready", and can be completed with an issued document.
 - **0.4.4:** a k6 load test of course registration, run in CI on the end-to-end stack.
