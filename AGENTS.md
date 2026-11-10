@@ -423,6 +423,12 @@
 - Vault files live in private storage through `LmsAttachmentStore`; only owners download their own. Issued documents carry an HMAC-derived verification code whose fingerprint is stored; the public check reveals only authenticity, title, and issue date. Documents are withdrawn, never deleted.
 - Career eligibility is decided on the server with reasons; resume versions are never changed so applications keep theirs; the applicant export contains only consenting applicants, built per request and never stored. Placement managers hold `CAREER_MANAGE`; students `CAREER_USE`.
 
+## Grievances
+
+- Grievances (`grievance` module, `docs/grievances.md`) are confidential cases, never helpdesk tickets. A case opens only for its complainant (from the token) and the active committee members of its category, never for a member's own complaint; anyone else, admins included, gets the same 404. There is no admin pass.
+- Admins (`GRIEVANCE_MANAGE`) manage categories (code fixed, made inactive, never deleted) and committees (active `FACULTY` or `ADMIN` accounts, audited, ended not deleted) and never read cases.
+- Cases move forward only under the case row lock: submitted, under review, resolved, then accepted (closed) or appealed once within 14 days, and the appeal decision closes them. Overdue is worked out on read from the respond-by times, never stored. Never delete or reopen a case, and do not add notifications, attachments, or messages without their own phase.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.

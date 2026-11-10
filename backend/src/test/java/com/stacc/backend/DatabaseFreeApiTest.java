@@ -121,6 +121,9 @@ import com.stacc.backend.engagement.teams.CampusTeamMemberRepository;
 import com.stacc.backend.engagement.teams.CampusTeamRepository;
 import com.stacc.backend.engagement.tournaments.CampusFixtureRepository;
 import com.stacc.backend.engagement.tournaments.CampusTournamentRepository;
+import com.stacc.backend.grievance.GrievanceCaseRepository;
+import com.stacc.backend.grievance.GrievanceCategoryRepository;
+import com.stacc.backend.grievance.GrievanceCommitteeMemberRepository;
 import com.stacc.backend.engagement.groups.GroupAnnouncementRepository;
 import com.stacc.backend.engagement.groups.GroupSessionRepository;
 import com.stacc.backend.hostel.visitor.HostelVisitRepository;
@@ -266,6 +269,9 @@ import org.springframework.web.context.WebApplicationContext;
     CampusTeamMemberRepository.class,
     CampusTournamentRepository.class,
     CampusFixtureRepository.class,
+    GrievanceCategoryRepository.class,
+    GrievanceCommitteeMemberRepository.class,
+    GrievanceCaseRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

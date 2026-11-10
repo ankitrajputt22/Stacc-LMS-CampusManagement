@@ -11,13 +11,13 @@ test('a warden sets the weekly mess menu and changes one meal for a day', async 
     await card.getByLabel(`${day} lunch`).fill('Rice, dal, salad')
   }
   await card.getByRole('button', { name: 'Save weekly menu' }).click()
-  await expect(card.getByRole('status')).toHaveText('Weekly menu saved.')
+  await expect(card.getByRole('status').filter({ hasText: 'Weekly menu saved.' })).toHaveCount(1)
   await expect(card.getByText('Rice, dal, salad').first()).toBeVisible()
 
   await card.getByLabel('Meal', { exact: true }).selectOption('DINNER')
   await card.getByLabel('Served instead').fill(dish)
   await card.getByLabel('Note (optional)').fill('Festival')
   await card.getByRole('button', { name: 'Save change' }).click()
-  await expect(card.getByRole('status')).toHaveText('Change for the day saved.')
+  await expect(card.getByRole('status').filter({ hasText: 'Change for the day saved.' })).toHaveCount(1)
   await expect(card.getByText(dish)).toBeVisible()
 })

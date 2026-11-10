@@ -39,6 +39,15 @@ export const queryKeys = {
     tasks: () => ['hostel', 'approval-tasks'] as const,
     movements: () => ['hostel', 'gate-movements'] as const,
   },
+  grievances: {
+    all: ['grievances'] as const,
+    categories: () => ['grievances', 'categories'] as const,
+    mine: () => ['grievances', 'mine'] as const,
+    myCase: (caseId: number) => ['grievances', 'mine', caseId] as const,
+    committee: () => ['grievances', 'committee'] as const,
+    committeeCase: (caseId: number) => ['grievances', 'committee', caseId] as const,
+    admin: () => ['grievances', 'admin'] as const,
+  },
   engagement: {
     all: ['engagement'] as const,
     groups: () => ['engagement', 'groups'] as const,

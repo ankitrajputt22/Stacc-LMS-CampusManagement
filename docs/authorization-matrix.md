@@ -52,6 +52,11 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/certificate-requests/{requestId}/issue` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
 | `/api/v1/admin/certificate-requests/{requestId}/refuse` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
 | `/api/v1/admin/documents/{documentId}/withdraw` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
+| `/api/v1/admin/grievances/categories` | GET | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories/{categoryId}/committee` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/committee/{memberId}/end` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/users/import` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}` | GET | `hasRole('ADMIN') and hasAuthority('USER_VIEW')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
@@ -216,6 +221,17 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/gate/visitors/walk-in` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
 | `/api/v1/gate/visitors/{visitId}/arrive` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
 | `/api/v1/gate/visitors/{visitId}/leave` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/grievances` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/categories` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/committee` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/appeal-decision` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/resolve` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/review` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}/accept` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}/appeal` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
 | `/api/v1/helpdesk/admin/articles` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles/{articleId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
