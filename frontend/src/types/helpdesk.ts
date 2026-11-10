@@ -158,3 +158,30 @@ export type QueueQuery = MyTicketQuery & {
   assignedToMe?: boolean
   requesterLoginId?: string
 }
+
+/** A published help article, as someone writing a ticket reads it. Plain text. */
+export type HelpArticle = {
+  articleId: number
+  categoryId: number
+  categoryName: string
+  title: string
+  body: string
+  publishedAt: string
+}
+
+export type HelpArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+
+/** A help article as admins manage it. */
+export type AdminHelpArticle = {
+  articleId: number
+  categoryId: number
+  categoryName: string
+  categoryActive: boolean
+  title: string
+  body: string
+  status: HelpArticleStatus
+  publishedAt: string | null
+  updatedAt: string
+}
+
+export type HelpArticleInput = { categoryId: number; title: string; body: string }

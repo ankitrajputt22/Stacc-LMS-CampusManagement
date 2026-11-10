@@ -22,6 +22,7 @@ import {
   SUBJECT_MAX,
 } from '../support/helpdeskText'
 import type { CreateHelpdeskTicketRequest, HelpdeskCategory } from '../types/helpdesk'
+import { SuggestedArticles } from '../support/SuggestedArticles'
 
 type Field = 'categoryId' | 'subject' | 'priority' | 'description'
 type Values = Record<Field, string>
@@ -48,6 +49,8 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
   const [errors, setErrors] = useState<Errors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // The subject as of the last time the field was left, for the help article suggestions.
+  const [suggestionSubject, setSuggestionSubject] = useState('')
 
   function change(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -181,6 +184,7 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
             aria-invalid={errors.subject ? true : undefined}
             aria-describedby={describedBy('subject', true)}
             onChange={(event) => change('subject', event.target.value)}
+            onBlur={() => setSuggestionSubject(values.subject.trim())}
             className={`h-11 ${fieldClasses} ${border(Boolean(errors.subject))}`}
           />
           <p id="new-ticket-subject-hint" className="mt-1 text-xs text-ink-muted">
@@ -188,6 +192,11 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
           </p>
           {errorText('subject')}
         </div>
+        <SuggestedArticles
+          className="sm:col-span-2"
+          categoryId={values.categoryId === '' ? null : Number(values.categoryId)}
+          subject={suggestionSubject}
+        />
         <div className="sm:col-span-2">
           <label htmlFor="new-ticket-description" className="block text-sm font-medium text-ink">
             Description
