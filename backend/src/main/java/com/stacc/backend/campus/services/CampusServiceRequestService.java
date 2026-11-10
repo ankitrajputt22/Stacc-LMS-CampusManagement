@@ -148,7 +148,7 @@ public class CampusServiceRequestService {
         if (request.getStatus() == CampusServiceRequestStatus.COMPLETED) {
             return queries.adminRequest(admin, requestId);
         }
-        if (request.getStatus() != CampusServiceRequestStatus.APPROVED) {
+        if (!request.getStatus().isBeingHandled()) {
             throw new ApiException(HttpStatus.CONFLICT, CANNOT_COMPLETE);
         }
         request.complete(clock.instant());

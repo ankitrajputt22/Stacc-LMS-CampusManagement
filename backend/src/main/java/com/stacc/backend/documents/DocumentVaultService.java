@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import javax.crypto.Mac;
 
+import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.auth.account.UserAccountRepository;
 import com.stacc.backend.auth.token.JwtProperties;
 import com.stacc.backend.common.error.ApiException;
@@ -145,6 +146,28 @@ public class DocumentVaultService {
             throw failure instanceof IllegalArgumentException ? new ApiException(HttpStatus.BAD_REQUEST, "Give the certificate a title.") : failure;
         }
         return view(request);
+    }
+
+    /**
+     * Issues a document into the owner's vault for another feature's record, such as a completed campus service
+     * request: stored privately, verifiable by its code like any issued document. The stored file is removed again if
+     * recording it fails.
+     */
+    public VaultDocument issueFile(Long adminId, UserAccount owner, String title, MultipartFile file) {
+        List<StoredFile> stored = files.storeAll("vault/accounts/" + owner.getId(), file == null ? List.of() : List.of(file));
+        if (stored.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Attach the document file.");
+        }
+        try {
+            VaultDocument document = documents.saveAndFlush(new VaultDocument(owner, VaultDocument.Origin.ISSUED, title,
+                    stored.get(0), accounts.getReferenceById(adminId), null, now()));
+            document.verifiableBy(fingerprint(codeFor(document.getId())));
+            documents.flush();
+            return document;
+        } catch (RuntimeException failure) {
+            files.removeQuietly(stored);
+            throw failure instanceof IllegalArgumentException ? new ApiException(HttpStatus.BAD_REQUEST, "Give the document a title.") : failure;
+        }
     }
 
     public RequestView refuse(Long adminId, Long requestId, String note) {

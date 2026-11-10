@@ -63,7 +63,8 @@ public class CampusServiceQueryService {
                 service.getName(), request.getSubject(), request.getDetails(), status.name(),
                 CampusServiceResponses.nameOf(request.approvalStatus()), rejectionComment(approval),
                 status == CampusServiceRequestStatus.SUBMITTED || status == CampusServiceRequestStatus.APPROVED,
-                request.getSubmittedAt(), request.getCompletedAt(), approval == null ? List.of() : approval.steps());
+                request.getSubmittedAt(), request.getCompletedAt(), approval == null ? List.of() : approval.steps(),
+                request.getProcessingAt(), request.getReadyAt(), documentTitle(request));
     }
 
     /** One page of every request, newest first, narrowed by each filter that is given. */
@@ -97,7 +98,13 @@ public class CampusServiceQueryService {
                 CampusServiceResponses.nameOf(request.approvalStatus()), rejectionComment(approval),
                 request.getSubmittedAt(), request.getCompletedAt(), approval == null ? List.of() : approval.steps(),
                 approval == null ? List.of() : approval.history(), current, canDecide,
-                status == CampusServiceRequestStatus.APPROVED);
+                status.isBeingHandled(), request.getProcessingAt(), request.getReadyAt(), documentTitle(request),
+                status == CampusServiceRequestStatus.APPROVED,
+                status == CampusServiceRequestStatus.APPROVED || status == CampusServiceRequestStatus.IN_PROGRESS);
+    }
+
+    private static String documentTitle(CampusServiceRequest request) {
+        return request.getIssuedDocument() == null ? null : request.getIssuedDocument().getTitle();
     }
 
     private CampusServiceRequest loaded(Long requestId) {

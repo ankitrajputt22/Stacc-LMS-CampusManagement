@@ -49,6 +49,7 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   HOSTEL_ALLOCATED: 'View hostel',
   HOSTEL_VACATED: 'View hostel',
   CAMPUS_NOTICE_PUBLISHED: 'View campus notices',
+  CAMPUS_SERVICE_READY: 'View request',
   CAMPUS_SERVICE_COMPLETED: 'View request',
 }
 

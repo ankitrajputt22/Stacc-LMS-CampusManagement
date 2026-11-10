@@ -32,6 +32,7 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
             join fetch request.serviceDefinition
             join fetch request.requester
             left join fetch request.approvalRequest
+            left join fetch request.issuedDocument
             where request.id = :requestId
             """)
     Optional<CampusServiceRequest> findWithContextById(@Param("requestId") Long requestId);

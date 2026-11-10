@@ -38,6 +38,8 @@ public enum NotificationType {
     HOSTEL_VACATED,
     /** A campus notice was published for the first time. */
     CAMPUS_NOTICE_PUBLISHED,
+    /** A campus service request is ready for its requester. */
+    CAMPUS_SERVICE_READY,
     /** A campus service request was completed. */
     CAMPUS_SERVICE_COMPLETED
 }
