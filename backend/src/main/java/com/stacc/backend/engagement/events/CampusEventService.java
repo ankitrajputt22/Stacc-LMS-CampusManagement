@@ -44,7 +44,7 @@ public class CampusEventService {
     public record EventView(Long eventId, String title, String description, Long groupId, String groupName, String organizerLoginId,
             String venue, Instant startsAt, Instant endsAt, Integer capacity, Instant registrationOpensAt, Instant registrationClosesAt,
             boolean forStudents, boolean forFaculty, boolean membersOnly, String status, long registered, long waitlisted,
-            String myRegistration, Integer myWaitlistPosition, List<String> cannotRegisterBecause, boolean canManage) {
+            String myRegistration, Integer myWaitlistPosition, List<String> cannotRegisterBecause, boolean canManage, boolean trial) {
     }
 
     public record EventInput(String title, String description, Long groupId, String venue, Instant startsAt, Instant endsAt,
@@ -252,7 +252,7 @@ public class CampusEventService {
                 event.getRegistrationOpensAt(), event.getRegistrationClosesAt(), event.isForStudents(), event.isForFaculty(),
                 event.isMembersOnly(), status, current.size() - waiting.size(), waiting.size(),
                 mine.map(r -> r.getStatus().name()).orElse(null), position,
-                mine.isPresent() ? List.of() : reasons(event, viewer, status, current), canManage(event, viewer));
+                mine.isPresent() ? List.of() : reasons(event, viewer, status, current), canManage(event, viewer), event.isTrial());
     }
 
     boolean canManage(CampusEvent event, Viewer viewer) {

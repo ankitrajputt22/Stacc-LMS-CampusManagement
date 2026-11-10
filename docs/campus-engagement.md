@@ -51,3 +51,9 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - Its schedule links existing campus events; an event is on at most one fest (unique), and taking it off the schedule keeps the event itself.
 - Volunteer shifts have a role, a start and end, and a number of places. Students and faculty (`CAMPUS_ENGAGEMENT_USE`, the Fests tab at `/campus/fests`) apply before a shift starts, with an optional note, and may withdraw while the application is open or accepted. Each account has at most one open or accepted application per shift (a unique generated column); after a withdrawal or a decline it may apply again.
 - The campus office accepts or declines each application once. Accepting locks the shift row and counts accepted volunteers with a locking read, so a shift never takes more than its places (`FestVolunteerMySqlIT`).
+
+## Trials (v0.11.8)
+
+- A trial is an ordinary campus event that its managers (the organizer, the group's officers, or the campus office) mark as a trial before it starts (`POST /api/v1/engagement/events/{id}/trial`, `V115`). It stays a trial; marking it again changes nothing, and a started or cancelled event cannot become one.
+- Once the trial has started, its managers record Selected or Not selected for each registered (not waitlisted) attendee by college ID (`POST …/trial-outcomes`), under the registration's row lock. An outcome may be corrected; the registration keeps only the latest outcome, who recorded it, and when.
+- Attendees see their own outcome with their attendance (`GET …/my-attendance`); the managers see everyone's in the registrations list. Selection grants nothing by itself: team rosters come with their own phase.

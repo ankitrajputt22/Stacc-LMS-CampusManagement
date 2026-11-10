@@ -87,4 +87,35 @@ class EventAttendanceTest {
         assertThatThrownBy(() -> registration.checkIn(CampusEventRegistration.CheckInMethod.MANUAL, null, START))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void trialOutcomesNeedATrialThatHasStartedAndARegisteredAttendee() {
+        organizedEvent();
+        CampusEventRegistration registration = registered();
+        when(registrations.findCurrentForAccount(3L, 7L)).thenReturn(Optional.of(registration));
+        when(registrations.findByIdForUpdate(40L)).thenReturn(Optional.of(registration));
+        when(accounts.getReferenceById(any())).thenReturn(new UserAccount("faculty1", "hash"));
+
+        assertThatThrownBy(() -> at(START).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED))
+                .isInstanceOf(ApiException.class).hasMessage(EventAttendanceService.NOT_TRIAL);
+        when(event.isTrial()).thenReturn(true);
+        assertThatThrownBy(() -> at(START.minusSeconds(60)).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED))
+                .isInstanceOf(ApiException.class).hasMessage(EventAttendanceService.TRIAL_NOT_STARTED);
+
+        at(START).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.NOT_SELECTED);
+        EventAttendanceService.Attendee corrected = at(START.plusSeconds(60)).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED);
+        assertThat(corrected.trialOutcome()).isEqualTo(CampusEventRegistration.TrialOutcome.SELECTED);
+        assertThat(registration.getTrialDecidedAt()).isEqualTo(START.plusSeconds(60));
+    }
+
+    @Test
+    void anEventBecomesATrialOnlyBeforeItStartsAndStaysOne() {
+        CampusEvent real = new CampusEvent();
+        ReflectionTestUtils.setField(real, "startsAt", START);
+        ReflectionTestUtils.setField(real, "status", CampusEvent.Status.PUBLISHED);
+        assertThatThrownBy(() -> real.markAsTrial(START)).isInstanceOf(IllegalStateException.class);
+        assertThat(real.markAsTrial(START.minusSeconds(1))).isTrue();
+        assertThat(real.markAsTrial(START.plusSeconds(1))).isFalse();
+        assertThat(real.isTrial()).isTrue();
+    }
 }

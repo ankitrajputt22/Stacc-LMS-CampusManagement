@@ -22,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Event attendance (v0.11.6). A registered attendee gets a check-in code from the pass service, valid from an hour
  * before the event until it ends; the event's managers check attendees in by that code or by college ID within the
  * same window. Attending is recorded once on the registration under its row lock. A participation certificate is due
- * to every attendee once the event has ended; that is worked out on read, never stored.
+ * to every attendee once the event has ended; that is worked out on read, never stored. A trial (v0.11.8) is an event
+ * marked as one before it starts; once it has started its managers record Selected or Not selected per attendee.
  */
 @Service
 @Transactional
@@ -34,15 +35,19 @@ public class EventAttendanceService {
     static final String OUTSIDE_WINDOW = "Check-in opens an hour before the event and closes when it ends.";
     static final String UNKNOWN_CODE = "That code is not a check-in code for this event.";
     static final String NOT_ATTENDEE = "That student is not registered for this event.";
+    static final String NOT_TRIAL = "This event is not a trial.";
+    static final String TRIAL_NOT_STARTED = "Outcomes are recorded once the trial has started.";
 
     public record CheckInCode(String code, Instant validFrom, Instant validUntil) {
     }
 
-    public record MyAttendance(boolean registered, Instant attendedAt, boolean certificateEligible) {
+    public record MyAttendance(boolean registered, Instant attendedAt, boolean certificateEligible,
+            CampusEventRegistration.TrialOutcome trialOutcome) {
     }
 
     public record Attendee(String loginId, String status, Instant registeredAt, Instant attendedAt,
-            CampusEventRegistration.CheckInMethod checkInMethod, boolean certificateEligible) {
+            CampusEventRegistration.CheckInMethod checkInMethod, boolean certificateEligible,
+            CampusEventRegistration.TrialOutcome trialOutcome) {
     }
 
     public record CheckInResult(String loginId, Instant attendedAt, boolean alreadyCheckedIn) {
@@ -80,8 +85,8 @@ public class EventAttendanceService {
     public MyAttendance mine(Long accountId, Long eventId) {
         Optional<CampusEventRegistration> registration = registrations.findCurrentForAccount(eventId, accountId)
                 .filter(found -> found.getStatus() == CampusEventRegistration.Status.REGISTERED);
-        return registration.map(found -> new MyAttendance(true, found.getAttendedAt(), eligible(found)))
-                .orElse(new MyAttendance(false, null, false));
+        return registration.map(found -> new MyAttendance(true, found.getAttendedAt(), eligible(found), found.getTrialOutcome()))
+                .orElse(new MyAttendance(false, null, false, null));
     }
 
     /** The event's registrations with attendance, for those who manage it. */
@@ -89,7 +94,7 @@ public class EventAttendanceService {
     public List<Attendee> attendees(Viewer viewer, Long eventId) {
         managed(viewer, eventId);
         return registrations.findCurrent(eventId).stream().map(found -> new Attendee(found.getAccount().getLoginId(), found.getStatus().name(),
-                found.getRegisteredAt(), found.getAttendedAt(), found.getCheckInMethod(), eligible(found))).toList();
+                found.getRegisteredAt(), found.getAttendedAt(), found.getCheckInMethod(), eligible(found), found.getTrialOutcome())).toList();
     }
 
     /** Checks in the attendee whose check-in code this is, within the window. */
@@ -130,6 +135,44 @@ public class EventAttendanceService {
         }
         registrations.flush();
         return new CheckInResult(registration.getAccount().getLoginId(), registration.getAttendedAt(), !first);
+    }
+
+    // --- Trials (v0.11.8)
+
+    /** Marks a managed event as a trial before it starts; it stays one. */
+    public void markAsTrial(Viewer viewer, Long eventId) {
+        CampusEvent event = managed(viewer, eventId);
+        CampusEvent locked = events.findByIdForUpdate(event.getId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
+        try {
+            locked.markAsTrial(now());
+        } catch (IllegalStateException refused) {
+            throw new ApiException(HttpStatus.CONFLICT, refused.getMessage());
+        }
+    }
+
+    /** Records or corrects Selected or Not selected for a registered attendee of a trial that has started. */
+    public Attendee decideTrial(Viewer viewer, Long eventId, String loginId, CampusEventRegistration.TrialOutcome outcome) {
+        CampusEvent event = managed(viewer, eventId);
+        if (!event.isTrial()) {
+            throw new ApiException(HttpStatus.CONFLICT, NOT_TRIAL);
+        }
+        if (now().isBefore(event.getStartsAt())) {
+            throw new ApiException(HttpStatus.CONFLICT, TRIAL_NOT_STARTED);
+        }
+        Long accountId = (loginId == null ? Optional.<UserAccount>empty() : accounts.findByLoginId(loginId.strip()))
+                .map(UserAccount::getId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_ATTENDEE));
+        Long registrationId = registrations.findCurrentForAccount(eventId, accountId).map(CampusEventRegistration::getId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_ATTENDEE));
+        CampusEventRegistration registration = registrations.findByIdForUpdate(registrationId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_ATTENDEE));
+        try {
+            registration.decideTrial(outcome, accounts.getReferenceById(viewer.accountId()), now());
+        } catch (IllegalStateException | IllegalArgumentException refused) {
+            throw new ApiException(HttpStatus.CONFLICT, refused.getMessage());
+        }
+        registrations.flush();
+        return new Attendee(registration.getAccount().getLoginId(), registration.getStatus().name(), registration.getRegisteredAt(),
+                registration.getAttendedAt(), registration.getCheckInMethod(), eligible(registration), registration.getTrialOutcome());
     }
 
     private boolean eligible(CampusEventRegistration registration) {

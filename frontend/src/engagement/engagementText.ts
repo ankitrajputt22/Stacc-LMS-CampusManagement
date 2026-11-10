@@ -16,6 +16,7 @@ export function failureText(error: unknown, fallback: string): string | null {
 export const POLICY_LABEL = { OPEN: 'Open to join', APPROVAL: 'Join on approval', CLOSED: 'Not taking members' } as const
 export const TITLE_LABEL = { ADVISOR: 'Faculty advisor', COACH: 'Coach', PRESIDENT: 'President', SECRETARY: 'Secretary', OFFICER: 'Officer' } as const
 export const BOOKING_LABEL = { CONFIRMED: 'Confirmed', PENDING: 'Waiting for approval', REJECTED: 'Refused', CANCELLED: 'Cancelled' } as const
+export const TRIAL_OUTCOME_LABEL = { SELECTED: 'Selected', NOT_SELECTED: 'Not selected' } as const
 export const FEST_STATUS_LABEL = { DRAFT: 'Draft', PUBLISHED: 'Published', ARCHIVED: 'Archived' } as const
 export const VOLUNTEER_LABEL = { APPLIED: 'Applied', ACCEPTED: 'Accepted', DECLINED: 'Declined', WITHDRAWN: 'Withdrawn' } as const
 export const EVENT_STATUS_LABEL = { DRAFT: 'Draft', PENDING_APPROVAL: 'Waiting for the advisor', PUBLISHED: 'Published', CANCELLED: 'Cancelled' } as const
