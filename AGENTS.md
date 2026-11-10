@@ -412,6 +412,7 @@
 - Eligibility is decided on the server with reasons in words; the frontend shows them and never decides.
 - Event check-in uses only `PassService` codes (`EVENT_CHECK_IN`) or the organizer's manual check-in by college ID, within an hour before the event until it ends, recorded once on the registration; certificate eligibility (attended and the event ended) is worked out on read, never stored.
 - Fests (`engagement.fests`) are drafts, published, or archived, never deleted; their schedule links existing events (each on at most one fest) and their volunteer shifts take at most one open or accepted application per shift and account. Accepting locks the shift row and counts accepted volunteers with a locking read; keep `FestVolunteerMySqlIT`.
+- A trial is a campus event marked as one by its managers before it starts; once it has started they record `SELECTED` or `NOT_SELECTED` on each registered attendee's registration (correctable, latest only, under the registration row lock). An outcome grants nothing by itself.
 - Group sessions and announcements (`GroupActivityService`) are written by the group's officers or the campus office and read by active members; sessions are cancelled not deleted and reach members' calendars; announcements notify active members except the author.
 
 ## Digital ID, Documents, and Career

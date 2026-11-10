@@ -171,6 +171,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/events/{eventId}/publish` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/trial` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/trial-outcomes` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
 | `/api/v1/engagement/facilities` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |

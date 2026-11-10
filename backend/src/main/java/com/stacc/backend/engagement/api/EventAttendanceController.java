@@ -7,6 +7,7 @@ import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
 import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.engagement.events.CampusEventRegistration;
 import com.stacc.backend.engagement.events.CampusEventService.Viewer;
 import com.stacc.backend.engagement.events.EventAttendanceService;
 import com.stacc.backend.engagement.events.EventAttendanceService.Attendee;
@@ -20,6 +21,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /** Event attendance: attendees' check-in codes, check-in by code or college ID, and certificate eligibility. */
 @RestController
@@ -52,6 +56,9 @@ public class EventAttendanceController {
 
     public EventAttendanceController(EventAttendanceService service) {
         this.service = service;
+    }
+
+    public record TrialOutcomeRequest(@NotBlank @Size(max = 100) String loginId, @NotNull CampusEventRegistration.TrialOutcome outcome) {
     }
 
     public record CheckInRequest(@Size(max = 40) String code, @Size(max = 100) String loginId) {
@@ -107,5 +114,29 @@ public class EventAttendanceController {
             return service.checkInByLoginId(viewer, eventId, request.loginId());
         }
         throw new ApiException(HttpStatus.BAD_REQUEST, "Enter a check-in code or a college ID.");
+    }
+
+    @PostMapping("/{eventId}/trial")
+    @PreAuthorize(ANY)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Make an event a trial", description = "Before it starts; it stays a trial. Again changes nothing.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "409", description = "The event has started or was cancelled.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public void markAsTrial(@PathVariable Long eventId, @AuthenticationPrincipal Jwt token, Authentication authentication) {
+        service.markAsTrial(viewer(token, authentication), eventId);
+    }
+
+    @PostMapping("/{eventId}/trial-outcomes")
+    @PreAuthorize(ANY)
+    @Operation(summary = "Record a trial outcome", description = "Selected or Not selected for a registered attendee, once the trial has started; it may be corrected.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "404", description = "Not an event the account manages, or no registration.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "Not a trial, not started yet, or a waitlisted place.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public Attendee decideTrial(@PathVariable Long eventId, @Valid @RequestBody TrialOutcomeRequest request, @AuthenticationPrincipal Jwt token,
+            Authentication authentication) {
+        return service.decideTrial(viewer(token, authentication), eventId, request.loginId(), request.outcome());
     }
 }

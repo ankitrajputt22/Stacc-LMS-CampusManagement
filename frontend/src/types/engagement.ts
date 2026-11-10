@@ -71,6 +71,8 @@ export type CampusEvent = {
   /** Why the signed-in account cannot register, in words from the backend; empty when it can. */
   cannotRegisterBecause: string[]
   canManage: boolean
+  /** Marked as a trial: attendees get Selected or Not selected. */
+  trial: boolean
 }
 
 export type EventInput = {
@@ -109,7 +111,8 @@ export type GroupActivity = { canManage: boolean; sessions: GroupSession[]; anno
 
 export type EventCheckInCode = { code: string; validFrom: string; validUntil: string }
 /** certificateEligible: attended and the event has ended. */
-export type MyEventAttendance = { registered: boolean; attendedAt: string | null; certificateEligible: boolean }
+export type TrialOutcome = 'SELECTED' | 'NOT_SELECTED'
+export type MyEventAttendance = { registered: boolean; attendedAt: string | null; certificateEligible: boolean; trialOutcome: TrialOutcome | null }
 export type EventAttendanceRow = {
   loginId: string
   status: string
@@ -117,6 +120,7 @@ export type EventAttendanceRow = {
   attendedAt: string | null
   checkInMethod: 'MANUAL' | 'PASS' | null
   certificateEligible: boolean
+  trialOutcome: TrialOutcome | null
 }
 export type EventCheckIn = { loginId: string; attendedAt: string; alreadyCheckedIn: boolean }
 

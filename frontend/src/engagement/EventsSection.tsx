@@ -4,12 +4,14 @@ import {
   cancelEvent,
   createEvent,
   checkInEventAttendee,
+  decideTrialOutcome,
   getEventAttendance,
   getEventCheckInCode,
   getMyEventAttendance,
   getEvents,
   getGroups,
   getManagedEvents,
+  markEventAsTrial,
   publishEvent,
   registerForEvent,
   unregisterFromEvent,
@@ -21,9 +23,9 @@ import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
 import { PassQr } from '../hostel/outings/PassQr'
 import { SectionState } from '../courses/SectionState'
-import type { CampusEvent, EventCheckInCode } from '../types/engagement'
+import type { CampusEvent, EventCheckInCode, TrialOutcome } from '../types/engagement'
 import { Alert, Badge, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
-import { EVENT_STATUS_LABEL, failureText, localToIso } from './engagementText'
+import { EVENT_STATUS_LABEL, failureText, localToIso, TRIAL_OUTCOME_LABEL } from './engagementText'
 
 function EventItem({ event, canRegister }: { event: CampusEvent; canRegister: boolean }) {
   const queryClient = useQueryClient()
@@ -38,6 +40,7 @@ function EventItem({ event, canRegister }: { event: CampusEvent; canRegister: bo
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold text-ink">{event.title}</span>
         {event.status === 'CANCELLED' && <Badge tone="danger">Cancelled</Badge>}
+        {event.trial && <Badge tone="info">Trial</Badge>}
         {event.myRegistration === 'REGISTERED' && <Badge tone="success">You’re going</Badge>}
         {event.myRegistration === 'WAITLISTED' && <Badge tone="info">Waitlist #{event.myWaitlistPosition}</Badge>}
       </div>
@@ -109,7 +112,16 @@ export function EventsSection({ canRegister, withinDays }: { canRegister: boolea
   )
 }
 
-function Attendees({ eventId }: { eventId: number }) {
+function Attendees({ eventId, trial }: { eventId: number; trial: boolean }) {
+  const queryClient = useQueryClient()
+  const [outcomeMessage, setOutcomeMessage] = useState('')
+  const decide = (loginId: string, outcome: TrialOutcome) =>
+    void decideTrialOutcome(eventId, loginId, outcome)
+      .then(async () => {
+        setOutcomeMessage(`${loginId}: ${TRIAL_OUTCOME_LABEL[outcome]}.`)
+        await queryClient.invalidateQueries({ queryKey: queryKeys.engagement.attendance(eventId) })
+      })
+      .catch((caught: unknown) => setOutcomeMessage(failureText(caught, 'Couldn’t save the outcome.') ?? ''))
   const attendees = useApiQuery(queryKeys.engagement.attendance(eventId), (signal) => getEventAttendance(eventId, signal))
   if (attendees.status !== 'loaded') {
     return <SectionState request={attendees} what="registrations" />
@@ -127,9 +139,25 @@ function Attendees({ eventId }: { eventId: number }) {
               {attendee.status === 'WAITLISTED' && <span className="text-ink-muted"> (waitlist)</span>}
               {attendee.attendedAt && <span className="text-ink-muted">{` · checked in ${formatDateTime(attendee.attendedAt)}`}</span>}
               {attendee.certificateEligible && <span className="text-ink-muted"> · certificate due</span>}
+              {attendee.trialOutcome && <span className="text-ink-muted">{` · ${TRIAL_OUTCOME_LABEL[attendee.trialOutcome]}`}</span>}
+              {trial && attendee.status === 'REGISTERED' && (
+                <span className="ml-2 inline-flex gap-1">
+                  <Button size="sm" variant="secondary" onClick={() => decide(attendee.loginId, 'SELECTED')}>
+                    Selected<span className="sr-only">{` ${attendee.loginId}`}</span>
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => decide(attendee.loginId, 'NOT_SELECTED')}>
+                    Not selected<span className="sr-only">{` ${attendee.loginId}`}</span>
+                  </Button>
+                </span>
+              )}
             </li>
           ))}
         </ol>
+      )}
+      {trial && (
+        <p role="status" className="text-sm empty:hidden">
+          {outcomeMessage}
+        </p>
       )}
     </div>
   )
@@ -237,6 +265,7 @@ export function EventOrganizer({ admin }: { admin: boolean }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-ink">{event.title}</span>
                   <Badge tone={event.status === 'PUBLISHED' ? 'success' : event.status === 'CANCELLED' ? 'danger' : 'info'}>{EVENT_STATUS_LABEL[event.status]}</Badge>
+                  {event.trial && <Badge tone="info">Trial</Badge>}
                   <span className="text-ink-muted">{formatDateTime(event.startsAt)}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -250,11 +279,16 @@ export function EventOrganizer({ admin }: { admin: boolean }) {
                       Cancel<span className="sr-only">{` ${event.title}`}</span>
                     </Button>
                   )}
+                  {!event.trial && event.status !== 'CANCELLED' && (
+                    <Button size="sm" variant="secondary" onClick={() => void markEventAsTrial(event.eventId).then(() => refresh('Marked as a trial. Record Selected or Not selected once it starts.')).catch((caught: unknown) => setMessage({ tone: 'error', text: failureText(caught, 'Couldn’t mark it as a trial.') ?? '' }))}>
+                      Make a trial<span className="sr-only">{` of ${event.title}`}</span>
+                    </Button>
+                  )}
                   <Button size="sm" variant="secondary" onClick={() => setOpen(open === event.eventId ? null : event.eventId)}>
                     {open === event.eventId ? 'Hide registrations' : 'Registrations'}
                   </Button>
                 </div>
-                {open === event.eventId && <Attendees eventId={event.eventId} />}
+                {open === event.eventId && <Attendees eventId={event.eventId} trial={event.trial} />}
               </li>
             ))}
           </ul>
@@ -269,13 +303,18 @@ function MyCheckIn({ eventId, title }: { eventId: number; title: string }) {
   const attendance = useApiQuery(queryKeys.engagement.myAttendance(eventId), (signal) => getMyEventAttendance(eventId, signal))
   const [code, setCode] = useState<EventCheckInCode | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const outcome = attendance.status === 'loaded' && attendance.data.trialOutcome
   if (attendance.status === 'loaded' && attendance.data.attendedAt) {
     return (
       <p className="text-sm text-success">
         {`You checked in ${formatDateTime(attendance.data.attendedAt)}.`}
         {attendance.data.certificateEligible && ' A participation certificate is due to you.'}
+        {outcome && ` Trial outcome: ${TRIAL_OUTCOME_LABEL[outcome]}.`}
       </p>
     )
+  }
+  if (outcome) {
+    return <p className="text-sm text-ink">{`Trial outcome: ${TRIAL_OUTCOME_LABEL[outcome]}.`}</p>
   }
   return (
     <div className="space-y-2">

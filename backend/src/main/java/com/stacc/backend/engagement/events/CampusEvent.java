@@ -74,6 +74,9 @@ public class CampusEvent {
     @Column(name = "members_only", nullable = false)
     private boolean membersOnly;
 
+    @Column(name = "trial", nullable = false)
+    private boolean trial;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status = Status.DRAFT;
@@ -179,6 +182,19 @@ public class CampusEvent {
     public boolean isForStudents() { return forStudents; }
     public boolean isForFaculty() { return forFaculty; }
     public boolean isMembersOnly() { return membersOnly; }
+    public boolean isTrial() { return trial; }
+
+    /** Marks the event as a trial before it starts; it stays one. Marking again changes nothing. */
+    public boolean markAsTrial(Instant now) {
+        if (trial) {
+            return false;
+        }
+        if (status == Status.CANCELLED || !now.isBefore(startsAt)) {
+            throw new IllegalStateException("Only an event that has not started or been cancelled can become a trial.");
+        }
+        this.trial = true;
+        return true;
+    }
     public Status getStatus() { return status; }
     public Long getApprovalRequestId() { return approvalRequestId; }
     public Instant getPublishedAt() { return publishedAt; }

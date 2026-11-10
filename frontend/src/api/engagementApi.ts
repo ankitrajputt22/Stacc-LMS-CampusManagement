@@ -20,6 +20,7 @@ import type {
   JoinPolicy,
   MyEventAttendance,
   OfficerTitle,
+  TrialOutcome,
 } from '../types/engagement'
 import { apiClient } from './apiClient'
 
@@ -116,6 +117,18 @@ export async function getEventAttendance(eventId: number, signal?: AbortSignal) 
 /** Checks an attendee in by their check-in code or college ID. */
 export async function checkInEventAttendee(eventId: number, input: { code?: string; loginId?: string }) {
   return (await apiClient.post<EventCheckIn>(`${BASE}/events/${eventId}/check-ins`, input)).data
+}
+
+// --- Trials
+
+/** Marks an event the account manages as a trial, before it starts. */
+export async function markEventAsTrial(eventId: number) {
+  await apiClient.post(`${BASE}/events/${eventId}/trial`)
+}
+
+/** Records or corrects Selected or Not selected for a registered attendee, once the trial has started. */
+export async function decideTrialOutcome(eventId: number, loginId: string, outcome: TrialOutcome) {
+  return (await apiClient.post<EventAttendanceRow>(`${BASE}/events/${eventId}/trial-outcomes`, { loginId, outcome })).data
 }
 
 // --- Fests
