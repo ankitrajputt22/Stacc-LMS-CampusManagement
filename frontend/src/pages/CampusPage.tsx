@@ -5,18 +5,20 @@ import { MyRequestsSection } from '../campus/MyRequestsSection'
 import { NoticesSection } from '../campus/NoticesSection'
 import { ServicesSection } from '../campus/ServicesSection'
 import { EventOrganizer, EventsSection } from '../engagement/EventsSection'
+import { FestsSection } from '../engagement/FestsSection'
 import { FacilitiesSection } from '../engagement/FacilitiesSection'
 import { GroupsSection } from '../engagement/GroupsSection'
 import { LinkTabs, PageHeader } from '../ui'
 import { NotFoundPage } from './NotFoundPage'
 
-const TABS = ['happening', 'clubs', 'sports', 'events', 'facilities', 'services', 'notices'] as const
+const TABS = ['happening', 'clubs', 'sports', 'events', 'fests', 'facilities', 'services', 'notices'] as const
 type CampusTab = (typeof TABS)[number]
 const LABELS: Record<CampusTab, string> = {
   happening: 'Happening',
   clubs: 'Clubs',
   sports: 'Sports',
   events: 'Events',
+  fests: 'Fests',
   facilities: 'Facilities',
   services: 'Services',
   notices: 'Notices',
@@ -59,6 +61,7 @@ export function CampusPage() {
               <EventOrganizer admin={admin} />
             </>
           )}
+          {current === 'fests' && <FestsSection canVolunteer={member} />}
           {current === 'facilities' && <FacilitiesSection canBook={member} />}
           {current === 'services' && member && (
             <>

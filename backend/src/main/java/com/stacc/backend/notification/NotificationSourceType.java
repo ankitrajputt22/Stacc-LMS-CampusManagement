@@ -17,5 +17,6 @@ public enum NotificationSourceType {
     HOSTEL_ALLOCATION,
     HOSTEL_NOTICE,
     CAMPUS_NOTICE,
+    CAMPUS_GROUP,
     CAMPUS_SERVICE_REQUEST
 }

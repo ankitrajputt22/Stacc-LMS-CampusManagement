@@ -8,6 +8,7 @@ import { SectionState } from '../courses/SectionState'
 import type { CampusGroup, GroupKind } from '../types/engagement'
 import { Alert, Badge, Button, Card, TextField } from '../ui'
 import { failureText, POLICY_LABEL, TITLE_LABEL } from './engagementText'
+import { GroupActivityPanel } from './GroupActivity'
 
 function Members({ groupId }: { groupId: number }) {
   const queryClient = useQueryClient()
@@ -98,6 +99,7 @@ function GroupCard({ group, canJoin }: { group: CampusGroup; canJoin: boolean })
         )}
       </div>
       {showMembers && <Members groupId={group.groupId} />}
+      {(group.myMembership === 'ACTIVE' || group.iAmOfficer) && <GroupActivityPanel groupId={group.groupId} groupName={group.name} />}
       {error && <Alert tone="error">{error}</Alert>}
     </li>
   )

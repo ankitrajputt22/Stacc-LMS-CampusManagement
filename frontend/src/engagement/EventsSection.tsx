@@ -3,7 +3,10 @@ import { type FormEvent, useState } from 'react'
 import {
   cancelEvent,
   createEvent,
-  getEventAttendees,
+  checkInEventAttendee,
+  getEventAttendance,
+  getEventCheckInCode,
+  getMyEventAttendance,
   getEvents,
   getGroups,
   getManagedEvents,
@@ -16,8 +19,9 @@ import { useApiQuery } from '../api/useApiQuery'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
+import { PassQr } from '../hostel/outings/PassQr'
 import { SectionState } from '../courses/SectionState'
-import type { CampusEvent } from '../types/engagement'
+import type { CampusEvent, EventCheckInCode } from '../types/engagement'
 import { Alert, Badge, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
 import { EVENT_STATUS_LABEL, failureText, localToIso } from './engagementText'
 
@@ -66,6 +70,7 @@ function EventItem({ event, canRegister }: { event: CampusEvent; canRegister: bo
           )}
         </div>
       )}
+      {canRegister && event.myRegistration === 'REGISTERED' && <MyCheckIn eventId={event.eventId} title={event.title} />}
       {error && <Alert tone="error">{error}</Alert>}
     </li>
   )
@@ -105,21 +110,28 @@ export function EventsSection({ canRegister, withinDays }: { canRegister: boolea
 }
 
 function Attendees({ eventId }: { eventId: number }) {
-  const attendees = useApiQuery(queryKeys.engagement.attendees(eventId), (signal) => getEventAttendees(eventId, signal))
+  const attendees = useApiQuery(queryKeys.engagement.attendance(eventId), (signal) => getEventAttendance(eventId, signal))
   if (attendees.status !== 'loaded') {
     return <SectionState request={attendees} what="registrations" />
   }
-  return attendees.data.length === 0 ? (
-    <p className="text-sm text-ink-muted">Nobody has registered yet.</p>
-  ) : (
-    <ol className="list-decimal pl-5 text-sm text-ink">
-      {attendees.data.map((attendee) => (
-        <li key={attendee.loginId}>
-          {attendee.loginId}
-          {attendee.status === 'WAITLISTED' && <span className="text-ink-muted"> (waitlist)</span>}
-        </li>
-      ))}
-    </ol>
+  return (
+    <div className="space-y-3">
+      <CheckInForm eventId={eventId} />
+      {attendees.data.length === 0 ? (
+        <p className="text-sm text-ink-muted">Nobody has registered yet.</p>
+      ) : (
+        <ol className="list-decimal pl-5 text-sm text-ink">
+          {attendees.data.map((attendee) => (
+            <li key={attendee.loginId}>
+              {attendee.loginId}
+              {attendee.status === 'WAITLISTED' && <span className="text-ink-muted"> (waitlist)</span>}
+              {attendee.attendedAt && <span className="text-ink-muted">{` · checked in ${formatDateTime(attendee.attendedAt)}`}</span>}
+              {attendee.certificateEligible && <span className="text-ink-muted"> · certificate due</span>}
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
   )
 }
 
@@ -251,3 +263,75 @@ export function EventOrganizer({ admin }: { admin: boolean }) {
     </Card>
   )
 }
+
+/** My check-in: Show check-in code (a QR code and the code in words) and whether I attended. */
+function MyCheckIn({ eventId, title }: { eventId: number; title: string }) {
+  const attendance = useApiQuery(queryKeys.engagement.myAttendance(eventId), (signal) => getMyEventAttendance(eventId, signal))
+  const [code, setCode] = useState<EventCheckInCode | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  if (attendance.status === 'loaded' && attendance.data.attendedAt) {
+    return (
+      <p className="text-sm text-success">
+        {`You checked in ${formatDateTime(attendance.data.attendedAt)}.`}
+        {attendance.data.certificateEligible && ' A participation certificate is due to you.'}
+      </p>
+    )
+  }
+  return (
+    <div className="space-y-2">
+      {code ? (
+        <PassQr pass={code} />
+      ) : (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() =>
+            void getEventCheckInCode(eventId)
+              .then(setCode)
+              .catch((caught: unknown) => setError(failureText(caught, 'Couldn’t get a check-in code.')))
+          }
+        >
+          Show check-in code<span className="sr-only">{` for ${title}`}</span>
+        </Button>
+      )}
+      {error && <Alert tone="error">{error}</Alert>}
+    </div>
+  )
+}
+
+/** Check an attendee in by the code they show (typed or scanned into the field) or by college ID. */
+function CheckInForm({ eventId }: { eventId: number }) {
+  const queryClient = useQueryClient()
+  const [value, setValue] = useState('')
+  const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+  return (
+    <form
+      className="flex flex-wrap items-end gap-2"
+      onSubmit={(event) => {
+        event.preventDefault()
+        const typed = value.trim()
+        if (typed === '') {
+          return
+        }
+        // A check-in code is letters and digits in groups; anything else is taken as a college ID.
+        const input = /^[A-Z0-9]{4}(-?[A-Z0-9]{4})+$/i.test(typed) ? { code: typed } : { loginId: typed }
+        void checkInEventAttendee(eventId, input)
+          .then(async (result) => {
+            setValue('')
+            setMessage({ tone: 'success', text: result.alreadyCheckedIn ? `${result.loginId} was already checked in.` : `${result.loginId} checked in.` })
+            await queryClient.invalidateQueries({ queryKey: queryKeys.engagement.attendance(eventId) })
+          })
+          .catch((caught: unknown) => setMessage({ tone: 'error', text: failureText(caught, 'Couldn’t check in.') ?? 'Couldn’t check in.' }))
+      }}
+    >
+      <TextField label="Check-in code or college ID" value={value} maxLength={100} onChange={(event) => setValue(event.target.value)} />
+      <Button type="submit" size="sm">
+        Check in
+      </Button>
+      <p role="status" className="w-full text-sm empty:hidden">
+        {message?.text ?? ''}
+      </p>
+    </form>
+  )
+}
+

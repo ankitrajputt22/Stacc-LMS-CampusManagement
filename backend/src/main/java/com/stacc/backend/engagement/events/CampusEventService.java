@@ -255,7 +255,7 @@ public class CampusEventService {
                 mine.isPresent() ? List.of() : reasons(event, viewer, status, current), canManage(event, viewer));
     }
 
-    private boolean canManage(CampusEvent event, Viewer viewer) {
+    boolean canManage(CampusEvent event, Viewer viewer) {
         return viewer.admin() || event.getOrganizer().getId().equals(viewer.accountId())
                 || (event.getGroup() != null && groupService.isOfficer(viewer.accountId(), event.getGroup().getId()));
     }

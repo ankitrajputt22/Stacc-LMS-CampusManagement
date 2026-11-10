@@ -1,14 +1,24 @@
 import type {
   CampusEvent,
   CampusFacility,
+  CampusFest,
+  FestApplication,
+  FestInput,
   CampusGroup,
+  EventAttendanceRow,
   EventAttendee,
+  EventCheckIn,
+  EventCheckInCode,
   EventInput,
   FacilityBooking,
   FacilityKind,
+  GroupActivity,
+  GroupAnnouncement,
   GroupKind,
   GroupMember,
+  GroupSession,
   JoinPolicy,
+  MyEventAttendance,
   OfficerTitle,
 } from '../types/engagement'
 import { apiClient } from './apiClient'
@@ -63,3 +73,71 @@ export const cancelEvent = async (eventId: number) => (await apiClient.post<Camp
 export const registerForEvent = async (eventId: number) => (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration`)).data
 export const unregisterFromEvent = async (eventId: number) =>
   (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration/cancel`)).data
+
+// --- Group sessions and announcements
+
+export async function getGroupActivity(groupId: number, signal?: AbortSignal) {
+  return (await apiClient.get<GroupActivity>(`${BASE}/groups/${groupId}/activity`, { signal })).data
+}
+
+export async function addGroupSession(groupId: number, input: { kind: GroupSession['kind']; title: string; location: string | null; startsAt: string; endsAt: string }) {
+  return (await apiClient.post<GroupSession>(`${BASE}/groups/${groupId}/sessions`, input)).data
+}
+
+export async function cancelGroupSession(sessionId: number) {
+  return (await apiClient.post<GroupSession>(`${BASE}/sessions/${sessionId}/cancel`)).data
+}
+
+/** Posts an announcement; active members are told in their Inbox. */
+export async function postGroupAnnouncement(groupId: number, title: string, message: string) {
+  return (await apiClient.post<GroupAnnouncement>(`${BASE}/groups/${groupId}/announcements`, { title, message })).data
+}
+
+/** Scheduled sessions of the account's groups overlapping the range (moments in UTC). */
+export async function getMyGroupSessions(from: string, to: string, signal?: AbortSignal) {
+  return (await apiClient.get<GroupSession[]>(`${BASE}/me/sessions`, { params: { from, to }, signal })).data
+}
+
+// --- Event attendance
+
+/** A fresh check-in code for my registration; earlier codes stop working. */
+export async function getEventCheckInCode(eventId: number) {
+  return (await apiClient.post<EventCheckInCode>(`${BASE}/events/${eventId}/check-in-code`)).data
+}
+
+export async function getMyEventAttendance(eventId: number, signal?: AbortSignal) {
+  return (await apiClient.get<MyEventAttendance>(`${BASE}/events/${eventId}/my-attendance`, { signal })).data
+}
+
+export async function getEventAttendance(eventId: number, signal?: AbortSignal) {
+  return (await apiClient.get<EventAttendanceRow[]>(`${BASE}/events/${eventId}/attendance`, { signal })).data
+}
+
+/** Checks an attendee in by their check-in code or college ID. */
+export async function checkInEventAttendee(eventId: number, input: { code?: string; loginId?: string }) {
+  return (await apiClient.post<EventCheckIn>(`${BASE}/events/${eventId}/check-ins`, input)).data
+}
+
+// --- Fests
+
+export const getFests = async (signal?: AbortSignal) => (await apiClient.get<CampusFest[]>(`${BASE}/fests`, { signal })).data
+/** Applies to volunteer for a shift; the campus office accepts or declines. */
+export const applyForFestShift = async (shiftId: number, note: string | null) =>
+  (await apiClient.post<CampusFest>(`${BASE}/fests/shifts/${shiftId}/apply`, { note })).data
+export const withdrawFestApplication = async (applicationId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/fests/applications/${applicationId}/withdraw`)).data
+
+export const getAllFests = async (signal?: AbortSignal) => (await apiClient.get<CampusFest[]>(`${BASE}/admin/fests`, { signal })).data
+export const createFest = async (input: FestInput) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests`, input)).data
+export const publishFest = async (festId: number) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/publish`)).data
+export const archiveFest = async (festId: number) => (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/archive`)).data
+export const scheduleFestEvent = async (festId: number, eventId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/schedule`, { eventId })).data
+export const unscheduleFestEvent = async (festId: number, eventId: number) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/unschedule`, { eventId })).data
+export const addFestShift = async (festId: number, input: { roleTitle: string; startsAt: string; endsAt: string; places: number }) =>
+  (await apiClient.post<CampusFest>(`${BASE}/admin/fests/${festId}/shifts`, input)).data
+export const getFestApplications = async (festId: number, signal?: AbortSignal) =>
+  (await apiClient.get<FestApplication[]>(`${BASE}/admin/fests/${festId}/applications`, { signal })).data
+export const decideFestApplication = async (applicationId: number, accept: boolean) =>
+  (await apiClient.post<FestApplication>(`${BASE}/admin/fests/applications/${applicationId}/decision`, { accept })).data

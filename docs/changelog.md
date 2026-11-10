@@ -14,6 +14,9 @@
 - **0.10.9:** hostel and block notices, with emergency notices sent to every affected resident.
 - **0.10.10:** the hostel mess: weekly menus, changes for single days, and meal ratings.
 - **0.10.11:** hostel visitors: registration by residents, the security desk, and visiting hours.
+- **0.11.2:** club and sports group sessions on members' calendars, and group announcements.
+- **0.11.6:** event check-in by QR code or college ID, and certificate eligibility from attendance.
+- **0.11.7:** fests with a schedule of campus events, and volunteer shifts.
 
 ## v1.0.0 (2026-11-11)
 

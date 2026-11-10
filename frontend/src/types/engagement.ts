@@ -89,3 +89,75 @@ export type EventInput = {
 }
 
 export type EventAttendee = { loginId: string; status: 'REGISTERED' | 'WAITLISTED'; registeredAt: string }
+
+export type GroupSession = {
+  sessionId: number
+  groupId: number
+  groupName: string
+  kind: 'MEETING' | 'PRACTICE'
+  title: string
+  location: string | null
+  startsAt: string
+  endsAt: string
+  status: 'SCHEDULED' | 'CANCELLED'
+}
+
+export type GroupAnnouncement = { announcementId: number; title: string; message: string; createdAt: string }
+
+/** A group's sessions and announcements; canManage when the account may add them (officers, the campus office). */
+export type GroupActivity = { canManage: boolean; sessions: GroupSession[]; announcements: GroupAnnouncement[] }
+
+export type EventCheckInCode = { code: string; validFrom: string; validUntil: string }
+/** certificateEligible: attended and the event has ended. */
+export type MyEventAttendance = { registered: boolean; attendedAt: string | null; certificateEligible: boolean }
+export type EventAttendanceRow = {
+  loginId: string
+  status: string
+  registeredAt: string
+  attendedAt: string | null
+  checkInMethod: 'MANUAL' | 'PASS' | null
+  certificateEligible: boolean
+}
+export type EventCheckIn = { loginId: string; attendedAt: string; alreadyCheckedIn: boolean }
+
+// --- Fests (FestService views)
+
+export type FestStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type VolunteerStatus = 'APPLIED' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN'
+
+export type FestScheduleItem = { eventId: number; title: string; venue: string | null; startsAt: string; endsAt: string; status: string }
+
+export type FestShift = {
+  shiftId: number
+  roleTitle: string
+  startsAt: string
+  endsAt: string
+  places: number
+  accepted: number
+  myApplicationId: number | null
+  myApplication: VolunteerStatus | null
+}
+
+export type CampusFest = {
+  festId: number
+  name: string
+  /** Plain text. */
+  description: string | null
+  startsOn: string
+  endsOn: string
+  status: FestStatus
+  schedule: FestScheduleItem[]
+  shifts: FestShift[]
+}
+
+export type FestInput = { name: string; description: string | null; startsOn: string; endsOn: string }
+
+export type FestApplication = {
+  applicationId: number
+  shiftId: number
+  roleTitle: string
+  loginId: string
+  note: string | null
+  status: VolunteerStatus
+  appliedAt: string
+}
