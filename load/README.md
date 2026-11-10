@@ -23,9 +23,11 @@ These k6 scripts load-test Stacc's busiest reads and its locked writes, against 
 ## Baseline
 
 k6 is not installed on the development machine. `course-registration-burst.js` runs in CI on every phase branch, so
-its thresholds are checked on each run; the full k6 summary (p50, p95, p99) is in that step's log. Record a run of the
+its thresholds are checked on each run, and each run's timings and any failed check appear as annotations on the CI run's page (`annotate` in `common.js`). Record a run of the
 other scripts here when one is made.
 
 | Date | Script | Machine | p95 | Errors | Notes |
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-10 | `course-registration-burst.js` (30 requests, 3 students, CS305) | GitHub Actions `ubuntu-latest`, end-to-end Docker stack, demo data | under 3 s (threshold met) | 0 unexpected answers, 0 broken rules | [CI run 42722068954](https://github.com/ankitrajputt22/Stacc-LMS-CampusManagement/actions/runs/42722068954): one enrollment per student, places reduced by exactly the new enrollments |
+| 2026-11-10 | `quiz-burst.js` (30 flows, 3 students, one-attempt quiz) | GitHub Actions `ubuntu-latest`, end-to-end Docker stack, demo data | 189 ms (p50 88 ms, max 319 ms; 193 requests) | 0 unexpected answers, 0 broken rules | [CI run 42764671266](https://github.com/ankitrajputt22/Stacc-LMS-CampusManagement/actions/runs/42764671266): one handed-in attempt with full marks per student. The first runs found two races (duplicate answer options and a start deadlock), fixed before this run. |
+| 2026-11-10 | `course-registration-burst.js` | same stack, same run | 123 ms (p50 92 ms) | 0 | Same CI run, after the quiz fixes. |
