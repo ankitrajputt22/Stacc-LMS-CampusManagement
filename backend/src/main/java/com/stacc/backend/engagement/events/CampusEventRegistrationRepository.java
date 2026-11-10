@@ -27,4 +27,8 @@ public interface CampusEventRegistrationRepository extends JpaRepository<CampusE
             + "(com.stacc.backend.engagement.events.CampusEventRegistration.Status.REGISTERED, "
             + "com.stacc.backend.engagement.events.CampusEventRegistration.Status.WAITLISTED)")
     Optional<CampusEventRegistration> findCurrentForAccount(@Param("eventId") Long eventId, @Param("accountId") Long accountId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from CampusEventRegistration r join fetch r.account join fetch r.event where r.id = :registrationId")
+    Optional<CampusEventRegistration> findByIdForUpdate(@Param("registrationId") Long registrationId);
 }

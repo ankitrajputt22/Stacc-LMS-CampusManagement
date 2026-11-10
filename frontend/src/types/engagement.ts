@@ -106,3 +106,16 @@ export type GroupAnnouncement = { announcementId: number; title: string; message
 
 /** A group's sessions and announcements; canManage when the account may add them (officers, the campus office). */
 export type GroupActivity = { canManage: boolean; sessions: GroupSession[]; announcements: GroupAnnouncement[] }
+
+export type EventCheckInCode = { code: string; validFrom: string; validUntil: string }
+/** certificateEligible: attended and the event has ended. */
+export type MyEventAttendance = { registered: boolean; attendedAt: string | null; certificateEligible: boolean }
+export type EventAttendanceRow = {
+  loginId: string
+  status: string
+  registeredAt: string
+  attendedAt: string | null
+  checkInMethod: 'MANUAL' | 'PASS' | null
+  certificateEligible: boolean
+}
+export type EventCheckIn = { loginId: string; attendedAt: string; alreadyCheckedIn: boolean }

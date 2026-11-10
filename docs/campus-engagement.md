@@ -38,3 +38,9 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - Active members, officers, and the campus office read a group's sessions and latest announcements (`GET /api/v1/engagement/groups/{id}/activity`); anyone else gets 404. The "Sessions and announcements" panel opens on each group the account belongs to or leads.
 - Scheduled sessions of the account's groups appear on its calendar (`GET /api/v1/engagement/me/sessions`, ranges up to 62 days; the month view shows them).
 - Posting an announcement tells every active member except its author through the Inbox (`GROUP_ANNOUNCEMENT`, Campus category).
+
+## Event attendance (v0.11.6)
+
+- A registered attendee (not waitlisted) gets a check-in code from the pass service (`EVENT_CHECK_IN`, valid from an hour before the event until it ends; a new code revokes the earlier one) and shows it as a QR code with the code in words (`POST /api/v1/engagement/events/{id}/check-in-code`). Only the code's fingerprint is stored.
+- The event's managers check attendees in by that code (typed or scanned) or by college ID, in the same window (`POST …/check-ins`); attending is recorded once on the registration (`attended_at`, how, and by whom; `V113`) under its row lock. Checking in again changes nothing.
+- Certificate eligibility is worked out on read: an attendee who checked in is due a participation certificate once the event has ended. The organizer's list (`GET …/attendance`) and the attendee's own view (`GET …/my-attendance`) show it; nothing about it is stored.

@@ -72,6 +72,36 @@ public class CampusEventRegistration {
         }
     }
 
+    public enum CheckInMethod { MANUAL, PASS }
+
+    @Column(name = "attended_at")
+    private Instant attendedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "check_in_method", length = 10)
+    private CheckInMethod checkInMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "checked_in_by_account_id")
+    private UserAccount checkedInBy;
+
+    /** Records attending once: only a registered (not waitlisted or cancelled) attendee; again changes nothing. */
+    public boolean checkIn(CheckInMethod method, UserAccount by, Instant at) {
+        if (status != Status.REGISTERED) {
+            throw new IllegalStateException("Only a registered attendee can check in.");
+        }
+        if (attendedAt != null) {
+            return false;
+        }
+        this.attendedAt = at;
+        this.checkInMethod = method;
+        this.checkedInBy = by;
+        return true;
+    }
+
+    public Instant getAttendedAt() { return attendedAt; }
+    public CheckInMethod getCheckInMethod() { return checkInMethod; }
+
     public Long getId() { return id; }
     public CampusEvent getEvent() { return event; }
     public UserAccount getAccount() { return account; }

@@ -152,8 +152,12 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/events/managed` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}` | PUT | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/attendance` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
 | `/api/v1/engagement/events/{eventId}/attendees` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/cancel` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/check-in-code` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/check-ins` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/my-attendance` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EventAttendanceController |
 | `/api/v1/engagement/events/{eventId}/publish` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |

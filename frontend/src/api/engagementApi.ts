@@ -2,7 +2,10 @@ import type {
   CampusEvent,
   CampusFacility,
   CampusGroup,
+  EventAttendanceRow,
   EventAttendee,
+  EventCheckIn,
+  EventCheckInCode,
   EventInput,
   FacilityBooking,
   FacilityKind,
@@ -12,6 +15,7 @@ import type {
   GroupMember,
   GroupSession,
   JoinPolicy,
+  MyEventAttendance,
   OfficerTitle,
 } from '../types/engagement'
 import { apiClient } from './apiClient'
@@ -89,4 +93,24 @@ export async function postGroupAnnouncement(groupId: number, title: string, mess
 /** Scheduled sessions of the account's groups overlapping the range (moments in UTC). */
 export async function getMyGroupSessions(from: string, to: string, signal?: AbortSignal) {
   return (await apiClient.get<GroupSession[]>(`${BASE}/me/sessions`, { params: { from, to }, signal })).data
+}
+
+// --- Event attendance
+
+/** A fresh check-in code for my registration; earlier codes stop working. */
+export async function getEventCheckInCode(eventId: number) {
+  return (await apiClient.post<EventCheckInCode>(`${BASE}/events/${eventId}/check-in-code`)).data
+}
+
+export async function getMyEventAttendance(eventId: number, signal?: AbortSignal) {
+  return (await apiClient.get<MyEventAttendance>(`${BASE}/events/${eventId}/my-attendance`, { signal })).data
+}
+
+export async function getEventAttendance(eventId: number, signal?: AbortSignal) {
+  return (await apiClient.get<EventAttendanceRow[]>(`${BASE}/events/${eventId}/attendance`, { signal })).data
+}
+
+/** Checks an attendee in by their check-in code or college ID. */
+export async function checkInEventAttendee(eventId: number, input: { code?: string; loginId?: string }) {
+  return (await apiClient.post<EventCheckIn>(`${BASE}/events/${eventId}/check-ins`, input)).data
 }
