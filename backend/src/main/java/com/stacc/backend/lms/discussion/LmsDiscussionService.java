@@ -12,6 +12,7 @@ import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.discussion.LmsCourseParticipation.Viewer;
+import org.hibernate.Hibernate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -84,13 +85,19 @@ public class LmsDiscussionService {
         LmsCourse course = lmsCourses.getReferenceById(lmsCourseId);
         LmsDiscussionThread thread = threads.saveAndFlush(new LmsDiscussionThread(course,
                 accounts.getReferenceById(viewer.accountId()), viewer.kind(), title, body, now()));
+        // The answer is built after the transaction, so the author is loaded now.
+        Hibernate.initialize(thread.getAuthor());
         return new ThreadDetail(thread, List.of());
     }
 
     @Transactional(readOnly = true)
     public ThreadDetail detail(Viewer viewer, Long lmsCourseId, Long threadId) {
         LmsDiscussionThread thread = thread(viewer, lmsCourseId, threadId);
-        return new ThreadDetail(thread, replies.findAllForThread(thread.getId()));
+        List<LmsDiscussionReply> found = replies.findAllForThread(thread.getId());
+        // The answer is built after the transaction (open-in-view is off), so every author it shows is loaded now.
+        Hibernate.initialize(thread.getAuthor());
+        found.forEach(reply -> Hibernate.initialize(reply.getAuthor()));
+        return new ThreadDetail(thread, found);
     }
 
     @Transactional
