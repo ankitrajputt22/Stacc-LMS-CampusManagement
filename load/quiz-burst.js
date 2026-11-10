@@ -2,7 +2,7 @@ import http from 'k6/http'
 import { check } from 'k6'
 import exec from 'k6/execution'
 import { Counter } from 'k6/metrics'
-import { BASE, signIn } from './common.js'
+import { annotate, BASE, signIn } from './common.js'
 
 // Many students take one quiz at once, several requests from each, so starting, saving, and handing in race on the
 // same attempt. Setup builds a graded quiz with one attempt each from the reviewed objective questions of the course's
@@ -134,3 +134,5 @@ export function teardown(data) {
     }
   }
 }
+
+export const handleSummary = annotate('Quiz load test')

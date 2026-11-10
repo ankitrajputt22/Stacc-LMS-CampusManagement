@@ -2,7 +2,7 @@ import http from 'k6/http'
 import { check } from 'k6'
 import exec from 'k6/execution'
 import { Counter } from 'k6/metrics'
-import { BASE, signIn } from './common.js'
+import { annotate, BASE, signIn } from './common.js'
 
 // Many registrations for one course offering at once, several from each student, so the capacity lock and the
 // "not taken before" rule are raced. The demo data's third-semester students and CS305 (open to the whole semester)
@@ -117,3 +117,5 @@ export function teardown(data) {
     brokenRules.add(1)
   }
 }
+
+export const handleSummary = annotate('Registration load test')
