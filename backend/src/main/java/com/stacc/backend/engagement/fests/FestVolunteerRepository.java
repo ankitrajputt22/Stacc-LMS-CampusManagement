@@ -26,4 +26,8 @@ public interface FestVolunteerRepository extends JpaRepository<FestVolunteer, Lo
 
     @Query("select volunteer from FestVolunteer volunteer join fetch volunteer.shift shift join fetch shift.fest where volunteer.account.id = :accountId order by shift.startsAt")
     List<FestVolunteer> findForAccount(@Param("accountId") Long accountId);
+
+    /** Accepted volunteering of the account, with shift and fest. */
+    @Query("select v from FestVolunteer v join fetch v.shift s join fetch s.fest where v.account.id = :accountId and v.status = com.stacc.backend.engagement.fests.FestVolunteer.Status.ACCEPTED order by s.startsAt desc")
+    List<FestVolunteer> findAcceptedByAccount(@Param("accountId") Long accountId);
 }

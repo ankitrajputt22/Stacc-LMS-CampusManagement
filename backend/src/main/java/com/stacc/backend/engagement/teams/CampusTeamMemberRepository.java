@@ -23,4 +23,8 @@ public interface CampusTeamMemberRepository extends JpaRepository<CampusTeamMemb
 
     @Query("select m.team.id from CampusTeamMember m where m.id = :memberId")
     Optional<Long> findTeamIdOf(@Param("memberId") Long memberId);
+
+    /** Every roster place the account has held, with team and group. */
+    @Query("select m from CampusTeamMember m join fetch m.team t join fetch t.group where m.account.id = :accountId order by m.joinedAt desc")
+    List<CampusTeamMember> findForAccount(@Param("accountId") Long accountId);
 }

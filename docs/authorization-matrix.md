@@ -496,6 +496,13 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/notifications/unread-count` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/{notificationRecipientId}/read` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/{notificationRecipientId}/unread` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
+| `/api/v1/portfolio/items` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}` | PUT | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}/hide` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}/verification` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/me` | GET | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/verifications` | GET | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
+| `/api/v1/portfolio/verifications/{itemId}/decision` | POST | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
 | `/api/v1/public/documents/verify/{code}` | GET | `public` | DocumentVaultController |
 | `/api/v1/reports/admin/enrollments` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
 | `/api/v1/reports/admin/enrollments/export.csv` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
