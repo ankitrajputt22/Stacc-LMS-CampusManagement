@@ -128,7 +128,6 @@ import com.stacc.backend.hostel.notice.HostelNoticeRepository;
 import com.stacc.backend.hostel.rollcall.HostelRollCallEntryRepository;
 import com.stacc.backend.hostel.rollcall.HostelRollCallRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskArticleRepository;
-import com.stacc.backend.lms.announcement.LmsAnnouncementAttachmentRepository;
 import com.stacc.backend.lms.paper.LmsExamBlueprintRepository;
 import com.stacc.backend.lms.paper.LmsExamPaperQuestionRepository;
 import com.stacc.backend.lms.paper.LmsExamPaperRepository;
@@ -270,7 +269,6 @@ import org.springframework.web.context.WebApplicationContext;
     HostelRollCallRepository.class,
     HostelRollCallEntryRepository.class,
     HelpdeskArticleRepository.class,
-    LmsAnnouncementAttachmentRepository.class,
     LmsExamBlueprintRepository.class,
     LmsExamPaperRepository.class,
     LmsExamPaperQuestionRepository.class
