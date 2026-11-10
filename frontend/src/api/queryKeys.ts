@@ -19,6 +19,9 @@ export const queryKeys = {
   },
   hostel: {
     myRoomChanges: () => ['hostel', 'room-changes', 'mine'] as const,
+    myVisitors: () => ['hostel', 'visitors', 'mine'] as const,
+    todaysVisitors: () => ['hostel', 'visitors', 'today'] as const,
+    visitingHours: (hostelId: number) => ['hostel', 'visiting-hours', hostelId] as const,
     myMess: () => ['hostel', 'mess', 'mine'] as const,
     mess: (hostelId: number) => ['hostel', 'mess', hostelId] as const,
     notices: (hostelId: number) => ['hostel', 'notices', hostelId] as const,

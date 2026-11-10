@@ -114,6 +114,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.stacc.backend.lms.announcement.LmsAnnouncementAttachmentRepository;
 import com.stacc.backend.hostel.HostelRoomChangeRepository;
+import com.stacc.backend.hostel.visitor.HostelVisitRepository;
+import com.stacc.backend.hostel.visitor.HostelVisitingHoursRepository;
 import com.stacc.backend.hostel.mess.MealFeedbackRepository;
 import com.stacc.backend.hostel.mess.MessMenuChangeRepository;
 import com.stacc.backend.hostel.mess.MessMenuItemRepository;
@@ -249,6 +251,8 @@ import org.springframework.web.context.WebApplicationContext;
     ReportExportRepository.class,
     LmsAnnouncementAttachmentRepository.class,
     HostelRoomChangeRepository.class,
+    HostelVisitRepository.class,
+    HostelVisitingHoursRepository.class,
     MessMenuItemRepository.class,
     MessMenuChangeRepository.class,
     MealFeedbackRepository.class,

@@ -295,3 +295,22 @@ export type ManagerMess = {
   lastMonth: MealSummary[]
   comments: MealComment[]
 }
+
+export type VisitStatus = 'EXPECTED' | 'ARRIVED' | 'LEFT' | 'CANCELLED'
+
+/** A hostel visitor; only the name and relation are kept. */
+export type HostelVisit = {
+  visitId: number
+  visitorName: string
+  relation: string
+  kind: 'PRE_REGISTERED' | 'WALK_IN'
+  expectedOn: string
+  status: VisitStatus
+  arrivedAt: string | null
+  leftAt: string | null
+  residentLoginId: string
+  hostel: string
+  room: string
+}
+
+export type VisitingHours = { hostelId: number; opensAt: string; closesAt: string }

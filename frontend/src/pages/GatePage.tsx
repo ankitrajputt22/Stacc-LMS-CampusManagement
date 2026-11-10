@@ -8,6 +8,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import { KIND_LABEL, outingStatusLabel } from '../hostel/outings/outingText'
+import { GateVisitors } from '../hostel/visitors/Visitors'
 import type { HostelOuting, PassCheck } from '../types/outings'
 import { Alert, Badge, Button, Card, PageHeader, TextField } from '../ui'
 
@@ -195,6 +196,7 @@ export function GatePage() {
       <title>Gate · Stacc</title>
       <PageHeader title="Gate" description="Check passes and record students going out and coming back." />
       <div className="mt-6 space-y-6">
+        <GateVisitors />
         <Card title="Check a pass">
           <div className="space-y-4">
             <CameraScanner onCode={(value) => void verify(value)} />
