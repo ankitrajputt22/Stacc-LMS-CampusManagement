@@ -2,6 +2,7 @@ import type {
   Conversation,
   ConversationSummary,
   CourseSide,
+  DiscussionReport,
   DiscussionThread,
   DiscussionThreadSummary,
 } from '../types/communication'
@@ -82,4 +83,33 @@ function messageForm(body: string, files: File[]): FormData {
     form.append('files', file)
   }
   return form
+}
+
+/** Hides a thread from students, or shows it again (faculty). */
+export async function hideDiscussion(lmsCourseId: number, threadId: number, hidden: boolean): Promise<DiscussionThread> {
+  return (await apiClient.post<DiscussionThread>(`${base('faculty', lmsCourseId)}/discussions/${threadId}/hide`, { hidden })).data
+}
+
+/** Locks a thread against new replies, or opens it again (faculty). */
+export async function lockDiscussion(lmsCourseId: number, threadId: number, locked: boolean): Promise<DiscussionThread> {
+  return (await apiClient.post<DiscussionThread>(`${base('faculty', lmsCourseId)}/discussions/${threadId}/lock`, { locked })).data
+}
+
+export async function hideReply(lmsCourseId: number, threadId: number, replyId: number, hidden: boolean): Promise<DiscussionThread> {
+  return (await apiClient.post<DiscussionThread>(`${base('faculty', lmsCourseId)}/discussions/${threadId}/replies/${replyId}/hide`, { hidden }))
+    .data
+}
+
+/** Reports the thread (no reply) or one of its replies to the course's faculty (students). */
+export async function reportPost(lmsCourseId: number, threadId: number, replyId: number | null, reason: string): Promise<void> {
+  await apiClient.post(`${base('student', lmsCourseId)}/discussions/${threadId}/reports`, { replyId, reason })
+}
+
+export async function getDiscussionReports(lmsCourseId: number, signal?: AbortSignal): Promise<DiscussionReport[]> {
+  return (await apiClient.get<DiscussionReport[]>(`${base('faculty', lmsCourseId)}/discussion-reports`, { signal })).data
+}
+
+/** Hides the reported post, or dismisses its open reports. */
+export async function resolveReport(lmsCourseId: number, reportId: number, hide: boolean): Promise<void> {
+  await apiClient.post(`${base('faculty', lmsCourseId)}/discussion-reports/${reportId}/resolve`, { hide })
 }
