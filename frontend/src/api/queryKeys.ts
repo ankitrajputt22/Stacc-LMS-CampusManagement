@@ -44,6 +44,7 @@ export const queryKeys = {
     groups: () => ['engagement', 'groups'] as const,
     members: (groupId: number) => ['engagement', 'members', groupId] as const,
     activity: (groupId: number) => ['engagement', 'activity', groupId] as const,
+    teams: (groupId: number) => ['engagement', 'teams', groupId] as const,
     myAttendance: (eventId: number) => ['engagement', 'my-attendance', eventId] as const,
     attendance: (eventId: number) => ['engagement', 'attendance', eventId] as const,
     mySessions: (from: string) => ['engagement', 'my-sessions', from] as const,

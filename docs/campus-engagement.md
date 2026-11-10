@@ -57,3 +57,10 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - A trial is an ordinary campus event that its managers (the organizer, the group's officers, or the campus office) mark as a trial before it starts (`POST /api/v1/engagement/events/{id}/trial`, `V115`). It stays a trial; marking it again changes nothing, and a started or cancelled event cannot become one.
 - Once the trial has started, its managers record Selected or Not selected for each registered (not waitlisted) attendee by college ID (`POST …/trial-outcomes`), under the registration's row lock. An outcome may be corrected; the registration keeps only the latest outcome, who recorded it, and when.
 - Attendees see their own outcome with their attendance (`GET …/my-attendance`); the managers see everyone's in the registrations list. Selection grants nothing by itself: team rosters come with their own phase.
+
+## Teams (v0.11.9)
+
+- A team (`CampusTeam` in `engagement.teams`, `V116`) belongs to one active sports group and one season, with a name unique per group and season. The group's officers and the campus office add teams and make them inactive; a team is never deleted, and an inactive one keeps its roster but takes no changes.
+- Its roster holds active members of the group, by college ID, as players. At most one current captain and one current vice-captain (unique generated columns): naming a new one makes the previous holder a player. Players are taken off the roster with a leaving time, never deleted.
+- Every roster change takes the team row lock (after checking the manager from the team's stored group), then reads the roster with a locking read (`TeamCaptainMySqlIT`).
+- Active members, officers, and the campus office read a group's teams (`GET /api/v1/engagement/groups/{id}/teams`) from the Teams button on the sports group; anyone else gets the same 404 as for a missing group.
