@@ -100,7 +100,7 @@ Goal: make every later change safe to make. No new features.
 | ★ 0.4.1 | Registration periods | A registration period and drop deadline per semester, and an optional credit limit per program. Done. |
 | ★ 0.4.2 | Self-registration and drop | Students see the offerings open to their semester and section, register for several at once (all or nothing, capacity and credit limit held under row locks), and drop before the deadline; dropped enrollments stay as history. Done. |
 | ★ 0.4.3 | Enrollment monitor | Admins search and filter every course enrollment; faculty see the students registered in offerings they teach. Done. |
-| 0.4.4 | Registration load test | A k6 test of many students registering at once, with the result recorded. |
+| 0.4.4 | Registration load test | A k6 test of many students registering at once, with the result recorded. Done: `load/course-registration-burst.js`, run in CI on the end-to-end stack; result in `load/README.md`. |
 
 The v0.4 specification keeps prerequisites, curriculum rules, elective groups, minimum credits, and withdrawal approval for later phases.
 
@@ -287,7 +287,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.1 Foundation | Done (0.1.1 to 0.1.9) |
 | v0.2 Accounts, roles, and audit | Done (0.2.1 to 0.2.10) |
 | v0.3 ERP core | Done (0.3.1 to 0.3.6) |
-| v0.4 Course registration | In progress: 0.4.1 to 0.4.3 done |
+| v0.4 Course registration | Done (0.4.1 to 0.4.4) |
 | v0.5 ERP to LMS access | Done (0.5.1 to 0.5.3) |
 | v0.6 LMS core | Done (0.6.1 to 0.6.8) |
 | v0.7 Assessment | Done for the submission (0.7.1 to 0.7.8 and 0.7.10; 0.7.9 and 0.7.11 come after the core phases) |
