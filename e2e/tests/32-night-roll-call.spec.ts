@@ -10,7 +10,7 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   const card = page.getByRole('region', { name: 'Night roll call' })
   await card.getByLabel('Night').fill(night)
   await card.getByRole('button', { name: 'Open roll call' }).click()
-  await expect(card.getByRole('status')).toHaveText(/Roll call opened with \d+ residents\./)
+  await expect(card.getByRole('status').filter({ hasText: /Roll call opened with \d+ residents\./ })).toHaveCount(1)
 
   const sheet = card.getByRole('listitem').filter({ hasText: night })
   // The sheet loads after the list; wait for it before collecting its residents.
@@ -21,10 +21,10 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   const save = sheet.getByRole('button', { name: 'Save marks' })
   if (await save.isEnabled()) {
     await save.click()
-    await expect(card.getByRole('status')).toHaveText('Marks saved.')
+    await expect(card.getByRole('status').filter({ hasText: 'Marks saved.' })).toHaveCount(1)
   }
   await sheet.getByRole('button', { name: 'Finalize' }).click()
   await sheet.getByRole('button', { name: 'Finalize' }).last().click()
-  await expect(card.getByRole('status')).toHaveText('Roll call finalized.')
+  await expect(card.getByRole('status').filter({ hasText: 'Roll call finalized.' })).toHaveCount(1)
   await expect(card.getByRole('listitem').filter({ hasText: night }).getByText('Finalized')).toBeVisible()
 })

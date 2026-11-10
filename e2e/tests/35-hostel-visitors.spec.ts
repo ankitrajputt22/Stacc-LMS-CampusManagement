@@ -10,7 +10,7 @@ test('a resident registers a visitor, security sees them, and the hostel office 
   await card.getByLabel('Visitor’s name').fill(visitor)
   await card.getByLabel('Relation').fill('Mother')
   await card.getByRole('button', { name: 'Register visitor' }).click()
-  await expect(card.getByRole('status')).toHaveText('Visitor registered. Security lets them in during visiting hours.')
+  await expect(card.getByRole('status').filter({ hasText: 'Visitor registered. Security lets them in during visiting hours.' })).toHaveCount(1)
   await expect(card.getByRole('listitem').filter({ hasText: visitor }).getByText('Expected')).toBeVisible()
   await signOut(page)
 
