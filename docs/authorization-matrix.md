@@ -342,6 +342,24 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/innovation/ideas/{ideaId}/review` | POST | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
 | `/api/v1/innovation/ideas/{ideaId}/withdraw` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
 | `/api/v1/innovation/reviews` | GET | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
+| `/api/v1/library/desk/copies/withdraw` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/issue` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/loans` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources/{resourceId}/active` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/return` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/active` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/copies` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/copies` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/holds/{holdId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/loans/{loanId}/renew` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/resources` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
+| `/api/v1/library/titles` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
+| `/api/v1/library/titles/{titleId}/hold` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |

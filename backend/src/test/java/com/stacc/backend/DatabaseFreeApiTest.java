@@ -133,6 +133,11 @@ import com.stacc.backend.hackathon.HackathonTeamMemberRepository;
 import com.stacc.backend.hackathon.HackathonTeamRepository;
 import com.stacc.backend.innovation.InnovationIdeaRepository;
 import com.stacc.backend.innovation.InnovationReviewRepository;
+import com.stacc.backend.library.LibraryCopyRepository;
+import com.stacc.backend.library.LibraryHoldRepository;
+import com.stacc.backend.library.LibraryLoanRepository;
+import com.stacc.backend.library.LibraryResourceRepository;
+import com.stacc.backend.library.LibraryTitleRepository;
 import com.stacc.backend.mentoring.MentorAssignmentRepository;
 import com.stacc.backend.mentoring.MentoringActionItemRepository;
 import com.stacc.backend.mentoring.MentoringMeetingRepository;
@@ -304,6 +309,11 @@ import org.springframework.web.context.WebApplicationContext;
     HackathonSubmissionRepository.class,
     HackathonJudgeRepository.class,
     HackathonScoreRepository.class,
+    LibraryTitleRepository.class,
+    LibraryCopyRepository.class,
+    LibraryLoanRepository.class,
+    LibraryHoldRepository.class,
+    LibraryResourceRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

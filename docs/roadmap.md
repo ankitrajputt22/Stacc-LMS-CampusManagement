@@ -213,7 +213,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | 0.12.10 | Projects | One team model for projects with join requests and faculty mentors. Done (`V122`): projects led by students, join requests within a member limit, and faculty mentors. |
 | 0.12.11 | Innovation | Idea submission and review. Done (`V123`): ideas, faculty reviews with scores, and the campus office's decisions. |
 | 0.12.12 | Hackathons | Events with teams, submissions, and judging with hidden scores until results. Done (`V124`): teams within a size limit, one submission per team, judges, and results released once. |
-| 0.12.13 | Library | Catalog, copies, loans, holds, and digital resources (or showing data from existing library software, if the college has it). |
+| 0.12.13 | Library | Catalog, copies, loans, holds, and digital resources (or showing data from existing library software, if the college has it). Done (`V125`): the catalog with copies, lending within limits, holds first, renewals, and digital resources. |
 
 ## v0.13 AI foundation upgrade
 
@@ -295,7 +295,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.9 Shared engines | Done (0.9.1 to 0.9.8) |
 | v0.10 Hostel | Done (0.10.1 to 0.10.12) |
 | v0.11 Campus engagement | Done (0.11.1 to 0.11.10) |
-| v0.12 Student services and career | 0.12.1 to 0.12.12 done; 0.12.13 comes after the core phases |
+| v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
 | v1.0 Stable release | Done: released as `v1.0.0` |
 | v0.13 – v0.15 AI | Later, after the core phases |
