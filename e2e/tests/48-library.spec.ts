@@ -28,6 +28,5 @@ test('a librarian catalogs a book and lends it, and the student sees the loan', 
   const student = await browser.newPage()
   await signIn(student, 'erp', 'student1')
   await student.goto('/library')
-  await expect(student.getByRole('region', { name: 'My loans and holds' }).getByText(book)).toBeVisible()
-  await expect(student.getByRole('button', { name: new RegExp(`^Renew\\s*${book}$`) })).toBeVisible()
+  await expect(student.getByRole('region', { name: 'My loans and holds' }).getByRole('button', { name: new RegExp(`^Renew\\s*${book}$`) })).toBeVisible()
 })

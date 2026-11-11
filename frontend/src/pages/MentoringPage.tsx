@@ -54,7 +54,7 @@ function Meeting({ meeting, pairing, notify }: { meeting: MentoringMeeting; pair
                   <Badge tone="success">Done</Badge>
                 ) : (
                   <Button size="sm" variant="secondary" onClick={() => run(() => completeActionItem(action.itemId), 'Marked done.', 'Couldn’t mark it done.')}>
-                    Mark done<span className="sr-only">{`: ${action.description}`}</span>
+                    Mark done<span className="sr-only">{` ${action.description}`}</span>
                   </Button>
                 )}
               </li>

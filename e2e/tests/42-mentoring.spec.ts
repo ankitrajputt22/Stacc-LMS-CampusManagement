@@ -34,9 +34,10 @@ test('a mentor records a meeting and the student sees only the shared part and t
   await student.goto('/todo')
   await expect(student.getByRole('link', { name: `Mentoring: ${task}` })).toBeVisible()
   await student.goto('/mentoring')
-  const mine = student.getByRole('region', { name: 'Your mentor faculty2' })
+  // This run's meeting, inside the pairing with faculty2.
+  const mine = student.getByRole('region', { name: 'Your mentor faculty2' }).getByRole('region', { name: title })
   await expect(mine.getByText('Agreed to plan revision weekly.')).toBeVisible()
   await expect(mine.getByText('Keep an eye on attendance.')).toHaveCount(0)
-  await mine.getByRole('button', { name: new RegExp(`^Mark done:?\\s*${task}$`) }).click()
+  await mine.getByRole('button', { name: new RegExp(`^Mark done\\s*${task}$`) }).click()
   await expect(student.getByRole('status').filter({ hasText: 'Marked done.' })).toHaveCount(1)
 })
