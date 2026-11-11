@@ -116,6 +116,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `LIBRARY_USE` | `STUDENT`, `FACULTY` | Searching the library catalog, one's own loans and holds, renewing, and digital resources. Added by `V125`. |
 | `LIBRARY_MANAGE` | `LIBRARIAN` | The lending desk: catalog, copies, lending, taking back, and digital resources. Added by `V125`. |
 | `DEPARTMENT_ANALYTICS_VIEW` | `HOD` | Reading the analytics of the departments one heads now. Added by `V126`. |
+| `AREA_ANALYTICS_VIEW` | `ADMIN`, `LIBRARIAN`, `PLACEMENT_OFFICER` | Reading area analytics; each area's section also needs that area's own permission. Added by `V127`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |

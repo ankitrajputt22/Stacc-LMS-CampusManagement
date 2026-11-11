@@ -1,4 +1,4 @@
-import type { CourseAnalytics, DepartmentAnalytics, ExportKind, ReportExport, StudentAnalytics } from '../types/analytics'
+import type { AreaAnalytics, CourseAnalytics, DepartmentAnalytics, ExportKind, ReportExport, StudentAnalytics } from '../types/analytics'
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
@@ -14,3 +14,6 @@ export const downloadExport = async (exportId: number) =>
 /** The departments the signed-in head of department heads now, with current-session counts. */
 export const getDepartmentAnalytics = async (signal?: AbortSignal) =>
   (await apiClient.get<DepartmentAnalytics[]>('/analytics/department', { signal })).data
+
+/** Area analytics; each section only for holders of that area's permission. */
+export const getAreaAnalytics = async (signal?: AbortSignal) => (await apiClient.get<AreaAnalytics>('/analytics/areas', { signal })).data

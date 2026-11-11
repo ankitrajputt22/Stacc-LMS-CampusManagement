@@ -79,3 +79,15 @@ export type DepartmentAnalytics = {
   offerings: DepartmentOfferingLine[]
   note: string
 }
+
+// --- Area analytics (AreaAnalyticsService): a section is null when the account lacks that area's permission.
+
+export type AreaAnalytics = {
+  hostel: { bedsInService: number; bedsUnderMaintenance: number; occupiedBeds: number; occupancyPercent: number | null } | null
+  helpdesk: { ticketsByStatus: Record<string, number>; ratedTickets: number; averageRating: number | null } | null
+  engagement: { activeGroups: number; activeMemberships: number; pastEvents: number; comingEvents: number; pastRegistrations: number; checkedIn: number; attendancePercent: number | null } | null
+  placement: { openOpportunities: number; applicationsByStatus: Record<string, number>; offersByStatus: Record<string, number> } | null
+  library: { activeTitles: number; copiesInService: number; openLoans: number; overdueLoans: number; activeHolds: number } | null
+  ai: { courseIndexesByStatus: Record<string, number> } | null
+  note: string
+}

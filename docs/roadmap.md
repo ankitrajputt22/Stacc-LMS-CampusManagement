@@ -260,7 +260,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.16.1 | Analytics rules and student view | The aggregation rules (decision 7) and a student's own analytics. Done (`V101`): `AnalyticsRules` and `/academic/analytics`. |
 | ★ 0.16.2 | Course analytics | Class attendance, assessment and question analysis, topic performance, completion. Done: `/teaching/:id/analytics` with attendance, assignments, quiz questions, and required pages. |
 | 0.16.3 | Department analytics | The HOD's department view, scoped by assignment. Done (`V126`): `/department` with students by program and per-offering enrollment, attendance, and published results. |
-| 0.16.4 | Area analytics | Hostel, helpdesk, campus, placement, library, and AI usage. |
+| 0.16.4 | Area analytics | Hostel, helpdesk, campus, placement, library, and AI usage. Done (`V127`): `/areas` with a section per area for holders of its permission. |
 | ★ 0.16.5 | Report service | XLSX export, background exports with expiring downloads, and export auditing. Done: background XLSX exports with expiring, owner-only, audited downloads. |
 | ★ 0.16.6 | Performance review | Indexes, repeated queries, and paging checked across the app. Done: query review and two missing indexes (`V101`); findings in `analytics.md`. |
 | 0.16.7 | Monitoring | Metrics, an optional monitoring Docker profile, and a system health page. |
@@ -296,6 +296,6 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.10 Hostel | Done (0.10.1 to 0.10.12) |
 | v0.11 Campus engagement | Done (0.11.1 to 0.11.10) |
 | v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
-| v0.16 Analytics and operations | 0.16.1 to 0.16.3, 0.16.5, 0.16.6, 0.16.8 done; 0.16.4 and 0.16.7 come after the core phases |
+| v0.16 Analytics and operations | 0.16.1 to 0.16.6 and 0.16.8 done; 0.16.7 comes after the core phases |
 | v1.0 Stable release | Done: released as `v1.0.0` |
 | v0.13 – v0.15 AI | Later, after the core phases |
