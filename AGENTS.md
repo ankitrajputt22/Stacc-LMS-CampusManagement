@@ -452,6 +452,10 @@
 
 - Hackathons (`hackathon` module, `docs/hackathons.md`): teams form and hand in one submission each while a published hackathon has not ended, decided by the server's clock; one live team place per student and hackathon, and joining locks the team row and counts members with a locking read (keep `HackathonMySqlIT`). Named faculty judges score 0 to 100 after the end until results are released. Never show participants scores before the release; totals and places are worked out on read, never stored.
 
+## Library
+
+- The library (`library` module, `docs/library.md`) is the `LIBRARIAN` role's feature (`LIBRARY_MANAGE`); members hold `LIBRARY_USE`. Lending locks the borrower's account row, then the copy row, then reads loans, copies, and holds with locking reads: one open loan per copy, at most five per borrower, and holds first in queue order (keep `LibraryLendingMySqlIT`). Overdue and queue positions are worked out on read. Titles and resources are made inactive, copies withdrawn, holds cancelled, and loans returned; nothing is deleted.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.

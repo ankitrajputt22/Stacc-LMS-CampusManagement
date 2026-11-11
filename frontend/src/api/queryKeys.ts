@@ -39,6 +39,16 @@ export const queryKeys = {
     tasks: () => ['hostel', 'approval-tasks'] as const,
     movements: () => ['hostel', 'gate-movements'] as const,
   },
+  library: {
+    all: ['library'] as const,
+    search: (q: string) => ['library', 'search', q] as const,
+    mine: () => ['library', 'mine'] as const,
+    resources: () => ['library', 'resources'] as const,
+    desk: (q: string) => ['library', 'desk', q] as const,
+    copies: (titleId: number) => ['library', 'copies', titleId] as const,
+    loans: () => ['library', 'loans'] as const,
+    allResources: () => ['library', 'all-resources'] as const,
+  },
   hackathons: {
     all: ['hackathons'] as const,
     visible: () => ['hackathons', 'visible'] as const,

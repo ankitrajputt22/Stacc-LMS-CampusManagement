@@ -118,6 +118,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Innovation', to: '/innovation', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'student' },
       // Teams and submissions for students, judging for faculty, running them for admins.
       { label: 'Hackathons', to: '/hackathons', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'student' },
+      // The catalog and loans for members; the lending desk for librarians.
+      { label: 'Library', to: '/library', roles: ['STUDENT', 'FACULTY', 'LIBRARIAN'], icon: 'student' },
       { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
       { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },
