@@ -8,6 +8,7 @@ import type {
   FixtureResult,
   CampusGroup,
   CampusTeam,
+  DayOfWeek,
   EventAttendanceRow,
   EventAttendee,
   EventCheckIn,
@@ -68,6 +69,11 @@ export const createFacility = async (body: {
   closesAt: string
   needsApproval: boolean
 }) => (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities`, body)).data
+/** Adds weekly class hours; later bookings that overlap them are refused. */
+export const addClassHour = async (facilityId: number, body: { dayOfWeek: DayOfWeek; startsAt: string; endsAt: string; label: string }) =>
+  (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities/${facilityId}/class-hours`, body)).data
+export const removeClassHour = async (classHourId: number) =>
+  (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities/class-hours/${classHourId}/remove`)).data
 export const closeFacility = async (facilityId: number, body: { startDate: string; endDate: string; reason: string }) =>
   (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities/${facilityId}/closures`, body)).data
 

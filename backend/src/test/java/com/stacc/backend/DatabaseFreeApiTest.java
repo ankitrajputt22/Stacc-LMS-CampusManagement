@@ -114,6 +114,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.stacc.backend.lms.announcement.LmsAnnouncementAttachmentRepository;
 import com.stacc.backend.hostel.HostelRoomChangeRepository;
+import com.stacc.backend.engagement.facilities.CampusFacilityClassHourRepository;
 import com.stacc.backend.engagement.fests.CampusFestRepository;
 import com.stacc.backend.engagement.fests.FestShiftRepository;
 import com.stacc.backend.engagement.fests.FestVolunteerRepository;
@@ -278,6 +279,7 @@ import org.springframework.web.context.WebApplicationContext;
     MentorAssignmentRepository.class,
     MentoringMeetingRepository.class,
     MentoringActionItemRepository.class,
+    CampusFacilityClassHourRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

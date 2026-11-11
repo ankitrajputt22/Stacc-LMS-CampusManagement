@@ -18,7 +18,7 @@ public interface MentoringActionItemRepository extends JpaRepository<MentoringAc
             where i.completedAt is null and a.endedAt is null
             and ((i.owner = com.stacc.backend.mentoring.MentoringActionItem.Owner.MENTOR and a.mentor.id = :accountId)
               or (i.owner = com.stacc.backend.mentoring.MentoringActionItem.Owner.MENTEE and a.mentee.id = :accountId))
-            order by i.dueAt asc nulls last, i.id
+            order by case when i.dueAt is null then 1 else 0 end, i.dueAt, i.id
             """)
     List<MentoringActionItem> findOpenOwnedBy(@Param("accountId") Long accountId);
 }

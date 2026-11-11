@@ -22,6 +22,7 @@
 - **0.11.10:** tournaments with matches, text scores, results, and standings worked out from them.
 - **0.12.3:** confidential grievances with category committees, one appeal, and response deadlines.
 - **0.12.4:** mentoring pairs, meetings with shared and private notes, and action items on the To-Do list.
+- **0.12.5:** classrooms and equipment on the facilities engine, with weekly class hours closed to bookings.
 
 ## v1.0.0 (2026-11-11)
 

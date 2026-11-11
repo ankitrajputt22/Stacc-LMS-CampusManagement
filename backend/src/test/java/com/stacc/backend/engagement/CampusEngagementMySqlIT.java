@@ -1,11 +1,13 @@
 package com.stacc.backend.engagement;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import com.stacc.backend.Concurrently;
 import com.stacc.backend.Concurrently.Outcome;
 import com.stacc.backend.MySqlIntegrationTest;
 import com.stacc.backend.auth.account.UserAccountRepository;
+import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.engagement.events.CampusEventService;
 import com.stacc.backend.engagement.events.CampusEventService.EventInput;
 import com.stacc.backend.engagement.events.CampusEventService.EventView;
@@ -73,5 +76,19 @@ class CampusEngagementMySqlIT extends MySqlIntegrationTest {
 
         assertThat(outcomes.stream().filter(Outcome::succeeded)).hasSize(1);
         assertThat(facilities.upcoming(facilityId)).hasSize(1);
+    }
+
+    @Test
+    void classHoursRefuseOverlappingBookingsOnlyOnTheirDay() {
+        Long facilityId = facilities.create("IT-CLASSROOM", "Test classroom", CampusFacility.Kind.CLASSROOM, null, 60, LocalTime.of(0, 0),
+                LocalTime.of(23, 59), false).facilityId();
+        ZonedDateTime start = Instant.now().atZone(ZoneId.of("Asia/Kolkata")).plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0);
+        facilities.addClassHour(facilityId, start.getDayOfWeek(), LocalTime.of(9, 0), LocalTime.of(11, 0), "CS101 lecture");
+
+        assertThatThrownBy(() -> facilities.book(id("student1"), facilityId, start.toInstant(), start.plusHours(1).toInstant(), "Study group"))
+                .isInstanceOf(ApiException.class).hasMessageContaining("CS101 lecture");
+        facilities.book(id("student1"), facilityId, start.plusHours(1).toInstant(), start.plusHours(2).toInstant(), "Study group");
+        facilities.book(id("student2"), facilityId, start.plusDays(1).toInstant(), start.plusDays(1).plusHours(1).toInstant(), "Another day");
+        assertThat(facilities.upcoming(facilityId)).hasSize(2);
     }
 }
