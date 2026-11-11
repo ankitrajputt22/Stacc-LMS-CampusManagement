@@ -75,6 +75,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Grievances](grievances.md)
 - [Mentoring](mentoring.md)
 - [Portfolio](portfolio.md)
+- [Projects](projects.md)
 - [Analytics and exports](analytics.md)
 - [Security review](security-review.md)
 - [Authorization matrix](authorization-matrix.md)

@@ -440,6 +440,10 @@
 - Portfolios (`portfolio` module, `docs/portfolio.md`) read records live from their own modules (vault documents, `EngagementRecordQueries`) and never copy them. Only the owner (`STUDENT` with `PORTFOLIO_USE`) reads a portfolio.
 - Self-entered items take one `https://` link at most; the owner asks one active faculty member to verify an item once, and only that member (`PORTFOLIO_VERIFY`) decides, once, under the item row lock. Verified or waiting items are not edited; items are hidden, never deleted.
 
+## Projects
+
+- Projects (`projects` module, `docs/projects.md`) are one team model: a student starts and leads a project; other students ask to join once while live, and only the lead accepts, under the project row lock with a locking read of active members, never past the limit (keep `ProjectCapacityMySqlIT`). The lead invites active faculty as mentors, who answer once. Places and mentorships keep their history; projects are closed or archived, never deleted. People are shown by login ID only, and join messages reach the lead only.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.

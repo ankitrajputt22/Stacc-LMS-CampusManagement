@@ -106,6 +106,7 @@ A permission is added by a new migration only when the real feature it protects 
 | `MENTORING_MANAGE` | `ADMIN` | Pairing mentors with students and ending pairings, never reading meetings. Added by `V119`. |
 | `PORTFOLIO_USE` | `STUDENT` | Reading one's own portfolio and adding, hiding, and sending one's own items for verification. Added by `V121`. |
 | `PORTFOLIO_VERIFY` | `FACULTY` | Verifying or declining portfolio items one was named on. Added by `V121`. |
+| `PROJECT_USE` | `STUDENT`, `FACULTY` | Seeing projects; students start, join, and lead them, and faculty answer mentoring invitations. Added by `V122`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |
