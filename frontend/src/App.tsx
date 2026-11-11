@@ -44,6 +44,7 @@ import { HackathonsPage } from './pages/HackathonsPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { DepartmentAnalyticsPage } from './pages/DepartmentAnalyticsPage'
 import { AreaAnalyticsPage } from './pages/AreaAnalyticsPage'
+import { SystemHealthPage } from './pages/SystemHealthPage'
 import { AdminMentoringPage } from './pages/AdminMentoringPage'
 import { AdminGrievancesPage } from './pages/AdminGrievancesPage'
 import { CertificateDeskPage } from './pages/CertificateDeskPage'
@@ -218,6 +219,7 @@ function App() {
           <Route path="library" element={<LibraryPage />} />
           <Route path="department" element={<DepartmentAnalyticsPage />} />
           <Route path="areas" element={<AreaAnalyticsPage />} />
+          <Route path="admin/system" element={<SystemHealthPage />} />
           <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />

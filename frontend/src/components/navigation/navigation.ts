@@ -81,6 +81,8 @@ const navigationSections: readonly NavigationSection[] = [
       // Categories and committees only; cases stay with their committees.
       { label: 'Grievance committees', to: '/admin/grievances' },
       { label: 'Mentoring', to: '/admin/mentoring' },
+      // Each part's status, the schema version, and optional features; the backend checks SYSTEM_HEALTH_VIEW.
+      { label: 'System health', to: '/admin/system' },
       // Read-only record of sensitive changes; the backend checks AUDIT_LOG_VIEW.
       { label: 'Audit log', to: '/admin/audit' },
       { label: 'Reports', to: '/reports' },
