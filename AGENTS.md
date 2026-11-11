@@ -444,6 +444,10 @@
 
 - Projects (`projects` module, `docs/projects.md`) are one team model: a student starts and leads a project; other students ask to join once while live, and only the lead accepts, under the project row lock with a locking read of active members, never past the limit (keep `ProjectCapacityMySqlIT`). The lead invites active faculty as mentors, who answer once. Places and mentorships keep their history; projects are closed or archived, never deleted. People are shown by login ID only, and join messages reach the lead only.
 
+## Innovation
+
+- Ideas (`innovation` module, `docs/innovation.md`) are submitted by students and faculty, scored once per reviewer (1 to 5, replaced while open) by faculty who did not submit them, and decided by the campus office (`INNOVATION_MANAGE`), forward only, under the idea row lock (keep `InnovationMySqlIT`). Submitters see comments only once decided, without reviewer names or scores. Ideas are withdrawn, never deleted.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.

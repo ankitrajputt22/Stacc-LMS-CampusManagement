@@ -25,6 +25,7 @@
 - **0.12.5:** classrooms and equipment on the facilities engine, with weekly class hours closed to bookings.
 - **0.12.9:** student portfolios with live records and items verified by a named faculty member.
 - **0.12.10:** student projects with join requests, member limits, and faculty mentors.
+- **0.12.11:** innovation ideas with faculty reviews and the campus office's decisions.
 
 ## v1.0.0 (2026-11-11)
 

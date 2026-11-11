@@ -125,6 +125,8 @@ import com.stacc.backend.engagement.tournaments.CampusTournamentRepository;
 import com.stacc.backend.grievance.GrievanceCaseRepository;
 import com.stacc.backend.grievance.GrievanceCategoryRepository;
 import com.stacc.backend.grievance.GrievanceCommitteeMemberRepository;
+import com.stacc.backend.innovation.InnovationIdeaRepository;
+import com.stacc.backend.innovation.InnovationReviewRepository;
 import com.stacc.backend.mentoring.MentorAssignmentRepository;
 import com.stacc.backend.mentoring.MentoringActionItemRepository;
 import com.stacc.backend.mentoring.MentoringMeetingRepository;
@@ -288,6 +290,8 @@ import org.springframework.web.context.WebApplicationContext;
     ProjectRepository.class,
     ProjectMemberRepository.class,
     ProjectMentorRepository.class,
+    InnovationIdeaRepository.class,
+    InnovationReviewRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,
