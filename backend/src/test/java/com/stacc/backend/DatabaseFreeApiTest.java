@@ -125,6 +125,12 @@ import com.stacc.backend.engagement.tournaments.CampusTournamentRepository;
 import com.stacc.backend.grievance.GrievanceCaseRepository;
 import com.stacc.backend.grievance.GrievanceCategoryRepository;
 import com.stacc.backend.grievance.GrievanceCommitteeMemberRepository;
+import com.stacc.backend.hackathon.HackathonJudgeRepository;
+import com.stacc.backend.hackathon.HackathonRepository;
+import com.stacc.backend.hackathon.HackathonScoreRepository;
+import com.stacc.backend.hackathon.HackathonSubmissionRepository;
+import com.stacc.backend.hackathon.HackathonTeamMemberRepository;
+import com.stacc.backend.hackathon.HackathonTeamRepository;
 import com.stacc.backend.innovation.InnovationIdeaRepository;
 import com.stacc.backend.innovation.InnovationReviewRepository;
 import com.stacc.backend.mentoring.MentorAssignmentRepository;
@@ -292,6 +298,12 @@ import org.springframework.web.context.WebApplicationContext;
     ProjectMentorRepository.class,
     InnovationIdeaRepository.class,
     InnovationReviewRepository.class,
+    HackathonRepository.class,
+    HackathonTeamRepository.class,
+    HackathonTeamMemberRepository.class,
+    HackathonSubmissionRepository.class,
+    HackathonJudgeRepository.class,
+    HackathonScoreRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

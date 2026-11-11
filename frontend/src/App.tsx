@@ -40,6 +40,7 @@ import { MentoringPage } from './pages/MentoringPage'
 import { PortfolioPage } from './pages/PortfolioPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { InnovationPage } from './pages/InnovationPage'
+import { HackathonsPage } from './pages/HackathonsPage'
 import { AdminMentoringPage } from './pages/AdminMentoringPage'
 import { AdminGrievancesPage } from './pages/AdminGrievancesPage'
 import { CertificateDeskPage } from './pages/CertificateDeskPage'
@@ -210,6 +211,7 @@ function App() {
           <Route path="portfolio" element={<PortfolioPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="innovation" element={<InnovationPage />} />
+          <Route path="hackathons" element={<HackathonsPage />} />
           <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />

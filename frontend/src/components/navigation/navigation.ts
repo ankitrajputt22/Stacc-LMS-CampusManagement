@@ -116,6 +116,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Projects', to: '/projects', roles: ['STUDENT', 'FACULTY'], icon: 'student' },
       // Ideas: submitting, faculty reviews, and the campus office's decisions, one part per role held.
       { label: 'Innovation', to: '/innovation', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'student' },
+      // Teams and submissions for students, judging for faculty, running them for admins.
+      { label: 'Hackathons', to: '/hackathons', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'student' },
       { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
       { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },

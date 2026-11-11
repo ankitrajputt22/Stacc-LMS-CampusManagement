@@ -110,6 +110,9 @@ A permission is added by a new migration only when the real feature it protects 
 | `INNOVATION_SUBMIT` | `STUDENT`, `FACULTY` | Submitting, following, and withdrawing one's own ideas. Added by `V123`. |
 | `INNOVATION_REVIEW` | `FACULTY` | Scoring and commenting on open ideas other than one's own. Added by `V123`. |
 | `INNOVATION_MANAGE` | `ADMIN` | Reading every idea with its reviews and deciding ideas. Added by `V123`. |
+| `HACKATHON_PARTICIPATE` | `STUDENT` | Forming and joining hackathon teams and handing in their work. Added by `V124`. |
+| `HACKATHON_JUDGE` | `FACULTY` | Scoring the submissions of hackathons one is named to judge. Added by `V124`. |
+| `HACKATHON_MANAGE` | `ADMIN` | Running hackathons: judges, publishing, releasing results, and archiving. Added by `V124`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |

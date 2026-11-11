@@ -448,6 +448,10 @@
 
 - Ideas (`innovation` module, `docs/innovation.md`) are submitted by students and faculty, scored once per reviewer (1 to 5, replaced while open) by faculty who did not submit them, and decided by the campus office (`INNOVATION_MANAGE`), forward only, under the idea row lock (keep `InnovationMySqlIT`). Submitters see comments only once decided, without reviewer names or scores. Ideas are withdrawn, never deleted.
 
+## Hackathons
+
+- Hackathons (`hackathon` module, `docs/hackathons.md`): teams form and hand in one submission each while a published hackathon has not ended, decided by the server's clock; one live team place per student and hackathon, and joining locks the team row and counts members with a locking read (keep `HackathonMySqlIT`). Named faculty judges score 0 to 100 after the end until results are released. Never show participants scores before the release; totals and places are worked out on read, never stored.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.
