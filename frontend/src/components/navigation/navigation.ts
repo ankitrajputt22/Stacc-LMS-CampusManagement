@@ -110,6 +110,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Grievances', to: '/grievances', roles: ['STUDENT', 'FACULTY', 'ADMIN'], icon: 'support' },
       // Mentors and their students; the backend opens only one's own pairings.
       { label: 'Mentoring', to: '/mentoring', roles: ['STUDENT', 'FACULTY'], icon: 'student' },
+      // A student's portfolio; faculty see the items they were asked to verify.
+      { label: 'Portfolio', to: '/portfolio', roles: ['STUDENT', 'FACULTY'], icon: 'student' },
       { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
       { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },

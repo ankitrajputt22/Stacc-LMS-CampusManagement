@@ -8,7 +8,7 @@ ALTER TABLE campus_facilities
 CREATE TABLE campus_facility_class_hours (
     id BIGINT NOT NULL AUTO_INCREMENT,
     facility_id BIGINT NOT NULL,
-    day_of_week TINYINT NOT NULL,
+    day_of_week INT NOT NULL,
     starts_at TIME NOT NULL,
     ends_at TIME NOT NULL,
     label VARCHAR(100) NOT NULL,

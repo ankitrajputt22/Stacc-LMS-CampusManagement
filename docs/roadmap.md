@@ -209,7 +209,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.12.6 | Career profile | Skills, links, and resumes, with the resume kept as it was at each application. Done: headline, skills, links, and never-changed resume versions. |
 | ★ 0.12.7 | Opportunities | One engine for placements, internships, research openings, and scholarships: eligibility, applications, and stages. Done: one engine with eligibility reasons, stages, rounds, and applications with consent. |
 | ★ 0.12.8 | Placement | Companies, rounds on the calendar, offers, the college's placement policy, and applicant export with consent. Done: companies, scheduled rounds, offers, the one-placement policy, and the consent-based CSV export. |
-| 0.12.9 | Portfolio | Verified items read live from their records, self-entered items, and verification. |
+| 0.12.9 | Portfolio | Verified items read live from their records, self-entered items, and verification. Done (`V121`): live records from documents and campus participation, and items verified once by a named faculty member. |
 | 0.12.10 | Projects | One team model for projects with join requests and faculty mentors. |
 | 0.12.11 | Innovation | Idea submission and review. |
 | 0.12.12 | Hackathons | Events with teams, submissions, and judging with hidden scores until results. |
@@ -295,7 +295,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.9 Shared engines | Done (0.9.1 to 0.9.8) |
 | v0.10 Hostel | Done (0.10.1 to 0.10.12) |
 | v0.11 Campus engagement | Done (0.11.1 to 0.11.10) |
-| v0.12 Student services and career | 0.12.1 to 0.12.8 done; 0.12.9 to 0.12.13 come after the core phases |
+| v0.12 Student services and career | 0.12.1 to 0.12.9 done; 0.12.10 to 0.12.13 come after the core phases |
 | v0.16 Analytics and operations | Core done (0.16.1, 0.16.2, 0.16.5, 0.16.6, 0.16.8); the rest come after the core phases |
 | v1.0 Stable release | Done: released as `v1.0.0` |
 | v0.13 – v0.15 AI | Later, after the core phases |
