@@ -26,6 +26,7 @@
 - **0.12.9:** student portfolios with live records and items verified by a named faculty member.
 - **0.12.10:** student projects with join requests, member limits, and faculty mentors.
 - **0.12.11:** innovation ideas with faculty reviews and the campus office's decisions.
+- **0.12.12:** hackathons with teams, submissions, judges, and results hidden until released.
 
 ## v1.0.0 (2026-11-11)
 

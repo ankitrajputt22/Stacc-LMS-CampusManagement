@@ -57,6 +57,12 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/grievances/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/categories/{categoryId}/committee` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/committee/{memberId}/end` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/hackathons` | GET | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/judges` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/release` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
 | `/api/v1/admin/innovation/ideas` | GET | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
 | `/api/v1/admin/innovation/ideas/{ideaId}/decision` | POST | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
 | `/api/v1/admin/mentoring/pairings` | GET | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
@@ -239,6 +245,13 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/grievances/me/{caseId}` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
 | `/api/v1/grievances/me/{caseId}/accept` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
 | `/api/v1/grievances/me/{caseId}/appeal` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/hackathons` | GET | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/judging` | GET | `hasRole('FACULTY') and hasAuthority('HACKATHON_JUDGE')` | HackathonController |
+| `/api/v1/hackathons/submissions/{submissionId}/score` | POST | `hasRole('FACULTY') and hasAuthority('HACKATHON_JUDGE')` | HackathonController |
+| `/api/v1/hackathons/teams/{teamId}/join` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/leave` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/submission` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/teams` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
 | `/api/v1/helpdesk/admin/articles` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/articles/{articleId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |

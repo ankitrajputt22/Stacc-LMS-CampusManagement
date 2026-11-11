@@ -77,6 +77,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Portfolio](portfolio.md)
 - [Projects](projects.md)
 - [Innovation](innovation.md)
+- [Hackathons](hackathons.md)
 - [Analytics and exports](analytics.md)
 - [Security review](security-review.md)
 - [Authorization matrix](authorization-matrix.md)
