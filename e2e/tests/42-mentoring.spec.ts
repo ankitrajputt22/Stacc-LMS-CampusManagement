@@ -32,7 +32,7 @@ test('a mentor records a meeting and the student sees only the shared part and t
   const student = await browser.newPage()
   await signIn(student, 'erp', 'student2')
   await student.goto('/todo')
-  await expect(student.getByText(`Mentoring: ${task}`)).toBeVisible()
+  await expect(student.getByRole('link', { name: `Mentoring: ${task}` })).toBeVisible()
   await student.goto('/mentoring')
   const mine = student.getByRole('region', { name: 'Your mentor faculty2' })
   await expect(mine.getByText('Agreed to plan revision weekly.')).toBeVisible()
