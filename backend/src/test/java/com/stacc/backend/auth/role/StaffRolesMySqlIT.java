@@ -26,7 +26,7 @@ class StaffRolesMySqlIT extends MySqlIntegrationTest {
         assertThat(stored).containsExactlyInAnyOrderElementsOf(Arrays.stream(RoleName.values()).map(Enum::name).toList());
 
         Map<String, List<String>> granted = Map.of(
-                "HOD", List.of("APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE"),
+                "HOD", List.of("APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE", "DEPARTMENT_ANALYTICS_VIEW"),
                 "WARDEN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "HOSTEL_WARDEN_VIEW", "APPROVAL_TASK_VIEW", "APPROVAL_TASK_DECIDE", "ID_CARD_VERIFY", "HOSTEL_ROLL_CALL", "HOSTEL_NOTICE_MANAGE", "HOSTEL_MESS_MANAGE"),
                 "MAINTENANCE", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW"),
                 "LIBRARIAN", List.of("HELPDESK_TEAM_WORK", "NOTIFICATION_VIEW", "ID_CARD_VERIFY", "LIBRARY_MANAGE"),

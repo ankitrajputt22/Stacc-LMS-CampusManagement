@@ -53,8 +53,10 @@ public class AnalyticsController {
 
     private final AnalyticsService analytics;
     private final ReportExportService exports;
+    private final DepartmentAnalyticsService departments;
 
-    public AnalyticsController(AnalyticsService analytics, ReportExportService exports) {
+    public AnalyticsController(AnalyticsService analytics, ReportExportService exports, DepartmentAnalyticsService departments) {
+        this.departments = departments;
         this.analytics = analytics;
         this.exports = exports;
     }
@@ -93,6 +95,15 @@ public class AnalyticsController {
             throw new ApiException(HttpStatus.FORBIDDEN, "You cannot export this report.");
         }
         return exports.request(AuthenticatedAccount.idFrom(token), request.kind(), request.parameter());
+    }
+
+    @GetMapping("/api/v1/analytics/department")
+    @PreAuthorize("hasRole('HOD') and hasAuthority('DEPARTMENT_ANALYTICS_VIEW')")
+    @Operation(summary = "My department's analytics", description = "For each department the account heads now: current-session students by program and, "
+            + "per offering, enrolled students, finalized attendance (for groups of at least five), and published results. No student is named.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public List<DepartmentAnalyticsService.DepartmentView> department(@AuthenticationPrincipal Jwt token) {
+        return departments.forHead(AuthenticatedAccount.idFrom(token));
     }
 
     @GetMapping("/api/v1/exports")

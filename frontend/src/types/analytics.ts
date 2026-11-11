@@ -56,3 +56,26 @@ export type ReportExport = {
   createdAt: string
   expiresAt: string
 }
+
+// --- Department analytics (DepartmentAnalyticsService): counts for the current session; attendance only for groups of
+// at least five (null otherwise). No student is named.
+
+export type DepartmentProgramLine = { code: string; name: string; students: number }
+export type DepartmentOfferingLine = {
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  programCode: string
+  semesterNumber: number
+  enrolled: number
+  attendancePercent: number | null
+  publishedResults: number
+}
+export type DepartmentAnalytics = {
+  departmentId: number
+  code: string
+  name: string
+  programs: DepartmentProgramLine[]
+  offerings: DepartmentOfferingLine[]
+  note: string
+}

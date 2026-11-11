@@ -14,6 +14,7 @@ import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
 import com.stacc.backend.analytics.AnalyticsQueries;
+import com.stacc.backend.analytics.DepartmentAnalyticsQueries;
 import com.stacc.backend.report.export.ReportExportRepository;
 import com.stacc.backend.documents.VaultDocumentRepository;
 import com.stacc.backend.documents.CertificateRequestRepository;
@@ -280,6 +281,7 @@ import org.springframework.web.context.WebApplicationContext;
     CareerOfferRepository.class,
     CareerPolicyRepository.class,
     AnalyticsQueries.class,
+    DepartmentAnalyticsQueries.class,
     ReportExportRepository.class,
     LmsAnnouncementAttachmentRepository.class,
     HostelRoomChangeRepository.class,

@@ -78,6 +78,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/users/{accountId}/status` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/student-profile` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/temporary-password` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
+| `/api/v1/analytics/department` | GET | `hasRole('HOD') and hasAuthority('DEPARTMENT_ANALYTICS_VIEW')` | AnalyticsController |
 | `/api/v1/analytics/faculty/courses/{lmsCourseId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('COURSE_ANALYTICS_VIEW')` | AnalyticsController |
 | `/api/v1/analytics/student/me` | GET | `hasRole('STUDENT') and hasAuthority('ANALYTICS_VIEW_OWN')` | AnalyticsController |
 | `/api/v1/approvals/admin/workflows/{workflowId}` | GET | `hasRole('ADMIN') and hasAuthority('APPROVAL_WORKFLOW_MANAGE')` | ApprovalWorkflowAdminController |
