@@ -39,6 +39,10 @@ export const queryKeys = {
     tasks: () => ['hostel', 'approval-tasks'] as const,
     movements: () => ['hostel', 'gate-movements'] as const,
   },
+  projects: {
+    all: ['projects'] as const,
+    list: () => ['projects', 'list'] as const,
+  },
   portfolio: {
     all: ['portfolio'] as const,
     mine: () => ['portfolio', 'mine'] as const,

@@ -24,6 +24,7 @@
 - **0.12.4:** mentoring pairs, meetings with shared and private notes, and action items on the To-Do list.
 - **0.12.5:** classrooms and equipment on the facilities engine, with weekly class hours closed to bookings.
 - **0.12.9:** student portfolios with live records and items verified by a named faculty member.
+- **0.12.10:** student projects with join requests, member limits, and faculty mentors.
 
 ## v1.0.0 (2026-11-11)
 

@@ -129,6 +129,9 @@ import com.stacc.backend.mentoring.MentorAssignmentRepository;
 import com.stacc.backend.mentoring.MentoringActionItemRepository;
 import com.stacc.backend.mentoring.MentoringMeetingRepository;
 import com.stacc.backend.portfolio.PortfolioItemRepository;
+import com.stacc.backend.projects.ProjectMemberRepository;
+import com.stacc.backend.projects.ProjectMentorRepository;
+import com.stacc.backend.projects.ProjectRepository;
 import com.stacc.backend.engagement.groups.GroupAnnouncementRepository;
 import com.stacc.backend.engagement.groups.GroupSessionRepository;
 import com.stacc.backend.hostel.visitor.HostelVisitRepository;
@@ -282,6 +285,9 @@ import org.springframework.web.context.WebApplicationContext;
     MentoringActionItemRepository.class,
     CampusFacilityClassHourRepository.class,
     PortfolioItemRepository.class,
+    ProjectRepository.class,
+    ProjectMemberRepository.class,
+    ProjectMentorRepository.class,
     GroupSessionRepository.class,
     GroupAnnouncementRepository.class,
     HostelVisitRepository.class,

@@ -503,6 +503,14 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/portfolio/me` | GET | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
 | `/api/v1/portfolio/verifications` | GET | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
 | `/api/v1/portfolio/verifications/{itemId}/decision` | POST | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
+| `/api/v1/projects/members/{memberId}/decision` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/members/{memberId}/leave` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/mentors/{mentorId}/answer` | POST | `hasRole('FACULTY') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/mentors/{mentorId}/step-down` | POST | `hasRole('FACULTY') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}` | PUT | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/join` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/mentors` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/status` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
 | `/api/v1/public/documents/verify/{code}` | GET | `public` | DocumentVaultController |
 | `/api/v1/reports/admin/enrollments` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
 | `/api/v1/reports/admin/enrollments/export.csv` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
