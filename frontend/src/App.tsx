@@ -39,6 +39,7 @@ import { GrievancesPage } from './pages/GrievancesPage'
 import { MentoringPage } from './pages/MentoringPage'
 import { PortfolioPage } from './pages/PortfolioPage'
 import { ProjectsPage } from './pages/ProjectsPage'
+import { InnovationPage } from './pages/InnovationPage'
 import { AdminMentoringPage } from './pages/AdminMentoringPage'
 import { AdminGrievancesPage } from './pages/AdminGrievancesPage'
 import { CertificateDeskPage } from './pages/CertificateDeskPage'
@@ -208,6 +209,7 @@ function App() {
           <Route path="mentoring" element={<MentoringPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />
           <Route path="projects" element={<ProjectsPage />} />
+          <Route path="innovation" element={<InnovationPage />} />
           <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />

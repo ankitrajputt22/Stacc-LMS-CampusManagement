@@ -57,6 +57,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/grievances/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/categories/{categoryId}/committee` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/committee/{memberId}/end` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/innovation/ideas` | GET | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
+| `/api/v1/admin/innovation/ideas/{ideaId}/decision` | POST | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
 | `/api/v1/admin/mentoring/pairings` | GET | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/mentoring/pairings` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/mentoring/pairings/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
@@ -322,6 +324,11 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/warden/roll-calls/{rollCallId}/finalize` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/hostel/warden/roll-calls/{rollCallId}/marks` | PUT | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/id-cards/check` | POST | `hasAnyRole('ADMIN', 'SECURITY', 'LIBRARIAN', 'WARDEN') and hasAuthority('ID_CARD_VERIFY')` | IdCardController |
+| `/api/v1/innovation/ideas` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/ideas/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/ideas/{ideaId}/review` | POST | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
+| `/api/v1/innovation/ideas/{ideaId}/withdraw` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/reviews` | GET | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
