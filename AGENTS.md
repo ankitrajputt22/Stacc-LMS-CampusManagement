@@ -429,6 +429,11 @@
 - Admins (`GRIEVANCE_MANAGE`) manage categories (code fixed, made inactive, never deleted) and committees (active `FACULTY` or `ADMIN` accounts, audited, ended not deleted) and never read cases.
 - Cases move forward only under the case row lock: submitted, under review, resolved, then accepted (closed) or appealed once within 14 days, and the appeal decision closes them. Overdue is worked out on read from the respond-by times, never stored. Never delete or reopen a case, and do not add notifications, attachments, or messages without their own phase.
 
+## Mentoring
+
+- Mentoring (`mentoring` module, `docs/mentoring.md`): admins (`MENTORING_MANAGE`) pair active `FACULTY` mentors with active `STUDENT` accounts, one active pair each (ended, never deleted), and never read meetings. A pairing opens only for its mentor and student (same 404 for anyone else, no admin pass).
+- Only the mentor of an active pairing records meetings and action items; private notes are sent to the mentor only. Open action items reach their owner's To-Do list live through `MentoringService.openItems`, never copied; either of the pair completes an item once, and nothing is deleted.
+
 ## Search
 
 - Global search (`com.stacc.backend.search`) composes read-only providers; it owns no data and no access rule. Each provider reuses its domain's access services (`LmsStudentCourseQueryService`, `LmsFacultyCourseQueryService`, `LmsFacultyManagedCourseQueryService`, the calendar scopes, `HelpdeskAccessService`) and requires the same role and permission as the domain's own routes. A text match never grants access. See `docs/search.md`.

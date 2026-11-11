@@ -21,6 +21,7 @@ import com.stacc.backend.approval.ApprovalQueryService;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.api.LmsFacultyManagedCourseQueryService;
 import com.stacc.backend.lms.api.LmsStudentCourseQueryService;
+import com.stacc.backend.mentoring.MentoringService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.AuthorityUtils;
 
@@ -31,7 +32,7 @@ class TodoServiceTest {
     private final TodoDismissalRepository dismissals = mock(TodoDismissalRepository.class);
     private final ApprovalQueryService approvals = mock(ApprovalQueryService.class);
     private final TodoService service = new TodoService(studentCourses, facultyCourses, mock(TodoAssignmentQueries.class),
-            mock(AttendanceSessionRepository.class), approvals, dismissals,
+            mock(AttendanceSessionRepository.class), approvals, dismissals, mock(MentoringService.class),
             Clock.fixed(Instant.parse("2026-11-10T10:00:00Z"), ZoneOffset.UTC));
 
     @Test

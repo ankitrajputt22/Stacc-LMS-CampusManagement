@@ -10,6 +10,7 @@
 | Work to grade | `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_GRADE` | Latest attempts without a grade, per published assignment of the open courses taught. |
 | Attendance to finish | `FACULTY`, `FACULTY_COURSE_VIEW`, and `ATTENDANCE_MANAGE` | `OPEN` attendance sessions of the offerings taught. |
 | Approvals | `APPROVAL_TASK_VIEW` | The approval engine's own task list. |
+| Mentoring action items | `STUDENT` or `FACULTY` with `MENTORING_USE` | Open action items the account owns in its active mentoring pairings (`MentoringService.openItems`, see `mentoring.md`). |
 
 - **Dismissals:** the only thing stored is a dismissal (`todo_dismissals`: account and item key). A grading key carries the waiting count, so new work shows up again.
 - **Pages:** the list is at `/todo` (To-Do in the Common links), and its first five items are on the dashboard.

@@ -73,6 +73,7 @@ Start with the [roadmap](roadmap.md): the plan to v1.0, the decisions behind it,
 - [Campus engagement](campus-engagement.md)
 - [Digital ID, documents, and career](student-services-and-career.md)
 - [Grievances](grievances.md)
+- [Mentoring](mentoring.md)
 - [Analytics and exports](analytics.md)
 - [Security review](security-review.md)
 - [Authorization matrix](authorization-matrix.md)

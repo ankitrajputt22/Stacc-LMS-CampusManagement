@@ -57,6 +57,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/grievances/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/categories/{categoryId}/committee` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
 | `/api/v1/admin/grievances/committee/{memberId}/end` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/mentoring/pairings` | GET | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/mentoring/pairings` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/mentoring/pairings/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/users/import` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}` | GET | `hasRole('ADMIN') and hasAuthority('USER_VIEW')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
@@ -481,6 +484,12 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/me/profile/photo` | GET | `hasAuthority('PERSON_PROFILE_VIEW_OWN')` | MyPersonProfileController |
 | `/api/v1/me/sessions/{sessionId}/end` | POST | `signed in` | MySessionsController |
 | `/api/v1/me/todo/dismissals` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('TODO_VIEW')` | TodoController |
+| `/api/v1/mentoring/action-items/{itemId}/complete` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/meetings/{meetingId}` | PUT | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/meetings/{meetingId}/action-items` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/pairings/{assignmentId}` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/pairings/{assignmentId}/meetings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
 | `/api/v1/notifications/read-all` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/unread-count` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/{notificationRecipientId}/read` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
