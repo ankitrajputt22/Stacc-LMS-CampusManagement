@@ -71,6 +71,7 @@ export type AiKnowledgeStatus = {
 export type AiQuestionBankDraft = {
   added: number
   droppedForKeyMismatch: number
+  droppedAsRepeats: number
   leftOut: number
   insufficientContext: boolean
   questionIds: number[]

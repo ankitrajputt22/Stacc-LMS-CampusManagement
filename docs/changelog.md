@@ -38,6 +38,7 @@
 - **0.13.8:** an AI retrieval evaluation with expected sources, and leakage tests, run with the fake model.
 - **0.13.9:** Ask My Course: three search modes, a module scope, and source cards that link to their pages.
 - **0.14.1:** AI drafts go into the question bank as Needs review with their sources, after a self-check of every choice and true/false key.
+- **0.14.2:** quality checks on AI drafts: possible duplicates, matches in final papers, out-of-syllabus flags, and difficulty and Bloom suggestions.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

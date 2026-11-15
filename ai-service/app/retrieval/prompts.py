@@ -39,7 +39,8 @@ TASKS["bank_questions"] = (
     "Difficulty: {difficulty}. Use only these question types: {questionTypes}. SINGLE_CHOICE has 2 to 6 options "
     "with exactly one correct; MULTIPLE_CHOICE has 2 to 6 options with one or more correct; TRUE_FALSE gives "
     "trueFalseAnswer; SHORT_ANSWER gives up to 5 short acceptedAnswers; DESCRIPTIVE gives answerGuidance for the "
-    "marker. Add a short explanation of the answer. Suggest marks between 1 and 100. Each question must be "
+    "marker. Add a short explanation of the answer. Suggest marks between 1 and 100, a difficultySuggestion (EASY, "
+    "MEDIUM, or HARD) and a bloomSuggestion (REMEMBER, UNDERSTAND, APPLY, ANALYZE, EVALUATE, or CREATE). Each question must be "
     "answerable from the sources and list the sources it is based on.")
 TASKS["answer_check"] = (
     "Task: answer the question below using only the sources. For a question with numbered options, list the numbers "

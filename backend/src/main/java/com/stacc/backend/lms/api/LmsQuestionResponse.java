@@ -43,7 +43,18 @@ public record LmsQuestionResponse(
         @Schema(description = "Drafted by AI (v0.14.1); it still needs a teacher's review like any new question.")
         boolean aiGenerated,
         @Schema(description = "For an AI draft, the course sources it was drafted from; otherwise empty.")
-        List<Source> sources) {
+        List<Source> sources,
+        @Schema(description = "For an AI draft, its quality checks when it was drafted (v0.14.2); otherwise null.")
+        AiChecks aiChecks) {
+
+    /** Flags and suggestions for the reviewer; they decide nothing. */
+    public record AiChecks(
+            @Schema(description = "A bank question this one may duplicate, or null.") Long duplicateOfQuestionId,
+            @Schema(description = "The possible duplicate is in a final exam paper.") boolean inPreviousPaper,
+            @Schema(description = "The question shares little with the course content.") boolean outOfSyllabus,
+            @Schema(description = "The AI's suggestion only; the question's own difficulty decides.") QuestionDifficulty suggestedDifficulty,
+            @Schema(description = "The AI's suggestion only; the question's own Bloom level decides.") BloomLevel suggestedBloomLevel) {
+    }
 
     public record Option(String text, boolean correct) {
     }
@@ -64,6 +75,9 @@ public record LmsQuestionResponse(
                 question.getUpdatedAt(), question.isAiGenerated(), question.getSources().stream()
                         .map(source -> new Source(source.getSourceType(), source.getSourceId(), source.getTitle(),
                                 source.getFileName(), source.getPageNumber(), source.getSlideNumber(), source.getPageId()))
-                        .toList());
+                        .toList(),
+                question.isAiGenerated() ? new AiChecks(question.getAiChecks().getDuplicateOfQuestionId(),
+                        question.getAiChecks().isInPreviousPaper(), question.getAiChecks().isOutOfSyllabus(),
+                        question.getAiChecks().getSuggestedDifficulty(), question.getAiChecks().getSuggestedBloomLevel()) : null);
     }
 }

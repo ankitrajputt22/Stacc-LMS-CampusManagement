@@ -19,6 +19,8 @@ import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.BankQuestion;
+import com.stacc.backend.lms.ai.AiServiceMessages.ExistingQuestion;
+import com.stacc.backend.lms.ai.AiServiceMessages.QualityChecks;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
@@ -26,9 +28,12 @@ import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
 import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import com.stacc.backend.lms.question.LmsQuestion;
+import com.stacc.backend.lms.outcome.BloomLevel;
+import com.stacc.backend.lms.question.LmsQuestionAiChecks;
 import com.stacc.backend.lms.question.LmsQuestionBankService;
 import com.stacc.backend.lms.question.LmsQuestionContent;
 import com.stacc.backend.lms.question.LmsQuestionSource;
+import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +50,7 @@ public class AiQuestionBankDraftService {
     static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
     static final String TOPIC_UNAVAILABLE = "Topic not found or unavailable.";
     private static final BigDecimal MAX_MARKS = new BigDecimal("100");
+    static final int MAX_EXISTING = 500;
 
     private final LmsFacultyAccessService facultyAccess;
     private final AiKnowledgeSources sources;
@@ -92,20 +98,24 @@ public class AiQuestionBankDraftService {
                 ? List.of(new IndexRef(AiCourseKeys.forTeacherDocuments(lmsCourseId), teacher.fingerprint(), teacher.allowedSources()))
                 : List.of();
         List<String> types = new LinkedHashSet<>(request.questionTypes()).stream().map(Enum::name).toList();
+        List<ExistingQuestion> existing = existing(lmsCourseId);
+        java.util.Set<Long> sent = new java.util.HashSet<>();
+        existing.forEach(question -> sent.add(question.id()));
         BankDraftResult result;
         try {
             result = client.questionBankDraft(AiCourseKeys.forLmsCourse(lmsCourseId), new BankDraftRequest(
                     knowledge.fingerprint(), request.questionCount(), types, request.difficulty().name(), request.topicId(),
-                    AiResults.text(request.additionalInstruction(), 500), knowledge.allowedSources(), additional));
+                    AiResults.text(request.additionalInstruction(), 500), knowledge.allowedSources(), additional, existing));
         } catch (AiServiceException exception) {
             throw AiErrors.of(exception, AiErrors.TEACHING_NOT_READY);
         }
         int dropped = result.droppedForKeyMismatch() == null ? 0 : Math.max(0, result.droppedForKeyMismatch());
+        int repeats = result.droppedAsRepeats() == null ? 0 : Math.max(0, result.droppedAsRepeats());
         List<LmsQuestionBankService.AiDraft> drafts = new ArrayList<>();
         int leftOut = 0;
         for (BankQuestion question : result.questions() == null ? List.<BankQuestion>of() : result.questions()) {
             LmsQuestionBankService.AiDraft draft = question == null || drafts.size() >= request.questionCount() ? null
-                    : toDraft(question, request, knowledge, withTeacher ? teacher : null);
+                    : toDraft(question, request, knowledge, withTeacher ? teacher : null, sent);
             if (draft == null) {
                 leftOut++;
             } else {
@@ -114,13 +124,41 @@ public class AiQuestionBankDraftService {
         }
         List<LmsQuestion> added = drafts.isEmpty() ? List.of() : bank.addAiDrafts(accountId, lmsCourseId, drafts);
         leftOut += drafts.size() - added.size();
-        return new AiQuestionBankDraftResponse(added.size(), dropped, leftOut, added.isEmpty() && dropped == 0,
+        return new AiQuestionBankDraftResponse(added.size(), dropped, repeats, leftOut, added.isEmpty() && dropped == 0 && repeats == 0,
                 added.stream().map(LmsQuestion::getId).toList());
+    }
+
+    /** The bank questions drafts are compared with (v0.14.2): the newest active ones, texts cut to the AI service's limit. */
+    private List<ExistingQuestion> existing(Long lmsCourseId) {
+        return bank.forQualityChecks(lmsCourseId, MAX_EXISTING).stream()
+                .map(question -> new ExistingQuestion(question.id(), question.text().length() > 2000
+                        ? question.text().substring(0, 2000) : question.text(), question.inFinalPaper()))
+                .toList();
+    }
+
+    /** The checks as the bank keeps them; a duplicate ID the request did not send is ignored. */
+    private static LmsQuestionAiChecks checks(QualityChecks checks, java.util.Set<Long> sent) {
+        if (checks == null) {
+            return LmsQuestionAiChecks.none();
+        }
+        Long duplicate = checks.duplicateOfQuestionId() != null && sent.contains(checks.duplicateOfQuestionId())
+                ? checks.duplicateOfQuestionId() : null;
+        return new LmsQuestionAiChecks(duplicate, Boolean.TRUE.equals(checks.inPreviousPaper()),
+                Boolean.TRUE.equals(checks.outOfSyllabus()), enumOrNull(QuestionDifficulty.class, checks.suggestedDifficulty()),
+                enumOrNull(BloomLevel.class, checks.suggestedBloomLevel()));
+    }
+
+    private static <E extends Enum<E>> E enumOrNull(Class<E> type, String value) {
+        try {
+            return value == null ? null : Enum.valueOf(type, value);
+        } catch (IllegalArgumentException unknown) {
+            return null;
+        }
     }
 
     /** The bank content of one drafted question, or null when its type, sources, or answers do not fit. */
     private static LmsQuestionBankService.AiDraft toDraft(BankQuestion question, AiQuestionBankDraftRequest request,
-            AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
+            AiCourseKnowledge knowledge, AiTeacherKnowledge teacher, java.util.Set<Long> sent) {
         QuestionType type;
         try {
             type = QuestionType.valueOf(question.questionType());
@@ -153,6 +191,6 @@ public class AiQuestionBankDraftService {
             questionSources.add(new LmsQuestionSource(questionSources.size() + 1, citation.sourceType(), citation.sourceId(),
                     citation.title(), citation.fileName(), citation.pageNumber(), citation.slideNumber(), citation.pageId()));
         }
-        return new LmsQuestionBankService.AiDraft(content, questionSources);
+        return new LmsQuestionBankService.AiDraft(content, questionSources, checks(question.checks(), sent));
     }
 }

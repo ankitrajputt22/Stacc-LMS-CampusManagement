@@ -289,10 +289,16 @@ class LearningService:
             usable=lambda out: bool(usable(out)), teacher_note=request.additionalInstruction)
         if result is None:
             return empty
-        questions, dropped = [], 0
+        scopes = self._scopes(course_key, request)
+        quality = _Quality(self._embeddings, self._settings, scopes, request.existingQuestions)
+        questions, dropped, repeats = [], 0, 0
         for question, citations in usable(result):
             if question.questionType.keyed and not self._key_confirmed(question, context):
                 dropped += 1
+                continue
+            checks = quality.check(question)
+            if checks is None:
+                repeats += 1
                 continue
             questions.append(schemas.BankQuestion(
                 questionType=question.questionType, text=question.text,
@@ -301,9 +307,10 @@ class LearningService:
                 trueFalseAnswer=question.trueFalseAnswer if question.questionType is schemas.BankType.TRUE_FALSE else None,
                 acceptedAnswers=question.acceptedAnswers if question.questionType is schemas.BankType.SHORT_ANSWER else [],
                 answerGuidance=question.answerGuidance if question.questionType is schemas.BankType.DESCRIPTIVE else None,
-                explanation=question.explanation or None, suggestedMarks=question.suggestedMarks, citations=citations))
-        return schemas.BankDraftResponse(questions=questions, droppedForKeyMismatch=dropped,
-                                         insufficientContext=not questions and dropped == 0)
+                explanation=question.explanation or None, suggestedMarks=question.suggestedMarks, citations=citations,
+                checks=checks))
+        return schemas.BankDraftResponse(questions=questions, droppedForKeyMismatch=dropped, droppedAsRepeats=repeats,
+                                         insufficientContext=not questions and dropped == 0 and repeats == 0)
 
     def _key_confirmed(self, question: schemas.BankModelQuestion, context: _Context) -> bool:
         """Answers the question again from its own cited sources, without the key, and compares."""
@@ -326,4 +333,74 @@ class LearningService:
             return check.trueFalseAnswer is not None and check.trueFalseAnswer == question.trueFalseAnswer
         key = {number for number, option in enumerate(question.options, start=1) if option.correct}
         return set(check.chosenOptions) == key
+
+
+def _content_words(text: str) -> set[str]:
+    return {word for word in keyword.WORD.findall(text.lower()) if word not in keyword.STOP_WORDS}
+
+
+def _word_overlap(first: set[str], second: set[str]) -> float:
+    return len(first & second) / len(first | second) if first and second else 0.0
+
+
+class _Quality:
+    """The v0.14.2 checks for one batch of drafts: possible duplicates of bank questions (by meaning or wording), whether
+    the match is in a final exam paper, repeats within the batch (dropped), and how close each draft is to the allowed
+    course content."""
+
+    DUPLICATE_SIMILARITY = 0.92
+    DUPLICATE_WORD_OVERLAP = 0.8
+
+    def __init__(self, embeddings: EmbeddingProvider, settings: Settings, scopes: list[tuple[CourseIndex, np.ndarray]],
+                 existing: list[schemas.ExistingQuestion]) -> None:
+        self._embeddings = embeddings
+        self._settings = settings
+        course, allowed = scopes[0]
+        self._course_vectors = course.vectors[allowed] if allowed.any() else np.zeros((0, course.vectors.shape[1]))
+        self._course_words = [_content_words(chunk.text) for chunk, keep in zip(course.chunks, allowed, strict=True) if keep]
+        self._existing = existing
+        self._existing_words = [_content_words(question.text) for question in existing]
+        self._existing_vectors = self._embed([question.text for question in existing])
+        self._kept_vectors: list[np.ndarray] = []
+        self._kept_words: list[set[str]] = []
+
+    def _embed(self, texts: list[str]) -> np.ndarray:
+        if not texts:
+            return np.zeros((0, 0))
+        size = self._settings.embedding_batch_size
+        vectors = []
+        for start in range(0, len(texts), size):
+            vectors.extend(self._embeddings.embed(texts[start:start + size]))
+        return unit_vectors(vectors)
+
+    def _similar(self, vector: np.ndarray, words: set[str], vectors: np.ndarray, word_sets: list[set[str]]) -> int | None:
+        """The position of the closest match at or above the duplicate thresholds, or None."""
+        best, best_score = None, 0.0
+        for position, other in enumerate(word_sets):
+            meaning = float(vectors[position] @ vector) if len(vectors) else 0.0
+            wording = _word_overlap(words, other)
+            if meaning >= self.DUPLICATE_SIMILARITY or wording >= self.DUPLICATE_WORD_OVERLAP:
+                score = max(meaning, wording)
+                if score > best_score:
+                    best, best_score = position, score
+        return best
+
+    def check(self, question: schemas.BankModelQuestion) -> schemas.QualityChecks | None:
+        """The checks for one draft, or None when it repeats an earlier draft of the same batch."""
+        text = question.text
+        vector = self._embed([text])[0]
+        words = _content_words(text)
+        if self._similar(vector, words, np.array(self._kept_vectors), self._kept_words) is not None:
+            return None
+        self._kept_vectors.append(vector)
+        self._kept_words.append(words)
+        match = self._similar(vector, words, self._existing_vectors, self._existing_words)
+        closeness = float((self._course_vectors @ vector).max()) if len(self._course_vectors) else 0.0
+        shares_words = any(words & chunk_words for chunk_words in self._course_words)
+        return schemas.QualityChecks(
+            duplicateOfQuestionId=None if match is None else self._existing[match].id,
+            inPreviousPaper=match is not None and self._existing[match].inFinalPaper,
+            outOfSyllabus=closeness < self._settings.min_relevance and not shares_words,
+            suggestedDifficulty=question.difficultySuggestion.value if question.difficultySuggestion else None,
+            suggestedBloomLevel=question.bloomSuggestion.value if question.bloomSuggestion else None)
 

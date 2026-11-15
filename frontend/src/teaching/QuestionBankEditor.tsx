@@ -90,7 +90,18 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
         {question.practiceAllowed && <Badge tone="info">OK for practice</Badge>}
         {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
         {question.aiGenerated && <Badge tone="info">AI draft</Badge>}
+        {question.aiChecks?.duplicateOfQuestionId != null && (
+          <Badge tone="warning">{question.aiChecks.inPreviousPaper ? 'Like a question in a final paper' : 'Possible duplicate'}</Badge>
+        )}
+        {question.aiChecks?.outOfSyllabus && <Badge tone="warning">May be outside the course content</Badge>}
       </div>
+      {question.aiChecks && (question.aiChecks.suggestedDifficulty || question.aiChecks.suggestedBloomLevel) && (
+        <p className="text-sm text-ink-muted">
+          AI suggestions only:
+          {question.aiChecks.suggestedDifficulty && ` difficulty ${difficultyLabel(question.aiChecks.suggestedDifficulty)}`}
+          {question.aiChecks.suggestedBloomLevel && ` · Bloom level ${bloomLabel(question.aiChecks.suggestedBloomLevel)}`}
+        </p>
+      )}
       <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={4} />
       <Answers question={question} />
       {question.explanation && (

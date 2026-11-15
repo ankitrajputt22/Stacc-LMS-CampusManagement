@@ -584,6 +584,14 @@ export type LmsQuestion = {
   aiGenerated?: boolean
   /** For an AI draft, the course sources it was drafted from. */
   sources?: LmsQuestionSource[]
+  /** For an AI draft, its quality checks when drafted (v0.14.2): flags and suggestions that decide nothing. */
+  aiChecks?: {
+    duplicateOfQuestionId: number | null
+    inPreviousPaper: boolean
+    outOfSyllabus: boolean
+    suggestedDifficulty: QuestionDifficulty | null
+    suggestedBloomLevel: BloomLevel | null
+  } | null
 }
 
 /** A course source an AI-drafted question was drafted from, as it was then (v0.14.1). */

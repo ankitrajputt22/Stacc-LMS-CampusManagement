@@ -79,7 +79,28 @@ public class LmsQuestionBankService {
     }
 
     /** One AI-drafted question to add, with the sources it was drafted from (v0.14.1). */
-    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
+    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
+
+        public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
+            this(content, sources, LmsQuestionAiChecks.none());
+        }
+    }
+
+    /** A bank question as the AI quality checks compare against it (v0.14.2). */
+    public record CheckedQuestion(long id, String text, boolean inFinalPaper) {
+    }
+
+    /**
+     * The course's active questions, newest first and at most {@code limit}, with whether a final exam paper of the course
+     * uses each, for the AI drafts' duplicate and previous-paper checks. Callers check faculty access first.
+     */
+    @Transactional(readOnly = true)
+    public List<CheckedQuestion> forQualityChecks(Long lmsCourseId, int limit) {
+        Set<Long> inFinalPapers = new HashSet<>(questions.findIdsInFinalPapers(lmsCourseId));
+        return questions.findActiveTexts(lmsCourseId, org.springframework.data.domain.PageRequest.of(0, limit)).stream()
+                .map(row -> new CheckedQuestion(((Number) row[0]).longValue(), (String) row[1],
+                        inFinalPapers.contains(((Number) row[0]).longValue())))
+                .toList();
     }
 
     /**
@@ -96,7 +117,7 @@ public class LmsQuestionBankService {
         for (AiDraft draft : drafts) {
             LmsQuestion question;
             try {
-                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, draft.content(), draft.sources());
+                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, draft.content(), draft.sources(), draft.checks());
             } catch (IllegalArgumentException | IllegalStateException refused) {
                 continue;
             }
