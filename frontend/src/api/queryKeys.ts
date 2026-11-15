@@ -124,6 +124,7 @@ export const queryKeys = {
     mine: () => ['analytics', 'me'] as const,
     course: (lmsCourseId: number) => ['analytics', 'course', lmsCourseId] as const,
     department: () => ['analytics', 'department'] as const,
+    areas: () => ['analytics', 'areas'] as const,
     exports: () => ['analytics', 'exports'] as const,
   },
   audit: {

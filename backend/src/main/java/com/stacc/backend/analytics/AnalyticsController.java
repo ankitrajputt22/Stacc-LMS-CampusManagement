@@ -8,6 +8,7 @@ import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
 import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.report.ReportActor;
 import com.stacc.backend.report.export.ReportExport;
 import com.stacc.backend.report.export.ReportExportService;
 import com.stacc.backend.report.export.ReportExportService.ExportView;
@@ -54,9 +55,12 @@ public class AnalyticsController {
     private final AnalyticsService analytics;
     private final ReportExportService exports;
     private final DepartmentAnalyticsService departments;
+    private final AreaAnalyticsService areas;
 
-    public AnalyticsController(AnalyticsService analytics, ReportExportService exports, DepartmentAnalyticsService departments) {
+    public AnalyticsController(AnalyticsService analytics, ReportExportService exports, DepartmentAnalyticsService departments,
+            AreaAnalyticsService areas) {
         this.departments = departments;
+        this.areas = areas;
         this.analytics = analytics;
         this.exports = exports;
     }
@@ -104,6 +108,14 @@ public class AnalyticsController {
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     public List<DepartmentAnalyticsService.DepartmentView> department(@AuthenticationPrincipal Jwt token) {
         return departments.forHead(AuthenticatedAccount.idFrom(token));
+    }
+
+    @GetMapping("/api/v1/analytics/areas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN', 'PLACEMENT_OFFICER') and hasAuthority('AREA_ANALYTICS_VIEW')")
+    @Operation(summary = "Area analytics", description = "Live counts for hostel, helpdesk, campus engagement, placement, library, and AI course indexes; "
+            + "each section only with that area's own permission, left out otherwise.", security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public AreaAnalyticsService.Areas areas(Authentication authentication) {
+        return areas.forActor(ReportActor.of(null, authentication.getAuthorities()));
     }
 
     @GetMapping("/api/v1/exports")

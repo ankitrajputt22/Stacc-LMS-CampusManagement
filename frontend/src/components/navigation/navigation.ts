@@ -122,6 +122,8 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Library', to: '/library', roles: ['STUDENT', 'FACULTY', 'LIBRARIAN'], icon: 'student' },
       // A head of department's figures for the departments they head now.
       { label: 'Department', to: '/department', roles: ['HOD'], icon: 'admin' },
+      // Counts for the campus areas each account runs; the backend includes only those areas.
+      { label: 'Area analytics', to: '/areas', roles: ['ADMIN', 'LIBRARIAN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Career', to: '/career', roles: ['STUDENT'], icon: 'student' },
       { label: 'Placement office', to: '/placement', roles: ['ADMIN', 'PLACEMENT_OFFICER'], icon: 'admin' },
       { label: 'Certificates', to: '/admin/certificates', roles: ['ADMIN'], icon: 'admin' },
