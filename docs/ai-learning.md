@@ -215,6 +215,13 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **When they are used.** An assessment draft adds the teacher index as an `additionalIndexes` entry, with the active documents as its allowed sources, only when its last refresh covers exactly the current documents. Until then the status shows "Changed — refresh to include", and the draft uses the course content alone.
 - **Routes.** `GET` and `POST /api/v1/lms/faculty/courses/{id}/ai/teacher-documents`, `PUT /api/v1/lms/faculty/ai/teacher-documents/{documentId}`, and `POST .../{documentId}/archive`, with the same rule as the other AI Tools (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, and the faculty access policy; the course comes from the stored document). No new permission.
 
+### Student notes (v0.13.6)
+
+- **What they are.** A student keeps private plain-text notes per course (`AiStudentNote` in `lms.ai.notes`, table `ai_student_notes`, by course and account IDs: a title and up to 10,000 characters) in My notes on the AI Study Assistant. At most 20 per course, checked under the student's account row lock (`AiStudentNoteMySqlIT`). The owner is always the account in the token; another student's note, staff included, answers the same 404. Routes: `GET`/`POST /api/v1/lms/courses/{id}/ai/notes` and `PUT`/`DELETE .../notes/{noteId}`, with `STUDENT`, `LMS_COURSE_VIEW`, `AI_STUDY_USE`, and the student access policy. No new permission.
+- **Course + my notes.** Ask has two modes. With `includeMyNotes`, the asking student's own notes index (`AiCourseKeys.forStudentNotes`) is searched with the course's, as an `additionalIndexes` entry whose allowed sources are their current notes. Summaries and practice use the course alone. A note is cited as `NOTE` and shown as "My note"; a citation of any other note is dropped.
+- **Built when needed.** `AiStudentNoteIndexer` rebuilds the notes index only when the notes' fingerprint (`stacc-ai-notes-v1`) differs from the one recorded in `ai_student_note_indexes` (fingerprint and time only, never text), outside any transaction.
+- **True deletion.** Deleting a note removes its row. The notes index is then rebuilt without it, or, when no note is left, removed with all its files (`DELETE /internal/v1/indexes/{key}` on the AI service) together with its metadata row. If the AI service cannot be reached at that moment, the deleted note is still never used (it is no longer an allowed source), and the index is rebuilt or removed the next time the student uses their notes.
+
 ### What a refresh does
 
 1. Faculty access is checked.

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -70,7 +71,37 @@ class AiControllerTest extends DatabaseFreeApiTest {
     private static List<MockHttpServletRequestBuilder> studentRoutes() {
         return List.of(json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}"),
                 post("/api/v1/lms/courses/7/ai/topics/3/summary"),
-                json(post("/api/v1/lms/courses/7/ai/practice"), "{\"questionCount\":3}"));
+                json(post("/api/v1/lms/courses/7/ai/practice"), "{\"questionCount\":3}"),
+                json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\",\"includeMyNotes\":true}"));
+    }
+
+    private static List<MockHttpServletRequestBuilder> noteRoutes() {
+        return List.of(get("/api/v1/lms/courses/7/ai/notes"),
+                json(post("/api/v1/lms/courses/7/ai/notes"), "{\"title\":\"Mine\",\"content\":\"Text\"}"),
+                json(put("/api/v1/lms/courses/7/ai/notes/4"), "{\"title\":\"Mine\",\"content\":\"Text\"}"),
+                delete("/api/v1/lms/courses/7/ai/notes/4"));
+    }
+
+    @Test
+    void noteRoutesAreTheStudentsOwnAnd404OtherwiseOrForAnotherCourse() throws Exception {
+        for (String denied : List.of(token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW"),
+                token(80, "ROLE_FACULTY", "LMS_COURSE_VIEW", "AI_STUDY_USE", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE"),
+                token(1, "ROLE_ADMIN", "LMS_COURSE_VIEW", "AI_STUDY_USE"))) {
+            for (MockHttpServletRequestBuilder route : noteRoutes()) {
+                assertThat(statusOf(route, denied)).isEqualTo(403);
+            }
+        }
+        // The note stand-in has no rows: a note that is missing or another student's is the same 404.
+        assertThat(statusOf(json(put("/api/v1/lms/courses/7/ai/notes/4"), "{\"title\":\"Mine\",\"content\":\"Text\"}"), STUDENT)).isEqualTo(404);
+        assertThat(statusOf(delete("/api/v1/lms/courses/7/ai/notes/4"), STUDENT)).isEqualTo(404);
+        assertThat(statusOf(get("/api/v1/lms/courses/7/ai/notes"), STUDENT)).isEqualTo(200);
+        for (String body : List.of("{\"title\":\"\",\"content\":\"Text\"}", "{\"title\":\"Mine\",\"content\":\"" + "x".repeat(10_001) + "\"}")) {
+            assertThat(statusOf(json(post("/api/v1/lms/courses/7/ai/notes"), body), STUDENT)).isEqualTo(400);
+        }
+        when(studentAccess.canAccessCourse(any(), any())).thenReturn(false);
+        for (MockHttpServletRequestBuilder route : noteRoutes()) {
+            assertThat(statusOf(route, STUDENT)).isEqualTo(404);
+        }
     }
 
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {

@@ -33,6 +33,7 @@
 - **0.13.3:** better AI extraction: token-measured chunks that follow headings and slides, PDF header and footer cleaning, and "Exclude from AI" on study materials.
 - **0.13.4:** hybrid AI search: keyword matching for exact course terms merged with semantic search.
 - **0.13.5:** teacher-only documents that only AI Tools read, in their own index.
+- **0.13.6:** private student notes with a "Course + my notes" mode, labelled citations, and true deletion.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

@@ -60,6 +60,15 @@ export type AiKnowledgeStatus = {
   teacherDocumentsCurrent: boolean
 }
 
+/** One of the signed-in student's private notes in a course (v0.13.6). */
+export type AiStudentNote = {
+  id: number
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
 /** A teacher-only document (v0.13.5): plain text only AI Tools read. Students never see it. */
 export type AiTeacherDocument = {
   id: number

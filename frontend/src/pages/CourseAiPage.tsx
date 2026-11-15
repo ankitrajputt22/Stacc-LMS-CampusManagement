@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AiMessage } from '../ai/AiMessage'
 import { AskPanel } from '../ai/AskPanel'
+import { MyNotesPanel } from '../ai/MyNotesPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
 import { PracticePanel } from '../ai/PracticePanel'
 import { TopicSummaryPanel } from '../ai/TopicSummaryPanel'
@@ -69,6 +70,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
         <AskPanel lmsCourseId={course.lmsCourseId} />
+        <MyNotesPanel lmsCourseId={course.lmsCourseId} />
         <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
       </div>

@@ -25,6 +25,11 @@ test('a faculty member uploads and publishes a course file, and a student finds 
   await expect(row).toContainText('Hidden: the file is a draft.')
   await row.getByRole('button', { name: `Publish ${FILE_TITLE}` }).click()
   await expect(row).toContainText('Visible')
+
+  // Keeping a file out of AI knowledge (v0.13.3) does not hide it from students.
+  await row.getByRole('button', { name: `Exclude from AI ${FILE_TITLE}` }).click()
+  await expect(row).toContainText('Kept out')
+  await expect(row).toContainText('Visible')
   await signOut(page)
 
   await signIn(page, 'lms', 'student1')

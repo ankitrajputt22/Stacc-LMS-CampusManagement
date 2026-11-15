@@ -10,6 +10,8 @@ import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
+import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexer;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeQuestion;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeRequest;
@@ -18,6 +20,7 @@ import com.stacc.backend.lms.ai.AiServiceMessages.SummaryRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.SummaryResult;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,9 +43,11 @@ public class AiStudyService {
     private final AiKnowledgeSources sources;
     private final AiKnowledgeRecords records;
     private final AiServiceClient client;
+    private final AiStudentNoteIndexer notes;
 
     public AiStudyService(LmsStudentAccessService studentAccess, AiKnowledgeSources sources, AiKnowledgeRecords records,
-            AiServiceClient client) {
+            AiServiceClient client, AiStudentNoteIndexer notes) {
+        this.notes = notes;
         this.studentAccess = studentAccess;
         this.sources = sources;
         this.records = records;
@@ -55,9 +60,14 @@ public class AiStudyService {
             throw new ApiException(HttpStatus.BAD_REQUEST, QUESTION_LENGTH);
         }
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId);
+        // "Course + my notes" (v0.13.6): only the asking student's own notes index, rebuilt first if they changed.
+        Optional<AiStudentNoteIndexer.Scope> myNotes = request.withMyNotes()
+                ? call(() -> notes.current(lmsCourseId, accountId)) : Optional.empty();
+        List<IndexRef> additional = myNotes.map(scope -> List.of(scope.index())).orElse(List.of());
         AskResult result = call(() -> client.ask(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new AskRequest(knowledge.fingerprint(), question, knowledge.allowedSources())));
-        List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge);
+                new AskRequest(knowledge.fingerprint(), question, knowledge.allowedSources(), additional)));
+        List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge, null,
+                myNotes.map(AiStudentNoteIndexer.Scope::knowledge).orElse(null));
         String answer = AiResults.text(result.answer(), AiResults.ANSWER_MAX);
         // An answer is shown only with at least one real citation; anything else is insufficient context.
         if (!Boolean.FALSE.equals(result.insufficientContext()) || answer == null || citations.isEmpty()) {

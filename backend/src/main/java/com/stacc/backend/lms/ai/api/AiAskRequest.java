@@ -10,5 +10,16 @@ import jakarta.validation.constraints.Size;
  */
 public record AiAskRequest(
         @Schema(description = "The question, 2 to 1,000 characters after trimming.", example = "What does third normal form remove?")
-        @NotBlank @Size(max = 1000) String question) {
+        @NotBlank @Size(max = 1000) String question,
+        @Schema(description = "True asks \"Course + my notes\" (v0.13.6): the student's own notes in this course are "
+                + "searched too. Leave it out or false for the course alone.", nullable = true)
+        Boolean includeMyNotes) {
+
+    public AiAskRequest(String question) {
+        this(question, null);
+    }
+
+    boolean withMyNotes() {
+        return Boolean.TRUE.equals(includeMyNotes);
+    }
 }

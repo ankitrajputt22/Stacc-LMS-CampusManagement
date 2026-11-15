@@ -136,6 +136,8 @@ import com.stacc.backend.hackathon.HackathonTeamRepository;
 import com.stacc.backend.innovation.InnovationIdeaRepository;
 import com.stacc.backend.innovation.InnovationReviewRepository;
 import com.stacc.backend.lms.ai.job.AiJobRepository;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexRepository;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteRepository;
 import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentRepository;
 import com.stacc.backend.library.LibraryCopyRepository;
 import com.stacc.backend.library.LibraryHoldRepository;
@@ -186,6 +188,8 @@ import org.springframework.web.context.WebApplicationContext;
     AcademicCalendarEventRepository.class,
     AiCourseKnowledgeIndexRepository.class,
     AiTeacherDocumentRepository.class,
+    AiStudentNoteRepository.class,
+    AiStudentNoteIndexRepository.class,
     AcademicSessionRepository.class,
     com.stacc.backend.identity.admin.AccountSearchRepository.class,
     com.stacc.backend.auth.throttle.SignInThrottleRepository.class,

@@ -19,6 +19,8 @@ import com.stacc.backend.lms.ai.AiCourseKnowledgeIndex;
 import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexer;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteKnowledge;
 import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
@@ -52,7 +54,8 @@ class AiStudyServiceTest {
     private final AiKnowledgeSources sources = mock(AiKnowledgeSources.class);
     private final AiKnowledgeRecords records = mock(AiKnowledgeRecords.class);
     private final AiServiceClient client = mock(AiServiceClient.class);
-    private final AiStudyService service = new AiStudyService(access, sources, records, client);
+    private final AiStudentNoteIndexer notes = mock(AiStudentNoteIndexer.class);
+    private final AiStudyService service = new AiStudyService(access, sources, records, client, notes);
 
     private static Citation topicCitation(long id) {
         return new Citation("TOPIC", id, id, "From the AI service", null, null, null);
@@ -78,6 +81,27 @@ class AiStudyServiceTest {
                 List.of(new AiCourseKnowledge.Material(20, 1, "Normalization notes", "normalization-notes.pdf",
                         "application/pdf", 100, "lms/courses/7/topics/1/secret-key"))));
         when(records.find(COURSE)).thenReturn(Optional.of(indexOf(CURRENT)));
+    }
+
+    @Test
+    void courseAndMyNotesSearchesOnlyTheAskersNotesAndLabelsThem() {
+        AiStudentNoteKnowledge mine = new AiStudentNoteKnowledge("d".repeat(64),
+                List.of(new AiStudentNoteKnowledge.Note(4L, "My summary", "Redundancy goes.")));
+        AiServiceMessages.IndexRef notesIndex = new AiServiceMessages.IndexRef(AiCourseKeys.forStudentNotes(COURSE, STUDENT_A),
+                mine.fingerprint(), mine.allowedSources());
+        when(notes.current(COURSE, STUDENT_A)).thenReturn(Optional.of(new AiStudentNoteIndexer.Scope(notesIndex, mine)));
+        when(client.ask(anyString(), any())).thenReturn(new AskResult("It reduces redundancy.", false, List.of(
+                new Citation("NOTE", 4L, null, "x", null, null, null), new Citation("NOTE", 5L, null, "x", null, null, null))));
+
+        AiAnswerResponse answer = service.ask(STUDENT_A, COURSE, new AiAskRequest("What does normalization reduce?", true));
+        assertThat(answer.citations()).containsExactly(new AiCitationResponse("NOTE", 4, "My summary", null, null, null));
+        ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
+        verify(client).ask(eq(AiCourseKeys.forLmsCourse(COURSE)), sent.capture());
+        assertThat(sent.getValue().additionalIndexes()).containsExactly(notesIndex);
+
+        // Without the mode, notes are neither searched nor cited.
+        assertThat(service.ask(STUDENT_A, COURSE, new AiAskRequest("What does normalization reduce?")).insufficientContext()).isTrue();
+        verify(notes, org.mockito.Mockito.times(1)).current(any(), any());
     }
 
     @Test

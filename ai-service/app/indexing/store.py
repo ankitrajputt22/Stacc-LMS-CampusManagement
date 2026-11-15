@@ -109,6 +109,18 @@ class IndexStore:
                 shutil.rmtree(temporary, ignore_errors=True)
             self._remove_old_versions(course_dir, keep=version)
 
+    def delete(self, course_key: str) -> bool:
+        """Removes an index and every version of it from disk (v0.13.6), so deleted text is gone; whether one existed."""
+        course_dir = self._course_dir(course_key)
+        with self._lock(course_key):
+            with self._cache_guard:
+                for cached in [key for key in self._cache if key[0] == course_key]:
+                    del self._cache[cached]
+            if not course_dir.exists():
+                return False
+            shutil.rmtree(course_dir)
+            return True
+
     def load(self, course_key: str) -> CourseIndex:
         course_dir = self._course_dir(course_key)
         for _ in range(2):  # A replacement may remove a version between reading the pointer and loading it.
