@@ -89,6 +89,7 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
         )}
         {question.practiceAllowed && <Badge tone="info">OK for practice</Badge>}
         {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
+        {question.aiGenerated && <Badge tone="info">AI draft</Badge>}
       </div>
       <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={4} />
       <Answers question={question} />
@@ -99,6 +100,22 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
         </div>
       )}
       <p className="text-sm text-ink-muted">{facts.join(' · ')}</p>
+      {question.aiGenerated && question.sources && question.sources.length > 0 && (
+        <div className="text-sm text-ink-muted">
+          <p className="font-medium">Drafted from</p>
+          <ul className="list-disc pl-5">
+            {question.sources.map((source) => (
+              <li key={`${source.sourceType}-${source.sourceId}-${source.pageNumber ?? ''}-${source.slideNumber ?? ''}`}>
+                {source.fileName ?? source.title}
+                {source.fileName !== null && ` (${source.title})`}
+                {source.pageNumber !== null && ` · page ${source.pageNumber}`}
+                {source.slideNumber !== null && ` · slide ${source.slideNumber}`}
+                {source.sourceType === 'TEACHER_DOCUMENT' && ' · teacher document'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

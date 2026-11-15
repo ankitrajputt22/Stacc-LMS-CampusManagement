@@ -233,7 +233,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.14.1 | Generate into the bank | AI questions go into the question bank as "Needs review" with sources; multiple-choice keys are self-checked. |
+| ★ 0.14.1 | Generate into the bank | AI questions go into the question bank as "Needs review" with sources; multiple-choice keys are self-checked. Done (`V134`). |
 | ★ 0.14.2 | Quality checks | Duplicates, previous papers, and out-of-syllabus flags from code and embeddings; difficulty and Bloom suggestions labelled as suggestions. |
 | ★ 0.14.3 | Quiz drafts | Quizzes filled from reviewed bank questions first, AI only for gaps, created as normal draft quizzes. |
 | 0.14.4 | Exam papers | Blueprints planned by code into slots, filled from the bank and then AI; multiple sets. |
@@ -298,4 +298,4 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
 | v0.16 Analytics and operations | Done (0.16.1 to 0.16.8) |
 | v1.0 Stable release | Done: released as `v1.0.0` |
-| v0.13 – v0.15 AI | v0.13 done; v0.14 and v0.15 later |
+| v0.13 – v0.15 AI | v0.13 and 0.14.1 done; the rest later |

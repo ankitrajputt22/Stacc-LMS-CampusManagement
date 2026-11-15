@@ -221,6 +221,54 @@ class AssessmentDraftResponse(BaseModel):
     insufficientContext: bool
 
 
+# --- Question bank drafts (v0.14.1) ------------------------------------------------------------------
+
+
+class BankType(StrEnum):
+    """The question bank's own kinds of question."""
+    SINGLE_CHOICE = "SINGLE_CHOICE"
+    MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
+    TRUE_FALSE = "TRUE_FALSE"
+    SHORT_ANSWER = "SHORT_ANSWER"
+    DESCRIPTIVE = "DESCRIPTIVE"
+
+    @property
+    def keyed(self) -> bool:
+        """Whether the question has a key the self-check can test."""
+        return self in (BankType.SINGLE_CHOICE, BankType.MULTIPLE_CHOICE, BankType.TRUE_FALSE)
+
+
+class BankDraftRequest(IndexedRequest):
+    questionCount: int = Field(ge=1, le=10)
+    questionTypes: list[BankType] = Field(min_length=1, max_length=5)
+    difficulty: Difficulty
+    topicId: int | None = Field(default=None, gt=0)
+    additionalInstruction: str | None = Field(default=None, max_length=500)
+
+
+class BankOption(BaseModel):
+    text: str
+    correct: bool
+
+
+class BankQuestion(BaseModel):
+    questionType: BankType
+    text: str
+    options: list[BankOption]
+    trueFalseAnswer: bool | None
+    acceptedAnswers: list[str]
+    answerGuidance: str | None
+    explanation: str | None
+    suggestedMarks: float
+    citations: list[Citation]
+
+
+class BankDraftResponse(BaseModel):
+    questions: list[BankQuestion]
+    droppedForKeyMismatch: int
+    insufficientContext: bool
+
+
 # --- What the model must return ----------------------------------------------------------------
 # Source references are the short labels ("S1", "S2", ...) the prompt gives each retrieved chunk.
 
@@ -274,3 +322,47 @@ class AssessmentModelOutput(BaseModel):
     titleSuggestion: Bounded(200, 1)
     instructionsSuggestion: Bounded(2000)
     questions: Annotated[list[AssessmentModelQuestion], Field(max_length=20)]
+
+
+class BankModelOption(BaseModel):
+    text: Bounded(300, 1)
+    correct: bool
+
+
+class BankModelQuestion(BaseModel):
+    questionType: BankType
+    text: Bounded(1500, 1)
+    options: Annotated[list[BankModelOption], Field(max_length=6)] = []
+    trueFalseAnswer: bool | None = None
+    acceptedAnswers: Annotated[list[Bounded(200, 1)], Field(max_length=5)] = []
+    answerGuidance: Bounded(2000) | None = None
+    explanation: Bounded(2000) | None = None
+    suggestedMarks: float = Field(gt=0, le=100)
+    sourceIds: SourceRefs = []
+
+    @model_validator(mode="after")
+    def answers_fit_type(self) -> BankModelQuestion:
+        correct = sum(option.correct for option in self.options)
+        kind = self.questionType
+        if kind is BankType.SINGLE_CHOICE and (len(self.options) < 2 or correct != 1):
+            raise ValueError("a single-choice question needs two or more options and exactly one correct")
+        if kind is BankType.MULTIPLE_CHOICE and (len(self.options) < 2 or correct < 1):
+            raise ValueError("a multiple-choice question needs two or more options and one or more correct")
+        if kind is BankType.TRUE_FALSE and self.trueFalseAnswer is None:
+            raise ValueError("a true/false question needs its answer")
+        if kind is BankType.SHORT_ANSWER and not self.acceptedAnswers:
+            raise ValueError("a short-answer question needs accepted answers")
+        if kind is BankType.DESCRIPTIVE and not self.answerGuidance:
+            raise ValueError("a descriptive question needs marking guidance")
+        return self
+
+
+class BankModelOutput(BaseModel):
+    questions: Annotated[list[BankModelQuestion], Field(max_length=10)]
+
+
+class AnswerCheckOutput(BaseModel):
+    """The model's own answer to a keyed question, given without the key: the chosen option numbers (from 1), or the
+    true/false answer."""
+    chosenOptions: Annotated[list[int], Field(max_length=10)] = []
+    trueFalseAnswer: bool | None = None

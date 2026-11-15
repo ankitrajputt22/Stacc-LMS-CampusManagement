@@ -111,6 +111,22 @@ public final class AiServiceMessages {
     }
 
     /** The AI service's error body: a stable code and a short message. */
+    /** A question bank draft in the bank's own types (v0.14.1). */
+    public record BankDraftRequest(String indexFingerprint, int questionCount, List<String> questionTypes, String difficulty,
+            Long topicId, String additionalInstruction, List<SourceRef> allowedSources, List<IndexRef> additionalIndexes) {
+    }
+
+    public record BankOption(String text, Boolean correct) {
+    }
+
+    public record BankQuestion(String questionType, String text, List<BankOption> options, Boolean trueFalseAnswer,
+            List<String> acceptedAnswers, String answerGuidance, String explanation, BigDecimal suggestedMarks,
+            List<Citation> citations) {
+    }
+
+    public record BankDraftResult(List<BankQuestion> questions, Integer droppedForKeyMismatch, Boolean insufficientContext) {
+    }
+
     record ErrorBody(String code, String message) {
     }
 }

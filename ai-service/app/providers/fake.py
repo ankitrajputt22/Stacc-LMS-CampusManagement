@@ -102,6 +102,45 @@ class FakeModelProvider(ModelProvider):
         return {"questions": questions}
 
     @staticmethod
+    def _bank_questions(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("questionCount", 5))
+        kinds = [kind.strip() for kind in str(parameters.get("questionTypes", "SINGLE_CHOICE")).split(",")]
+        questions = []
+        for number in range(count):
+            chunk = context[number % len(context)]
+            kind = kinds[number % len(kinds)]
+            sentence = _first_sentence(chunk.text, 280)
+            question = {"questionType": kind, "text": f"Q{number + 1}. About {chunk.title}: which is stated?",
+                        "explanation": f"The source says: {sentence}", "suggestedMarks": 2, "sourceIds": [chunk.ref]}
+            if kind in ("SINGLE_CHOICE", "MULTIPLE_CHOICE"):
+                question["options"] = [{"text": sentence, "correct": True},
+                                       {"text": "Quokkas invented the abacus in 1066.", "correct": False}]
+            elif kind == "TRUE_FALSE":
+                question["text"] = sentence
+                question["trueFalseAnswer"] = True
+            elif kind == "SHORT_ANSWER":
+                question["acceptedAnswers"] = [" ".join(words(chunk.text)[:3])]
+            else:
+                question["answerGuidance"] = f"Look for: {sentence}"
+            questions.append(question)
+        return {"questions": questions}
+
+    @staticmethod
+    def _answer_check(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        """Marks an option or statement correct when nearly all its words are in the sources."""
+        known = set(words(" ".join(chunk.text for chunk in context)))
+
+        def supported(text: str) -> bool:
+            own = words(text)
+            return bool(own) and sum(word in known for word in own) / len(own) >= 0.8
+
+        options = parameters.get("options") or []
+        if not options:
+            statement = parameters.get("question", "").removeprefix("True or false: ")
+            return {"trueFalseAnswer": supported(statement)}
+        return {"chosenOptions": [number for number, text in enumerate(options, start=1) if supported(text)]}
+
+    @staticmethod
     def _assessment_draft(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
         count = int(parameters.get("questionCount", 5))
         requested = parameters.get("questionType", "MIXED")

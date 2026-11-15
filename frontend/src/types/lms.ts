@@ -580,6 +580,21 @@ export type LmsQuestion = {
   /** A published or archived quiz uses the question, so it can no longer be edited. */
   inPublishedQuiz: boolean
   updatedAt: string
+  /** Drafted by AI (v0.14.1); it still needs review like any new question. */
+  aiGenerated?: boolean
+  /** For an AI draft, the course sources it was drafted from. */
+  sources?: LmsQuestionSource[]
+}
+
+/** A course source an AI-drafted question was drafted from, as it was then (v0.14.1). */
+export type LmsQuestionSource = {
+  sourceType: 'TOPIC' | 'STUDY_MATERIAL' | 'TEACHER_DOCUMENT'
+  sourceId: number
+  title: string
+  fileName: string | null
+  pageNumber: number | null
+  slideNumber: number | null
+  pageId: number | null
 }
 
 /** What a faculty member writes when adding or editing a question. */

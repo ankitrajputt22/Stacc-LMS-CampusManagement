@@ -9,6 +9,8 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await signIn(page, 'lms', 'faculty1')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'AI Tools')
+  // Drafting into the question bank (v0.14.1) is offered on AI Tools.
+  await expect(page.getByRole('region', { name: 'Draft into the question bank' }).getByRole('button', { name: 'Draft questions' })).toBeVisible()
   const teacherDocuments = page.getByRole('region', { name: 'Teacher-only documents' })
   await teacherDocuments.getByRole('button', { name: 'Add teacher document' }).click()
   await teacherDocuments.getByRole('textbox', { name: 'Title' }).fill(DOCUMENT)

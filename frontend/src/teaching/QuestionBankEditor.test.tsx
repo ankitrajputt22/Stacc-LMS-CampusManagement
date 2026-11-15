@@ -55,6 +55,17 @@ describe('QuestionBankEditor', () => {
     ])
   })
 
+  it('marks an AI draft and lists the sources it was drafted from', async () => {
+    vi.mocked(api.getQuestions).mockResolvedValue([{
+      ...question, aiGenerated: true,
+      sources: [{ sourceType: 'STUDY_MATERIAL', sourceId: 20, title: 'Keys', fileName: 'keys.pdf', pageNumber: 4, slideNumber: null, pageId: 3 }],
+    }])
+    renderEditor()
+    expect(await screen.findByText('AI draft')).toBeInTheDocument()
+    expect(screen.getByText('Needs review')).toBeInTheDocument()
+    expect(screen.getByText('keys.pdf (Keys) · page 4')).toBeInTheDocument()
+  })
+
   it('adds a single-choice question with its correct option and outcome', async () => {
     vi.mocked(api.getQuestions).mockResolvedValue([])
     vi.mocked(api.addQuestion).mockResolvedValue({ ...question, id: 302 })

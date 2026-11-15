@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AssessmentDraftPanel } from '../ai/AssessmentDraftPanel'
+import { BankDraftPanel } from '../ai/BankDraftPanel'
 import { KnowledgePanel } from '../ai/KnowledgePanel'
 import { TeacherDocumentsPanel } from '../ai/TeacherDocumentsPanel'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
@@ -94,6 +95,7 @@ function FacultyTools({ lmsCourseId }: { lmsCourseId: number | null }) {
           <div className="max-w-3xl">
             <KnowledgePanel lmsCourseId={course.data.lmsCourseId} />
             <TeacherDocumentsPanel lmsCourseId={course.data.lmsCourseId} />
+            <BankDraftPanel lmsCourseId={course.data.lmsCourseId} />
             <AssessmentDraftPanel lmsCourseId={course.data.lmsCourseId} />
             <Link to={`/teaching/${course.data.lmsCourseId}`} className={`mt-6 text-sm ${backLinkClasses}`}>
               Back to course
