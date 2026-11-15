@@ -143,6 +143,8 @@ A permission is added by a new migration only when the real feature it protects 
 
 `LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use and download its published study materials. Faculty download materials with `FACULTY_COURSE_VIEW`.
 
+Model answers and rubric suggestions (v0.14.5) added no permission: the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE` or `LMS_ASSIGNMENT_MANAGE`.
+
 Exam paper sets and AI for short rows (v0.14.4) added no permission: sets and the shortfall need `LMS_EXAM_PAPER_MANAGE`; AI drafting also needs the AI Tools rule and `LMS_QUESTION_BANK_MANAGE`.
 
 Quiz drafts (v0.14.3) added no permission: they need the AI Tools rule with `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`.

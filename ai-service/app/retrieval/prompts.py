@@ -46,6 +46,14 @@ TASKS["answer_check"] = (
     "Task: answer the question below using only the sources. For a question with numbered options, list the numbers "
     "of every correct option in chosenOptions. For a true or false statement, give trueFalseAnswer. Do not explain.")
 
+TASKS["model_answer"] = (
+    "Task: write a model answer to the teacher's question below, as a strong student would, worth {marks} marks, using "
+    "only the sources, with up to 8 key points a marker should look for.")
+TASKS["rubric"] = (
+    "Task: suggest a marking rubric for the assignment below with exactly {criteriaCount} criteria whose maxPoints add up "
+    "to {maxMarks}. Give each criterion up to 4 levels, from best to weakest, each with points between 0 and the "
+    "criterion's maxPoints. Base the criteria on the assignment and the course sources.")
+
 FENCE = re.compile(r"</?\s*(source|question|teacher_note)", re.IGNORECASE)
 
 

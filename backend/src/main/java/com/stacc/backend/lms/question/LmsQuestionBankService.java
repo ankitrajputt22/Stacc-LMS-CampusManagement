@@ -214,6 +214,13 @@ public class LmsQuestionBankService {
         return lockedAfterAccess(questionId);
     }
 
+    /** One question of a course the faculty member teaches, for reading only (v0.14.5); anything else is the same 404. */
+    @Transactional(readOnly = true)
+    public LmsQuestion find(Long userAccountId, Long questionId) {
+        requireQuestion(userAccountId, questionId);
+        return questions.findById(questionId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
+    }
+
     private Long requireQuestion(Long userAccountId, Long questionId) {
         Long lmsCourseId = questionId == null ? null : questions.findLmsCourseIdById(questionId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {

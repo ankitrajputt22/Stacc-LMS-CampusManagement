@@ -13,6 +13,7 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { EmptyState } from '../components/states/EmptyState'
+import { ModelAnswerSuggestion } from '../ai/ModelAnswerSuggestion'
 import { bloomLabel } from '../courses/bloomText'
 import { SectionState } from '../courses/SectionState'
 import { FormattedText } from '../formatting/FormattedText'
@@ -303,7 +304,12 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
                       />
                     ) : (
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <QuestionSummary question={question} />
+                        <div className="min-w-0 flex-1">
+                          <QuestionSummary question={question} />
+                          {question.status === 'ACTIVE' && (question.type === 'DESCRIPTIVE' || question.type === 'SHORT_ANSWER') && (
+                            <ModelAnswerSuggestion questionId={question.id} />
+                          )}
+                        </div>
                         {question.status === 'ACTIVE' && (
                           <div className="flex shrink-0 flex-wrap gap-2">
                             {/* A published quiz keeps asking what it asked, so its questions are not edited. */}

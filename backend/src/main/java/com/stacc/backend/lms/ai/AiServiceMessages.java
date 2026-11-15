@@ -137,6 +137,28 @@ public final class AiServiceMessages {
             Boolean insufficientContext) {
     }
 
+    /** A model answer to a bank question (v0.14.5). */
+    public record ModelAnswerRequest(String indexFingerprint, String questionText, String questionType, BigDecimal marks,
+            List<SourceRef> allowedSources) {
+    }
+
+    public record ModelAnswerResult(String answer, List<String> keyPoints, List<Citation> citations, Boolean insufficientContext) {
+    }
+
+    /** A rubric suggestion for an assignment (v0.14.5). */
+    public record RubricRequest(String indexFingerprint, String title, String instructions, BigDecimal maxMarks, int criteriaCount,
+            List<SourceRef> allowedSources) {
+    }
+
+    public record RubricLevel(String title, String description, BigDecimal points) {
+    }
+
+    public record RubricCriterion(String title, String description, BigDecimal maxPoints, List<RubricLevel> levels) {
+    }
+
+    public record RubricResult(List<RubricCriterion> criteria, List<Citation> citations, Boolean insufficientContext) {
+    }
+
     record ErrorBody(String code, String message) {
     }
 }

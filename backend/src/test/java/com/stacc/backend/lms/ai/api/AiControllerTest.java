@@ -122,6 +122,21 @@ class AiControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
+    void suggestionsNeedTheirPermissionsAndAnswer404ForAQuestionOrAssignmentNotFound() throws Exception {
+        String answer = "/api/v1/lms/faculty/ai/questions/4/model-answer";
+        String rubric = "/api/v1/lms/faculty/ai/assignments/4/rubric-suggestion";
+        String basic = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE");
+        assertThat(statusOf(post(answer), basic)).isEqualTo(403);
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":3}"), basic)).isEqualTo(403);
+        String withRights = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE",
+                "LMS_ASSIGNMENT_MANAGE");
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":9}"), withRights)).isEqualTo(400);
+        // The stand-ins hold no question or assignment: the same 404 as for one the faculty member does not teach.
+        assertThat(statusOf(post(answer), withRights)).isEqualTo(404);
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":3}"), withRights)).isEqualTo(404);
+    }
+
+    @Test
     void theStudentAccessSwitchNeedsAValue() throws Exception {
         assertThat(statusOf(json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{}"), FACULTY)).isEqualTo(400);
     }

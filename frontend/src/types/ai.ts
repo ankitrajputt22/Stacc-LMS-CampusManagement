@@ -86,6 +86,28 @@ export type AiQuizDraft = {
   aiNote: string | null
 }
 
+/** A suggested model answer to a bank question (v0.14.5); nothing is saved. */
+export type AiModelAnswer = {
+  answer: string | null
+  keyPoints: string[]
+  citations: AiCitation[]
+  insufficientContext: boolean
+}
+
+/** A suggested rubric for an assignment (v0.14.5): points add up to the assignment's maximum marks. */
+export type AiRubricSuggestion = {
+  title: string
+  maxMarks: number
+  criteria: {
+    title: string
+    description: string | null
+    maxPoints: number
+    levels: { title: string; description: string | null; points: number }[]
+  }[]
+  citations: AiCitation[]
+  insufficientContext: boolean
+}
+
 /** One of the signed-in student's private notes in a course (v0.13.6). */
 export type AiStudentNote = {
   id: number

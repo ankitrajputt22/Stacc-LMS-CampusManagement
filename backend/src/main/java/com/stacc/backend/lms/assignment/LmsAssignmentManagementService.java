@@ -131,6 +131,12 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
+    /** An assignment of a course the faculty member teaches, for reading only (v0.14.5); anything else is the same 404. */
+    @Transactional(readOnly = true)
+    public LmsAssignment find(Long userAccountId, Long assignmentId) {
+        return manageable(userAccountId, assignmentId);
+    }
+
     // The course is taken from the stored assignment, never from the request.
     private LmsAssignment manageable(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = assignmentId == null ? null : assignments.findById(assignmentId).orElse(null);

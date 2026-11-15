@@ -35,6 +35,12 @@ public interface AiServiceClient {
     /** Questions in the bank's own types, with keyed ones checked by answering them again (v0.14.1). */
     BankDraftResult questionBankDraft(String courseKey, BankDraftRequest request);
 
+    /** A model answer to a question, with sources (v0.14.5). */
+    AiServiceMessages.ModelAnswerResult modelAnswer(String courseKey, AiServiceMessages.ModelAnswerRequest request);
+
+    /** A rubric suggestion whose points add up to the assignment's maximum (v0.14.5). */
+    AiServiceMessages.RubricResult rubric(String courseKey, AiServiceMessages.RubricRequest request);
+
     SummaryResult summarize(String courseKey, SummaryRequest request);
 
     PracticeResult practice(String courseKey, PracticeRequest request);

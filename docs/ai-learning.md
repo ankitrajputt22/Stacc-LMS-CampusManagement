@@ -254,6 +254,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **AI only for gaps.** When the bank is short and the teacher ticked "Let AI draft questions the bank is short of", up to 10 questions are drafted through Draft into the question bank (Needs review, with sources and checks). If AI is off or refuses, the quiz is still made from the bank and the reply says why.
 - **An ordinary draft quiz.** The quiz is created and filled only through `LmsQuizService` (`create`, `addQuestion` with the bank's marks), so every quiz rule applies; publishing still needs every question reviewed. When nothing matches and AI added nothing, no quiz is made (409).
 
+### Answers and rubrics (v0.14.5)
+
+- **Model answers on request.** On a short-answer or descriptive bank question, Suggest a model answer (`POST /api/v1/lms/faculty/ai/questions/{id}/model-answer`, the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`; the course from the stored question) gives a model answer and up to 8 key points from the course's published content, with sources, or insufficient context. Nothing is saved; the teacher copies what they want into the marking guidance with the normal Edit, which needs a new review.
+- **Rubric suggestions.** On the Rubrics page, Suggest a rubric with AI (`POST /api/v1/lms/faculty/ai/assignments/{id}/rubric-suggestion`, the AI Tools rule plus `LMS_ASSIGNMENT_MANAGE`; the course from the stored assignment) suggests 2 to 8 criteria with up to 4 levels. The AI service scales the points to the assignment's maximum marks and the backend checks it again (the last criterion takes any rounding; levels never exceed their criterion; anything that does not add up is dropped as insufficient). Use in rubric form fills the normal rubric form; only Create rubric saves it.
+- Both go through `AiRequestGate` (kinds `MODEL_ANSWER` and `RUBRIC`).
+
 ### What a refresh does
 
 1. Faculty access is checked.

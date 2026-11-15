@@ -6,9 +6,11 @@ import type {
   AiJob,
   AiKnowledgeStatus,
   AiKnowledgeSync,
+  AiModelAnswer,
   AiPracticeSet,
   AiQuestionBankDraft,
   AiQuizDraft,
+  AiRubricSuggestion,
   AiStudentNote,
   AiTeacherDocument,
   AiTopicSummary,
@@ -148,4 +150,15 @@ export async function draftQuiz(
   signal?: AbortSignal,
 ): Promise<AiQuizDraft> {
   return (await apiClient.post<AiQuizDraft>(`/lms/faculty/courses/${lmsCourseId}/ai/quiz-draft`, input, { signal })).data
+}
+
+/** Suggests a model answer to a bank question, with sources (v0.14.5). */
+export async function suggestModelAnswer(questionId: number, signal?: AbortSignal): Promise<AiModelAnswer> {
+  return (await apiClient.post<AiModelAnswer>(`/lms/faculty/ai/questions/${questionId}/model-answer`, undefined, { signal })).data
+}
+
+/** Suggests a rubric for an assignment whose points add up to its maximum marks (v0.14.5). */
+export async function suggestRubric(assignmentId: number, criteriaCount: number, signal?: AbortSignal): Promise<AiRubricSuggestion> {
+  return (await apiClient.post<AiRubricSuggestion>(`/lms/faculty/ai/assignments/${assignmentId}/rubric-suggestion`, { criteriaCount },
+    { signal })).data
 }
