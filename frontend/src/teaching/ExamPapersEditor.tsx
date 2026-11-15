@@ -28,6 +28,7 @@ import type {
   QuestionType,
 } from '../types/lms'
 import { Alert, Badge, Button, Card, SelectField, TextAreaField, TextField, textLinkClasses } from '../ui'
+import { BlueprintShortfall, PaperSetsForm } from './BlueprintTools'
 import { blueprintRowText, PAPER_FORBIDDEN, paperFacts, paperRefusal, paperStatusLabel, parseMarks } from './examPaperText'
 import { DIFFICULTIES, QUESTION_TYPES } from './questionText'
 
@@ -375,7 +376,13 @@ export function PaperDetailsForm({
   )
 }
 
-type Open = { kind: 'new-blueprint' } | { kind: 'edit'; id: number } | { kind: 'build'; id: number } | { kind: 'archive'; id: number }
+type Open =
+  | { kind: 'new-blueprint' }
+  | { kind: 'edit'; id: number }
+  | { kind: 'build'; id: number }
+  | { kind: 'sets'; id: number }
+  | { kind: 'bank'; id: number }
+  | { kind: 'archive'; id: number }
 
 /**
  * The course's exam blueprints and papers: New blueprint (rows of section, filters, count, and marks), Edit, Build
@@ -452,6 +459,20 @@ export function ExamPapersEditor({ lmsCourseId }: { lmsCourseId: number }) {
                     }}
                   />
                 )}
+                {blueprint.status === 'ACTIVE' && open?.kind === 'sets' && open.id === blueprint.id && (
+                  <PaperSetsForm
+                    blueprintId={blueprint.id}
+                    onDone={(message) => {
+                      setOpen(null)
+                      if (message) {
+                        setAnnouncement(message)
+                      }
+                    }}
+                  />
+                )}
+                {blueprint.status === 'ACTIVE' && open?.kind === 'bank' && open.id === blueprint.id && (
+                  <BlueprintShortfall lmsCourseId={lmsCourseId} blueprintId={blueprint.id} onClose={() => setOpen(null)} />
+                )}
                 {open?.kind === 'archive' && open.id === blueprint.id && (
                   <StatusConfirmation
                     question={`Archive “${blueprint.title}”?`}
@@ -474,6 +495,12 @@ export function ExamPapersEditor({ lmsCourseId }: { lmsCourseId: number }) {
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" onClick={() => setOpen({ kind: 'build', id: blueprint.id })}>
                       Build paper<span className="sr-only">{` from ${blueprint.title}`}</span>
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => setOpen({ kind: 'sets', id: blueprint.id })}>
+                      Build sets<span className="sr-only">{` from ${blueprint.title}`}</span>
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => setOpen({ kind: 'bank', id: blueprint.id })}>
+                      Check the bank<span className="sr-only">{` for ${blueprint.title}`}</span>
                     </Button>
                     <Button variant="secondary" size="sm" onClick={() => setOpen({ kind: 'edit', id: blueprint.id })}>
                       Edit<span className="sr-only">{` ${blueprint.title}`}</span>

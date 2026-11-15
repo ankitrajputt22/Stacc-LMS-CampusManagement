@@ -79,10 +79,14 @@ public class LmsQuestionBankService {
     }
 
     /** One AI-drafted question to add, with the sources it was drafted from (v0.14.1). */
-    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
+    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks, Long outcomeId) {
 
         public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
-            this(content, sources, LmsQuestionAiChecks.none());
+            this(content, sources, LmsQuestionAiChecks.none(), null);
+        }
+
+        public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
+            this(content, sources, checks, null);
         }
     }
 
@@ -117,7 +121,10 @@ public class LmsQuestionBankService {
         for (AiDraft draft : drafts) {
             LmsQuestion question;
             try {
-                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, draft.content(), draft.sources(), draft.checks());
+                // An outcome (v0.14.4, from an exam blueprint row) must still be an active outcome of the course.
+                LmsQuestionContent content = draft.outcomeId() == null ? draft.content()
+                        : draft.content().withOutcome(outcome(lmsCourseId, draft.outcomeId(), null));
+                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, content, draft.sources(), draft.checks());
             } catch (IllegalArgumentException | IllegalStateException refused) {
                 continue;
             }
