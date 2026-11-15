@@ -18,6 +18,7 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeRefresher;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentQuestion;
@@ -137,7 +138,8 @@ class AiFacultyServiceTest {
 
         ArgumentCaptor<AssessmentDraftRequest> sent = ArgumentCaptor.forClass(AssessmentDraftRequest.class);
         verify(client).assessmentDraft(anyString(), sent.capture());
-        assertThat(sent.getValue()).isEqualTo(new AssessmentDraftRequest(CURRENT, 2, "MEDIUM", "MIXED", "Focus on normal forms."));
+        assertThat(sent.getValue()).isEqualTo(new AssessmentDraftRequest(CURRENT, 2, "MEDIUM", "MIXED", "Focus on normal forms.",
+                List.of(new AiServiceMessages.SourceRef("TOPIC", 1))));
     }
 
     @Test

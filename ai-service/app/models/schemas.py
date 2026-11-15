@@ -113,8 +113,34 @@ class Citation(BaseModel):
 # --- Student requests --------------------------------------------------------------------------
 
 
-class IndexedRequest(Strict):
+class SourceRef(Strict):
+    """One source a request may use, as the backend allows it right now."""
+
+    sourceType: SourceType
+    sourceId: int = Field(gt=0)
+
+
+AllowedSources = Annotated[list[SourceRef] | None, Field(default=None, max_length=5000)]
+
+
+class IndexRef(Strict):
+    """Another index to search with the course's own, such as a teacher's or a student's notes index."""
+
+    indexKey: str = Field(pattern=r"^[a-f0-9]{32}$")
     indexFingerprint: str = Field(pattern=FINGERPRINT)
+    allowedSources: AllowedSources = None
+
+
+class IndexedRequest(Strict):
+    """A request over the course index named in the path, and optionally more indexes.
+
+    ``allowedSources`` lists the sources the backend allows at this moment; chunks of any other source are never
+    searched, summarised, or cited, even if an index still holds them. ``None`` allows every source of the index.
+    """
+
+    indexFingerprint: str = Field(pattern=FINGERPRINT)
+    allowedSources: AllowedSources = None
+    additionalIndexes: Annotated[list[IndexRef], Field(default_factory=list, max_length=3)]
 
 
 class AskRequest(IndexedRequest):

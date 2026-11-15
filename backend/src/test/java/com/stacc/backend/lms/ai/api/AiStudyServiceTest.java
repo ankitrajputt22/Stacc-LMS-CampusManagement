@@ -20,6 +20,7 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.AiServiceException;
+import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.Citation;
@@ -42,6 +43,9 @@ class AiStudyServiceTest {
     private static final long STUDENT_B = 12L;
     private static final long COURSE = 7L;
     private static final String CURRENT = "c".repeat(64);
+    /** The published topic and study material of the fixture, sent as the sources allowed right now. */
+    private static final List<AiServiceMessages.SourceRef> ALLOWED = List.of(new AiServiceMessages.SourceRef("TOPIC", 1),
+            new AiServiceMessages.SourceRef("STUDY_MATERIAL", 20));
     private static final String OLD = "0".repeat(64);
 
     private final LmsStudentAccessService access = mock(LmsStudentAccessService.class);
@@ -91,7 +95,7 @@ class AiStudyServiceTest {
 
         ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
         verify(client).ask(eq(AiCourseKeys.forLmsCourse(COURSE)), sent.capture());
-        assertThat(sent.getValue()).isEqualTo(new AskRequest(CURRENT, "What does normalization reduce?"));
+        assertThat(sent.getValue()).isEqualTo(new AskRequest(CURRENT, "What does normalization reduce?", ALLOWED));
     }
 
     @Test
@@ -188,7 +192,7 @@ class AiStudyServiceTest {
 
         ArgumentCaptor<PracticeRequest> sent = ArgumentCaptor.forClass(PracticeRequest.class);
         verify(client).practice(anyString(), sent.capture());
-        assertThat(sent.getValue()).isEqualTo(new PracticeRequest(CURRENT, 2, 1L));
+        assertThat(sent.getValue()).isEqualTo(new PracticeRequest(CURRENT, 2, 1L, ALLOWED));
 
         assertThat(new AiPracticeRequest(null, null).questionCountOrDefault()).isEqualTo(5);
     }

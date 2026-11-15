@@ -193,6 +193,12 @@ Faculty refresh a course's knowledge with `POST /api/v1/lms/faculty/courses/{lms
 
 The old `POST …/ai/sync`, which refreshes inside the request, still works but is marked deprecated; the page no longer uses it.
 
+### Separate indexes and the allowed-source list (v0.13.2)
+
+- **Index keys.** Each index has its own opaque key from `AiCourseKeys`, all 32 lower-case hex characters: `forLmsCourse` (a course's published, student-visible content), `forTeacherDocuments` (a course's teacher-only documents, used by Teacher AI only), and `forStudentNotes` (one student's notes in one course, keyed by IDs, never a login ID). Students' requests never name a teacher index.
+- **Allowed sources.** Every ask, summary, practice, and assessment-draft request carries `allowedSources`: the sources the backend allows at that moment (`AiCourseKnowledge.allowedSources`, the published topics and study materials). The AI service never searches, summarizes, or cites a chunk of any other source, even if an index still holds it.
+- **Several indexes.** A request may also name up to three `additionalIndexes`, each with its own fingerprint check and allowed list. A stale one answers 409, like the course index. The AI service searches them together with the course index and ranks the results as one list.
+
 ### What a refresh does
 
 1. Faculty access is checked.
