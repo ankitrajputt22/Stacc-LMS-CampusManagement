@@ -1,10 +1,10 @@
-import { type ReactNode, useId, useMemo } from 'react'
-import { getFacultyAiStatus, syncFacultyAiKnowledge } from '../api/aiApi'
+import { type ReactNode, useEffect, useId, useMemo } from 'react'
+import { getFacultyAiStatus, queueFacultyAiRefresh } from '../api/aiApi'
 import { useApiRequest } from '../api/useApiRequest'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
 import { formatDateTime } from '../courses/dates'
-import type { AiKnowledgeStatus, AiKnowledgeSync } from '../types/ai'
+import type { AiJob, AiKnowledgeStatus } from '../types/ai'
 import { AiMessage } from './AiMessage'
 import { AI_UNAVAILABLE, KNOWLEDGE_STATUS_LABELS } from './aiText'
 import { hintClasses, panelClasses } from './aiStyles'
@@ -38,22 +38,38 @@ function StatusDetails({ status }: { status: AiKnowledgeStatus }) {
   )
 }
 
+/** How often the status is asked again, only while a refresh job is queued or running. */
+const CHECK_EVERY_MS = 3000
+
 /**
  * The course's AI knowledge: its status, whether published content changed since the last refresh, and Refresh AI
- * knowledge, which rebuilds it from published topics and study materials only.
+ * knowledge, which queues a background job that rebuilds it from published topics and study materials only. While the
+ * job is queued or running the status is asked again every few seconds; otherwise the page never polls.
  */
 export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const request = useMemo(() => (signal: AbortSignal) => getFacultyAiStatus(lmsCourseId, signal), [lmsCourseId])
   const status = useApiRequest(request)
-  const sync = useAiAction<AiKnowledgeSync>('faculty')
-  const running = sync.state.status === 'running'
+  const queue = useAiAction<AiJob>('faculty')
+  const data = status.status === 'loaded' ? status.data : null
+  const job = data?.job ?? null
+  const jobLive = job !== null && (job.status === 'QUEUED' || job.status === 'RUNNING')
+  const running = queue.state.status === 'running' || jobLive
+  const { refresh: checkAgain } = status
+
+  useEffect(() => {
+    if (!jobLive) {
+      return undefined
+    }
+    const timer = window.setTimeout(checkAgain, CHECK_EVERY_MS)
+    return () => window.clearTimeout(timer)
+  }, [jobLive, data, checkAgain])
 
   async function refresh() {
     if (running) {
       return
     }
-    await sync.run((signal) => syncFacultyAiKnowledge(lmsCourseId, signal))
+    await queue.run((signal) => queueFacultyAiRefresh(lmsCourseId, signal))
     status.refresh()
   }
 
@@ -81,7 +97,7 @@ export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
         <>
           <StatusDetails status={status.data} />
           {!status.data.enabled && <AiMessage tone="note" className="mt-3">{AI_UNAVAILABLE}</AiMessage>}
-          {status.data.status === 'FAILED' && status.data.failureMessage && (
+          {status.data.status === 'FAILED' && status.data.failureMessage && status.data.job === null && (
             <AiMessage tone="note" className="mt-3">
               The last refresh failed: {status.data.failureMessage}
             </AiMessage>
@@ -95,22 +111,22 @@ export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
       )}
 
       <div aria-live="polite" className="mt-3 empty:hidden">
-        {running && <p className="text-sm text-ink-muted">Refreshing AI knowledge… This can take a few minutes.</p>}
-        {sync.state.status === 'done' && (
+        {job?.status === 'QUEUED' && <p className="text-sm text-ink-muted">Refresh queued. It starts in a moment.</p>}
+        {job?.status === 'RUNNING' && <p className="text-sm text-ink-muted">Refreshing AI knowledge… This can take a few minutes; you can leave this page.</p>}
+        {job?.status === 'SUCCEEDED' && job.finishedAt && (
           <AiMessage tone="success">
             <p className="font-medium">AI knowledge is ready.</p>
             <p>
-              Last indexed <time dateTime={sync.state.data.indexedAt}>{formatDateTime(sync.state.data.indexedAt)}</time>.{' '}
-              {sync.state.data.indexedSourceCount} {sync.state.data.indexedSourceCount === 1 ? 'source' : 'sources'} indexed,{' '}
-              {sync.state.data.skippedSourceCount} skipped.
+              Refreshed <time dateTime={job.finishedAt}>{formatDateTime(job.finishedAt)}</time>. {job.resultSummary}
             </p>
           </AiMessage>
         )}
+        {job?.status === 'FAILED' && <AiMessage tone="note">The last refresh failed: {job.errorMessage}</AiMessage>}
       </div>
-      {sync.state.status === 'failed' && (
+      {queue.state.status === 'failed' && (
         <div role="alert" className="mt-3 rounded-control border border-danger/40 bg-danger/5 px-3 py-2.5 text-sm leading-6">
-          <p className="font-medium text-danger">Couldn’t refresh AI knowledge.</p>
-          <p className="text-ink">{sync.state.failure.message}</p>
+          <p className="font-medium text-danger">Couldn’t start the refresh.</p>
+          <p className="text-ink">{queue.state.failure.message}</p>
           <ActionButton className="mt-2" onClick={refresh}>
             Retry
           </ActionButton>

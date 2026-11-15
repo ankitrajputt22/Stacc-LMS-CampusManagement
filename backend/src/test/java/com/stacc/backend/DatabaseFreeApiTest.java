@@ -135,6 +135,7 @@ import com.stacc.backend.hackathon.HackathonTeamMemberRepository;
 import com.stacc.backend.hackathon.HackathonTeamRepository;
 import com.stacc.backend.innovation.InnovationIdeaRepository;
 import com.stacc.backend.innovation.InnovationReviewRepository;
+import com.stacc.backend.lms.ai.job.AiJobRepository;
 import com.stacc.backend.library.LibraryCopyRepository;
 import com.stacc.backend.library.LibraryHoldRepository;
 import com.stacc.backend.library.LibraryLoanRepository;
@@ -284,6 +285,7 @@ import org.springframework.web.context.WebApplicationContext;
     AnalyticsQueries.class,
     DepartmentAnalyticsQueries.class,
     AreaAnalyticsQueries.class,
+    AiJobRepository.class,
     ReportExportRepository.class,
     LmsAnnouncementAttachmentRepository.class,
     HostelRoomChangeRepository.class,

@@ -403,6 +403,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_GRADE')` | LmsFacultySubmissionController |
 | `/api/v1/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/status` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |

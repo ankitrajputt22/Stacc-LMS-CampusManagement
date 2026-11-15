@@ -11,6 +11,7 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeRefresher;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.job.AiJobService;
 import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
@@ -41,9 +42,11 @@ public class AiFacultyService {
     private final AiKnowledgeRecords records;
     private final AiKnowledgeRefresher refresher;
     private final AiServiceClient client;
+    private final AiJobService jobs;
 
     public AiFacultyService(LmsFacultyAccessService facultyAccess, AiKnowledgeSources sources,
-            AiKnowledgeRecords records, AiKnowledgeRefresher refresher, AiServiceClient client) {
+            AiKnowledgeRecords records, AiKnowledgeRefresher refresher, AiServiceClient client, AiJobService jobs) {
+        this.jobs = jobs;
         this.facultyAccess = facultyAccess;
         this.sources = sources;
         this.records = records;
@@ -57,12 +60,18 @@ public class AiFacultyService {
         Optional<AiCourseKnowledgeIndex> index = records.find(lmsCourseId);
         if (index.isEmpty()) {
             return new AiKnowledgeStatusResponse(client.isEnabled(), "NOT_INDEXED", false, null,
-                    knowledge.publishedSourceCount(), null);
+                    knowledge.publishedSourceCount(), null, jobs.latestRefresh(lmsCourseId).orElse(null));
         }
         AiCourseKnowledgeIndex row = index.get();
         return new AiKnowledgeStatusResponse(client.isEnabled(), row.getStatus().name(),
                 row.isStaleFor(knowledge.fingerprint()), row.getIndexedAt(), knowledge.publishedSourceCount(),
-                row.getStatus() == AiKnowledgeIndexStatus.FAILED ? row.getLastError() : null);
+                row.getStatus() == AiKnowledgeIndexStatus.FAILED ? row.getLastError() : null, jobs.latestRefresh(lmsCourseId).orElse(null));
+    }
+
+    /** Queues a background refresh of the course's AI knowledge and answers at once. */
+    public AiJobService.JobView queueRefresh(Long accountId, Long lmsCourseId) {
+        requireAccess(accountId, lmsCourseId);
+        return jobs.queueRefresh(accountId, lmsCourseId);
     }
 
     public AiKnowledgeSyncResponse sync(Long accountId, Long lmsCourseId) {
