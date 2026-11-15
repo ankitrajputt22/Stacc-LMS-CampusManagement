@@ -34,6 +34,14 @@ function StatusDetails({ status }: { status: AiKnowledgeStatus }) {
         {status.indexedAt ? <time dateTime={status.indexedAt}>{formatDateTime(status.indexedAt)}</time> : 'Never'}
       </Row>
       <Row term="Published sources">{status.publishedSourceCount}</Row>
+      <Row term="Teacher documents">
+        {status.teacherDocumentCount}
+        {!status.teacherDocumentsCurrent && (
+          <span className="rounded-control border border-warning/40 bg-warning/5 px-2 py-0.5 text-sm font-medium text-warning">
+            Changed — refresh to include
+          </span>
+        )}
+      </Row>
     </dl>
   )
 }

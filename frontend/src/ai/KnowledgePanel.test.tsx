@@ -9,6 +9,7 @@ vi.mock('../api/aiApi')
 
 const ready: AiKnowledgeStatus = {
   enabled: true, status: 'READY', stale: true, indexedAt: '2026-11-10T05:00:00Z', publishedSourceCount: 4, failureMessage: null, job: null,
+  teacherDocumentCount: 0, teacherDocumentsCurrent: true,
 }
 const queued: AiJob = { jobId: 1, status: 'QUEUED', createdAt: '2026-11-15T05:00:00Z', startedAt: null, finishedAt: null, resultSummary: null, errorMessage: null }
 

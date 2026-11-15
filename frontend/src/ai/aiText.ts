@@ -33,6 +33,12 @@ export function citationKind(citation: AiCitation): string {
   if (citation.sourceType === 'TOPIC') {
     return 'Topic'
   }
+  if (citation.sourceType === 'TEACHER_DOCUMENT') {
+    return 'Teacher document'
+  }
+  if (citation.sourceType === 'NOTE') {
+    return 'My note'
+  }
   const place =
     citation.pageNumber !== null
       ? ` · Page ${citation.pageNumber}`

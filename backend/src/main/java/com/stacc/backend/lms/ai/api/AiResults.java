@@ -2,6 +2,7 @@ package com.stacc.backend.lms.ai.api;
 
 import com.stacc.backend.lms.ai.AiCourseKnowledge;
 import com.stacc.backend.lms.ai.AiServiceMessages.Citation;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +30,14 @@ final class AiResults {
     }
 
     static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge) {
+        return citations(cited, knowledge, null);
+    }
+
+    /**
+     * As above, and also keeps citations of the teacher documents Teacher AI was allowed to use (v0.13.5). Without
+     * teacher knowledge, as for every student request, a teacher document citation is always dropped.
+     */
+    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
         if (cited == null) {
             return List.of();
         }
@@ -46,6 +55,9 @@ final class AiResults {
             } else if ("STUDY_MATERIAL".equals(citation.sourceType())) {
                 knowledge.material(id).ifPresent(material -> result.add(new AiCitationResponse(
                         "STUDY_MATERIAL", id, material.title(), material.fileName(), page, slide)));
+            } else if (teacher != null && AiTeacherKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
+                teacher.document(id).ifPresent(document -> result.add(new AiCitationResponse(
+                        AiTeacherKnowledge.SOURCE_TYPE, id, document.title(), null, null, null)));
             }
         }
         return List.copyOf(result);

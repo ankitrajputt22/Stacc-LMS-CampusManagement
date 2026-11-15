@@ -17,7 +17,7 @@ from app.errors import no_indexable_content
 from app.extraction.extractors import ExtractionError, Segment, extract
 from app.indexing.chunking import chunk_segments, split_headings
 from app.indexing.store import CourseIndex, IndexStore, StoredChunk, unit_vectors
-from app.models.schemas import FileType, ReplaceIndexRequest, ReplaceIndexResponse, SourceType
+from app.models.schemas import FileType, ReplaceIndexRequest, ReplaceIndexResponse
 from app.providers.base import EmbeddingProvider
 
 log = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class IndexBuilder:
         return _Prepared(chunks, indexed, skipped)
 
     def _segments(self, source, max_chars: int) -> list[Segment]:
-        if source.sourceType is SourceType.TOPIC:
+        if source.sourceType.carries_text:
             return split_headings(source.text[:max_chars])
         try:
             # Checked before decoding: base64 text is a third longer than the file.

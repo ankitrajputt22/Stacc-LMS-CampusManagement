@@ -84,6 +84,7 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
 
     // --- AI
 
-    @Query("select cast(knowledge.status as string), count(knowledge) from AiCourseKnowledgeIndex knowledge group by knowledge.status")
+    @Query("select cast(knowledge.status as string), count(knowledge) from AiCourseKnowledgeIndex knowledge"
+            + " where knowledge.kind = com.stacc.backend.lms.ai.AiIndexKind.COURSE_CONTENT group by knowledge.status")
     List<Object[]> countKnowledgeIndexesByStatus();
 }

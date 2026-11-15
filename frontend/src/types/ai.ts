@@ -1,7 +1,7 @@
 // Shapes of the AI learning API (docs/ai-learning.md). Only what the backend sends: answers, summaries, and
 // questions come with citations of published course sources, never storage keys, prompts, or scores.
 
-export type AiSourceType = 'TOPIC' | 'STUDY_MATERIAL'
+export type AiSourceType = 'TOPIC' | 'STUDY_MATERIAL' | 'TEACHER_DOCUMENT' | 'NOTE'
 
 /** A published course source an AI result is based on. */
 export type AiCitation = {
@@ -54,6 +54,20 @@ export type AiKnowledgeStatus = {
   failureMessage: string | null
   /** The latest background refresh job, or null when none was ever queued. */
   job: AiJob | null
+  /** Active teacher-only documents (v0.13.5). */
+  teacherDocumentCount: number
+  /** False until a refresh includes the latest teacher document changes. */
+  teacherDocumentsCurrent: boolean
+}
+
+/** A teacher-only document (v0.13.5): plain text only AI Tools read. Students never see it. */
+export type AiTeacherDocument = {
+  id: number
+  title: string
+  content: string
+  status: 'ACTIVE' | 'ARCHIVED'
+  createdAt: string
+  updatedAt: string
 }
 
 /** A background refresh job (v0.13.1); results and errors are short safe texts from the backend. */

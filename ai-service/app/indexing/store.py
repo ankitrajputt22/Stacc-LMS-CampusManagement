@@ -40,7 +40,7 @@ CACHE_SIZE = 16
 class StoredChunk:
     sourceType: str
     sourceId: int
-    topicId: int
+    topicId: int | None
     title: str
     fileName: str | None
     pageNumber: int | None

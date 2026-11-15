@@ -9,10 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface AiCourseKnowledgeIndexRepository extends JpaRepository<AiCourseKnowledgeIndex, Long> {
 
-    Optional<AiCourseKnowledgeIndex> findByLmsCourseId(Long lmsCourseId);
+    Optional<AiCourseKnowledgeIndex> findByLmsCourseIdAndKind(Long lmsCourseId, AiIndexKind kind);
 
-    /** The row locked for a change, so two refreshes of one course never run at once. */
+    /** The row locked for a change, so two refreshes of one index never run at once. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select knowledge from AiCourseKnowledgeIndex knowledge where knowledge.lmsCourse.id = :lmsCourseId")
-    Optional<AiCourseKnowledgeIndex> findForUpdateByLmsCourseId(@Param("lmsCourseId") Long lmsCourseId);
+    @Query("select knowledge from AiCourseKnowledgeIndex knowledge where knowledge.lmsCourse.id = :lmsCourseId"
+            + " and knowledge.kind = :kind")
+    Optional<AiCourseKnowledgeIndex> findForUpdateByLmsCourseIdAndKind(@Param("lmsCourseId") Long lmsCourseId,
+            @Param("kind") AiIndexKind kind);
 }

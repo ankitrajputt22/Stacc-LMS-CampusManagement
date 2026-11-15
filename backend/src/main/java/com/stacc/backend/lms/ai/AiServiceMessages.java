@@ -14,13 +14,21 @@ public final class AiServiceMessages {
     private AiServiceMessages() {
     }
 
-    /** One published source. A topic carries its text; a study material carries its file's bytes as Base64. */
+    /**
+     * One source. A topic, teacher document, or note carries its text; a study material carries its file's bytes as
+     * Base64. Only topics and study materials name a topic.
+     */
     public record IndexSource(
-            String sourceType, long sourceId, long topicId, String title, String text,
+            String sourceType, long sourceId, Long topicId, String title, String text,
             String fileName, String fileType, String contentBase64) {
 
         static IndexSource topic(long topicId, String title, String text) {
             return new IndexSource("TOPIC", topicId, topicId, title, text, null, null, null);
+        }
+
+        /** A text source kept in its own index (v0.13.5, v0.13.6): a teacher document or a student's note. */
+        public static IndexSource text(String sourceType, long sourceId, String title, String text) {
+            return new IndexSource(sourceType, sourceId, null, title, text, null, null, null);
         }
 
         static IndexSource material(long materialId, long topicId, String title, String fileName, String fileType,

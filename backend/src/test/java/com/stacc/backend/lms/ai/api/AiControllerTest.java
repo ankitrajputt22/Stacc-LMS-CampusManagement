@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,7 +76,11 @@ class AiControllerTest extends DatabaseFreeApiTest {
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
         return List.of(get("/api/v1/lms/faculty/courses/7/ai/status"), post("/api/v1/lms/faculty/courses/7/ai/sync"),
                 json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
-                        "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}"));
+                        "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}"),
+                get("/api/v1/lms/faculty/courses/7/ai/teacher-documents"),
+                json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
+                json(put("/api/v1/lms/faculty/ai/teacher-documents/9"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
+                post("/api/v1/lms/faculty/ai/teacher-documents/9/archive"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -178,6 +183,10 @@ class AiControllerTest extends DatabaseFreeApiTest {
         }
         assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
                 "{\"questionCount\":20,\"difficulty\":\"MIXED\",\"questionType\":\"MIXED\"}"), FACULTY)).isEqualTo(503);
+        for (String body : List.of("{\"title\":\"\",\"content\":\"Text\"}", "{\"title\":\"Notes\"}",
+                "{\"title\":\"Notes\",\"content\":\"" + "x".repeat(20_001) + "\"}")) {
+            assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), body), FACULTY)).isEqualTo(400);
+        }
     }
 
     @Test

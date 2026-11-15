@@ -36,6 +36,13 @@ class Strict(BaseModel):
 class SourceType(StrEnum):
     TOPIC = "TOPIC"
     STUDY_MATERIAL = "STUDY_MATERIAL"
+    # Kept in their own indexes (v0.13.5, v0.13.6): a course's teacher-only documents and a student's private notes.
+    TEACHER_DOCUMENT = "TEACHER_DOCUMENT"
+    NOTE = "NOTE"
+
+    @property
+    def carries_text(self) -> bool:
+        return self is not SourceType.STUDY_MATERIAL
 
 
 class FileType(StrEnum):
@@ -64,11 +71,12 @@ class QuestionType(StrEnum):
 
 
 class IndexSource(Strict):
-    """One published source. A topic carries its plain text; a study material carries its file."""
+    """One source. A topic, teacher document, or note carries its text; a study material carries its file. Only
+    topics and study materials belong to a topic."""
 
     sourceType: SourceType
     sourceId: int = Field(gt=0)
-    topicId: int = Field(gt=0)
+    topicId: int | None = Field(default=None, gt=0)
     title: str = Field(min_length=1, max_length=200)
     text: str | None = Field(default=None, max_length=25_000)
     fileName: str | None = Field(default=None, max_length=255)
@@ -77,11 +85,13 @@ class IndexSource(Strict):
 
     @model_validator(mode="after")
     def matches_type(self) -> IndexSource:
-        if self.sourceType is SourceType.TOPIC:
+        if self.sourceType.carries_text:
             if not self.text or self.fileName or self.fileType or self.contentBase64:
-                raise ValueError("a topic source carries text only")
+                raise ValueError("a text source carries text only")
         elif not (self.fileName and self.fileType and self.contentBase64) or self.text:
             raise ValueError("a study material source carries a file only")
+        if (self.topicId is None) != (self.sourceType in (SourceType.TEACHER_DOCUMENT, SourceType.NOTE)):
+            raise ValueError("topics and study materials name their topic; other sources do not")
         return self
 
 
@@ -103,7 +113,7 @@ class ReplaceIndexResponse(BaseModel):
 class Citation(BaseModel):
     sourceType: SourceType
     sourceId: int
-    topicId: int
+    topicId: int | None = None
     title: str
     fileName: str | None = None
     pageNumber: int | None = None
