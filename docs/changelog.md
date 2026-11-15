@@ -40,6 +40,7 @@
 - **0.14.1:** AI drafts go into the question bank as Needs review with their sources, after a self-check of every choice and true/false key.
 - **0.14.2:** quality checks on AI drafts: possible duplicates, matches in final papers, out-of-syllabus flags, and difficulty and Bloom suggestions.
 - **0.14.3:** draft quizzes built from reviewed bank questions first, with AI only for gaps.
+- **0.14.4:** exam paper sets from one blueprint, what the bank has per row, and AI drafts for short rows.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
