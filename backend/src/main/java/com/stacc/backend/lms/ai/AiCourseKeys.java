@@ -29,7 +29,7 @@ public final class AiCourseKeys {
         return sha256Hex("stacc-student-notes:" + lmsCourseId + ":" + accountId).substring(0, 32);
     }
 
-    static String sha256Hex(String text) {
+    public static String sha256Hex(String text) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);

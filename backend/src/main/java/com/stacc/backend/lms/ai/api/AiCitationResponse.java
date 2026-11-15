@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * is never a storage key, path, or similarity score.
  */
 public record AiCitationResponse(
-        @Schema(description = "TOPIC or STUDY_MATERIAL.") String sourceType,
+        @Schema(description = "TOPIC, STUDY_MATERIAL, or, in AI Tools only, TEACHER_DOCUMENT.") String sourceType,
         long sourceId,
         String title,
         @Schema(description = "The study material's file name, or null for a topic.") String fileName,

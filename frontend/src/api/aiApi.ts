@@ -6,6 +6,7 @@ import type {
   AiKnowledgeStatus,
   AiKnowledgeSync,
   AiPracticeSet,
+  AiTeacherDocument,
   AiTopicSummary,
 } from '../types/ai'
 import { apiClient } from './apiClient'
@@ -66,4 +67,25 @@ export async function generateCoursePracticeQuestions(
   return (
     await apiClient.post<AiPracticeSet>(`/lms/courses/${lmsCourseId}/ai/practice`, { questionCount, topicId }, { signal })
   ).data
+}
+
+/** The course's active teacher-only documents (v0.13.5). */
+export async function getTeacherDocuments(lmsCourseId: number, signal?: AbortSignal): Promise<AiTeacherDocument[]> {
+  const response = await apiClient.get<AiTeacherDocument[]>(`/lms/faculty/courses/${lmsCourseId}/ai/teacher-documents`, { signal })
+  return response.data
+}
+
+export async function createTeacherDocument(lmsCourseId: number, title: string, content: string): Promise<AiTeacherDocument> {
+  const response = await apiClient.post<AiTeacherDocument>(`/lms/faculty/courses/${lmsCourseId}/ai/teacher-documents`, { title, content })
+  return response.data
+}
+
+export async function updateTeacherDocument(documentId: number, title: string, content: string): Promise<AiTeacherDocument> {
+  const response = await apiClient.put<AiTeacherDocument>(`/lms/faculty/ai/teacher-documents/${documentId}`, { title, content })
+  return response.data
+}
+
+export async function archiveTeacherDocument(documentId: number): Promise<AiTeacherDocument> {
+  const response = await apiClient.post<AiTeacherDocument>(`/lms/faculty/ai/teacher-documents/${documentId}/archive`)
+  return response.data
 }

@@ -207,6 +207,14 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Exclude from AI.** Faculty may keep a study material out of AI knowledge (`PUT /api/v1/lms/faculty/materials/{id}/ai-exclusion`, `LMS_CONTENT_MANAGE` under the faculty access policy; Exclude from AI and Include in AI on the teaching Files page). Students still see and download it. The flag is part of the knowledge fingerprint, so the course's knowledge shows as out of date until the next refresh leaves the file out.
 - The knowledge format is `stacc-ai-knowledge-v2` and the index format version 2, so every course needs one refresh after the upgrade.
 
+### Teacher-only documents (v0.13.5)
+
+- **What they are.** Faculty who teach a course keep plain-text notes and drafts (`AiTeacherDocument` in `lms.ai.teacher`, table `ai_teacher_documents`: a title and up to 20,000 characters) at Teacher-only documents on the AI Tools page. At most 50 are active per course, checked under the course row lock. They are edited and archived (confirmed first), never deleted.
+- **Who reads them.** Only AI Tools (assessment drafts). Students never see them, and student requests never name the teacher index or accept a `TEACHER_DOCUMENT` citation.
+- **Their own index.** They are indexed under `AiCourseKeys.forTeacherDocuments` with their own fingerprint (`stacc-ai-teacher-v1`) and their own metadata row (`ai_course_knowledge_indexes.index_kind = TEACHER_DOCUMENTS`; the published content keeps `COURSE_CONTENT`). Refresh AI knowledge refreshes both; a course with only teacher documents refreshes only those.
+- **When they are used.** An assessment draft adds the teacher index as an `additionalIndexes` entry, with the active documents as its allowed sources, only when its last refresh covers exactly the current documents. Until then the status shows "Changed — refresh to include", and the draft uses the course content alone.
+- **Routes.** `GET` and `POST /api/v1/lms/faculty/courses/{id}/ai/teacher-documents`, `PUT /api/v1/lms/faculty/ai/teacher-documents/{documentId}`, and `POST .../{documentId}/archive`, with the same rule as the other AI Tools (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, and the faculty access policy; the course comes from the stored document). No new permission.
+
 ### What a refresh does
 
 1. Faculty access is checked.

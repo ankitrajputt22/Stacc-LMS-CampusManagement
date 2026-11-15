@@ -17,7 +17,11 @@ import com.stacc.backend.lms.ai.AiCourseKnowledgeIndex;
 import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeRefresher;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
+import com.stacc.backend.lms.ai.AiCourseKeys;
+import com.stacc.backend.lms.ai.AiIndexKind;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
@@ -46,7 +50,11 @@ class AiFacultyServiceTest {
     private final AiKnowledgeRecords records = mock(AiKnowledgeRecords.class);
     private final AiKnowledgeRefresher refresher = mock(AiKnowledgeRefresher.class);
     private final AiServiceClient client = mock(AiServiceClient.class);
-    private final AiFacultyService service = new AiFacultyService(access, sources, records, refresher, client, mock(AiJobService.class));
+    private final AiTeacherDocumentService teacherDocuments = mock(AiTeacherDocumentService.class);
+    private final AiFacultyService service = new AiFacultyService(access, sources, records, refresher, client, mock(AiJobService.class),
+            teacherDocuments);
+    private static final AiTeacherKnowledge TEACHER = new AiTeacherKnowledge("e".repeat(64),
+            List.of(new AiTeacherKnowledge.Document(9L, "Exam focus", "Normal forms matter.")));
 
     private static final Citation CITED = new Citation("TOPIC", 1L, 1L, "t", null, null, null);
 
@@ -61,6 +69,7 @@ class AiFacultyServiceTest {
         when(access.canAccessCourse(FACULTY_A, COURSE_A)).thenReturn(true);
         when(access.canAccessCourse(FACULTY_A, COURSE_B)).thenReturn(false);
         when(client.isEnabled()).thenReturn(true);
+        when(teacherDocuments.knowledge(COURSE_A)).thenReturn(new AiTeacherKnowledge("0".repeat(64), List.of()));
         when(sources.publishedKnowledge(COURSE_A)).thenReturn(new AiCourseKnowledge(CURRENT,
                 List.of(new AiCourseKnowledge.Topic(1, 10, "Normal forms", "Text")), List.of()));
     }
@@ -140,6 +149,35 @@ class AiFacultyServiceTest {
         verify(client).assessmentDraft(anyString(), sent.capture());
         assertThat(sent.getValue()).isEqualTo(new AssessmentDraftRequest(CURRENT, 2, "MEDIUM", "MIXED", "Focus on normal forms.",
                 List.of(new AiServiceMessages.SourceRef("TOPIC", 1))));
+    }
+
+    @Test
+    void draftUsesTeacherDocumentsOnlyWhenTheirIndexIsCurrent() {
+        when(records.find(COURSE_A)).thenReturn(Optional.of(ready(CURRENT)));
+        when(teacherDocuments.knowledge(COURSE_A)).thenReturn(TEACHER);
+        Citation teacherCited = new Citation("TEACHER_DOCUMENT", 9L, null, "x", null, null, null);
+        when(client.assessmentDraft(anyString(), any())).thenReturn(new AssessmentDraftResult("Quiz", null, List.of(
+                new AssessmentQuestion("SHORT_ANSWER", "Why 3NF?", List.of(), "x", BigDecimal.ONE, List.of(teacherCited))), false));
+
+        // Not yet refreshed: the teacher index is left out, and a teacher citation is dropped.
+        assertThat(service.assessmentDraft(FACULTY_A, COURSE_A, request(AiQuestionType.MIXED)).questions()).isEmpty();
+        assertThat(service.status(FACULTY_A, COURSE_A).teacherDocumentsCurrent()).isFalse();
+
+        AiCourseKnowledgeIndex teacherIndex = new AiCourseKnowledgeIndex(ContentFixtures.lmsCourse(COURSE_A), AiIndexKind.TEACHER_DOCUMENTS);
+        teacherIndex.ready("e".repeat(64), Instant.parse("2026-10-27T09:00:00Z"));
+        when(records.find(COURSE_A, AiIndexKind.TEACHER_DOCUMENTS)).thenReturn(Optional.of(teacherIndex));
+        AiAssessmentDraftResponse draft = service.assessmentDraft(FACULTY_A, COURSE_A, request(AiQuestionType.MIXED));
+        assertThat(draft.questions().get(0).citations()).containsExactly(
+                new AiCitationResponse("TEACHER_DOCUMENT", 9L, "Exam focus", null, null, null));
+        assertThat(service.status(FACULTY_A, COURSE_A).teacherDocumentCount()).isEqualTo(1);
+        assertThat(service.status(FACULTY_A, COURSE_A).teacherDocumentsCurrent()).isTrue();
+
+        ArgumentCaptor<AssessmentDraftRequest> sent = ArgumentCaptor.forClass(AssessmentDraftRequest.class);
+        verify(client, org.mockito.Mockito.times(2)).assessmentDraft(anyString(), sent.capture());
+        assertThat(sent.getAllValues().get(0).additionalIndexes()).isEmpty();
+        assertThat(sent.getAllValues().get(1).additionalIndexes()).containsExactly(new AiServiceMessages.IndexRef(
+                AiCourseKeys.forTeacherDocuments(COURSE_A), "e".repeat(64),
+                List.of(new AiServiceMessages.SourceRef("TEACHER_DOCUMENT", 9L))));
     }
 
     @Test

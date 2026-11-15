@@ -51,3 +51,32 @@ def test_bad_index_keys_and_unknown_fields_are_refused(indexed):
 def test_course_sources_still_answer_without_a_list(indexed):
     assert len(course_sources()) == 3
     assert post(indexed, "ask", {"question": "What does commit do in a transaction?"}).json()["citations"]
+
+
+def teacher_document(source_id: int, title: str, text: str) -> dict:
+    return {"sourceType": "TEACHER_DOCUMENT", "sourceId": source_id, "title": title, "text": text}
+
+
+def test_teacher_documents_and_notes_are_text_sources_without_a_topic(client):
+    assert replace(client, [topic(1, "Transactions", TRANSACTIONS)]).status_code == 200
+    teacher = replace(client, [teacher_document(9, "Exam focus", NORMALIZATION)], fingerprint=OTHER_FINGERPRINT,
+                      course=TEACHER)
+    assert teacher.status_code == 200
+    extra = [{"indexKey": TEACHER, "indexFingerprint": OTHER_FINGERPRINT,
+              "allowedSources": [{"sourceType": "TEACHER_DOCUMENT", "sourceId": 9}]}]
+    body = post(client, "ask", {"question": "What does third normal form remove?", "additionalIndexes": extra}).json()
+    cited = next(c for c in body["citations"] if c["sourceType"] == "TEACHER_DOCUMENT")
+    assert cited == {"sourceType": "TEACHER_DOCUMENT", "sourceId": 9, "topicId": None, "title": "Exam focus",
+                     "fileName": None, "pageNumber": None, "slideNumber": None}
+    # Without the teacher index, the same question finds nothing of it.
+    alone = post(client, "ask", {"question": "What does third normal form remove?"}).json()
+    assert all(c["sourceType"] != "TEACHER_DOCUMENT" for c in alone["citations"])
+
+
+@pytest.mark.parametrize("source", [
+    {"sourceType": "TEACHER_DOCUMENT", "sourceId": 9, "topicId": 1, "title": "Doc", "text": "Text"},
+    {"sourceType": "NOTE", "sourceId": 9, "title": "Note"},
+    {"sourceType": "TOPIC", "sourceId": 9, "title": "Topic", "text": "Text"},
+])
+def test_source_shapes_are_checked(client, source):
+    assert replace(client, [source]).status_code == 400

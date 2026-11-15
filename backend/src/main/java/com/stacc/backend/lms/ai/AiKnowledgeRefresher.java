@@ -3,6 +3,7 @@ package com.stacc.backend.lms.ai;
 import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.lms.ai.AiServiceMessages.ReplaceIndexRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.ReplaceIndexResult;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import java.time.Instant;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -68,6 +69,41 @@ public class AiKnowledgeRefresher {
             throw AiErrors.of(exception, AiErrors.TEACHING_NOT_READY);
         } catch (RuntimeException exception) {
             records.markFailed(lmsCourseId, "The refresh failed. Try again.");
+            throw exception;
+        }
+    }
+
+    /**
+     * Rebuilds the course's teacher-only index (v0.13.5) from its active teacher documents, in the same steps as the
+     * course index. Callers check faculty access first. A course without teacher documents gets no teacher index.
+     */
+    public Outcome refreshTeacherDocuments(Long lmsCourseId, AiTeacherKnowledge teacher) {
+        if (!client.isEnabled()) {
+            throw AiErrors.unavailable();
+        }
+        if (teacher.isEmpty()) {
+            throw AiErrors.noContent();
+        }
+        try {
+            records.claim(lmsCourseId, AiIndexKind.TEACHER_DOCUMENTS);
+        } catch (DataIntegrityViolationException exception) {
+            throw new ApiException(HttpStatus.CONFLICT, AiKnowledgeRecords.ALREADY_REFRESHING);
+        }
+        try {
+            ReplaceIndexResult result = client.replaceIndex(AiCourseKeys.forTeacherDocuments(lmsCourseId),
+                    new ReplaceIndexRequest(teacher.fingerprint(), teacher.indexSources()));
+            if (result.indexedSourceCount() == null || result.skippedSourceCount() == null
+                    || result.indexedSourceCount() < 1 || !teacher.fingerprint().equals(result.contentFingerprint())) {
+                throw new AiServiceException(AiServiceException.Reason.BAD_RESPONSE);
+            }
+            AiCourseKnowledgeIndex index = records.markReady(lmsCourseId, AiIndexKind.TEACHER_DOCUMENTS,
+                    teacher.fingerprint());
+            return new Outcome(result.indexedSourceCount(), result.skippedSourceCount(), index.getIndexedAt());
+        } catch (AiServiceException exception) {
+            records.markFailed(lmsCourseId, AiIndexKind.TEACHER_DOCUMENTS, AiErrors.refreshFailure(exception.reason()));
+            throw AiErrors.of(exception, AiErrors.TEACHING_NOT_READY);
+        } catch (RuntimeException exception) {
+            records.markFailed(lmsCourseId, AiIndexKind.TEACHER_DOCUMENTS, "The refresh failed. Try again.");
             throw exception;
         }
     }

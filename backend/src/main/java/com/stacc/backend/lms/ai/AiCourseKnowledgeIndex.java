@@ -10,7 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,9 +32,14 @@ public class AiCourseKnowledgeIndex {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "lms_course_id", nullable = false, unique = true, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
     private LmsCourse lmsCourse;
+
+    // One row per course and kind (v0.13.5): the published content, and the teacher-only documents.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "index_kind", nullable = false, length = 30, updatable = false)
+    private AiIndexKind kind;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -61,13 +66,23 @@ public class AiCourseKnowledgeIndex {
         // Required by JPA.
     }
 
-    /** The first refresh of a course: it starts building. */
+    /** The first refresh of a course's published content: it starts building. */
     public AiCourseKnowledgeIndex(LmsCourse lmsCourse) {
-        if (lmsCourse == null) {
-            throw new IllegalArgumentException("lmsCourse is required");
+        this(lmsCourse, AiIndexKind.COURSE_CONTENT);
+    }
+
+    /** The first refresh of one of a course's indexes: it starts building. */
+    public AiCourseKnowledgeIndex(LmsCourse lmsCourse, AiIndexKind kind) {
+        if (lmsCourse == null || kind == null) {
+            throw new IllegalArgumentException("lmsCourse and kind are required");
         }
         this.lmsCourse = lmsCourse;
+        this.kind = kind;
         this.status = AiKnowledgeIndexStatus.BUILDING;
+    }
+
+    public AiIndexKind getKind() {
+        return kind;
     }
 
     public Long getId() {

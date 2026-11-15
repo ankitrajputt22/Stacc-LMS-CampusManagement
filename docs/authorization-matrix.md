@@ -387,6 +387,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_QUIZ_TAKE')` | LmsStudentQuizController |
 | `/api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}/attempts` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_QUIZ_TAKE')` | LmsStudentQuizController |
 | `/api/v1/lms/courses/{lmsCourseId}/syllabus` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsSyllabusController |
+| `/api/v1/lms/faculty/ai/teacher-documents/{documentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
+| `/api/v1/lms/faculty/ai/teacher-documents/{documentId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
 | `/api/v1/lms/faculty/announcements/{announcementId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/files` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
@@ -406,6 +408,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/status` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |

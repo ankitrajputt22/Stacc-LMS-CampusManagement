@@ -11,6 +11,8 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeRefresher;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,10 +39,12 @@ public class AiJobService {
     private final AiKnowledgeRefresher refresher;
     private final AiServiceClient client;
     private final AiJobSteps steps;
+    private final AiTeacherDocumentService teacherDocuments;
     private final Clock clock;
 
     public AiJobService(AiJobRepository jobs, AiKnowledgeSources sources, AiKnowledgeRefresher refresher, AiServiceClient client,
-            AiJobSteps steps, Clock clock) {
+            AiJobSteps steps, AiTeacherDocumentService teacherDocuments, Clock clock) {
+        this.teacherDocuments = teacherDocuments;
         this.jobs = jobs;
         this.sources = sources;
         this.refresher = refresher;
@@ -54,7 +58,7 @@ public class AiJobService {
         if (!client.isEnabled()) {
             throw AiErrors.unavailable();
         }
-        if (!sources.publishedKnowledge(lmsCourseId).hasIndexableContent()) {
+        if (!sources.publishedKnowledge(lmsCourseId).hasIndexableContent() && teacherDocuments.knowledge(lmsCourseId).isEmpty()) {
             throw AiErrors.noContent();
         }
         try {
@@ -77,9 +81,7 @@ public class AiJobService {
         String summary = null;
         String error = null;
         try {
-            AiKnowledgeRefresher.Outcome outcome = refresher.refresh(claimed.getLmsCourseId());
-            summary = "Indexed " + outcome.indexedSourceCount() + " sources" + (outcome.skippedSourceCount() > 0
-                    ? ", skipped " + outcome.skippedSourceCount() + "." : ".");
+            summary = refreshAll(claimed.getLmsCourseId());
         } catch (ApiException refused) {
             error = refused.getMessage();
         } catch (RuntimeException unexpected) {
@@ -87,6 +89,29 @@ public class AiJobService {
         }
         steps.finish(claimed.getId(), summary, error, now());
         return true;
+    }
+
+    /**
+     * Refreshes the course's published-content index and, when it has teacher documents (v0.13.5), its teacher-only
+     * index too. A course with only teacher documents refreshes only those.
+     */
+    private String refreshAll(Long lmsCourseId) {
+        StringBuilder summary = new StringBuilder();
+        if (sources.publishedKnowledge(lmsCourseId).hasIndexableContent()) {
+            AiKnowledgeRefresher.Outcome outcome = refresher.refresh(lmsCourseId);
+            summary.append("Indexed ").append(outcome.indexedSourceCount()).append(" sources")
+                    .append(outcome.skippedSourceCount() > 0 ? ", skipped " + outcome.skippedSourceCount() + "." : ".");
+        }
+        AiTeacherKnowledge teacher = teacherDocuments.knowledge(lmsCourseId);
+        if (!teacher.isEmpty()) {
+            AiKnowledgeRefresher.Outcome outcome = refresher.refreshTeacherDocuments(lmsCourseId, teacher);
+            summary.append(summary.isEmpty() ? "" : " ").append("Indexed ").append(outcome.indexedSourceCount())
+                    .append(outcome.indexedSourceCount() == 1 ? " teacher document." : " teacher documents.");
+        }
+        if (summary.isEmpty()) {
+            throw AiErrors.noContent();
+        }
+        return summary.toString();
     }
 
     /** Fails jobs a stopped process left running. */
