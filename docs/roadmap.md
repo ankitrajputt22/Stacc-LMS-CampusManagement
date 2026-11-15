@@ -227,7 +227,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | ★ 0.13.6 | Student notes | Private notes per student with a quota, "Course + my notes" mode, labelled citations, true deletion. Done. |
 | ★ 0.13.7 | Controls and limits | A per-course switch, one question at a time per student with a queue, a request log without content, and AI health for admins. Done (`V133`). |
 | ★ 0.13.8 | Evaluation | A question set with expected sources, a retrieval check, and leakage tests that run with the fake model. Done. |
-| ★ 0.13.9 | Ask My Course | The ask page redesigned with modes, module scope, and source cards. |
+| ★ 0.13.9 | Ask My Course | The ask page redesigned with modes, module scope, and source cards. Done. |
 
 ## v0.14 Teacher AI
 
@@ -298,4 +298,4 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
 | v0.16 Analytics and operations | Done (0.16.1 to 0.16.8) |
 | v1.0 Stable release | Done: released as `v1.0.0` |
-| v0.13 – v0.15 AI | 0.13.1 to 0.13.8 done; the rest later |
+| v0.13 – v0.15 AI | v0.13 done; v0.14 and v0.15 later |

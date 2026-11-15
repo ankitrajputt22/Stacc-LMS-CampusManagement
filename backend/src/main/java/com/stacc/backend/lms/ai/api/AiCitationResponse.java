@@ -12,5 +12,13 @@ public record AiCitationResponse(
         String title,
         @Schema(description = "The study material's file name, or null for a topic.") String fileName,
         @Schema(description = "The PDF page, when known.") Integer pageNumber,
-        @Schema(description = "The slide, when known.") Integer slideNumber) {
+        @Schema(description = "The slide, when known.") Integer slideNumber,
+        @Schema(description = "The course page (topic) the source is on, for a link to it: the topic itself, or a study "
+                + "material's page. Null for notes and teacher documents (v0.13.9).") Long pageId) {
+
+    /** A source that is on no course page: a note or a teacher document. */
+    public AiCitationResponse(String sourceType, long sourceId, String title, String fileName, Integer pageNumber,
+            Integer slideNumber) {
+        this(sourceType, sourceId, title, fileName, pageNumber, slideNumber, null);
+    }
 }

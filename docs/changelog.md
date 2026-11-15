@@ -36,6 +36,7 @@
 - **0.13.6:** private student notes with a "Course + my notes" mode, labelled citations, and true deletion.
 - **0.13.7:** AI controls and limits: a per-course switch, one request at a time per person with a queue, a request log without content, and AI health for admins.
 - **0.13.8:** an AI retrieval evaluation with expected sources, and leakage tests, run with the fake model.
+- **0.13.9:** Ask My Course: three search modes, a module scope, and source cards that link to their pages.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

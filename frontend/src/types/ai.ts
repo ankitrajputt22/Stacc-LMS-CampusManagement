@@ -12,7 +12,12 @@ export type AiCitation = {
   fileName: string | null
   pageNumber: number | null
   slideNumber: number | null
+  /** The course page the source is on, for a link (v0.13.9); null for notes and teacher documents. */
+  pageId?: number | null
 }
+
+/** What a question searches (v0.13.9). */
+export type AiAskMode = 'COURSE' | 'COURSE_AND_NOTES' | 'NOTES_ONLY'
 
 /** A grounded answer, or insufficientContext with no answer and no citations. */
 export type AiAnswer = {

@@ -9,6 +9,7 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.AiServiceException;
+import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
@@ -41,6 +42,8 @@ public class AiStudyService {
     static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
     static final String TOPIC_UNAVAILABLE = "Topic not found or unavailable.";
     static final String QUESTION_LENGTH = "Enter a question of 2 to 1,000 characters.";
+    static final String MODULE_UNAVAILABLE = "Module not found or unavailable.";
+    static final String MODULE_WITH_NOTES_ONLY = "Choose a module only when asking about the course.";
 
     private final LmsStudentAccessService studentAccess;
     private final AiKnowledgeSources sources;
@@ -71,13 +74,27 @@ public class AiStudyService {
         if (question.length() < 2 || question.length() > 1000) {
             throw new ApiException(HttpStatus.BAD_REQUEST, QUESTION_LENGTH);
         }
+        AiAskMode mode = request.effectiveMode();
+        if (mode == AiAskMode.NOTES_ONLY && request.moduleId() != null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, MODULE_WITH_NOTES_ONLY);
+        }
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId);
-        // "Course + my notes" (v0.13.6): only the asking student's own notes index, rebuilt first if they changed.
+        // A module scope (v0.13.9) narrows the allowed course sources to that module's published pages and files.
+        if (request.moduleId() != null && !knowledge.hasModule(request.moduleId())) {
+            throw new ApiException(HttpStatus.NOT_FOUND, MODULE_UNAVAILABLE);
+        }
+        List<AiServiceMessages.SourceRef> courseSources = mode == AiAskMode.NOTES_ONLY ? List.of()
+                : request.moduleId() != null ? knowledge.allowedSourcesInModule(request.moduleId()) : knowledge.allowedSources();
+        // "Course + my notes" (v0.13.6) and "My notes only" (v0.13.9): only the asking student's own notes index,
+        // rebuilt first if they changed.
         Optional<AiStudentNoteIndexer.Scope> myNotes = request.withMyNotes()
                 ? call(() -> notes.current(lmsCourseId, accountId)) : Optional.empty();
+        if (mode == AiAskMode.NOTES_ONLY && myNotes.isEmpty()) {
+            return AiAnswerResponse.insufficient();
+        }
         List<IndexRef> additional = myNotes.map(scope -> List.of(scope.index())).orElse(List.of());
         AskResult result = call(() -> client.ask(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new AskRequest(knowledge.fingerprint(), question, knowledge.allowedSources(), additional)));
+                new AskRequest(knowledge.fingerprint(), question, courseSources, additional)));
         List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge, null,
                 myNotes.map(AiStudentNoteIndexer.Scope::knowledge).orElse(null));
         String answer = AiResults.text(result.answer(), AiResults.ANSWER_MAX);

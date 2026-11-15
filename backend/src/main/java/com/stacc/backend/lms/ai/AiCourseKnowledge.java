@@ -76,6 +76,22 @@ public record AiCourseKnowledge(String fingerprint, List<Topic> topics, List<Mat
                 materials.stream().map(material -> new AiServiceMessages.SourceRef("STUDY_MATERIAL", material.id()))).toList();
     }
 
+    /** Whether the module has a published topic in this knowledge (v0.13.9). */
+    public boolean hasModule(long moduleId) {
+        return topics.stream().anyMatch(topic -> topic.moduleId() == moduleId);
+    }
+
+    /** The allowed sources of one module only: its published topics and their study materials (v0.13.9). */
+    public List<AiServiceMessages.SourceRef> allowedSourcesInModule(long moduleId) {
+        Set<Long> topicIds = new java.util.HashSet<>();
+        topics.stream().filter(topic -> topic.moduleId() == moduleId).forEach(topic -> topicIds.add(topic.id()));
+        return Stream.concat(
+                topics.stream().filter(topic -> topicIds.contains(topic.id()))
+                        .map(topic -> new AiServiceMessages.SourceRef("TOPIC", topic.id())),
+                materials.stream().filter(material -> topicIds.contains(material.topicId()))
+                        .map(material -> new AiServiceMessages.SourceRef("STUDY_MATERIAL", material.id()))).toList();
+    }
+
     public Optional<Topic> topic(long topicId) {
         return topics.stream().filter(topic -> topic.id() == topicId).findFirst();
     }

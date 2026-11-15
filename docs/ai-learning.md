@@ -236,6 +236,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **What it found.** SQL words that are also common English (`WHERE`, `HAVING`) were dropped as stop words; a word written in capitals now always counts.
 - **Leakage tests.** With the fake model recording its prompts: a source left out of `allowedSources` never reaches the prompt or the reply for questions, summaries, practice, or drafts, and an index the request does not name, or a note it does not allow, is never searched. In the backend, no student request names the teacher index or another student's notes index, and no request carries an account or login ID.
 
+### Ask My Course (v0.13.9)
+
+- **Modes.** A question carries `mode`: `COURSE` (the default), `COURSE_AND_NOTES`, or `NOTES_ONLY` (the older `includeMyNotes` still means `COURSE_AND_NOTES`). My notes only sends an empty allowed list for the course, so only the asking student's notes index can answer; with no notes it is insufficient context without asking the model.
+- **Module scope.** An optional `moduleId` narrows the allowed course sources to that module's published pages and their files (`AiCourseKnowledge.allowedSourcesInModule`). A module with no published page in the course answers 404, and a module with My notes only answers 400.
+- **Source cards.** Each citation carries `pageId`, the course page it is on (the topic itself, or a file's page; null for notes and teacher documents). The page shows sources as cards with their kind, title, and file, and an Open page link to `/courses/:lmsCourseId/pages/:pageId`, where the page's own access check applies again.
+
 ### What a refresh does
 
 1. Faculty access is checked.

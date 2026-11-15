@@ -130,6 +130,43 @@ class AiStudyServiceTest {
     }
 
     @Test
+    void aModuleScopeAllowsOnlyThatModulesPagesAndFiles() {
+        when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
+        AiCourseKnowledge knowledge = sources.publishedKnowledge(COURSE);
+        long moduleId = knowledge.topics().get(0).moduleId();
+        service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", null, AiAskMode.COURSE, moduleId));
+        ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
+        verify(client).ask(anyString(), sent.capture());
+        assertThat(sent.getValue().allowedSources()).isEqualTo(knowledge.allowedSourcesInModule(moduleId));
+        assertThat(sent.getValue().allowedSources()).allMatch(source -> knowledge.topic(source.sourceId()).map(topic -> topic.moduleId() == moduleId)
+                .orElseGet(() -> knowledge.material(source.sourceId()).map(material -> knowledge.topic(material.topicId())
+                        .orElseThrow().moduleId() == moduleId).orElse(false)));
+
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", null, AiAskMode.COURSE, 999L)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", null, AiAskMode.NOTES_ONLY, moduleId)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void myNotesOnlyAllowsNoCourseSourceAndNeedsNotes() {
+        when(notes.current(COURSE, STUDENT_A)).thenReturn(Optional.empty());
+        assertThat(service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", null, AiAskMode.NOTES_ONLY, null)).insufficientContext()).isTrue();
+        verify(client, never()).ask(anyString(), any());
+
+        AiStudentNoteKnowledge mine = new AiStudentNoteKnowledge("d".repeat(64), List.of(new AiStudentNoteKnowledge.Note(4L, "Mine", "Text")));
+        AiServiceMessages.IndexRef notesIndex = new AiServiceMessages.IndexRef(AiCourseKeys.forStudentNotes(COURSE, STUDENT_A),
+                mine.fingerprint(), mine.allowedSources());
+        when(notes.current(COURSE, STUDENT_A)).thenReturn(Optional.of(new AiStudentNoteIndexer.Scope(notesIndex, mine)));
+        when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
+        service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", null, AiAskMode.NOTES_ONLY, null));
+        ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
+        verify(client).ask(anyString(), sent.capture());
+        assertThat(sent.getValue().allowedSources()).isEmpty();
+        assertThat(sent.getValue().additionalIndexes()).containsExactly(notesIndex);
+    }
+
+    @Test
     void courseAndMyNotesSearchesOnlyTheAskersNotesAndLabelsThem() {
         AiStudentNoteKnowledge mine = new AiStudentNoteKnowledge("d".repeat(64),
                 List.of(new AiStudentNoteKnowledge.Note(4L, "My summary", "Redundancy goes.")));
@@ -159,8 +196,8 @@ class AiStudyServiceTest {
         assertThat(answer.insufficientContext()).isFalse();
         assertThat(answer.answer()).isEqualTo("Normalization reduces redundancy.");
         assertThat(answer.citations()).containsExactly(
-                new AiCitationResponse("TOPIC", 1, "Database Normalization", null, null, null),
-                new AiCitationResponse("STUDY_MATERIAL", 20, "Normalization notes", "normalization-notes.pdf", 4, null));
+                new AiCitationResponse("TOPIC", 1, "Database Normalization", null, null, null, 1L),
+                new AiCitationResponse("STUDY_MATERIAL", 20, "Normalization notes", "normalization-notes.pdf", 4, null, 1L));
         assertThat(answer.toString()).doesNotContain("secret-key", "ignored.pdf", "From the AI service");
 
         ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);

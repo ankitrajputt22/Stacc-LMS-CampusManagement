@@ -1,5 +1,6 @@
 import type {
   AiAnswer,
+  AiAskMode,
   AiAssessmentDraft,
   AiAssessmentDraftInput,
   AiJob,
@@ -47,9 +48,9 @@ export async function askCourseAi(
   lmsCourseId: number,
   question: string,
   signal?: AbortSignal,
-  includeMyNotes = false,
+  options: { mode?: AiAskMode; moduleId?: number | null } = {},
 ): Promise<AiAnswer> {
-  const body = includeMyNotes ? { question, includeMyNotes } : { question }
+  const body = { question, mode: options.mode ?? 'COURSE', ...(options.moduleId ? { moduleId: options.moduleId } : {}) }
   return (await apiClient.post<AiAnswer>(`/lms/courses/${lmsCourseId}/ai/ask`, body, { signal })).data
 }
 

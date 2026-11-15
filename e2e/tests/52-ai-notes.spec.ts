@@ -23,7 +23,12 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'AI Study Assistant')
   await expect(page.getByText(DOCUMENT)).toHaveCount(0)
-  await expect(page.getByRole('radio', { name: 'Course + my notes' })).toBeVisible()
+  // Ask My Course (v0.13.9) offers three searches and a module scope for course searches only.
+  const ask = page.getByRole('region', { name: 'Ask My Course' })
+  await expect(ask.getByRole('radio', { name: /^Course \+ my notes/ })).toBeVisible()
+  await expect(ask.getByRole('combobox', { name: 'Module' })).toBeVisible()
+  await ask.getByRole('radio', { name: /^My notes only/ }).check()
+  await expect(ask.getByRole('combobox', { name: 'Module' })).toHaveCount(0)
   const myNotes = page.getByRole('region', { name: 'My notes' })
   await myNotes.getByRole('button', { name: 'Add note' }).click()
   await myNotes.getByRole('textbox', { name: 'Note title' }).fill(NOTE)

@@ -57,10 +57,10 @@ final class AiResults {
             long id = citation.sourceId();
             if ("TOPIC".equals(citation.sourceType())) {
                 knowledge.topic(id).ifPresent(topic ->
-                        result.add(new AiCitationResponse("TOPIC", id, topic.title(), null, null, null)));
+                        result.add(new AiCitationResponse("TOPIC", id, topic.title(), null, null, null, id)));
             } else if ("STUDY_MATERIAL".equals(citation.sourceType())) {
                 knowledge.material(id).ifPresent(material -> result.add(new AiCitationResponse(
-                        "STUDY_MATERIAL", id, material.title(), material.fileName(), page, slide)));
+                        "STUDY_MATERIAL", id, material.title(), material.fileName(), page, slide, material.topicId())));
             } else if (teacher != null && AiTeacherKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
                 teacher.document(id).ifPresent(document -> result.add(new AiCitationResponse(
                         AiTeacherKnowledge.SOURCE_TYPE, id, document.title(), null, null, null)));
