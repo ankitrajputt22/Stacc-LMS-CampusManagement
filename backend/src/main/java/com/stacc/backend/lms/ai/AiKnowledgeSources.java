@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiKnowledgeSources {
 
     /** Changing how sources are indexed changes this, so every course then shows as needing a refresh. */
-    static final String FORMAT = "stacc-ai-knowledge-v1";
+    static final String FORMAT = "stacc-ai-knowledge-v2";
 
     private final LmsTopicRepository topics;
     private final LmsStudyMaterialRepository materials;
@@ -51,6 +51,8 @@ public class AiKnowledgeSources {
                 .findAllInCourse(lmsCourseId, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
                         LmsContentPolicy.PUBLISHED_ONLY).stream()
                 .filter(LmsContentPolicy::isVisibleToStudents)
+                // Faculty may keep a material out of AI knowledge (v0.13.3); students still see it.
+                .filter(material -> !material.isExcludedFromAi())
                 .filter(material -> topicOrder.containsKey(material.getLmsTopic().getId()))
                 .sorted(Comparator.comparing((LmsStudyMaterial material) -> topicOrder.get(material.getLmsTopic().getId()))
                         .thenComparing(LmsStudyMaterial::getPosition)

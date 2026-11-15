@@ -15,9 +15,9 @@ from dataclasses import dataclass
 from app.config import Settings
 from app.errors import no_indexable_content
 from app.extraction.extractors import ExtractionError, Segment, extract
-from app.indexing.chunking import chunk_segments
+from app.indexing.chunking import chunk_segments, split_headings
 from app.indexing.store import CourseIndex, IndexStore, StoredChunk, unit_vectors
-from app.models.schemas import ReplaceIndexRequest, ReplaceIndexResponse, SourceType
+from app.models.schemas import FileType, ReplaceIndexRequest, ReplaceIndexResponse, SourceType
 from app.providers.base import EmbeddingProvider
 
 log = logging.getLogger(__name__)
@@ -45,7 +45,9 @@ class IndexBuilder:
         for start in range(0, len(prepared.chunks), size):
             batch = prepared.chunks[start:start + size]
             # The title travels with each chunk, so a question naming the topic finds it.
-            vectors.extend(self._embeddings.embed([f"{chunk.title}\n{chunk.text}" for chunk in batch]))
+            vectors.extend(self._embeddings.embed([
+                f"{chunk.title}\n{chunk.heading}\n{chunk.text}" if chunk.heading else f"{chunk.title}\n{chunk.text}"
+                for chunk in batch]))
         index = CourseIndex(request.contentFingerprint, self._embeddings.model_id,
                             unit_vectors(vectors), tuple(prepared.chunks))
         self._store.replace(course_key, index)
@@ -83,18 +85,23 @@ class IndexBuilder:
                     pageNumber=piece.page_number,
                     slideNumber=piece.slide_number,
                     text=piece.text,
+                    heading=piece.heading,
                 ))
         return _Prepared(chunks, indexed, skipped)
 
     def _segments(self, source, max_chars: int) -> list[Segment]:
         if source.sourceType is SourceType.TOPIC:
-            return [Segment(source.text[:max_chars])]
+            return split_headings(source.text[:max_chars])
         try:
             # Checked before decoding: base64 text is a third longer than the file.
             if len(source.contentBase64) > (self._settings.max_source_bytes * 4) // 3 + 4:
                 raise ExtractionError("too large")
             data = base64.b64decode(source.contentBase64, validate=True)
-            return extract(source.fileType, data, max_chars)
+            segments = extract(source.fileType, data, max_chars)
+            if source.fileType is FileType.TXT:
+                # Plain-text notes often use Markdown headings too.
+                return [part for segment in segments for part in split_headings(segment.text)]
+            return segments
         except (ExtractionError, binascii.Error, ValueError) as error:
             # Only the kind of problem is logged, never the file name or its text.
             log.info("Skipped a %s source: %s", source.fileType, type(error).__name__)

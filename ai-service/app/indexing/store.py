@@ -31,7 +31,7 @@ import numpy as np
 from app.errors import ServiceError, index_not_found
 from app.security import checked_course_key
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2  # 2: chunks measured in tokens and carrying their heading (v0.13.3).
 VERSION_NAME = re.compile(r"^v-[a-f0-9]{32}$")
 CACHE_SIZE = 16
 
@@ -46,6 +46,7 @@ class StoredChunk:
     pageNumber: int | None
     slideNumber: int | None
     text: str
+    heading: str | None = None
 
 
 @dataclass(frozen=True)

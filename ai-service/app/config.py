@@ -86,10 +86,11 @@ class Settings:
         embedding_model = _text(env, "AI_EMBEDDING_MODEL")
         if provider == "ollama" and (not chat_model or not embedding_model):
             raise SettingsError("AI_CHAT_MODEL and AI_EMBEDDING_MODEL must be set for the ollama provider")
-        chunk_size = _int(env, "AI_CHUNK_SIZE", 1200, 300, 4000)
-        chunk_overlap = _int(env, "AI_CHUNK_OVERLAP", 200, 0, 1000)
+        # Chunks are measured in tokens (words and punctuation marks), not characters (v0.13.3).
+        chunk_size = _int(env, "AI_CHUNK_TOKENS", 300, 50, 1000)
+        chunk_overlap = _int(env, "AI_CHUNK_OVERLAP_TOKENS", 50, 0, 300)
         if chunk_overlap >= chunk_size // 2:
-            raise SettingsError("AI_CHUNK_OVERLAP must be less than half of AI_CHUNK_SIZE")
+            raise SettingsError("AI_CHUNK_OVERLAP_TOKENS must be less than half of AI_CHUNK_TOKENS")
         index_dir = _text(env, "AI_INDEX_DIR", "./data/indexes")
         return cls(
             provider=provider,

@@ -5,7 +5,7 @@ import { hiddenBecause } from './fileVisibility'
 const file: LmsFacultyCourseFile = {
   id: 7, title: 'Notes', description: null, originalFileName: 'notes.pdf', contentType: 'application/pdf', sizeBytes: 10,
   uploadedAt: '2026-10-14T09:30:00Z', status: 'PUBLISHED', pageId: 31, pageTitle: 'Arrays', pageStatus: 'PUBLISHED',
-  moduleTitle: 'Unit 1', moduleStatus: 'PUBLISHED',
+  moduleTitle: 'Unit 1', moduleStatus: 'PUBLISHED', excludedFromAi: false,
 }
 
 describe('hiddenBecause', () => {

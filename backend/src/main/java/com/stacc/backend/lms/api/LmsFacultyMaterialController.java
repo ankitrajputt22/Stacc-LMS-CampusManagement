@@ -137,6 +137,26 @@ public class LmsFacultyMaterialController {
         return LmsFacultyMaterialResponse.of(materialService.publishMaterial(AuthenticatedAccount.idFrom(accessToken), materialId));
     }
 
+    @PutMapping("/materials/{materialId}/ai-exclusion")
+    @PreAuthorize(MANAGE)
+    @Operation(
+            summary = "Keep a study material out of AI knowledge, or bring it back",
+            description = "Send excluded true to leave the file out of the course's AI knowledge, false to include it again. "
+                    + "Students still see and download it. The change applies at the next knowledge refresh.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The changed material.")
+    @ApiResponse(responseCode = "400", description = "excluded is missing.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The material, its topic, or its module is archived.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public LmsFacultyMaterialResponse changeAiExclusion(
+            @PathVariable Long materialId,
+            @Valid @RequestBody LmsMaterialAiExclusionRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return LmsFacultyMaterialResponse.of(materialService.changeAiExclusion(
+                AuthenticatedAccount.idFrom(accessToken), materialId, request.excluded()));
+    }
+
     @PostMapping("/materials/{materialId}/archive")
     @PreAuthorize(MANAGE)
     @Operation(

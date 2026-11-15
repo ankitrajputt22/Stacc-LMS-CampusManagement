@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
-import { archiveMaterial, getFacultyCourseContent, getFacultyCourseFiles, publishMaterial, uploadMaterial } from '../api/lmsContentApi'
+import { archiveMaterial, changeMaterialAiExclusion, getFacultyCourseContent, getFacultyCourseFiles, publishMaterial, uploadMaterial } from '../api/lmsContentApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
@@ -140,6 +140,19 @@ export function TeachingFilesPage() {
     }
   }
 
+  async function changeAi(file: LmsFacultyCourseFile) {
+    setPublishError(null)
+    try {
+      await changeMaterialAiExclusion(file.id, !file.excludedFromAi)
+      await changed(file.excludedFromAi ? `${file.title} is included in AI knowledge again.` : `${file.title} is kept out of AI knowledge.`)
+    } catch (error) {
+      const status = getHttpStatus(error)
+      if (status !== 401) {
+        setPublishError(refusal(status, getApiError(error)?.message ?? null))
+      }
+    }
+  }
+
   return (
     <Shell lmsCourseId={lmsCourseId} title={course.courseName}>
       <p role="status" className="sr-only">
@@ -249,6 +262,12 @@ export function TeachingFilesPage() {
                 )
               },
             },
+            {
+              key: 'ai',
+              header: 'AI knowledge',
+              cell: (file) =>
+                file.excludedFromAi ? <Badge tone="neutral">Kept out</Badge> : <span className="text-sm text-ink-muted">Included when visible</span>,
+            },
             { key: 'uploaded', header: 'Uploaded', cell: (file) => <UploadedAt at={file.uploadedAt} /> },
             {
               key: 'actions',
@@ -261,6 +280,10 @@ export function TeachingFilesPage() {
                       Publish<span className="sr-only"> {file.title}</span>
                     </ActionButton>
                   )}
+                  <ActionButton onClick={() => void changeAi(file)}>
+                    {file.excludedFromAi ? 'Include in AI' : 'Exclude from AI'}
+                    <span className="sr-only"> {file.title}</span>
+                  </ActionButton>
                   <ActionButton onClick={() => setArchiving(file)}>
                     Archive<span className="sr-only"> {file.title}</span>
                   </ActionButton>
