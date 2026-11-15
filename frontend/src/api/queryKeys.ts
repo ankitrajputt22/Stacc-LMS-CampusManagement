@@ -39,6 +39,9 @@ export const queryKeys = {
     tasks: () => ['hostel', 'approval-tasks'] as const,
     movements: () => ['hostel', 'gate-movements'] as const,
   },
+  system: {
+    health: () => ['system', 'health'] as const,
+  },
   library: {
     all: ['library'] as const,
     search: (q: string) => ['library', 'search', q] as const,

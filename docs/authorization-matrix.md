@@ -68,6 +68,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/mentoring/pairings` | GET | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/mentoring/pairings` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/mentoring/pairings/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/system` | GET | `hasRole('ADMIN') and hasAuthority('SYSTEM_HEALTH_VIEW')` | SystemHealthController |
 | `/api/v1/admin/users/import` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}` | GET | `hasRole('ADMIN') and hasAuthority('USER_VIEW')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |

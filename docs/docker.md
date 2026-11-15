@@ -102,6 +102,8 @@ If a port is already taken, for example `3306` by a MySQL installed on the machi
 
 **Optional AI learning (profile `ai`).** `docker compose --profile ai up` adds two services, `ai-service` (the internal Python AI service, built from `ai-service/`) and `ollama` (local models, pinned to `ollama/ollama:0.13.0`). Neither publishes a port: only the backend reaches `ai-service`, as `http://ai-service:8000` set in `compose.yaml`, with the shared `STACC_AI_INTERNAL_TOKEN`, and only `ai-service` reaches `ollama`. Nginx proxies `/api` only, with a longer wait on the AI routes, so `/internal` is never reachable from a browser. Indexes live in the `ai-index-data` volume and models in `ollama-data`; models are pulled once by hand, never during a build. Without the profile nothing changes: the four usual services start, and AI routes answer 503. See `ai-learning.md`.
 
+**Optional monitoring (profile `monitoring`).** With `monitoring` added to `SPRING_PROFILES_ACTIVE`, `docker compose --profile monitoring up` adds `prometheus` (`prom/prometheus:v3.5.0`), which reads the backend's metrics on its internal port 8081. Only Prometheus's own page is published, on `127.0.0.1:${PROMETHEUS_PORT:-9090}`. See `operations.md`.
+
 **Accounts.** Nothing creates user accounts. The stack starts with the reference data from the migrations only, so the login endpoint answers but nobody can sign in until accounts are added by a later feature.
 
 ## Local test data

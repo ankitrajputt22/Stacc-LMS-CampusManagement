@@ -30,6 +30,7 @@
 - **0.12.13:** the library: catalog and copies, lending within limits, holds, renewals, and digital resources.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
+- **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
 
 ## v1.0.0 (2026-11-11)
 
