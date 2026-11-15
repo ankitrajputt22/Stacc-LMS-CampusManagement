@@ -238,12 +238,38 @@ class BankType(StrEnum):
         return self in (BankType.SINGLE_CHOICE, BankType.MULTIPLE_CHOICE, BankType.TRUE_FALSE)
 
 
+class Bloom(StrEnum):
+    REMEMBER = "REMEMBER"
+    UNDERSTAND = "UNDERSTAND"
+    APPLY = "APPLY"
+    ANALYZE = "ANALYZE"
+    EVALUATE = "EVALUATE"
+    CREATE = "CREATE"
+
+
+class ExistingQuestion(Strict):
+    """A question already in the course's bank, for the duplicate and previous-paper checks (v0.14.2)."""
+    id: int = Field(gt=0)
+    text: str = Field(min_length=1, max_length=2000)
+    inFinalPaper: bool = False
+
+
 class BankDraftRequest(IndexedRequest):
     questionCount: int = Field(ge=1, le=10)
     questionTypes: list[BankType] = Field(min_length=1, max_length=5)
     difficulty: Difficulty
     topicId: int | None = Field(default=None, gt=0)
     additionalInstruction: str | None = Field(default=None, max_length=500)
+    existingQuestions: list[ExistingQuestion] = Field(default_factory=list, max_length=500)
+
+
+class QualityChecks(BaseModel):
+    """Flags worked out by code and embeddings, and the model's suggestions, for the reviewer (v0.14.2)."""
+    duplicateOfQuestionId: int | None
+    inPreviousPaper: bool
+    outOfSyllabus: bool
+    suggestedDifficulty: str | None
+    suggestedBloomLevel: str | None
 
 
 class BankOption(BaseModel):
@@ -261,11 +287,13 @@ class BankQuestion(BaseModel):
     explanation: str | None
     suggestedMarks: float
     citations: list[Citation]
+    checks: QualityChecks
 
 
 class BankDraftResponse(BaseModel):
     questions: list[BankQuestion]
     droppedForKeyMismatch: int
+    droppedAsRepeats: int = 0
     insufficientContext: bool
 
 
@@ -338,6 +366,8 @@ class BankModelQuestion(BaseModel):
     answerGuidance: Bounded(2000) | None = None
     explanation: Bounded(2000) | None = None
     suggestedMarks: float = Field(gt=0, le=100)
+    difficultySuggestion: Difficulty | None = None
+    bloomSuggestion: Bloom | None = None
     sourceIds: SourceRefs = []
 
     @model_validator(mode="after")

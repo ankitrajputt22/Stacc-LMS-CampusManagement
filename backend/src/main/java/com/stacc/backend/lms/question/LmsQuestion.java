@@ -18,6 +18,7 @@ import com.stacc.backend.lms.outcome.LmsCourseOutcome;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -119,6 +120,9 @@ public class LmsQuestion {
     @Column(name = "ai_generated", nullable = false, updatable = false)
     private boolean aiGenerated;
 
+    @Embedded
+    private LmsQuestionAiChecks aiChecks = LmsQuestionAiChecks.none();
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "lms_question_sources", joinColumns = @JoinColumn(name = "lms_question_id"))
@@ -168,10 +172,22 @@ public class LmsQuestion {
      */
     public static LmsQuestion aiDraft(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content,
             List<LmsQuestionSource> sources) {
+        return aiDraft(lmsCourse, createdByAccountId, content, sources, LmsQuestionAiChecks.none());
+    }
+
+    /** As above, with the quality checks worked out when it was drafted (v0.14.2). */
+    public static LmsQuestion aiDraft(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content,
+            List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
         LmsQuestion question = new LmsQuestion(lmsCourse, createdByAccountId, content);
         question.aiGenerated = true;
         question.sources.addAll(Require.notNull(sources, "sources"));
+        question.aiChecks = Require.notNull(checks, "checks");
         return question;
+    }
+
+    /** The quality checks of an AI draft; empty for a question written by hand. */
+    public LmsQuestionAiChecks getAiChecks() {
+        return aiChecks == null ? LmsQuestionAiChecks.none() : aiChecks;
     }
 
     public boolean isAiGenerated() {

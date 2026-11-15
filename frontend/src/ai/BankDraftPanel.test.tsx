@@ -22,7 +22,7 @@ function renderPanel() {
 describe('BankDraftPanel', () => {
   it('drafts the chosen types into the bank and says what was dropped', async () => {
     vi.mocked(api.draftIntoQuestionBank).mockResolvedValue({
-      added: 3, droppedForKeyMismatch: 1, leftOut: 0, insufficientContext: false, questionIds: [1, 2, 3],
+      added: 3, droppedForKeyMismatch: 1, droppedAsRepeats: 0, leftOut: 0, insufficientContext: false, questionIds: [1, 2, 3],
     })
     const user = userEvent.setup()
     renderPanel()

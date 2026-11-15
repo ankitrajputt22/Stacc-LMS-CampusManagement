@@ -111,7 +111,9 @@ class FakeModelProvider(ModelProvider):
             kind = kinds[number % len(kinds)]
             sentence = _first_sentence(chunk.text, 280)
             question = {"questionType": kind, "text": f"Q{number + 1}. About {chunk.title}: which is stated?",
-                        "explanation": f"The source says: {sentence}", "suggestedMarks": 2, "sourceIds": [chunk.ref]}
+                        "explanation": f"The source says: {sentence}", "suggestedMarks": 2, "sourceIds": [chunk.ref],
+                        "difficultySuggestion": "MEDIUM" if parameters.get("difficulty") == "MIXED"
+                        else parameters.get("difficulty", "MEDIUM"), "bloomSuggestion": "REMEMBER"}
             if kind in ("SINGLE_CHOICE", "MULTIPLE_CHOICE"):
                 question["options"] = [{"text": sentence, "correct": True},
                                        {"text": "Quokkas invented the abacus in 1066.", "correct": False}]

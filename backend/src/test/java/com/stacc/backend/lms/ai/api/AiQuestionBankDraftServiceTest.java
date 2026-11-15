@@ -29,6 +29,7 @@ import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.BankOption;
 import com.stacc.backend.lms.ai.AiServiceMessages.BankQuestion;
 import com.stacc.backend.lms.ai.AiServiceMessages.Citation;
+import com.stacc.backend.lms.ai.AiServiceMessages.QualityChecks;
 import com.stacc.backend.lms.ai.control.AiLimitProperties;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLimiter;
@@ -74,6 +75,8 @@ class AiQuestionBankDraftServiceTest {
         ready.ready(CURRENT, Instant.EPOCH);
         when(records.find(COURSE)).thenReturn(Optional.of(ready));
         when(teacherDocuments.knowledge(COURSE)).thenReturn(new AiTeacherKnowledge("0".repeat(64), List.of()));
+        when(bank.forQualityChecks(COURSE, AiQuestionBankDraftService.MAX_EXISTING)).thenReturn(List.of(
+                new LmsQuestionBankService.CheckedQuestion(41L, "Which form is stricter?", true)));
         when(bank.addAiDrafts(anyLong(), anyLong(), any())).thenAnswer(invocation -> {
             List<LmsQuestionBankService.AiDraft> drafts = invocation.getArgument(2);
             return drafts.stream().map(draft -> LmsQuestion.aiDraft(ContentFixtures.lmsCourse(COURSE), FACULTY, draft.content(),
@@ -90,18 +93,20 @@ class AiQuestionBankDraftServiceTest {
         when(client.questionBankDraft(anyString(), any())).thenReturn(new BankDraftResult(List.of(
                 new BankQuestion("SINGLE_CHOICE", "Which removes transitive dependencies?",
                         List.of(new BankOption("3NF", true), new BankOption("1NF", false)), null, List.of(), null, "Because.",
-                        new BigDecimal("2.555"), List.of(TOPIC_1)),
+                        new BigDecimal("2.555"), List.of(TOPIC_1),
+                        new QualityChecks(41L, true, false, "HARD", "APPLY")),
                 new BankQuestion("SHORT_ANSWER", "Name the form.", List.of(), null, List.of("3NF", " "), null, null,
-                        BigDecimal.ONE, List.of(TOPIC_1)),
-                new BankQuestion("DESCRIPTIVE", "Uncited?", List.of(), null, List.of(), "Guidance", null, BigDecimal.ONE, List.of()),
-                new BankQuestion("TRUE_FALSE", "Not asked for.", List.of(), true, List.of(), null, null, BigDecimal.ONE, List.of(TOPIC_1))),
-                1, false));
+                        BigDecimal.ONE, List.of(TOPIC_1), new QualityChecks(999L, true, true, "IMPOSSIBLE", null)),
+                new BankQuestion("DESCRIPTIVE", "Uncited?", List.of(), null, List.of(), "Guidance", null, BigDecimal.ONE, List.of(), null),
+                new BankQuestion("TRUE_FALSE", "Not asked for.", List.of(), true, List.of(), null, null, BigDecimal.ONE, List.of(TOPIC_1), null)),
+                1, 2, false));
 
         AiQuestionBankDraftResponse response = service.draft(FACULTY, COURSE, request(QuestionType.SINGLE_CHOICE, QuestionType.SHORT_ANSWER,
                 QuestionType.DESCRIPTIVE));
 
         assertThat(response.added()).isEqualTo(2);
         assertThat(response.droppedForKeyMismatch()).isEqualTo(1);
+        assertThat(response.droppedAsRepeats()).isEqualTo(2);
         assertThat(response.leftOut()).isEqualTo(2);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<LmsQuestionBankService.AiDraft>> added = ArgumentCaptor.forClass(List.class);
@@ -115,6 +120,19 @@ class AiQuestionBankDraftServiceTest {
         assertThat(choice.getSources()).extracting(source -> source.getSourceType() + ":" + source.getSourceId() + ":" + source.getTitle()
                 + ":" + source.getPageId()).containsExactly("TOPIC:1:Normal forms:1");
         assertThat(added.getValue().get(1).content().options()).extracting(LmsQuestionContentOptionText::of).containsExactly("3NF");
+        // Checks are kept as suggestions; a duplicate the request never sent, and an unknown level, are dropped.
+        assertThat(added.getValue().get(0).checks().getDuplicateOfQuestionId()).isEqualTo(41L);
+        assertThat(added.getValue().get(0).checks().isInPreviousPaper()).isTrue();
+        assertThat(added.getValue().get(0).checks().getSuggestedDifficulty()).isEqualTo(QuestionDifficulty.HARD);
+        assertThat(added.getValue().get(1).checks().getDuplicateOfQuestionId()).isNull();
+        assertThat(added.getValue().get(1).checks().isInPreviousPaper()).isFalse();
+        assertThat(added.getValue().get(1).checks().isOutOfSyllabus()).isTrue();
+        assertThat(added.getValue().get(1).checks().getSuggestedDifficulty()).isNull();
+        ArgumentCaptor<com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest> sentRequest =
+                ArgumentCaptor.forClass(com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest.class);
+        verify(client).questionBankDraft(anyString(), sentRequest.capture());
+        assertThat(sentRequest.getValue().existingQuestions()).containsExactly(
+                new com.stacc.backend.lms.ai.AiServiceMessages.ExistingQuestion(41L, "Which form is stricter?", true));
     }
 
     @Test
