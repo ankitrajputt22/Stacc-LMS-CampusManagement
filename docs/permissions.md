@@ -143,19 +143,19 @@ A permission is added by a new migration only when the real feature it protects 
 
 `LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use and download its published study materials. Faculty download materials with `FACULTY_COURSE_VIEW`.
 
-Model answers and rubric suggestions (v0.14.5) added no permission: the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE` or `LMS_ASSIGNMENT_MANAGE`.
+Model answers and rubric suggestions (v0.14.5) added no permission: the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE` or `LMS_ASSIGNMENT_MANAGE`.
 
-Exam paper sets and AI for short rows (v0.14.4) added no permission: sets and the shortfall need `LMS_EXAM_PAPER_MANAGE`; AI drafting also needs the AI Tools rule and `LMS_QUESTION_BANK_MANAGE`.
+Exam paper sets and AI for short rows (v0.14.4) added no permission: sets and the shortfall need `LMS_EXAM_PAPER_MANAGE`; AI drafting also needs the Teacher AI rule and `LMS_QUESTION_BANK_MANAGE`.
 
-Quiz drafts (v0.14.3) added no permission: they need the AI Tools rule with `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`.
+Quiz drafts (v0.14.3) added no permission: they need the Teacher AI rule with `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`.
 
-Draft into the question bank (v0.14.1) added no permission: it needs the AI Tools rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`) and `LMS_QUESTION_BANK_MANAGE` together.
+Draft into the question bank (v0.14.1) added no permission: it needs the Teacher AI rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`) and `LMS_QUESTION_BANK_MANAGE` together.
 
-AI controls (v0.13.7) added no permission: the student assistant switch follows the AI Tools rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, faculty access policy), and AI health uses `SYSTEM_HEALTH_VIEW` with `ADMIN`.
+AI controls (v0.13.7) added no permission: the student assistant switch follows the Teacher AI rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, faculty access policy), and AI health uses `SYSTEM_HEALTH_VIEW` with `ADMIN`.
 
 Student notes (v0.13.6) added no permission: they are part of the AI Study Assistant and need `STUDENT`, `LMS_COURSE_VIEW`, and `AI_STUDY_USE` under the student access policy.
 
-Teacher-only documents (v0.13.5) added no permission: they are part of AI Tools and need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE` under the faculty access policy.
+Teacher-only documents (v0.13.5) added no permission: they are part of Teacher AI and need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE` under the faculty access policy.
 
 Keeping a study material out of AI knowledge (v0.13.3) added no permission: it is a content change and needs `LMS_CONTENT_MANAGE` under the faculty access policy.
 

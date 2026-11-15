@@ -5,13 +5,17 @@ const DOCUMENT = 'Exam focus (AI notes journey)'
 const NOTE = 'My 3NF summary (AI notes journey)'
 
 test('a teacher keeps a teacher-only document and a student keeps, then deletes, a private note', async ({ page }) => {
-  // Teacher-only documents (v0.13.5) live on AI Tools and are for AI Tools only.
+  // Teacher AI (v0.14.6) is one area with a tab per section; teacher-only documents (v0.13.5) are under Knowledge.
   await signIn(page, 'lms', 'faculty1')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
-  await openCourseSection(page, 'AI Tools')
-  // Drafting into the question bank (v0.14.1) is offered on AI Tools.
+  await openCourseSection(page, 'Teacher AI')
+  await expect(page.getByRole('heading', { level: 1, name: 'Teacher AI' })).toBeVisible()
+  const sections = page.getByRole('navigation', { name: 'Teacher AI sections' })
+  await sections.getByRole('link', { name: 'Question bank' }).click()
   await expect(page.getByRole('region', { name: 'Draft into the question bank' }).getByRole('button', { name: 'Draft questions' })).toBeVisible()
+  await sections.getByRole('link', { name: 'Quizzes' }).click()
   await expect(page.getByRole('region', { name: 'Build a draft quiz' }).getByRole('button', { name: 'Build draft quiz' })).toBeVisible()
+  await sections.getByRole('link', { name: 'Knowledge' }).click()
   const teacherDocuments = page.getByRole('region', { name: 'Teacher-only documents' })
   await teacherDocuments.getByRole('button', { name: 'Add teacher document' }).click()
   await teacherDocuments.getByRole('textbox', { name: 'Title' }).fill(DOCUMENT)

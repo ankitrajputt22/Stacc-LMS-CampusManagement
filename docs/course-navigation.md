@@ -45,7 +45,7 @@ The optional **welcome message** (`LmsCourse.welcomeMessage`, formatted text up 
 | Exam papers | `/papers` | Blueprints, the paper builder, and the print view. See `exam-papers.md`. |
 | Files | `/files` | See `course-files.md`. |
 | Syllabus | `/syllabus` | See `course-syllabus.md`. |
-| AI Tools | `/ai` | See `ai-learning.md`. "Use in assignment form" now opens the Assignments page. |
+| Teacher AI | `/ai` | See `ai-learning.md`. "Use in assignment form" now opens the Assignments page. |
 
 Links that used to land on the single teaching page now open the right section: calendar teaching deadlines and faculty assignment search results open Assignments, announcement results Announcements, material results Files, and student announcement results the student's Announcements page.
 

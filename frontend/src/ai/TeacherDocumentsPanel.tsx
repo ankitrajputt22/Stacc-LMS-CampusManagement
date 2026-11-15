@@ -88,8 +88,8 @@ function DocumentForm({ draft, onSaved, onCancel, lmsCourseId }: {
 }
 
 /**
- * Teacher-only documents (v0.13.5): plain-text notes and drafts that only AI Tools read when drafting assessments.
- * Students never see them. Changes reach AI Tools after the next Refresh AI knowledge; documents are archived (confirmed
+ * Teacher-only documents (v0.13.5): plain-text notes and drafts that only Teacher AI read when drafting assessments.
+ * Students never see them. Changes reach Teacher AI after the next Refresh AI knowledge; documents are archived (confirmed
  * first), never deleted. The backend checks that the faculty member teaches the course on every request.
  */
 export function TeacherDocumentsPanel({ lmsCourseId }: { lmsCourseId: number }) {
@@ -113,7 +113,7 @@ export function TeacherDocumentsPanel({ lmsCourseId }: { lmsCourseId: number }) 
         Teacher-only documents
       </h2>
       <p className={hintClasses}>
-        Notes and drafts that only AI Tools read when drafting assessments. Students never see them, and the AI Study
+        Notes and drafts that only Teacher AI read when drafting assessments. Students never see them, and the AI Study
         Assistant never uses them. Refresh AI knowledge after a change.
       </p>
       <p role="status" className="mt-2 text-sm text-ink-muted empty:hidden">
@@ -162,7 +162,7 @@ export function TeacherDocumentsPanel({ lmsCourseId }: { lmsCourseId: number }) 
             <div className="mt-3">
               <StatusConfirmation
                 question={`Archive ${archiving.title}?`}
-                detail="AI Tools stop using it after the next refresh. It cannot be restored."
+                detail="Teacher AI stop using it after the next refresh. It cannot be restored."
                 confirmLabel="Archive document"
                 busyLabel="Archiving…"
                 onCancel={() => setArchiving(null)}

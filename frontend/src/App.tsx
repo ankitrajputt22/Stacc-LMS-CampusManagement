@@ -178,6 +178,7 @@ function App() {
             <Route path="files" element={<TeachingFilesPage />} />
             <Route path="syllabus" element={<TeachingSyllabusPage />} />
             <Route path="ai" element={<TeachingAiPage />} />
+            <Route path="ai/:section" element={<TeachingAiPage />} />
           </Route>
           <Route path="assignments" element={<AssignmentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />

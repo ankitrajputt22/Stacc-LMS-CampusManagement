@@ -7,7 +7,7 @@ import { useFacultyCourse } from './useFacultyCourse'
 
 /**
  * Every faculty page of one course, under /teaching/:lmsCourseId, with the course navigation: Home (course settings and
- * the course home), Modules, Announcements, Assignments, Quizzes, Outcomes, Question bank, Files, Syllabus, and AI Tools. The navigation appears once
+ * the course home), Modules, Announcements, Assignments, Quizzes, Outcomes, Question bank, Files, Syllabus, and Teacher AI. The navigation appears once
  * the course has loaded; each page shows its own states.
  */
 export function TeachingCourseLayout() {
@@ -41,7 +41,7 @@ export function TeachingCourseLayout() {
             { to: `${root}/papers`, label: 'Exam papers' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },
-            { to: `${root}/ai`, label: 'AI Tools' },
+            { to: `${root}/ai`, label: 'Teacher AI' },
           ]}
         />
       }
