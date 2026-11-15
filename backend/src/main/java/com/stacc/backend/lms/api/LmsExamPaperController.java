@@ -251,6 +251,49 @@ public class LmsExamPaperController {
         return PaperResponse.of(service.paper(userAccountId, paperId));
     }
 
+    public record PaperSetsRequest(
+            @Size(max = LmsExamPaper.MAX_TITLE_LENGTH) String title,
+            @Size(max = LmsExamPaper.MAX_INSTRUCTIONS_LENGTH) String instructions,
+            @Min(1) @Max(LmsExamPaper.MAX_DURATION_MINUTES) Integer durationMinutes,
+            @Schema(description = "From 2 to 4.") @NotNull @Min(2) @Max(LmsExamPaperService.MAX_SETS) Integer sets,
+            @Schema(description = "True: no question in two sets.") boolean distinct) {
+    }
+
+    public record RowShortfallResponse(int position, String sectionTitle, int needed, int available, int missing) {
+    }
+
+    @PostMapping("/exam-blueprints/{blueprintId}/paper-sets")
+    @PreAuthorize(MANAGE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Build several sets of a paper from a blueprint",
+            description = "Two to four draft papers titled \"… – Set A\", \"… – Set B\", and so on, each built by the blueprint's "
+                    + "rows. With distinct, no question is in two sets. Nothing is saved unless every set can be built (v0.14.4).",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "201", description = "The new papers, in set order.")
+    @ApiResponse(responseCode = "409", description = "The blueprint is archived, or a set's row has too few questions (named).",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public List<PaperResponse> buildPaperSets(@PathVariable Long blueprintId, @Valid @RequestBody PaperSetsRequest request,
+            @AuthenticationPrincipal Jwt token) {
+        Long userAccountId = AuthenticatedAccount.idFrom(token);
+        return service.buildPaperSets(userAccountId, blueprintId, request.title(), request.instructions(), request.durationMinutes(),
+                request.sets(), request.distinct()).stream().map(paper -> PaperResponse.of(service.paper(userAccountId, paper.getId())))
+                .toList();
+    }
+
+    @GetMapping("/exam-blueprints/{blueprintId}/shortfall")
+    @PreAuthorize(MANAGE)
+    @Operation(summary = "What the bank has for each blueprint row",
+            description = "For each row in order, how many active, reviewed questions it needs and how many match, counted as a "
+                    + "build takes them (a question used by an earlier row is not counted again). Only reads (v0.14.4).",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The rows.")
+    public List<RowShortfallResponse> shortfall(@PathVariable Long blueprintId, @AuthenticationPrincipal Jwt token) {
+        return service.shortfall(AuthenticatedAccount.idFrom(token), blueprintId).rows().stream()
+                .map(row -> new RowShortfallResponse(row.row().getPosition(), row.row().getSectionTitle(), row.row().getQuestionCount(),
+                        row.available(), row.missing()))
+                .toList();
+    }
+
     // --- Papers
 
     @GetMapping("/courses/{lmsCourseId}/exam-papers")

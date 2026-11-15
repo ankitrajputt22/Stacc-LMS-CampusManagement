@@ -71,3 +71,29 @@ export async function downloadExamPaper(paperId: number, answers: boolean): Prom
     })
   ).data
 }
+
+/** Builds two to four sets of a paper from the blueprint; with distinct, no question is in two sets (v0.14.4). */
+export async function buildExamPaperSets(
+  blueprintId: number,
+  input: { title: string | null; sets: number; distinct: boolean },
+): Promise<ExamPaper[]> {
+  return (await apiClient.post<ExamPaper[]>(`/lms/faculty/exam-blueprints/${blueprintId}/paper-sets`, input)).data
+}
+
+/** For each blueprint row, how many reviewed questions it needs and how many the bank has (v0.14.4). */
+export type BlueprintRowShortfall = { position: number; sectionTitle: string | null; needed: number; available: number; missing: number }
+
+export async function getBlueprintShortfall(blueprintId: number, signal?: AbortSignal): Promise<BlueprintRowShortfall[]> {
+  return (await apiClient.get<BlueprintRowShortfall[]>(`/lms/faculty/exam-blueprints/${blueprintId}/shortfall`, { signal })).data
+}
+
+/** What AI drafted into the bank for each short row, as Needs review (v0.14.4). */
+export type BlueprintFillResult = {
+  rows: { position: number; sectionTitle: string | null; missing: number; added: number; droppedForKeyMismatch: number }[]
+  note: string | null
+}
+
+export async function fillBlueprintShortfall(blueprintId: number): Promise<BlueprintFillResult> {
+  return (await apiClient.post<BlueprintFillResult>(`/lms/faculty/ai/exam-blueprints/${blueprintId}/fill-shortfall`)).data
+}
+

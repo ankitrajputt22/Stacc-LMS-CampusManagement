@@ -9,6 +9,8 @@ final class AiAccess {
     static final String FACULTY_BANK = FACULTY + " and hasAuthority('LMS_QUESTION_BANK_MANAGE')";
     /** Quiz drafts (v0.14.3) read the bank and make a quiz, so they need both permissions. */
     static final String FACULTY_QUIZ = FACULTY_BANK + " and hasAuthority('LMS_QUIZ_MANAGE')";
+    /** Filling an exam blueprint's shortfall (v0.14.4) needs the bank's and the exam papers' permissions. */
+    static final String FACULTY_PAPER = FACULTY_BANK + " and hasAuthority('LMS_EXAM_PAPER_MANAGE')";
 
     private AiAccess() {
     }

@@ -188,6 +188,100 @@ public class LmsExamPaperService {
         return paper;
     }
 
+    public static final int MAX_SETS = 4;
+    static final String[] SET_NAMES = {"A", "B", "C", "D"};
+
+    /**
+     * Builds two to four draft papers from one blueprint (v0.14.4), titled "… – Set A", "… – Set B", and so on, each by
+     * the blueprint's rows. With {@code distinct}, no question is in two sets; when the bank is too small for that, nothing
+     * is saved (409, naming the set and row). All sets are made in one transaction.
+     */
+    @Transactional
+    public List<LmsExamPaper> buildPaperSets(Long userAccountId, Long blueprintId, String title, String instructions,
+            Integer durationMinutes, int sets, boolean distinct) {
+        if (sets < 2 || sets > MAX_SETS) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Choose from 2 to " + MAX_SETS + " sets.");
+        }
+        LmsExamBlueprint blueprint = lockedBlueprint(userAccountId, blueprintId);
+        if (!blueprint.isActive()) {
+            throw new ApiException(HttpStatus.CONFLICT, BLUEPRINT_ARCHIVED);
+        }
+        LmsCourse lmsCourse = blueprint.getLmsCourse();
+        List<LmsQuestion> usable = questions.findAllForCourse(lmsCourse.getId()).stream().filter(LmsExamPaperService::usable).toList();
+        Set<Long> usedBySets = new HashSet<>();
+        List<List<Chosen>> picks = new ArrayList<>();
+        for (int set = 0; set < sets; set++) {
+            String name = SET_NAMES[set];
+            List<LmsQuestion> pool = distinct ? usable.stream().filter(question -> !usedBySets.contains(question.getId())).toList() : usable;
+            List<Chosen> chosen;
+            try {
+                chosen = choose(blueprint.getRows(), pool, random);
+            } catch (ApiException tooFew) {
+                throw new ApiException(HttpStatus.CONFLICT, "Set " + name + ": " + tooFew.getMessage()
+                        + (distinct ? " Allow questions to repeat across sets, or add more to the bank." : ""));
+            }
+            chosen.forEach(pick -> usedBySets.add(pick.question().getId()));
+            picks.add(chosen);
+        }
+        String base = title == null || title.isBlank() ? blueprint.getTitle() : title.strip();
+        List<LmsExamPaper> made = new ArrayList<>();
+        for (int set = 0; set < sets; set++) {
+            String setTitle = base + " – Set " + SET_NAMES[set];
+            String shortened = setTitle.length() > LmsExamPaper.MAX_TITLE_LENGTH ? setTitle.substring(0, LmsExamPaper.MAX_TITLE_LENGTH) : setTitle;
+            LmsExamPaper paper = papers.saveAndFlush(valid(() ->
+                    new LmsExamPaper(lmsCourse, userAccountId, blueprint.getId(), shortened, instructions, durationMinutes)));
+            int position = 1;
+            for (Chosen pick : picks.get(set)) {
+                links.save(new LmsExamPaperQuestion(paper, pick.question(), position++, pick.row().getSectionTitle(),
+                        pick.row().getMarksEach()));
+            }
+            made.add(paper);
+        }
+        links.flush();
+        return List.copyOf(made);
+    }
+
+    /** How many questions one blueprint row needs and how many the bank has for it now (v0.14.4). */
+    public record RowShortfall(LmsExamBlueprintRow row, int available) {
+
+        public int missing() {
+            return Math.max(0, row.getQuestionCount() - available);
+        }
+    }
+
+    /**
+     * For each row of a blueprint, how many active, reviewed bank questions match it, counted the way a build takes them:
+     * rows in order, a question used by an earlier row not counted again. Only reads.
+     */
+    /** A blueprint's rows with what the bank has for each, and the blueprint's course. */
+    public record BlueprintShortfall(long lmsCourseId, List<RowShortfall> rows) {
+    }
+
+    @Transactional(readOnly = true)
+    public BlueprintShortfall shortfall(Long userAccountId, Long blueprintId) {
+        Long lmsCourseId = blueprintId == null ? null : blueprints.findLmsCourseIdById(blueprintId).orElse(null);
+        if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
+            throw new ApiException(HttpStatus.NOT_FOUND, BLUEPRINT_UNAVAILABLE);
+        }
+        LmsExamBlueprint blueprint = blueprints.findById(blueprintId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, BLUEPRINT_UNAVAILABLE));
+        List<LmsQuestion> usable = questions.findAllForCourse(lmsCourseId).stream().filter(LmsExamPaperService::usable).toList();
+        Set<Long> taken = new HashSet<>();
+        List<RowShortfall> result = new ArrayList<>();
+        for (LmsExamBlueprintRow row : blueprint.getRows()) {
+            List<LmsQuestion> matching = usable.stream().filter(question -> !taken.contains(question.getId()))
+                    .filter(question -> matches(row, question)).toList();
+            matching.stream().limit(row.getQuestionCount()).forEach(question -> taken.add(question.getId()));
+            result.add(new RowShortfall(row, matching.size()));
+        }
+        return new BlueprintShortfall(lmsCourseId, List.copyOf(result));
+    }
+
+    private static boolean matches(LmsExamBlueprintRow row, LmsQuestion question) {
+        return row.matches(question.getType(), question.getDifficulty(), question.getBloomLevel(),
+                question.getOutcome() == null ? null : question.getOutcome().getId(), question.getTopic());
+    }
+
     /** One question picked for a blueprint row. */
     record Chosen(LmsExamBlueprintRow row, LmsQuestion question) {
     }

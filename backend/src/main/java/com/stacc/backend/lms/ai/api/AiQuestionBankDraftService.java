@@ -72,12 +72,22 @@ public class AiQuestionBankDraftService {
         this.gate = gate;
     }
 
-    public AiQuestionBankDraftResponse draft(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request) {
-        return gate.run(AiRequestLogEntry.Kind.QUESTION_BANK, accountId, lmsCourseId,
-                () -> generate(accountId, lmsCourseId, request), AiQuestionBankDraftResponse::insufficientContext);
+    /** What the drafts are labelled with besides their content (v0.14.4): an exam blueprint row's topic, Bloom level, and outcome. */
+    public record Labels(String topic, BloomLevel bloomLevel, Long outcomeId) {
+
+        static final Labels NONE = new Labels(null, null, null);
     }
 
-    private AiQuestionBankDraftResponse generate(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request) {
+    public AiQuestionBankDraftResponse draft(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request) {
+        return draft(accountId, lmsCourseId, request, Labels.NONE);
+    }
+
+    public AiQuestionBankDraftResponse draft(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request, Labels labels) {
+        return gate.run(AiRequestLogEntry.Kind.QUESTION_BANK, accountId, lmsCourseId,
+                () -> generate(accountId, lmsCourseId, request, labels), AiQuestionBankDraftResponse::insufficientContext);
+    }
+
+    private AiQuestionBankDraftResponse generate(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request, Labels labels) {
         if (!facultyAccess.canAccessCourse(accountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE);
         }
@@ -115,7 +125,7 @@ public class AiQuestionBankDraftService {
         int leftOut = 0;
         for (BankQuestion question : result.questions() == null ? List.<BankQuestion>of() : result.questions()) {
             LmsQuestionBankService.AiDraft draft = question == null || drafts.size() >= request.questionCount() ? null
-                    : toDraft(question, request, knowledge, withTeacher ? teacher : null, sent);
+                    : toDraft(question, request, knowledge, withTeacher ? teacher : null, sent, labels);
             if (draft == null) {
                 leftOut++;
             } else {
@@ -158,7 +168,7 @@ public class AiQuestionBankDraftService {
 
     /** The bank content of one drafted question, or null when its type, sources, or answers do not fit. */
     private static LmsQuestionBankService.AiDraft toDraft(BankQuestion question, AiQuestionBankDraftRequest request,
-            AiCourseKnowledge knowledge, AiTeacherKnowledge teacher, java.util.Set<Long> sent) {
+            AiCourseKnowledge knowledge, AiTeacherKnowledge teacher, java.util.Set<Long> sent, Labels labels) {
         QuestionType type;
         try {
             type = QuestionType.valueOf(question.questionType());
@@ -185,12 +195,12 @@ public class AiQuestionBankDraftService {
                 AiResults.text(question.explanation(), LmsQuestion.MAX_EXPLANATION_LENGTH), options,
                 type == QuestionType.TRUE_FALSE ? question.trueFalseAnswer() : null,
                 type == QuestionType.DESCRIPTIVE ? AiResults.text(question.answerGuidance(), LmsQuestion.MAX_GUIDANCE_LENGTH) : null,
-                null, request.difficulty(), marks, null, null);
+                labels.topic(), request.difficulty(), marks, labels.bloomLevel(), null);
         List<LmsQuestionSource> questionSources = new ArrayList<>();
         for (AiCitationResponse citation : citations) {
             questionSources.add(new LmsQuestionSource(questionSources.size() + 1, citation.sourceType(), citation.sourceId(),
                     citation.title(), citation.fileName(), citation.pageNumber(), citation.slideNumber(), citation.pageId()));
         }
-        return new LmsQuestionBankService.AiDraft(content, questionSources, checks(question.checks(), sent));
+        return new LmsQuestionBankService.AiDraft(content, questionSources, checks(question.checks(), sent), labels.outcomeId());
     }
 }
