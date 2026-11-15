@@ -114,3 +114,9 @@ cd ai-service && python -m pytest -q
 ```
 
 They use the deterministic fake model and embeddings, so they need no model, GPU, or network. See `ai-learning.md`.
+
+`tests/test_evaluation.py` (v0.13.8) runs the retrieval evaluation in `app/evaluation` with the fake model and keeps floors on it (every answerable question finds its source, the best source is right for at least 90%, nothing is found for unrelated questions), and checks for leaks: a source outside the allowed list, or an index the request does not name, never reaches the model. To see how a real local model does, run the same evaluation with the configured providers:
+
+```bash
+cd ai-service && python -m app.evaluation.run
+```

@@ -229,6 +229,13 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Request log without content.** `AiRequestGate` writes one `ai_request_log` row per question, summary, practice set, or assessment draft: the kind, the course, the outcome (`SUCCEEDED`, `INSUFFICIENT_CONTEXT`, `REFUSED`, `BUSY`, `FAILED`), the duration, and the time. Never the question, the answer, the sources, or who asked. A course the caller may not use (404) and requests while AI is off are not logged. Rows older than `AI_REQUEST_LOG_RETENTION` (90 days) are removed hourly while AI is on.
 - **AI health for admins.** The system health page's AI card reads `GET /api/v1/admin/system/ai` (`ADMIN` with `SYSTEM_HEALTH_VIEW`): whether AI is on and the AI service answers, index states, refresh jobs live or from the last 24 hours, requests running and waiting now, the last 24 hours of requests by outcome and kind, the average answer time, and how many courses have the student assistant off. Numbers only.
 
+### Evaluation (v0.13.8)
+
+- **Question set.** `app/evaluation/dataset.py` holds a small database course (seven published topics) and questions, each with the topics that should answer it, written in the course's own words, in other words, and as exact terms (`3NF`, `GROUP BY`, `HAVING`); two have no answer in the course.
+- **Retrieval check.** `app/evaluation/run.py` builds that course's index, asks every question through the same search as real answers (`LearningService.retrieve`), and reports the hit rate, the share whose best source is right, the mean reciprocal rank, and false finds for the unanswerable ones. `python -m app.evaluation.run` uses the configured providers; the tests use the fake ones and keep floors (hit rate 1.0, best source right at least 90%, MRR at least 0.9, no false finds), and require keyword matching to beat meaning alone.
+- **What it found.** SQL words that are also common English (`WHERE`, `HAVING`) were dropped as stop words; a word written in capitals now always counts.
+- **Leakage tests.** With the fake model recording its prompts: a source left out of `allowedSources` never reaches the prompt or the reply for questions, summaries, practice, or drafts, and an index the request does not name, or a note it does not allow, is never searched. In the backend, no student request names the teacher index or another student's notes index, and no request carries an account or login ID.
+
 ### What a refresh does
 
 1. Faculty access is checked.

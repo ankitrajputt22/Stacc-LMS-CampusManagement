@@ -38,13 +38,17 @@ def terms(text: str) -> list[str]:
 
 
 def query_terms(question: str) -> list[str]:
-    """The question's terms that can show a match: no stop words, and no pair made only of stop words."""
+    """The question's terms that can show a match: no stop words, and no pair made only of stop words. A word written in
+    capitals, such as WHERE or HAVING in SQL, is a technical term and always counts (v0.13.8)."""
+    capitals = {word.lower() for word in re.findall(r"\b[A-Z][A-Z0-9_]+\b", question)}
+
+    def meaningful(word: str) -> bool:
+        return word not in STOP_WORDS or word in capitals
+
     found = []
     for term in dict.fromkeys(terms(question)):
-        parts = term.split(" ")
-        if all(part in STOP_WORDS for part in parts):
-            continue
-        found.append(term)
+        if any(meaningful(part) for part in term.split(" ")):
+            found.append(term)
     return found
 
 

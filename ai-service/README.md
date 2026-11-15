@@ -9,6 +9,7 @@ backend calls it, with the shared internal token; browsers never reach it. See `
 - `app/indexing/` — chunking, index building, and the atomically replaced on-disk index.
 - `app/retrieval/` — retrieval, guarded prompts, and checked structured output.
 - `app/api/` — the `/health` and token-protected `/internal` routes.
+- `app/evaluation/` — a fixed course and question set with expected sources, scored for hit rate, mean reciprocal rank, and false finds (`python -m app.evaluation.run`).
 
 Run the tests (no network, GPU, or model needed):
 
