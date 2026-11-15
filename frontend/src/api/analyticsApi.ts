@@ -1,4 +1,4 @@
-import type { CourseAnalytics, ExportKind, ReportExport, StudentAnalytics } from '../types/analytics'
+import type { CourseAnalytics, DepartmentAnalytics, ExportKind, ReportExport, StudentAnalytics } from '../types/analytics'
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
@@ -10,3 +10,7 @@ export const startExport = async (kind: ExportKind, parameter: number | null) =>
 export const getMyExports = async (signal?: AbortSignal) => (await apiClient.get<ReportExport[]>('/exports', { signal })).data
 export const downloadExport = async (exportId: number) =>
   (await apiClient.get<Blob>(`/exports/${exportId}/download`, { responseType: 'blob', timeout: FILE_TIMEOUT_MS })).data
+
+/** The departments the signed-in head of department heads now, with current-session counts. */
+export const getDepartmentAnalytics = async (signal?: AbortSignal) =>
+  (await apiClient.get<DepartmentAnalytics[]>('/analytics/department', { signal })).data

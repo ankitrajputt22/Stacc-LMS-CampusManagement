@@ -26,6 +26,15 @@
 - **Quizzes:** per published quiz, how many were handed in and the average score, plus each question's correct rate.
 - **Required pages:** completion counts.
 
+## Department analytics (v0.16.3)
+
+`GET /api/v1/analytics/department` (`HOD` with `DEPARTMENT_ANALYTICS_VIEW`, added by `V126`), shown at `/department` ("Department" for accounts holding `HOD`), lists each department the account heads now. Which departments those are comes only from active head terms that `DepartmentHeadResolver` counts (an `ACTIVE` account still holding `HOD`); someone who heads none gets an empty list. For the current academic session it shows:
+
+- **Programs:** the students enrolled in a semester of each program.
+- **Offerings:** per offering of the department's courses, the enrolled students, the present rate of finalized attendance (only for groups of at least five), and the number of published results.
+
+Counts only otherwise: no student is named, nothing is ranked, and nothing is stored.
+
 ## Background exports (report service)
 
 - **Starting one:** `POST /api/v1/exports` (`FACULTY` or `ADMIN` with `REPORT_EXPORT`) starts an XLSX export of a report the caller can already read:
