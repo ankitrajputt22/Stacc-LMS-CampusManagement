@@ -21,7 +21,7 @@ from app.indexing.store import CourseIndex, IndexStore, StoredChunk, unit_vector
 from app.models import schemas
 from app.models.schemas import Citation, QuestionType
 from app.providers.base import ContextChunk, EmbeddingProvider, GenerationRequest, ModelProvider
-from app.retrieval import prompts
+from app.retrieval import keyword, prompts
 from app.security import checked_course_key
 
 Output = TypeVar("Output", bound=BaseModel)
@@ -49,6 +49,11 @@ def inline_schema(model: type[BaseModel]) -> dict:
 def _citation(chunk: StoredChunk) -> Citation:
     return Citation(sourceType=chunk.sourceType, sourceId=chunk.sourceId, topicId=chunk.topicId, title=chunk.title,
                     fileName=chunk.fileName, pageNumber=chunk.pageNumber, slideNumber=chunk.slideNumber)
+
+
+def _searchable(chunk: StoredChunk) -> str:
+    """What keyword matching reads: the source title, the heading path, and the text."""
+    return "\n".join(part for part in (chunk.title, chunk.heading, chunk.text) if part)
 
 
 class _Context:
@@ -107,15 +112,30 @@ class LearningService:
         return scopes
 
     def _search(self, scopes: list[tuple[CourseIndex, np.ndarray]], question: str) -> list[StoredChunk]:
-        """The best allowed chunks across every index, best first, above the relevance floor."""
+        """The best allowed chunks across every index, best first.
+
+        Hybrid search (v0.13.4): the semantic ranking (chunks above the relevance floor) and the keyword ranking
+        (BM25 over words and word pairs, chunks sharing a meaningful term) are merged by reciprocal rank fusion. A
+        question that neither finds returns nothing, so the answer is insufficient context without asking the model.
+        """
         query = unit_vectors(self._embeddings.embed([question]))[0]
-        found: list[tuple[float, int, int, StoredChunk]] = []
-        for order, (index, allowed) in enumerate(scopes):
+        candidates: list[StoredChunk] = []
+        semantic: list[tuple[float, int]] = []
+        for index, allowed in scopes:
             for position, score in index.search(query, len(index.chunks)):
-                if allowed[position] and score >= self._settings.min_relevance:
-                    found.append((score, order, position, index.chunks[position]))
-        found.sort(key=lambda item: (-item[0], item[1], item[2]))
-        return [item[3] for item in found[: self._settings.top_k]]
+                if allowed[position]:
+                    candidates.append(index.chunks[position])
+                    if score >= self._settings.min_relevance:
+                        semantic.append((score, len(candidates) - 1))
+        semantic.sort(key=lambda item: (-item[0], item[1]))
+        semantic_ranking = [item for _, item in semantic]
+        if not self._settings.keyword_search:
+            return [candidates[item] for item in semantic_ranking[: self._settings.top_k]]
+        scores = keyword.bm25([_searchable(chunk) for chunk in candidates], question)
+        keyword_ranking = sorted((item for item, score in enumerate(scores) if score > 0),
+                                 key=lambda item: (-scores[item], item))
+        fused = keyword.fuse(semantic_ranking, keyword_ranking)
+        return [candidates[item] for item in fused[: self._settings.top_k]]
 
     def _spread(self, chunks: list[StoredChunk]) -> list[StoredChunk]:
         """Up to the context limit, spread evenly over the chunks so the whole selection is covered."""

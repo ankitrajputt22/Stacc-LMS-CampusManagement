@@ -250,7 +250,7 @@ Knowledge must be ready: a successful refresh of the current content, and no fai
 
 ### Grounding and citations
 
-- **Retrieval:** the question is embedded and the best `AI_TOP_K` chunks (6, at most 8) above `AI_MIN_RELEVANCE` are retrieved. The whole course is never sent to the model.
+- **Retrieval:** hybrid search (v0.13.4). The question is embedded and the chunks above `AI_MIN_RELEVANCE` are ranked by meaning; the same allowed chunks are also ranked by keyword matching (Okapi BM25 over words and adjacent word pairs of the title, heading, and text, ignoring common English words), so exact course terms such as `3NF`, `GROUP BY`, or `C++` are found even when the embedding misses them. The two rankings are merged by reciprocal rank fusion and the best `AI_TOP_K` chunks (6, at most 8) are used. `AI_KEYWORD_SEARCH=false` turns keyword matching off. Keyword scores are worked out per request and never stored. The whole course is never sent to the model.
 - **No relevant chunk:** the answer is insufficient context without asking the model.
 - **Labels:** each chunk is labelled `S1`, `S2`, … and the model must cite the labels it used.
 - **Unsupported answers:** an answer without at least one real label becomes insufficient context, never a general-knowledge answer.
