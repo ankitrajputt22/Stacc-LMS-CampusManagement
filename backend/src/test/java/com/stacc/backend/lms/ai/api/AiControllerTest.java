@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 class AiControllerTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW", "AI_STUDY_USE");
-    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE");
+    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE");
 
     @MockitoBean
     private LmsStudentAccessService studentAccess;
@@ -94,6 +94,21 @@ class AiControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
+    void draftingIntoTheBankAlsoNeedsTheBankPermissionAndValidSettings() throws Exception {
+        String route = "/api/v1/lms/faculty/courses/7/ai/question-bank";
+        String body = "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}";
+        assertThat(statusOf(json(post(route), body), token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE"))).isEqualTo(403);
+        for (String bad : List.of("{\"questionCount\":0,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":11,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[\"ESSAY\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"]}")) {
+            assertThat(statusOf(json(post(route), bad), FACULTY)).isEqualTo(400);
+        }
+        assertThat(statusOf(json(post(route), body), FACULTY)).isEqualTo(503);
+    }
+
+    @Test
     void theStudentAccessSwitchNeedsAValue() throws Exception {
         assertThat(statusOf(json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{}"), FACULTY)).isEqualTo(400);
     }
@@ -128,7 +143,9 @@ class AiControllerTest extends DatabaseFreeApiTest {
                 json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
                 json(put("/api/v1/lms/faculty/ai/teacher-documents/9"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
                 post("/api/v1/lms/faculty/ai/teacher-documents/9/archive"),
-                json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{\"enabled\":false}"));
+                json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{\"enabled\":false}"),
+                json(post("/api/v1/lms/faculty/courses/7/ai/question-bank"),
+                        "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {

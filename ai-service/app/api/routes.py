@@ -28,6 +28,11 @@ def replace_index(course_key: str, body: schemas.ReplaceIndexRequest, request: R
     return request.app.state.builder.replace(checked_course_key(course_key), body)
 
 
+@internal.post("/indexes/{course_key}/question-bank-draft", response_model=schemas.BankDraftResponse)
+def question_bank_draft(course_key: str, body: schemas.BankDraftRequest, request: Request):
+    return request.app.state.learning.bank_draft(checked_course_key(course_key), body)
+
+
 @internal.delete("/indexes/{course_key}", status_code=204)
 def delete_index(course_key: str, request: Request) -> Response:
     """Removes an index completely, such as a student's notes index after their last note is deleted. Deleting a

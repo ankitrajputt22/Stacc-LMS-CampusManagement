@@ -242,6 +242,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Module scope.** An optional `moduleId` narrows the allowed course sources to that module's published pages and their files (`AiCourseKnowledge.allowedSourcesInModule`). A module with no published page in the course answers 404, and a module with My notes only answers 400.
 - **Source cards.** Each citation carries `pageId`, the course page it is on (the topic itself, or a file's page; null for notes and teacher documents). The page shows sources as cards with their kind, title, and file, and an Open page link to `/courses/:lmsCourseId/pages/:pageId`, where the page's own access check applies again.
 
+### Generate into the bank (v0.14.1)
+
+- **Bank types.** The AI service's `question-bank-draft` task drafts questions in the question bank's own types (single and multiple choice with their correct options, true/false with its answer, short answers with accepted answers, descriptive with marking guidance), each with an explanation, suggested marks, and the sources it cites. Only the requested types and questions citing a real allowed source are kept.
+- **Self-checked keys.** Every choice and true/false question is answered again by the model from its own cited sources, without the key (`answer_check`, temperature 0). A question whose answer differs from its key, or whose check gives no usable answer, is dropped and counted as `droppedForKeyMismatch`.
+- **Into the bank as Needs review.** `AiQuestionBankDraftService` checks faculty access and current AI knowledge, adds current teacher documents as an extra index, rebuilds every citation from Stacc's records, and saves the questions through `LmsQuestionBankService.addAiDrafts`: `NEEDS_REVIEW`, never offered for practice, marked as AI drafts with their sources. The difficulty is the requested one; marks are the suggestion, rounded to 2 places and at most 100. The route needs the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`, goes through `AiRequestGate` (kind `QUESTION_BANK`), and answers how many were added, dropped, or left out.
+
 ### What a refresh does
 
 1. Faculty access is checked.

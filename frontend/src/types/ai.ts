@@ -67,6 +67,15 @@ export type AiKnowledgeStatus = {
   studentAiEnabled: boolean
 }
 
+/** What a question bank draft added (v0.14.1); the questions are in the bank, each needing review. */
+export type AiQuestionBankDraft = {
+  added: number
+  droppedForKeyMismatch: number
+  leftOut: number
+  insufficientContext: boolean
+  questionIds: number[]
+}
+
 /** One of the signed-in student's private notes in a course (v0.13.6). */
 export type AiStudentNote = {
   id: number

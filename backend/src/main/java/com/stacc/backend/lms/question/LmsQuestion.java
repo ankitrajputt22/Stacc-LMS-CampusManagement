@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,6 +30,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.UpdateTimestamp;
 
 /**
@@ -111,6 +114,17 @@ public class LmsQuestion {
     @Column(name = "practice_allowed", nullable = false)
     private boolean practiceAllowed;
 
+    // v0.14.1: drafted by AI, with the sources it was drafted from. Loaded in its own select, so it never multiplies
+    // the options it is read with.
+    @Column(name = "ai_generated", nullable = false, updatable = false)
+    private boolean aiGenerated;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "lms_question_sources", joinColumns = @JoinColumn(name = "lms_question_id"))
+    @OrderBy("position")
+    private Set<LmsQuestionSource> sources = new LinkedHashSet<>();
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private QuestionStatus status = QuestionStatus.ACTIVE;
@@ -148,6 +162,26 @@ public class LmsQuestion {
     }
 
     /** Marks the question reviewed; reviewing again changes nothing. */
+    /**
+     * A question drafted by AI (v0.14.1): it needs review like every new question, says it was drafted by AI, and keeps
+     * the sources it was drafted from.
+     */
+    public static LmsQuestion aiDraft(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content,
+            List<LmsQuestionSource> sources) {
+        LmsQuestion question = new LmsQuestion(lmsCourse, createdByAccountId, content);
+        question.aiGenerated = true;
+        question.sources.addAll(Require.notNull(sources, "sources"));
+        return question;
+    }
+
+    public boolean isAiGenerated() {
+        return aiGenerated;
+    }
+
+    public List<LmsQuestionSource> getSources() {
+        return sources.stream().sorted(java.util.Comparator.comparingInt(LmsQuestionSource::getPosition)).toList();
+    }
+
     public void markReviewed() {
         requireActive();
         this.reviewStatus = QuestionReviewStatus.REVIEWED;

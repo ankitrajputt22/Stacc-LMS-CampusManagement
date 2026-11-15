@@ -78,6 +78,34 @@ public class LmsQuestionBankService {
         return questions.saveAndFlush(question);
     }
 
+    /** One AI-drafted question to add, with the sources it was drafted from (v0.14.1). */
+    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
+    }
+
+    /**
+     * Adds AI-drafted questions to the bank (v0.14.1), all in one transaction, each NEEDS_REVIEW and marked as drafted
+     * by AI. A draft the bank's own rules refuse (such as an option that is too long) is left out, never changed.
+     * Faculty access is checked as for a question written by hand.
+     */
+    @Transactional
+    public List<LmsQuestion> addAiDrafts(Long userAccountId, Long lmsCourseId, List<AiDraft> drafts) {
+        requireCourse(userAccountId, lmsCourseId);
+        LmsCourse lmsCourse = lmsCourses.findById(lmsCourseId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE));
+        List<LmsQuestion> added = new java.util.ArrayList<>();
+        for (AiDraft draft : drafts) {
+            LmsQuestion question;
+            try {
+                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, draft.content(), draft.sources());
+            } catch (IllegalArgumentException | IllegalStateException refused) {
+                continue;
+            }
+            added.add(questions.save(question));
+        }
+        questions.flush();
+        return List.copyOf(added);
+    }
+
     /**
      * Replaces what the question says; it then needs a new review and is no longer offered for practice. A question
      * that a published or archived quiz uses keeps what students were asked (409). The course row is locked first, as

@@ -16,7 +16,7 @@ import numpy as np
 from pydantic import BaseModel, ValidationError
 
 from app.config import Settings
-from app.errors import index_mismatch, model_output_invalid
+from app.errors import ServiceError, index_mismatch, model_output_invalid
 from app.indexing.store import CourseIndex, IndexStore, StoredChunk, unit_vectors
 from app.models import schemas
 from app.models.schemas import Citation, QuestionType
@@ -261,3 +261,69 @@ class LearningService:
         return schemas.AssessmentDraftResponse(titleSuggestion=result.titleSuggestion,
                                                instructionsSuggestion=result.instructionsSuggestion or None,
                                                questions=accepted(result), insufficientContext=False)
+
+    # --- Question bank drafts (v0.14.1) --------------------------------------------------------
+
+    def bank_draft(self, course_key: str, request: schemas.BankDraftRequest) -> schemas.BankDraftResponse:
+        """Questions in the bank's own types, each cited. Every keyed question (choice or true/false) is answered
+        again by the model from its own sources without the key; a question whose answer differs is dropped."""
+        empty = schemas.BankDraftResponse(questions=[], droppedForKeyMismatch=0, insufficientContext=True)
+        chunks = self._selection(self._scopes(course_key, request), request.topicId)
+        if not chunks:
+            return empty
+        context = _Context(chunks)
+        wanted = set(request.questionTypes)
+
+        def usable(out: schemas.BankModelOutput) -> list[tuple[schemas.BankModelQuestion, list[Citation]]]:
+            kept = []
+            for question in out.questions:
+                citations = context.citations(question.sourceIds)
+                if citations and question.questionType in wanted:
+                    kept.append((question, citations))
+            return kept[:request.questionCount]
+
+        result = self._generate(
+            "bank_questions", context, schemas.BankModelOutput, self._settings.draft_temperature,
+            {"questionCount": request.questionCount, "difficulty": request.difficulty.value,
+             "questionTypes": ", ".join(kind.value for kind in request.questionTypes)},
+            usable=lambda out: bool(usable(out)), teacher_note=request.additionalInstruction)
+        if result is None:
+            return empty
+        questions, dropped = [], 0
+        for question, citations in usable(result):
+            if question.questionType.keyed and not self._key_confirmed(question, context):
+                dropped += 1
+                continue
+            questions.append(schemas.BankQuestion(
+                questionType=question.questionType, text=question.text,
+                options=[schemas.BankOption(text=o.text, correct=o.correct) for o in question.options]
+                if question.questionType in (schemas.BankType.SINGLE_CHOICE, schemas.BankType.MULTIPLE_CHOICE) else [],
+                trueFalseAnswer=question.trueFalseAnswer if question.questionType is schemas.BankType.TRUE_FALSE else None,
+                acceptedAnswers=question.acceptedAnswers if question.questionType is schemas.BankType.SHORT_ANSWER else [],
+                answerGuidance=question.answerGuidance if question.questionType is schemas.BankType.DESCRIPTIVE else None,
+                explanation=question.explanation or None, suggestedMarks=question.suggestedMarks, citations=citations))
+        return schemas.BankDraftResponse(questions=questions, droppedForKeyMismatch=dropped,
+                                         insufficientContext=not questions and dropped == 0)
+
+    def _key_confirmed(self, question: schemas.BankModelQuestion, context: _Context) -> bool:
+        """Answers the question again from its own cited sources, without the key, and compares."""
+        cited = _Context([context.chunks[ref.strip().upper()] for ref in question.sourceIds
+                          if ref.strip().upper() in context.chunks])
+        if question.questionType is schemas.BankType.TRUE_FALSE:
+            asked = f"True or false: {question.text}"
+            options: list[str] = []
+        else:
+            options = [option.text for option in question.options]
+            asked = question.text + "\n" + "\n".join(f"{number}. {text}" for number, text in enumerate(options, start=1))
+        try:
+            check = self._generate("answer_check", cited, schemas.AnswerCheckOutput, 0.0,
+                                   {"options": options, "kind": question.questionType.value}, question=asked)
+        except ServiceError:
+            return False
+        if check is None:
+            return False
+        if question.questionType is schemas.BankType.TRUE_FALSE:
+            return check.trueFalseAnswer is not None and check.trueFalseAnswer == question.trueFalseAnswer
+        key = {number for number, option in enumerate(question.options, start=1) if option.correct}
+        return set(check.chosenOptions) == key
+

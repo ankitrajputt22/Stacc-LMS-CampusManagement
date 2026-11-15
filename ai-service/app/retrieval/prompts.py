@@ -34,6 +34,17 @@ TASKS = {
                         "list the sources it is based on.",
 }
 
+TASKS["bank_questions"] = (
+    "Task: write exactly {questionCount} questions for a teacher's question bank, for the teacher to review. "
+    "Difficulty: {difficulty}. Use only these question types: {questionTypes}. SINGLE_CHOICE has 2 to 6 options "
+    "with exactly one correct; MULTIPLE_CHOICE has 2 to 6 options with one or more correct; TRUE_FALSE gives "
+    "trueFalseAnswer; SHORT_ANSWER gives up to 5 short acceptedAnswers; DESCRIPTIVE gives answerGuidance for the "
+    "marker. Add a short explanation of the answer. Suggest marks between 1 and 100. Each question must be "
+    "answerable from the sources and list the sources it is based on.")
+TASKS["answer_check"] = (
+    "Task: answer the question below using only the sources. For a question with numbered options, list the numbers "
+    "of every correct option in chosenOptions. For a true or false statement, give trueFalseAnswer. Do not explain.")
+
 FENCE = re.compile(r"</?\s*(source|question|teacher_note)", re.IGNORECASE)
 
 

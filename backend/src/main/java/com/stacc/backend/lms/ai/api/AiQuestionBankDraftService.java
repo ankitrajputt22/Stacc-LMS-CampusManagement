@@ -1,0 +1,158 @@
+package com.stacc.backend.lms.ai.api;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+
+import com.stacc.backend.common.error.ApiException;
+import com.stacc.backend.lms.access.LmsFacultyAccessService;
+import com.stacc.backend.lms.ai.AiCourseKeys;
+import com.stacc.backend.lms.ai.AiCourseKnowledge;
+import com.stacc.backend.lms.ai.AiErrors;
+import com.stacc.backend.lms.ai.AiIndexKind;
+import com.stacc.backend.lms.ai.AiKnowledgeRecords;
+import com.stacc.backend.lms.ai.AiKnowledgeSources;
+import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.AiServiceException;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftResult;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankQuestion;
+import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
+import com.stacc.backend.lms.ai.control.AiRequestGate;
+import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
+import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
+import com.stacc.backend.lms.content.LmsTextFormat;
+import com.stacc.backend.lms.question.LmsQuestion;
+import com.stacc.backend.lms.question.LmsQuestionBankService;
+import com.stacc.backend.lms.question.LmsQuestionContent;
+import com.stacc.backend.lms.question.LmsQuestionSource;
+import com.stacc.backend.lms.question.QuestionType;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+/**
+ * Generate into the bank (v0.14.1): AI drafts questions in the bank's own types from the course's published content
+ * (and current teacher documents), the AI service drops choice and true/false questions whose key it does not
+ * reproduce, and every question left that cites a real course source is added to the bank as NEEDS_REVIEW, marked as
+ * drafted by AI, with its sources. Nothing is offered for practice, put in a quiz, or published here.
+ */
+@Service
+public class AiQuestionBankDraftService {
+
+    static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
+    static final String TOPIC_UNAVAILABLE = "Topic not found or unavailable.";
+    private static final BigDecimal MAX_MARKS = new BigDecimal("100");
+
+    private final LmsFacultyAccessService facultyAccess;
+    private final AiKnowledgeSources sources;
+    private final AiKnowledgeRecords records;
+    private final AiServiceClient client;
+    private final AiTeacherDocumentService teacherDocuments;
+    private final LmsQuestionBankService bank;
+    private final AiRequestGate gate;
+
+    public AiQuestionBankDraftService(LmsFacultyAccessService facultyAccess, AiKnowledgeSources sources,
+            AiKnowledgeRecords records, AiServiceClient client, AiTeacherDocumentService teacherDocuments,
+            LmsQuestionBankService bank, AiRequestGate gate) {
+        this.facultyAccess = facultyAccess;
+        this.sources = sources;
+        this.records = records;
+        this.client = client;
+        this.teacherDocuments = teacherDocuments;
+        this.bank = bank;
+        this.gate = gate;
+    }
+
+    public AiQuestionBankDraftResponse draft(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.QUESTION_BANK, accountId, lmsCourseId,
+                () -> generate(accountId, lmsCourseId, request), AiQuestionBankDraftResponse::insufficientContext);
+    }
+
+    private AiQuestionBankDraftResponse generate(Long accountId, Long lmsCourseId, AiQuestionBankDraftRequest request) {
+        if (!facultyAccess.canAccessCourse(accountId, lmsCourseId)) {
+            throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE);
+        }
+        if (!client.isEnabled()) {
+            throw AiErrors.unavailable();
+        }
+        AiCourseKnowledge knowledge = sources.publishedKnowledge(lmsCourseId);
+        if (request.topicId() != null && knowledge.topic(request.topicId()).isEmpty()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, TOPIC_UNAVAILABLE);
+        }
+        if (!records.find(lmsCourseId).map(index -> index.answersFor(knowledge.fingerprint())).orElse(false)) {
+            throw new ApiException(HttpStatus.CONFLICT, AiErrors.TEACHING_NOT_READY);
+        }
+        AiTeacherKnowledge teacher = teacherDocuments.knowledge(lmsCourseId);
+        boolean withTeacher = !teacher.isEmpty() && records.find(lmsCourseId, AiIndexKind.TEACHER_DOCUMENTS)
+                .map(index -> index.answersFor(teacher.fingerprint())).orElse(false);
+        List<IndexRef> additional = withTeacher && request.topicId() == null
+                ? List.of(new IndexRef(AiCourseKeys.forTeacherDocuments(lmsCourseId), teacher.fingerprint(), teacher.allowedSources()))
+                : List.of();
+        List<String> types = new LinkedHashSet<>(request.questionTypes()).stream().map(Enum::name).toList();
+        BankDraftResult result;
+        try {
+            result = client.questionBankDraft(AiCourseKeys.forLmsCourse(lmsCourseId), new BankDraftRequest(
+                    knowledge.fingerprint(), request.questionCount(), types, request.difficulty().name(), request.topicId(),
+                    AiResults.text(request.additionalInstruction(), 500), knowledge.allowedSources(), additional));
+        } catch (AiServiceException exception) {
+            throw AiErrors.of(exception, AiErrors.TEACHING_NOT_READY);
+        }
+        int dropped = result.droppedForKeyMismatch() == null ? 0 : Math.max(0, result.droppedForKeyMismatch());
+        List<LmsQuestionBankService.AiDraft> drafts = new ArrayList<>();
+        int leftOut = 0;
+        for (BankQuestion question : result.questions() == null ? List.<BankQuestion>of() : result.questions()) {
+            LmsQuestionBankService.AiDraft draft = question == null || drafts.size() >= request.questionCount() ? null
+                    : toDraft(question, request, knowledge, withTeacher ? teacher : null);
+            if (draft == null) {
+                leftOut++;
+            } else {
+                drafts.add(draft);
+            }
+        }
+        List<LmsQuestion> added = drafts.isEmpty() ? List.of() : bank.addAiDrafts(accountId, lmsCourseId, drafts);
+        leftOut += drafts.size() - added.size();
+        return new AiQuestionBankDraftResponse(added.size(), dropped, leftOut, added.isEmpty() && dropped == 0,
+                added.stream().map(LmsQuestion::getId).toList());
+    }
+
+    /** The bank content of one drafted question, or null when its type, sources, or answers do not fit. */
+    private static LmsQuestionBankService.AiDraft toDraft(BankQuestion question, AiQuestionBankDraftRequest request,
+            AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
+        QuestionType type;
+        try {
+            type = QuestionType.valueOf(question.questionType());
+        } catch (IllegalArgumentException | NullPointerException unknown) {
+            return null;
+        }
+        List<AiCitationResponse> citations = AiResults.citations(question.citations(), knowledge, teacher);
+        if (!request.questionTypes().contains(type) || citations.isEmpty() || question.text() == null || question.text().isBlank()) {
+            return null;
+        }
+        List<LmsQuestionContent.Option> options = switch (type) {
+            case SINGLE_CHOICE, MULTIPLE_CHOICE -> question.options() == null ? List.of() : question.options().stream()
+                    .filter(option -> option != null && option.text() != null)
+                    .map(option -> new LmsQuestionContent.Option(option.text().strip(), Boolean.TRUE.equals(option.correct())))
+                    .toList();
+            case SHORT_ANSWER -> question.acceptedAnswers() == null ? List.of() : question.acceptedAnswers().stream()
+                    .filter(answer -> answer != null && !answer.isBlank())
+                    .map(answer -> new LmsQuestionContent.Option(answer.strip(), true)).toList();
+            default -> List.of();
+        };
+        BigDecimal marks = question.suggestedMarks() == null || question.suggestedMarks().signum() <= 0 ? BigDecimal.ONE
+                : question.suggestedMarks().min(MAX_MARKS).setScale(2, RoundingMode.HALF_UP);
+        LmsQuestionContent content = new LmsQuestionContent(type, question.text().strip(), LmsTextFormat.PLAIN,
+                AiResults.text(question.explanation(), LmsQuestion.MAX_EXPLANATION_LENGTH), options,
+                type == QuestionType.TRUE_FALSE ? question.trueFalseAnswer() : null,
+                type == QuestionType.DESCRIPTIVE ? AiResults.text(question.answerGuidance(), LmsQuestion.MAX_GUIDANCE_LENGTH) : null,
+                null, request.difficulty(), marks, null, null);
+        List<LmsQuestionSource> questionSources = new ArrayList<>();
+        for (AiCitationResponse citation : citations) {
+            questionSources.add(new LmsQuestionSource(questionSources.size() + 1, citation.sourceType(), citation.sourceId(),
+                    citation.title(), citation.fileName(), citation.pageNumber(), citation.slideNumber(), citation.pageId()));
+        }
+        return new LmsQuestionBankService.AiDraft(content, questionSources);
+    }
+}

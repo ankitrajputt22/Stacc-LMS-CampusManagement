@@ -172,6 +172,12 @@ public class HttpAiServiceClient implements AiServiceClient {
     }
 
     @Override
+    public AiServiceMessages.BankDraftResult questionBankDraft(String courseKey, AiServiceMessages.BankDraftRequest request) {
+        // Drafting and checking every keyed question takes longer than one answer, like a refresh.
+        return post(syncClient, courseKey, "question-bank-draft", request, AiServiceMessages.BankDraftResult.class);
+    }
+
+    @Override
     public AssessmentDraftResult assessmentDraft(String courseKey, AssessmentDraftRequest request) {
         return post(client, courseKey, "assessment-draft", request, AssessmentDraftResult.class);
     }

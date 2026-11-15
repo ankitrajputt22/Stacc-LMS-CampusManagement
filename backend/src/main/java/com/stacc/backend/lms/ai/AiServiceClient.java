@@ -4,6 +4,8 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.ReplaceIndexRequest;
@@ -29,6 +31,9 @@ public interface AiServiceClient {
 
     /** Removes an index and all its files (v0.13.6), such as a student's notes index after their last note is deleted. */
     void deleteIndex(String courseKey);
+
+    /** Questions in the bank's own types, with keyed ones checked by answering them again (v0.14.1). */
+    BankDraftResult questionBankDraft(String courseKey, BankDraftRequest request);
 
     SummaryResult summarize(String courseKey, SummaryRequest request);
 

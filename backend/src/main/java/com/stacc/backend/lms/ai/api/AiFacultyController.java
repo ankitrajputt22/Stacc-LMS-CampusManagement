@@ -36,9 +36,40 @@ public class AiFacultyController {
     private static final String ERROR = "application/json";
 
     private final AiFacultyService faculty;
+    private final AiQuestionBankDraftService bankDrafts;
 
-    public AiFacultyController(AiFacultyService faculty) {
+    public AiFacultyController(AiFacultyService faculty, AiQuestionBankDraftService bankDrafts) {
         this.faculty = faculty;
+        this.bankDrafts = bankDrafts;
+    }
+
+    @PostMapping("/question-bank")
+    @PreAuthorize(AiAccess.FACULTY_BANK)
+    @Operation(
+            summary = "Draft questions into the question bank",
+            description = "AI drafts questions of the chosen types from the course's published content and current teacher "
+                    + "documents. Choice and true/false questions whose key the AI does not reproduce are dropped. Every "
+                    + "question left that cites a real course source is added to the bank as NEEDS_REVIEW, marked as drafted "
+                    + "by AI, with its sources. Nothing is offered for practice, put in a quiz, or published.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "How many questions were added, dropped, or left out.")
+    @ApiResponse(responseCode = "400", description = "A setting is missing or out of range.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "The account is not allowed to use this operation.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "The course or topic does not exist or is not taught by this faculty member.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "AI knowledge is not ready for the current content.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "429", description = "Another AI request of this account is running, or AI is busy.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "503", description = "AI is switched off or unavailable.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AiQuestionBankDraftResponse questionBank(@PathVariable Long lmsCourseId,
+            @Valid @RequestBody AiQuestionBankDraftRequest request, @AuthenticationPrincipal Jwt accessToken) {
+        return bankDrafts.draft(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
     }
 
     @GetMapping("/status")

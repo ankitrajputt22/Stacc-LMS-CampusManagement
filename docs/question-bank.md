@@ -57,4 +57,8 @@ A question is sent as `type`, `text`, `textFormat`, `explanation`, `options` (`t
 - **Add a question**: the type decides which parts the form shows (options with Correct marks, the true or false answer, accepted answers, or guidance), then topic, difficulty, marks, course outcome, and Bloom level. Obvious slips are caught before sending; the backend decides.
 - **Questions**: search the question text and filter by type, topic, difficulty, and status (Active by default), on the page over what the API sent. Each question shows its answers, facts, and badges (Needs review, Reviewed, OK for practice, Archived), with Edit, Mark reviewed, OK for practice or Not for practice, and Archive (confirmed first).
 
-Not in this phase: "Used in" counts, question pools, import or export, or AI-generated questions (v0.14).
+## AI drafts (v0.14.1)
+
+AI Tools' Draft into the question bank (`POST /api/v1/lms/faculty/courses/{id}/ai/question-bank`, the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`) adds AI-drafted questions through `LmsQuestionBankService.addAiDrafts`, in one transaction, under the same rules as written ones: each starts `NEEDS_REVIEW`, is never offered for practice, and is marked `aiGenerated` with the course sources it was drafted from (`lms_question_sources`: kind, ID, and a snapshot of the title, file, and page or slide; never a storage key). The bank shows an AI draft badge and the sources. A draft the bank's rules refuse is left out, never changed. See `ai-learning.md`.
+
+Not in this phase: "Used in" counts, question pools, import or export.

@@ -5,6 +5,8 @@ final class AiAccess {
 
     static final String STUDENT = "hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')";
     static final String FACULTY = "hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')";
+    /** Drafting into the question bank (v0.14.1) also needs the bank's own permission. */
+    static final String FACULTY_BANK = FACULTY + " and hasAuthority('LMS_QUESTION_BANK_MANAGE')";
 
     private AiAccess() {
     }

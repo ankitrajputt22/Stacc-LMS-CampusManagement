@@ -7,10 +7,12 @@ import type {
   AiKnowledgeStatus,
   AiKnowledgeSync,
   AiPracticeSet,
+  AiQuestionBankDraft,
   AiStudentNote,
   AiTeacherDocument,
   AiTopicSummary,
 } from '../types/ai'
+import type { QuestionDifficulty, QuestionType } from '../types/lms'
 import { apiClient } from './apiClient'
 
 // AI learning requests. The browser only ever talks to Stacc's own API: the AI service is internal. Requests carry the
@@ -119,4 +121,14 @@ export async function deleteMyNote(lmsCourseId: number, noteId: number): Promise
 /** Turns the course's student AI Study Assistant on or off (v0.13.7). */
 export async function changeStudentAiAccess(lmsCourseId: number, enabled: boolean): Promise<{ enabled: boolean }> {
   return (await apiClient.put<{ enabled: boolean }>(`/lms/faculty/courses/${lmsCourseId}/ai/student-access`, { enabled })).data
+}
+
+/** Drafts questions into the course's question bank as Needs review (v0.14.1). */
+export async function draftIntoQuestionBank(
+  lmsCourseId: number,
+  input: { questionCount: number; questionTypes: QuestionType[]; difficulty: QuestionDifficulty; topicId: number | null },
+  signal?: AbortSignal,
+): Promise<AiQuestionBankDraft> {
+  const body = { ...input, ...(input.topicId === null ? { topicId: undefined } : {}) }
+  return (await apiClient.post<AiQuestionBankDraft>(`/lms/faculty/courses/${lmsCourseId}/ai/question-bank`, body, { signal })).data
 }

@@ -39,9 +39,18 @@ public record LmsQuestionResponse(
         QuestionStatus status,
         @Schema(description = "A published or archived quiz uses the question, so it can no longer be edited.")
         boolean inPublishedQuiz,
-        Instant updatedAt) {
+        Instant updatedAt,
+        @Schema(description = "Drafted by AI (v0.14.1); it still needs a teacher's review like any new question.")
+        boolean aiGenerated,
+        @Schema(description = "For an AI draft, the course sources it was drafted from; otherwise empty.")
+        List<Source> sources) {
 
     public record Option(String text, boolean correct) {
+    }
+
+    /** A course source an AI draft was drafted from, as it was then. */
+    public record Source(String sourceType, long sourceId, String title, String fileName, Integer pageNumber,
+            Integer slideNumber, Long pageId) {
     }
 
     static LmsQuestionResponse of(LmsQuestion question, boolean inPublishedQuiz) {
@@ -52,6 +61,9 @@ public record LmsQuestionResponse(
                 question.getTrueFalseAnswer(), question.getAnswerGuidance(), question.getTopic(), question.getDifficulty(),
                 question.getMarks(), question.getBloomLevel(), outcome == null ? null : LmsOutcomeResponse.of(outcome),
                 question.getReviewStatus(), question.isPracticeAllowed(), question.getStatus(), inPublishedQuiz,
-                question.getUpdatedAt());
+                question.getUpdatedAt(), question.isAiGenerated(), question.getSources().stream()
+                        .map(source -> new Source(source.getSourceType(), source.getSourceId(), source.getTitle(),
+                                source.getFileName(), source.getPageNumber(), source.getSlideNumber(), source.getPageId()))
+                        .toList());
     }
 }
