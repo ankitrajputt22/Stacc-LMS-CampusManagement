@@ -83,6 +83,22 @@ class AiControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
+    void aiHealthIsForAdminsWithSystemHealthViewAndHoldsNumbersOnly() throws Exception {
+        assertThat(statusOf(get("/api/v1/admin/system/ai"), FACULTY)).isEqualTo(403);
+        assertThat(statusOf(get("/api/v1/admin/system/ai"), token(1, "ROLE_ADMIN"))).isEqualTo(403);
+        mockMvc.perform(get("/api/v1/admin/system/ai").header(HttpHeaders.AUTHORIZATION, token(1, "ROLE_ADMIN", "SYSTEM_HEALTH_VIEW")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(false))
+                .andExpect(jsonPath("$.reachable").value(false))
+                .andExpect(jsonPath("$.running").value(0));
+    }
+
+    @Test
+    void theStudentAccessSwitchNeedsAValue() throws Exception {
+        assertThat(statusOf(json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{}"), FACULTY)).isEqualTo(400);
+    }
+
+    @Test
     void noteRoutesAreTheStudentsOwnAnd404OtherwiseOrForAnotherCourse() throws Exception {
         for (String denied : List.of(token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW"),
                 token(80, "ROLE_FACULTY", "LMS_COURSE_VIEW", "AI_STUDY_USE", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE"),
@@ -111,7 +127,8 @@ class AiControllerTest extends DatabaseFreeApiTest {
                 get("/api/v1/lms/faculty/courses/7/ai/teacher-documents"),
                 json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
                 json(put("/api/v1/lms/faculty/ai/teacher-documents/9"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
-                post("/api/v1/lms/faculty/ai/teacher-documents/9/archive"));
+                post("/api/v1/lms/faculty/ai/teacher-documents/9/archive"),
+                json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{\"enabled\":false}"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {

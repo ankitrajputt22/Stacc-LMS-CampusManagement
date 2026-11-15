@@ -143,6 +143,8 @@ A permission is added by a new migration only when the real feature it protects 
 
 `LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use and download its published study materials. Faculty download materials with `FACULTY_COURSE_VIEW`.
 
+AI controls (v0.13.7) added no permission: the student assistant switch follows the AI Tools rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, faculty access policy), and AI health uses `SYSTEM_HEALTH_VIEW` with `ADMIN`.
+
 Student notes (v0.13.6) added no permission: they are part of the AI Study Assistant and need `STUDENT`, `LMS_COURSE_VIEW`, and `AI_STUDY_USE` under the student access policy.
 
 Teacher-only documents (v0.13.5) added no permission: they are part of AI Tools and need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE` under the faculty access policy.

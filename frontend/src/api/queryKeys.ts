@@ -41,6 +41,7 @@ export const queryKeys = {
   },
   system: {
     health: () => ['system', 'health'] as const,
+    ai: () => ['system', 'ai'] as const,
   },
   library: {
     all: ['library'] as const,

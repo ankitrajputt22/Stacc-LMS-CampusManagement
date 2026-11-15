@@ -61,6 +61,7 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, s
 | `STACC_AI_INTERNAL_TOKEN` | empty | if AI is on, 32+ characters | **yes** | The shared secret between the backend and the AI service. |
 | `AI_CONNECT_TIMEOUT`, `AI_READ_TIMEOUT`, `AI_SYNC_READ_TIMEOUT` | `3s`, `120s`, `15m` | | | How long the backend waits for the AI service. |
 | `AI_MAX_SYNC_SOURCES`, `AI_MAX_SYNC_BYTES`, `AI_BUILDING_TIMEOUT` | `100`, `40MB`, `30m` | | | Limits of one knowledge refresh. See `ai-learning.md`. |
+| `AI_MAX_CONCURRENT_REQUESTS`, `AI_QUEUE_WAIT`, `AI_REQUEST_LOG_RETENTION` | `4`, `60s`, `90d` | 1 to 64; at most `10m` | | AI requests running at once (more wait their turn, one per person), how long a request waits before answering 429, and how long the request log is kept. Per backend instance. |
 | `MAIL_ENABLED` | `false` | | | Emails notifications to people who chose email. See `notification-settings.md`. |
 | `MAIL_FROM` | empty | if mail is on | | The sender address of notification emails. |
 | `MAIL_LINK_BASE_URL` | `http://localhost:5173` | https if mail is on | | The frontend address that links in emails start with. |

@@ -18,6 +18,9 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentQuestion;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.AiIndexKind;
+import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiRequestGate;
+import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
 import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
 import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import java.math.BigDecimal;
@@ -48,10 +51,14 @@ public class AiFacultyService {
     private final AiServiceClient client;
     private final AiJobService jobs;
     private final AiTeacherDocumentService teacherDocuments;
+    private final AiCourseControlService controls;
+    private final AiRequestGate gate;
 
     public AiFacultyService(LmsFacultyAccessService facultyAccess, AiKnowledgeSources sources,
             AiKnowledgeRecords records, AiKnowledgeRefresher refresher, AiServiceClient client, AiJobService jobs,
-            AiTeacherDocumentService teacherDocuments) {
+            AiTeacherDocumentService teacherDocuments, AiCourseControlService controls, AiRequestGate gate) {
+        this.controls = controls;
+        this.gate = gate;
         this.jobs = jobs;
         this.teacherDocuments = teacherDocuments;
         this.facultyAccess = facultyAccess;
@@ -65,7 +72,8 @@ public class AiFacultyService {
         requireAccess(accountId, lmsCourseId);
         AiTeacherKnowledge teacher = teacherDocuments.knowledge(lmsCourseId);
         return courseStatus(lmsCourseId).withTeacherDocuments(teacher.documents().size(),
-                teacher.isEmpty() || teacherIndexAnswers(lmsCourseId, teacher));
+                teacher.isEmpty() || teacherIndexAnswers(lmsCourseId, teacher))
+                .withStudentAi(controls.studentAiEnabled(lmsCourseId));
     }
 
     private AiKnowledgeStatusResponse courseStatus(Long lmsCourseId) {
@@ -95,6 +103,16 @@ public class AiFacultyService {
     }
 
     public AiAssessmentDraftResponse assessmentDraft(Long accountId, Long lmsCourseId, AiAssessmentDraftRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.ASSESSMENT_DRAFT, accountId, lmsCourseId,
+                () -> draft(accountId, lmsCourseId, request), AiAssessmentDraftResponse::insufficientContext);
+    }
+
+    /** Turns the course's student AI Study Assistant on or off (v0.13.7) and answers the new state. */
+    public boolean changeStudentAi(Long accountId, Long lmsCourseId, boolean enabled) {
+        return controls.change(accountId, lmsCourseId, enabled);
+    }
+
+    private AiAssessmentDraftResponse draft(Long accountId, Long lmsCourseId, AiAssessmentDraftRequest request) {
         requireAccess(accountId, lmsCourseId);
         if (!client.isEnabled()) {
             throw AiErrors.unavailable();

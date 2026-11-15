@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +58,28 @@ public class AiFacultyController {
             content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
     public AiKnowledgeStatusResponse status(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
         return faculty.status(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
+    }
+
+    @PutMapping("/student-access")
+    @PreAuthorize(AiAccess.FACULTY)
+    @Operation(
+            summary = "Turn the student AI Study Assistant on or off",
+            description = "While it is off, students' questions, summaries, and practice in this course answer 409. AI Tools "
+                    + "and students' notes keep working. Setting the current value changes nothing.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The new state.")
+    @ApiResponse(responseCode = "400", description = "enabled is missing.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "The account is not allowed to use this operation.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "The course does not exist or is not taught by this faculty member.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AiStudentAccessResponse changeStudentAccess(@PathVariable Long lmsCourseId,
+            @Valid @RequestBody AiStudentAccessRequest request, @AuthenticationPrincipal Jwt accessToken) {
+        return new AiStudentAccessResponse(faculty.changeStudentAi(AuthenticatedAccount.idFrom(accessToken), lmsCourseId,
+                request.enabled()));
     }
 
     @PostMapping("/jobs")

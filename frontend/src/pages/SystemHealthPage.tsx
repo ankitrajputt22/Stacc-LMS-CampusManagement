@@ -1,4 +1,4 @@
-import { getSystemHealth } from '../api/systemApi'
+import { getAiHealth, getSystemHealth } from '../api/systemApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
@@ -16,6 +16,50 @@ const PART_LABEL: Record<string, string> = {
 
 function tone(status: string) {
   return status === 'UP' ? 'success' : status === 'DOWN' || status === 'OUT_OF_SERVICE' ? 'danger' : 'neutral'
+}
+
+const WORDS: Record<string, string> = {
+  READY: 'Ready', BUILDING: 'Building', FAILED: 'Failed', QUEUED: 'Queued', RUNNING: 'Running', SUCCEEDED: 'Succeeded',
+  INSUFFICIENT_CONTEXT: 'No source found', REFUSED: 'Refused', BUSY: 'Busy', ASK: 'Questions', SUMMARY: 'Summaries',
+  PRACTICE: 'Practice', ASSESSMENT_DRAFT: 'Assessment drafts',
+}
+
+function Counts({ label, counts }: { label: string; counts: Record<string, number> }) {
+  const entries = Object.entries(counts)
+  return (
+    <div>
+      <dt className="text-xs font-medium text-ink-muted">{label}</dt>
+      <dd className="text-ink">{entries.length === 0 ? 'None' : entries.map(([key, count]) => `${WORDS[key] ?? key} ${count}`).join(' · ')}</dd>
+    </div>
+  )
+}
+
+/** The AI part (v0.13.7): numbers only, never settings, courses, people, or content. */
+function AiCard() {
+  const ai = useApiQuery(queryKeys.system.ai(), (signal) => getAiHealth(signal))
+  if (ai.status !== 'loaded') {
+    return <Card title="AI"><SectionState request={ai} what="AI health" /></Card>
+  }
+  const data = ai.data
+  return (
+    <Card title="AI">
+      {!data.enabled ? (
+        <p className="text-sm text-ink-muted">AI features are off.</p>
+      ) : (
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <div><dt className="text-xs font-medium text-ink-muted">AI service</dt><dd><Badge tone={data.reachable ? 'success' : 'danger'}>{data.reachable ? 'Answering' : 'Not answering'}</Badge></dd></div>
+          <div><dt className="text-xs font-medium text-ink-muted">Requests now</dt><dd className="text-ink">{data.running} running · {data.waiting} waiting</dd></div>
+          <Counts label="Course knowledge" counts={data.courseIndexes} />
+          <Counts label="Teacher documents" counts={data.teacherIndexes} />
+          <Counts label="Refresh jobs (live and last 24 hours)" counts={data.jobs} />
+          <Counts label="Requests in the last 24 hours" counts={data.requestsByOutcome} />
+          <Counts label="Requests by kind" counts={data.requestsByKind} />
+          <div><dt className="text-xs font-medium text-ink-muted">Average answer time</dt><dd className="text-ink">{data.averageMillis === null ? '—' : `${(data.averageMillis / 1000).toFixed(1)} s`}</dd></div>
+          <div><dt className="text-xs font-medium text-ink-muted">Courses with the student assistant off</dt><dd className="text-ink">{data.coursesWithStudentAiOff}</dd></div>
+        </dl>
+      )}
+    </Card>
+  )
 }
 
 function hours(minutes: number) {
@@ -65,6 +109,7 @@ export function SystemHealthPage() {
                 <div><dt className="text-xs font-medium text-ink-muted">Metrics for Prometheus</dt><dd className="text-ink">{health.data.metricsEnabled ? 'On (internal port)' : 'Off'}</dd></div>
               </dl>
             </Card>
+            <AiCard />
           </>
         )}
       </div>

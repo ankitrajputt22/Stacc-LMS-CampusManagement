@@ -222,6 +222,13 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Built when needed.** `AiStudentNoteIndexer` rebuilds the notes index only when the notes' fingerprint (`stacc-ai-notes-v1`) differs from the one recorded in `ai_student_note_indexes` (fingerprint and time only, never text), outside any transaction.
 - **True deletion.** Deleting a note removes its row. The notes index is then rebuilt without it, or, when no note is left, removed with all its files (`DELETE /internal/v1/indexes/{key}` on the AI service) together with its metadata row. If the AI service cannot be reached at that moment, the deleted note is still never used (it is no longer an allowed source), and the index is rebuilt or removed the next time the student uses their notes.
 
+### Controls and limits (v0.13.7)
+
+- **Per-course switch.** Faculty who teach a course turn the student AI Study Assistant off or on from AI Tools (`PUT /api/v1/lms/faculty/courses/{id}/ai/student-access`, the AI Tools rule). It is on unless a row in `ai_course_controls` says otherwise. While it is off, students' questions, summaries, and practice answer 409 "The AI Study Assistant is turned off for this course." after the access check; AI Tools and students' notes keep working.
+- **One at a time, with a queue.** `AiRequestLimiter` lets each account run one AI request at a time and the backend run at most `AI_MAX_CONCURRENT_REQUESTS` (4) at once. Others wait their turn, first come first served, for up to `AI_QUEUE_WAIT` (60 s), then answer 429 ("Your previous AI request is still running…" or "AI is busy right now…"). The limits are held in memory, per backend instance.
+- **Request log without content.** `AiRequestGate` writes one `ai_request_log` row per question, summary, practice set, or assessment draft: the kind, the course, the outcome (`SUCCEEDED`, `INSUFFICIENT_CONTEXT`, `REFUSED`, `BUSY`, `FAILED`), the duration, and the time. Never the question, the answer, the sources, or who asked. A course the caller may not use (404) and requests while AI is off are not logged. Rows older than `AI_REQUEST_LOG_RETENTION` (90 days) are removed hourly while AI is on.
+- **AI health for admins.** The system health page's AI card reads `GET /api/v1/admin/system/ai` (`ADMIN` with `SYSTEM_HEALTH_VIEW`): whether AI is on and the AI service answers, index states, refresh jobs live or from the last 24 hours, requests running and waiting now, the last 24 hours of requests by outcome and kind, the average answer time, and how many courses have the student assistant off. Numbers only.
+
 ### What a refresh does
 
 1. Faculty access is checked.

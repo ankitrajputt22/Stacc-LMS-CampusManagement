@@ -11,6 +11,9 @@ import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
+import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiRequestGate;
+import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexer;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeQuestion;
@@ -44,10 +47,14 @@ public class AiStudyService {
     private final AiKnowledgeRecords records;
     private final AiServiceClient client;
     private final AiStudentNoteIndexer notes;
+    private final AiCourseControlService controls;
+    private final AiRequestGate gate;
 
     public AiStudyService(LmsStudentAccessService studentAccess, AiKnowledgeSources sources, AiKnowledgeRecords records,
-            AiServiceClient client, AiStudentNoteIndexer notes) {
+            AiServiceClient client, AiStudentNoteIndexer notes, AiCourseControlService controls, AiRequestGate gate) {
         this.notes = notes;
+        this.controls = controls;
+        this.gate = gate;
         this.studentAccess = studentAccess;
         this.sources = sources;
         this.records = records;
@@ -55,6 +62,11 @@ public class AiStudyService {
     }
 
     public AiAnswerResponse ask(Long accountId, Long lmsCourseId, AiAskRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.ASK, accountId, lmsCourseId, () -> answer(accountId, lmsCourseId, request),
+                AiAnswerResponse::insufficientContext);
+    }
+
+    private AiAnswerResponse answer(Long accountId, Long lmsCourseId, AiAskRequest request) {
         String question = request.question() == null ? "" : request.question().strip();
         if (question.length() < 2 || question.length() > 1000) {
             throw new ApiException(HttpStatus.BAD_REQUEST, QUESTION_LENGTH);
@@ -77,6 +89,11 @@ public class AiStudyService {
     }
 
     public AiTopicSummaryResponse summarize(Long accountId, Long lmsCourseId, Long topicId) {
+        return gate.run(AiRequestLogEntry.Kind.SUMMARY, accountId, lmsCourseId, () -> summary(accountId, lmsCourseId, topicId),
+                AiTopicSummaryResponse::insufficientContext);
+    }
+
+    private AiTopicSummaryResponse summary(Long accountId, Long lmsCourseId, Long topicId) {
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, topicId);
         AiCourseKnowledge.Topic topic = knowledge.topic(topicId).orElseThrow();
         SummaryResult result = call(() -> client.summarize(AiCourseKeys.forLmsCourse(lmsCourseId),
@@ -91,6 +108,11 @@ public class AiStudyService {
     }
 
     public AiPracticeResponse practice(Long accountId, Long lmsCourseId, AiPracticeRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.PRACTICE, accountId, lmsCourseId, () -> practiceSet(accountId, lmsCourseId, request),
+                AiPracticeResponse::insufficientContext);
+    }
+
+    private AiPracticeResponse practiceSet(Long accountId, Long lmsCourseId, AiPracticeRequest request) {
         int count = request.questionCountOrDefault();
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, request.topicId());
         PracticeResult result = call(() -> client.practice(AiCourseKeys.forLmsCourse(lmsCourseId),
@@ -127,6 +149,7 @@ public class AiStudyService {
         if (!client.isEnabled()) {
             throw AiErrors.unavailable();
         }
+        controls.requireStudentAi(lmsCourseId);
         AiCourseKnowledge knowledge = sources.publishedKnowledge(lmsCourseId);
         if (topicId != null && knowledge.topic(topicId).isEmpty()) {
             throw new ApiException(HttpStatus.NOT_FOUND, TOPIC_UNAVAILABLE);

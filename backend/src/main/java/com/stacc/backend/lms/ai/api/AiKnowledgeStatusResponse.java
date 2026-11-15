@@ -15,16 +15,22 @@ public record AiKnowledgeStatusResponse(
         @Schema(nullable = true, description = "The latest background refresh job, or null when none was ever queued.") AiJobService.JobView job,
         @Schema(description = "Active teacher-only documents of the course (v0.13.5).") int teacherDocumentCount,
         @Schema(description = "Whether AI Tools use the current teacher documents: true when there are none or their "
-                + "latest refresh covers them; false until a refresh includes a change.") boolean teacherDocumentsCurrent) {
+                + "latest refresh covers them; false until a refresh includes a change.") boolean teacherDocumentsCurrent,
+        @Schema(description = "Whether students may use the AI Study Assistant in this course (v0.13.7).") boolean studentAiEnabled) {
 
     /** The status before teacher documents are added in. */
     AiKnowledgeStatusResponse(boolean enabled, String status, boolean stale, Instant indexedAt, int publishedSourceCount,
             String failureMessage, AiJobService.JobView job) {
-        this(enabled, status, stale, indexedAt, publishedSourceCount, failureMessage, job, 0, true);
+        this(enabled, status, stale, indexedAt, publishedSourceCount, failureMessage, job, 0, true, true);
     }
 
     AiKnowledgeStatusResponse withTeacherDocuments(int count, boolean current) {
         return new AiKnowledgeStatusResponse(enabled, status, stale, indexedAt, publishedSourceCount, failureMessage, job,
-                count, current);
+                count, current, studentAiEnabled);
+    }
+
+    AiKnowledgeStatusResponse withStudentAi(boolean on) {
+        return new AiKnowledgeStatusResponse(enabled, status, stale, indexedAt, publishedSourceCount, failureMessage, job,
+                teacherDocumentCount, teacherDocumentsCurrent, on);
     }
 }
