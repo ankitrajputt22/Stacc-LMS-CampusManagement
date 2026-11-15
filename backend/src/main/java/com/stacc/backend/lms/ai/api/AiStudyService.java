@@ -94,7 +94,8 @@ public class AiStudyService {
         }
         List<IndexRef> additional = myNotes.map(scope -> List.of(scope.index())).orElse(List.of());
         AskResult result = call(() -> client.ask(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new AskRequest(knowledge.fingerprint(), question, courseSources, additional)));
+                new AskRequest(knowledge.fingerprint(), question, courseSources, additional, turns(request),
+                        request.style() == null ? AiAnswerStyle.NORMAL.name() : request.style().name())));
         List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge, null,
                 myNotes.map(AiStudentNoteIndexer.Scope::knowledge).orElse(null));
         String answer = AiResults.text(result.answer(), AiResults.ANSWER_MAX);
@@ -176,6 +177,18 @@ public class AiStudyService {
             throw new ApiException(HttpStatus.CONFLICT, AiErrors.STUDY_NOT_READY);
         }
         return knowledge;
+    }
+
+    /** The earlier turns the page sent (v0.15.1), trimmed and cut to the AI service's limits; never stored. */
+    private static List<AiServiceMessages.Turn> turns(AiAskRequest request) {
+        if (request.history() == null) {
+            return List.of();
+        }
+        return request.history().stream().filter(turn -> turn != null && AiResults.text(turn.question(), 1000) != null
+                        && AiResults.text(turn.answer(), 2000) != null)
+                .limit(3)
+                .map(turn -> new AiServiceMessages.Turn(AiResults.text(turn.question(), 1000), AiResults.text(turn.answer(), 2000)))
+                .toList();
     }
 
     private static <T> T call(Supplier<T> request) {

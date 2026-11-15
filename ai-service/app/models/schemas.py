@@ -153,8 +153,23 @@ class IndexedRequest(Strict):
     additionalIndexes: Annotated[list[IndexRef], Field(default_factory=list, max_length=3)]
 
 
+class AnswerStyle(StrEnum):
+    """How to answer (v0.15.1): normally, more simply, or with an example."""
+    NORMAL = "NORMAL"
+    SIMPLER = "SIMPLER"
+    EXAMPLE = "EXAMPLE"
+
+
+class Turn(Strict):
+    """An earlier question and answer on the student's open page (v0.15.1); the page sends them, nothing is stored."""
+    question: str = Field(min_length=1, max_length=1000)
+    answer: str = Field(min_length=1, max_length=2000)
+
+
 class AskRequest(IndexedRequest):
     question: str
+    history: Annotated[list[Turn], Field(default_factory=list, max_length=3)]
+    style: AnswerStyle = AnswerStyle.NORMAL
 
     @field_validator("question")
     @classmethod

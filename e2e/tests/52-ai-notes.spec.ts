@@ -36,6 +36,8 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await expect(ask.getByRole('combobox', { name: 'Module' })).toBeVisible()
   await ask.getByRole('radio', { name: /^My notes only/ }).check()
   await expect(ask.getByRole('combobox', { name: 'Module' })).toHaveCount(0)
+  // Saved answers (v0.15.1) start empty; nothing of a conversation is kept unless the student saves it.
+  await expect(page.getByRole('region', { name: 'Saved answers' }).getByText(/No saved answers yet/)).toBeVisible()
   const myNotes = page.getByRole('region', { name: 'My notes' })
   await myNotes.getByRole('button', { name: 'Add note' }).click()
   await myNotes.getByRole('textbox', { name: 'Note title' }).fill(NOTE)

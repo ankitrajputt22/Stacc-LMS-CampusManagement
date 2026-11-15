@@ -130,6 +130,17 @@ class AiStudyServiceTest {
     }
 
     @Test
+    void followUpsSendTheEarlierTurnsAndTheStyleButNothingIsStored() {
+        when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
+        service.ask(STUDENT_A, COURSE, new AiAskRequest("And why?", null, null, null,
+                List.of(new AiFollowUpTurn(" What is 3NF? ", "It removes transitive dependencies.")), AiAnswerStyle.SIMPLER));
+        ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
+        verify(client).ask(anyString(), sent.capture());
+        assertThat(sent.getValue().history()).containsExactly(new AiServiceMessages.Turn("What is 3NF?", "It removes transitive dependencies."));
+        assertThat(sent.getValue().style()).isEqualTo("SIMPLER");
+    }
+
+    @Test
     void aModuleScopeAllowsOnlyThatModulesPagesAndFiles() {
         when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
         AiCourseKnowledge knowledge = sources.publishedKnowledge(COURSE);

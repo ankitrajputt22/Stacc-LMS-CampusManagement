@@ -122,7 +122,7 @@ class HttpAiServiceClientTest {
         // The personal-data boundary: the question, the fingerprint, and the allowed sources, nothing about the student.
         assertThat(lastBody.get()).isEqualTo("{\"indexFingerprint\":\"" + FINGERPRINT
                 + "\",\"question\":\"What does third normal form remove?\",\"allowedSources\":[{\"sourceType\":\"TOPIC\",\"sourceId\":3}],"
-                + "\"additionalIndexes\":[]}");
+                + "\"additionalIndexes\":[],\"history\":[],\"style\":\"NORMAL\"}");
     }
 
     @Test
