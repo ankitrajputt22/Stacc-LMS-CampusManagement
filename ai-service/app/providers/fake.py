@@ -143,6 +143,30 @@ class FakeModelProvider(ModelProvider):
         return {"chosenOptions": [number for number, text in enumerate(options, start=1) if supported(text)]}
 
     @staticmethod
+    def _model_answer(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        if not context:
+            return {"insufficientContext": True, "answer": "", "keyPoints": [], "sourceIds": []}
+        return {"insufficientContext": False, "answer": " ".join(_first_sentence(chunk.text) for chunk in context[:2]),
+                "keyPoints": [_first_sentence(chunk.text, 160) for chunk in context[:3]],
+                "sourceIds": [chunk.ref for chunk in context[:2]]}
+
+    @staticmethod
+    def _rubric(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("criteriaCount", 3))
+        total = float(parameters.get("maxMarks", 10))
+        each = round(total / count, 2)
+        criteria = []
+        for number in range(count):
+            chunk = context[number % len(context)] if context else None
+            points = each if number < count - 1 else round(total - each * (count - 1), 2)
+            criteria.append({"title": f"Criterion {number + 1}: {chunk.title if chunk else 'Quality'}",
+                             "description": _first_sentence(chunk.text, 200) if chunk else None, "maxPoints": points,
+                             "levels": [{"title": "Excellent", "points": points},
+                                        {"title": "Developing", "points": round(points / 2, 2)},
+                                        {"title": "Missing", "points": 0}]})
+        return {"criteria": criteria, "sourceIds": [chunk.ref for chunk in context[:2]]}
+
+    @staticmethod
     def _assessment_draft(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
         count = int(parameters.get("questionCount", 5))
         requested = parameters.get("questionType", "MIXED")

@@ -262,6 +262,53 @@ class LearningService:
                                                instructionsSuggestion=result.instructionsSuggestion or None,
                                                questions=accepted(result), insufficientContext=False)
 
+    # --- Model answers and rubric suggestions (v0.14.5) ---------------------------------------
+
+    def model_answer(self, course_key: str, request: schemas.ModelAnswerRequest) -> schemas.ModelAnswerResponse:
+        insufficient = schemas.ModelAnswerResponse(answer=None, keyPoints=[], citations=[], insufficientContext=True)
+        hits = self._search(self._scopes(course_key, request), request.questionText)
+        if not hits:
+            return insufficient
+        context = _Context(hits)
+        result = self._generate(
+            "model_answer", context, schemas.ModelAnswerOutput, self._settings.answer_temperature,
+            {"marks": request.marks, "questionType": request.questionType.value},
+            usable=lambda out: out.insufficientContext or (bool(out.answer) and bool(context.citations(out.sourceIds))),
+            teacher_note=request.questionText)
+        if result is None or result.insufficientContext:
+            return insufficient
+        return schemas.ModelAnswerResponse(answer=result.answer, keyPoints=[p for p in result.keyPoints if p],
+                                           citations=context.citations(result.sourceIds), insufficientContext=False)
+
+    def rubric(self, course_key: str, request: schemas.RubricRequest) -> schemas.RubricResponse:
+        """Criteria whose points are scaled to add up to the assignment's maximum marks; levels never exceed their criterion."""
+        empty = schemas.RubricResponse(criteria=[], citations=[], insufficientContext=True)
+        query = request.title + "\n" + (request.instructions or "")
+        hits = self._search(self._scopes(course_key, request), query[:2000])
+        context = _Context(hits)
+        result = self._generate(
+            "rubric", context, schemas.RubricModelOutput, self._settings.draft_temperature,
+            {"criteriaCount": request.criteriaCount, "maxMarks": request.maxMarks},
+            usable=lambda out: len(out.criteria) >= 1, teacher_note=query[:4000])
+        if result is None or not result.criteria:
+            return empty
+        criteria = result.criteria[:request.criteriaCount]
+        stated = sum(criterion.maxPoints for criterion in criteria)
+        scale = request.maxMarks / stated if stated else 0
+        scaled = [round(criterion.maxPoints * scale, 2) for criterion in criteria]
+        scaled[-1] = round(request.maxMarks - sum(scaled[:-1]), 2)
+        made = []
+        for criterion, points in zip(criteria, scaled, strict=True):
+            if points <= 0:
+                return empty
+            ratio = points / criterion.maxPoints
+            levels = [schemas.RubricLevel(title=level.title, description=level.description or None,
+                                          points=min(points, round(level.points * ratio, 2)))
+                      for level in criterion.levels]
+            made.append(schemas.RubricCriterion(title=criterion.title, description=criterion.description or None,
+                                                maxPoints=points, levels=levels))
+        return schemas.RubricResponse(criteria=made, citations=context.citations(result.sourceIds), insufficientContext=False)
+
     # --- Question bank drafts (v0.14.1) --------------------------------------------------------
 
     def bank_draft(self, course_key: str, request: schemas.BankDraftRequest) -> schemas.BankDraftResponse:

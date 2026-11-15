@@ -178,6 +178,16 @@ public class HttpAiServiceClient implements AiServiceClient {
     }
 
     @Override
+    public AiServiceMessages.ModelAnswerResult modelAnswer(String courseKey, AiServiceMessages.ModelAnswerRequest request) {
+        return post(client, courseKey, "model-answer", request, AiServiceMessages.ModelAnswerResult.class);
+    }
+
+    @Override
+    public AiServiceMessages.RubricResult rubric(String courseKey, AiServiceMessages.RubricRequest request) {
+        return post(client, courseKey, "rubric", request, AiServiceMessages.RubricResult.class);
+    }
+
+    @Override
     public AssessmentDraftResult assessmentDraft(String courseKey, AssessmentDraftRequest request) {
         return post(client, courseKey, "assessment-draft", request, AssessmentDraftResult.class);
     }

@@ -297,6 +297,48 @@ class BankDraftResponse(BaseModel):
     insufficientContext: bool
 
 
+# --- Model answers and rubric suggestions (v0.14.5) ------------------------------------------------
+
+
+class ModelAnswerRequest(IndexedRequest):
+    questionText: str = Field(min_length=1, max_length=5000)
+    questionType: BankType
+    marks: float = Field(gt=0, le=1000)
+
+
+class ModelAnswerResponse(BaseModel):
+    answer: str | None
+    keyPoints: list[str]
+    citations: list[Citation]
+    insufficientContext: bool
+
+
+class RubricRequest(IndexedRequest):
+    title: str = Field(min_length=1, max_length=200)
+    instructions: str | None = Field(default=None, max_length=20_000)
+    maxMarks: float = Field(gt=0, le=1000)
+    criteriaCount: int = Field(ge=2, le=8)
+
+
+class RubricLevel(BaseModel):
+    title: str
+    description: str | None
+    points: float
+
+
+class RubricCriterion(BaseModel):
+    title: str
+    description: str | None
+    maxPoints: float
+    levels: list[RubricLevel]
+
+
+class RubricResponse(BaseModel):
+    criteria: list[RubricCriterion]
+    citations: list[Citation]
+    insufficientContext: bool
+
+
 # --- What the model must return ----------------------------------------------------------------
 # Source references are the short labels ("S1", "S2", ...) the prompt gives each retrieved chunk.
 
@@ -396,3 +438,29 @@ class AnswerCheckOutput(BaseModel):
     true/false answer."""
     chosenOptions: Annotated[list[int], Field(max_length=10)] = []
     trueFalseAnswer: bool | None = None
+
+
+class ModelAnswerOutput(BaseModel):
+    insufficientContext: bool
+    answer: Bounded(4000) = ""
+    keyPoints: Annotated[list[Bounded(300, 1)], Field(max_length=8)] = []
+    sourceIds: SourceRefs = []
+
+
+class RubricModelLevel(BaseModel):
+    title: Bounded(100, 1)
+    description: Bounded(500) | None = None
+    points: float = Field(ge=0, le=1000)
+
+
+class RubricModelCriterion(BaseModel):
+    title: Bounded(200, 1)
+    description: Bounded(1000) | None = None
+    maxPoints: float = Field(gt=0, le=1000)
+    levels: Annotated[list[RubricModelLevel], Field(max_length=6)] = []
+
+
+class RubricModelOutput(BaseModel):
+    criteria: Annotated[list[RubricModelCriterion], Field(max_length=8)]
+    sourceIds: SourceRefs = []
+

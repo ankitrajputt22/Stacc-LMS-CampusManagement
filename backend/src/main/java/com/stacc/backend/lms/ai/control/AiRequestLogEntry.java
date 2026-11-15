@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 @Table(name = "ai_request_log")
 public class AiRequestLogEntry {
 
-    public enum Kind { ASK, SUMMARY, PRACTICE, ASSESSMENT_DRAFT, QUESTION_BANK }
+    public enum Kind { ASK, SUMMARY, PRACTICE, ASSESSMENT_DRAFT, QUESTION_BANK, MODEL_ANSWER, RUBRIC }
 
     public enum Outcome { SUCCEEDED, INSUFFICIENT_CONTEXT, REFUSED, BUSY, FAILED }
 
