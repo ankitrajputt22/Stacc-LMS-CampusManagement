@@ -27,6 +27,9 @@ public interface AiServiceClient {
 
     AskResult ask(String courseKey, AskRequest request);
 
+    /** Removes an index and all its files (v0.13.6), such as a student's notes index after their last note is deleted. */
+    void deleteIndex(String courseKey);
+
     SummaryResult summarize(String courseKey, SummaryRequest request);
 
     PracticeResult practice(String courseKey, PracticeRequest request);

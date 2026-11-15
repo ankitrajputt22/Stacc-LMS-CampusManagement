@@ -2,6 +2,7 @@ package com.stacc.backend.lms.ai.api;
 
 import com.stacc.backend.lms.ai.AiCourseKnowledge;
 import com.stacc.backend.lms.ai.AiServiceMessages.Citation;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteKnowledge;
 import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -30,14 +31,19 @@ final class AiResults {
     }
 
     static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge) {
-        return citations(cited, knowledge, null);
+        return citations(cited, knowledge, null, null);
+    }
+
+    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
+        return citations(cited, knowledge, teacher, null);
     }
 
     /**
      * As above, and also keeps citations of the teacher documents Teacher AI was allowed to use (v0.13.5). Without
      * teacher knowledge, as for every student request, a teacher document citation is always dropped.
      */
-    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
+    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher,
+            AiStudentNoteKnowledge notes) {
         if (cited == null) {
             return List.of();
         }
@@ -58,6 +64,10 @@ final class AiResults {
             } else if (teacher != null && AiTeacherKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
                 teacher.document(id).ifPresent(document -> result.add(new AiCitationResponse(
                         AiTeacherKnowledge.SOURCE_TYPE, id, document.title(), null, null, null)));
+            } else if (notes != null && AiStudentNoteKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
+                // Only the asking student's own notes, which the request carried (v0.13.6).
+                notes.note(id).ifPresent(note -> result.add(new AiCitationResponse(
+                        AiStudentNoteKnowledge.SOURCE_TYPE, id, note.title(), null, null, null)));
             }
         }
         return List.copyOf(result);

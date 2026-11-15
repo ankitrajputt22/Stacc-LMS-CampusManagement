@@ -4,7 +4,7 @@ it has already checked who the user is and what they may see before it calls any
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 
 from app.models import schemas
 from app.security import checked_course_key, require_internal_token
@@ -26,6 +26,14 @@ def internal_health(request: Request) -> dict:
 @internal.post("/indexes/{course_key}/replace", response_model=schemas.ReplaceIndexResponse)
 def replace_index(course_key: str, body: schemas.ReplaceIndexRequest, request: Request):
     return request.app.state.builder.replace(checked_course_key(course_key), body)
+
+
+@internal.delete("/indexes/{course_key}", status_code=204)
+def delete_index(course_key: str, request: Request) -> Response:
+    """Removes an index completely, such as a student's notes index after their last note is deleted. Deleting a
+    missing index changes nothing."""
+    request.app.state.store.delete(checked_course_key(course_key))
+    return Response(status_code=204)
 
 
 @internal.post("/indexes/{course_key}/ask", response_model=schemas.AskResponse)

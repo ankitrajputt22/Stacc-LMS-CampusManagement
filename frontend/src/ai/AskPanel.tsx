@@ -16,6 +16,7 @@ export function AskPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const [question, setQuestion] = useState('')
+  const [withNotes, setWithNotes] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { state, run } = useAiAction<AiAnswer>('student')
   const running = state.status === 'running'
@@ -32,7 +33,7 @@ export function AskPanel({ lmsCourseId }: { lmsCourseId: number }) {
       return
     }
     setError(null)
-    await run((signal) => askCourseAi(lmsCourseId, trimmed, signal))
+    await run((signal) => askCourseAi(lmsCourseId, trimmed, signal, withNotes))
   }
 
   return (
@@ -59,13 +60,26 @@ export function AskPanel({ lmsCourseId }: { lmsCourseId: number }) {
           className={`${fieldClasses} ${border(error !== null)} py-2 leading-6`}
         />
         <p id={`${id}-hint`} className={hintClasses}>
-          Up to 1,000 characters. Answers use only this course’s published materials.
+          Up to 1,000 characters. Answers use only this course’s published materials, and your own notes when you choose Course + my notes.
         </p>
         {error && (
           <p id={`${id}-error`} className={fieldErrorClasses}>
             {error}
           </p>
         )}
+        <fieldset className="mt-3">
+          <legend className={labelClasses}>Search</legend>
+          <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink">
+            <label className="inline-flex items-center gap-2">
+              <input type="radio" name={`${id}-mode`} checked={!withNotes} onChange={() => setWithNotes(false)} />
+              Course only
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input type="radio" name={`${id}-mode`} checked={withNotes} onChange={() => setWithNotes(true)} />
+              Course + my notes
+            </label>
+          </div>
+        </fieldset>
         <div className="mt-3">
           <Button type="submit" disabled={running}>
             Ask

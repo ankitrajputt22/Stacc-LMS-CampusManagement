@@ -80,3 +80,18 @@ def test_teacher_documents_and_notes_are_text_sources_without_a_topic(client):
 ])
 def test_source_shapes_are_checked(client, source):
     assert replace(client, [source]).status_code == 400
+
+
+def test_an_index_is_deleted_completely(client, settings):
+    note = {"sourceType": "NOTE", "sourceId": 4, "title": "My note", "text": NORMALIZATION}
+    assert replace(client, [note], fingerprint=OTHER_FINGERPRINT, course=TEACHER).status_code == 200
+    assert (settings.index_dir / TEACHER).exists()
+    assert client.delete(f"/internal/v1/indexes/{TEACHER}", headers=HEADERS).status_code == 204
+    assert not (settings.index_dir / TEACHER).exists()
+    extra = [{"indexKey": TEACHER, "indexFingerprint": OTHER_FINGERPRINT}]
+    assert replace(client, [topic(1, "Transactions", TRANSACTIONS)]).status_code == 200
+    assert post(client, "ask", {"question": "What is a transaction?", "additionalIndexes": extra}).status_code == 404
+    # Deleting again changes nothing; the token and key are still checked.
+    assert client.delete(f"/internal/v1/indexes/{TEACHER}", headers=HEADERS).status_code == 204
+    assert client.delete(f"/internal/v1/indexes/{TEACHER}").status_code == 401
+    assert client.delete("/internal/v1/indexes/not-a-key", headers=HEADERS).status_code == 400

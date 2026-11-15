@@ -128,6 +128,35 @@ public class HttpAiServiceClient implements AiServiceClient {
     }
 
     @Override
+    public void deleteIndex(String courseKey) {
+        if (syncClient == null) {
+            throw new AiServiceException(Reason.DISABLED);
+        }
+        if (courseKey == null || !courseKey.matches("[0-9a-f]{32}")) {
+            throw new IllegalArgumentException("courseKey must come from AiCourseKeys");
+        }
+        try {
+            syncClient.delete()
+                    .uri("/internal/v1/indexes/{courseKey}", courseKey)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, (request, response) -> {
+                        throw failure("delete", response.getStatusCode(), errorCode(response));
+                    })
+                    .toBodilessEntity();
+        } catch (AiServiceException exception) {
+            throw exception;
+        } catch (ResourceAccessException exception) {
+            LOGGER.warn("The AI service could not be reached for delete: {}", exception.getClass().getSimpleName());
+            throw new AiServiceException(Reason.UNAVAILABLE, exception);
+        } catch (RestClientException exception) {
+            if (exception.getCause() instanceof AiServiceException cause) {
+                throw cause;
+            }
+            throw new AiServiceException(Reason.BAD_RESPONSE, exception);
+        }
+    }
+
+    @Override
     public AskResult ask(String courseKey, AskRequest request) {
         return post(client, courseKey, "ask", request, AskResult.class);
     }

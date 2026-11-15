@@ -6,6 +6,7 @@ import type {
   AiKnowledgeStatus,
   AiKnowledgeSync,
   AiPracticeSet,
+  AiStudentNote,
   AiTeacherDocument,
   AiTopicSummary,
 } from '../types/ai'
@@ -42,8 +43,14 @@ export async function generateFacultyAssessmentDraft(
 }
 
 /** A grounded answer to the signed-in student's question about a course they may open. */
-export async function askCourseAi(lmsCourseId: number, question: string, signal?: AbortSignal): Promise<AiAnswer> {
-  return (await apiClient.post<AiAnswer>(`/lms/courses/${lmsCourseId}/ai/ask`, { question }, { signal })).data
+export async function askCourseAi(
+  lmsCourseId: number,
+  question: string,
+  signal?: AbortSignal,
+  includeMyNotes = false,
+): Promise<AiAnswer> {
+  const body = includeMyNotes ? { question, includeMyNotes } : { question }
+  return (await apiClient.post<AiAnswer>(`/lms/courses/${lmsCourseId}/ai/ask`, body, { signal })).data
 }
 
 /** A summary of one published topic of the course. */
@@ -88,4 +95,22 @@ export async function updateTeacherDocument(documentId: number, title: string, c
 export async function archiveTeacherDocument(documentId: number): Promise<AiTeacherDocument> {
   const response = await apiClient.post<AiTeacherDocument>(`/lms/faculty/ai/teacher-documents/${documentId}/archive`)
   return response.data
+}
+
+/** The signed-in student's own notes in the course (v0.13.6). */
+export async function getMyNotes(lmsCourseId: number, signal?: AbortSignal): Promise<AiStudentNote[]> {
+  return (await apiClient.get<AiStudentNote[]>(`/lms/courses/${lmsCourseId}/ai/notes`, { signal })).data
+}
+
+export async function createMyNote(lmsCourseId: number, title: string, content: string): Promise<AiStudentNote> {
+  return (await apiClient.post<AiStudentNote>(`/lms/courses/${lmsCourseId}/ai/notes`, { title, content })).data
+}
+
+export async function updateMyNote(lmsCourseId: number, noteId: number, title: string, content: string): Promise<AiStudentNote> {
+  return (await apiClient.put<AiStudentNote>(`/lms/courses/${lmsCourseId}/ai/notes/${noteId}`, { title, content })).data
+}
+
+/** Deletes the note for real; the backend removes it from the notes index too. */
+export async function deleteMyNote(lmsCourseId: number, noteId: number): Promise<void> {
+  await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/notes/${noteId}`)
 }
