@@ -58,6 +58,8 @@ export type AiKnowledgeStatus = {
   teacherDocumentCount: number
   /** False until a refresh includes the latest teacher document changes. */
   teacherDocumentsCurrent: boolean
+  /** Whether students may use the AI Study Assistant in this course (v0.13.7). */
+  studentAiEnabled: boolean
 }
 
 /** One of the signed-in student's private notes in a course (v0.13.6). */

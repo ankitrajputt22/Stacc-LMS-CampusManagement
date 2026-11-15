@@ -20,6 +20,11 @@ import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiCourseKeys;
 import com.stacc.backend.lms.ai.AiIndexKind;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiLimitProperties;
+import com.stacc.backend.lms.ai.control.AiRequestGate;
+import com.stacc.backend.lms.ai.control.AiRequestLimiter;
+import com.stacc.backend.lms.ai.control.AiRequestLogRepository;
 import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentService;
 import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import com.stacc.backend.lms.ai.AiServiceMessages;
@@ -51,8 +56,10 @@ class AiFacultyServiceTest {
     private final AiKnowledgeRefresher refresher = mock(AiKnowledgeRefresher.class);
     private final AiServiceClient client = mock(AiServiceClient.class);
     private final AiTeacherDocumentService teacherDocuments = mock(AiTeacherDocumentService.class);
+    private final AiCourseControlService controls = mock(AiCourseControlService.class);
     private final AiFacultyService service = new AiFacultyService(access, sources, records, refresher, client, mock(AiJobService.class),
-            teacherDocuments);
+            teacherDocuments, controls, new AiRequestGate(new AiRequestLimiter(new AiLimitProperties(4, java.time.Duration.ofSeconds(5), null)),
+                    mock(AiRequestLogRepository.class), client, java.time.Clock.systemUTC()));
     private static final AiTeacherKnowledge TEACHER = new AiTeacherKnowledge("e".repeat(64),
             List.of(new AiTeacherKnowledge.Document(9L, "Exam focus", "Normal forms matter.")));
 
@@ -69,6 +76,7 @@ class AiFacultyServiceTest {
         when(access.canAccessCourse(FACULTY_A, COURSE_A)).thenReturn(true);
         when(access.canAccessCourse(FACULTY_A, COURSE_B)).thenReturn(false);
         when(client.isEnabled()).thenReturn(true);
+        when(controls.studentAiEnabled(org.mockito.ArgumentMatchers.anyLong())).thenReturn(true);
         when(teacherDocuments.knowledge(COURSE_A)).thenReturn(new AiTeacherKnowledge("0".repeat(64), List.of()));
         when(sources.publishedKnowledge(COURSE_A)).thenReturn(new AiCourseKnowledge(CURRENT,
                 List.of(new AiCourseKnowledge.Topic(1, 10, "Normal forms", "Text")), List.of()));

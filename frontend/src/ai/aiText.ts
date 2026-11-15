@@ -48,8 +48,11 @@ export function citationKind(citation: AiCitation): string {
   return `Study Material${place}`
 }
 
+/** The backend's words when a course's teachers turned the AI Study Assistant off (v0.13.7). */
+export const STUDENT_AI_TURNED_OFF = 'The AI Study Assistant is turned off for this course.'
+
 export type AiFailure = {
-  kind: 'unavailable' | 'notReady' | 'notFound' | 'denied' | 'invalid' | 'failed'
+  kind: 'unavailable' | 'notReady' | 'turnedOff' | 'busy' | 'notFound' | 'denied' | 'invalid' | 'failed'
   message: string
 }
 
@@ -66,7 +69,12 @@ export function aiFailure(error: unknown, audience: 'student' | 'faculty'): AiFa
     case 502:
     case 503:
       return { kind: 'unavailable', message: AI_UNAVAILABLE }
+    case 429:
+      return { kind: 'busy', message: message ?? 'AI is busy right now. Try again in a minute.' }
     case 409:
+      if (message === STUDENT_AI_TURNED_OFF) {
+        return { kind: 'turnedOff', message }
+      }
       return {
         kind: 'notReady',
         message: audience === 'student' ? STUDY_NOT_READY : (message ?? 'AI knowledge is not ready for this course.'),

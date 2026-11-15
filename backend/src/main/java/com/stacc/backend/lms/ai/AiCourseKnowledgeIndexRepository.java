@@ -11,6 +11,11 @@ public interface AiCourseKnowledgeIndexRepository extends JpaRepository<AiCourse
 
     Optional<AiCourseKnowledgeIndex> findByLmsCourseIdAndKind(Long lmsCourseId, AiIndexKind kind);
 
+    /** Indexes of one kind by their latest refresh's status (v0.13.7). */
+    @Query("select cast(knowledge.status as string), count(knowledge) from AiCourseKnowledgeIndex knowledge"
+            + " where knowledge.kind = :kind group by knowledge.status")
+    java.util.List<Object[]> countByStatus(@Param("kind") AiIndexKind kind);
+
     /** The row locked for a change, so two refreshes of one index never run at once. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select knowledge from AiCourseKnowledgeIndex knowledge where knowledge.lmsCourse.id = :lmsCourseId"

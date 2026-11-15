@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useId, useMemo } from 'react'
-import { getFacultyAiStatus, queueFacultyAiRefresh } from '../api/aiApi'
+import { type ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import { changeStudentAiAccess, getFacultyAiStatus, queueFacultyAiRefresh } from '../api/aiApi'
 import { useApiRequest } from '../api/useApiRequest'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
@@ -16,6 +16,32 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
       <dt className="text-sm text-ink-muted">{term}</dt>
       <dd className="flex flex-wrap items-center gap-2 text-sm text-ink">{children}</dd>
     </div>
+  )
+}
+
+function StudentAccess({ lmsCourseId, enabled, changed }: { lmsCourseId: number; enabled: boolean; changed: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  async function toggle() {
+    setBusy(true)
+    setError(null)
+    try {
+      await changeStudentAiAccess(lmsCourseId, !enabled)
+      changed()
+    } catch {
+      setError('Couldn’t change it. Try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Row term="AI Study Assistant">
+      <span className="font-medium">{enabled ? 'On for students' : 'Off for students'}</span>
+      <ActionButton onClick={toggle} disabled={busy}>
+        {enabled ? 'Turn off for students' : 'Turn on for students'}
+      </ActionButton>
+      {error && <span role="alert" className="text-danger">{error}</span>}
+    </Row>
   )
 }
 
@@ -104,6 +130,9 @@ export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
       {status.status === 'loaded' && (
         <>
           <StatusDetails status={status.data} />
+          <dl className="divide-y divide-line border-t border-line">
+            <StudentAccess lmsCourseId={lmsCourseId} enabled={status.data.studentAiEnabled} changed={status.refresh} />
+          </dl>
           {!status.data.enabled && <AiMessage tone="note" className="mt-3">{AI_UNAVAILABLE}</AiMessage>}
           {status.data.status === 'FAILED' && status.data.failureMessage && status.data.job === null && (
             <AiMessage tone="note" className="mt-3">

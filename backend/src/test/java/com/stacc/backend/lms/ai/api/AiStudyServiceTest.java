@@ -19,6 +19,12 @@ import com.stacc.backend.lms.ai.AiCourseKnowledgeIndex;
 import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
+import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiLimitProperties;
+import com.stacc.backend.lms.ai.control.AiRequestGate;
+import com.stacc.backend.lms.ai.control.AiRequestLimiter;
+import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
+import com.stacc.backend.lms.ai.control.AiRequestLogRepository;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexer;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteKnowledge;
 import com.stacc.backend.lms.ai.AiServiceException;
@@ -55,7 +61,11 @@ class AiStudyServiceTest {
     private final AiKnowledgeRecords records = mock(AiKnowledgeRecords.class);
     private final AiServiceClient client = mock(AiServiceClient.class);
     private final AiStudentNoteIndexer notes = mock(AiStudentNoteIndexer.class);
-    private final AiStudyService service = new AiStudyService(access, sources, records, client, notes);
+    private final AiCourseControlService controls = mock(AiCourseControlService.class);
+    private final AiRequestLogRepository requestLog = mock(AiRequestLogRepository.class);
+    private final AiStudyService service = new AiStudyService(access, sources, records, client, notes, controls,
+            new AiRequestGate(new AiRequestLimiter(new AiLimitProperties(4, java.time.Duration.ofSeconds(5), null)), requestLog,
+                    client, java.time.Clock.systemUTC()));
 
     private static Citation topicCitation(long id) {
         return new Citation("TOPIC", id, id, "From the AI service", null, null, null);
@@ -81,6 +91,19 @@ class AiStudyServiceTest {
                 List.of(new AiCourseKnowledge.Material(20, 1, "Normalization notes", "normalization-notes.pdf",
                         "application/pdf", 100, "lms/courses/7/topics/1/secret-key"))));
         when(records.find(COURSE)).thenReturn(Optional.of(indexOf(CURRENT)));
+    }
+
+    @Test
+    void aCourseWithTheAssistantTurnedOffAnswers409AndIsLoggedWithoutContent() {
+        org.mockito.Mockito.doThrow(new ApiException(HttpStatus.CONFLICT, AiCourseControlService.TURNED_OFF))
+                .when(controls).requireStudentAi(COURSE);
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?")))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+        verify(client, never()).ask(anyString(), any());
+        ArgumentCaptor<AiRequestLogEntry> logged = ArgumentCaptor.forClass(AiRequestLogEntry.class);
+        verify(requestLog).save(logged.capture());
+        assertThat(logged.getValue().getKind()).isEqualTo(AiRequestLogEntry.Kind.ASK);
+        assertThat(logged.getValue().getOutcome()).isEqualTo(AiRequestLogEntry.Outcome.REFUSED);
     }
 
     @Test
@@ -183,7 +206,7 @@ class AiStudyServiceTest {
             assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest(question)))
                     .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
         }
-        verifyNoInteractions(client);
+        verify(client, never()).ask(anyString(), any());
     }
 
     @Test

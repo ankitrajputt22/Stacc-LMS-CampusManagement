@@ -114,3 +114,8 @@ export async function updateMyNote(lmsCourseId: number, noteId: number, title: s
 export async function deleteMyNote(lmsCourseId: number, noteId: number): Promise<void> {
   await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/notes/${noteId}`)
 }
+
+/** Turns the course's student AI Study Assistant on or off (v0.13.7). */
+export async function changeStudentAiAccess(lmsCourseId: number, enabled: boolean): Promise<{ enabled: boolean }> {
+  return (await apiClient.put<{ enabled: boolean }>(`/lms/faculty/courses/${lmsCourseId}/ai/student-access`, { enabled })).data
+}

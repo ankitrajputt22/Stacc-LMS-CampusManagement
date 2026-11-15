@@ -69,6 +69,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/mentoring/pairings` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/mentoring/pairings/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
 | `/api/v1/admin/system` | GET | `hasRole('ADMIN') and hasAuthority('SYSTEM_HEALTH_VIEW')` | SystemHealthController |
+| `/api/v1/admin/system/ai` | GET | `hasRole('ADMIN') and hasAuthority('SYSTEM_HEALTH_VIEW')` | AiHealthController |
 | `/api/v1/admin/users/import` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}` | GET | `hasRole('ADMIN') and hasAuthority('USER_VIEW')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
@@ -409,6 +410,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/status` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/student-access` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
