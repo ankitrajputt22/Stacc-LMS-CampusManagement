@@ -182,7 +182,18 @@ One row per LMS course whose knowledge was ever refreshed. No row means `NOT_IND
 
 MySQL holds no vectors, extracted text, prompts, questions, answers, or conversations.
 
-### Refreshing (`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync`)
+### Refreshing as a background job (v0.13.1)
+
+Faculty refresh a course's knowledge with `POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs`, which answers 202 at once with the queued job. The steps:
+
+- **Queue.** Faculty access is checked, AI must be on (503 otherwise), and the course must have indexable content (409). The job is stored in `ai_jobs` (`V129`) with the course and the requester. At most one refresh is queued or running per course (a unique generated column; a second request answers 409).
+- **Run.** `AiJobWorker` exists only while `AI_ENABLED=true`. Every 2 seconds it claims the oldest queued job with `FOR UPDATE SKIP LOCKED` (`AiJobSteps.claim`), so two workers never take the same one (`AiJobMySqlIT`). It runs the refresh below outside any long transaction, and records `SUCCEEDED` with a short summary or `FAILED` with the safe message. Jobs are kept as history.
+- **Restart.** At start-up, jobs a stopped process left `RUNNING` are marked failed ("Stopped by a restart. Start the refresh again.").
+- **Status.** `GET …/ai/status` adds the latest `job` (status, times, summary, or error). The AI Tools page asks for it again every 3 seconds only while that job is queued or running, and never polls otherwise.
+
+The old `POST …/ai/sync`, which refreshes inside the request, still works but is marked deprecated; the page no longer uses it.
+
+### What a refresh does
 
 1. Faculty access is checked.
 2. The published sources and their fingerprint are found.
@@ -263,8 +274,8 @@ This lowers the risk; it cannot remove it. The access rules and the published-on
 
 All need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE`, and access through `LmsFacultyAccessService` on every request. Another faculty member's course answers 404. There is no admin pass.
 
-- **`GET /api/v1/lms/faculty/courses/{lmsCourseId}/ai/status`:** returns `enabled`, `status` (`NOT_INDEXED`, `BUILDING`, `READY`, `FAILED`), `stale`, `indexedAt`, `publishedSourceCount`, and a safe `failureMessage` when failed. It works with AI off.
-- **`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync`:** refreshes the knowledge (above).
+- **`GET /api/v1/lms/faculty/courses/{lmsCourseId}/ai/status`:** returns `enabled`, `status` (`NOT_INDEXED`, `BUILDING`, `READY`, `FAILED`), `stale`, `indexedAt`, `publishedSourceCount`, a safe `failureMessage` when failed, and the latest refresh `job`. It works with AI off.
+- **`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs`:** queues a background refresh (above); `…/ai/sync` is the deprecated in-request refresh.
 - **`POST /api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft`:**
   - Request: `questionCount` 1–20, `difficulty` (`EASY`, `MEDIUM`, `HARD`, `MIXED`), `questionType` (`MCQ`, `SHORT_ANSWER`, `LONG_ANSWER`, `MIXED`), and an optional `additionalInstruction` up to 500 characters. Difficulty is generation guidance only, never stored.
   - Response: `titleSuggestion`, `instructionsSuggestion`, and `questions`. Each question has `questionType`, `prompt`, `options` (multiple choice only), `suggestedAnswer`, `suggestedMarks` (above 0, at most 100), and `citations`.

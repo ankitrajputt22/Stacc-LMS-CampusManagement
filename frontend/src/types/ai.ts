@@ -52,6 +52,19 @@ export type AiKnowledgeStatus = {
   indexedAt: string | null
   publishedSourceCount: number
   failureMessage: string | null
+  /** The latest background refresh job, or null when none was ever queued. */
+  job: AiJob | null
+}
+
+/** A background refresh job (v0.13.1); results and errors are short safe texts from the backend. */
+export type AiJob = {
+  jobId: number
+  status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  createdAt: string
+  startedAt: string | null
+  finishedAt: string | null
+  resultSummary: string | null
+  errorMessage: string | null
 }
 
 export type AiKnowledgeSync = {

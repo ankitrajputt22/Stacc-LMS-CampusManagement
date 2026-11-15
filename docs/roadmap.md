@@ -219,7 +219,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.13.1 | AI jobs | Database-backed background jobs replace the long synchronous refresh; pages check status only while work runs. |
+| ★ 0.13.1 | AI jobs | Database-backed background jobs replace the long synchronous refresh; pages check status only while work runs. Done (`V129`): `ai_jobs`, a worker claiming with `SKIP LOCKED`, restart recovery, and status checks only while a job runs. |
 | ★ 0.13.2 | Separate indexes | One index per course for student-visible content, one per course for teacher-only content, one per student for notes; every question also carries the currently allowed document list. |
 | 0.13.3 | Better extraction | Heading- and slide-aware chunks measured in tokens, header and footer cleaning, and "Exclude from AI" on materials. |
 | 0.13.4 | Hybrid search | Keyword matching alongside semantic search, so terms like "3NF" and `GROUP BY` are found. |
@@ -298,4 +298,4 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
 | v0.16 Analytics and operations | Done (0.16.1 to 0.16.8) |
 | v1.0 Stable release | Done: released as `v1.0.0` |
-| v0.13 – v0.15 AI | Later, after the core phases |
+| v0.13 – v0.15 AI | 0.13.1 done; the rest later |

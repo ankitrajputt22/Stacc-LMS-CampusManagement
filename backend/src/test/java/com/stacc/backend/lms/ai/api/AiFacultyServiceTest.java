@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import com.stacc.backend.lms.ai.job.AiJobService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
@@ -44,7 +45,7 @@ class AiFacultyServiceTest {
     private final AiKnowledgeRecords records = mock(AiKnowledgeRecords.class);
     private final AiKnowledgeRefresher refresher = mock(AiKnowledgeRefresher.class);
     private final AiServiceClient client = mock(AiServiceClient.class);
-    private final AiFacultyService service = new AiFacultyService(access, sources, records, refresher, client);
+    private final AiFacultyService service = new AiFacultyService(access, sources, records, refresher, client, mock(AiJobService.class));
 
     private static final Citation CITED = new Citation("TOPIC", 1L, 1L, "t", null, null, null);
 
@@ -67,7 +68,7 @@ class AiFacultyServiceTest {
     void statusCoversEveryState() {
         when(records.find(COURSE_A)).thenReturn(Optional.empty());
         assertThat(service.status(FACULTY_A, COURSE_A))
-                .isEqualTo(new AiKnowledgeStatusResponse(true, "NOT_INDEXED", false, null, 1, null));
+                .isEqualTo(new AiKnowledgeStatusResponse(true, "NOT_INDEXED", false, null, 1, null, null));
 
         when(records.find(COURSE_A)).thenReturn(Optional.of(ready(CURRENT)));
         AiKnowledgeStatusResponse fresh = service.status(FACULTY_A, COURSE_A);

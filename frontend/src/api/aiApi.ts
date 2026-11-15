@@ -2,6 +2,7 @@ import type {
   AiAnswer,
   AiAssessmentDraft,
   AiAssessmentDraftInput,
+  AiJob,
   AiKnowledgeStatus,
   AiKnowledgeSync,
   AiPracticeSet,
@@ -19,6 +20,11 @@ export async function getFacultyAiStatus(lmsCourseId: number, signal?: AbortSign
 }
 
 /** Rebuilds the course's AI knowledge from its published content. */
+/** Queues a background refresh of the course's AI knowledge; answers at once with the queued job. */
+export async function queueFacultyAiRefresh(lmsCourseId: number, signal?: AbortSignal): Promise<AiJob> {
+  return (await apiClient.post<AiJob>(`/lms/faculty/courses/${lmsCourseId}/ai/jobs`, null, { signal })).data
+}
+
 export async function syncFacultyAiKnowledge(lmsCourseId: number, signal?: AbortSignal): Promise<AiKnowledgeSync> {
   return (await apiClient.post<AiKnowledgeSync>(`/lms/faculty/courses/${lmsCourseId}/ai/sync`, null, { signal })).data
 }

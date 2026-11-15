@@ -3,6 +3,7 @@ package com.stacc.backend.lms.ai.api;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
+import com.stacc.backend.lms.ai.job.AiJobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -56,10 +59,27 @@ public class AiFacultyController {
         return faculty.status(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
 
+    @PostMapping("/jobs")
+    @PreAuthorize(AiAccess.FACULTY)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Operation(
+            summary = "Queue a refresh of the course's AI knowledge",
+            description = "Answers at once with the queued job; a background worker rebuilds the knowledge from the course's "
+                    + "published topics and study materials. Follow it with the status route while it is queued or running.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "409", description = "No published content can be indexed, or a refresh is already queued or running.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "503", description = "AI learning features are switched off.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AiJobService.JobView queue(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt accessToken) {
+        return faculty.queueRefresh(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
+    }
+
     @PostMapping("/sync")
     @PreAuthorize(AiAccess.FACULTY)
     @Operation(
-            summary = "Refresh the course's AI knowledge",
+            deprecated = true,
+            summary = "Refresh the course's AI knowledge in the request (replaced by the jobs route)",
             description = "Rebuilds the AI knowledge from the course's published topics and study materials only, "
                     + "replacing the previous index once the new one is complete. Unreadable or unsupported files are "
                     + "skipped and counted. It may take a while for large courses.",
