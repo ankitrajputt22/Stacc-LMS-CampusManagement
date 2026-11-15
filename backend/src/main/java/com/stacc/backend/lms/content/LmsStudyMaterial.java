@@ -67,6 +67,9 @@ public class LmsStudyMaterial {
     @Column(nullable = false, length = 20)
     private LmsContentStatus status = LmsContentStatus.DRAFT;
 
+    @Column(name = "excluded_from_ai", nullable = false)
+    private boolean excludedFromAi;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -151,6 +154,17 @@ public class LmsStudyMaterial {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    /** Whether faculty keep this material out of the course's AI knowledge. Students still see it. */
+    public boolean isExcludedFromAi() {
+        return excludedFromAi;
+    }
+
+    /** Keeps the material out of, or brings it back into, the course's AI knowledge. Setting the same value changes nothing. */
+    public void changeAiExclusion(boolean excluded) {
+        requireNotArchived();
+        this.excludedFromAi = excluded;
     }
 
     public boolean isArchived() {

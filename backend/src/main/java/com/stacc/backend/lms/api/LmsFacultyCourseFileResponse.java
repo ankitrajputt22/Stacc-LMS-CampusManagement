@@ -33,12 +33,14 @@ public record LmsFacultyCourseFileResponse(
         LmsContentStatus pageStatus,
         @Schema(example = "Unit 1: Arrays and Linked Lists")
         String moduleTitle,
-        LmsContentStatus moduleStatus) {
+        LmsContentStatus moduleStatus,
+        @Schema(description = "True when faculty keep the file out of the course's AI knowledge. Students still see it.")
+        boolean excludedFromAi) {
 
     static LmsFacultyCourseFileResponse of(LmsFacultyMaterialResponse file, LmsFacultyTopicContentResponse page,
             LmsFacultyModuleContentResponse module) {
         return new LmsFacultyCourseFileResponse(file.id(), file.title(), file.description(), file.originalFileName(),
                 file.contentType(), file.sizeBytes(), file.uploadedAt(), file.status(), page.id(), page.title(),
-                page.status(), module.title(), module.status());
+                page.status(), module.title(), module.status(), file.excludedFromAi());
     }
 }

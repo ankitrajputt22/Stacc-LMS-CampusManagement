@@ -45,6 +45,7 @@ class Segment:
     text: str
     page_number: int | None = None
     slide_number: int | None = None
+    heading: str | None = None
 
 
 class _Budget:
@@ -103,12 +104,47 @@ def _pdf(data: bytes, budget: _Budget) -> list[Segment]:
                 raise ExtractionError("encrypted")
         except Exception as error:
             raise ExtractionError("encrypted") from error
-    segments = []
+    pages = []
     for number, page in enumerate(reader.pages, start=1):
         if number > MAX_PDF_PAGES or budget.spent:
             break
-        segments.append(Segment(budget.take(page.extract_text() or ""), page_number=number))
-    return segments
+        pages.append(page.extract_text() or "")
+    return [Segment(budget.take(text), page_number=number) for number, text in enumerate(without_running_lines(pages), start=1)]
+
+
+EDGE_LINES = 2
+DIGITS = re.compile(r"\d+")
+
+
+def _edge_key(line: str) -> str:
+    """A line as it repeats across pages: page numbers and other digits do not make it different."""
+    return DIGITS.sub("#", " ".join(line.split()).lower())
+
+
+def without_running_lines(pages: list[str]) -> list[str]:
+    """Pages without their running headers and footers (v0.13.3).
+
+    A line among the first or last two of a page that also appears there on at least half of the pages (and at least
+    three) is a header or footer, such as a course name, a college name, or "Page 3 of 20", and is removed.
+    """
+    if len(pages) < 3:
+        return pages
+    counts: dict[str, int] = {}
+    for text in pages:
+        lines = [line for line in text.split("\n") if line.strip()]
+        for key in {_edge_key(line) for line in lines[:EDGE_LINES] + lines[-EDGE_LINES:]}:
+            counts[key] = counts.get(key, 0) + 1
+    running = {key for key, count in counts.items() if count >= max(3, (len(pages) + 1) // 2)}
+    if not running:
+        return pages
+    cleaned = []
+    for text in pages:
+        lines = [line for line in text.split("\n") if line.strip()]
+        edge = set(range(min(EDGE_LINES, len(lines)))) | set(range(max(len(lines) - EDGE_LINES, 0), len(lines)))
+        kept = [line for index, line in enumerate(lines) if not (index in edge and _edge_key(line) in running)]
+        # A page is never emptied: on very short pages the "running" lines may be its only text.
+        cleaned.append("\n".join(kept) if kept else text)
+    return cleaned
 
 
 def _open_package(data: bytes) -> zipfile.ZipFile:
@@ -131,8 +167,16 @@ def _xml(package: zipfile.ZipFile, name: str):
 def _docx(data: bytes, budget: _Budget) -> list[Segment]:
     with _open_package(data) as package:
         body = _xml(package, "word/document.xml")
-    paragraphs = []
+    segments: list[Segment] = []
+    heading: str | None = None
+    paragraphs: list[str] = []
+
+    def close() -> None:
+        if paragraphs:
+            segments.append(Segment(budget.take("\n".join(paragraphs)), heading=heading))
+
     for paragraph in body.iter(f"{W}p"):
+        style = next((node.get(f"{W}val", "") for node in paragraph.iter(f"{W}pStyle")), "")
         parts = []
         for node in paragraph.iter():
             if node.tag == f"{W}t" and node.text:
@@ -141,10 +185,18 @@ def _docx(data: bytes, budget: _Budget) -> list[Segment]:
                 parts.append("\t")
             elif node.tag in (f"{W}br", f"{W}cr"):
                 parts.append("\n")
-        paragraphs.append("".join(parts))
+        text = "".join(parts)
+        if style.lower().startswith(("heading", "title")) and text.strip():
+            # A heading starts a new section, so no chunk mixes two sections (v0.13.3).
+            close()
+            paragraphs = []
+            heading = text.strip()[:200]
+        else:
+            paragraphs.append(text)
         if budget.spent:
             break
-    return [Segment(budget.take("\n".join(paragraphs)))]
+    close()
+    return segments
 
 
 def _slide_order(package: zipfile.ZipFile) -> list[str]:
@@ -176,8 +228,10 @@ def _pptx(data: bytes, budget: _Budget) -> list[Segment]:
             slide = _xml(package, name)
             lines = ["".join(node.text or "" for node in paragraph.iter(f"{A}t"))
                      for paragraph in slide.iter(f"{A}p")]
-            segments.append(Segment(budget.take("\n".join(line for line in lines if line.strip())),
-                                    slide_number=number))
+            kept = [line for line in lines if line.strip()]
+            # The slide's first line, usually its title, travels with each chunk of the slide.
+            segments.append(Segment(budget.take("\n".join(kept)), slide_number=number,
+                                    heading=kept[0].strip()[:200] if kept else None))
     return segments
 
 

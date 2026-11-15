@@ -10,7 +10,7 @@ A course's **Files** area (v0.6.3) lists every file of the course in one place. 
 ## Faculty
 
 - `/teaching/:lmsCourseId/files`, linked as **Files** in the course's tools: every file that is not archived, drafts included, with its page (a link to the page preview) and module, and whether students see it. A hidden file says why: the file, its page, or its module is a draft, or the course is not published.
-- **Upload file** puts a new file on a chosen page as a draft, through the same upload route and checks as course content. **Publish** and **Archive** (confirmed first) use the existing material routes. Nothing is deleted.
+- **Upload file** puts a new file on a chosen page as a draft, through the same upload route and checks as course content. **Publish** and **Archive** (confirmed first) use the existing material routes. Nothing is deleted. **Exclude from AI** and **Include in AI** keep a file out of, or bring it back into, the course's AI knowledge (v0.13.3); the AI knowledge column says which, and students still see the file either way.
 - `GET /api/v1/lms/faculty/courses/{lmsCourseId}/files` needs `FACULTY` and `FACULTY_COURSE_VIEW` and is built from exactly what the faculty content route lists (`LmsFacultyAccessService`). Changes still need `LMS_CONTENT_MANAGE`.
 
 File responses carry `uploadedAt` (when the material was created). Who uploaded a file is not stored. Both list routes only read.

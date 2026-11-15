@@ -455,6 +455,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/gradebook/items/{itemId}/entries/{courseEnrollmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/managed-courses` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |
 | `/api/v1/lms/faculty/materials/{materialId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
+| `/api/v1/lms/faculty/materials/{materialId}/ai-exclusion` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/materials/{materialId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/materials/{materialId}/publish` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/modules/{moduleId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyContentController |

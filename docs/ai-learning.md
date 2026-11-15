@@ -199,6 +199,14 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Allowed sources.** Every ask, summary, practice, and assessment-draft request carries `allowedSources`: the sources the backend allows at that moment (`AiCourseKnowledge.allowedSources`, the published topics and study materials). The AI service never searches, summarizes, or cites a chunk of any other source, even if an index still holds it.
 - **Several indexes.** A request may also name up to three `additionalIndexes`, each with its own fingerprint check and allowed list. A stale one answers 409, like the course index. The AI service searches them together with the course index and ranks the results as one list.
 
+### Better extraction (v0.13.3)
+
+- **Tokens, not characters.** Chunks are measured in tokens (words and single symbols, `AI_CHUNK_TOKENS` 300 and `AI_CHUNK_OVERLAP_TOKENS` 50 by default) and cut at a paragraph, then a sentence, then a line break, so a chunk rarely ends mid-sentence.
+- **Headings.** Markdown headings in topic text and TXT files, Word heading and title styles, and each slide's first line start a new section. A chunk never spans two sections and keeps its heading path (such as `Joins > Inner joins`), which is embedded with the text so a search for a heading finds its section.
+- **Running headers and footers.** In a PDF, a line among the first or last two of a page that repeats on at least half of the pages (and at least three), with page numbers ignored, is a header or footer and is dropped. A page is never emptied this way.
+- **Exclude from AI.** Faculty may keep a study material out of AI knowledge (`PUT /api/v1/lms/faculty/materials/{id}/ai-exclusion`, `LMS_CONTENT_MANAGE` under the faculty access policy; Exclude from AI and Include in AI on the teaching Files page). Students still see and download it. The flag is part of the knowledge fingerprint, so the course's knowledge shows as out of date until the next refresh leaves the file out.
+- The knowledge format is `stacc-ai-knowledge-v2` and the index format version 2, so every course needs one refresh after the upgrade.
+
 ### What a refresh does
 
 1. Faculty access is checked.
@@ -208,7 +216,7 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 5. Readable study-material files are read through `ObjectStorageService`, within the size limits.
 6. Topic text and file bytes go to the AI service. There, sources are:
    - extracted;
-   - cut into overlapping chunks (about 1,200 characters, 200 overlapping, never across a page or slide);
+   - cut into overlapping chunks measured in tokens (about 300 words and symbols, 50 overlapping, never across a page, slide, or heading section; v0.13.3);
    - embedded in batches.
 7. The new index is written to a temporary folder, read back and checked, renamed into place, and made live by atomically replacing a `current` pointer.
 8. Only then is the row marked `READY` with the fingerprint and time.

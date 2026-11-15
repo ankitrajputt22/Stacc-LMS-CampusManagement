@@ -79,7 +79,7 @@ These checks apply everywhere, `prod` or not: a missing or short `JWT_SECRET`, s
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | | The Ollama server. Docker sets `http://ollama:11434`. |
 | `AI_CHAT_MODEL`, `AI_EMBEDDING_MODEL` | none | | The local models pulled into Ollama. |
 | `AI_INDEX_DIR` | `./data/indexes` | | Where course indexes are kept. Docker uses `/data/indexes` on the `ai-index-data` volume. |
-| `AI_PROVIDER_TIMEOUT_SECONDS`, `AI_TOP_K`, `AI_MIN_RELEVANCE`, `AI_CHUNK_SIZE`, `AI_CHUNK_OVERLAP`, `AI_EMBEDDING_BATCH_SIZE`, `AI_MAX_*`, `AI_ANSWER_TEMPERATURE`, `AI_DRAFT_TEMPERATURE` | in `ai-service/app/config.py` | | Retrieval, generation, and size limits; the defaults suit a laptop. See `ai-learning.md`. |
+| `AI_PROVIDER_TIMEOUT_SECONDS`, `AI_TOP_K`, `AI_MIN_RELEVANCE`, `AI_CHUNK_TOKENS`, `AI_CHUNK_OVERLAP_TOKENS`, `AI_EMBEDDING_BATCH_SIZE`, `AI_MAX_*`, `AI_ANSWER_TEMPERATURE`, `AI_DRAFT_TEMPERATURE` | in `ai-service/app/config.py` | | Retrieval, generation, and size limits; the defaults suit a laptop. See `ai-learning.md`. |
 
 ## Frontend
 

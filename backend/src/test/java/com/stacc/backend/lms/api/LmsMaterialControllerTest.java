@@ -102,7 +102,8 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                 json(put("/api/v1/lms/faculty/topics/31/materials/reorder"), "{\"materialIds\":[7]}"),
                 json(put("/api/v1/lms/faculty/materials/7"), "{\"title\":\"Notes\"}"),
                 post("/api/v1/lms/faculty/materials/7/publish"),
-                post("/api/v1/lms/faculty/materials/7/archive"));
+                post("/api/v1/lms/faculty/materials/7/archive"),
+                json(put("/api/v1/lms/faculty/materials/7/ai-exclusion"), "{\"excluded\":true}"));
     }
 
     // Upload and changes
@@ -122,7 +123,8 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.contentType").value("application/pdf"))
                 .andExpect(jsonPath("$.sizeBytes").value(1007))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
-                .andExpect(jsonPath("$.*", hasSize(9)))
+                .andExpect(jsonPath("$.excludedFromAi").value(false))
+                .andExpect(jsonPath("$.*", hasSize(10)))
                 .andExpect(content().string(not(containsString("key"))))
                 .andExpect(content().string(not(containsString("bucket"))));
 
@@ -171,8 +173,9 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         when(materialService.updateMaterial(ACCOUNT_ID, 7L, "Notes", null)).thenReturn(material);
         when(materialService.publishMaterial(ACCOUNT_ID, 7L)).thenReturn(material);
         when(materialService.archiveMaterial(ACCOUNT_ID, 7L)).thenReturn(material);
+        when(materialService.changeAiExclusion(ACCOUNT_ID, 7L, true)).thenReturn(material);
 
-        for (AbstractMockHttpServletRequestBuilder<?> route : changeRoutes().subList(1, 5)) {
+        for (AbstractMockHttpServletRequestBuilder<?> route : changeRoutes().subList(1, 6)) {
             mockMvc.perform(as(managerToken(), route)).andExpect(status().isOk());
         }
 
@@ -180,6 +183,14 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         verify(materialService).updateMaterial(eq(ACCOUNT_ID), eq(7L), eq("Notes"), isNull());
         verify(materialService).publishMaterial(ACCOUNT_ID, 7L);
         verify(materialService).archiveMaterial(ACCOUNT_ID, 7L);
+        verify(materialService).changeAiExclusion(ACCOUNT_ID, 7L, true);
+    }
+
+    @Test
+    void aiExclusionNeedsTheValue() throws Exception {
+        mockMvc.perform(as(managerToken(), json(put("/api/v1/lms/faculty/materials/7/ai-exclusion"), "{}")))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(materialService);
     }
 
     @Test
@@ -289,6 +300,7 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                 {"/api/v1/lms/faculty/materials/{materialId}", "put"},
                 {"/api/v1/lms/faculty/materials/{materialId}/publish", "post"},
                 {"/api/v1/lms/faculty/materials/{materialId}/archive", "post"},
+                {"/api/v1/lms/faculty/materials/{materialId}/ai-exclusion", "put"},
                 {"/api/v1/lms/materials/{materialId}/download", "get"}}) {
             String path = "$.paths['" + operation[0] + "']." + operation[1];
             result.andExpect(jsonPath(path + ".security[0].bearerAuth").exists())

@@ -176,8 +176,8 @@ class LmsFacultyContentQueryServiceTest {
                 service.getCourseContent(ACCOUNT_ID, COURSE_ID).modules().get(0).topics().get(0).materials();
 
         assertEquals(List.of(
-                new LmsFacultyMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007, 1, LmsContentStatus.DRAFT, null),
-                new LmsFacultyMaterialResponse(8L, "Material 8", null, "material-8.pdf", "application/pdf", 1008, 2, LmsContentStatus.PUBLISHED, null)),
+                new LmsFacultyMaterialResponse(7L, "Material 7", null, "material-7.pdf", "application/pdf", 1007, 1, LmsContentStatus.DRAFT, null, false),
+                new LmsFacultyMaterialResponse(8L, "Material 8", null, "material-8.pdf", "application/pdf", 1008, 2, LmsContentStatus.PUBLISHED, null, false)),
                 shown);
     }
 }

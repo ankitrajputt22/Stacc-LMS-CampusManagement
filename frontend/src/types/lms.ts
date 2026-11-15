@@ -110,6 +110,8 @@ export type LmsFacultyTopic = {
 export type LmsFacultyMaterial = LmsCourseMaterial & {
   position: number
   status: LmsContentStatus
+  /** True when faculty keep the file out of the course's AI knowledge. Students still see it. */
+  excludedFromAi: boolean
 }
 
 /** One topic with its study materials that are not archived. */
@@ -505,6 +507,8 @@ export type LmsFacultyCourseFile = Omit<LmsCourseFile, 'pageId' | 'pageTitle' | 
   pageStatus: LmsContentStatus
   moduleTitle: string
   moduleStatus: LmsContentStatus
+  /** True when faculty keep the file out of the course's AI knowledge. Students still see it. */
+  excludedFromAi: boolean
 }
 
 /** The Files list of a course a faculty member teaches. */
