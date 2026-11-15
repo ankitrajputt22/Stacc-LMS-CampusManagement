@@ -137,6 +137,10 @@ class LearningService:
         fused = keyword.fuse(semantic_ranking, keyword_ranking)
         return [candidates[item] for item in fused[: self._settings.top_k]]
 
+    def retrieve(self, course_key: str, request: schemas.IndexedRequest, question: str) -> list[StoredChunk]:
+        """The chunks an answer to the question would be given, best first (v0.13.8, for evaluation)."""
+        return self._search(self._scopes(course_key, request), question)
+
     def _spread(self, chunks: list[StoredChunk]) -> list[StoredChunk]:
         """Up to the context limit, spread evenly over the chunks so the whole selection is covered."""
         limit = self._settings.max_context_chunks

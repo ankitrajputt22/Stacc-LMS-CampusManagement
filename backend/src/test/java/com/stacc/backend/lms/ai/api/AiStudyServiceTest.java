@@ -107,6 +107,29 @@ class AiStudyServiceTest {
     }
 
     @Test
+    void noStudentRequestNamesTheTeacherIndexAnotherStudentsNotesOrAnyPersonalRecord() {
+        AiStudentNoteKnowledge mine = new AiStudentNoteKnowledge("d".repeat(64), List.of(new AiStudentNoteKnowledge.Note(4L, "Mine", "Text")));
+        when(notes.current(COURSE, STUDENT_A)).thenReturn(Optional.of(new AiStudentNoteIndexer.Scope(new AiServiceMessages.IndexRef(
+                AiCourseKeys.forStudentNotes(COURSE, STUDENT_A), mine.fingerprint(), mine.allowedSources()), mine)));
+        when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
+        when(client.summarize(anyString(), any())).thenReturn(new SummaryResult(null, List.of(), true, List.of()));
+        when(client.practice(anyString(), any())).thenReturn(new AiServiceMessages.PracticeResult(List.of(), true));
+        service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?", true));
+        service.summarize(STUDENT_A, COURSE, 1L);
+        service.practice(STUDENT_A, COURSE, new AiPracticeRequest(2, null));
+
+        ArgumentCaptor<Object> sent = ArgumentCaptor.forClass(Object.class);
+        verify(client).ask(anyString(), (AskRequest) sent.capture());
+        verify(client).summarize(anyString(), (AiServiceMessages.SummaryRequest) sent.capture());
+        verify(client).practice(anyString(), (AiServiceMessages.PracticeRequest) sent.capture());
+        // Records print every field, so this is everything the AI service is sent.
+        String json = sent.getAllValues().toString();
+        assertThat(json).doesNotContain(AiCourseKeys.forTeacherDocuments(COURSE), AiCourseKeys.forStudentNotes(COURSE, STUDENT_B),
+                "TEACHER_DOCUMENT", "accountId", "loginId", "secret-key");
+        assertThat(json).contains(AiCourseKeys.forStudentNotes(COURSE, STUDENT_A));
+    }
+
+    @Test
     void courseAndMyNotesSearchesOnlyTheAskersNotesAndLabelsThem() {
         AiStudentNoteKnowledge mine = new AiStudentNoteKnowledge("d".repeat(64),
                 List.of(new AiStudentNoteKnowledge.Note(4L, "My summary", "Redundancy goes.")));
