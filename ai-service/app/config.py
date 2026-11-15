@@ -45,6 +45,15 @@ def _float(env: Mapping[str, str], name: str, default: float, low: float, high: 
     return value
 
 
+def _bool(env: Mapping[str, str], name: str, default: bool) -> bool:
+    raw = _text(env, name).lower()
+    if not raw:
+        return default
+    if raw not in ("true", "false"):
+        raise SettingsError(f"{name} must be true or false")
+    return raw == "true"
+
+
 @dataclass(frozen=True)
 class Settings:
     provider: str
@@ -67,6 +76,7 @@ class Settings:
     embedding_batch_size: int
     top_k: int
     min_relevance: float
+    keyword_search: bool
     max_context_chunks: int
     # Generation.
     answer_temperature: float
@@ -111,6 +121,7 @@ class Settings:
             embedding_batch_size=_int(env, "AI_EMBEDDING_BATCH_SIZE", 32, 1, 512),
             top_k=_int(env, "AI_TOP_K", 6, 1, 8),
             min_relevance=_float(env, "AI_MIN_RELEVANCE", 0.2, 0.0, 1.0),
+            keyword_search=_bool(env, "AI_KEYWORD_SEARCH", True),
             max_context_chunks=_int(env, "AI_MAX_CONTEXT_CHUNKS", 8, 1, 12),
             answer_temperature=_float(env, "AI_ANSWER_TEMPERATURE", 0.1, 0.0, 1.0),
             draft_temperature=_float(env, "AI_DRAFT_TEMPERATURE", 0.4, 0.0, 1.0),
