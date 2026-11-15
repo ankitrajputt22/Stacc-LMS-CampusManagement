@@ -2,6 +2,7 @@ package com.stacc.backend.lms.ai.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -13,13 +14,29 @@ public record AiAskRequest(
         @NotBlank @Size(max = 1000) String question,
         @Schema(description = "True asks \"Course + my notes\" (v0.13.6): the student's own notes in this course are "
                 + "searched too. Leave it out or false for the course alone.", nullable = true)
-        Boolean includeMyNotes) {
+        Boolean includeMyNotes,
+        @Schema(description = "COURSE (the default), COURSE_AND_NOTES, or NOTES_ONLY (v0.13.9). Overrides includeMyNotes.",
+                nullable = true)
+        AiAskMode mode,
+        @Schema(description = "Only this module's published pages and files (v0.13.9); not with NOTES_ONLY.", nullable = true)
+        @Positive Long moduleId) {
 
     public AiAskRequest(String question) {
-        this(question, null);
+        this(question, null, null, null);
+    }
+
+    public AiAskRequest(String question, Boolean includeMyNotes) {
+        this(question, includeMyNotes, null, null);
+    }
+
+    AiAskMode effectiveMode() {
+        if (mode != null) {
+            return mode;
+        }
+        return Boolean.TRUE.equals(includeMyNotes) ? AiAskMode.COURSE_AND_NOTES : AiAskMode.COURSE;
     }
 
     boolean withMyNotes() {
-        return Boolean.TRUE.equals(includeMyNotes);
+        return effectiveMode() != AiAskMode.COURSE;
     }
 }

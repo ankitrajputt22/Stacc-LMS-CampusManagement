@@ -69,7 +69,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
         <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
-        <AskPanel lmsCourseId={course.lmsCourseId} />
+        <AskPanel lmsCourseId={course.lmsCourseId} modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))} />
         <MyNotesPanel lmsCourseId={course.lmsCourseId} />
         <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />

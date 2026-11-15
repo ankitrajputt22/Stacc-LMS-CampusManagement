@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/aiApi'
 import { testQueryClient } from '../test/queryTestUtils'
@@ -41,15 +42,39 @@ describe('AskPanel', () => {
       citations: [{ sourceType: 'NOTE', sourceId: 4, title: 'My summary', fileName: null, pageNumber: null, slideNumber: null }],
     })
     const user = userEvent.setup()
-    render(<AskPanel lmsCourseId={3} />)
+    render(<MemoryRouter><AskPanel lmsCourseId={3} /></MemoryRouter>)
 
     await user.type(screen.getByRole('textbox', { name: 'Question' }), 'What does 3NF remove?')
     await user.click(screen.getByRole('button', { name: 'Ask' }))
-    expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What does 3NF remove?', expect.anything(), false)
+    expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What does 3NF remove?', expect.anything(), { mode: 'COURSE', moduleId: null })
 
-    await user.click(screen.getByRole('radio', { name: 'Course + my notes' }))
+    await user.click(screen.getByRole('radio', { name: /^Course \+ my notes/ }))
     await user.click(screen.getByRole('button', { name: 'Ask' }))
-    expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What does 3NF remove?', expect.anything(), true)
-    expect(await screen.findByText(/My note/)).toBeInTheDocument()
+    expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What does 3NF remove?', expect.anything(), { mode: 'COURSE_AND_NOTES', moduleId: null })
+    expect(await screen.findByText('My note', { exact: true })).toBeInTheDocument()
+  })
+})
+
+describe('Ask My Course', () => {
+  it('scopes a question to one module and links each source to its page', async () => {
+    vi.mocked(api.askCourseAi).mockResolvedValue({
+      answer: 'A join combines rows.', insufficientContext: false,
+      citations: [{ sourceType: 'TOPIC', sourceId: 31, title: 'Joins', fileName: null, pageNumber: null, slideNumber: null, pageId: 31 }],
+    })
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <AskPanel lmsCourseId={3} modules={[{ id: 7, title: 'Unit 2: SQL' }]} />
+      </MemoryRouter>,
+    )
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Module' }), 'Unit 2: SQL')
+    await user.type(screen.getByRole('textbox', { name: 'Question' }), 'What is a join?')
+    await user.click(screen.getByRole('button', { name: 'Ask' }))
+    expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What is a join?', expect.anything(), { mode: 'COURSE', moduleId: 7 })
+    expect(await screen.findByRole('link', { name: /^Open page/ })).toHaveAttribute('href', '/courses/3/pages/31')
+
+    // Notes only searches no module.
+    await user.click(screen.getByRole('radio', { name: /^My notes only/ }))
+    expect(screen.queryByRole('combobox', { name: 'Module' })).not.toBeInTheDocument()
   })
 })
