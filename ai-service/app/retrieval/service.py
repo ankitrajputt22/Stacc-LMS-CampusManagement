@@ -22,6 +22,7 @@ from app.models import schemas
 from app.models.schemas import Citation, QuestionType
 from app.providers.base import ContextChunk, EmbeddingProvider, GenerationRequest, ModelProvider
 from app.retrieval import prompts
+from app.security import checked_course_key
 
 Output = TypeVar("Output", bound=BaseModel)
 REPAIR_NOTE = ("\n\nYour previous reply could not be used: it was not valid JSON for the required schema. "
@@ -88,6 +89,34 @@ class LearningService:
             raise index_mismatch()
         return index
 
+    @staticmethod
+    def _allowed(index: CourseIndex, allowed: list[schemas.SourceRef] | None) -> np.ndarray:
+        """Which chunks of the index the request may use: those of the allowed sources, or all when no list is given."""
+        if allowed is None:
+            return np.ones(len(index.chunks), dtype=bool)
+        keys = {(ref.sourceType.value, ref.sourceId) for ref in allowed}
+        return np.array([(chunk.sourceType, chunk.sourceId) in keys for chunk in index.chunks], dtype=bool)
+
+    def _scopes(self, course_key: str, request: schemas.IndexedRequest) -> list[tuple[CourseIndex, np.ndarray]]:
+        """The course index and any additional ones, each checked against its fingerprint, with the allowed chunks."""
+        course = self._index(course_key, request.indexFingerprint)
+        scopes = [(course, self._allowed(course, request.allowedSources))]
+        for extra in request.additionalIndexes:
+            index = self._index(checked_course_key(extra.indexKey), extra.indexFingerprint)
+            scopes.append((index, self._allowed(index, extra.allowedSources)))
+        return scopes
+
+    def _search(self, scopes: list[tuple[CourseIndex, np.ndarray]], question: str) -> list[StoredChunk]:
+        """The best allowed chunks across every index, best first, above the relevance floor."""
+        query = unit_vectors(self._embeddings.embed([question]))[0]
+        found: list[tuple[float, int, int, StoredChunk]] = []
+        for order, (index, allowed) in enumerate(scopes):
+            for position, score in index.search(query, len(index.chunks)):
+                if allowed[position] and score >= self._settings.min_relevance:
+                    found.append((score, order, position, index.chunks[position]))
+        found.sort(key=lambda item: (-item[0], item[1], item[2]))
+        return [item[3] for item in found[: self._settings.top_k]]
+
     def _spread(self, chunks: list[StoredChunk]) -> list[StoredChunk]:
         """Up to the context limit, spread evenly over the chunks so the whole selection is covered."""
         limit = self._settings.max_context_chunks
@@ -96,8 +125,9 @@ class LearningService:
         positions = np.linspace(0, len(chunks) - 1, num=limit).round().astype(int)
         return [chunks[i] for i in dict.fromkeys(positions.tolist())]
 
-    def _selection(self, index: CourseIndex, topic_id: int | None) -> list[StoredChunk]:
-        chunks = [chunk for chunk in index.chunks if topic_id is None or chunk.topicId == topic_id]
+    def _selection(self, scopes: list[tuple[CourseIndex, np.ndarray]], topic_id: int | None) -> list[StoredChunk]:
+        chunks = [chunk for index, allowed in scopes for position, chunk in enumerate(index.chunks)
+                  if allowed[position] and (topic_id is None or chunk.topicId == topic_id)]
         return self._spread(chunks)
 
     # --- Generation --------------------------------------------------------------------------
@@ -131,13 +161,10 @@ class LearningService:
 
     def ask(self, course_key: str, request: schemas.AskRequest) -> schemas.AskResponse:
         insufficient = schemas.AskResponse(answer=None, insufficientContext=True, citations=[])
-        index = self._index(course_key, request.indexFingerprint)
-        query = unit_vectors(self._embeddings.embed([request.question]))[0]
-        hits = [position for position, score in index.search(query, self._settings.top_k)
-                if score >= self._settings.min_relevance]
+        hits = self._search(self._scopes(course_key, request), request.question)
         if not hits:
             return insufficient
-        context = _Context([index.chunks[position] for position in hits])
+        context = _Context(hits)
         result = self._generate(
             "ask", context, schemas.AskModelOutput, self._settings.answer_temperature, {},
             usable=lambda out: out.insufficientContext or (bool(out.answer) and bool(context.citations(out.sourceIds))),
@@ -149,8 +176,7 @@ class LearningService:
 
     def summary(self, course_key: str, request: schemas.SummaryRequest) -> schemas.SummaryResponse:
         insufficient = schemas.SummaryResponse(summary=None, keyPoints=[], insufficientContext=True, citations=[])
-        index = self._index(course_key, request.indexFingerprint)
-        chunks = self._selection(index, request.topicId)
+        chunks = self._selection(self._scopes(course_key, request), request.topicId)
         if not chunks:
             return insufficient
         context = _Context(chunks)
@@ -164,8 +190,7 @@ class LearningService:
                                        insufficientContext=False, citations=citations)
 
     def practice(self, course_key: str, request: schemas.PracticeRequest) -> schemas.PracticeResponse:
-        index = self._index(course_key, request.indexFingerprint)
-        chunks = self._selection(index, request.topicId)
+        chunks = self._selection(self._scopes(course_key, request), request.topicId)
         if not chunks:
             return schemas.PracticeResponse(questions=[], insufficientContext=True)
         context = _Context(chunks)
@@ -184,8 +209,9 @@ class LearningService:
     def assessment_draft(self, course_key: str, request: schemas.AssessmentDraftRequest) -> schemas.AssessmentDraftResponse:
         empty = schemas.AssessmentDraftResponse(titleSuggestion=None, instructionsSuggestion=None, questions=[],
                                                 insufficientContext=True)
-        index = self._index(course_key, request.indexFingerprint)
-        chunks = self._selection(index, None)
+        chunks = self._selection(self._scopes(course_key, request), None)
+        if not chunks:
+            return empty
         context = _Context(chunks)
         wanted = request.questionType
 

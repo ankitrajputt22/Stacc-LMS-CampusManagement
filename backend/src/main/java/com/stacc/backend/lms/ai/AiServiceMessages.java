@@ -40,20 +40,43 @@ public final class AiServiceMessages {
             Integer pageNumber, Integer slideNumber) {
     }
 
-    public record AskRequest(String indexFingerprint, String question) {
+    /** One source a request may use (v0.13.2), as the backend allows it at the moment of the request. */
+    public record SourceRef(String sourceType, long sourceId) {
+    }
+
+    /** Another index searched with the course's own, with its own fingerprint and allowed sources. */
+    public record IndexRef(String indexKey, String indexFingerprint, List<SourceRef> allowedSources) {
+    }
+
+    public record AskRequest(String indexFingerprint, String question, List<SourceRef> allowedSources,
+            List<IndexRef> additionalIndexes) {
+
+        public AskRequest(String indexFingerprint, String question, List<SourceRef> allowedSources) {
+            this(indexFingerprint, question, allowedSources, List.of());
+        }
     }
 
     public record AskResult(String answer, Boolean insufficientContext, List<Citation> citations) {
     }
 
-    public record SummaryRequest(String indexFingerprint, long topicId) {
+    public record SummaryRequest(String indexFingerprint, long topicId, List<SourceRef> allowedSources,
+            List<IndexRef> additionalIndexes) {
+
+        public SummaryRequest(String indexFingerprint, long topicId, List<SourceRef> allowedSources) {
+            this(indexFingerprint, topicId, allowedSources, List.of());
+        }
     }
 
     public record SummaryResult(String summary, List<String> keyPoints, Boolean insufficientContext,
             List<Citation> citations) {
     }
 
-    public record PracticeRequest(String indexFingerprint, int questionCount, Long topicId) {
+    public record PracticeRequest(String indexFingerprint, int questionCount, Long topicId, List<SourceRef> allowedSources,
+            List<IndexRef> additionalIndexes) {
+
+        public PracticeRequest(String indexFingerprint, int questionCount, Long topicId, List<SourceRef> allowedSources) {
+            this(indexFingerprint, questionCount, topicId, allowedSources, List.of());
+        }
     }
 
     public record PracticeQuestion(String question, String suggestedAnswer, List<Citation> citations) {
@@ -63,7 +86,12 @@ public final class AiServiceMessages {
     }
 
     public record AssessmentDraftRequest(String indexFingerprint, int questionCount, String difficulty,
-            String questionType, String additionalInstruction) {
+            String questionType, String additionalInstruction, List<SourceRef> allowedSources, List<IndexRef> additionalIndexes) {
+
+        public AssessmentDraftRequest(String indexFingerprint, int questionCount, String difficulty, String questionType,
+                String additionalInstruction, List<SourceRef> allowedSources) {
+            this(indexFingerprint, questionCount, difficulty, questionType, additionalInstruction, allowedSources, List.of());
+        }
     }
 
     public record AssessmentQuestion(String questionType, String prompt, List<String> options, String suggestedAnswer,

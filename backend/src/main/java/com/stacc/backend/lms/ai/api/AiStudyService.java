@@ -56,7 +56,7 @@ public class AiStudyService {
         }
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId);
         AskResult result = call(() -> client.ask(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new AskRequest(knowledge.fingerprint(), question)));
+                new AskRequest(knowledge.fingerprint(), question, knowledge.allowedSources())));
         List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge);
         String answer = AiResults.text(result.answer(), AiResults.ANSWER_MAX);
         // An answer is shown only with at least one real citation; anything else is insufficient context.
@@ -70,7 +70,7 @@ public class AiStudyService {
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, topicId);
         AiCourseKnowledge.Topic topic = knowledge.topic(topicId).orElseThrow();
         SummaryResult result = call(() -> client.summarize(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new SummaryRequest(knowledge.fingerprint(), topicId)));
+                new SummaryRequest(knowledge.fingerprint(), topicId, knowledge.allowedSources())));
         List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge);
         String summary = AiResults.text(result.summary(), AiResults.SUMMARY_MAX);
         if (!Boolean.FALSE.equals(result.insufficientContext()) || summary == null || citations.isEmpty()) {
@@ -84,7 +84,7 @@ public class AiStudyService {
         int count = request.questionCountOrDefault();
         AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, request.topicId());
         PracticeResult result = call(() -> client.practice(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new PracticeRequest(knowledge.fingerprint(), count, request.topicId())));
+                new PracticeRequest(knowledge.fingerprint(), count, request.topicId(), knowledge.allowedSources())));
         List<AiPracticeQuestionResponse> questions = new ArrayList<>();
         if (result.questions() != null) {
             for (PracticeQuestion question : result.questions()) {

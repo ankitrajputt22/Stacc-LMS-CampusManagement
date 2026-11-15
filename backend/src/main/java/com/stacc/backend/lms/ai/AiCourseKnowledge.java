@@ -4,6 +4,7 @@ import com.stacc.backend.lms.content.LmsMaterialFileType;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import java.util.Set;
 
 /**
@@ -63,6 +64,16 @@ public record AiCourseKnowledge(String fingerprint, List<Topic> topics, List<Mat
     public boolean hasIndexableContent() {
         return topics.stream().anyMatch(Topic::hasText)
                 || materials.stream().anyMatch(material -> material.readableType().isPresent());
+    }
+
+    /**
+     * The sources a request may use right now (v0.13.2): every published topic and study material. The AI service
+     * ignores any other chunk an index still holds, so nothing unpublished since the last refresh is ever used.
+     */
+    public List<AiServiceMessages.SourceRef> allowedSources() {
+        return Stream.concat(
+                topics.stream().map(topic -> new AiServiceMessages.SourceRef("TOPIC", topic.id())),
+                materials.stream().map(material -> new AiServiceMessages.SourceRef("STUDY_MATERIAL", material.id()))).toList();
     }
 
     public Optional<Topic> topic(long topicId) {

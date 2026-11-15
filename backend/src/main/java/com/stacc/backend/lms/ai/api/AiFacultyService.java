@@ -96,7 +96,7 @@ public class AiFacultyService {
         try {
             result = client.assessmentDraft(AiCourseKeys.forLmsCourse(lmsCourseId), new AssessmentDraftRequest(
                     knowledge.fingerprint(), request.questionCount(), request.difficulty().name(),
-                    request.questionType().name(), note));
+                    request.questionType().name(), note, knowledge.allowedSources()));
         } catch (AiServiceException exception) {
             throw AiErrors.of(exception, AiErrors.TEACHING_NOT_READY);
         }

@@ -85,7 +85,8 @@ class HttpAiServiceClientTest {
     }
 
     private static AskRequest question() {
-        return new AskRequest(FINGERPRINT, "What does third normal form remove?");
+        return new AskRequest(FINGERPRINT, "What does third normal form remove?",
+                List.of(new AiServiceMessages.SourceRef("TOPIC", 3)));
     }
 
     @Test
@@ -118,9 +119,10 @@ class HttpAiServiceClientTest {
         assertThat(lastPath.get()).isEqualTo("/internal/v1/indexes/" + COURSE_KEY + "/ask");
         assertThat(lastToken.get()).isEqualTo(TOKEN);
         assertThat(lastAuthorization.get()).isNull();
-        // The personal-data boundary: the question and the fingerprint, nothing about the student.
-        assertThat(lastBody.get()).isEqualTo(
-                "{\"indexFingerprint\":\"" + FINGERPRINT + "\",\"question\":\"What does third normal form remove?\"}");
+        // The personal-data boundary: the question, the fingerprint, and the allowed sources, nothing about the student.
+        assertThat(lastBody.get()).isEqualTo("{\"indexFingerprint\":\"" + FINGERPRINT
+                + "\",\"question\":\"What does third normal form remove?\",\"allowedSources\":[{\"sourceType\":\"TOPIC\",\"sourceId\":3}],"
+                + "\"additionalIndexes\":[]}");
     }
 
     @Test
