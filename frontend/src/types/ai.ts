@@ -117,7 +117,7 @@ export type AiStudentNote = {
   updatedAt: string
 }
 
-/** A teacher-only document (v0.13.5): plain text only AI Tools read. Students never see it. */
+/** A teacher-only document (v0.13.5): plain text only Teacher AI read. Students never see it. */
 export type AiTeacherDocument = {
   id: number
   title: string

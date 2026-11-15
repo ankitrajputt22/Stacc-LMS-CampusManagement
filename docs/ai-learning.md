@@ -189,7 +189,7 @@ Faculty refresh a course's knowledge with `POST /api/v1/lms/faculty/courses/{lms
 - **Queue.** Faculty access is checked, AI must be on (503 otherwise), and the course must have indexable content (409). The job is stored in `ai_jobs` (`V129`) with the course and the requester. At most one refresh is queued or running per course (a unique generated column; a second request answers 409).
 - **Run.** `AiJobWorker` exists only while `AI_ENABLED=true`. Every 2 seconds it claims the oldest queued job with `FOR UPDATE SKIP LOCKED` (`AiJobSteps.claim`), so two workers never take the same one (`AiJobMySqlIT`). It runs the refresh below outside any long transaction, and records `SUCCEEDED` with a short summary or `FAILED` with the safe message. Jobs are kept as history.
 - **Restart.** At start-up, jobs a stopped process left `RUNNING` are marked failed ("Stopped by a restart. Start the refresh again.").
-- **Status.** `GET …/ai/status` adds the latest `job` (status, times, summary, or error). The AI Tools page asks for it again every 3 seconds only while that job is queued or running, and never polls otherwise.
+- **Status.** `GET …/ai/status` adds the latest `job` (status, times, summary, or error). The Teacher AI page asks for it again every 3 seconds only while that job is queued or running, and never polls otherwise.
 
 The old `POST …/ai/sync`, which refreshes inside the request, still works but is marked deprecated; the page no longer uses it.
 
@@ -209,11 +209,11 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 
 ### Teacher-only documents (v0.13.5)
 
-- **What they are.** Faculty who teach a course keep plain-text notes and drafts (`AiTeacherDocument` in `lms.ai.teacher`, table `ai_teacher_documents`: a title and up to 20,000 characters) at Teacher-only documents on the AI Tools page. At most 50 are active per course, checked under the course row lock. They are edited and archived (confirmed first), never deleted.
-- **Who reads them.** Only AI Tools (assessment drafts). Students never see them, and student requests never name the teacher index or accept a `TEACHER_DOCUMENT` citation.
+- **What they are.** Faculty who teach a course keep plain-text notes and drafts (`AiTeacherDocument` in `lms.ai.teacher`, table `ai_teacher_documents`: a title and up to 20,000 characters) at Teacher-only documents on the Teacher AI page. At most 50 are active per course, checked under the course row lock. They are edited and archived (confirmed first), never deleted.
+- **Who reads them.** Only Teacher AI (assessment drafts). Students never see them, and student requests never name the teacher index or accept a `TEACHER_DOCUMENT` citation.
 - **Their own index.** They are indexed under `AiCourseKeys.forTeacherDocuments` with their own fingerprint (`stacc-ai-teacher-v1`) and their own metadata row (`ai_course_knowledge_indexes.index_kind = TEACHER_DOCUMENTS`; the published content keeps `COURSE_CONTENT`). Refresh AI knowledge refreshes both; a course with only teacher documents refreshes only those.
 - **When they are used.** An assessment draft adds the teacher index as an `additionalIndexes` entry, with the active documents as its allowed sources, only when its last refresh covers exactly the current documents. Until then the status shows "Changed — refresh to include", and the draft uses the course content alone.
-- **Routes.** `GET` and `POST /api/v1/lms/faculty/courses/{id}/ai/teacher-documents`, `PUT /api/v1/lms/faculty/ai/teacher-documents/{documentId}`, and `POST .../{documentId}/archive`, with the same rule as the other AI Tools (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, and the faculty access policy; the course comes from the stored document). No new permission.
+- **Routes.** `GET` and `POST /api/v1/lms/faculty/courses/{id}/ai/teacher-documents`, `PUT /api/v1/lms/faculty/ai/teacher-documents/{documentId}`, and `POST .../{documentId}/archive`, with the same rule as the other Teacher AI (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, and the faculty access policy; the course comes from the stored document). No new permission.
 
 ### Student notes (v0.13.6)
 
@@ -224,7 +224,7 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 
 ### Controls and limits (v0.13.7)
 
-- **Per-course switch.** Faculty who teach a course turn the student AI Study Assistant off or on from AI Tools (`PUT /api/v1/lms/faculty/courses/{id}/ai/student-access`, the AI Tools rule). It is on unless a row in `ai_course_controls` says otherwise. While it is off, students' questions, summaries, and practice answer 409 "The AI Study Assistant is turned off for this course." after the access check; AI Tools and students' notes keep working.
+- **Per-course switch.** Faculty who teach a course turn the student AI Study Assistant off or on from Teacher AI (`PUT /api/v1/lms/faculty/courses/{id}/ai/student-access`, the Teacher AI rule). It is on unless a row in `ai_course_controls` says otherwise. While it is off, students' questions, summaries, and practice answer 409 "The AI Study Assistant is turned off for this course." after the access check; Teacher AI and students' notes keep working.
 - **One at a time, with a queue.** `AiRequestLimiter` lets each account run one AI request at a time and the backend run at most `AI_MAX_CONCURRENT_REQUESTS` (4) at once. Others wait their turn, first come first served, for up to `AI_QUEUE_WAIT` (60 s), then answer 429 ("Your previous AI request is still running…" or "AI is busy right now…"). The limits are held in memory, per backend instance.
 - **Request log without content.** `AiRequestGate` writes one `ai_request_log` row per question, summary, practice set, or assessment draft: the kind, the course, the outcome (`SUCCEEDED`, `INSUFFICIENT_CONTEXT`, `REFUSED`, `BUSY`, `FAILED`), the duration, and the time. Never the question, the answer, the sources, or who asked. A course the caller may not use (404) and requests while AI is off are not logged. Rows older than `AI_REQUEST_LOG_RETENTION` (90 days) are removed hourly while AI is on.
 - **AI health for admins.** The system health page's AI card reads `GET /api/v1/admin/system/ai` (`ADMIN` with `SYSTEM_HEALTH_VIEW`): whether AI is on and the AI service answers, index states, refresh jobs live or from the last 24 hours, requests running and waiting now, the last 24 hours of requests by outcome and kind, the average answer time, and how many courses have the student assistant off. Numbers only.
@@ -246,19 +246,24 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 
 - **Bank types.** The AI service's `question-bank-draft` task drafts questions in the question bank's own types (single and multiple choice with their correct options, true/false with its answer, short answers with accepted answers, descriptive with marking guidance), each with an explanation, suggested marks, and the sources it cites. Only the requested types and questions citing a real allowed source are kept.
 - **Self-checked keys.** Every choice and true/false question is answered again by the model from its own cited sources, without the key (`answer_check`, temperature 0). A question whose answer differs from its key, or whose check gives no usable answer, is dropped and counted as `droppedForKeyMismatch`.
-- **Into the bank as Needs review.** `AiQuestionBankDraftService` checks faculty access and current AI knowledge, adds current teacher documents as an extra index, rebuilds every citation from Stacc's records, and saves the questions through `LmsQuestionBankService.addAiDrafts`: `NEEDS_REVIEW`, never offered for practice, marked as AI drafts with their sources. The difficulty is the requested one; marks are the suggestion, rounded to 2 places and at most 100. The route needs the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`, goes through `AiRequestGate` (kind `QUESTION_BANK`), and answers how many were added, dropped, or left out.
+- **Into the bank as Needs review.** `AiQuestionBankDraftService` checks faculty access and current AI knowledge, adds current teacher documents as an extra index, rebuilds every citation from Stacc's records, and saves the questions through `LmsQuestionBankService.addAiDrafts`: `NEEDS_REVIEW`, never offered for practice, marked as AI drafts with their sources. The difficulty is the requested one; marks are the suggestion, rounded to 2 places and at most 100. The route needs the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE`, goes through `AiRequestGate` (kind `QUESTION_BANK`), and answers how many were added, dropped, or left out.
 
 ### Quiz drafts (v0.14.3)
 
-- **Bank first.** Build a draft quiz on AI Tools (`POST /api/v1/lms/faculty/courses/{id}/ai/quiz-draft`, the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`) picks reviewed, active bank questions of the chosen types, and of the difficulty and topic when given, at random; a practice quiz takes only questions offered for practice.
+- **Bank first.** Build a draft quiz on Teacher AI (`POST /api/v1/lms/faculty/courses/{id}/ai/quiz-draft`, the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`) picks reviewed, active bank questions of the chosen types, and of the difficulty and topic when given, at random; a practice quiz takes only questions offered for practice.
 - **AI only for gaps.** When the bank is short and the teacher ticked "Let AI draft questions the bank is short of", up to 10 questions are drafted through Draft into the question bank (Needs review, with sources and checks). If AI is off or refuses, the quiz is still made from the bank and the reply says why.
 - **An ordinary draft quiz.** The quiz is created and filled only through `LmsQuizService` (`create`, `addQuestion` with the bank's marks), so every quiz rule applies; publishing still needs every question reviewed. When nothing matches and AI added nothing, no quiz is made (409).
 
 ### Answers and rubrics (v0.14.5)
 
-- **Model answers on request.** On a short-answer or descriptive bank question, Suggest a model answer (`POST /api/v1/lms/faculty/ai/questions/{id}/model-answer`, the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`; the course from the stored question) gives a model answer and up to 8 key points from the course's published content, with sources, or insufficient context. Nothing is saved; the teacher copies what they want into the marking guidance with the normal Edit, which needs a new review.
-- **Rubric suggestions.** On the Rubrics page, Suggest a rubric with AI (`POST /api/v1/lms/faculty/ai/assignments/{id}/rubric-suggestion`, the AI Tools rule plus `LMS_ASSIGNMENT_MANAGE`; the course from the stored assignment) suggests 2 to 8 criteria with up to 4 levels. The AI service scales the points to the assignment's maximum marks and the backend checks it again (the last criterion takes any rounding; levels never exceed their criterion; anything that does not add up is dropped as insufficient). Use in rubric form fills the normal rubric form; only Create rubric saves it.
+- **Model answers on request.** On a short-answer or descriptive bank question, Suggest a model answer (`POST /api/v1/lms/faculty/ai/questions/{id}/model-answer`, the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE`; the course from the stored question) gives a model answer and up to 8 key points from the course's published content, with sources, or insufficient context. Nothing is saved; the teacher copies what they want into the marking guidance with the normal Edit, which needs a new review.
+- **Rubric suggestions.** On the Rubrics page, Suggest a rubric with AI (`POST /api/v1/lms/faculty/ai/assignments/{id}/rubric-suggestion`, the Teacher AI rule plus `LMS_ASSIGNMENT_MANAGE`; the course from the stored assignment) suggests 2 to 8 criteria with up to 4 levels. The AI service scales the points to the assignment's maximum marks and the backend checks it again (the last criterion takes any rounding; levels never exceed their criterion; anything that does not add up is dropped as insufficient). Use in rubric form fills the normal rubric form; only Create rubric saves it.
 - Both go through `AiRequestGate` (kinds `MODEL_ANSWER` and `RUBRIC`).
+
+### Teacher AI pages (v0.14.6)
+
+- **One area.** The course navigation's Teacher AI item opens one area at `/teaching/:lmsCourseId/ai` with a tab per section, each its own address: Knowledge (status, the student assistant switch, refresh, and teacher-only documents), Question bank (`/ai/bank`, draft into the bank), Quizzes (`/ai/quizzes`, build a draft quiz), Assignments (`/ai/assignments`, the assessment draft and Use in assignment form), and More (`/ai/more`, links to the AI help on the Question bank, Rubrics, Exam papers, and Files pages).
+- It replaces the single long page of panels; every panel, route, and rule is unchanged.
 
 ### What a refresh does
 
@@ -366,7 +371,7 @@ All need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE`, and access thr
   - has Ask, Topic summary, and Practice questions, with "For practice only — does not affect your grade." and Show answer;
   - sends nothing while typing; answers render as plain text;
   - keeps no chat history.
-- **`/teaching/:lmsCourseId/ai`** (**AI Tools**, linked from the faculty course page):
+- **`/teaching/:lmsCourseId/ai`** (**Teacher AI**, linked from the faculty course page):
   - shown to accounts holding `FACULTY`;
   - has Course AI Knowledge (status, "Content changed — refresh required", Refresh AI knowledge) and the Assessment Draft Generator.
 - **Errors:**

@@ -32,7 +32,7 @@
 - **0.13.2:** separate AI index kinds, and every AI request limited to the sources allowed right now.
 - **0.13.3:** better AI extraction: token-measured chunks that follow headings and slides, PDF header and footer cleaning, and "Exclude from AI" on study materials.
 - **0.13.4:** hybrid AI search: keyword matching for exact course terms merged with semantic search.
-- **0.13.5:** teacher-only documents that only AI Tools read, in their own index.
+- **0.13.5:** teacher-only documents that only Teacher AI read, in their own index.
 - **0.13.6:** private student notes with a "Course + my notes" mode, labelled citations, and true deletion.
 - **0.13.7:** AI controls and limits: a per-course switch, one request at a time per person with a queue, a request log without content, and AI health for admins.
 - **0.13.8:** an AI retrieval evaluation with expected sources, and leakage tests, run with the fake model.
@@ -42,6 +42,7 @@
 - **0.14.3:** draft quizzes built from reviewed bank questions first, with AI only for gaps.
 - **0.14.4:** exam paper sets from one blueprint, what the bank has per row, and AI drafts for short rows.
 - **0.14.5:** AI model answers for bank questions and rubric suggestions for assignments, shown only to the teacher.
+- **0.14.6:** one Teacher AI area per course with a tab per section, replacing the long AI tools page.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
