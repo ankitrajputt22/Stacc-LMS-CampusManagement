@@ -36,7 +36,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 class AiControllerTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW", "AI_STUDY_USE");
-    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE");
+    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE",
+            "LMS_QUIZ_MANAGE");
 
     @MockitoBean
     private LmsStudentAccessService studentAccess;
@@ -106,6 +107,18 @@ class AiControllerTest extends DatabaseFreeApiTest {
             assertThat(statusOf(json(post(route), bad), FACULTY)).isEqualTo(400);
         }
         assertThat(statusOf(json(post(route), body), FACULTY)).isEqualTo(503);
+    }
+
+    @Test
+    void quizDraftsNeedTheQuizAndBankPermissionsAndValidSettings() throws Exception {
+        String route = "/api/v1/lms/faculty/courses/7/ai/quiz-draft";
+        String body = "{\"title\":\"Test\",\"type\":\"GRADED\",\"questionCount\":3,\"questionTypes\":[\"TRUE_FALSE\"],\"fillGapsWithAi\":false}";
+        assertThat(statusOf(json(post(route), body), token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE",
+                "LMS_QUESTION_BANK_MANAGE"))).isEqualTo(403);
+        for (String bad : List.of(body.replace("\"questionCount\":3", "\"questionCount\":31"), body.replace("Test", ""),
+                body.replace("[\"TRUE_FALSE\"]", "[]"), body.replace("GRADED", "EXAM"))) {
+            assertThat(statusOf(json(post(route), bad), FACULTY)).isEqualTo(400);
+        }
     }
 
     @Test

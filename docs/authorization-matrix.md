@@ -410,6 +410,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/question-bank` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/quiz-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE') and hasAuthority('LMS_QUIZ_MANAGE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/status` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/student-access` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |

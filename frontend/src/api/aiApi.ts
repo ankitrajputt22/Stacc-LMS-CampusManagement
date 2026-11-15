@@ -8,6 +8,7 @@ import type {
   AiKnowledgeSync,
   AiPracticeSet,
   AiQuestionBankDraft,
+  AiQuizDraft,
   AiStudentNote,
   AiTeacherDocument,
   AiTopicSummary,
@@ -131,4 +132,20 @@ export async function draftIntoQuestionBank(
 ): Promise<AiQuestionBankDraft> {
   const body = { ...input, ...(input.topicId === null ? { topicId: undefined } : {}) }
   return (await apiClient.post<AiQuestionBankDraft>(`/lms/faculty/courses/${lmsCourseId}/ai/question-bank`, body, { signal })).data
+}
+
+/** Builds an ordinary draft quiz from reviewed bank questions, with AI only for gaps when allowed (v0.14.3). */
+export async function draftQuiz(
+  lmsCourseId: number,
+  input: {
+    title: string
+    type: 'GRADED' | 'PRACTICE'
+    questionCount: number
+    questionTypes: QuestionType[]
+    difficulty: QuestionDifficulty | null
+    fillGapsWithAi: boolean
+  },
+  signal?: AbortSignal,
+): Promise<AiQuizDraft> {
+  return (await apiClient.post<AiQuizDraft>(`/lms/faculty/courses/${lmsCourseId}/ai/quiz-draft`, input, { signal })).data
 }

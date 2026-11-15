@@ -248,6 +248,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Self-checked keys.** Every choice and true/false question is answered again by the model from its own cited sources, without the key (`answer_check`, temperature 0). A question whose answer differs from its key, or whose check gives no usable answer, is dropped and counted as `droppedForKeyMismatch`.
 - **Into the bank as Needs review.** `AiQuestionBankDraftService` checks faculty access and current AI knowledge, adds current teacher documents as an extra index, rebuilds every citation from Stacc's records, and saves the questions through `LmsQuestionBankService.addAiDrafts`: `NEEDS_REVIEW`, never offered for practice, marked as AI drafts with their sources. The difficulty is the requested one; marks are the suggestion, rounded to 2 places and at most 100. The route needs the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE`, goes through `AiRequestGate` (kind `QUESTION_BANK`), and answers how many were added, dropped, or left out.
 
+### Quiz drafts (v0.14.3)
+
+- **Bank first.** Build a draft quiz on AI Tools (`POST /api/v1/lms/faculty/courses/{id}/ai/quiz-draft`, the AI Tools rule plus `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`) picks reviewed, active bank questions of the chosen types, and of the difficulty and topic when given, at random; a practice quiz takes only questions offered for practice.
+- **AI only for gaps.** When the bank is short and the teacher ticked "Let AI draft questions the bank is short of", up to 10 questions are drafted through Draft into the question bank (Needs review, with sources and checks). If AI is off or refuses, the quiz is still made from the bank and the reply says why.
+- **An ordinary draft quiz.** The quiz is created and filled only through `LmsQuizService` (`create`, `addQuestion` with the bank's marks), so every quiz rule applies; publishing still needs every question reviewed. When nothing matches and AI added nothing, no quiz is made (409).
+
 ### What a refresh does
 
 1. Faculty access is checked.

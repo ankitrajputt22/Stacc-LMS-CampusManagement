@@ -7,6 +7,8 @@ final class AiAccess {
     static final String FACULTY = "hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')";
     /** Drafting into the question bank (v0.14.1) also needs the bank's own permission. */
     static final String FACULTY_BANK = FACULTY + " and hasAuthority('LMS_QUESTION_BANK_MANAGE')";
+    /** Quiz drafts (v0.14.3) read the bank and make a quiz, so they need both permissions. */
+    static final String FACULTY_QUIZ = FACULTY_BANK + " and hasAuthority('LMS_QUIZ_MANAGE')";
 
     private AiAccess() {
     }
