@@ -77,6 +77,15 @@ export type AiQuestionBankDraft = {
   questionIds: number[]
 }
 
+/** The draft quiz built from the bank, with AI only for gaps (v0.14.3). */
+export type AiQuizDraft = {
+  quizId: number
+  fromBank: number
+  fromAi: number
+  missing: number
+  aiNote: string | null
+}
+
 /** One of the signed-in student's private notes in a course (v0.13.6). */
 export type AiStudentNote = {
   id: number

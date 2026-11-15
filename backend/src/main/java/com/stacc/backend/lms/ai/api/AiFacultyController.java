@@ -37,10 +37,35 @@ public class AiFacultyController {
 
     private final AiFacultyService faculty;
     private final AiQuestionBankDraftService bankDrafts;
+    private final AiQuizDraftService quizDrafts;
 
-    public AiFacultyController(AiFacultyService faculty, AiQuestionBankDraftService bankDrafts) {
+    public AiFacultyController(AiFacultyService faculty, AiQuestionBankDraftService bankDrafts, AiQuizDraftService quizDrafts) {
         this.faculty = faculty;
         this.bankDrafts = bankDrafts;
+        this.quizDrafts = quizDrafts;
+    }
+
+    @PostMapping("/quiz-draft")
+    @PreAuthorize(AiAccess.FACULTY_QUIZ)
+    @Operation(
+            summary = "Build a draft quiz from the question bank, with AI only for gaps",
+            description = "Picks reviewed, active bank questions of the chosen types (and difficulty and topic, when given; "
+                    + "offered for practice, for a practice quiz) at random. When the bank is short and fillGapsWithAi is set, "
+                    + "AI drafts up to 10 more into the bank as Needs review. Creates an ordinary draft quiz with them; "
+                    + "publishing still needs every question reviewed.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The draft quiz and where its questions came from.")
+    @ApiResponse(responseCode = "400", description = "A setting is missing or out of range.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "The account is not allowed to use this operation.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "The course does not exist or is not taught by this faculty member.",
+            content = @Content(mediaType = ERROR, schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AiQuizDraftResponse quizDraft(@PathVariable Long lmsCourseId, @Valid @RequestBody AiQuizDraftRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return quizDrafts.draft(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
     }
 
     @PostMapping("/question-bank")
