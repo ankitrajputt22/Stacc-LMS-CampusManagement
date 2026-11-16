@@ -205,6 +205,7 @@ export const queryKeys = {
     courseFiles: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'files'] as const,
     facultyCourseFiles: (lmsCourseId: number) => ['lms', 'faculty-courses', lmsCourseId, 'files'] as const,
     myNotes: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'ai', 'notes'] as const,
+    mastery: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'ai', 'mastery'] as const,
     courseAssignments: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'assignments'] as const,
     savedAnswers: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'ai', 'saved-answers'] as const,
     flashcardSets: (lmsCourseId: number) => ['lms', 'courses', lmsCourseId, 'ai', 'flashcard-sets'] as const,

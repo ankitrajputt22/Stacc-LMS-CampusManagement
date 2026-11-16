@@ -141,6 +141,7 @@ import com.stacc.backend.lms.ai.control.AiRequestLogRepository;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexRepository;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardRepository;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardSetRepository;
+import com.stacc.backend.lms.ai.mastery.AiLearningEvidenceRepository;
 import com.stacc.backend.lms.ai.saved.AiSavedAnswerRepository;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteRepository;
 import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentRepository;
@@ -198,6 +199,7 @@ import org.springframework.web.context.WebApplicationContext;
     AiCourseControlRepository.class,
     AiRequestLogRepository.class,
     AiSavedAnswerRepository.class,
+    AiLearningEvidenceRepository.class,
     AiFlashcardSetRepository.class,
     AiFlashcardRepository.class,
     AcademicSessionRepository.class,

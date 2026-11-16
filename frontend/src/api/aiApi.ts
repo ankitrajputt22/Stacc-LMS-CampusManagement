@@ -25,6 +25,7 @@ import type {
   AiSummaryScope,
   AiSummaryStyle,
   AiTeacherDocument,
+  AiTopicMastery,
   AiTopicSummary,
   ReviewRating,
 } from '../types/ai'
@@ -244,5 +245,15 @@ export async function evaluatePracticeAnswer(
   signal?: AbortSignal,
 ): Promise<AiEvaluation> {
   return (await apiClient.post<AiEvaluation>(`/lms/courses/${lmsCourseId}/ai/practice/evaluate`, input, { signal })).data
+}
+
+/** The signed-in student's mastery of each published page of the course (v0.15.5). */
+export async function getMastery(lmsCourseId: number, signal?: AbortSignal): Promise<AiTopicMastery[]> {
+  return (await apiClient.get<AiTopicMastery[]>(`/lms/courses/${lmsCourseId}/ai/mastery`, { signal })).data
+}
+
+/** Clears the student's learning evidence in the course for good. */
+export async function clearMastery(lmsCourseId: number): Promise<void> {
+  await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/mastery`)
 }
 

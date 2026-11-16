@@ -47,6 +47,7 @@
 - **0.15.2:** summaries of a page, a module, or a file, brief, detailed, or as revision notes.
 - **0.15.3:** flashcard sets made with AI and reviewed with spaced repetition.
 - **0.15.4:** practice, mock exams, and viva with AI marking and mistake explanations, hint-only help for open assignments, and AI paused during a graded quiz.
+- **0.15.5:** learning evidence from practice and flashcards, with each student's own mastery per page.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
