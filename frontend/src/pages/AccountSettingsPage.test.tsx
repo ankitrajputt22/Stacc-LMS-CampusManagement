@@ -27,7 +27,7 @@ const auth: AuthContextValue = {
 
 const profile = {
   loginId: 'student1', displayName: 'Aarav Sharma', recorded: true, fullName: 'Aarav Sharma', preferredName: null,
-  email: 'aarav@college.example', phone: null, hasPhoto: false,
+  email: 'aarav@college.example', phone: null, hasPhoto: false, mailingAddress: null, emergencyContacts: [],
 }
 
 function renderPage() {

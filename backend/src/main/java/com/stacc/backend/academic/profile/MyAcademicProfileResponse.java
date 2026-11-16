@@ -51,8 +51,9 @@ public record MyAcademicProfileResponse(
             @Schema(example = "Data Structures") String courseName,
             @Schema(example = "4.00") BigDecimal credits,
             @Schema(allowableValues = {"CORE", "ELECTIVE", "LAB", "PROJECT", "AUDIT"}) String courseType,
-            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN"}) String status,
-            @Schema(description = "The published result, or null when none is published.") Result result) {
+            @Schema(allowableValues = {"ENROLLED", "COMPLETED", "WITHDRAWN", "DROPPED"}) String status,
+            @Schema(description = "The published result, or null when none is published.") Result result,
+            @Schema(description = "Who teaches the offering now, primary teacher first, by name.") List<String> teachers) {
     }
 
     public record Result(

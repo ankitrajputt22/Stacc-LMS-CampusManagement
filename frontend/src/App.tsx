@@ -11,6 +11,11 @@ import { TeachingCourseLayout } from './teaching/TeachingCourseLayout'
 
 // Pages load on first use, so the first screen downloads only what it needs.
 const AcademicAdminPage = lazy(() => import('./pages/AcademicAdminPage').then((module) => ({ default: module.AcademicAdminPage })))
+const ErpHomePage = lazy(() => import('./erp/ErpHomePage').then((module) => ({ default: module.ErpHomePage })))
+const ErpProfilePage = lazy(() => import('./erp/ErpProfilePage').then((module) => ({ default: module.ErpProfilePage })))
+const ErpTimetablePage = lazy(() => import('./erp/ErpTimetablePage').then((module) => ({ default: module.ErpTimetablePage })))
+const ErpDegreeProgressPage = lazy(() => import('./erp/ErpDegreeProgressPage').then((module) => ({ default: module.ErpDegreeProgressPage })))
+const ErpAcademicsPage = lazy(() => import('./erp/ErpAcademicsPage').then((module) => ({ default: module.ErpAcademicsPage })))
 const AcademicProfilePage = lazy(() => import('./pages/AcademicProfilePage').then((module) => ({ default: module.AcademicProfilePage })))
 const CourseFilesPage = lazy(() => import('./pages/CourseFilesPage').then((module) => ({ default: module.CourseFilesPage })))
 const CourseSyllabusPage = lazy(() => import('./pages/CourseSyllabusPage').then((module) => ({ default: module.CourseSyllabusPage })))
@@ -191,6 +196,14 @@ function App() {
           <Route path="assignments" element={<AssignmentsPage />} />
           <Route path="attendance" element={<AttendancePage />} />
           <Route path="attendance/:courseOfferingId" element={<CourseAttendancePage />} />
+          <Route path="erp" element={<ErpHomePage />} />
+          <Route path="erp/profile" element={<ErpProfilePage />} />
+          <Route path="erp/academics" element={<ErpAcademicsPage />} />
+          <Route path="erp/academics/timetable" element={<ErpTimetablePage />} />
+          <Route path="erp/academics/degree-progress" element={<ErpDegreeProgressPage />} />
+          <Route path="erp/timetable" element={<ErpTimetablePage teaching />} />
+          <Route path="erp/attendance" element={<StudentAttendancePage />} />
+          <Route path="erp/exams" element={<StudentResultsPage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />
           <Route path="academic/analytics" element={<StudentAnalyticsPage />} />

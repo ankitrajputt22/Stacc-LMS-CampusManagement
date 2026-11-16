@@ -133,7 +133,7 @@
 - Creating a session snapshots the offering's currently `ENROLLED` course enrollments in the same transaction. Later enrollment changes never alter an existing roster, and faculty never add or remove students.
 - Records start `UNMARKED`, never `ABSENT`. Saves name records by `attendanceRecordId` only, each once and from that session. The server sets `markedBy` and `markedAt`.
 - Finalizing needs every record `PRESENT` or `ABSENT`. Students see only `FINALIZED` sessions, which can still be corrected between `PRESENT` and `ABSENT`, never back to `UNMARKED`.
-- Never reopen or hard-delete sessions or records, and never store the attendance percentage. Do not add attendance thresholds, notifications, self check-in, QR, location, or biometrics without their own phase.
+- Never reopen or hard-delete sessions or records, and never store the attendance percentage. The college minimum is 75% (`StudentAttendanceQueryService.MINIMUM_PERCENT`, v0.16): the student response marks a course `lowAttendance` below it, worked out on read. Do not add other thresholds, notifications, self check-in, QR, location, or biometrics without their own phase.
 - Faculty routes need `FACULTY` and `ATTENDANCE_MANAGE`; `GET /api/v1/attendance/student/me` needs `STUDENT` and `ATTENDANCE_VIEW` and takes the student from the access token.
 
 ## Results
@@ -144,7 +144,7 @@
 - New results start `DRAFT`. Students see only `PUBLISHED` results. Published corrections stay published and keep the first `publishedAt`. Never delete, unpublish, or archive a result.
 - New results need an `ENROLLED` or `COMPLETED` enrollment; existing results stay after any later enrollment change.
 - Faculty routes need `FACULTY` and `ACADEMIC_RESULT_MANAGE` plus `FacultyTeachingAccessService` for the offering in the route, and the enrollment must belong to that offering. `GET /api/v1/results/student/me` needs `STUDENT` and `ACADEMIC_RESULT_VIEW` and takes the student from the access token. No admin pass.
-- Do not add GPA, SGPA, CGPA, ranks, pass or fail, approval workflows, or revision history without their own phase.
+- SGPA and CGPA (v0.16.3) come only from `AcademicStandingService`: the `grade_scale` reference data (10-point scale, O to F) and course credits, worked out on read and never stored; a result's grade is its entered code when the scale knows it, else the grade its percentage reaches, and an unknown code is left out of the averages. Do not add ranks, approval workflows, or revision history without their own phase.
 
 ## Academic Calendar
 
@@ -232,7 +232,7 @@
 ## Frontend Authentication
 
 - Sign-in is one form at `/login` with a college ID or employee ID and a password. There is no public signup and no role selector, and the frontend never chooses a role.
-- `/login` is the front page with two choices, ERP Login and LMS Login (`?portal=erp` or `?portal=lms`), both opening that same form. The portal only picks the landing page (ERP: Dashboard; LMS: Courses or Teaching for a single-role account, otherwise the Dashboard), never a role or permission. Use Stacc's own name, emblem, and `--color-portal-*` colours; never copy another institution's branding.
+- `/login` is the front page: one sign-in for everything (v0.16), with help cards and no portal choice. Signing in opens the page asked for, else the Overview; an old `?portal=lms` link still lands a single-role account on Courses or Teaching (`login/landing.ts`), never a role or permission. Use Stacc's own name, emblem, and `--color-portal-*` colours; never copy another institution's branding.
 - Frontend route guards and stored roles are for the interface only. They are not security: the backend checks every request.
 - The frontend never sees or stores the token: it lives in the HttpOnly session cookie. On load `AuthProvider` asks `GET /api/v1/auth/session` once and shows nothing protected while it checks; nothing about the session goes into `localStorage` or `sessionStorage`. Signing out calls the backend and forgets the session whatever the answer. Do not add "remember me" or refresh tokens.
 - Never store a password, a signing secret, or any other secret in frontend code or storage.
@@ -244,7 +244,7 @@
 - Users never select or switch roles. The roles come from the login answer and are read in one place, `src/auth/roles.ts`.
 - Support accounts with several roles. Never treat `roles[0]` or any other role as the main one; show every role's section in the fixed order Student, Faculty, Admin.
 - Role-aware navigation is for the interface only, never authorization. Every feature must be protected by the backend whether or not its item is visible.
-- The navigation is one list in `src/components/navigation/navigation.ts`, shared by the desktop navigation rail (`GlobalNav`, Canvas style: Account tray, Dashboard, one tray per role section named for its work — Academics for `STUDENT`, Teaching for `FACULTY`, Manage for `ADMIN` — then the Common links) and the mobile drawer. Do not create navigation per role, do not repeat shared items for multi-role accounts, and add only features Stacc has.
+- The navigation is one list in `src/components/navigation/navigation.ts`, shared by the navy sidebar of wide screens and the phone drawer (`Sidebar.tsx`, v0.16): Overview, then collapsible groups Learning (`STUDENT`), Teaching (`FACULTY`), ERP (its title links to `/erp`), Manage (`ADMIN`), Campus, Services, and Career, in that fixed order; empty groups are dropped. The white `TopBar` shows the breadcrumb (`breadcrumbFor`), Search, Calendar, the Inbox with the shared count, and the account menu (`Account` button). Do not create navigation per role, do not repeat shared items for multi-role accounts, and add only features Stacc has.
 - Page titles are large, bold, and Stacc navy (`text-3xl font-bold text-portal-navy`). Dashboards show course cards with one steady colour per course (`courseColors.ts`) and upcoming work planner style (`PlannerList`), with only what the API sends.
 - An upcoming item is shown as "Soon" and is not a link. Do not create placeholder pages or routes for it.
 - Do not build role-specific dashboards or role route trees before their roadmap phases. The student, faculty, and admin dashboards render on `/`, one part per role the account holds, in the fixed order Student, Faculty, Admin; never pick a role with `roles[0]`, and add no role switcher.
@@ -282,6 +282,12 @@
 - Campus is one page per `UserAccount` at `/campus` in the Common section for `STUDENT`, `FACULTY`, or `ADMIN`: services and own requests for accounts holding `STUDENT` or `FACULTY`, notices for all; requests open at `/campus/requests/:requestId`. Admins use `/admin/campus/:section` (Campus Management) with review at `/admin/campus/requests/:requestId`. Show the request status and the approval status as separate words, decide only through `approveTask` and `rejectTask`, choose workflows from the approval admin list, confirm cancelling, completing, publishing, and archiving, and offer no Delete or Restore. Shared approval UI lives in `src/approvals/`. See `docs/campus-services.md`.
 - `/academic/profile` is the student's and faculty member's own read-only academic profile, linked from the Account menu (not repeated in the role sections), with a part per role held in the order Student, Faculty. It shows only what `GET /api/v1/academic/me` sends, including the head of department by name: no GPA, percentages, or pass or fail.
 - Admins manage calendar events at `/admin/academic/calendar` with Add (as a draft), Edit, Publish, and Cancel event, each change confirmed, and never a Delete. A published event's session and semester are shown but cannot be changed.
+
+## ERP Section
+
+- The ERP (v0.16, `docs/erp.md`) is a section of the one app, never a second login: `/erp` (hub with live summaries and alerts), `/erp/profile` (official details read-only; preferred name, phone, mailing address, and up to three emergency contacts kept by the person), `/erp/academics` with tabs Registered courses, Timetable, Degree progress, and Calendar, `/erp/attendance`, `/erp/exams`, and `/erp/timetable` for faculty. Build every figure from the backend; show nothing it does not send.
+- The class timetable (`academic.timetable`) is weekly slots of course offerings (day, times in the college time zone, room, kind), added and removed (kept with `removed_at`) by admins with `ACADEMIC_TIMETABLE_VIEW`/`_MANAGE`; adding locks the academic session row and then reads that day's slots, so a room or a class of students is never booked twice. `GET /api/v1/timetable/me` (`TIMETABLE_VIEW_OWN`) gives students their enrolled offerings and faculty those they teach.
+- Degree requirements (`academic.curriculum`) are credits per course type per program, set (never removed) under the program row lock with the academic master permissions. Progress is worked out on read from passed, published results, each course counted once.
 
 ## Student Dashboard
 

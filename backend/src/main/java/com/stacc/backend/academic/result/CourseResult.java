@@ -65,6 +65,18 @@ public class CourseResult {
     @Column(length = MAX_REMARKS_LENGTH)
     private String remarks;
 
+    @Column(name = "internal_marks", precision = 8, scale = MARK_DECIMAL_PLACES)
+    private BigDecimal internalMarks;
+
+    @Column(name = "internal_max", precision = 8, scale = MARK_DECIMAL_PLACES)
+    private BigDecimal internalMax;
+
+    @Column(name = "external_marks", precision = 8, scale = MARK_DECIMAL_PLACES)
+    private BigDecimal externalMarks;
+
+    @Column(name = "external_max", precision = 8, scale = MARK_DECIMAL_PLACES)
+    private BigDecimal externalMax;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private CourseResultStatus status = CourseResultStatus.DRAFT;
@@ -155,6 +167,47 @@ public class CourseResult {
 
     public BigDecimal getMaxMarks() {
         return maxMarks;
+    }
+
+    public BigDecimal getInternalMarks() {
+        return internalMarks;
+    }
+
+    public BigDecimal getInternalMax() {
+        return internalMax;
+    }
+
+    public BigDecimal getExternalMarks() {
+        return externalMarks;
+    }
+
+    public BigDecimal getExternalMax() {
+        return externalMax;
+    }
+
+    /**
+     * Records the marks as internal and external parts (v0.16.3): both parts or neither. With parts, the marks obtained
+     * and the maximum are their sums. Without, the parts are cleared.
+     */
+    public void recordSplit(BigDecimal internalMarks, BigDecimal internalMax, BigDecimal externalMarks, BigDecimal externalMax) {
+        if (internalMarks == null && internalMax == null && externalMarks == null && externalMax == null) {
+            this.internalMarks = null;
+            this.internalMax = null;
+            this.externalMarks = null;
+            this.externalMax = null;
+            return;
+        }
+        BigDecimal inMarks = validMarks(internalMarks, "internalMarks");
+        BigDecimal inMax = validMarks(internalMax, "internalMax");
+        BigDecimal exMarks = validMarks(externalMarks, "externalMarks");
+        BigDecimal exMax = validMarks(externalMax, "externalMax");
+        if (inMarks.compareTo(inMax) > 0 || exMarks.compareTo(exMax) > 0) {
+            throw new IllegalArgumentException("A part's marks must not exceed its maximum");
+        }
+        this.internalMarks = inMarks;
+        this.internalMax = inMax;
+        this.externalMarks = exMarks;
+        this.externalMax = exMax;
     }
 
     public String getGradeCode() {

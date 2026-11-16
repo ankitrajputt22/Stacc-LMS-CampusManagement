@@ -2,9 +2,9 @@ import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react'
 import { NavLink } from 'react-router'
 
 const tabBase =
-  'inline-flex min-h-11 shrink-0 items-center border-b-[3px] px-3 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-10'
+  'inline-flex min-h-12 shrink-0 items-center border-b-[3px] px-4 text-[0.95rem] font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-10'
 const tabIdle = 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
-const tabSelected = 'border-portal-navy text-portal-navy font-semibold'
+const tabSelected = 'border-portal-cta text-ink font-semibold'
 
 /** `current` overrides the address match, for a tab that stands for several pages, such as a group of sections. */
 export type LinkTab = { to: string; label: string; end?: boolean; current?: boolean }

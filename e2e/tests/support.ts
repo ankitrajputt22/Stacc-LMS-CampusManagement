@@ -9,18 +9,21 @@ export function password(): string {
   return value
 }
 
-/** Signs in through the ERP or LMS entry point, the way a person does. */
-export async function signIn(page: Page, portal: 'erp' | 'lms', loginId: string, withPassword = password()): Promise<void> {
-  await page.goto(`/login?portal=${portal}`)
+/**
+ * Signs in at the one sign-in page, the way a person does. An `lms` entry uses an old LMS link, which lands a student
+ * on Courses and a teacher on Teaching; `erp` lands on the Overview.
+ */
+export async function signIn(page: Page, entry: 'erp' | 'lms', loginId: string, withPassword = password()): Promise<void> {
+  await page.goto(`/login?portal=${entry}`)
   await page.getByLabel('College ID / Employee ID').fill(loginId)
   await page.getByLabel('Password', { exact: true }).fill(withPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).not.toHaveURL(/\/login/)
 }
 
-/** Signs out from the Account tray of the navigation rail. */
+/** Signs out from the account menu in the top bar. */
 export async function signOut(page: Page): Promise<void> {
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Account' }).click()
+  await page.getByRole('button', { name: 'Account', exact: true }).click()
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expect(page).toHaveURL(/\/login/)
 }
