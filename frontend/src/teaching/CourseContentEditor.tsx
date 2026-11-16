@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useRef, useState } from 'react'
 import {
   archiveModule,
@@ -122,11 +123,12 @@ function TopicItem({
   return (
     <article aria-labelledby={`${key}-title`} className="py-3">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <NavIcon name="documents" className="size-4 shrink-0 text-ink-muted" />
         <h4
           id={`${key}-title`}
           tabIndex={-1}
           data-focus-key={`${key}-heading`}
-          className="text-sm font-semibold break-words text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+          className="text-[0.95rem] font-semibold break-words text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
         >
           {topic.title}
         </h4>
@@ -262,7 +264,10 @@ function ModuleItem({
   }
 
   return (
-    <section aria-labelledby={`${key}-title`} className="rounded-panel border border-line bg-surface">
+    <section
+      aria-labelledby={`${key}-title`}
+      className={`rounded-panel border border-l-4 border-line bg-surface ${module.status === 'PUBLISHED' ? 'border-l-teal-600' : 'border-l-amber-400'}`}
+    >
       <div className="px-4 py-3 sm:px-5">
         {isEditing ? (
           <ContentForm
@@ -295,13 +300,13 @@ function ModuleItem({
           />
         ) : (
           <>
-            <p className="text-xs font-semibold tracking-[0.04em] text-ink-muted">Module {index + 1}</p>
+            <p className="text-xs font-semibold tracking-[0.04em] text-ink-muted uppercase">Module {index + 1}</p>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               <h3
                 id={`${key}-title`}
                 tabIndex={-1}
                 data-focus-key={`${key}-heading`}
-                className="text-base font-semibold break-words text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+                className="text-lg font-bold break-words text-portal-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
               >
                 {module.title}
               </h3>
@@ -384,7 +389,7 @@ function ModuleItem({
       {/* Topics sit inside their module, set in by a line, so the hierarchy reads at any width. */}
       <div className="border-t border-line px-4 pb-3 sm:px-5">
         {module.topics.length > 0 ? (
-          <ol aria-label={`Pages in ${module.title}`} className="divide-y divide-line border-l-2 border-line pl-3 sm:pl-4">
+          <ol aria-label={`Pages in ${module.title}`} className="divide-y divide-line">
             {module.topics.map((topic, topicIndex) => (
               <li key={topic.id}>
                 <TopicItem

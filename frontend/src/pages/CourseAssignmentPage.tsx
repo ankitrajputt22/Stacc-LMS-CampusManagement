@@ -18,6 +18,9 @@ import { bloomLabel } from '../courses/bloomText'
 import { FormattedText } from '../formatting/FormattedText'
 import { RubricView } from '../courses/RubricView'
 import { ButtonLink, Card, PageHeader } from '../ui'
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
+import { courseBanner } from '../courses/courseFactsLine'
+import { useLmsCourse } from '../courses/useLmsCourse'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -62,11 +65,14 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
   )
 }
 
-function InformationRow({ term, children }: { term: string; children: ReactNode }) {
+function Fact({ icon, term, children }: { icon: NavIconName; term: string; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5 px-4 py-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4 sm:px-5">
-      <dt className="text-sm text-ink-muted">{term}</dt>
-      <dd className="flex flex-wrap items-center gap-2 text-sm break-words text-ink">{children}</dd>
+    <div className="flex min-w-0 gap-2.5 py-2 sm:pr-5">
+      <NavIcon name={icon} className="mt-0.5 size-5 shrink-0 text-ink-muted" />
+      <div className="min-w-0">
+        <dt className="text-sm font-semibold text-ink">{term}</dt>
+        <dd className="flex flex-wrap items-center gap-2 text-sm break-words text-ink">{children}</dd>
+      </div>
     </div>
   )
 }
@@ -77,63 +83,76 @@ function InformationRow({ term, children }: { term: string; children: ReactNode 
  */
 function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetail }) {
   const [now] = useState(() => Date.now())
+  // The course itself comes from the shared cache the course layout already filled.
+  const course = useLmsCourse(assignment.lmsCourseId)
 
   return (
-    <div className="max-w-3xl">
+    <div>
       <title>{`${assignment.title} · ${assignment.courseName} · Stacc`}</title>
-      <PageHeader
-        breadcrumb={
-          <Breadcrumb
-            parent={[COURSES, { to: coursePath(assignment.lmsCourseId), label: assignment.courseName }]}
-            current={assignment.title}
-          />
-        }
-        eyebrow={
-          <>
-            {assignment.courseCode}
-            <span aria-hidden="true"> · </span>
-            <span className="sr-only">, </span>
-            {assignment.courseName}
-          </>
-        }
-        title={assignment.title}
-      />
+      {course.status === 'loaded' ? (
+        <div className="mb-5">
+          <p className="text-2xl font-bold break-words text-portal-navy sm:text-3xl">{courseBanner(course.data).name}</p>
+          <p className="mt-1 break-words text-ink">{courseBanner(course.data).facts}</p>
+        </div>
+      ) : (
+        <p className="mb-5 text-2xl font-bold break-words text-portal-navy sm:text-3xl">{`${assignment.courseCode} ${assignment.courseName}`}</p>
+      )}
 
-      <dl className="divide-y divide-line rounded-panel border border-line bg-surface">
-        <InformationRow term="Due">
-          <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
-          {isPast(assignment.dueAt, now) && <PastDueLabel />}
-        </InformationRow>
-        <InformationRow term="Maximum marks">{marksText(assignment.maxMarks)}</InformationRow>
-        <InformationRow term="Published">
-          <time dateTime={assignment.publishedAt}>{formatDateTime(assignment.publishedAt)}</time>
-        </InformationRow>
-        {assignment.outcomes.length > 0 && (
-          <InformationRow term="Course outcomes">
-            <span>
-              {assignment.outcomes.map((outcome) => (
-                <span key={outcome.id} className="block">
-                  <span className="font-semibold">{outcome.code}</span> {outcome.description}
-                </span>
-              ))}
-            </span>
-          </InformationRow>
+      <section aria-labelledby="assignment-title" className="rounded-panel border border-line bg-surface px-5 py-4">
+        <h1 id="assignment-title" className="flex items-center gap-3 text-3xl font-bold tracking-tight break-words text-portal-navy">
+          <span aria-hidden="true" className="h-9 w-1.5 shrink-0 rounded bg-teal-600" />
+          {assignment.title}
+        </h1>
+        <dl className="mt-3 grid gap-x-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 2xl:divide-x 2xl:divide-line [&>*:not(:first-child)]:2xl:pl-5">
+          <Fact icon="calendar" term="Due">
+            <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
+            {isPast(assignment.dueAt, now) && <PastDueLabel />}
+          </Fact>
+          <Fact icon="exams" term="Maximum">
+            {marksText(assignment.maxMarks)}
+          </Fact>
+          {assignment.availableFrom && (
+            <Fact icon="calendar" term="Opens">
+              <time dateTime={assignment.availableFrom}>{formatDateTime(assignment.availableFrom)}</time>
+            </Fact>
+          )}
+          <Fact icon="attendance" term="Late work">
+            {!assignment.allowLateSubmissions
+              ? 'Not accepted after the due date'
+              : assignment.availableUntil
+                ? `Accepted until ${formatDateTime(assignment.availableUntil)}, marked late`
+                : 'Accepted, marked late'}
+          </Fact>
+          <Fact icon="todo" term="Attempts">
+            {assignment.maxAttempts === null ? 'Unlimited' : String(assignment.maxAttempts)}
+          </Fact>
+        </dl>
+        {(assignment.outcomes.length > 0 || assignment.bloomLevel) && (
+          <dl className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            {assignment.outcomes.length > 0 && (
+              <div>
+                <dt className="text-sm font-semibold text-ink">Course outcomes</dt>
+                <dd className="text-sm text-ink">
+                  {assignment.outcomes.map((outcome) => (
+                    <span key={outcome.id} className="block">
+                      <span className="font-semibold">{outcome.code}</span> {outcome.description}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            )}
+            {assignment.bloomLevel && (
+              <div>
+                <dt className="text-sm font-semibold text-ink">Bloom level</dt>
+                <dd className="text-sm text-ink">{bloomLabel(assignment.bloomLevel)}</dd>
+              </div>
+            )}
+          </dl>
         )}
-        {assignment.bloomLevel && <InformationRow term="Bloom level">{bloomLabel(assignment.bloomLevel)}</InformationRow>}
-        {assignment.availableFrom && (
-          <InformationRow term="Opens">
-            <time dateTime={assignment.availableFrom}>{formatDateTime(assignment.availableFrom)}</time>
-          </InformationRow>
-        )}
-        <InformationRow term="Late work">
-          {!assignment.allowLateSubmissions
-            ? 'Not accepted after the due date'
-            : assignment.availableUntil
-              ? `Accepted until ${formatDateTime(assignment.availableUntil)}, marked late`
-              : 'Accepted, marked late'}
-        </InformationRow>
-        <InformationRow term="Attempts">{assignment.maxAttempts === null ? 'Unlimited' : String(assignment.maxAttempts)}</InformationRow>
-      </dl>
+        <p className="mt-2 text-xs text-ink-muted">
+          Published <time dateTime={assignment.publishedAt}>{formatDateTime(assignment.publishedAt)}</time>
+        </p>
+      </section>
 
       <Card title="Instructions" className="mt-6">
         <div>

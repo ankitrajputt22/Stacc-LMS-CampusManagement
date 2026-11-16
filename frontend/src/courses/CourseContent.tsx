@@ -33,9 +33,12 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
     <section aria-labelledby={headingId} className="rounded-panel border border-line bg-surface shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
       <div className="relative mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pt-4 pb-3 sm:mx-5">
         <span aria-hidden="true" className="absolute -bottom-px left-0 h-0.5 w-12 bg-portal-cta" />
-        <h3 id={headingId} className="text-lg font-bold break-words text-ink">
-          {`Module ${number}: ${module.title}`}
-        </h3>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold tracking-[0.04em] text-ink-muted uppercase">Module {number}</p>
+          <h3 id={headingId} className="text-lg font-bold break-words text-ink">
+            {module.title}
+          </h3>
+        </div>
         {module.locked ? (
           <span className="inline-flex items-center gap-2 rounded-md bg-surface-muted px-2.5 py-1 text-sm text-ink">
             <Badge tone="neutral">Locked</Badge>
