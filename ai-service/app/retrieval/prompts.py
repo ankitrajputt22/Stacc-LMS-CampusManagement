@@ -23,7 +23,7 @@ sources do not contain enough information, set insufficientContext to true inste
 
 TASKS = {
     "ask": "Task: answer only the student's academic question about this course, in at most 250 words.",
-    "summary": "Task: summarise this topic for a student in at most 200 words, with up to 6 short key points.",
+    "summary": "Task: summarise these sources for a student. {styleInstruction}",
     "practice": "Task: write exactly {questionCount} practice questions with suggested answers. Every question "
                 "must be answerable from the sources, and each must list the sources it is based on.",
     "assessment_draft": "Task: draft an assessment of exactly {questionCount} questions for a teacher to review "
@@ -53,6 +53,13 @@ TASKS["rubric"] = (
     "Task: suggest a marking rubric for the assignment below with exactly {criteriaCount} criteria whose maxPoints add up "
     "to {maxMarks}. Give each criterion up to 4 levels, from best to weakest, each with points between 0 and the "
     "criterion's maxPoints. Base the criteria on the assignment and the course sources.")
+
+SUMMARY_STYLES = {
+    "BRIEF": "Write at most 200 words, with up to 6 short key points.",
+    "DETAILED": "Write a fuller explanation of at most 500 words, in the sources' order, with up to 8 key points.",
+    "REVISION_NOTES": "Write short revision notes of at most 300 words: the definitions and facts to remember, with up to "
+                      "8 key points a student can test themselves on.",
+}
 
 STYLES = {
     "SIMPLER": "Explain it more simply than before, in short sentences and everyday words, for a student who found it hard.",

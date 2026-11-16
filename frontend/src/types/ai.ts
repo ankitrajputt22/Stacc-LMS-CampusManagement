@@ -16,6 +16,21 @@ export type AiCitation = {
   pageId?: number | null
 }
 
+/** What a summary covers and how (v0.15.2). */
+export type AiSummaryScope = 'TOPIC' | 'MODULE' | 'DOCUMENT'
+export type AiSummaryStyle = 'BRIEF' | 'DETAILED' | 'REVISION_NOTES'
+
+export type AiSummary = {
+  scope: AiSummaryScope
+  id: number
+  title: string | null
+  style: AiSummaryStyle
+  summary: string | null
+  keyPoints: string[]
+  insufficientContext: boolean
+  citations: AiCitation[]
+}
+
 /** How to answer (v0.15.1). */
 export type AiAnswerStyle = 'NORMAL' | 'SIMPLER' | 'EXAMPLE'
 

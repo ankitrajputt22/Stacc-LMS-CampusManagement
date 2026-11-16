@@ -8,7 +8,7 @@ import { MyNotesPanel } from '../ai/MyNotesPanel'
 import { SavedAnswersPanel } from '../ai/SavedAnswersPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
 import { PracticePanel } from '../ai/PracticePanel'
-import { TopicSummaryPanel } from '../ai/TopicSummaryPanel'
+import { SummaryPanel, type SummaryChoices } from '../ai/SummaryPanel'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -43,6 +43,16 @@ function publishedTopics(content: LmsCourseContent): CourseTopicChoice[] {
   )
 }
 
+/** The published pages, modules, and files a student can summarise (v0.15.2), in course order. */
+function summaryChoices(content: LmsCourseContent): SummaryChoices {
+  return {
+    modules: content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title })),
+    topics: content.modules.flatMap((module) => module.topics.map((topic) => ({ id: topic.id, title: topic.title, moduleTitle: module.title }))),
+    files: content.modules.flatMap((module) => module.topics.flatMap((topic) =>
+      topic.materials.map((material) => ({ id: material.id, title: material.title, pageTitle: topic.title })))),
+  }
+}
+
 function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsCourseContent }) {
   const topics = useMemo(() => publishedTopics(content), [content])
   return (
@@ -73,7 +83,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
         <AskPanel lmsCourseId={course.lmsCourseId} modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))} />
         <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
         <MyNotesPanel lmsCourseId={course.lmsCourseId} />
-        <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
+        <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
       </div>
     </div>

@@ -141,6 +141,27 @@ class AiStudyServiceTest {
     }
 
     @Test
+    void summariesCoverAPageAModuleOrOneFileInAStyle() {
+        when(client.summarize(anyString(), any())).thenReturn(new SummaryResult("Short summary.", List.of("Point"), false,
+                List.of(materialCitation(20, 2))));
+        AiSummaryResponse file = service.summarize(STUDENT_A, COURSE, new AiSummaryRequest(AiSummaryScope.DOCUMENT, 20L,
+                AiSummaryStyle.REVISION_NOTES));
+        assertThat(file.title()).isEqualTo("Normalization notes");
+        assertThat(file.citations()).singleElement().satisfies(citation -> assertThat(citation.sourceId()).isEqualTo(20));
+        ArgumentCaptor<AiServiceMessages.SummaryRequest> sent = ArgumentCaptor.forClass(AiServiceMessages.SummaryRequest.class);
+        verify(client).summarize(anyString(), sent.capture());
+        assertThat(sent.getValue().topicId()).isNull();
+        assertThat(sent.getValue().allowedSources()).containsExactly(new AiServiceMessages.SourceRef("STUDY_MATERIAL", 20));
+        assertThat(sent.getValue().style()).isEqualTo("REVISION_NOTES");
+
+        assertThatThrownBy(() -> service.summarize(STUDENT_A, COURSE, new AiSummaryRequest(AiSummaryScope.DOCUMENT, 21L, null)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.summarize(STUDENT_A, COURSE, new AiSummaryRequest(AiSummaryScope.MODULE, 99L, null)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThat(service.summarize(STUDENT_A, COURSE, new AiSummaryRequest(AiSummaryScope.MODULE, 10L, null)).title()).isNull();
+    }
+
+    @Test
     void aModuleScopeAllowsOnlyThatModulesPagesAndFiles() {
         when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
         AiCourseKnowledge knowledge = sources.publishedKnowledge(COURSE);

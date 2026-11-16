@@ -80,11 +80,12 @@ public final class AiServiceMessages {
     public record AskResult(String answer, Boolean insufficientContext, List<Citation> citations) {
     }
 
-    public record SummaryRequest(String indexFingerprint, long topicId, List<SourceRef> allowedSources,
-            List<IndexRef> additionalIndexes) {
+    /** A topic's summary, or without a topic a summary of the allowed sources (a module or a document), in a style (v0.15.2). */
+    public record SummaryRequest(String indexFingerprint, Long topicId, List<SourceRef> allowedSources,
+            List<IndexRef> additionalIndexes, String style) {
 
         public SummaryRequest(String indexFingerprint, long topicId, List<SourceRef> allowedSources) {
-            this(indexFingerprint, topicId, allowedSources, List.of());
+            this(indexFingerprint, topicId, allowedSources, List.of(), "BRIEF");
         }
     }
 

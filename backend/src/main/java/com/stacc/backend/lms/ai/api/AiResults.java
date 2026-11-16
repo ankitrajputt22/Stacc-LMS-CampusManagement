@@ -17,7 +17,7 @@ import java.util.Set;
 final class AiResults {
 
     static final int ANSWER_MAX = 2000;
-    static final int SUMMARY_MAX = 1500;
+    static final int SUMMARY_MAX = 4000;
     static final int KEY_POINT_MAX = 300;
     static final int MAX_KEY_POINTS = 8;
     static final int QUESTION_MAX = 1500;

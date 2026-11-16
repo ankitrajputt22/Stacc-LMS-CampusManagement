@@ -16,6 +16,9 @@ import type {
   AiRubricSuggestion,
   AiSavedAnswer,
   AiStudentNote,
+  AiSummary,
+  AiSummaryScope,
+  AiSummaryStyle,
   AiTeacherDocument,
   AiTopicSummary,
 } from '../types/ai'
@@ -189,5 +192,14 @@ export async function saveAnswer(lmsCourseId: number, question: string, answer: 
 /** Deletes a saved answer for good. */
 export async function deleteSavedAnswer(lmsCourseId: number, savedAnswerId: number): Promise<void> {
   await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/saved-answers/${savedAnswerId}`)
+}
+
+/** A summary of one published page, module, or file in a style (v0.15.2). */
+export async function summarizeCourse(
+  lmsCourseId: number,
+  input: { scope: AiSummaryScope; id: number; style: AiSummaryStyle },
+  signal?: AbortSignal,
+): Promise<AiSummary> {
+  return (await apiClient.post<AiSummary>(`/lms/courses/${lmsCourseId}/ai/summary`, input, { signal })).data
 }
 

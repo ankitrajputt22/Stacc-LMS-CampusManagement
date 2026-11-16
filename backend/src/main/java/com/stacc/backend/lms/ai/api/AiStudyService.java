@@ -43,6 +43,7 @@ public class AiStudyService {
     static final String TOPIC_UNAVAILABLE = "Topic not found or unavailable.";
     static final String QUESTION_LENGTH = "Enter a question of 2 to 1,000 characters.";
     static final String MODULE_UNAVAILABLE = "Module not found or unavailable.";
+    static final String FILE_UNAVAILABLE = "File not found or unavailable.";
     static final String MODULE_WITH_NOTES_ONLY = "Choose a module only when asking about the course.";
 
     private final LmsStudentAccessService studentAccess;
@@ -122,6 +123,49 @@ public class AiStudyService {
             return new AiTopicSummaryResponse(topicId, topic.title(), null, List.of(), true, List.of());
         }
         return new AiTopicSummaryResponse(topicId, topic.title(), summary,
+                AiResults.texts(result.keyPoints(), AiResults.KEY_POINT_MAX, AiResults.MAX_KEY_POINTS), false, citations);
+    }
+
+    /** A summary of one published page, module, or file in a style (v0.15.2). */
+    public AiSummaryResponse summarize(Long accountId, Long lmsCourseId, AiSummaryRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.SUMMARY, accountId, lmsCourseId, () -> scopedSummary(accountId, lmsCourseId, request),
+                AiSummaryResponse::insufficientContext);
+    }
+
+    private AiSummaryResponse scopedSummary(Long accountId, Long lmsCourseId, AiSummaryRequest request) {
+        AiSummaryStyle style = request.style() == null ? AiSummaryStyle.BRIEF : request.style();
+        long id = request.id();
+        AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId);
+        String title;
+        Long topicId = null;
+        List<AiServiceMessages.SourceRef> allowed;
+        switch (request.scope()) {
+            case TOPIC -> {
+                title = knowledge.topic(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, TOPIC_UNAVAILABLE)).title();
+                topicId = id;
+                allowed = knowledge.allowedSources();
+            }
+            case MODULE -> {
+                if (!knowledge.hasModule(id)) {
+                    throw new ApiException(HttpStatus.NOT_FOUND, MODULE_UNAVAILABLE);
+                }
+                title = null;
+                allowed = knowledge.allowedSourcesInModule(id);
+            }
+            default -> {
+                title = knowledge.material(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, FILE_UNAVAILABLE)).title();
+                allowed = List.of(new AiServiceMessages.SourceRef("STUDY_MATERIAL", id));
+            }
+        }
+        Long scopeTopic = topicId;
+        SummaryResult result = call(() -> client.summarize(AiCourseKeys.forLmsCourse(lmsCourseId),
+                new SummaryRequest(knowledge.fingerprint(), scopeTopic, allowed, List.of(), style.name())));
+        List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge);
+        String summary = AiResults.text(result.summary(), AiResults.SUMMARY_MAX);
+        if (!Boolean.FALSE.equals(result.insufficientContext()) || summary == null || citations.isEmpty()) {
+            return new AiSummaryResponse(request.scope(), id, title, style, null, List.of(), true, List.of());
+        }
+        return new AiSummaryResponse(request.scope(), id, title, style, summary,
                 AiResults.texts(result.keyPoints(), AiResults.KEY_POINT_MAX, AiResults.MAX_KEY_POINTS), false, citations);
     }
 
