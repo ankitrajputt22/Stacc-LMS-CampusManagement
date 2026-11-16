@@ -21,7 +21,7 @@ test('a student asks for medical leave from ERP Attendance and the office approv
 
   await signIn(page, 'erp', 'admin1')
   await page.goto('/erp/requests')
-  await page.getByLabel('Search').fill('ece25010')
+  await page.getByRole('searchbox', { name: 'Search' }).fill('ece25010')
   await page.getByRole('button', { name: 'Search', exact: true }).click()
   await page.getByRole('button', { name: `Review ${reference}` }).click()
   await page.getByRole('button', { name: 'Approve' }).click()
