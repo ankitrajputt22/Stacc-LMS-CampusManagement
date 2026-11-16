@@ -58,6 +58,12 @@ function Members({ groupId }: { groupId: number }) {
   )
 }
 
+const POLICY_TONE = {
+  OPEN: 'border-success-line bg-success-soft text-ink',
+  APPROVAL: 'border-sky-200 bg-sky-50 text-ink',
+  CLOSED: 'border-line-strong bg-surface-muted text-ink-muted',
+} as const
+
 function GroupCard({ group, canJoin }: { group: CampusGroup; canJoin: boolean }) {
   const queryClient = useQueryClient()
   const [showMembers, setShowMembers] = useState(false)
@@ -67,37 +73,43 @@ function GroupCard({ group, canJoin }: { group: CampusGroup; canJoin: boolean })
       .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.engagement.all }))
       .catch((caught: unknown) => setError(failureText(caught, 'Couldn’t save. Try again.')))
   return (
-    <li className="space-y-2 px-4 py-4 sm:px-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{group.name}</span>
-        <Badge tone="neutral">{POLICY_LABEL[group.joinPolicy]}</Badge>
-        {!group.active && <Badge tone="neutral">Inactive</Badge>}
-        {group.myMembership === 'ACTIVE' && <Badge tone="success">Member</Badge>}
-        {group.myMembership === 'PENDING' && <Badge tone="info">Asked to join</Badge>}
-      </div>
-      {group.description && <p className="text-sm break-words whitespace-pre-line text-ink">{group.description}</p>}
-      <p className="text-sm text-ink-muted">
-        {group.members === 1 ? '1 member' : `${group.members} members`}
-        {group.officers.map((officer) => ` · ${TITLE_LABEL[officer.title]}: ${officer.loginId}`).join('')}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {canJoin && group.active && group.myMembership === null && group.joinPolicy !== 'CLOSED' && (
-          <Button size="sm" onClick={() => act(() => joinGroup(group.groupId))}>
-            {group.joinPolicy === 'OPEN' ? 'Join' : 'Ask to join'}
-            <span className="sr-only">{` ${group.name}`}</span>
-          </Button>
-        )}
-        {canJoin && group.myMembership !== null && (
-          <Button size="sm" variant="secondary" onClick={() => act(() => leaveGroup(group.groupId))}>
-            {group.myMembership === 'PENDING' ? 'Withdraw request' : 'Leave'}
-            <span className="sr-only">{` ${group.name}`}</span>
-          </Button>
-        )}
-        {group.iAmOfficer && (
-          <Button size="sm" variant="secondary" onClick={() => setShowMembers(!showMembers)}>
-            {showMembers ? 'Hide members' : 'Members and requests'}
-          </Button>
-        )}
+    <li className="space-y-3 px-4 py-4 sm:px-5">
+      <div className="grid gap-2 md:grid-cols-[minmax(0,1.1fr)_10rem_minmax(0,1.6fr)_7rem_minmax(0,1.2fr)_auto] md:items-center md:gap-4">
+        <div className="min-w-0">
+          <h3 className="text-base font-bold break-words text-ink">{group.name}</h3>
+          <div className="mt-1 flex flex-wrap gap-1.5 empty:hidden">
+            {!group.active && <Badge tone="neutral">Inactive</Badge>}
+            {group.myMembership === 'ACTIVE' && <Badge tone="success">Member</Badge>}
+            {group.myMembership === 'PENDING' && <Badge tone="info">Asked to join</Badge>}
+          </div>
+        </div>
+        <span>
+          <span className={`inline-block rounded-sm border px-2 py-0.5 text-sm ${POLICY_TONE[group.joinPolicy]}`}>{POLICY_LABEL[group.joinPolicy]}</span>
+        </span>
+        <p className="text-sm break-words whitespace-pre-line text-ink">{group.description ?? '—'}</p>
+        <p className="text-sm text-ink">{group.members === 1 ? '1 member' : `${group.members} members`}</p>
+        <p className="text-sm text-ink-muted">
+          {group.officers.length === 0 ? '—' : group.officers.map((officer) => `${TITLE_LABEL[officer.title]}: ${officer.loginId}`).join(' · ')}
+        </p>
+        <div className="flex flex-wrap gap-2 md:justify-end">
+          {canJoin && group.active && group.myMembership === null && group.joinPolicy !== 'CLOSED' && (
+            <Button size="sm" onClick={() => act(() => joinGroup(group.groupId))}>
+              {group.joinPolicy === 'OPEN' ? 'Join' : 'Ask to join'}
+              <span className="sr-only">{` ${group.name}`}</span>
+            </Button>
+          )}
+          {canJoin && group.myMembership !== null && (
+            <Button size="sm" variant="secondary" onClick={() => act(() => leaveGroup(group.groupId))}>
+              {group.myMembership === 'PENDING' ? 'Withdraw request' : 'Leave'}
+              <span className="sr-only">{` ${group.name}`}</span>
+            </Button>
+          )}
+          {group.iAmOfficer && (
+            <Button size="sm" variant="secondary" onClick={() => setShowMembers(!showMembers)}>
+              {showMembers ? 'Hide members' : 'Members and requests'}
+            </Button>
+          )}
+        </div>
       </div>
       {showMembers && <Members groupId={group.groupId} />}
       {(group.myMembership === 'ACTIVE' || group.iAmOfficer) && <GroupActivityPanel groupId={group.groupId} groupName={group.name} />}
@@ -116,10 +128,15 @@ export function GroupsSection({ kind, canJoin }: { kind: GroupKind; canJoin: boo
     ? groups.data.filter((group) => group.kind === kind && (term === '' || `${group.name} ${group.description ?? ''}`.toLowerCase().includes(term)))
     : []
   return (
-    <Card title={kind === 'CLUB' ? 'Clubs' : 'Sports'} padding="none">
-      <div className="px-4 pt-3 sm:px-5">
-        <TextField label={kind === 'CLUB' ? 'Search clubs' : 'Search sports'} value={search} onChange={(event) => setSearch(event.target.value)} />
-      </div>
+    <Card
+      title={kind === 'CLUB' ? 'Clubs' : 'Sports'}
+      padding="none"
+      action={
+        <div className="w-full sm:w-72">
+          <TextField label={kind === 'CLUB' ? 'Search clubs' : 'Search sports'} type="search" value={search} onChange={(event) => setSearch(event.target.value)} />
+        </div>
+      }
+    >
       {groups.status !== 'loaded' ? (
         <SectionState request={groups} what="groups" />
       ) : shown.length === 0 ? (
