@@ -7,6 +7,7 @@ import { AskPanel } from '../ai/AskPanel'
 import { FlashcardsPanel } from '../ai/FlashcardsPanel'
 import { MasteryPanel } from '../ai/MasteryPanel'
 import { RecommendationsPanel } from '../ai/RecommendationsPanel'
+import { StudyPlanPanel } from '../ai/StudyPlanPanel'
 import { MyNotesPanel } from '../ai/MyNotesPanel'
 import { SavedAnswersPanel } from '../ai/SavedAnswersPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
@@ -104,6 +105,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
         <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
         <FlashcardsPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
         <MasteryPanel lmsCourseId={course.lmsCourseId} />
+        <StudyPlanPanel lmsCourseId={course.lmsCourseId} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
       </div>
     </div>

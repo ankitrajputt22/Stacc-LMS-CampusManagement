@@ -24,6 +24,8 @@ import com.stacc.backend.lms.api.LmsCourseSummaryResponse;
 import com.stacc.backend.lms.api.LmsFacultyManagedCourseQueryService;
 import com.stacc.backend.lms.api.LmsFacultyManagedCourseResponse;
 import com.stacc.backend.lms.api.LmsStudentCourseQueryService;
+import com.stacc.backend.lms.ai.planner.AiStudyPlanService;
+import com.stacc.backend.lms.ai.planner.AiStudySession;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.course.LmsCourseStatus;
 import com.stacc.backend.mentoring.MentoringService;
@@ -58,11 +60,13 @@ public class TodoService {
     private final ApprovalQueryService approvals;
     private final TodoDismissalRepository dismissals;
     private final MentoringService mentoring;
+    private final AiStudyPlanService studyPlans;
     private final Clock clock;
 
     public TodoService(LmsStudentCourseQueryService studentCourses, LmsFacultyManagedCourseQueryService facultyCourses,
             TodoAssignmentQueries assignments, AttendanceSessionRepository attendanceSessions, ApprovalQueryService approvals,
-            TodoDismissalRepository dismissals, MentoringService mentoring, Clock clock) {
+            TodoDismissalRepository dismissals, MentoringService mentoring, Clock clock, AiStudyPlanService studyPlans) {
+        this.studyPlans = studyPlans;
         this.studentCourses = studentCourses;
         this.facultyCourses = facultyCourses;
         this.assignments = assignments;
@@ -95,6 +99,14 @@ public class TodoService {
             for (MentoringService.OpenItem open : mentoring.openItems(accountId)) {
                 items.add(new TodoItem("MENTORING:" + open.itemId(), "MENTORING", "Mentoring: " + open.description(),
                         (open.asMentor() ? "Mentoring " : "With your mentor ") + open.otherLoginId(), open.dueAt(), "/mentoring"));
+            }
+        }
+        // Study sessions the student added from a study plan (v0.15.7), from their day until dismissed.
+        if (held.contains("ROLE_STUDENT") && held.contains("AI_STUDY_USE")) {
+            for (AiStudySession session : studyPlans.dueForTodo(accountId)) {
+                items.add(new TodoItem("STUDY:" + session.getId(), "STUDY", session.getTitle(), session.getMinutes() + " min of study",
+                        session.getPlannedOn().plusDays(1).atStartOfDay(studyPlans.zone()).toInstant().minusSeconds(1),
+                        "/courses/" + session.getLmsCourseId() + "/ai"));
             }
         }
         Set<String> dismissed = dismissals.findKeysByAccountId(accountId);

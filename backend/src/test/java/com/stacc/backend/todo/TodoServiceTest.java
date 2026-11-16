@@ -31,9 +31,11 @@ class TodoServiceTest {
     private final LmsFacultyManagedCourseQueryService facultyCourses = mock(LmsFacultyManagedCourseQueryService.class);
     private final TodoDismissalRepository dismissals = mock(TodoDismissalRepository.class);
     private final ApprovalQueryService approvals = mock(ApprovalQueryService.class);
+    private final com.stacc.backend.lms.ai.planner.AiStudyPlanService studyPlans =
+            mock(com.stacc.backend.lms.ai.planner.AiStudyPlanService.class);
     private final TodoService service = new TodoService(studentCourses, facultyCourses, mock(TodoAssignmentQueries.class),
             mock(AttendanceSessionRepository.class), approvals, dismissals, mock(MentoringService.class),
-            Clock.fixed(Instant.parse("2026-11-10T10:00:00Z"), ZoneOffset.UTC));
+            Clock.fixed(Instant.parse("2026-11-10T10:00:00Z"), ZoneOffset.UTC), studyPlans);
 
     @Test
     void eachPartNeedsItsOwnRoleAndPermission() {

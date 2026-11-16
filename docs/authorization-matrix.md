@@ -366,10 +366,18 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/library/titles/{titleId}/hold` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}/cards/{cardId}/review` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/mastery/recommendations` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiMasteryController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/notes/{noteId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudentNoteController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/notes/{noteId}` | PUT | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudentNoteController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/practice/evaluate` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/saved-answers/{savedAnswerId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiSavedAnswerController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/study-plan/calendar` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE') and hasAuthority('CALENDAR_PERSONAL_USE')` | AiStudyPlanController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/study-plan/todo` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE') and hasAuthority('TODO_VIEW')` | AiStudyPlanController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/announcements` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/courses/{lmsCourseId}/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |

@@ -22,6 +22,7 @@ import type {
   AiRubricSuggestion,
   AiSavedAnswer,
   AiStudentNote,
+  AiStudyPlanDay,
   AiSummary,
   AiSummaryScope,
   AiSummaryStyle,
@@ -261,5 +262,15 @@ export async function clearMastery(lmsCourseId: number): Promise<void> {
 /** What to do next in the course, from fixed rules over the student's own records (v0.15.6). */
 export async function getRecommendations(lmsCourseId: number, signal?: AbortSignal): Promise<AiRecommendation[]> {
   return (await apiClient.get<AiRecommendation[]>(`/lms/courses/${lmsCourseId}/ai/mastery/recommendations`, { signal })).data
+}
+
+/** A study plan for the next 7 or 14 days, scheduled by code; nothing is stored (v0.15.7). */
+export async function planStudy(lmsCourseId: number, days: number, minutesPerDay: number, signal?: AbortSignal): Promise<AiStudyPlanDay[]> {
+  return (await apiClient.post<AiStudyPlanDay[]>(`/lms/courses/${lmsCourseId}/ai/study-plan`, { days, minutesPerDay }, { signal })).data
+}
+
+/** Adds the plan's days to the personal calendar or its sessions to the To-Do list; answers how many were added. */
+export async function addStudyPlan(lmsCourseId: number, to: 'calendar' | 'todo', days: number, minutesPerDay: number): Promise<number> {
+  return (await apiClient.post<{ added: number }>(`/lms/courses/${lmsCourseId}/ai/study-plan/${to}`, { days, minutesPerDay })).data.added
 }
 
