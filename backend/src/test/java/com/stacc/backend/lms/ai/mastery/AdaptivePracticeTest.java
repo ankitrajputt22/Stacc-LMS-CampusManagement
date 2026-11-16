@@ -15,7 +15,6 @@ import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardSet;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.assignment.LmsAssignment;
-import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import org.junit.jupiter.api.Test;
 
 /** Adaptive practice favours weak pages and says why; recommendations follow their rules, each with a reason. */
@@ -50,12 +49,12 @@ class AdaptivePracticeTest {
         AiFlashcardStore flashcards = mock(AiFlashcardStore.class);
         AiFlashcardSet set = new AiFlashcardSet(7L, 11L, "Unit 2 cards");
         when(flashcards.list(any(), any(), any())).thenReturn(List.of(new AiFlashcardStore.SetSummary(set, 10, 3)));
-        LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
+        AiOpenAssignments assignments = mock(AiOpenAssignments.class);
         LmsAssignment soon = mock(LmsAssignment.class);
         when(soon.getId()).thenReturn(9L);
         when(soon.getTitle()).thenReturn("Lab 2");
         when(soon.getDueAt()).thenReturn(Instant.parse("2026-11-18T05:00:00Z"));
-        when(assignments.findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(any(), any())).thenReturn(List.of(soon));
+        when(assignments.stillToHandIn(11L, 7L, NOW)).thenReturn(List.of(soon));
         AiRecommendationService service = new AiRecommendationService(mastery, flashcards, assignments, new EngagementProperties("UTC"),
                 Clock.fixed(NOW, ZoneOffset.UTC));
 

@@ -23,8 +23,8 @@ import com.stacc.backend.calendar.personal.PersonalCalendarService;
 import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
+import com.stacc.backend.lms.ai.mastery.AiOpenAssignments;
 import com.stacc.backend.lms.ai.mastery.Mastery;
-import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class AiStudyPlanServiceTest {
 
     private final AiMasteryService mastery = mock(AiMasteryService.class);
     private final AiFlashcardStore flashcards = mock(AiFlashcardStore.class);
-    private final LmsAssignmentRepository assignments = mock(LmsAssignmentRepository.class);
+    private final AiOpenAssignments assignments = mock(AiOpenAssignments.class);
     private final PersonalCalendarService calendar = mock(PersonalCalendarService.class);
     private final LmsCourseRepository lmsCourses = mock(LmsCourseRepository.class);
     private AiStudyPlanService service;

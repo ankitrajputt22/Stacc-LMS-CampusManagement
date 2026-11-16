@@ -12,8 +12,6 @@ import java.util.Locale;
 import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.assignment.LmsAssignment;
-import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
-import com.stacc.backend.lms.content.LmsContentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,15 +36,15 @@ public class AiRecommendationService {
 
     private final AiMasteryService mastery;
     private final AiFlashcardStore flashcards;
-    private final LmsAssignmentRepository assignments;
+    private final AiOpenAssignments openAssignments;
     private final EngagementProperties college;
     private final Clock clock;
 
-    public AiRecommendationService(AiMasteryService mastery, AiFlashcardStore flashcards, LmsAssignmentRepository assignments,
+    public AiRecommendationService(AiMasteryService mastery, AiFlashcardStore flashcards, AiOpenAssignments openAssignments,
             EngagementProperties college, Clock clock) {
         this.mastery = mastery;
         this.flashcards = flashcards;
-        this.assignments = assignments;
+        this.openAssignments = openAssignments;
         this.college = college;
         this.clock = clock;
     }
@@ -68,9 +66,9 @@ public class AiRecommendationService {
         flashcards.list(accountId, lmsCourseId, now.atZone(zone).toLocalDate()).stream().filter(set -> set.due() > 0).limit(1)
                 .forEach(set -> result.add(new Recommendation(Kind.REVIEW_FLASHCARDS, set.set().getId(), "Review " + set.set().getTitle(),
                         set.due() + (set.due() == 1 ? " card is" : " cards are") + " due today.")));
-        // 3. Published assignments due within a week.
-        assignments.findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(lmsCourseId, List.of(LmsContentStatus.PUBLISHED)).stream()
-                .filter(assignment -> assignment.getDueAt().isAfter(now) && assignment.getDueAt().isBefore(now.plus(ASSIGNMENT_SOON)))
+        // 3. Published assignments due within a week and not handed in yet.
+        openAssignments.stillToHandIn(accountId, lmsCourseId, now).stream()
+                .filter(assignment -> assignment.getDueAt().isBefore(now.plus(ASSIGNMENT_SOON)))
                 .limit(1)
                 .forEach((LmsAssignment assignment) -> result.add(new Recommendation(Kind.ASSIGNMENT_SOON, assignment.getId(),
                         "Prepare for " + assignment.getTitle(), "It is due " + DAY.format(assignment.getDueAt().atZone(zone)) + ".")));

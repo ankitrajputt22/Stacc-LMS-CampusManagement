@@ -17,9 +17,8 @@ import com.stacc.backend.common.error.ApiException;
 import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
+import com.stacc.backend.lms.ai.mastery.AiOpenAssignments;
 import com.stacc.backend.lms.ai.mastery.Mastery;
-import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
-import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -42,20 +41,20 @@ public class AiStudyPlanService {
 
     private final AiMasteryService mastery;
     private final AiFlashcardStore flashcards;
-    private final LmsAssignmentRepository assignments;
+    private final AiOpenAssignments openAssignments;
     private final PersonalCalendarService calendar;
     private final AiStudySessionRepository sessions;
     private final LmsCourseRepository lmsCourses;
     private final EngagementProperties college;
     private final Clock clock;
 
-    public AiStudyPlanService(AiMasteryService mastery, AiFlashcardStore flashcards, LmsAssignmentRepository assignments,
+    public AiStudyPlanService(AiMasteryService mastery, AiFlashcardStore flashcards, AiOpenAssignments openAssignments,
             PersonalCalendarService calendar, AiStudySessionRepository sessions, LmsCourseRepository lmsCourses,
             EngagementProperties college, Clock clock) {
         this.lmsCourses = lmsCourses;
         this.mastery = mastery;
         this.flashcards = flashcards;
-        this.assignments = assignments;
+        this.openAssignments = openAssignments;
         this.calendar = calendar;
         this.sessions = sessions;
         this.college = college;
@@ -77,8 +76,7 @@ public class AiStudyPlanService {
         LocalDate start = now.atZone(zone).toLocalDate();
         LocalDate end = start.plusDays(days - 1L);
         List<StudyPlanner.Need> needs = new ArrayList<>();
-        assignments.findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(lmsCourseId, List.of(LmsContentStatus.PUBLISHED)).stream()
-                .filter(assignment -> assignment.getDueAt().isAfter(now))
+        openAssignments.stillToHandIn(accountId, lmsCourseId, now).stream()
                 .filter(assignment -> !assignment.getDueAt().atZone(zone).toLocalDate().isAfter(end.plusDays(1)))
                 .forEach(assignment -> needs.add(new StudyPlanner.Need(StudyPlanner.Kind.ASSIGNMENT, assignment.getId(), assignment.getTitle(),
                         assignment.getDueAt().atZone(zone).toLocalDate())));
