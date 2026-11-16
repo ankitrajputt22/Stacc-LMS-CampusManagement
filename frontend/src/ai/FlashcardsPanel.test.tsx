@@ -26,18 +26,18 @@ function renderPanel() {
 describe('FlashcardsPanel', () => {
   it('makes a set from a page', async () => {
     vi.mocked(api.getFlashcardSets).mockResolvedValue([])
-    vi.mocked(api.createFlashcardSet).mockResolvedValue({ id: 5, title: 'Joins', cards: [card(1, '2000-01-01')] })
+    vi.mocked(api.createFlashcardSet).mockResolvedValue({ id: 5, title: 'Joins', cards: [card(1, '2000-01-01')], today: '2026-11-16' })
     const user = userEvent.setup()
     renderPanel()
     await user.selectOptions(screen.getByRole('combobox', { name: 'Make cards from' }), 'A page')
     await user.click(screen.getByRole('button', { name: 'Make flashcards' }))
     expect(api.createFlashcardSet).toHaveBeenCalledWith(3, { scope: 'TOPIC', id: 31, cardCount: 10 }, expect.anything())
-    expect(await screen.findByText('Made “Joins” with 1 cards.')).toBeInTheDocument()
+    expect(await screen.findByText('Made “Joins” with 1 card.')).toBeInTheDocument()
   })
 
   it('reviews only due cards, showing the answer before the rating', async () => {
     vi.mocked(api.getFlashcardSets).mockResolvedValue([{ id: 5, title: 'Joins', cards: 2, dueToday: 1 }])
-    vi.mocked(api.getFlashcardSet).mockResolvedValue({ id: 5, title: 'Joins', cards: [card(1, '2000-01-01'), card(2, '2999-01-01')] })
+    vi.mocked(api.getFlashcardSet).mockResolvedValue({ id: 5, title: 'Joins', cards: [card(1, '2000-01-01'), card(2, '2999-01-01')], today: '2026-11-16' })
     vi.mocked(api.reviewFlashcard).mockResolvedValue(card(1, '2999-01-01'))
     const user = userEvent.setup()
     renderPanel()

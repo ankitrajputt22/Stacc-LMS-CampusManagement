@@ -159,7 +159,8 @@ public class AiFlashcardService {
         };
     }
 
-    private LocalDate today() {
+    /** Today in the college's time zone, which decides which cards are due. */
+    public LocalDate today() {
         return LocalDate.now(clock.withZone(college.zone()));
     }
 

@@ -24,8 +24,8 @@ const RATINGS: { value: ReviewRating; label: string }[] = [
 /** Reviews the cards of one set that are due today, one at a time: show the front, then the answer, then rate it. */
 function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFlashcardSet; onClose: () => void }) {
   const queryClient = useQueryClient()
-  // The local day (YYYY-MM-DD); the backend decides due days in the college's time zone.
-  const today = new Date().toLocaleDateString('en-CA')
+  // The college's day, as the backend counts due cards.
+  const today = set.today
   const [queue, setQueue] = useState<AiFlashcard[]>(() => set.cards.filter((card) => card.dueOn <= today))
   const [shown, setShown] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -127,7 +127,7 @@ export function FlashcardsPanel({ lmsCourseId, choices }: { lmsCourseId: number;
       createFlashcardSet(lmsCourseId, { scope, id: scope === 'COURSE' ? null : Number(chosen), cardCount: Number(count) }, signal),
     )
     if (made) {
-      setAnnouncement(`Made “${made.title}” with ${made.cards.length} cards.`)
+      setAnnouncement(`Made “${made.title}” with ${made.cards.length} ${made.cards.length === 1 ? 'card' : 'cards'}.`)
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
     }
   }
