@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/grievanceApi'
@@ -16,7 +17,11 @@ const base: GrievanceCase = {
 }
 
 function renderWith(node: React.ReactNode) {
-  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>{node}</QueryClientProvider>)
+  render(
+    <MemoryRouter>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>{node}</QueryClientProvider>
+    </MemoryRouter>,
+  )
 }
 
 describe('grievance case views', () => {
