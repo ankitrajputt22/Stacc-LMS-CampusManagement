@@ -74,7 +74,7 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
   return (
     <>
       <section aria-labelledby="ticket-issue" className="rounded-panel border border-line bg-surface p-4 sm:p-5">
-        <h2 id="ticket-issue" className="text-base font-semibold text-ink">
+        <h2 id="ticket-issue" className="text-lg font-bold text-portal-navy">
           Original issue
         </h2>
         <p className="mt-1 text-xs text-ink-muted">
@@ -85,15 +85,22 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
       </section>
 
       <section aria-labelledby="ticket-conversation" className="mt-6">
-        <h2 id="ticket-conversation" className="text-base font-semibold text-ink">
+        <h2 id="ticket-conversation" className="text-lg font-bold text-portal-navy">
           Conversation
         </h2>
         {ticket.messages.length === 0 ? (
           <p className="mt-2 text-sm text-ink-muted">No replies yet.</p>
         ) : (
-          <ol className="mt-3 divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
+          <ol className="mt-3 space-y-3">
             {ticket.messages.map((entry) => (
-              <li key={entry.messageId} className={`px-4 py-3 sm:px-5 ${entry.internal ? 'bg-amber-50' : ''}`}>
+              <li
+                key={entry.messageId}
+                className={`flex gap-3 rounded-panel border px-4 py-3 ${entry.internal ? 'border-amber-200 bg-amber-50' : 'border-line bg-surface'}`}
+              >
+                <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-portal-bar-strong text-xs font-bold text-portal-navy uppercase">
+                  {entry.authorLoginId.slice(0, 2)}
+                </span>
+                <div className="min-w-0 flex-1">
                 <p className="text-sm">
                   {entry.internal && <span className="mr-2 rounded-sm border border-amber-200 px-1.5 py-0.5 text-xs font-medium text-warning">Internal note</span>}
                   <span className="font-semibold text-ink">{entry.authorLoginId}</span>
@@ -103,7 +110,8 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
                     <time dateTime={entry.createdAt}>{formatDateTime(entry.createdAt)}</time>
                   </span>
                 </p>
-                <p className="mt-1 text-sm leading-6 break-words whitespace-pre-wrap text-ink">{entry.message}</p>
+                <p className="mt-1 text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{entry.message}</p>
+                </div>
               </li>
             ))}
           </ol>
@@ -116,7 +124,7 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
         </p>
       ) : (
         <form onSubmit={send} noValidate aria-labelledby="ticket-reply-label" className="mt-6">
-          <label id="ticket-reply-label" htmlFor="ticket-reply" className="block text-base font-semibold text-ink">
+          <label id="ticket-reply-label" htmlFor="ticket-reply" className="block text-lg font-bold text-portal-navy">
             Reply
           </label>
           {ticket.status === 'RESOLVED' && (

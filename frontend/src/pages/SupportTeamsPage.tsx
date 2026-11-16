@@ -1,3 +1,4 @@
+import { SupportHeader } from '../support/SupportHeader'
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
@@ -11,12 +12,11 @@ import {
 } from '../api/helpdeskApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import { refusalText } from '../support/helpdeskText'
 import type { HelpdeskTeam } from '../types/helpdesk'
-import { Alert, Badge, Button, Card, PageHeader, SelectField, TextField } from '../ui'
+import { Alert, Badge, Button, Card, SelectField, TextField } from '../ui'
 
 function failure(error: unknown, what: string): string | null {
   const status = getHttpStatus(error)
@@ -117,14 +117,13 @@ export function SupportTeamsPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <title>Support teams · Stacc</title>
-      <PageHeader
+      <SupportHeader
         title="Support teams"
-        breadcrumb={<Breadcrumb parent={{ to: '/support', label: 'Support' }} current="Teams" />}
         description="Teams work the tickets of the categories routed to them. Admins with every ticket still see them all."
       />
-      <div className="mt-6 space-y-6">
+      <div className="max-w-5xl space-y-6">
         {message && <Alert tone={message.tone}>{message.text}</Alert>}
         <Card title="Add a team">
           <form className="grid gap-3 sm:grid-cols-[12rem_1fr_auto] sm:items-end" onSubmit={(event) => void create(event)}>
