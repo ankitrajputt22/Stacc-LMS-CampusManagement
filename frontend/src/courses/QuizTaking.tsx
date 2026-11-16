@@ -427,7 +427,7 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
         {confirming && (
           <StatusConfirmation
             question="Submit your answers?"
-            detail={`${answered} of ${current.questions.length} questions are answered. After submitting, the answers can no longer change.`}
+            detail={`${answered} of ${current.questions.length} ${current.questions.length === 1 ? 'question is' : 'questions are'} answered. After submitting, the answers can no longer change.`}
             confirmLabel="Submit"
             busyLabel="Submitting…"
             describeRefusal={() => 'Couldn’t submit the quiz. Try again.'}

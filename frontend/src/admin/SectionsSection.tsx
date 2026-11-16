@@ -112,13 +112,13 @@ export function SectionsSection() {
       renderEdit={(row, done, cancel) => (
         <MasterForm
           heading={`Edit section ${row.code} of ${row.programCode} semester ${row.semesterNumber}, ${row.academicSessionCode}`}
-          note={`The semester and code cannot be changed. ${row.enrolledCount} students are enrolled in it now, so the capacity cannot be lower.`}
+          note={`The semester and code cannot be changed. ${row.enrolledCount === 1 ? '1 student is' : `${row.enrolledCount} students are`} enrolled in it now, so the capacity cannot be lower.`}
           fields={[nameField, capacityField]}
           initial={{ name: row.name ?? '', capacity: row.capacity === null ? '' : String(row.capacity) }}
           submitLabel="Save section"
           validate={(values) =>
             values.capacity.trim() !== '' && Number(values.capacity) < row.enrolledCount
-              ? { capacity: `${row.enrolledCount} students are enrolled, so use at least ${row.enrolledCount}.` }
+              ? { capacity: `${row.enrolledCount === 1 ? '1 student is' : `${row.enrolledCount} students are`} enrolled, so use at least ${row.enrolledCount}.` }
               : {}
           }
           onSubmit={async (values) => {
