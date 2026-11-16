@@ -2,35 +2,38 @@ import { expect, test } from '@playwright/test'
 import { signIn, signOut } from './support'
 
 test.describe('Signing in', () => {
-  test('the front page offers the ERP and LMS logins', async ({ page }) => {
+  test('the front page is one sign-in for everything', async ({ page }) => {
     await page.goto('/')
 
     await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole('link', { name: 'ERP Login' }).first()).toBeVisible()
-    await expect(page.getByRole('link', { name: 'LMS Login' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Sign In to STACC' })).toBeVisible()
+    await expect(page.getByLabel('College ID / Employee ID')).toBeVisible()
   })
 
-  test('a student signing in through the LMS lands on Courses', async ({ page }) => {
-    await signIn(page, 'lms', 'student1')
+  test('a student signing in lands on the Overview, with Learning and the ERP in the sidebar', async ({ page }) => {
+    await signIn(page, 'erp', 'student1')
 
-    await expect(page).toHaveURL(/\/courses$/)
-    await expect(page.getByRole('heading', { level: 1, name: 'Courses' })).toBeVisible()
+    await expect(page).toHaveURL(/\/$/)
+    const nav = page.getByRole('navigation', { name: 'Main' })
+    await expect(nav.getByRole('link', { name: 'Courses' })).toBeVisible()
+    await expect(nav.getByRole('link', { name: 'ERP', exact: true })).toBeVisible()
   })
 
   test('the Account tray shows the person by name, with the login ID beneath', async ({ page }) => {
     await signIn(page, 'lms', 'student1')
 
-    await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Account' }).click()
+    await page.getByRole('button', { name: 'Account', exact: true }).click()
 
     const tray = page.getByRole('dialog', { name: 'Account' })
     await expect(tray.getByText('Aarav Sharma')).toBeVisible()
     await expect(tray.getByText('student1', { exact: true })).toBeVisible()
   })
 
-  test('a faculty member signing in through the LMS lands on Teaching', async ({ page }) => {
+  test('an old LMS link still takes a faculty member to Teaching, with Teaching in the sidebar', async ({ page }) => {
     await signIn(page, 'lms', 'faculty1')
 
     await expect(page).toHaveURL(/\/teaching$/)
+    await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'My Courses' })).toBeVisible()
   })
 
   test('an account that both studies and teaches lands on the dashboard, with no main role picked', async ({ page }) => {
@@ -47,7 +50,7 @@ test.describe('Signing in', () => {
   })
 
   test('a wrong password gets one generic message and stays on the form', async ({ page }) => {
-    await page.goto('/login?portal=erp')
+    await page.goto('/login')
     await page.getByLabel('College ID / Employee ID').fill('student1')
     await page.getByLabel('Password', { exact: true }).fill('not-the-password')
     await page.getByRole('button', { name: 'Sign in' }).click()
@@ -78,7 +81,6 @@ test.describe('Signing in', () => {
     await page.reload()
 
     await expect(page).toHaveURL(/\/courses$/)
-    await expect(page.getByRole('heading', { level: 1, name: 'Courses' })).toBeVisible()
   })
 
   test('after signing out, pages need signing in again', async ({ page }) => {

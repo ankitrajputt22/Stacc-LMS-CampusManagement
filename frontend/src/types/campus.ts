@@ -4,7 +4,7 @@
 
 import type { ApprovalHistoryEntry, ApprovalStatus, ApprovalStep } from './approvals'
 
-export type CampusRequestStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+export type CampusRequestStatus = 'SUBMITTED' | 'APPROVED' | 'IN_PROGRESS' | 'READY' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
 export type CampusNoticeStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
 export type Page<T> = { items: T[]; page: number; size: number; totalElements: number; totalPages: number }
@@ -48,6 +48,10 @@ export type CampusRequestDetail = {
   submittedAt: string
   completedAt: string | null
   approvalSteps: ApprovalStep[]
+  processingAt: string | null
+  readyAt: string | null
+  /** The document issued with the request, kept in the requester's document vault. */
+  issuedDocumentTitle: string | null
 }
 
 export type CampusNotice = {
@@ -113,6 +117,11 @@ export type AdminCampusRequestDetail = {
   currentApprovalStep: CurrentApprovalStep | null
   canDecide: boolean
   canComplete: boolean
+  processingAt: string | null
+  readyAt: string | null
+  issuedDocumentTitle: string | null
+  canProcess: boolean
+  canMarkReady: boolean
 }
 
 export type AdminCampusNotice = {

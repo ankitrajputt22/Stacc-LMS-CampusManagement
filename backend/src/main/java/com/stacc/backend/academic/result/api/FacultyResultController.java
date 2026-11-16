@@ -108,8 +108,15 @@ public class FacultyResultController {
             @PathVariable Long courseEnrollmentId,
             @Valid @RequestBody CourseResultRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
-        return FacultyResultResponse.of(managementService.save(AuthenticatedAccount.idFrom(accessToken), courseOfferingId,
-                courseEnrollmentId, request.marksObtained(), request.maxMarks(), request.gradeCode(), request.remarks()));
+        Long accountId = AuthenticatedAccount.idFrom(accessToken);
+        boolean split = request.internalMarks() != null || request.internalMax() != null || request.externalMarks() != null
+                || request.externalMax() != null;
+        return FacultyResultResponse.of(split
+                ? managementService.save(accountId, courseOfferingId, courseEnrollmentId, request.marksObtained(), request.maxMarks(),
+                        request.gradeCode(), request.remarks(), request.internalMarks(), request.internalMax(), request.externalMarks(),
+                        request.externalMax())
+                : managementService.save(accountId, courseOfferingId, courseEnrollmentId, request.marksObtained(), request.maxMarks(),
+                        request.gradeCode(), request.remarks()));
     }
 
     @PostMapping("/course-offerings/{courseOfferingId}/enrollments/{courseEnrollmentId}/publish")

@@ -226,3 +226,42 @@ Payments and fees, mess, visitors, maintenance requests, room preferences or stu
 - **Queue position.** An approved application without a bed shows its place in the session's queue (`GET /api/v1/hostel/student/applications/{id}/queue`): approved, unallocated applications by submission time. It is worked out live and never stored.
 - **Check-in and vacating.** An active allocation records its check-in once, with an optional note (admins, or the hostel's warden). Vacating may record the room's condition (`POST /allocations/{id}/vacate-with-note`).
 - **Occupancy and bed map.** Both are worked out live from beds and `ACTIVE` allocations (Hostel Management → Occupancy & Bed Map). Only a student's login ID is shown on an occupied bed.
+
+## Room changes (v0.10.3)
+
+- A resident asks to move (`HostelRoomChange` of kind `MOVE`, a reason and an optional wish that is only a wish) or proposes a bed swap with another resident by college ID (`SWAP`). A swap waits for the other resident's one answer (Accept or Decline; declining ends it). A move, or an accepted swap, goes to the requester's hostel warden through the `HOSTEL_ROOM_CHANGE` workflow (the `STUDENT_HOSTEL_WARDEN` relationship, reference data from `V107`); its approval state stays with the engine and is never copied.
+- One open room change per bed, on either side: checked under the student row locks (the lower account ID first, so two swaps between the same students never wait on each other) at READ COMMITTED (`HostelRoomChangeMySqlIT`). The requester cancels while it waits for the partner or the warden, which cancels a pending approval too.
+- The hostel office sees open changes at Hostel Management, Room changes (`GET /api/v1/hostel/admin/room-changes`, `HOSTEL_MANAGE`), and carries out an approved one: a move vacates the student's bed and allocates the bed the office chooses; a swap vacates both and gives each student the other's bed, all in one transaction through `HostelAllocationService`'s usual lock order (`POST …/room-changes/{id}/complete`). Old allocations stay as history; students never choose a bed.
+- Residents use the Room change card on `/hostel` (`/api/v1/hostel/student/room-changes`, `STUDENT` and `HOSTEL_ROOM_CHANGE_REQUEST`). The status words keep the partner's answer and the warden's decision apart.
+
+## Night roll call (v0.10.7)
+
+- A warden opens one sheet per hostel, or block, and night (`HostelRollCall`, unique per hostel, block, and date; "tonight" is the date in `COLLEGE_TIME_ZONE`). It lists the residents allocated there at that moment (`HostelRollCallEntry`), pre-filled from the gate log: a resident whose last movement was going out starts as `OUT`, everyone else as `UNMARKED`. Nobody starts as `ABSENT`.
+- The warden marks residents `PRESENT`, `ABSENT`, or `OUT` (never back to unmarked) while the sheet is open, under its row lock, and finalizes it once every resident is marked. A finalized sheet no longer changes; nothing is deleted.
+- Only wardens of the hostel reach its sheets (`HostelWardenService.isWardenOf`), through `/api/v1/hostel/warden/hostels/{id}/roll-calls` and `/api/v1/hostel/warden/roll-calls/{id}` with `WARDEN` and `HOSTEL_ROLL_CALL` (`V108`); another hostel's sheet answers the same 404 as a missing one. The Night roll call card is on `/warden`.
+- `HostelRollCallMySqlIT` opens the same sheet twice at once: one wins, the other gets 409.
+
+## Notices and emergencies (v0.10.9)
+
+- `HostelNotice` (`hostel.notice`, `V109`) is a plain-text notice for one hostel or one block of it: draft, published (with `publishedAt` set once), or archived; never deleted. A published notice can be corrected but stays an emergency or not.
+- The hostel office manages notices of every hostel (Hostel Management, Notices) and a warden those of their own hostels (the Hostel notices card on `/warden`), through `/api/v1/hostel/notices/manage` with `ADMIN` or `WARDEN` and `HOSTEL_NOTICE_MANAGE`. Another hostel's notice answers the same 404 as a missing one.
+- Residents see the published notices of their current hostel that reach their block, emergencies first, on `/hostel` (`GET /api/v1/hostel/student/notices`).
+- Publishing an emergency notice for the first time tells every resident it reaches through the Inbox (`HOSTEL_EMERGENCY`, Campus category), under the notice's row lock, so two publications at once notify once (`HostelNoticeMySqlIT`).
+
+## Mess (v0.10.10)
+
+- Each hostel has a weekly menu: one line of items per day of the week and meal (`MessMenuItem`; breakfast, lunch, snacks, dinner). A change for one meal on one date (`MessMenuChange`, with an optional note such as "Festival") replaces the weekly line on that date only; setting it again replaces it (`V110`).
+- Residents see their current hostel's next seven days on `/hostel` (`GET /api/v1/hostel/student/mess`; without a bed the answer is empty) and rate meals of today or the last seven days from 1 to 5 with an optional comment, once per meal (`POST …/mess/feedback`, a unique key per student, date, and meal).
+- The hostel office (Hostel Management, Mess) and the hostel's wardens (the Mess card on `/warden`) manage the menu and read the last 30 days' feedback through `/api/v1/hostel/mess/manage` with `ADMIN` or `WARDEN` and `HOSTEL_MESS_MANAGE`; another hostel answers 404. Feedback is shown without who gave it, and a meal's average only for at least five ratings (`AnalyticsRules.MIN_GROUP`). "Today" is the date in `COLLEGE_TIME_ZONE`.
+
+## Visitors (v0.10.11)
+
+- The hostel office sets each hostel's daily visiting hours (Hostel Management, Visitors; `PUT /api/v1/hostel/admin/hostels/{id}/visiting-hours`, `HOSTEL_MANAGE`), read in `COLLEGE_TIME_ZONE`. A hostel without hours takes no visitors (`V111`).
+- A resident registers a visitor for today or a day in the next 30 days and cancels while expected (the Visitors card on `/hostel`; `/api/v1/hostel/student/visitors`, `STUDENT` and `HOSTEL_VISITOR_REGISTER`). Only the visitor's name and relation are kept.
+- Security sees today's visitors on `/gate` and records arrivals (only within the hostel's visiting hours), departures, and walk-ins for a resident by college ID (`/api/v1/gate/visitors`, `SECURITY` and `HOSTEL_VISITOR_DESK`). A visit moves forward only (expected, inside, left; or cancelled) under its row lock, and is never deleted.
+
+## Pages (v0.16.9)
+
+- Students: `/hostel` is the Overview (their allocation and application, hostel notices, tonight's dinner, and their latest outing), with a page per section: `/hostel/applications` (apply, the three steps from application to bed, and their applications with approval progress), `/hostel/room-changes`, `/hostel/outings` (gate passes and leave beside their requests and passes), `/hostel/mess`, `/hostel/visitors`, and `/hostel/room-problem`. A student never chooses a bed.
+- Wardens: `/warden` is the Overview (their hostels with occupancy, requests to decide, and overdue students), with `/warden/roll-call`, `/warden/notices`, `/warden/mess`, and `/warden/bed-map`.
+- The hostel office: `/admin/hostel/:section` keeps its nine sections; applications are a table with the allocation in words, and Occupancy & Bed Map opens on the first hostel with its counts and its rooms as cards.

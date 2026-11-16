@@ -7,6 +7,7 @@ import { EmptyState } from '../../components/states/EmptyState'
 import { SectionState } from '../../courses/SectionState'
 import type { CampusGroup, GroupKind, JoinPolicy, OfficerTitle } from '../../types/engagement'
 import { Alert, Badge, Button, Card, SelectField, TextField } from '../../ui'
+import { TeamsPanel } from '../TeamsPanel'
 import { failureText, POLICY_LABEL, TITLE_LABEL } from '../engagementText'
 
 function GroupAdminRow({ group, onDone }: { group: CampusGroup; onDone: (text: string, error?: boolean) => void }) {
@@ -47,6 +48,7 @@ function GroupAdminRow({ group, onDone }: { group: CampusGroup; onDone: (text: s
           Name officer
         </Button>
       </div>
+      {group.kind === 'SPORT' && <TeamsPanel groupId={group.groupId} groupName={group.name} />}
     </li>
   )
 }

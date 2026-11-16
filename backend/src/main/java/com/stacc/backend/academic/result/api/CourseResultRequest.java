@@ -35,5 +35,22 @@ public record CourseResultRequest(
 
         @Schema(description = "Optional plain text. Line breaks are kept; HTML is not interpreted.", example = "Good performance")
         @Size(max = CourseResult.MAX_REMARKS_LENGTH, message = "Remarks must be at most 2,000 characters")
-        String remarks) {
+        String remarks,
+
+        @Schema(description = "Optional internal part; give all four parts or none. The parts must add up to the totals.", example = "34")
+        @DecimalMin(value = "0", message = "Marks cannot be negative")
+        @Digits(integer = 6, fraction = CourseResult.MARK_DECIMAL_PLACES, message = "Marks must be below 1,000,000 with at most 2 decimal places")
+        BigDecimal internalMarks,
+
+        @DecimalMin(value = "0", message = "Marks cannot be negative")
+        @Digits(integer = 6, fraction = CourseResult.MARK_DECIMAL_PLACES, message = "Marks must be below 1,000,000 with at most 2 decimal places")
+        BigDecimal internalMax,
+
+        @DecimalMin(value = "0", message = "Marks cannot be negative")
+        @Digits(integer = 6, fraction = CourseResult.MARK_DECIMAL_PLACES, message = "Marks must be below 1,000,000 with at most 2 decimal places")
+        BigDecimal externalMarks,
+
+        @DecimalMin(value = "0", message = "Marks cannot be negative")
+        @Digits(integer = 6, fraction = CourseResult.MARK_DECIMAL_PLACES, message = "Marks must be below 1,000,000 with at most 2 decimal places")
+        BigDecimal externalMax) {
 }

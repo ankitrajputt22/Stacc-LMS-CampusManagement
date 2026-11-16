@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.stacc.backend.approval.ApprovalActor;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
+import com.stacc.backend.campus.services.CampusRequestProgressService;
 import com.stacc.backend.campus.services.CampusServiceDefinitionService;
 import com.stacc.backend.campus.services.CampusServiceInputs.CreateCampusServiceInput;
 import com.stacc.backend.campus.services.CampusServiceInputs.UpdateCampusServiceInput;
@@ -24,6 +25,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,8 +37,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * The campus office's service catalog and service requests. Every route needs the admin role and
@@ -60,12 +64,14 @@ public class CampusAdminController {
     private final CampusServiceDefinitionService services;
     private final CampusServiceRequestService requests;
     private final CampusServiceQueryService queries;
+    private final CampusRequestProgressService progress;
 
     public CampusAdminController(CampusServiceDefinitionService services, CampusServiceRequestService requests,
-            CampusServiceQueryService queries) {
+            CampusServiceQueryService queries, CampusRequestProgressService progress) {
         this.services = services;
         this.requests = requests;
         this.queries = queries;
+        this.progress = progress;
     }
 
     @GetMapping("/services")
@@ -152,6 +158,45 @@ public class CampusAdminController {
     public AdminCampusRequestDetail complete(@AuthenticationPrincipal Jwt accessToken, Authentication authentication,
             @PathVariable Long requestId) {
         return requests.complete(actor(accessToken, authentication), requestId);
+    }
+
+    @PostMapping(value = "/requests/{requestId}/complete", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(CampusAccess.MANAGE_SERVICES)
+    @Operation(summary = "Complete a campus service request with an issued document",
+            description = "multipart/form-data with documentTitle and file. The document goes into the requester's vault with "
+                    + "a verification code, like an issued certificate, and the requester is told in their Inbox.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The request, now completed with its document.")
+    @ApiResponse(responseCode = "400", description = "No file or title, or a file type or size that is not allowed.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "The request is not accepted yet, was rejected or cancelled, or is already completed.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AdminCampusRequestDetail completeWithDocument(@AuthenticationPrincipal Jwt accessToken, Authentication authentication,
+            @PathVariable Long requestId, @RequestParam(required = false) String documentTitle,
+            @RequestPart(name = "file", required = false) MultipartFile file) {
+        return progress.completeWithDocument(actor(accessToken, authentication), requestId, documentTitle, file);
+    }
+
+    @PostMapping("/requests/{requestId}/start-processing")
+    @PreAuthorize(CampusAccess.MANAGE_SERVICES)
+    @Operation(summary = "Mark a campus service request as being processed",
+            description = "Only an approved request. Repeating changes nothing.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The request.")
+    @ApiResponse(responseCode = "409", description = "The request is not approved, or already further along.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AdminCampusRequestDetail startProcessing(@AuthenticationPrincipal Jwt accessToken, Authentication authentication,
+            @PathVariable Long requestId) {
+        return progress.startProcessing(actor(accessToken, authentication), requestId);
+    }
+
+    @PostMapping("/requests/{requestId}/mark-ready")
+    @PreAuthorize(CampusAccess.MANAGE_SERVICES)
+    @Operation(summary = "Mark a campus service request as ready",
+            description = "An approved or processing request; the requester is told in their Inbox the first time.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The request.")
+    @ApiResponse(responseCode = "409", description = "The request is not approved, or is finished.", content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public AdminCampusRequestDetail markReady(@AuthenticationPrincipal Jwt accessToken, Authentication authentication,
+            @PathVariable Long requestId) {
+        return progress.markReady(actor(accessToken, authentication), requestId);
     }
 
     private static ApprovalActor actor(Jwt accessToken, Authentication authentication) {

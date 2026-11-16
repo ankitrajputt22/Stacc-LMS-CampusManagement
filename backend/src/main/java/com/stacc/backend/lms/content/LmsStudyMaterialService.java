@@ -122,6 +122,16 @@ public class LmsStudyMaterialService {
         return material;
     }
 
+    /**
+     * Keeps the material out of the course's AI knowledge, or brings it back (v0.13.3). Students still see and download
+     * it; the next knowledge refresh leaves it out, and until then the course's knowledge shows as out of date.
+     */
+    public LmsStudyMaterial changeAiExclusion(Long userAccountId, Long materialId, boolean excluded) {
+        LmsStudyMaterial material = changeableMaterial(userAccountId, materialId);
+        material.changeAiExclusion(excluded);
+        return material;
+    }
+
     /** Archives the material. Its row and stored file are kept. Archiving it again changes nothing. */
     public LmsStudyMaterial archiveMaterial(Long userAccountId, Long materialId) {
         LmsStudyMaterial material = manageableMaterial(userAccountId, materialId);

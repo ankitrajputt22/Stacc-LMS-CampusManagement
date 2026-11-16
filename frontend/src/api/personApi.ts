@@ -18,3 +18,21 @@ export async function getMyPhoto(signal?: AbortSignal): Promise<Blob> {
   const response = await apiClient.get<Blob>('/me/profile/photo', { responseType: 'blob', signal })
   return response.data
 }
+
+/** Changes the signed-in person's mailing address; blank clears it. */
+export async function updateMyMailingAddress(mailingAddress: string | null): Promise<MyPersonProfile> {
+  const response = await apiClient.put<MyPersonProfile>('/me/profile/mailing-address', { mailingAddress })
+  return response.data
+}
+
+/** Adds an emergency contact (at most three). */
+export async function addMyEmergencyContact(contact: { name: string; relation: string; phone: string }): Promise<MyPersonProfile> {
+  const response = await apiClient.post<MyPersonProfile>('/me/profile/emergency-contacts', contact)
+  return response.data
+}
+
+/** Removes one of the signed-in person's own emergency contacts. */
+export async function removeMyEmergencyContact(contactId: number): Promise<MyPersonProfile> {
+  const response = await apiClient.delete<MyPersonProfile>(`/me/profile/emergency-contacts/${contactId}`)
+  return response.data
+}

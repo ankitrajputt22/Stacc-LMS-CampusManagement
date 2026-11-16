@@ -70,12 +70,15 @@ class RequestIdAndHealthTest extends DatabaseFreeApiTest {
         mockMvc.perform(get("/actuator/health/readiness"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
+        // The same probes on the main port's short paths, which stay there when the monitoring profile moves Actuator.
+        mockMvc.perform(get("/livez")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("UP"));
+        mockMvc.perform(get("/readyz")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test
     void onlyTheHealthEndpointIsExposed() throws Exception {
         for (String endpoint : new String[] {"/actuator/env", "/actuator/beans", "/actuator/configprops", "/actuator/info",
-            "/actuator/metrics", "/actuator/loggers", "/actuator/heapdump"}) {
+            "/actuator/metrics", "/actuator/loggers", "/actuator/heapdump", "/actuator/prometheus"}) {
             mockMvc.perform(get(endpoint)).andExpect(status().isNotFound());
         }
     }

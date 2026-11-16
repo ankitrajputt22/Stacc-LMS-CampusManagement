@@ -18,8 +18,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * A question or topic in a course's discussions. Its text never changes and it is never deleted; only its pin and
- * accepted reply change, and its last activity moves with each reply.
+ * A question or topic in a course's discussions. Its text never changes and it is never deleted; only its pin, lock,
+ * hidden state, and accepted reply change, and its last activity moves with each reply. Faculty may hide it (students
+ * then no longer see it) and lock it (it takes no new replies).
  */
 @Entity
 @Table(name = "lms_discussion_threads")
@@ -52,6 +53,15 @@ public class LmsDiscussionThread {
 
     @Column(nullable = false)
     private boolean pinned;
+
+    @Column(nullable = false)
+    private boolean locked;
+
+    @Column(name = "hidden_at")
+    private Instant hiddenAt;
+
+    @Column(name = "hidden_by_account_id")
+    private Long hiddenByAccountId;
 
     @Column(name = "accepted_reply_id")
     private Long acceptedReplyId;
@@ -86,6 +96,31 @@ public class LmsDiscussionThread {
 
     public void accept(Long replyId) {
         this.acceptedReplyId = replyId;
+    }
+
+    public void lock(boolean locked) {
+        this.locked = locked;
+    }
+
+    /** Hides the thread from students; hiding again keeps the first time and moderator. */
+    public void hide(Long byAccountId, Instant at) {
+        if (hiddenAt == null) {
+            this.hiddenAt = Require.notNull(at, "at");
+            this.hiddenByAccountId = Require.notNull(byAccountId, "byAccountId");
+        }
+    }
+
+    public void unhide() {
+        this.hiddenAt = null;
+        this.hiddenByAccountId = null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 
     public Long getId() { return id; }

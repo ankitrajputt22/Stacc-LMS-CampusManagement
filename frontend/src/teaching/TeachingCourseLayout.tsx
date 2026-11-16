@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet, useParams } from 'react-router'
+import { LoadingState } from '../components/states/LoadingState'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { parseCourseId } from '../courses/courseRoute'
@@ -7,7 +9,7 @@ import { useFacultyCourse } from './useFacultyCourse'
 
 /**
  * Every faculty page of one course, under /teaching/:lmsCourseId, with the course navigation: Home (course settings and
- * the course home), Modules, Announcements, Assignments, Quizzes, Outcomes, Question bank, Files, Syllabus, and AI Tools. The navigation appears once
+ * the course home), Modules, Announcements, Assignments, Quizzes, Outcomes, Question bank, Files, Syllabus, and Teacher AI. The navigation appears once
  * the course has loaded; each page shows its own states.
  */
 export function TeachingCourseLayout() {
@@ -25,6 +27,8 @@ export function TeachingCourseLayout() {
       nav={
         <CourseNav
           title={course.data.courseCode}
+          subtitle={course.data.courseName}
+          back={{ to: '/teaching', label: 'Back to My Courses' }}
           items={[
             { to: root, label: 'Home', end: true },
             { to: `${root}/modules`, label: 'Modules' },
@@ -38,14 +42,17 @@ export function TeachingCourseLayout() {
             { to: `${root}/analytics`, label: 'Analytics' },
             { to: `${root}/outcomes`, label: 'Outcomes' },
             { to: `${root}/questions`, label: 'Question bank' },
+            { to: `${root}/papers`, label: 'Exam papers' },
             { to: `${root}/files`, label: 'Files' },
             { to: `${root}/syllabus`, label: 'Syllabus' },
-            { to: `${root}/ai`, label: 'AI Tools' },
+            { to: `${root}/ai`, label: 'Teacher AI' },
           ]}
         />
       }
     >
-      <Outlet />
+      <Suspense fallback={<LoadingState />}>
+        <Outlet />
+      </Suspense>
     </CourseFrame>
   )
 }

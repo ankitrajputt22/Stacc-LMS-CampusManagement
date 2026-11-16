@@ -33,6 +33,12 @@ export function citationKind(citation: AiCitation): string {
   if (citation.sourceType === 'TOPIC') {
     return 'Topic'
   }
+  if (citation.sourceType === 'TEACHER_DOCUMENT') {
+    return 'Teacher document'
+  }
+  if (citation.sourceType === 'NOTE') {
+    return 'My note'
+  }
   const place =
     citation.pageNumber !== null
       ? ` · Page ${citation.pageNumber}`
@@ -42,8 +48,14 @@ export function citationKind(citation: AiCitation): string {
   return `Study Material${place}`
 }
 
+/** The backend's words when a course's teachers turned the AI Study Assistant off (v0.13.7). */
+export const STUDENT_AI_TURNED_OFF = 'The AI Study Assistant is turned off for this course.'
+
+/** The backend's words while a graded quiz of the course is in progress for the student (v0.15.4). */
+export const AI_PAUSED_FOR_QUIZ = 'The AI Study Assistant is paused while you have a graded quiz in progress in this course.'
+
 export type AiFailure = {
-  kind: 'unavailable' | 'notReady' | 'notFound' | 'denied' | 'invalid' | 'failed'
+  kind: 'unavailable' | 'notReady' | 'turnedOff' | 'paused' | 'busy' | 'notFound' | 'denied' | 'invalid' | 'failed'
   message: string
 }
 
@@ -60,7 +72,19 @@ export function aiFailure(error: unknown, audience: 'student' | 'faculty'): AiFa
     case 502:
     case 503:
       return { kind: 'unavailable', message: AI_UNAVAILABLE }
+    case 429:
+      return { kind: 'busy', message: message ?? 'AI is busy right now. Try again in a minute.' }
     case 409:
+      if (message === STUDENT_AI_TURNED_OFF) {
+        return { kind: 'turnedOff', message }
+      }
+      if (message === AI_PAUSED_FOR_QUIZ) {
+        return { kind: 'paused', message }
+      }
+      // Other refusals the student should read as written, such as an assignment that is no longer open (v0.15.4).
+      if (audience === 'student' && message && message !== STUDY_NOT_READY) {
+        return { kind: 'notReady', message }
+      }
       return {
         kind: 'notReady',
         message: audience === 'student' ? STUDY_NOT_READY : (message ?? 'AI knowledge is not ready for this course.'),

@@ -102,8 +102,8 @@ services:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     healthcheck:
       # Readiness answers UP only after Spring Boot has fully started, including the Flyway migrations, and while the
-      # database answers. File storage and AI are not part of it (see docs/operations.md).
-      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      # database answers. /readyz stays on the main port even when the "monitoring" profile moves Actuator. File storage and AI are not part of it (see docs/operations.md).
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/readyz"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -154,6 +154,19 @@ services:
     # No published port: only the AI service calls it. Models are pulled once with
     #   docker compose --profile ai exec ollama ollama pull <model>
 
+  # Optional: `docker compose --profile monitoring up` with SPRING_PROFILES_ACTIVE including "monitoring". Prometheus
+  # reads the backend's metrics on its internal management port; only its own page is published, on this machine.
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: ["monitoring"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      - backend
+
 volumes:
   # The database files and the stored files. Both survive "docker compose down" and are
   # removed only by "docker compose down -v".
@@ -162,3 +175,4 @@ volumes:
   # AI learning (profile "ai"): the course vector indexes, and the downloaded local models.
   ai-index-data:
   ollama-data:
+  prometheus-data:

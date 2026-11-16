@@ -20,6 +20,19 @@ public interface LmsQuestionRepository extends JpaRepository<LmsQuestion, Long> 
             """)
     List<LmsQuestion> findAllForCourse(@Param("lmsCourseId") Long lmsCourseId);
 
+    /** Active questions' IDs and texts, newest first, for the AI quality checks (v0.14.2). */
+    @Query("select question.id, question.text from LmsQuestion question where question.lmsCourse.id = :lmsCourseId"
+            + " and question.status = com.stacc.backend.lms.question.QuestionStatus.ACTIVE order by question.id desc")
+    List<Object[]> findActiveTexts(@Param("lmsCourseId") Long lmsCourseId, org.springframework.data.domain.Pageable page);
+
+    /** The course's questions used by an exam paper that was made final (v0.14.2). */
+    @Query(value = """
+            select distinct link.lms_question_id from lms_exam_paper_questions link
+            join lms_exam_papers paper on paper.id = link.lms_exam_paper_id
+            where paper.lms_course_id = :lmsCourseId and paper.finalized_at is not null
+            """, nativeQuery = true)
+    List<Long> findIdsInFinalPapers(@Param("lmsCourseId") Long lmsCourseId);
+
     /** The course of the question, read without loading the question, so access is checked before the row is locked. */
     @Query("select question.lmsCourse.id from LmsQuestion question where question.id = :questionId")
     Optional<Long> findLmsCourseIdById(@Param("questionId") Long questionId);
@@ -41,6 +54,16 @@ public interface LmsQuestionRepository extends JpaRepository<LmsQuestion, Long> 
             where link.lms_question_id = :questionId for share
             """, nativeQuery = true)
     List<String> findQuizStatusesForShare(@Param("questionId") Long questionId);
+
+    /**
+     * The status of every exam paper that uses the question, read with a shared lock. A paper is made final under the
+     * course row lock, which an edit holds first, so the edit sees every paper made final before it.
+     */
+    @Query(value = """
+            select paper.status from lms_exam_paper_questions link join lms_exam_papers paper on paper.id = link.lms_exam_paper_id
+            where link.lms_question_id = :questionId for share
+            """, nativeQuery = true)
+    List<String> findPaperStatusesForShare(@Param("questionId") Long questionId);
 
     /** The questions of the course used by a quiz that is published or archived, which can no longer be edited. */
     @Query(value = """

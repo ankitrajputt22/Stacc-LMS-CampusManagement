@@ -9,6 +9,19 @@ import org.springframework.data.repository.query.Param;
 
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Long> {
 
+    /** One record, locked, with its session, enrollment, offering, and course, for a correction decided by the office. */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("""
+            select record from AttendanceRecord record
+            join fetch record.attendanceSession session
+            join fetch record.courseEnrollment enrollment
+            join fetch enrollment.courseOffering offering
+            join fetch offering.course
+            where record.id = :id
+            """)
+    java.util.Optional<AttendanceRecord> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
+
     /** A session's records, each with the student's account, in student ID order. */
     @Query("""
             select record

@@ -29,16 +29,19 @@ public class LmsAnnouncementManagementService {
     private final LmsAnnouncementRepository announcements;
     private final LmsFacultyAccessService facultyAccess;
     private final Clock clock;
+    private final LmsAnnouncementNotifications notifications;
 
     public LmsAnnouncementManagementService(
             LmsCourseRepository lmsCourses,
             LmsAnnouncementRepository announcements,
             LmsFacultyAccessService facultyAccess,
-            Clock clock) {
+            Clock clock,
+            LmsAnnouncementNotifications notifications) {
         this.lmsCourses = lmsCourses;
         this.announcements = announcements;
         this.facultyAccess = facultyAccess;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     /** Adds a draft plain-text announcement to the course. */
@@ -71,10 +74,26 @@ public class LmsAnnouncementManagementService {
         return announcement;
     }
 
-    /** Publishes a draft now. Publishing a published announcement changes nothing. */
+    /**
+     * Publishes a draft now and, the first time only, tells the students who may use the course through the Inbox.
+     * Publishing a published announcement changes nothing. The row is locked first and read fresh, so two publications
+     * at once notify once.
+     */
     public LmsAnnouncement publish(Long userAccountId, Long announcementId) {
-        LmsAnnouncement announcement = changeable(userAccountId, announcementId);
+        Long lmsCourseId = announcementId == null ? null : announcements.findLmsCourseIdById(announcementId).orElse(null);
+        if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
+            throw notFound(ANNOUNCEMENT_UNAVAILABLE);
+        }
+        LmsAnnouncement announcement = announcements.findByIdForUpdate(announcementId)
+                .orElseThrow(() -> notFound(ANNOUNCEMENT_UNAVAILABLE));
+        if (announcement.isArchived()) {
+            throw new ApiException(HttpStatus.CONFLICT, ANNOUNCEMENT_ARCHIVED);
+        }
+        boolean first = announcement.getPublishedAt() == null;
         announcement.publish(clock.instant());
+        if (first) {
+            notifications.published(announcement);
+        }
         return announcement;
     }
 

@@ -68,6 +68,8 @@ export type StudentAttendanceSession = {
   heldAt: string
   topic: string | null
   status: 'PRESENT' | 'ABSENT'
+  /** The student's own record, for asking to correct an absence. */
+  attendanceRecordId: number
 }
 
 /** A student's finalized attendance in one course offering, from GET /api/v1/attendance/student/me. */
@@ -85,6 +87,8 @@ export type StudentCourseAttendance = {
   attendancePercentage: number | null
   /** Latest class first. */
   sessions: StudentAttendanceSession[]
+  /** Below the college's minimum of 75%, decided by the backend. */
+  lowAttendance: boolean
 }
 
 export type StudentAttendance = {

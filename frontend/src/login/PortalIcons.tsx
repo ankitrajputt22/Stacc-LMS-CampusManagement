@@ -1,44 +1,31 @@
-/** Small icons of the sign-in portal. All decorative: every one sits next to words that say the same. */
+/** Small icons of the sign-in page. All decorative: each sits on a control whose name says the same in words. */
 
-export function ArrowCircleIcon() {
-  return (
-    <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false" className="size-10 shrink-0">
-      <circle cx="20" cy="20" r="18" fill="#ffffff" />
-      <path d="M11 20h17M21 13l7 7-7 7" fill="none" stroke="#c2410c" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-export function HomeIcon() {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false" className="size-5 shrink-0">
-      <path d="M10 2.5 1.5 10h2.5v7.5h4.5v-5h3v5H16V10h2.5z" fill="currentColor" />
-    </svg>
-  )
-}
-
-export function HelpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-7 shrink-0">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2.25" />
-      <path d="M9.2 9.2a2.9 2.9 0 1 1 4.3 2.5c-.9.5-1.5 1.1-1.5 2.1v.4" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" />
-      <circle cx="12" cy="17.6" r="1.3" fill="currentColor" />
-    </svg>
-  )
-}
-
-export function MenuLinesIcon() {
+export function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-6 shrink-0">
-      <path d="M3 6h18M3 10h18M3 14h18M3 18h18" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   )
 }
 
-export function CloseLinesIcon() {
+export function EyeOffIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-6 shrink-0">
-      <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" />
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M4 4l16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** Layered hills behind the sign-in form, in flat portal colours. Purely decorative. */
+export function PortalLandscape({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false" className={className}>
+      <path d="M0 560 170 430l120 70 190-210 150 150 110-90 210 230 140-120 170 140 180-170v480H0z" fill="#3d4f7c" fillOpacity="0.45" />
+      <path d="M0 660 220 520l170 110 160-90 200 160 170-120 190 140 150-80 180 110v170H0z" fill="#1d3461" fillOpacity="0.75" />
+      <path d="M0 760 260 650l210 80 230-70 240 110 220-60 280 90v100H0z" fill="#0b2545" />
     </svg>
   )
 }

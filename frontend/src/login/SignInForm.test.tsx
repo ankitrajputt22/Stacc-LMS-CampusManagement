@@ -48,4 +48,17 @@ describe('SignInForm', () => {
     await signIn()
     expect(await screen.findByText('Too many sign-in attempts. Wait a few minutes and try again.')).toBeInTheDocument()
   })
+
+  it('shows and hides the password on request', async () => {
+    renderWith(vi.fn())
+    const user = userEvent.setup()
+    const password = screen.getByLabelText('Password', { exact: true })
+    expect(password).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(password).toHaveAttribute('type', 'text')
+
+    await user.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(password).toHaveAttribute('type', 'password')
+  })
 })

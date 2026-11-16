@@ -46,7 +46,7 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 | --- | --- | --- |
 | `student1` | `STUDENT` | **Main student.**<br>• Student dashboard and Courses: CS301 is published; CS302 is a draft and CS303 is archived, so neither shows.<br>• Course content, announcements, and assignments.<br>• Quizzes: "Stacks and queues check" in CS301, with two attempts to take.<br>• Grades: the warm-up assignment (17/20) and "Class test 1" (21/25) are published; the warm-up is graded with a rubric.<br>• A graded late attempt, and an ungraded on-time one.<br>• Attendance: present in both finalized sessions.<br>• Results: published, including a completed course from the previous session.<br>• Calendar: semester 3 events and deadlines.<br>• Helpdesk: an open LMS ticket, and a resolved one with a reply.<br>• Registration: semester 3 is open; CS305 and CS306 (section A) can be added up to the 24-credit limit. |
 | `student2` | `STUDENT` | **Second student.**<br>• Two attempts on one assignment: the first graded, the latest not.<br>• An absence.<br>• A draft result, so no published results show.<br>• A withdrawn course enrollment (CS304).<br>• Registration: section B, so only CS305 is open to add (the e2e journey adds and drops it).<br>• Helpdesk: a closed ticket that was resolved first. |
-| `faculty1` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), CS306 (section A elective), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Question bank: four reviewed questions in CS301, used by the published quiz "Stacks and queues check".<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard.<br>• Helpdesk: a high-priority ticket in progress, assigned to `admin1`, with a reply. |
+| `faculty1` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), CS306 (section A elective), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Question bank: four reviewed questions in CS301, used by the published quiz "Stacks and queues check".<br>• Exam papers: the blueprint "Unit 1 test blueprint" and the draft paper "Unit 1 test" built from it.<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard.<br>• Helpdesk: a high-priority ticket in progress, assigned to `admin1`, with a reply. |
 | `faculty2` | `FACULTY` | **Draft LMS course and no LMS course.**<br>• CS302 has a draft LMS course with draft content and a draft assignment.<br>• CS304 has no LMS course, so Teaching offers Create.<br>• Teaches the open elective CS305 (no LMS course).<br>• An open, unmarked attendance session.<br>• Course copy: CS250 Algorithms Lab, archived from last session with a module, two pages, and a syllabus, and an empty draft in semester 4 to copy into. |
 | `admin1` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view.<br>• Helpdesk queue: every ticket, three of them assigned to `admin1`. |
 | `studentfaculty1` | `STUDENT`, `FACULTY` | **Student and teacher at once.**<br>• Enrolled in CS301, and co-teaches CS302 with `faculty2`.<br>• Both dashboard parts.<br>• Student and teaching deadlines on the calendar. |
@@ -144,8 +144,50 @@ The data lives in your local database. To start from an empty database with Dock
 
 - **Staff accounts:** `warden1` (warden of the Main Hostel), `security1`, `maintenance1` (with `warden1` on the `MAINTENANCE` support team), `librarian1`, and `placement1`.
 - **Clubs and sports:** the Coding Club (joins on approval; advisor `faculty1`, president `student1`) and the Cricket Team (open; coach `faculty2`).
+- **Grievances:** the `ACADEMIC` category (answer within 14 days) with `faculty1` on its committee.
+- **Mentoring:** `faculty1` mentors `student1`.
+- **Library:** *Introduction to Algorithms* (copies `LIB-0001`, `LIB-0002`) and *Effective Java* (`LIB-0003`), and one digital resource; `librarian1` works the desk.
 - **Facilities:** a Seminar Hall that needs approval, and an open Badminton Court.
 - **An event:** Open Source Day, published a week ahead.
 - **A placement:** Acme Software's open Graduate Software Engineer placement.
 
 It only finds or creates, through the feature services, like the main seeder.
+
+## A fuller college (v0.15.11)
+
+`LocalCollegePopulation` runs inside the main seeder, after its data and in its own transaction, under the same profile and password. It gives every feature a realistic class to work with: full class lists, attendance percentages with gaps, class groups large enough for analytics (at least five), grading queues, and a second department with its own head. Names are made up; addresses use the reserved `.example` domain like the rest.
+
+**People.** Login IDs are college IDs for students and employee IDs for staff. Every account uses `STACC_TEST_PASSWORD`.
+
+| Login IDs | Who | Useful for testing |
+| --- | --- | --- |
+| `cse25004` to `cse25015` | Twelve Computer Science students (roll numbers `25CSE004` to `25CSE015`), section C of semester 3 | Class lists and attendance in CS301 with 15 students; warm-up hand-ins (some ungraded, two missing); linked list hand-ins; a published CS201 result from last semester each. `cse25008` misses most classes. |
+| `ece25001` to `ece25015` | Fifteen Electronics and Communication students (`25ECE001` to `25ECE015`), sections A (`001` to `008`) and B | Signals and Systems and Analog Electronic Circuits as published courses; problem set hand-ins and grades; five and three finalized classes; a published EC201 result each. `ece25005` and `ece25012` miss most classes. `ece25001`, `ece25006`, `ece25011`, and `ece25014` have hostel applications waiting for a decision. |
+| `emp2011` | Anil Deshpande, CSE | Co-teaches CS301 with `faculty1`. |
+| `emp2012` | Farah Siddiqui, CSE | Co-teaches CS304. |
+| `emp3001` | Prakash Raman, `FACULTY` and `HOD` | Heads ECE (department analytics with 15 students); teaches EC304, which has no LMS course yet. |
+| `emp3002` | Divya Srinivasan, ECE | Teaches EC301 Signals and Systems: two published units with plain and formatted pages, a syllabus, announcements, a past and a future assignment with a grading queue, and a draft. |
+| `emp3003` | Manoj Tiwari, ECE | Teaches EC302 (published, an open attendance class to take) and last semester's EC201. |
+| `emp3004` | Kavya Nair, ECE | Teaches EC303 (a draft LMS course) and the open elective EC305 (40 places, registration open). |
+
+**Also created:** the `ECE` department and `BTECH-ECE` program (24 credits a semester), its semesters 2 (last session, closed) and 3 (current, registration open), courses `EC201` to `EC305`, `emp3001` as head of ECE, two more finalized CS301 classes with the whole class, two ECE calendar events, three helpdesk tickets (open, in progress, and resolved), and two campus requests (a transport pass waiting for approval and an approved bonafide certificate).
+
+Attendance marks and marks are worked out from each student's login ID and place in the list, so a second run creates nothing and changes nothing.
+
+**Campus activity.** `LocalCampusActivitySeeder` runs last (order 20) and gives these people everyday activity, through the feature services and only when missing:
+
+- **Discussions:** in EC301, a question from `ece25003` answered by `emp3002` (accepted) with a student follow-up, a student question answered by another student, and the teacher's pinned office-hours notice; in CS301, a question from `cse25006` answered by `faculty1` (accepted).
+- **Clubs:** `cse25004` and `cse25005` are accepted into the Coding Club; `cse25009`, `cse25013`, and `ece25006` wait for its officers. Five students joined the Cricket Team.
+- **Mentoring:** `emp3001` mentors `ece25005` (with a first meeting, shared and private notes, and two action items that show on their To-Do lists) and `ece25012`; `emp2011` mentors `cse25008`.
+- **Library:** *Signals and Systems* (`LIB-0101`, `LIB-0102`) and *Microelectronic Circuits* (`LIB-0103`); `ece25003` and `ece25008` each have a book on loan.
+
+## ERP records (v0.16)
+
+`LocalErpSeeder` adds, once each:
+
+- Weekly timetables for the current CSE and ECE semesters (rooms such as `CSE-204` and `LAB-02`).
+- Degree requirements for both B.Tech programs: core 96, electives 42, labs 12, projects 10 credits.
+- Aarav's (`student1`) mailing address and two emergency contacts.
+- Pending requests: Aarav's medical leave and CS201 revaluation, and an attendance correction from `cse25008`.
+- A published "End Semester Examinations — December 2026" session for each current semester, every student seated.
+- Fee structures of ₹1,12,500 for both programs, due 15 Dec 2026. Aarav has paid ₹70,000 in three payments and holds a ₹10,000 merit scholarship, leaving ₹32,500 due.

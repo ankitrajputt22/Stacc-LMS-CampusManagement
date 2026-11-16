@@ -31,3 +31,49 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - `CAMPUS_ENGAGEMENT_USE` (`STUDENT`, `FACULTY`): joining, registering, and booking.
 - `CAMPUS_ENGAGEMENT_MANAGE` (`ADMIN`): setting everything up.
 - Officers, organizers, and bookers are checked per record. Anything the caller may not manage answers 404.
+
+## Group sessions and announcements (v0.11.2)
+
+- A club or sports group's officers, and the campus office, schedule meetings and practices (`GroupSession`: kind, title, optional location, start and end moments) and cancel them (kept, marked cancelled), and post plain-text announcements (`GroupAnnouncement`, kept as written) (`V112`).
+- Active members, officers, and the campus office read a group's sessions and latest announcements (`GET /api/v1/engagement/groups/{id}/activity`); anyone else gets 404. The "Sessions and announcements" panel opens on each group the account belongs to or leads.
+- Scheduled sessions of the account's groups appear on its calendar (`GET /api/v1/engagement/me/sessions`, ranges up to 62 days; the month view shows them).
+- Posting an announcement tells every active member except its author through the Inbox (`GROUP_ANNOUNCEMENT`, Campus category).
+
+## Event attendance (v0.11.6)
+
+- A registered attendee (not waitlisted) gets a check-in code from the pass service (`EVENT_CHECK_IN`, valid from an hour before the event until it ends; a new code revokes the earlier one) and shows it as a QR code with the code in words (`POST /api/v1/engagement/events/{id}/check-in-code`). Only the code's fingerprint is stored.
+- The event's managers check attendees in by that code (typed or scanned) or by college ID, in the same window (`POST …/check-ins`); attending is recorded once on the registration (`attended_at`, how, and by whom; `V113`) under its row lock. Checking in again changes nothing.
+- Certificate eligibility is worked out on read: an attendee who checked in is due a participation certificate once the event has ended. The organizer's list (`GET …/attendance`) and the attendee's own view (`GET …/my-attendance`) show it; nothing about it is stored.
+
+## Fests and volunteers (v0.11.7)
+
+- A fest (`CampusFest`, `V114`) has a name, plain-text description, and first and last day. The campus office (`ADMIN` with `CAMPUS_ENGAGEMENT_MANAGE`, at Campus Management → Fests) adds it as a draft, publishes it, and archives it; nothing is deleted, and an archived fest no longer changes.
+- Its schedule links existing campus events; an event is on at most one fest (unique), and taking it off the schedule keeps the event itself.
+- Volunteer shifts have a role, a start and end, and a number of places. Students and faculty (`CAMPUS_ENGAGEMENT_USE`, the Fests tab at `/campus/fests`) apply before a shift starts, with an optional note, and may withdraw while the application is open or accepted. Each account has at most one open or accepted application per shift (a unique generated column); after a withdrawal or a decline it may apply again.
+- The campus office accepts or declines each application once. Accepting locks the shift row and counts accepted volunteers with a locking read, so a shift never takes more than its places (`FestVolunteerMySqlIT`).
+
+## Trials (v0.11.8)
+
+- A trial is an ordinary campus event that its managers (the organizer, the group's officers, or the campus office) mark as a trial before it starts (`POST /api/v1/engagement/events/{id}/trial`, `V115`). It stays a trial; marking it again changes nothing, and a started or cancelled event cannot become one.
+- Once the trial has started, its managers record Selected or Not selected for each registered (not waitlisted) attendee by college ID (`POST …/trial-outcomes`), under the registration's row lock. An outcome may be corrected; the registration keeps only the latest outcome, who recorded it, and when.
+- Attendees see their own outcome with their attendance (`GET …/my-attendance`); the managers see everyone's in the registrations list. Selection grants nothing by itself: team rosters come with their own phase.
+
+## Teams (v0.11.9)
+
+- A team (`CampusTeam` in `engagement.teams`, `V116`) belongs to one active sports group and one season, with a name unique per group and season. The group's officers and the campus office add teams and make them inactive; a team is never deleted, and an inactive one keeps its roster but takes no changes.
+- Its roster holds active members of the group, by college ID, as players. At most one current captain and one current vice-captain (unique generated columns): naming a new one makes the previous holder a player. Players are taken off the roster with a leaving time, never deleted.
+- Every roster change takes the team row lock (after checking the manager from the team's stored group), then reads the roster with a locking read (`TeamCaptainMySqlIT`).
+- Active members, officers, and the campus office read a group's teams (`GET /api/v1/engagement/groups/{id}/teams`) from the Teams button on the sports group; anyone else gets the same 404 as for a missing group.
+
+## Tournaments (v0.11.10)
+
+- The campus office (`ADMIN` with `CAMPUS_ENGAGEMENT_MANAGE`, at Campus Management → Tournaments) adds tournaments (name, sport, season; `V117`) as drafts, publishes them, and archives them; nothing is deleted, and an archived tournament no longer changes.
+- A match (`CampusFixture`) is between two different sides, each one of our active teams or an external opponent named in text, with a start and an optional venue. The office records text scores (such as `152/6`) and the result (home win, away win, or draw) and may correct them; a scheduled match may be cancelled and stays listed, a played one cannot be cancelled.
+- Standings (played, won, drawn, lost, and points at 3 for a win and 1 for a draw, ordered by points, then wins, then name) are worked out from played matches on every read and never stored.
+- Changes take the tournament row lock, then the match's (`TournamentResultMySqlIT`). Students and faculty see published tournaments on the campus Sports tab (`GET /api/v1/engagement/tournaments`).
+
+## Academic bookings (v0.12.5)
+
+- Facilities may also be classrooms and equipment (`CLASSROOM`, `EQUIPMENT`; `V120`), booked through the same engine with the same hours, closures, approvals, and overlap rule.
+- The campus office sets weekly class hours per facility (day, start and end in the college's time zone, and a label such as `CS101 lecture`) at Campus Management → Facilities. A new booking that overlaps class hours on their day is refused with the class named; bookings made before the class hours were added stay. Class hours are removed with a time and kept, never deleted, and they take the facility row lock like bookings (`CampusEngagementMySqlIT`).
+- Bookers see each facility's class hours on the campus Facilities tab.

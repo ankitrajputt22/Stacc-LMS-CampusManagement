@@ -1,22 +1,33 @@
-import { type ReactNode, useMemo } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AiMessage } from '../ai/AiMessage'
 import { AskPanel } from '../ai/AskPanel'
+import { FlashcardsPanel } from '../ai/FlashcardsPanel'
+import { MasteryPanel } from '../ai/MasteryPanel'
+import { RecommendationsPanel } from '../ai/RecommendationsPanel'
+import { StudyPlanPanel } from '../ai/StudyPlanPanel'
+import { MyNotesPanel } from '../ai/MyNotesPanel'
+import { SavedAnswersPanel } from '../ai/SavedAnswersPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
 import { PracticePanel } from '../ai/PracticePanel'
-import { TopicSummaryPanel } from '../ai/TopicSummaryPanel'
+import { SummaryPanel, type SummaryChoices } from '../ai/SummaryPanel'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
+import { getCourseAssignments } from '../api/lmsAssignmentsApi'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseContent, LmsCourseDetail } from '../types/lms'
-import { ButtonLink, PageHeader } from '../ui'
+import { ButtonLink, LinkTabs, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -41,36 +52,77 @@ function publishedTopics(content: LmsCourseContent): CourseTopicChoice[] {
   )
 }
 
+/** The published pages, modules, and files a student can summarise (v0.15.2), in course order. */
+function summaryChoices(content: LmsCourseContent): SummaryChoices {
+  return {
+    modules: content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title })),
+    topics: content.modules.flatMap((module) => module.topics.map((topic) => ({ id: topic.id, title: topic.title, moduleTitle: module.title }))),
+    files: content.modules.flatMap((module) => module.topics.flatMap((topic) =>
+      topic.materials.map((material) => ({ id: material.id, title: material.title, pageTitle: topic.title })))),
+  }
+}
+
+/** The course's study sections (v0.15.8), each its own address. */
+const STUDY_SECTIONS = [
+  { key: '', label: 'Overview' },
+  { key: 'ask', label: 'Ask' },
+  { key: 'summaries', label: 'Summaries' },
+  { key: 'practice', label: 'Practice' },
+  { key: 'flashcards', label: 'Flashcards' },
+  { key: 'notes', label: 'My notes' },
+] as const
+
 function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsCourseContent }) {
+  const { section } = useParams()
+  const root = `/courses/${course.lmsCourseId}/ai`
+  const current = STUDY_SECTIONS.find((choice) => choice.key === (section ?? '')) ?? STUDY_SECTIONS[0]
+  // Assignments still due, for hint-only help (v0.15.4); the backend decides whether each is open.
+  const assignments = useApiQuery(queryKeys.lms.courseAssignments(course.lmsCourseId),
+    (signal) => getCourseAssignments(course.lmsCourseId, signal))
+  // The time the page opened; a deadline passing while it is open only matters to the backend.
+  const [openedAt] = useState(() => Date.now())
+  const dueAssignments = assignments.status === 'loaded'
+    ? assignments.data.filter((assignment) => new Date(assignment.dueAt).getTime() > openedAt)
+      .map((assignment) => ({ id: assignment.id, title: assignment.title }))
+    : []
   const topics = useMemo(() => publishedTopics(content), [content])
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <title>{`AI Study Assistant · ${course.courseName} · Stacc`}</title>
-      <PageHeader
-        breadcrumb={
-          <Breadcrumb
-            parent={[COURSES, { to: `/courses/${course.lmsCourseId}`, label: course.courseName }]}
-            current="AI Study Assistant"
-          />
-        }
-        eyebrow={
-          <>
-            {course.courseCode}
-            <span aria-hidden="true"> · </span>
-            <span className="sr-only">, </span>
-            {course.courseName}
-          </>
-        }
+      <CourseSectionHeader
+        course={courseBanner(course)}
         title="AI Study Assistant"
-        description="Ask questions based on your published course materials."
+        description="Ask, summarise, practise, and plan from your published course materials."
+      />
+      <LinkTabs
+        label="Study sections"
+        tabs={STUDY_SECTIONS.map((choice) => ({ to: choice.key ? `${root}/${choice.key}` : root, label: choice.label, end: true }))}
       />
       <div>
         <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
-        <AskPanel lmsCourseId={course.lmsCourseId} />
-        <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
-        <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
+        {current.key === '' && (
+          <>
+            <RecommendationsPanel lmsCourseId={course.lmsCourseId} />
+            <MasteryPanel lmsCourseId={course.lmsCourseId} />
+            <StudyPlanPanel lmsCourseId={course.lmsCourseId} />
+          </>
+        )}
+        {current.key === 'ask' && (
+          <>
+            <AskPanel
+              lmsCourseId={course.lmsCourseId}
+              modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))}
+              assignments={dueAssignments}
+            />
+            <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
+          </>
+        )}
+        {current.key === 'summaries' && <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />}
+        {current.key === 'practice' && <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />}
+        {current.key === 'flashcards' && <FlashcardsPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />}
+        {current.key === 'notes' && <MyNotesPanel lmsCourseId={course.lmsCourseId} />}
       </div>
     </div>
   )

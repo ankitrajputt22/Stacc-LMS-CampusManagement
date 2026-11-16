@@ -26,6 +26,30 @@
 - **Quizzes:** per published quiz, how many were handed in and the average score, plus each question's correct rate.
 - **Required pages:** completion counts.
 
+## Department analytics (v0.16.3)
+
+`GET /api/v1/analytics/department` (`HOD` with `DEPARTMENT_ANALYTICS_VIEW`, added by `V126`), shown at `/department` ("Department" for accounts holding `HOD`), lists each department the account heads now. Which departments those are comes only from active head terms that `DepartmentHeadResolver` counts (an `ACTIVE` account still holding `HOD`); someone who heads none gets an empty list. For the current academic session it shows:
+
+- **Programs:** the students enrolled in a semester of each program.
+- **Offerings:** per offering of the department's courses, the enrolled students, the present rate of finalized attendance (only for groups of at least five), and the number of published results.
+
+Counts only otherwise: no student is named, nothing is ranked, and nothing is stored.
+
+## Area analytics (v0.16.4)
+
+`GET /api/v1/analytics/areas` (`ADMIN`, `LIBRARIAN`, or `PLACEMENT_OFFICER` with `AREA_ANALYTICS_VIEW`, added by `V127`), shown at `/areas` ("Area analytics"), gives live counts per campus area. Each section appears only with that area's own permission; a missing permission leaves it out, never shows zero:
+
+| Section | Needs | Figures |
+| --- | --- | --- |
+| Hostel | `ADMIN` and `HOSTEL_MANAGE` | beds in service and under maintenance, occupied beds, occupancy |
+| Helpdesk | `ADMIN` and `HELPDESK_TICKET_VIEW_ALL` | tickets by status, rated tickets, the average rating (only with at least five ratings) |
+| Campus engagement | `ADMIN` and `CAMPUS_ENGAGEMENT_MANAGE` | active groups and memberships, coming and past events, registrations and check-ins at past events, attendance (at least five registrations) |
+| Placement | `ADMIN` or `PLACEMENT_OFFICER` with `CAREER_MANAGE` | open opportunities, applications and offers by status |
+| Library | `LIBRARIAN` and `LIBRARY_MANAGE` | titles, copies in service, open and overdue loans, holds waiting |
+| AI | `ADMIN` | course knowledge indexes by status; AI questions and answers are never stored, so nothing else is counted |
+
+Each figure is one bounded aggregate query (`AreaAnalyticsQueries`); nothing is stored, and no person is named.
+
 ## Background exports (report service)
 
 - **Starting one:** `POST /api/v1/exports` (`FACULTY` or `ADMIN` with `REPORT_EXPORT`) starts an XLSX export of a report the caller can already read:

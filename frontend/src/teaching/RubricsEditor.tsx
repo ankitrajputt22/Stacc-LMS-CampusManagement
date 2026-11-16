@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
+import { RubricSuggestionPanel } from '../ai/RubricSuggestionPanel'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { archiveRubric, createRubric, editRubric, getRubrics } from '../api/lmsRubricsApi'
 import { queryKeys } from '../api/queryKeys'
@@ -211,6 +212,7 @@ export function RubricsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const rubrics = useApiQuery(queryKeys.lms.rubrics(lmsCourseId), (signal) => getRubrics(lmsCourseId, signal))
   const [adding, setAdding] = useState(false)
+  const [suggested, setSuggested] = useState<RubricDraft | null>(null)
   const [editing, setEditing] = useState<number | null>(null)
   const [archiving, setArchiving] = useState<LmsRubric | null>(null)
   const [announcement, setAnnouncement] = useState('')
@@ -228,16 +230,30 @@ export function RubricsEditor({ lmsCourseId }: { lmsCourseId: number }) {
       {adding && (
         <Card title="New rubric" description="An assignment can use a rubric whose total equals its maximum marks.">
           <RubricForm
-            initial={emptyRubric()}
+            key={suggested ? suggested.title : 'empty'}
+            initial={suggested ?? emptyRubric()}
             submitLabel="Create rubric"
-            onCancel={() => setAdding(false)}
+            onCancel={() => {
+              setAdding(false)
+              setSuggested(null)
+            }}
             onSubmit={async (input) => {
               await createRubric(lmsCourseId, input)
               setAdding(false)
+              setSuggested(null)
               await changed('Created the rubric.')
             }}
           />
         </Card>
+      )}
+      {!adding && (
+        <RubricSuggestionPanel
+          lmsCourseId={lmsCourseId}
+          onUse={(draft) => {
+            setSuggested(draft)
+            setAdding(true)
+          }}
+        />
       )}
       {archiving && (
         <StatusConfirmation

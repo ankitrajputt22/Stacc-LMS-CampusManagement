@@ -13,6 +13,7 @@ public final class PersonProfileValues {
     public static final int MAX_PREFERRED_NAME = 80;
     public static final int MAX_EMAIL = 254;
     public static final int MAX_PHONE = 20;
+    public static final int MAX_MAILING_ADDRESS = 500;
 
     // No control characters in a name: they could break a page, a CSV export, or a log line.
     private static final Pattern CONTROL = Pattern.compile("\\p{Cntrl}");
@@ -57,6 +58,40 @@ public final class PersonProfileValues {
             throw new IllegalArgumentException("Phone number must have 7 to 15 digits, with an optional leading +.");
         }
         return phone;
+    }
+
+    /** The name of an emergency contact: required plain text. */
+    public static String contactName(String value) {
+        String name = name(value, MAX_FULL_NAME, "Name");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is required.");
+        }
+        return name;
+    }
+
+    /** How an emergency contact is related, such as "Mother": required plain text. */
+    public static String relation(String value) {
+        String relation = name(value, 50, "Relation");
+        if (relation == null) {
+            throw new IllegalArgumentException("Relation is required.");
+        }
+        return relation;
+    }
+
+    /** A mailing address: plain text, line breaks kept, blank becomes none. */
+    public static String mailingAddress(String value) {
+        String address = blankToNull(value);
+        if (address == null) {
+            return null;
+        }
+        address = address.replace("\r\n", "\n");
+        if (address.length() > MAX_MAILING_ADDRESS) {
+            throw new IllegalArgumentException("Address must be at most " + MAX_MAILING_ADDRESS + " characters.");
+        }
+        if (address.chars().anyMatch(c -> Character.isISOControl(c) && c != '\n')) {
+            throw new IllegalArgumentException("Address contains characters that are not allowed.");
+        }
+        return address;
     }
 
     private static String name(String value, int max, String label) {

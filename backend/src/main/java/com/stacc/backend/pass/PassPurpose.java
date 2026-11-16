@@ -5,5 +5,7 @@ public enum PassPurpose {
     /** A hostel outing: a gate pass or leave. The source is the outing. */
     HOSTEL_OUTING,
     /** A digital ID card code, refreshed every minute. The source is the holder's account. */
-    ID_CARD
+    ID_CARD,
+    /** A campus event check-in code. The source is the event registration. */
+    EVENT_CHECK_IN
 }

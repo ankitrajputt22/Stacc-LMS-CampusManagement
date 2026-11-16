@@ -52,6 +52,24 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/certificate-requests/{requestId}/issue` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
 | `/api/v1/admin/certificate-requests/{requestId}/refuse` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
 | `/api/v1/admin/documents/{documentId}/withdraw` | POST | `hasRole('ADMIN') and hasAuthority('DOCUMENT_ISSUE')` | DocumentVaultController |
+| `/api/v1/admin/grievances/categories` | GET | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/categories/{categoryId}/committee` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/grievances/committee/{memberId}/end` | POST | `hasRole('ADMIN') and hasAuthority('GRIEVANCE_MANAGE')` | GrievanceController |
+| `/api/v1/admin/hackathons` | GET | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/judges` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/hackathons/{hackathonId}/release` | POST | `hasRole('ADMIN') and hasAuthority('HACKATHON_MANAGE')` | HackathonController |
+| `/api/v1/admin/innovation/ideas` | GET | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
+| `/api/v1/admin/innovation/ideas/{ideaId}/decision` | POST | `hasRole('ADMIN') and hasAuthority('INNOVATION_MANAGE')` | InnovationController |
+| `/api/v1/admin/mentoring/pairings` | GET | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/mentoring/pairings` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/mentoring/pairings/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('MENTORING_MANAGE')` | MentoringController |
+| `/api/v1/admin/system` | GET | `hasRole('ADMIN') and hasAuthority('SYSTEM_HEALTH_VIEW')` | SystemHealthController |
+| `/api/v1/admin/system/ai` | GET | `hasRole('ADMIN') and hasAuthority('SYSTEM_HEALTH_VIEW')` | AiHealthController |
 | `/api/v1/admin/users/import` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}` | GET | `hasRole('ADMIN') and hasAuthority('USER_VIEW')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
@@ -62,6 +80,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/admin/users/{accountId}/status` | PUT | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/student-profile` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
 | `/api/v1/admin/users/{accountId}/temporary-password` | POST | `hasRole('ADMIN') and hasAuthority('USER_VIEW') and hasAuthority('USER_MANAGE')` | AdminUserController |
+| `/api/v1/analytics/areas` | GET | `hasAnyRole('ADMIN', 'LIBRARIAN', 'PLACEMENT_OFFICER') and hasAuthority('AREA_ANALYTICS_VIEW')` | AnalyticsController |
+| `/api/v1/analytics/department` | GET | `hasRole('HOD') and hasAuthority('DEPARTMENT_ANALYTICS_VIEW')` | AnalyticsController |
 | `/api/v1/analytics/faculty/courses/{lmsCourseId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('COURSE_ANALYTICS_VIEW')` | AnalyticsController |
 | `/api/v1/analytics/student/me` | GET | `hasRole('STUDENT') and hasAuthority('ANALYTICS_VIEW_OWN')` | AnalyticsController |
 | `/api/v1/approvals/admin/workflows/{workflowId}` | GET | `hasRole('ADMIN') and hasAuthority('APPROVAL_WORKFLOW_MANAGE')` | ApprovalWorkflowAdminController |
@@ -98,6 +118,9 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/campus/admin/requests` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/requests/{requestId}` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/requests/{requestId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/mark-ready` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
+| `/api/v1/campus/admin/requests/{requestId}/start-processing` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
 | `/api/v1/campus/admin/services/{serviceId}` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_SERVICE_MANAGE')` | CampusAdminController |
@@ -136,12 +159,32 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/dashboard/faculty` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_DASHBOARD_VIEW')` | FacultyDashboardController |
 | `/api/v1/dashboard/student` | GET | `hasRole('STUDENT') and hasAuthority('STUDENT_DASHBOARD_VIEW')` | StudentDashboardController |
 | `/api/v1/engagement/admin/facilities` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/facilities/class-hours/{classHourId}/remove` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/facilities/{facilityId}/class-hours` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/facilities/{facilityId}/closures` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/fests` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/applications/{applicationId}/decision` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/applications` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/schedule` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/shifts` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
+| `/api/v1/engagement/admin/fests/{festId}/unschedule` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | FestController |
 | `/api/v1/engagement/admin/groups` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/groups/{groupId}` | PUT | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/groups/{groupId}/officers` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
 | `/api/v1/engagement/admin/officers/{officerId}/end` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | EngagementController |
+| `/api/v1/engagement/admin/tournaments` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/fixtures/{fixtureId}/cancel` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/fixtures/{fixtureId}/result` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/teams` | GET | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/fixtures` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
+| `/api/v1/engagement/admin/tournaments/{tournamentId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE')` | TournamentController |
 | `/api/v1/engagement/bookings/mine` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/bookings/{bookingId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/events` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
@@ -149,19 +192,40 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/engagement/events/managed` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}` | PUT | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/attendance` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
 | `/api/v1/engagement/events/{eventId}/attendees` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/cancel` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/check-in-code` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/check-ins` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/my-attendance` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EventAttendanceController |
 | `/api/v1/engagement/events/{eventId}/publish` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/events/{eventId}/registration/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
+| `/api/v1/engagement/events/{eventId}/trial` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
+| `/api/v1/engagement/events/{eventId}/trial-outcomes` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EventAttendanceController |
 | `/api/v1/engagement/facilities` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
 | `/api/v1/engagement/facilities/{facilityId}/bookings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
+| `/api/v1/engagement/fests` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
+| `/api/v1/engagement/fests/applications/{applicationId}/withdraw` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
+| `/api/v1/engagement/fests/shifts/{shiftId}/apply` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | FestController |
 | `/api/v1/engagement/groups` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/groups/{groupId}/activity` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
+| `/api/v1/engagement/groups/{groupId}/announcements` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
 | `/api/v1/engagement/groups/{groupId}/join` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/groups/{groupId}/leave` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | EngagementController |
 | `/api/v1/engagement/groups/{groupId}/members` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/groups/{groupId}/sessions` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
+| `/api/v1/engagement/groups/{groupId}/teams` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/groups/{groupId}/teams` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/me/sessions` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | GroupActivityController |
 | `/api/v1/engagement/memberships/{membershipId}/decision` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | EngagementController |
+| `/api/v1/engagement/sessions/{sessionId}/cancel` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | GroupActivityController |
+| `/api/v1/engagement/teams/players/{playerId}/remove` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/teams/players/{playerId}/role` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/teams/{teamId}/deactivate` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/teams/{teamId}/players` | POST | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')) or (hasRole('ADMIN') and hasAuthority('CAMPUS_ENGAGEMENT_MANAGE'))` | TeamController |
+| `/api/v1/engagement/tournaments` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_ENGAGEMENT_USE')` | TournamentController |
 | `/api/v1/exports` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
 | `/api/v1/exports/{exportId}/download` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('REPORT_EXPORT')` | AnalyticsController |
@@ -170,6 +234,33 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/gate/movements` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/movements` | POST | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
 | `/api/v1/gate/students/{loginId}/outings` | GET | `hasRole('SECURITY') and hasAuthority('GATE_PASS_VERIFY')` | HostelOutingController |
+| `/api/v1/gate/visitors` | GET | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/walk-in` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/{visitId}/arrive` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/gate/visitors/{visitId}/leave` | POST | `hasRole('SECURITY') and hasAuthority('HOSTEL_VISITOR_DESK')` | HostelVisitorController |
+| `/api/v1/grievances` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/categories` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/committee` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}` | GET | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/appeal-decision` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/resolve` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/committee/{caseId}/review` | POST | `hasAnyRole('FACULTY', 'ADMIN') and hasAuthority('GRIEVANCE_COMMITTEE_WORK')` | GrievanceController |
+| `/api/v1/grievances/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}/accept` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/grievances/me/{caseId}/appeal` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('GRIEVANCE_SUBMIT')` | GrievanceController |
+| `/api/v1/hackathons` | GET | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/judging` | GET | `hasRole('FACULTY') and hasAuthority('HACKATHON_JUDGE')` | HackathonController |
+| `/api/v1/hackathons/submissions/{submissionId}/score` | POST | `hasRole('FACULTY') and hasAuthority('HACKATHON_JUDGE')` | HackathonController |
+| `/api/v1/hackathons/teams/{teamId}/join` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/leave` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/submission` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/hackathons/{hackathonId}/teams` | POST | `hasRole('STUDENT') and hasAuthority('HACKATHON_PARTICIPATE')` | HackathonController |
+| `/api/v1/helpdesk/admin/articles` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}/archive` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/admin/articles/{articleId}/publish` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/admin/categories/{categoryId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskAdminCategoryController |
 | `/api/v1/helpdesk/admin/categories/{categoryId}/team` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
 | `/api/v1/helpdesk/admin/teams` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
@@ -180,6 +271,8 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/priority` | PUT | `(hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskAdminTicketController |
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/status` | PUT | `(hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskAdminTicketController |
 | `/api/v1/helpdesk/admin/tickets/{ticketId}/team` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HelpdeskTeamController |
+| `/api/v1/helpdesk/articles` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('HELPDESK_TICKET_CREATE')` | HelpdeskArticleController |
+| `/api/v1/helpdesk/articles/{articleId}` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('HELPDESK_TICKET_CREATE')` | HelpdeskArticleController |
 | `/api/v1/helpdesk/team/tickets` | GET | `hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK')` | HelpdeskTeamController |
 | `/api/v1/helpdesk/tickets/me` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HelpdeskTicketController |
 | `/api/v1/helpdesk/tickets/{ticketId}` | GET | `(hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and (hasAuthority('HELPDESK_TICKET_VIEW_OWN') or (hasRole('ADMIN') and hasAuthority('HELPDESK_TICKET_VIEW_ALL')))) or (hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK'))` | HelpdeskTicketController |
@@ -204,14 +297,21 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/admin/hostels/{hostelId}/bed-map` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/rooms` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/rooms` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
+| `/api/v1/hostel/admin/hostels/{hostelId}/visiting-hours` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelVisitorController |
+| `/api/v1/hostel/admin/hostels/{hostelId}/visiting-hours` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelVisitorController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/hostels/{hostelId}/wardens` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/occupancy` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
+| `/api/v1/hostel/admin/room-changes` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelRoomChangeController |
+| `/api/v1/hostel/admin/room-changes/{changeId}/complete` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelRoomChangeController |
 | `/api/v1/hostel/admin/rooms/{roomId}` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/beds` | GET | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/beds` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelAdminInventoryController |
 | `/api/v1/hostel/admin/rooms/{roomId}/details` | PUT | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
 | `/api/v1/hostel/admin/wardens/{assignmentId}/end` | POST | `hasRole('ADMIN') and hasAuthority('HOSTEL_MANAGE')` | HostelStructureController |
+| `/api/v1/hostel/mess/manage` | GET | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_MESS_MANAGE')` | HostelMessController |
+| `/api/v1/hostel/notices/manage` | GET | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/api/v1/hostel/notices/manage` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
 | `/api/v1/hostel/student/applications` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStudentController |
 | `/api/v1/hostel/student/applications` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_CREATE')` | HostelStudentController |
 | `/api/v1/hostel/student/applications/{applicationId}` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStudentController |
@@ -219,21 +319,69 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/hostel/student/applications/{applicationId}/queue` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelStructureController |
 | `/api/v1/hostel/student/complaints` | POST | `hasRole('STUDENT') and hasAuthority('HELPDESK_TICKET_CREATE')` | HostelOutingController |
 | `/api/v1/hostel/student/eligible-sessions` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_CREATE')` | HostelStudentController |
+| `/api/v1/hostel/student/mess` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelMessController |
+| `/api/v1/hostel/student/mess/feedback` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelMessController |
+| `/api/v1/hostel/student/notices` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_APPLICATION_VIEW_OWN')` | HostelNoticeController |
 | `/api/v1/hostel/student/outings` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/extensions` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
 | `/api/v1/hostel/student/outings/{outingId}/pass` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_OUTING_REQUEST')` | HostelOutingController |
+| `/api/v1/hostel/student/room-changes` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/api/v1/hostel/student/visitors` | GET | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
+| `/api/v1/hostel/student/visitors` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
+| `/api/v1/hostel/student/visitors/{visitId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_VISITOR_REGISTER')` | HostelVisitorController |
 | `/api/v1/hostel/warden/allocations/{allocationId}/check-in` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/hostels/{hostelId}/bed-map` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
+| `/api/v1/hostel/warden/hostels/{hostelId}/roll-calls` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/hostels/{hostelId}/roll-calls` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/hostel/warden/occupancy` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelStructureController |
 | `/api/v1/hostel/warden/overdue` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_WARDEN_VIEW')` | HostelOutingController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}` | GET | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}/finalize` | POST | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
+| `/api/v1/hostel/warden/roll-calls/{rollCallId}/marks` | PUT | `hasRole('WARDEN') and hasAuthority('HOSTEL_ROLL_CALL')` | HostelRollCallController |
 | `/api/v1/id-cards/check` | POST | `hasAnyRole('ADMIN', 'SECURITY', 'LIBRARIAN', 'WARDEN') and hasAuthority('ID_CARD_VERIFY')` | IdCardController |
+| `/api/v1/innovation/ideas` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/ideas/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/ideas/{ideaId}/review` | POST | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
+| `/api/v1/innovation/ideas/{ideaId}/withdraw` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('INNOVATION_SUBMIT')` | InnovationController |
+| `/api/v1/innovation/reviews` | GET | `hasRole('FACULTY') and hasAuthority('INNOVATION_REVIEW')` | InnovationController |
+| `/api/v1/library/desk/copies/withdraw` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/issue` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/loans` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/resources/{resourceId}/active` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/return` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/active` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/copies` | GET | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/desk/titles/{titleId}/copies` | POST | `hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE')` | LibraryController |
+| `/api/v1/library/holds/{holdId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/loans/{loanId}/renew` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/library/resources` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
+| `/api/v1/library/titles` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
+| `/api/v1/library/titles/{titleId}/hold` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/lms/ai/study-home` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyHomeController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}/cards/{cardId}/review` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/mastery/recommendations` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiMasteryController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/notes/{noteId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudentNoteController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/notes/{noteId}` | PUT | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudentNoteController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/practice` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/practice/evaluate` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/saved-answers/{savedAnswerId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiSavedAnswerController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/study-plan/calendar` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE') and hasAuthority('CALENDAR_PERSONAL_USE')` | AiStudyPlanController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/study-plan/todo` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE') and hasAuthority('TODO_VIEW')` | AiStudyPlanController |
+| `/api/v1/lms/courses/{lmsCourseId}/ai/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/topics/{topicId}/summary` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/announcements` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/courses/{lmsCourseId}/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentAssignmentController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
 | `/api/v1/lms/courses/{lmsCourseId}/assignments/{assignmentId}/submissions/me` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')` | LmsAssignmentSubmissionController |
@@ -252,8 +400,16 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_QUIZ_TAKE')` | LmsStudentQuizController |
 | `/api/v1/lms/courses/{lmsCourseId}/quizzes/{quizId}/attempts` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_QUIZ_TAKE')` | LmsStudentQuizController |
 | `/api/v1/lms/courses/{lmsCourseId}/syllabus` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsSyllabusController |
+| `/api/v1/lms/faculty/ai/assignments/{assignmentId}/rubric-suggestion` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | AiSuggestionController |
+| `/api/v1/lms/faculty/ai/exam-blueprints/{blueprintId}/fill-shortfall` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | AiExamController |
+| `/api/v1/lms/faculty/ai/questions/{questionId}/model-answer` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE')` | AiSuggestionController |
+| `/api/v1/lms/faculty/ai/teacher-documents/{documentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
+| `/api/v1/lms/faculty/ai/teacher-documents/{documentId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
 | `/api/v1/lms/faculty/announcements/{announcementId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |
+| `/api/v1/lms/faculty/announcements/{announcementId}/files/{fileId}/remove` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/announcements/{announcementId}/publish` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |
 | `/api/v1/lms/faculty/assignments/{assignmentId}/alignment` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_MANAGE')` | LmsFacultyAssignmentController |
@@ -265,8 +421,14 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/assignments/{assignmentId}/submissions/{submissionId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_GRADE')` | LmsFacultySubmissionController |
 | `/api/v1/lms/faculty/course-offerings/{courseOfferingId}/lms-course` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/assessment-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/jobs` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/question-bank` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/quiz-draft` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE') and hasAuthority('LMS_QUESTION_BANK_MANAGE') and hasAuthority('LMS_QUIZ_MANAGE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/status` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/student-access` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/sync` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiFacultyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/ai/teacher-documents` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('AI_TEACHING_USE')` | AiTeacherDocumentController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/announcements` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsAnnouncementController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |
@@ -276,8 +438,14 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/conversations` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_MESSAGE_USE')` | LmsMessageController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/copy` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsCourseCopyController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/copy-sources` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsCourseCopyController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/discussion-reports` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/discussion-reports/{reportId}/resolve` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/discussions` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-blueprints` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-blueprints` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-papers` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/courses/{lmsCourseId}/exam-papers` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/files` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsFacultyContentController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/gradebook` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/gradebook/items` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
@@ -297,10 +465,22 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsSyllabusController |
 | `/api/v1/lms/faculty/courses/{lmsCourseId}/syllabus/publish` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsSyllabusController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/paper-sets` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/papers` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-blueprints/{blueprintId}/shortfall` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/document` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/finalize` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
+| `/api/v1/lms/faculty/exam-papers/{paperId}/questions` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_EXAM_PAPER_MANAGE')` | LmsExamPaperController |
 | `/api/v1/lms/faculty/gradebook/items/{itemId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/gradebook/items/{itemId}/entries/{courseEnrollmentId}` | PUT | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_GRADEBOOK_MANAGE')` | LmsGradebookController |
 | `/api/v1/lms/faculty/managed-courses` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_COURSE_MANAGE')` | LmsFacultyCourseManagementController |
 | `/api/v1/lms/faculty/materials/{materialId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
+| `/api/v1/lms/faculty/materials/{materialId}/ai-exclusion` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/materials/{materialId}/archive` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/materials/{materialId}/publish` | POST | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyMaterialController |
 | `/api/v1/lms/faculty/modules/{moduleId}` | PUT | `hasRole('FACULTY') and hasAuthority('LMS_CONTENT_MANAGE')` | LmsFacultyContentController |
@@ -355,11 +535,15 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/lms/{conversationId}/messages` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_MESSAGE_USE')` | LmsMessageController |
 | `/api/v1/lms/{threadId}` | GET | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/hide` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/lock` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/pin` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies/{replyId}/accept` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/lms/{threadId}/replies/{replyId}/accept` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/replies/{replyId}/hide` | POST | `hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')` | LmsDiscussionController |
+| `/api/v1/lms/{threadId}/reports` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')` | LmsDiscussionController |
 | `/api/v1/me/certificate-requests` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |
 | `/api/v1/me/certificate-requests` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |
 | `/api/v1/me/certificate-requests/{requestId}/cancel` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('DOCUMENT_VAULT_USE')` | DocumentVaultController |
@@ -370,10 +554,31 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/me/profile/photo` | GET | `hasAuthority('PERSON_PROFILE_VIEW_OWN')` | MyPersonProfileController |
 | `/api/v1/me/sessions/{sessionId}/end` | POST | `signed in` | MySessionsController |
 | `/api/v1/me/todo/dismissals` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN') and hasAuthority('TODO_VIEW')` | TodoController |
+| `/api/v1/mentoring/action-items/{itemId}/complete` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/me` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/meetings/{meetingId}` | PUT | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/meetings/{meetingId}/action-items` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/pairings/{assignmentId}` | GET | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
+| `/api/v1/mentoring/pairings/{assignmentId}/meetings` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('MENTORING_USE')` | MentoringController |
 | `/api/v1/notifications/read-all` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/unread-count` | GET | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/{notificationRecipientId}/read` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
 | `/api/v1/notifications/{notificationRecipientId}/unread` | POST | `hasAnyRole('STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('NOTIFICATION_VIEW')` | NotificationController |
+| `/api/v1/portfolio/items` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}` | PUT | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}/hide` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/items/{itemId}/verification` | POST | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/me` | GET | `hasRole('STUDENT') and hasAuthority('PORTFOLIO_USE')` | PortfolioController |
+| `/api/v1/portfolio/verifications` | GET | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
+| `/api/v1/portfolio/verifications/{itemId}/decision` | POST | `hasRole('FACULTY') and hasAuthority('PORTFOLIO_VERIFY')` | PortfolioController |
+| `/api/v1/projects/members/{memberId}/decision` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/members/{memberId}/leave` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/mentors/{mentorId}/answer` | POST | `hasRole('FACULTY') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/mentors/{mentorId}/step-down` | POST | `hasRole('FACULTY') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}` | PUT | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/join` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/mentors` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
+| `/api/v1/projects/{projectId}/status` | POST | `hasRole('STUDENT') and hasAuthority('PROJECT_USE')` | ProjectController |
 | `/api/v1/public/documents/verify/{code}` | GET | `public` | DocumentVaultController |
 | `/api/v1/reports/admin/enrollments` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
 | `/api/v1/reports/admin/enrollments/export.csv` | GET | `hasRole('ADMIN') and hasAuthority('ADMIN_REPORT_VIEW')` | AdminReportController |
@@ -389,3 +594,12 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/students/me/course-enrollments/{courseEnrollmentId}/drop` | POST | `hasRole('STUDENT') and hasAuthority('COURSE_DROP')` | StudentRegistrationController |
 | `/api/v1/students/me/course-registration` | GET | `hasRole('STUDENT') and hasAuthority('COURSE_REGISTRATION_VIEW')` | StudentRegistrationController |
 | `/api/v1/students/me/course-registration` | POST | `hasRole('STUDENT') and hasAuthority('COURSE_REGISTER')` | StudentRegistrationController |
+| `/changes` | PUT | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_MESS_MANAGE')` | HostelMessController |
+| `/move` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/swap` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/template` | PUT | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_MESS_MANAGE')` | HostelMessController |
+| `/{changeId}/answer` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/{changeId}/cancel` | POST | `hasRole('STUDENT') and hasAuthority('HOSTEL_ROOM_CHANGE_REQUEST')` | HostelRoomChangeController |
+| `/{noticeId}` | PUT | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/{noticeId}/archive` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |
+| `/{noticeId}/publish` | POST | `hasAnyRole('ADMIN', 'WARDEN') and hasAuthority('HOSTEL_NOTICE_MANAGE')` | HostelNoticeController |

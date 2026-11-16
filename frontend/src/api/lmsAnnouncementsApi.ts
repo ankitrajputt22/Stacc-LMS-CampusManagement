@@ -4,6 +4,7 @@ import type {
   LmsFacultyAnnouncement,
 } from '../types/lms'
 import { apiClient } from './apiClient'
+import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
 // The client's base URL already ends in /api. The signed-in account is the one in the access token;
 // no account, student, or faculty ID is ever sent from here.
@@ -69,4 +70,30 @@ export async function archiveAnnouncement(announcementId: number): Promise<LmsFa
     `/lms/faculty/announcements/${announcementId}/archive`,
   )
   return response.data
+}
+
+/** Adds files to a draft or published announcement; the backend checks them like study materials. */
+export async function addAnnouncementFiles(announcementId: number, files: File[]): Promise<LmsFacultyAnnouncement> {
+  const form = new FormData()
+  files.forEach((file) => form.append('files', file))
+  return (await apiClient.post<LmsFacultyAnnouncement>(`/lms/faculty/announcements/${announcementId}/files`, form, { timeout: FILE_TIMEOUT_MS })).data
+}
+
+/** Stops listing a file; it is kept on the server. */
+export async function removeAnnouncementFile(announcementId: number, fileId: number): Promise<LmsFacultyAnnouncement> {
+  return (await apiClient.post<LmsFacultyAnnouncement>(`/lms/faculty/announcements/${announcementId}/files/${fileId}/remove`)).data
+}
+
+export async function downloadFacultyAnnouncementFile(announcementId: number, fileId: number): Promise<Blob> {
+  return (await apiClient.get<Blob>(`/lms/faculty/announcements/${announcementId}/files/${fileId}`, { responseType: 'blob', timeout: FILE_TIMEOUT_MS }))
+    .data
+}
+
+export async function downloadCourseAnnouncementFile(lmsCourseId: number, announcementId: number, fileId: number): Promise<Blob> {
+  return (
+    await apiClient.get<Blob>(`/lms/courses/${lmsCourseId}/announcements/${announcementId}/files/${fileId}`, {
+      responseType: 'blob',
+      timeout: FILE_TIMEOUT_MS,
+    })
+  ).data
 }

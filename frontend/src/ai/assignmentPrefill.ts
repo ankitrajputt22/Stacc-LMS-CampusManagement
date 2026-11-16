@@ -1,7 +1,7 @@
 import { ASSIGNMENT_INSTRUCTIONS_MAX, TITLE_MAX } from '../teaching/editorState'
 import type { AssignmentDraftPrefill } from '../types/ai'
 
-/** A question as the teacher edited it on the AI Tools page. */
+/** A question as the teacher edited it on the Teacher AI page. */
 export type EditableQuestion = {
   questionType: 'MCQ' | 'SHORT_ANSWER' | 'LONG_ANSWER'
   prompt: string
@@ -33,7 +33,7 @@ export function totalMarks(questions: EditableQuestion[]): number | null {
 
 /**
  * The fields the normal assignment form is filled with: the title, the instructions with the numbered questions (and
- * their options and marks), and the total marks. Suggested answers stay on the AI Tools page: assignment instructions
+ * their options and marks), and the total marks. Suggested answers stay on the Teacher AI page: assignment instructions
  * become visible to students once the assignment is published.
  */
 export function assignmentPrefill(title: string, instructions: string, questions: EditableQuestion[]): AssignmentDraftPrefill {

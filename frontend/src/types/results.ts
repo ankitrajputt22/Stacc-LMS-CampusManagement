@@ -30,6 +30,11 @@ export type FacultyResult = {
   /** When it was first published, or null for a draft. Corrections never change it. */
   publishedAt: string | null
   updatedAt: string
+  /** The marks split into parts, or nulls when they are not split. */
+  internalMarks: number | null
+  internalMax: number | null
+  externalMarks: number | null
+  externalMax: number | null
 }
 
 /** One enrollment of the offering with its result, or null when none has been saved. */
@@ -53,6 +58,11 @@ export type CourseResultInput = {
   maxMarks: number
   gradeCode: string | null
   remarks: string | null
+  /** Optional parts: all four or none, adding up to the totals. */
+  internalMarks?: number | null
+  internalMax?: number | null
+  externalMarks?: number | null
+  externalMax?: number | null
 }
 
 /** One of the signed-in student's own published results. No IDs are sent. */

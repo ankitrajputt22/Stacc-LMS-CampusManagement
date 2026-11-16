@@ -140,13 +140,18 @@ export function GradebookEditor({ lmsCourseId }: { lmsCourseId: number }) {
                 key: `${column.type}-${column.sourceId}`,
                 header: `${column.title} (/${column.maxMarks})`,
                 align: 'right' as const,
-                cell: (row: Row) => cellText(row.cells[index]),
+                cell: (row: Row) =>
+                  row.cells[index].status === 'NEEDS_GRADING' ? (
+                    <span className="inline-block rounded-control bg-amber-100 px-2 py-0.5 text-sm text-amber-900">{cellText(row.cells[index])}</span>
+                  ) : (
+                    cellText(row.cells[index])
+                  ),
               })),
               {
                 key: 'total',
-                header: 'Total',
+                header: 'Total (graded)',
                 align: 'right' as const,
-                cell: (row: Row) => (Number(row.totalOutOf) === 0 ? '—' : `${row.totalMarks} / ${row.totalOutOf}`),
+                cell: (row: Row) => <span className="font-semibold">{Number(row.totalOutOf) === 0 ? '—' : `${row.totalMarks} / ${row.totalOutOf}`}</span>,
               },
             ]}
           />

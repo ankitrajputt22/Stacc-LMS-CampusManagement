@@ -4,7 +4,7 @@ it has already checked who the user is and what they may see before it calls any
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 
 from app.models import schemas
 from app.security import checked_course_key, require_internal_token
@@ -26,6 +26,39 @@ def internal_health(request: Request) -> dict:
 @internal.post("/indexes/{course_key}/replace", response_model=schemas.ReplaceIndexResponse)
 def replace_index(course_key: str, body: schemas.ReplaceIndexRequest, request: Request):
     return request.app.state.builder.replace(checked_course_key(course_key), body)
+
+
+@internal.post("/indexes/{course_key}/question-bank-draft", response_model=schemas.BankDraftResponse)
+def question_bank_draft(course_key: str, body: schemas.BankDraftRequest, request: Request):
+    return request.app.state.learning.bank_draft(checked_course_key(course_key), body)
+
+
+@internal.post("/indexes/{course_key}/evaluate", response_model=schemas.EvaluateResponse)
+def evaluate(course_key: str, body: schemas.EvaluateRequest, request: Request):
+    return request.app.state.learning.evaluate(checked_course_key(course_key), body)
+
+
+@internal.post("/indexes/{course_key}/flashcards", response_model=schemas.FlashcardResponse)
+def flashcards(course_key: str, body: schemas.FlashcardRequest, request: Request):
+    return request.app.state.learning.flashcards(checked_course_key(course_key), body)
+
+
+@internal.post("/indexes/{course_key}/model-answer", response_model=schemas.ModelAnswerResponse)
+def model_answer(course_key: str, body: schemas.ModelAnswerRequest, request: Request):
+    return request.app.state.learning.model_answer(checked_course_key(course_key), body)
+
+
+@internal.post("/indexes/{course_key}/rubric", response_model=schemas.RubricResponse)
+def rubric(course_key: str, body: schemas.RubricRequest, request: Request):
+    return request.app.state.learning.rubric(checked_course_key(course_key), body)
+
+
+@internal.delete("/indexes/{course_key}", status_code=204)
+def delete_index(course_key: str, request: Request) -> Response:
+    """Removes an index completely, such as a student's notes index after their last note is deleted. Deleting a
+    missing index changes nothing."""
+    request.app.state.store.delete(checked_course_key(course_key))
+    return Response(status_code=204)
 
 
 @internal.post("/indexes/{course_key}/ask", response_model=schemas.AskResponse)

@@ -13,12 +13,14 @@ import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { CourseProgressCard } from '../courses/CourseProgressCard'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseDetail } from '../types/lms'
-import { Badge, Card, DataTable, PageHeader } from '../ui'
+import { Badge, Card, DataTable } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -43,22 +45,19 @@ export function StudentCourseSection({
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
   const course = useLmsCourse(isStudent ? lmsCourseId : null)
 
-  const header = (courseName?: string) => (
-    <PageHeader
+  // The course and its facts above the section's own title, which is the page's one h1. A page inside a section,
+  // such as one quiz, keeps a breadcrumb back to the section.
+  const header = (loaded?: LmsCourseDetail) => (
+    <CourseSectionHeader
+      course={loaded && courseBanner(loaded)}
       title={title}
       breadcrumb={
-        <Breadcrumb
-          parent={
-            lmsCourseId === null
-              ? COURSES
-              : [
-                  COURSES,
-                  { to: `/courses/${lmsCourseId}`, label: courseName ?? 'Course' },
-                  ...(parent ? [{ to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }] : []),
-                ]
-          }
-          current={title}
-        />
+        parent && lmsCourseId !== null ? (
+          <Breadcrumb
+            parent={[COURSES, { to: `/courses/${lmsCourseId}`, label: loaded?.courseName ?? 'Course' }, { to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }]}
+            current={title}
+          />
+        ) : undefined
       }
     />
   )
@@ -84,7 +83,7 @@ export function StudentCourseSection({
   return (
     <>
       <title>{`${title} · ${course.data.courseName} · Stacc`}</title>
-      {header(course.data.courseName)}
+      {header(course.data)}
       {children(course.data)}
     </>
   )
@@ -189,7 +188,7 @@ export function CourseAssignmentsPage() {
 
 function Announcements({ course }: { course: LmsCourseDetail }) {
   const announcements = useCourseAnnouncements(course.lmsCourseId)
-  return <CourseAnnouncements announcements={announcements} standalone />
+  return <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} standalone />
 }
 
 /** /courses/:lmsCourseId/announcements: the course's published announcements, newest first. */

@@ -54,7 +54,7 @@ Add a MySQL test whenever a phase adds a row-lock rule, a capacity limit, a uniq
 
 ## Frontend unit tests
 
-The frontend uses **Vitest** with **React Testing Library** in a simulated browser (jsdom). Tests sit next to the code they check, named `*.test.ts` or `*.test.tsx`, and never reach a server: the API client gets a placeholder address, and API answers are faked with an Axios adapter.
+The frontend uses **Vitest** with **React Testing Library** in a simulated browser (jsdom). Tests sit next to the code they check, named `*.test.ts` or `*.test.tsx`, and never reach a server: the API client gets a placeholder address, and API answers are faked with an Axios adapter. Tests run in the `vmThreads` pool: one jsdom per worker, while each test file keeps its own isolated modules, so the whole run takes seconds.
 
 ```bash
 cd frontend && npm test
@@ -114,3 +114,9 @@ cd ai-service && python -m pytest -q
 ```
 
 They use the deterministic fake model and embeddings, so they need no model, GPU, or network. See `ai-learning.md`.
+
+`tests/test_evaluation.py` (v0.13.8) runs the retrieval evaluation in `app/evaluation` with the fake model and keeps floors on it (every answerable question finds its source, the best source is right for at least 90%, nothing is found for unrelated questions), and checks for leaks: a source outside the allowed list, or an index the request does not name, never reaches the model. To see how a real local model does, run the same evaluation with the configured providers:
+
+```bash
+cd ai-service && python -m app.evaluation.run
+```

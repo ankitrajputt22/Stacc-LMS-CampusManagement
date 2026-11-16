@@ -1,5 +1,6 @@
 package com.stacc.backend.engagement.api;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -89,6 +90,10 @@ public class EngagementController {
     }
 
     public record ClosureRequest(@NotNull LocalDate startDate, @NotNull LocalDate endDate, @NotBlank @Size(max = 500) String reason) {
+    }
+
+    public record ClassHourRequest(@NotNull DayOfWeek dayOfWeek, @NotNull LocalTime startsAt, @NotNull LocalTime endsAt,
+            @NotBlank @Size(max = 100) String label) {
     }
 
     public record BookingRequest(@NotNull Instant startsAt, @NotNull Instant endsAt, @NotBlank @Size(max = 500) String purpose) {
@@ -245,6 +250,21 @@ public class EngagementController {
     @Operation(summary = "Close a facility for some days", security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     public FacilityView close(@PathVariable Long facilityId, @Valid @RequestBody ClosureRequest request) {
         return facilities.close(facilityId, request.startDate(), request.endDate(), request.reason());
+    }
+
+    @PostMapping("/admin/facilities/{facilityId}/class-hours")
+    @PreAuthorize(MANAGE)
+    @Operation(summary = "Add weekly class hours", description = "No new booking overlaps them; earlier bookings stay.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public FacilityView addClassHour(@PathVariable Long facilityId, @Valid @RequestBody ClassHourRequest request) {
+        return facilities.addClassHour(facilityId, request.dayOfWeek(), request.startsAt(), request.endsAt(), request.label());
+    }
+
+    @PostMapping("/admin/facilities/class-hours/{classHourId}/remove")
+    @PreAuthorize(MANAGE)
+    @Operation(summary = "Remove weekly class hours", description = "The record is kept.", security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public FacilityView removeClassHour(@PathVariable Long classHourId) {
+        return facilities.removeClassHour(classHourId);
     }
 
     // --- Events

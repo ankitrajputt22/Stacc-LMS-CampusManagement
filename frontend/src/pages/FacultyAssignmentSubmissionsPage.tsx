@@ -56,36 +56,43 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
   )
 }
 
+const ROW_GRID = 'md:grid md:grid-cols-[minmax(0,1fr)_8rem_10rem_minmax(0,1.2fr)] md:items-center md:gap-4'
+
 function SubmissionRow({ submission }: { submission: LmsFacultySubmissionSummary }) {
-  const attempts = submission.attemptCount === 1 ? '1 attempt' : `${submission.attemptCount} attempts`
+  const graded = submission.latestGraded && submission.latestMarksAwarded !== null && submission.latestMaxMarksSnapshot !== null
   return (
-    <li className="group relative px-4 py-3 first:rounded-t-panel last:rounded-b-panel hover:bg-surface-muted has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <h3 className="text-sm font-semibold break-all text-ink">
-          {/* The click area covers the whole row. */}
-          <Link
-            to={{ search: `?submission=${submission.submissionId}` }}
-            data-submission-id={submission.submissionId}
-            className="after:absolute after:inset-0 focus-visible:outline-none group-hover:text-stacc-primary group-hover:underline group-hover:underline-offset-4"
-          >
-            {submission.studentLoginId}
-            <span className="sr-only">, review submission</span>
-          </Link>
-        </h3>
+    <li
+      className={`group relative px-4 py-3 last:rounded-b-panel hover:bg-surface-muted has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5 ${ROW_GRID}`}
+    >
+      <h3 className="text-[0.95rem] font-semibold break-all text-ink">
+        {/* The click area covers the whole row. */}
+        <Link
+          to={{ search: `?submission=${submission.submissionId}` }}
+          data-submission-id={submission.submissionId}
+          className="after:absolute after:inset-0 focus-visible:outline-none group-hover:text-stacc-primary group-hover:underline group-hover:underline-offset-4"
+        >
+          {submission.studentLoginId}
+          <span className="sr-only">, review submission</span>
+        </Link>
+      </h3>
+      <p className="text-sm text-ink">
+        {submission.attemptCount === 1 ? '1 attempt' : `${submission.attemptCount} attempts`}
+      </p>
+      <p className="text-sm text-ink">
+        <span className="sr-only">Latest submitted </span>
+        <time dateTime={submission.latestSubmittedAt}>{formatDateTime(submission.latestSubmittedAt)}</time>
+      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-2 md:mt-0">
         <span className="sr-only">Latest attempt: </span>
         <TimingTag late={submission.latestLate} />
-        <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
-          {submission.latestGraded && submission.latestMarksAwarded !== null && submission.latestMaxMarksSnapshot !== null
-            ? `Graded ${formatMarks(submission.latestMarksAwarded)} / ${formatMarks(submission.latestMaxMarksSnapshot)}`
-            : 'Not graded'}
-        </span>
+        {graded ? (
+          <span className="inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
+            {`Graded ${formatMarks(submission.latestMarksAwarded as number)} / ${formatMarks(submission.latestMaxMarksSnapshot as number)}`}
+          </span>
+        ) : (
+          <span className="inline-block shrink-0 rounded-sm bg-sky-100 px-1.5 py-0.5 text-xs font-medium text-portal-navy">Needs grading</span>
+        )}
       </div>
-      <p className="mt-0.5 text-sm text-ink-muted">
-        {attempts}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        Latest submitted <time dateTime={submission.latestSubmittedAt}>{formatDateTime(submission.latestSubmittedAt)}</time>
-      </p>
     </li>
   )
 }
@@ -111,11 +118,19 @@ function SubmissionList({ submissions }: { submissions: LmsFacultySubmissionSumm
   }
 
   return (
-    <ol ref={listRef} aria-label="Submissions" className="divide-y divide-line rounded-panel border border-line bg-surface">
-      {submissions.map((submission) => (
-        <SubmissionRow key={submission.submissionId} submission={submission} />
-      ))}
-    </ol>
+    <div className="rounded-panel border border-line bg-surface">
+      <div aria-hidden="true" className={`hidden rounded-t-panel bg-surface-muted px-5 py-2.5 text-sm font-semibold text-ink ${ROW_GRID}`}>
+        <span>Student</span>
+        <span>Attempts</span>
+        <span>Submitted</span>
+        <span>Status</span>
+      </div>
+      <ol ref={listRef} aria-label="Submissions" className="divide-y divide-line">
+        {submissions.map((submission) => (
+          <SubmissionRow key={submission.submissionId} submission={submission} />
+        ))}
+      </ol>
+    </div>
   )
 }
 
@@ -140,13 +155,16 @@ function AssignmentSubmissions({ assignment, submissions, open, onGraded }: Load
       />
 
       <header className="mt-4">
-        <p className="text-sm font-semibold tracking-[0.04em] break-words text-ink-muted">
+        <p className="text-xl font-bold break-words text-portal-navy">
           {assignment.courseCode}
           <span aria-hidden="true"> · </span>
           <span className="sr-only">, </span>
           {assignment.courseName}
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy">{assignment.title}</h1>
+        <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight break-words text-portal-navy">
+          <span aria-hidden="true" className="h-9 w-1.5 shrink-0 rounded bg-teal-600" />
+          {assignment.title}
+        </h1>
         <p className="mt-2 text-sm text-ink-muted">
           Due <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
           <span aria-hidden="true"> · </span>
@@ -156,9 +174,9 @@ function AssignmentSubmissions({ assignment, submissions, open, onGraded }: Load
       </header>
 
       {open === null ? (
-        <section aria-labelledby="submissions-heading" className="mt-8 max-w-3xl">
-          <h2 id="submissions-heading" className="text-base font-semibold text-ink">
-            Submissions
+        <section aria-labelledby="submissions-heading" className="mt-8 max-w-5xl">
+          <h2 id="submissions-heading" className="text-lg font-semibold text-ink">
+            Submissions ({submissions.length})
           </h2>
           <p className="mt-1 mb-3 text-sm leading-6 text-ink-muted">
             Each student’s latest attempt, newest first. Open a submission to review every attempt and grade it.

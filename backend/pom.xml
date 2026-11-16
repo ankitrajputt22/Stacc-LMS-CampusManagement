@@ -20,6 +20,8 @@
     <properties>
         <java.version>21</java.version>
         <springdoc.version>3.1.1</springdoc.version>
+        <!-- Extra test JVM arguments; empty unless another plugin adds some. -->
+        <argLine></argLine>
     </properties>
 
     <dependencies>
@@ -57,6 +59,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Metrics in Prometheus format, served only on the internal management port of the "monitoring" profile. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,10 +131,33 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Exposes each dependency's jar path as a property, so the tests can load Mockito as a Java agent. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Mockito as an agent instead of attaching itself at run time, which newer JDKs refuse. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+                </configuration>
+            </plugin>
             <!-- `mvn test` runs the database-free tests; `mvn verify` also runs the *IT tests, which need Docker for MySQL. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>

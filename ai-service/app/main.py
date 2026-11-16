@@ -90,6 +90,7 @@ def create_app(settings: Settings | None = None, models: ModelProvider | None = 
 
     app = FastAPI(title="Stacc AI service", docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings = settings
+    app.state.store = store
     app.state.builder = IndexBuilder(settings, embeddings, store)
     app.state.learning = LearningService(settings, models, embeddings, store)
     app.include_router(public)

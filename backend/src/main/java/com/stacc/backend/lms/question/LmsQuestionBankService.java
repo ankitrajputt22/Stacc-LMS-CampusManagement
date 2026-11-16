@@ -32,6 +32,8 @@ public class LmsQuestionBankService {
     public static final String OUTCOME_INVALID = "Choose an active outcome of this course.";
     public static final String IN_PUBLISHED_QUIZ =
             "This question is in a published quiz, so it can no longer be edited. Add a new question instead.";
+    public static final String IN_FINAL_PAPER =
+            "This question is in a final exam paper, so it can no longer be edited. Add a new question instead.";
 
     private final LmsQuestionRepository questions;
     private final LmsCourseRepository lmsCourses;
@@ -76,6 +78,62 @@ public class LmsQuestionBankService {
         return questions.saveAndFlush(question);
     }
 
+    /** One AI-drafted question to add, with the sources it was drafted from (v0.14.1). */
+    public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks, Long outcomeId) {
+
+        public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
+            this(content, sources, LmsQuestionAiChecks.none(), null);
+        }
+
+        public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
+            this(content, sources, checks, null);
+        }
+    }
+
+    /** A bank question as the AI quality checks compare against it (v0.14.2). */
+    public record CheckedQuestion(long id, String text, boolean inFinalPaper) {
+    }
+
+    /**
+     * The course's active questions, newest first and at most {@code limit}, with whether a final exam paper of the course
+     * uses each, for the AI drafts' duplicate and previous-paper checks. Callers check faculty access first.
+     */
+    @Transactional(readOnly = true)
+    public List<CheckedQuestion> forQualityChecks(Long lmsCourseId, int limit) {
+        Set<Long> inFinalPapers = new HashSet<>(questions.findIdsInFinalPapers(lmsCourseId));
+        return questions.findActiveTexts(lmsCourseId, org.springframework.data.domain.PageRequest.of(0, limit)).stream()
+                .map(row -> new CheckedQuestion(((Number) row[0]).longValue(), (String) row[1],
+                        inFinalPapers.contains(((Number) row[0]).longValue())))
+                .toList();
+    }
+
+    /**
+     * Adds AI-drafted questions to the bank (v0.14.1), all in one transaction, each NEEDS_REVIEW and marked as drafted
+     * by AI. A draft the bank's own rules refuse (such as an option that is too long) is left out, never changed.
+     * Faculty access is checked as for a question written by hand.
+     */
+    @Transactional
+    public List<LmsQuestion> addAiDrafts(Long userAccountId, Long lmsCourseId, List<AiDraft> drafts) {
+        requireCourse(userAccountId, lmsCourseId);
+        LmsCourse lmsCourse = lmsCourses.findById(lmsCourseId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE));
+        List<LmsQuestion> added = new java.util.ArrayList<>();
+        for (AiDraft draft : drafts) {
+            LmsQuestion question;
+            try {
+                // An outcome (v0.14.4, from an exam blueprint row) must still be an active outcome of the course.
+                LmsQuestionContent content = draft.outcomeId() == null ? draft.content()
+                        : draft.content().withOutcome(outcome(lmsCourseId, draft.outcomeId(), null));
+                question = LmsQuestion.aiDraft(lmsCourse, userAccountId, content, draft.sources(), draft.checks());
+            } catch (IllegalArgumentException | IllegalStateException refused) {
+                continue;
+            }
+            added.add(questions.save(question));
+        }
+        questions.flush();
+        return List.copyOf(added);
+    }
+
     /**
      * Replaces what the question says; it then needs a new review and is no longer offered for practice. A question
      * that a published or archived quiz uses keeps what students were asked (409). The course row is locked first, as
@@ -87,6 +145,9 @@ public class LmsQuestionBankService {
         lmsCourses.findByIdForUpdate(lmsCourseId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
         if (questions.findQuizStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
             throw new ApiException(HttpStatus.CONFLICT, IN_PUBLISHED_QUIZ);
+        }
+        if (questions.findPaperStatusesForShare(questionId).stream().anyMatch(status -> !"DRAFT".equals(status))) {
+            throw new ApiException(HttpStatus.CONFLICT, IN_FINAL_PAPER);
         }
         LmsQuestion question = active(lockedAfterAccess(questionId));
         LmsQuestionContent content = written.withOutcome(
@@ -151,6 +212,13 @@ public class LmsQuestionBankService {
     private LmsQuestion locked(Long userAccountId, Long questionId) {
         requireQuestion(userAccountId, questionId);
         return lockedAfterAccess(questionId);
+    }
+
+    /** One question of a course the faculty member teaches, for reading only (v0.14.5); anything else is the same 404. */
+    @Transactional(readOnly = true)
+    public LmsQuestion find(Long userAccountId, Long questionId) {
+        requireQuestion(userAccountId, questionId);
+        return questions.findById(questionId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUESTION_UNAVAILABLE));
     }
 
     private Long requireQuestion(Long userAccountId, Long questionId) {

@@ -32,6 +32,7 @@ Options and accepted answers are plain text up to 500 characters, must differ fr
 - An outcome must be an active outcome of the same course; one the question already has may stay after it is archived. Anything else answers 409.
 - Archiving is final: the question stays in the bank, readable under Archived, but can no longer change or be offered for practice. Nothing deletes or restores a question.
 - A question that a published or archived quiz uses can no longer be edited (409), so the quiz keeps asking what it asked; it can still be reviewed, offered for practice, or archived. Answers carry `inPublishedQuiz`, and the page shows "In a published quiz" without Edit. See `quizzes.md` for how an edit and a publication never miss each other.
+- A question in a final exam paper can no longer be edited either (409); see `exam-papers.md`.
 - Students have no route to the bank: questions carry their answers. Quizzes send students only what they may see.
 
 ## API
@@ -56,4 +57,10 @@ A question is sent as `type`, `text`, `textFormat`, `explanation`, `options` (`t
 - **Add a question**: the type decides which parts the form shows (options with Correct marks, the true or false answer, accepted answers, or guidance), then topic, difficulty, marks, course outcome, and Bloom level. Obvious slips are caught before sending; the backend decides.
 - **Questions**: search the question text and filter by type, topic, difficulty, and status (Active by default), on the page over what the API sent. Each question shows its answers, facts, and badges (Needs review, Reviewed, OK for practice, Archived), with Edit, Mark reviewed, OK for practice or Not for practice, and Archive (confirmed first).
 
-Not in this phase: "Used in" counts, question pools, import or export, or AI-generated questions (v0.14).
+## AI drafts (v0.14.1)
+
+Teacher AI' Draft into the question bank (`POST /api/v1/lms/faculty/courses/{id}/ai/question-bank`, the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE`) adds AI-drafted questions through `LmsQuestionBankService.addAiDrafts`, in one transaction, under the same rules as written ones: each starts `NEEDS_REVIEW`, is never offered for practice, and is marked `aiGenerated` with the course sources it was drafted from (`lms_question_sources`: kind, ID, and a snapshot of the title, file, and page or slide; never a storage key). The bank shows an AI draft badge and the sources. A draft the bank's rules refuse is left out, never changed. See `ai-learning.md`.
+
+Quality checks (v0.14.2), worked out once when an AI draft is made and kept with it: a possible duplicate of a bank question by meaning (embeddings) or wording (word overlap), shown as "Like a question in a final paper" when the match is in a paper made final; "May be outside the course content" when the question is far from every allowed course source and shares no word with them; repeats within one request are dropped; and the model's difficulty and Bloom level, shown as suggestions only. They decide nothing.
+
+Not in this phase: "Used in" counts, question pools, import or export.

@@ -1,0 +1,10 @@
+# Prometheus for the optional "monitoring" Compose profile. It reads the backend's metrics on the internal
+# management port of the backend's "monitoring" Spring profile (see docs/operations.md).
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  - job_name: stacc-backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8081"]

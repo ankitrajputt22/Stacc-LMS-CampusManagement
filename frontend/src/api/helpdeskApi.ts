@@ -1,7 +1,10 @@
 import type {
+  AdminHelpArticle,
   AdminHelpdeskCategory,
   CreateHelpdeskCategoryRequest,
   CreateHelpdeskTicketRequest,
+  HelpArticle,
+  HelpArticleInput,
   HelpdeskAssignee,
   HelpdeskCategory,
   HelpdeskTicketDetail,
@@ -122,4 +125,29 @@ export async function setHelpdeskTeamMembers(teamId: number, loginIds: string[])
 
 export async function routeHelpdeskCategory(categoryId: number, teamId: number | null) {
   await apiClient.put(`/helpdesk/admin/categories/${categoryId}/team`, { teamId })
+}
+
+/** Published help articles of the category, those sharing the most words of the subject first. Only reads. */
+export async function getHelpArticles(categoryId: number, q: string, signal?: AbortSignal) {
+  return (await apiClient.get<HelpArticle[]>('/helpdesk/articles', { params: { categoryId, q: q || undefined }, signal })).data
+}
+
+export async function getAdminHelpArticles(signal?: AbortSignal) {
+  return (await apiClient.get<AdminHelpArticle[]>('/helpdesk/admin/articles', { signal })).data
+}
+
+export async function addHelpArticle(input: HelpArticleInput) {
+  return (await apiClient.post<AdminHelpArticle>('/helpdesk/admin/articles', input)).data
+}
+
+export async function editHelpArticle(articleId: number, input: HelpArticleInput) {
+  return (await apiClient.put<AdminHelpArticle>(`/helpdesk/admin/articles/${articleId}`, input)).data
+}
+
+export async function publishHelpArticle(articleId: number) {
+  return (await apiClient.post<AdminHelpArticle>(`/helpdesk/admin/articles/${articleId}/publish`)).data
+}
+
+export async function archiveHelpArticle(articleId: number) {
+  return (await apiClient.post<AdminHelpArticle>(`/helpdesk/admin/articles/${articleId}/archive`)).data
 }

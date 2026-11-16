@@ -55,3 +55,7 @@ The demo semester 3 opens registration a day before seeding for 61 days, with th
 ## Not built yet
 
 Prerequisites, curriculum rules, elective groups, minimum credits, waiting lists, and withdrawal approval.
+
+## Load test
+
+`load/course-registration-burst.js` (v0.4.4) sends many registrations for one offering at once, several from each student, and then checks that no student holds two enrollments, that every eligible student got a place up to the free places, and that the free places went down by exactly the new enrollments. CI runs it on the end-to-end stack after the journeys; the recorded result is in `load/README.md`.

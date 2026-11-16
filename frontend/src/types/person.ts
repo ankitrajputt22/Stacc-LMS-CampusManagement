@@ -10,4 +10,15 @@ export type MyPersonProfile = {
   email: string | null
   phone: string | null
   hasPhoto: boolean
+  /** Chosen by the person; plain text with line breaks. */
+  mailingAddress: string | null
+  /** Up to three, oldest first. */
+  emergencyContacts: EmergencyContact[]
+}
+
+export type EmergencyContact = {
+  contactId: number
+  name: string
+  relation: string
+  phone: string
 }

@@ -36,6 +36,13 @@ class Strict(BaseModel):
 class SourceType(StrEnum):
     TOPIC = "TOPIC"
     STUDY_MATERIAL = "STUDY_MATERIAL"
+    # Kept in their own indexes (v0.13.5, v0.13.6): a course's teacher-only documents and a student's private notes.
+    TEACHER_DOCUMENT = "TEACHER_DOCUMENT"
+    NOTE = "NOTE"
+
+    @property
+    def carries_text(self) -> bool:
+        return self is not SourceType.STUDY_MATERIAL
 
 
 class FileType(StrEnum):
@@ -64,11 +71,12 @@ class QuestionType(StrEnum):
 
 
 class IndexSource(Strict):
-    """One published source. A topic carries its plain text; a study material carries its file."""
+    """One source. A topic, teacher document, or note carries its text; a study material carries its file. Only
+    topics and study materials belong to a topic."""
 
     sourceType: SourceType
     sourceId: int = Field(gt=0)
-    topicId: int = Field(gt=0)
+    topicId: int | None = Field(default=None, gt=0)
     title: str = Field(min_length=1, max_length=200)
     text: str | None = Field(default=None, max_length=25_000)
     fileName: str | None = Field(default=None, max_length=255)
@@ -77,11 +85,13 @@ class IndexSource(Strict):
 
     @model_validator(mode="after")
     def matches_type(self) -> IndexSource:
-        if self.sourceType is SourceType.TOPIC:
+        if self.sourceType.carries_text:
             if not self.text or self.fileName or self.fileType or self.contentBase64:
-                raise ValueError("a topic source carries text only")
+                raise ValueError("a text source carries text only")
         elif not (self.fileName and self.fileType and self.contentBase64) or self.text:
             raise ValueError("a study material source carries a file only")
+        if (self.topicId is None) != (self.sourceType in (SourceType.TEACHER_DOCUMENT, SourceType.NOTE)):
+            raise ValueError("topics and study materials name their topic; other sources do not")
         return self
 
 
@@ -103,7 +113,7 @@ class ReplaceIndexResponse(BaseModel):
 class Citation(BaseModel):
     sourceType: SourceType
     sourceId: int
-    topicId: int
+    topicId: int | None = None
     title: str
     fileName: str | None = None
     pageNumber: int | None = None
@@ -113,12 +123,54 @@ class Citation(BaseModel):
 # --- Student requests --------------------------------------------------------------------------
 
 
-class IndexedRequest(Strict):
+class SourceRef(Strict):
+    """One source a request may use, as the backend allows it right now."""
+
+    sourceType: SourceType
+    sourceId: int = Field(gt=0)
+
+
+AllowedSources = Annotated[list[SourceRef] | None, Field(default=None, max_length=5000)]
+
+
+class IndexRef(Strict):
+    """Another index to search with the course's own, such as a teacher's or a student's notes index."""
+
+    indexKey: str = Field(pattern=r"^[a-f0-9]{32}$")
     indexFingerprint: str = Field(pattern=FINGERPRINT)
+    allowedSources: AllowedSources = None
+
+
+class IndexedRequest(Strict):
+    """A request over the course index named in the path, and optionally more indexes.
+
+    ``allowedSources`` lists the sources the backend allows at this moment; chunks of any other source are never
+    searched, summarised, or cited, even if an index still holds them. ``None`` allows every source of the index.
+    """
+
+    indexFingerprint: str = Field(pattern=FINGERPRINT)
+    allowedSources: AllowedSources = None
+    additionalIndexes: Annotated[list[IndexRef], Field(default_factory=list, max_length=3)]
+
+
+class AnswerStyle(StrEnum):
+    """How to answer (v0.15.1): normally, more simply, or with an example."""
+    NORMAL = "NORMAL"
+    SIMPLER = "SIMPLER"
+    EXAMPLE = "EXAMPLE"
+    HINT = "HINT"
+
+
+class Turn(Strict):
+    """An earlier question and answer on the student's open page (v0.15.1); the page sends them, nothing is stored."""
+    question: str = Field(min_length=1, max_length=1000)
+    answer: str = Field(min_length=1, max_length=2000)
 
 
 class AskRequest(IndexedRequest):
     question: str
+    history: Annotated[list[Turn], Field(default_factory=list, max_length=3)]
+    style: AnswerStyle = AnswerStyle.NORMAL
 
     @field_validator("question")
     @classmethod
@@ -135,8 +187,18 @@ class AskResponse(BaseModel):
     citations: list[Citation]
 
 
+class SummaryStyle(StrEnum):
+    """How to summarise (v0.15.2)."""
+    BRIEF = "BRIEF"
+    DETAILED = "DETAILED"
+    REVISION_NOTES = "REVISION_NOTES"
+
+
 class SummaryRequest(IndexedRequest):
-    topicId: int = Field(gt=0)
+    """A topic's summary, or, without a topic, a summary of whatever the allowed sources hold, such as one module or one
+    document (v0.15.2)."""
+    topicId: int | None = Field(default=None, gt=0)
+    style: SummaryStyle = SummaryStyle.BRIEF
 
 
 class SummaryResponse(BaseModel):
@@ -185,6 +247,175 @@ class AssessmentDraftResponse(BaseModel):
     insufficientContext: bool
 
 
+# --- Question bank drafts (v0.14.1) ------------------------------------------------------------------
+
+
+class BankType(StrEnum):
+    """The question bank's own kinds of question."""
+    SINGLE_CHOICE = "SINGLE_CHOICE"
+    MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
+    TRUE_FALSE = "TRUE_FALSE"
+    SHORT_ANSWER = "SHORT_ANSWER"
+    DESCRIPTIVE = "DESCRIPTIVE"
+
+    @property
+    def keyed(self) -> bool:
+        """Whether the question has a key the self-check can test."""
+        return self in (BankType.SINGLE_CHOICE, BankType.MULTIPLE_CHOICE, BankType.TRUE_FALSE)
+
+
+class Bloom(StrEnum):
+    REMEMBER = "REMEMBER"
+    UNDERSTAND = "UNDERSTAND"
+    APPLY = "APPLY"
+    ANALYZE = "ANALYZE"
+    EVALUATE = "EVALUATE"
+    CREATE = "CREATE"
+
+
+class ExistingQuestion(Strict):
+    """A question already in the course's bank, for the duplicate and previous-paper checks (v0.14.2)."""
+    id: int = Field(gt=0)
+    text: str = Field(min_length=1, max_length=2000)
+    inFinalPaper: bool = False
+
+
+class BankDraftRequest(IndexedRequest):
+    questionCount: int = Field(ge=1, le=10)
+    questionTypes: list[BankType] = Field(min_length=1, max_length=5)
+    difficulty: Difficulty
+    topicId: int | None = Field(default=None, gt=0)
+    additionalInstruction: str | None = Field(default=None, max_length=500)
+    existingQuestions: list[ExistingQuestion] = Field(default_factory=list, max_length=500)
+
+
+class QualityChecks(BaseModel):
+    """Flags worked out by code and embeddings, and the model's suggestions, for the reviewer (v0.14.2)."""
+    duplicateOfQuestionId: int | None
+    inPreviousPaper: bool
+    outOfSyllabus: bool
+    suggestedDifficulty: str | None
+    suggestedBloomLevel: str | None
+
+
+class BankOption(BaseModel):
+    text: str
+    correct: bool
+
+
+class BankQuestion(BaseModel):
+    questionType: BankType
+    text: str
+    options: list[BankOption]
+    trueFalseAnswer: bool | None
+    acceptedAnswers: list[str]
+    answerGuidance: str | None
+    explanation: str | None
+    suggestedMarks: float
+    citations: list[Citation]
+    checks: QualityChecks
+
+
+class BankDraftResponse(BaseModel):
+    questions: list[BankQuestion]
+    droppedForKeyMismatch: int
+    droppedAsRepeats: int = 0
+    insufficientContext: bool
+
+
+# --- Model answers and rubric suggestions (v0.14.5) ------------------------------------------------
+
+
+class ModelAnswerRequest(IndexedRequest):
+    questionText: str = Field(min_length=1, max_length=5000)
+    questionType: BankType
+    marks: float = Field(gt=0, le=1000)
+
+
+class ModelAnswerResponse(BaseModel):
+    answer: str | None
+    keyPoints: list[str]
+    citations: list[Citation]
+    insufficientContext: bool
+
+
+class RubricRequest(IndexedRequest):
+    title: str = Field(min_length=1, max_length=200)
+    instructions: str | None = Field(default=None, max_length=20_000)
+    maxMarks: float = Field(gt=0, le=1000)
+    criteriaCount: int = Field(ge=2, le=8)
+
+
+class RubricLevel(BaseModel):
+    title: str
+    description: str | None
+    points: float
+
+
+class RubricCriterion(BaseModel):
+    title: str
+    description: str | None
+    maxPoints: float
+    levels: list[RubricLevel]
+
+
+class RubricResponse(BaseModel):
+    criteria: list[RubricCriterion]
+    citations: list[Citation]
+    insufficientContext: bool
+
+
+# --- Practice evaluation (v0.15.4) -----------------------------------------------------------------
+
+
+class PracticeMode(StrEnum):
+    PRACTICE = "PRACTICE"
+    MOCK_EXAM = "MOCK_EXAM"
+    VIVA = "VIVA"
+
+
+class EvaluateRequest(IndexedRequest):
+    question: str = Field(min_length=1, max_length=1500)
+    referenceAnswer: str = Field(min_length=1, max_length=2000)
+    studentAnswer: str = Field(min_length=1, max_length=4000)
+    maxMarks: int = Field(ge=1, le=10)
+    mode: PracticeMode = PracticeMode.PRACTICE
+
+
+class Verdict(StrEnum):
+    CORRECT = "CORRECT"
+    PARTLY_CORRECT = "PARTLY_CORRECT"
+    INCORRECT = "INCORRECT"
+
+
+class EvaluateResponse(BaseModel):
+    marks: float | None
+    verdict: Verdict | None
+    feedback: str | None
+    followUpQuestion: str | None
+    citations: list[Citation]
+    insufficientContext: bool
+
+
+# --- Flashcards (v0.15.3) ----------------------------------------------------------------------------
+
+
+class FlashcardRequest(IndexedRequest):
+    cardCount: int = Field(ge=3, le=30)
+    topicId: int | None = Field(default=None, gt=0)
+
+
+class Flashcard(BaseModel):
+    front: str
+    back: str
+    citations: list[Citation]
+
+
+class FlashcardResponse(BaseModel):
+    cards: list[Flashcard]
+    insufficientContext: bool
+
+
 # --- What the model must return ----------------------------------------------------------------
 # Source references are the short labels ("S1", "S2", ...) the prompt gives each retrieved chunk.
 
@@ -199,7 +430,7 @@ class AskModelOutput(BaseModel):
 
 class SummaryModelOutput(BaseModel):
     insufficientContext: bool
-    summary: Bounded(1500) = ""
+    summary: Bounded(4000) = ""
     keyPoints: Annotated[list[Bounded(300)], Field(max_length=8)] = []
     sourceIds: SourceRefs = []
 
@@ -238,3 +469,94 @@ class AssessmentModelOutput(BaseModel):
     titleSuggestion: Bounded(200, 1)
     instructionsSuggestion: Bounded(2000)
     questions: Annotated[list[AssessmentModelQuestion], Field(max_length=20)]
+
+
+class BankModelOption(BaseModel):
+    text: Bounded(300, 1)
+    correct: bool
+
+
+class BankModelQuestion(BaseModel):
+    questionType: BankType
+    text: Bounded(1500, 1)
+    options: Annotated[list[BankModelOption], Field(max_length=6)] = []
+    trueFalseAnswer: bool | None = None
+    acceptedAnswers: Annotated[list[Bounded(200, 1)], Field(max_length=5)] = []
+    answerGuidance: Bounded(2000) | None = None
+    explanation: Bounded(2000) | None = None
+    suggestedMarks: float = Field(gt=0, le=100)
+    difficultySuggestion: Difficulty | None = None
+    bloomSuggestion: Bloom | None = None
+    sourceIds: SourceRefs = []
+
+    @model_validator(mode="after")
+    def answers_fit_type(self) -> BankModelQuestion:
+        correct = sum(option.correct for option in self.options)
+        kind = self.questionType
+        if kind is BankType.SINGLE_CHOICE and (len(self.options) < 2 or correct != 1):
+            raise ValueError("a single-choice question needs two or more options and exactly one correct")
+        if kind is BankType.MULTIPLE_CHOICE and (len(self.options) < 2 or correct < 1):
+            raise ValueError("a multiple-choice question needs two or more options and one or more correct")
+        if kind is BankType.TRUE_FALSE and self.trueFalseAnswer is None:
+            raise ValueError("a true/false question needs its answer")
+        if kind is BankType.SHORT_ANSWER and not self.acceptedAnswers:
+            raise ValueError("a short-answer question needs accepted answers")
+        if kind is BankType.DESCRIPTIVE and not self.answerGuidance:
+            raise ValueError("a descriptive question needs marking guidance")
+        return self
+
+
+class BankModelOutput(BaseModel):
+    questions: Annotated[list[BankModelQuestion], Field(max_length=10)]
+
+
+class AnswerCheckOutput(BaseModel):
+    """The model's own answer to a keyed question, given without the key: the chosen option numbers (from 1), or the
+    true/false answer."""
+    chosenOptions: Annotated[list[int], Field(max_length=10)] = []
+    trueFalseAnswer: bool | None = None
+
+
+class ModelAnswerOutput(BaseModel):
+    insufficientContext: bool
+    answer: Bounded(4000) = ""
+    keyPoints: Annotated[list[Bounded(300, 1)], Field(max_length=8)] = []
+    sourceIds: SourceRefs = []
+
+
+class RubricModelLevel(BaseModel):
+    title: Bounded(100, 1)
+    description: Bounded(500) | None = None
+    points: float = Field(ge=0, le=1000)
+
+
+class RubricModelCriterion(BaseModel):
+    title: Bounded(200, 1)
+    description: Bounded(1000) | None = None
+    maxPoints: float = Field(gt=0, le=1000)
+    levels: Annotated[list[RubricModelLevel], Field(max_length=6)] = []
+
+
+class RubricModelOutput(BaseModel):
+    criteria: Annotated[list[RubricModelCriterion], Field(max_length=8)]
+    sourceIds: SourceRefs = []
+
+
+class FlashcardModelCard(BaseModel):
+    front: Bounded(300, 1)
+    back: Bounded(1000, 1)
+    sourceIds: SourceRefs = []
+
+
+class FlashcardModelOutput(BaseModel):
+    cards: Annotated[list[FlashcardModelCard], Field(max_length=30)]
+
+
+class EvaluateModelOutput(BaseModel):
+    insufficientContext: bool
+    marks: float = Field(default=0, ge=0, le=10)
+    verdict: Verdict = Verdict.INCORRECT
+    feedback: Bounded(2000) = ""
+    followUpQuestion: Bounded(500) | None = None
+    sourceIds: SourceRefs = []
+

@@ -35,6 +35,7 @@ class AiKnowledgeSourcesTest {
     private final List<LmsTopic> topics = new ArrayList<>();
     private final List<LmsStudyMaterial> materials = new ArrayList<>();
     private LmsTopic publishedA;
+    private LmsStudyMaterial publishedD;
     private LmsTopic draftB;
     private LmsStudyMaterial draftE;
 
@@ -49,7 +50,7 @@ class AiKnowledgeSourcesTest {
         LmsTopic publishedInDraftModule = ContentFixtures.topic(draftModule, 4, 1, PUBLISHED);
         ReflectionTestUtils.setField(draftB, "content", "SECRET-DRAFT-PHRASE-7781 only in a draft topic.");
         topics.addAll(List.of(publishedA, draftB, archivedC, publishedInDraftModule));
-        LmsStudyMaterial publishedD = ContentFixtures.material(publishedA, 20, 1, PUBLISHED);
+        publishedD = ContentFixtures.material(publishedA, 20, 1, PUBLISHED);
         draftE = ContentFixtures.material(publishedA, 21, 2, DRAFT);
         LmsStudyMaterial publishedUnderDraftTopic = ContentFixtures.material(draftB, 22, 1, PUBLISHED);
         materials.addAll(List.of(publishedD, draftE, publishedUnderDraftTopic));
@@ -65,6 +66,17 @@ class AiKnowledgeSourcesTest {
         assertThat(knowledge.publishedSourceCount()).isEqualTo(2);
         assertThat(knowledge.topics()).noneMatch(topic -> topic.content().contains("SECRET-DRAFT-PHRASE"));
         assertThat(knowledge.fingerprint()).matches("[0-9a-f]{64}");
+    }
+
+    @Test
+    void materialsKeptOutOfAiAreLeftOutAndChangeTheFingerprint() {
+        String before = sources.publishedKnowledge(1L).fingerprint();
+        publishedD.changeAiExclusion(true);
+        AiCourseKnowledge knowledge = sources.publishedKnowledge(1L);
+        assertThat(knowledge.materials()).isEmpty();
+        assertThat(knowledge.fingerprint()).isNotEqualTo(before);
+        publishedD.changeAiExclusion(false);
+        assertThat(sources.publishedKnowledge(1L).fingerprint()).isEqualTo(before);
     }
 
     @Test

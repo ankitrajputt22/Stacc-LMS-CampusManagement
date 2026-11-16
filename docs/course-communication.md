@@ -13,6 +13,14 @@ Stacc v0.8 adds three things to every LMS course: discussions, private messages 
   - Faculty: `/api/v1/lms/faculty/courses/{id}/discussions…`, needing `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_DISCUSSION_USE`.
   - A course or thread the caller may not use answers 404.
 
+### Moderation (v0.8.3)
+
+- Faculty of the course (with `LMS_DISCUSSION_MODERATE`, `V103`) hide a thread or a reply and lock a thread. Nothing is deleted: a hidden thread is left out of the students' list and answers them the same 404 as a missing one; a hidden reply reaches students only as hidden, without its author or text, and stops being the accepted answer. A locked thread takes no new replies (409), from anyone, until it is unlocked. Faculty see everything, marked as hidden.
+- Students report a thread or a reply with a reason (up to 500 characters) to the course's faculty (`lms_discussion_reports`). Hidden posts and one's own cannot be reported, and a person has one open report per post (a unique key on open reports, checked under the thread row lock).
+- Faculty see the open reports of the course without the reporters, and resolve a post's reports together: Hide post (the post is hidden and its reports resolved as `HIDDEN`) or Dismiss (`DISMISSED`). Hiding a post directly resolves its open reports too. Reports are never deleted.
+- Routes: faculty `POST …/discussions/{threadId}/hide`, `…/lock`, `…/replies/{replyId}/hide`, `GET /api/v1/lms/faculty/courses/{id}/discussion-reports`, and `POST …/discussion-reports/{reportId}/resolve`, each needing `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_DISCUSSION_MODERATE`; students `POST /api/v1/lms/courses/{id}/discussions/{threadId}/reports`.
+- Every moderation change locks the thread row first (`LmsDiscussionModerationMySqlIT`).
+
 ## Messages (`lms.message`)
 
 - A student starts a private conversation (`LmsConversation`) with the faculty of a course. Every faculty member teaching that course can read and answer it.
@@ -36,3 +44,4 @@ Stacc v0.8 adds three things to every LMS course: discussions, private messages 
 - Faculty: the same paths under `/teaching/:id`.
 - Discussions and Messages appear in both course navigations.
 - Texts are shown as plain text.
+- The faculty discussions page starts with Reported posts (Hide post, Dismiss) when there are open reports; a thread shows Lock and Hide from students to faculty and Report to students, with a reason form.

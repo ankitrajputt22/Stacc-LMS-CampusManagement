@@ -56,3 +56,38 @@ export type ReportExport = {
   createdAt: string
   expiresAt: string
 }
+
+// --- Department analytics (DepartmentAnalyticsService): counts for the current session; attendance only for groups of
+// at least five (null otherwise). No student is named.
+
+export type DepartmentProgramLine = { code: string; name: string; students: number }
+export type DepartmentOfferingLine = {
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  programCode: string
+  semesterNumber: number
+  enrolled: number
+  attendancePercent: number | null
+  publishedResults: number
+}
+export type DepartmentAnalytics = {
+  departmentId: number
+  code: string
+  name: string
+  programs: DepartmentProgramLine[]
+  offerings: DepartmentOfferingLine[]
+  note: string
+}
+
+// --- Area analytics (AreaAnalyticsService): a section is null when the account lacks that area's permission.
+
+export type AreaAnalytics = {
+  hostel: { bedsInService: number; bedsUnderMaintenance: number; occupiedBeds: number; occupancyPercent: number | null } | null
+  helpdesk: { ticketsByStatus: Record<string, number>; ratedTickets: number; averageRating: number | null } | null
+  engagement: { activeGroups: number; activeMemberships: number; pastEvents: number; comingEvents: number; pastRegistrations: number; checkedIn: number; attendancePercent: number | null } | null
+  placement: { openOpportunities: number; applicationsByStatus: Record<string, number>; offersByStatus: Record<string, number> } | null
+  library: { activeTitles: number; copiesInService: number; openLoans: number; overdueLoans: number; activeHolds: number } | null
+  ai: { courseIndexesByStatus: Record<string, number> } | null
+  note: string
+}

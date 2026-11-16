@@ -15,7 +15,9 @@ Stacc is one college platform for the ERP (academic records), the LMS (courses a
 - **Campus:** a campus hub with clubs and sports groups, overlap-safe facility bookings, and events with eligibility, capacity, and a waitlist.
 - **Student services and career:** a digital ID with a QR code that changes every minute, a document vault with certificate requests and a public authenticity check, career profiles with resume versions, and one opportunities engine for placements, internships, research, and scholarships.
 - **Analytics:** a student's own progress and faculty course analytics (percentages only for groups of five or more, never rankings), reports, and background Excel exports.
-- **AI study tools** (optional): answers, summaries, and practice questions from published course material, through an internal Python service with a self-hosted model.
+- **AI study tools** (optional), from published course material only, with sources for every answer, through an internal Python service with a self-hosted model:
+  - students: Ask My Course (with their own notes and follow-ups, answers saved on request), summaries, flashcards with spaced repetition, practice, mock exams, and viva with feedback, their own mastery per page, recommendations that say why, study plans, and an AI Study home across courses;
+  - faculty: question drafts straight into the question bank (always for review), quiz drafts, exam paper sets and gap filling, model answers and rubric suggestions, teacher-only documents, and a per-course switch for the student assistant.
 
 The full plan and what is done are in [docs/roadmap.md](docs/roadmap.md); the guided demo is in [docs/demo-guide.md](docs/demo-guide.md).
 

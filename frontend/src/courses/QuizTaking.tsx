@@ -97,17 +97,17 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
   const name = `${id}-answer`
   const label = `Answer to question ${question.number}`
   return (
-    <li className="px-4 py-5 sm:px-5">
-      <fieldset className="space-y-3" disabled={!open}>
-        <legend className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
+    <li className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <fieldset className="space-y-2.5" disabled={!open}>
+        <legend className="flex flex-wrap items-center gap-2 text-base font-bold text-portal-navy">
           Question {question.number}
-          <span className="font-normal text-ink-muted">({marksText(question.marks)})</span>
+          <span className="rounded-control bg-surface-muted px-2 py-0.5 text-sm font-medium text-ink">{marksText(question.marks)}</span>
           {question.type === 'MULTIPLE_CHOICE' && <span className="font-normal text-ink-muted">Choose every correct answer.</span>}
         </legend>
-        <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={3} />
+        <FormattedText text={question.text} format={question.textFormat} className="text-[0.95rem] leading-6 text-ink" headingLevel={3} />
         {question.type === 'SINGLE_CHOICE' &&
           question.options.map((option) => (
-            <label key={option.position} className="flex items-start gap-2 text-sm text-ink">
+            <label key={option.position} className="flex items-start gap-2 rounded-control px-2 py-1.5 text-[0.95rem] text-ink has-[:checked]:bg-sky-100">
               <input
                 type="radio"
                 name={name}
@@ -120,7 +120,7 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
           ))}
         {question.type === 'MULTIPLE_CHOICE' &&
           question.options.map((option) => (
-            <label key={option.position} className="flex items-start gap-2 text-sm text-ink">
+            <label key={option.position} className="flex items-start gap-2 rounded-control px-2 py-1.5 text-[0.95rem] text-ink has-[:checked]:bg-sky-100">
               <input
                 type="checkbox"
                 className="mt-1"
@@ -139,7 +139,7 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
           ))}
         {question.type === 'TRUE_FALSE' &&
           [true, false].map((value) => (
-            <label key={String(value)} className="flex items-center gap-2 text-sm text-ink">
+            <label key={String(value)} className="flex items-center gap-2 rounded-control px-2 py-1.5 text-[0.95rem] text-ink has-[:checked]:bg-sky-100">
               <input type="radio" name={name} checked={draft.trueFalse === value} onChange={() => onChoose({ ...draft, trueFalse: value })} />
               {value ? 'True' : 'False'}
             </label>
@@ -172,7 +172,17 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
       </fieldset>
       {result && <QuestionResultPanel question={question} result={result} />}
       {open && saveState && (
-        <p className={`mt-2 text-sm ${saveState === 'failed' ? 'text-danger' : 'text-ink-muted'}`}>{saveStateText(saveState)}</p>
+        <p
+          className={`mt-2 text-sm ${
+            saveState === 'failed'
+              ? 'text-danger'
+              : saveState === 'saved'
+                ? 'inline-block rounded-control border border-success-line bg-success-soft px-2 py-0.5 font-medium text-ink'
+                : 'text-ink-muted'
+          }`}
+        >
+          {saveStateText(saveState)}
+        </p>
       )}
     </li>
   )
@@ -393,8 +403,11 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
         )}
       </Card>
 
-      <Card title="Questions" padding="none">
-        <ol className="divide-y divide-line">
+      <section aria-labelledby="quiz-questions-heading">
+        <h2 id="quiz-questions-heading" className="mb-3 text-lg font-semibold text-ink">
+          Questions
+        </h2>
+        <ol className="space-y-3">
           {current.questions.map((question) => (
             <QuizQuestion
               key={question.quizQuestionId}
@@ -409,7 +422,7 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
             />
           ))}
         </ol>
-      </Card>
+      </section>
 
       <Card>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -427,7 +440,7 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
         {confirming && (
           <StatusConfirmation
             question="Submit your answers?"
-            detail={`${answered} of ${current.questions.length} questions are answered. After submitting, the answers can no longer change.`}
+            detail={`${answered} of ${current.questions.length} ${current.questions.length === 1 ? 'question is' : 'questions are'} answered. After submitting, the answers can no longer change.`}
             confirmLabel="Submit"
             busyLabel="Submitting…"
             describeRefusal={() => 'Couldn’t submit the quiz. Try again.'}

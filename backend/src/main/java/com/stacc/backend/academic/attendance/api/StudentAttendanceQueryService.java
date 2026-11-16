@@ -86,7 +86,8 @@ public class StudentAttendanceQueryService {
                         record.getAttendanceSession().getId(),
                         record.getAttendanceSession().getHeldAt(),
                         record.getAttendanceSession().getTopic(),
-                        record.getStatus().name()))
+                        record.getStatus().name(),
+                        record.getId()))
                 .toList();
         return new StudentAttendanceResponse.Course(
                 offering.getId(),
@@ -99,6 +100,15 @@ public class StudentAttendanceQueryService {
                 present,
                 total - present,
                 percentage(present, total),
-                sessions);
+                sessions,
+                isLow(percentage(present, total)));
+    }
+
+    /** The college's minimum attendance (v0.16): a course below it needs attention. */
+    public static final BigDecimal MINIMUM_PERCENT = new BigDecimal("75");
+
+    /** Whether a percentage is below the minimum; no sessions means nothing to judge yet. */
+    public static boolean isLow(BigDecimal percentage) {
+        return percentage != null && percentage.compareTo(MINIMUM_PERCENT) < 0;
     }
 }

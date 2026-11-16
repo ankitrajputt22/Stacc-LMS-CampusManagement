@@ -13,6 +13,7 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { EmptyState } from '../components/states/EmptyState'
+import { ModelAnswerSuggestion } from '../ai/ModelAnswerSuggestion'
 import { bloomLabel } from '../courses/bloomText'
 import { SectionState } from '../courses/SectionState'
 import { FormattedText } from '../formatting/FormattedText'
@@ -89,7 +90,19 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
         )}
         {question.practiceAllowed && <Badge tone="info">OK for practice</Badge>}
         {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
+        {question.aiGenerated && <Badge tone="info">AI draft</Badge>}
+        {question.aiChecks?.duplicateOfQuestionId != null && (
+          <Badge tone="warning">{question.aiChecks.inPreviousPaper ? 'Like a question in a final paper' : 'Possible duplicate'}</Badge>
+        )}
+        {question.aiChecks?.outOfSyllabus && <Badge tone="warning">May be outside the course content</Badge>}
       </div>
+      {question.aiChecks && (question.aiChecks.suggestedDifficulty || question.aiChecks.suggestedBloomLevel) && (
+        <p className="text-sm text-ink-muted">
+          AI suggestions only:
+          {question.aiChecks.suggestedDifficulty && ` difficulty ${difficultyLabel(question.aiChecks.suggestedDifficulty)}`}
+          {question.aiChecks.suggestedBloomLevel && ` · Bloom level ${bloomLabel(question.aiChecks.suggestedBloomLevel)}`}
+        </p>
+      )}
       <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={4} />
       <Answers question={question} />
       {question.explanation && (
@@ -99,6 +112,22 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
         </div>
       )}
       <p className="text-sm text-ink-muted">{facts.join(' · ')}</p>
+      {question.aiGenerated && question.sources && question.sources.length > 0 && (
+        <div className="text-sm text-ink-muted">
+          <p className="font-medium">Drafted from</p>
+          <ul className="list-disc pl-5">
+            {question.sources.map((source) => (
+              <li key={`${source.sourceType}-${source.sourceId}-${source.pageNumber ?? ''}-${source.slideNumber ?? ''}`}>
+                {source.fileName ?? source.title}
+                {source.fileName !== null && ` (${source.title})`}
+                {source.pageNumber !== null && ` · page ${source.pageNumber}`}
+                {source.slideNumber !== null && ` · slide ${source.slideNumber}`}
+                {source.sourceType === 'TEACHER_DOCUMENT' && ' · teacher document'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
@@ -275,7 +304,12 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
                       />
                     ) : (
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <QuestionSummary question={question} />
+                        <div className="min-w-0 flex-1">
+                          <QuestionSummary question={question} />
+                          {question.status === 'ACTIVE' && (question.type === 'DESCRIPTIVE' || question.type === 'SHORT_ANSWER') && (
+                            <ModelAnswerSuggestion questionId={question.id} />
+                          )}
+                        </div>
                         {question.status === 'ACTIVE' && (
                           <div className="flex shrink-0 flex-wrap gap-2">
                             {/* A published quiz keeps asking what it asked, so its questions are not edited. */}

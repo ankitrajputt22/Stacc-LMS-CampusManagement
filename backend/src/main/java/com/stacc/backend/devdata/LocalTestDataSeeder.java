@@ -42,6 +42,7 @@ import com.stacc.backend.lms.syllabus.LmsSyllabusService;
 import com.stacc.backend.lms.question.LmsQuestion;
 import com.stacc.backend.lms.question.LmsQuestionBankService;
 import com.stacc.backend.lms.question.LmsQuestionContent;
+import com.stacc.backend.lms.paper.LmsExamPaperService;
 import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
 import com.stacc.backend.lms.assignment.rubric.LmsRubricService;
@@ -145,6 +146,7 @@ import com.stacc.backend.lms.course.LmsCourseStatus;
 import com.stacc.backend.lms.management.LmsCourseManagementService;
 import com.stacc.backend.support.helpdesk.HelpdeskActor;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskArticleService;
 import com.stacc.backend.support.helpdesk.HelpdeskCategoryService;
 import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskCategoryRequest;
 import com.stacc.backend.support.helpdesk.HelpdeskRequests.CreateHelpdeskTicketRequest;
@@ -340,6 +342,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final CourseResultManagementService results;
         final AcademicCalendarManagementService calendar;
         final HelpdeskCategoryService helpdeskCategories;
+        final HelpdeskArticleService helpArticles;
         final HelpdeskTicketCommandService helpdeskTickets;
         final ApprovalWorkflowDefinitionService approvalWorkflows;
         final ApprovalWorkflowService approvals;
@@ -357,6 +360,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         final LmsQuizService quizzes;
         final LmsGradebookService gradebook;
         final LmsRubricService rubrics;
+        final LmsExamPaperService examPapers;
 
         Services(LmsCourseManagementService lmsCourses, LmsContentManagementService content,
                 LmsStudyMaterialService studyMaterials,
@@ -371,7 +375,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 HostelApplicationService hostelApplications, HostelAllocationService hostelAllocations,
                 PersonProfileService personProfiles, DepartmentHeadService departmentHeads, LmsSyllabusService syllabi,
                 LmsQuestionBankService questionBank, LmsQuizService quizzes, LmsGradebookService gradebook,
-                LmsRubricService rubrics) {
+                LmsRubricService rubrics, LmsExamPaperService examPapers, HelpdeskArticleService helpArticles) {
             this.lmsCourses = lmsCourses;
             this.content = content;
             this.studyMaterials = studyMaterials;
@@ -400,6 +404,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             this.quizzes = quizzes;
             this.gradebook = gradebook;
             this.rubrics = rubrics;
+            this.examPapers = examPapers;
+            this.helpArticles = helpArticles;
         }
     }
 
@@ -419,6 +425,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         created = 0;
         existing = 0;
         transaction.executeWithoutResult(status -> seed(password));
+        // A fuller college on top: a second department and more students and teachers, in its own transaction.
+        transaction.executeWithoutResult(status -> new LocalCollegePopulation(this, clock).seed(password));
         // Separate, so a missing object store skips only this file and never undoes the rest.
         try {
             transaction.executeWithoutResult(status -> studyMaterial(materialFacultyId, materialTopicId,
@@ -475,15 +483,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         person(hod1, "Lakshmi Menon");
 
         // --- Academic masters.
-        Department cse = findOrCreate(repositories.departments.findByCode("CSE"),
-                () -> repositories.departments.save(new Department("CSE", "Computer Science and Engineering")));
-        Program btech = findOrCreate(repositories.programs.findByDepartmentIdAndCode(cse.getId(), "BTECH-CSE"),
-                () -> {
-                    Program program = new Program(cse, "BTECH-CSE",
-                            "Bachelor of Technology in Computer Science and Engineering", 8);
-                    program.changeMaxCreditsPerSemester(new BigDecimal("24.00"));
-                    return repositories.programs.save(program);
-                });
+        Department cse = department("CSE", "Computer Science and Engineering");
+        Program btech = program(cse, "BTECH-CSE", "Bachelor of Technology in Computer Science and Engineering", 8, "24.00");
         AcademicSession previous = session(startYear - 1, AcademicSession::close);
         AcademicSession current = session(startYear, session -> {
             session.markActive();
@@ -525,8 +526,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         FacultyProfile facultyAdminProfile = facultyProfile(facultyAdmin, cse);
         facultyProfile(hod1, cse);
         // hod1 heads CSE, unless CSE has ever had a head: an ended or replaced term is never started again here.
-        createUnless(!repositories.departmentHeads.findAllByDepartmentId(cse.getId()).isEmpty(),
-                () -> services.departmentHeads.assign(admin1.getId(), cse.getId(), new AssignDepartmentHead(hod1.getId())));
+        departmentHead(admin1, cse, hod1);
 
         // --- Teaching: several faculty may share an offering.
         teaching(faculty1Profile, cs201);
@@ -628,11 +628,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                     Implement insertion sort and count the comparisons for $n = 10$, $100$, and $1000$.""",
                     LmsTextFormat.FORMATTED, true);
             topic(faculty2, sorting, "Merge sort lab", "Implement merge sort and compare it with insertion sort.", true);
-            if (services.syllabi.forFaculty(faculty2.getId(), previousLabCourse).isEmpty()) {
-                services.syllabi.saveDraft(faculty2.getId(), previousLabCourse,
-                        "## Course overview\n\nWeekly labs on sorting, searching, and graphs.");
-                services.syllabi.publish(faculty2.getId(), previousLabCourse);
-            }
+            syllabus(faculty2, previousLabCourse, "## Course overview\n\nWeekly labs on sorting, searching, and graphs.");
             services.lmsCourses.archive(faculty2.getId(), previousLabCourse);
         }
         lmsCourse(faculty2, plannedLab, LmsCourseStatus.DRAFT);
@@ -675,6 +671,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 "Answer every question. Choice questions lose a quarter of their marks when answered wrongly.",
                 LmsTextFormat.PLAIN, QuizType.GRADED, 15, null, deadline(today, 7), null, 2, false, true,
                 new BigDecimal("25")), List.of(stackOrder, queueOrder, arrayCosts, whenLinked));
+
+        // --- Exam papers (v0.7.9): a blueprint for a short unit test in CS301 and a draft paper built from it.
+        examPaper(faculty1, lms301);
 
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
         submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
@@ -742,6 +741,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         Long lms = helpdeskCategory("LMS", "LMS and courses", "Course access, content, assignments, and submissions.");
         Long technical = helpdeskCategory("TECHNICAL", "Technical issues",
                 "Sign-in, devices, classrooms, and the campus network.");
+        // --- Help articles (v0.9.6): published answers suggested while a ticket is written.
+        helpArticle(admin1, technical, "Campus Wi-Fi keeps disconnecting",
+                "Forget the campus network on your device, then join it again with your college ID and password.\n"
+                        + "If it still drops, note the building and the time and create a ticket.");
+        helpArticle(admin1, lms, "A course is missing from my courses",
+                "Courses appear once your enrollment in the course is recorded and the course is published.\n"
+                        + "Check Registration under Academics first. If the course is listed there but not under Courses, "
+                        + "create a ticket with the course code.");
         ticket(student1, lms, "CS302 is missing from my courses",
                 "CS302 is on my enrollment but it does not appear under Courses.", HelpdeskTicketPriority.NORMAL,
                 List.of(), null, null, HelpdeskTicketStatus.OPEN);
@@ -769,7 +776,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
 
         // --- Hostel: a small inventory to try applications and allocations. Real hostels are added by admins.
         Long mainHostel = hostel("MAIN", "Main Hostel", "Development test hostel.");
-        for (String roomNumber : List.of("A-101", "A-102")) {
+        for (String roomNumber : List.of("A-101", "A-102", "A-103")) {
             Long roomId = hostelRoom(mainHostel, roomNumber);
             hostelBed(roomId, "B1");
             hostelBed(roomId, "B2");
@@ -811,11 +818,41 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             services.campusRequests.cancel(studentFaculty.getId(), withdrawn);
         }
         hostelAllocationHistory(admin1, student2Profile);
+        // Aarav lives in Main Hostel, room A-101, bed B1 (v0.16 hostel pages): applied, approved, allocated, checked in.
+        hostelApplication(student1, student1Profile, current, "I need accommodation for this academic session.");
+        hostelResident(admin1, student1Profile, "A-101", "B1");
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
 
-    private <T> T findOrCreate(Optional<T> found, Supplier<T> create) {
+    Department department(String code, String name) {
+        return findOrCreate(repositories.departments.findByCode(code),
+                () -> repositories.departments.save(new Department(code, name)));
+    }
+
+    Program program(Department department, String code, String name, int semesters, String maxCredits) {
+        return findOrCreate(repositories.programs.findByDepartmentIdAndCode(department.getId(), code), () -> {
+            Program program = new Program(department, code, name, semesters);
+            program.changeMaxCreditsPerSemester(new BigDecimal(maxCredits));
+            return repositories.programs.save(program);
+        });
+    }
+
+    /** The department's head, set by an admin, unless the department has ever had one (a term is never restarted). */
+    void departmentHead(UserAccount admin, Department department, UserAccount head) {
+        createUnless(!repositories.departmentHeads.findAllByDepartmentId(department.getId()).isEmpty(),
+                () -> services.departmentHeads.assign(admin.getId(), department.getId(), new AssignDepartmentHead(head.getId())));
+    }
+
+    /** A published syllabus, unless the course has one. */
+    void syllabus(UserAccount faculty, Long lmsCourseId, String text) {
+        createUnless(services.syllabi.forFaculty(faculty.getId(), lmsCourseId).isPresent(), () -> {
+            services.syllabi.saveDraft(faculty.getId(), lmsCourseId, text);
+            services.syllabi.publish(faculty.getId(), lmsCourseId);
+        });
+    }
+
+    <T> T findOrCreate(Optional<T> found, Supplier<T> create) {
         if (found.isPresent()) {
             existing++;
             return found.get();
@@ -824,7 +861,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         return create.get();
     }
 
-    private UserAccount account(String loginId, String password, RoleName... roleNames) {
+    UserAccount account(String loginId, String password, RoleName... roleNames) {
         UserAccount account = findOrCreate(repositories.accounts.findByLoginId(loginId),
                 () -> new UserAccount(loginId, passwordEncoder.encode(password)));
         // Missing roles are added; roles are never removed and Role rows are never created here.
@@ -837,12 +874,12 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         return repositories.accounts.save(account);
     }
 
-    private void person(UserAccount account, String fullName) {
+    void person(UserAccount account, String fullName) {
         createUnless(repositories.people.findByUserAccountId(account.getId()).isPresent(),
                 () -> services.personProfiles.record(account, fullName, account.getLoginId() + "@stacc.example"));
     }
 
-    private AcademicSession session(int startYear, Consumer<AcademicSession> lifecycle) {
+    AcademicSession session(int startYear, Consumer<AcademicSession> lifecycle) {
         String code = startYear + "-" + String.format("%02d", (startYear + 1) % 100);
         return findOrCreate(repositories.sessions.findByCode(code), () -> {
             AcademicSession session = new AcademicSession(code, LocalDate.of(startYear, 7, 1),
@@ -852,7 +889,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private Semester semester(Program program, AcademicSession session, int number, Consumer<Semester> lifecycle) {
+    Semester semester(Program program, AcademicSession session, int number, Consumer<Semester> lifecycle) {
         return findOrCreate(
                 repositories.semesters.findByProgramIdAndAcademicSessionIdAndSemesterNumber(program.getId(), session.getId(), number),
                 () -> {
@@ -862,11 +899,11 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 });
     }
 
-    private Course course(Department department, String code, String name, String credits) {
+    Course course(Department department, String code, String name, String credits) {
         return course(department, code, name, credits, CourseType.CORE);
     }
 
-    private Course course(Department department, String code, String name, String credits, CourseType type) {
+    Course course(Department department, String code, String name, String credits, CourseType type) {
         return findOrCreate(repositories.courses.findByCode(code), () -> {
             Course course = new Course(department, code, name, new BigDecimal(credits));
             course.describe(null, null, type);
@@ -874,7 +911,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private CourseOffering offering(Course course, Semester semester, Consumer<CourseOffering> lifecycle) {
+    CourseOffering offering(Course course, Semester semester, Consumer<CourseOffering> lifecycle) {
         return findOrCreate(repositories.offerings.findByCourseIdAndSemesterIdAndSectionIsNull(course.getId(), semester.getId()), () -> {
             CourseOffering offering = new CourseOffering(course, semester);
             lifecycle.accept(offering);
@@ -882,7 +919,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private CourseOffering sectionOffering(Course course, Semester semester, Section section,
+    CourseOffering sectionOffering(Course course, Semester semester, Section section,
             Consumer<CourseOffering> lifecycle) {
         return findOrCreate(repositories.offerings.findByCourseIdAndSemesterIdAndSectionId(
                 course.getId(), semester.getId(), section.getId()), () -> {
@@ -892,7 +929,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 });
     }
 
-    private StudentProfile studentProfile(UserAccount account, Program program, AcademicSession admission, String rollNumber) {
+    StudentProfile studentProfile(UserAccount account, Program program, AcademicSession admission, String rollNumber) {
         return findOrCreate(repositories.studentProfiles.findByUserAccountId(account.getId()), () -> {
             StudentProfile profile = new StudentProfile(account, program, admission);
             profile.assignRollNumber(rollNumber);
@@ -900,16 +937,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private FacultyProfile facultyProfile(UserAccount account, Department department) {
+    FacultyProfile facultyProfile(UserAccount account, Department department) {
         return findOrCreate(repositories.facultyProfiles.findByUserAccountId(account.getId()),
                 () -> repositories.facultyProfiles.save(new FacultyProfile(account, department)));
     }
 
-    private void teaching(FacultyProfile faculty, CourseOffering offering) {
+    void teaching(FacultyProfile faculty, CourseOffering offering) {
         teaching(faculty, offering, TeachingRole.PRIMARY);
     }
 
-    private void teaching(FacultyProfile faculty, CourseOffering offering, TeachingRole role) {
+    void teaching(FacultyProfile faculty, CourseOffering offering, TeachingRole role) {
         findOrCreate(repositories.teaching.findByFacultyProfileIdAndCourseOfferingId(faculty.getId(), offering.getId()),
                 () -> {
                     TeachingAssignment assignment = new TeachingAssignment(faculty, offering);
@@ -918,13 +955,13 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 });
     }
 
-    private Section section(Semester semester, String code, int capacity) {
+    Section section(Semester semester, String code, int capacity) {
         return findOrCreate(repositories.sections.findAllWithContextBySemesterId(semester.getId()).stream()
                         .filter(section -> section.getCode().equals(code)).findFirst(),
                 () -> repositories.sections.save(new Section(semester, code, "Section " + code, capacity)));
     }
 
-    private SemesterEnrollment semesterEnrollment(StudentProfile student, Semester semester,
+    SemesterEnrollment semesterEnrollment(StudentProfile student, Semester semester,
             Consumer<SemesterEnrollment> lifecycle) {
         return findOrCreate(repositories.semesterEnrollments.findByStudentProfileIdAndSemesterId(student.getId(), semester.getId()),
                 () -> {
@@ -934,7 +971,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 });
     }
 
-    private CourseEnrollment courseEnrollment(SemesterEnrollment semesterEnrollment, CourseOffering offering,
+    CourseEnrollment courseEnrollment(SemesterEnrollment semesterEnrollment, CourseOffering offering,
             Consumer<CourseEnrollment> lifecycle) {
         return findOrCreate(repositories.courseEnrollments.findBySemesterEnrollmentIdAndCourseOfferingId(
                         semesterEnrollment.getId(), offering.getId()),
@@ -947,7 +984,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** Creates the LMS course as its teacher would, which provisions its current students, then moves it on. */
-    private Long lmsCourse(UserAccount faculty, CourseOffering offering, LmsCourseStatus target) {
+    Long lmsCourse(UserAccount faculty, CourseOffering offering, LmsCourseStatus target) {
         Optional<LmsCourse> found = repositories.lmsCourses.findByCourseOfferingId(offering.getId());
         if (found.isPresent()) {
             existing++;
@@ -964,7 +1001,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         return lmsCourseId;
     }
 
-    private Long module(UserAccount faculty, Long lmsCourseId, String title, String description, boolean publish) {
+    Long module(UserAccount faculty, Long lmsCourseId, String title, String description, boolean publish) {
         Optional<LmsModule> found = repositories.modules
                 .findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(lmsCourseId, ANY_CONTENT_STATUS).stream()
                 .filter(module -> module.getTitle().equals(title))
@@ -978,11 +1015,11 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         }).getId();
     }
 
-    private Long topic(UserAccount faculty, Long moduleId, String title, String content, boolean publish) {
+    Long topic(UserAccount faculty, Long moduleId, String title, String content, boolean publish) {
         return topic(faculty, moduleId, title, content, LmsTextFormat.PLAIN, publish);
     }
 
-    private Long topic(UserAccount faculty, Long moduleId, String title, String content, LmsTextFormat format,
+    Long topic(UserAccount faculty, Long moduleId, String title, String content, LmsTextFormat format,
             boolean publish) {
         Optional<LmsTopic> found = repositories.topics
                 .findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(moduleId, ANY_CONTENT_STATUS).stream()
@@ -1002,7 +1039,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
      * upload, so it needs object storage; seeding it runs in its own transaction after the rest, and is skipped when
      * storage is not reachable.
      */
-    private void studyMaterial(Long facultyAccountId, Long topicId, String title, String fileName, String text) {
+    void studyMaterial(Long facultyAccountId, Long topicId, String title, String fileName, String text) {
         boolean exists = repositories.materials
                 .findAllByLmsTopicIdAndStatusInOrderByPositionAscIdAsc(topicId, ANY_CONTENT_STATUS).stream()
                 .map(LmsStudyMaterial::getTitle)
@@ -1062,7 +1099,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         }
     }
 
-    private void announcement(UserAccount faculty, Long lmsCourseId, String title, String message, boolean publish) {
+    void announcement(UserAccount faculty, Long lmsCourseId, String title, String message, boolean publish) {
         boolean exists = repositories.announcements
                 .findAllByLmsCourseIdAndStatusInOrderByCreatedAtDescIdDesc(lmsCourseId, ANY_CONTENT_STATUS).stream()
                 .map(LmsAnnouncement::getTitle)
@@ -1075,7 +1112,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private LmsAssignment assignment(UserAccount faculty, Long lmsCourseId, String title, String instructions,
+    LmsAssignment assignment(UserAccount faculty, Long lmsCourseId, String title, String instructions,
             Instant dueAt, String maxMarks, LmsContentStatus target) {
         Optional<LmsAssignment> found = repositories.assignments
                 .findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(lmsCourseId, ANY_CONTENT_STATUS).stream()
@@ -1095,7 +1132,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** Hands in one text attempt per text, as the student would, unless the student has already submitted. */
-    private void submit(UserAccount student, Long lmsCourseId, LmsAssignment assignment, CourseEnrollment enrollment,
+    void submit(UserAccount student, Long lmsCourseId, LmsAssignment assignment, CourseEnrollment enrollment,
             String... attemptTexts) {
         boolean exists = repositories.submissions
                 .findByAssignmentIdAndCourseEnrollmentId(assignment.getId(), enrollment.getId()).isPresent();
@@ -1106,7 +1143,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private void grade(UserAccount faculty, LmsAssignment assignment, CourseEnrollment enrollment, int attemptNumber,
+    void grade(UserAccount faculty, LmsAssignment assignment, CourseEnrollment enrollment, int attemptNumber,
             String marks, String feedback) {
         LmsAssignmentSubmission submission = repositories.submissions
                 .findByAssignmentIdAndCourseEnrollmentId(assignment.getId(), enrollment.getId()).orElseThrow();
@@ -1120,16 +1157,22 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** Takes a session as its teacher would: the roster is the snapshot of current students, then marks and finalizes. */
-    private void attendance(UserAccount faculty, CourseOffering offering, String topic, Instant heldAt,
+    void attendance(UserAccount faculty, CourseOffering offering, String topic, Instant heldAt,
             Map<String, AttendanceStatus> marks, boolean finalize) {
+        attendance(faculty, offering, topic, heldAt, marks::get, finalize);
+    }
+
+    /** The same, with each student's mark from {@code mark} by login ID; a null mark leaves the record unmarked. */
+    void attendance(UserAccount faculty, CourseOffering offering, String topic, Instant heldAt,
+            java.util.function.Function<String, AttendanceStatus> mark, boolean finalize) {
         boolean exists = repositories.attendanceSessions.findAllByCourseOfferingIdOrderByHeldAtDescIdDesc(offering.getId())
                 .stream()
                 .anyMatch(session -> topic.equals(session.getTopic()));
         createUnless(exists, () -> {
             Long sessionId = services.attendance.createSession(faculty.getId(), offering.getId(), heldAt, topic).getId();
             List<RecordChange> changes = repositories.attendanceRecords.findAllWithStudentBySessionId(sessionId).stream()
-                    .filter(record -> marks.containsKey(loginIdOf(record)))
-                    .map(record -> new RecordChange(record.getId(), marks.get(loginIdOf(record))))
+                    .filter(record -> mark.apply(loginIdOf(record)) != null)
+                    .map(record -> new RecordChange(record.getId(), mark.apply(loginIdOf(record))))
                     .toList();
             if (!changes.isEmpty()) {
                 services.attendance.saveRecords(faculty.getId(), sessionId, changes);
@@ -1140,7 +1183,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private void result(UserAccount faculty, CourseOffering offering, CourseEnrollment enrollment, String marks,
+    void result(UserAccount faculty, CourseOffering offering, CourseEnrollment enrollment, String marks,
             String maxMarks, String gradeCode, String remarks, boolean publish) {
         createUnless(repositories.results.findByCourseEnrollmentId(enrollment.getId()).isPresent(), () -> {
             services.results.save(faculty.getId(), offering.getId(), enrollment.getId(), new BigDecimal(marks),
@@ -1151,7 +1194,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private void calendarEvent(AcademicSession session, Semester semester, String title,
+    void calendarEvent(AcademicSession session, Semester semester, String title,
             AcademicCalendarEventCategory category, LocalDate startDate, LocalDate endDate, String description,
             AcademicCalendarEventStatus target) {
         boolean exists = repositories.calendarEvents.findAllWithContext(session.getId(), null, null, null, null).stream()
@@ -1168,7 +1211,16 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private Long helpdeskCategory(String code, String name, String description) {
+    /** A published help article, found by its title. */
+    void helpArticle(UserAccount admin, Long categoryId, String title, String body) {
+        boolean exists = services.helpArticles.all().stream().anyMatch(article -> article.getTitle().equals(title));
+        createUnless(exists, () -> {
+            Long articleId = services.helpArticles.add(admin.getId(), categoryId, title, body).getId();
+            services.helpArticles.publish(admin.getId(), articleId);
+        });
+    }
+
+    Long helpdeskCategory(String code, String name, String description) {
         return findOrCreate(repositories.helpdeskCategories.findByCode(code).map(category -> category.getId()),
                 () -> services.helpdeskCategories.create(new CreateHelpdeskCategoryRequest(code, name, description, true))
                         .categoryId());
@@ -1178,7 +1230,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
      * Raises a ticket as its requester, then lets the support team assign it, answer it, and move it to its status,
      * all through the ticket engine. A ticket is known by its requester and subject.
      */
-    private void ticket(UserAccount requester, Long categoryId, String subject, String description,
+    void ticket(UserAccount requester, Long categoryId, String subject, String description,
             HelpdeskTicketPriority priority, List<String> adminReplies, UserAccount assignee, UserAccount assignedBy,
             HelpdeskTicketStatus target) {
         boolean exists = repositories.helpdeskTickets.existsByRequesterIdAndSubject(requester.getId(), subject);
@@ -1203,7 +1255,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private void approvalWorkflow(String code, String name, String description) {
+    void approvalWorkflow(String code, String name, String description) {
         boolean exists = repositories.approvalWorkflows.findWithStepsByCode(code).isPresent();
         createUnless(exists, () -> services.approvalWorkflows.create(new CreateApprovalWorkflowRequest(code, name,
                 description, List.of(new ApprovalWorkflowStepRequest("Faculty review", "FACULTY"),
@@ -1211,28 +1263,28 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** Starts a demo request through the engine, once per demo source ID. */
-    private void demoApproval(UserAccount requester, String sourceId, String subject) {
+    void demoApproval(UserAccount requester, String sourceId, String subject) {
         boolean exists = !services.approvalQueries.requestsForSource(DEMO_APPROVAL_SOURCE, sourceId).isEmpty();
         createUnless(exists, () -> services.approvals.startApproval(new StartApprovalCommand(DEMO_APPROVAL_WORKFLOW,
                 requester.getId(), DEMO_APPROVAL_SOURCE, sourceId, subject)));
     }
 
-    private Long hostel(String code, String name, String description) {
+    Long hostel(String code, String name, String description) {
         return findOrCreate(repositories.hostels.findByCode(code).map(found -> found.getId()),
                 () -> services.hostels.createHostel(new CreateHostelRequest(code, name, description)).hostelId());
     }
 
-    private Long hostelRoom(Long hostelId, String roomNumber) {
+    Long hostelRoom(Long hostelId, String roomNumber) {
         return findOrCreate(repositories.hostelRooms.findByHostelIdAndRoomNumber(hostelId, roomNumber).map(found -> found.getId()),
                 () -> services.hostels.createRoom(hostelId, new CreateRoomRequest(roomNumber)).roomId());
     }
 
-    private void hostelBed(Long roomId, String bedNumber) {
+    void hostelBed(Long roomId, String bedNumber) {
         createUnless(repositories.hostelBeds.existsByRoomIdAndBedNumber(roomId, bedNumber),
                 () -> services.hostels.createBed(roomId, new CreateBedRequest(bedNumber)));
     }
 
-    private void campusService(String code, String name, String description, boolean student, boolean faculty,
+    void campusService(String code, String name, String description, boolean student, boolean faculty,
             String workflowCode) {
         createUnless(repositories.campusServices.existsByCode(code),
                 () -> services.campusServices.create(new CreateCampusServiceInput(code, name, description, true, student,
@@ -1240,7 +1292,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** A notice found by its title; a published one notifies its readers once, as an admin's would. */
-    private void campusNotice(String title, String message, boolean student, boolean faculty, boolean admin,
+    void campusNotice(String title, String message, boolean student, boolean faculty, boolean admin,
             boolean publish) {
         createUnless(repositories.campusNotices.existsByTitle(title), () -> {
             Long noticeId = services.campusNotices.create(new CampusNoticeInput(title, message, student, faculty, admin))
@@ -1255,7 +1307,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
      * A campus service request found by its requester and subject, created as that requester would. Returns the new
      * request's ID, or null when it already existed.
      */
-    private Long campusRequest(UserAccount requester, String role, String serviceCode, String subject, String details) {
+    Long campusRequest(UserAccount requester, String role, String serviceCode, String subject, String details) {
         if (repositories.campusRequests.existsByRequesterIdAndSubject(requester.getId(), subject)) {
             existing++;
             return null;
@@ -1272,7 +1324,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
      * allocates a bed, vacates it, and allocates another: one vacated and one active allocation. Nothing is done when
      * the application already has an allocation.
      */
-    private void hostelAllocationHistory(UserAccount admin, StudentProfile student) {
+    void hostelAllocationHistory(UserAccount admin, StudentProfile student) {
         HostelApplication application = repositories.hostelApplications.findAllForStudent(student.getId()).stream()
                 .findFirst().orElse(null);
         if (application == null) {
@@ -1297,25 +1349,53 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
+    /**
+     * Approves the student's first hostel application when it is still pending and allocates the named bed, then
+     * records the check-in. Nothing is done when the application already has an allocation or the bed is taken.
+     */
+    void hostelResident(UserAccount admin, StudentProfile student, String roomNumber, String bedNumber) {
+        HostelApplication application = repositories.hostelApplications.findAllForStudent(student.getId()).stream()
+                .findFirst().orElse(null);
+        if (application == null) {
+            return;
+        }
+        boolean exists = !repositories.hostelAllocations.findAllForApplications(List.of(application.getId())).isEmpty();
+        createUnless(exists, () -> {
+            if (application.approvalStatus() == ApprovalRequestStatus.PENDING) {
+                CurrentApprovalStep step = services.approvalQueries.currentStep(application.getApprovalRequest().getId())
+                        .orElseThrow(() -> new IllegalStateException("The hostel application has no current step"));
+                services.approvals.approveStep(adminActor(admin), step.approvalRequestStepId(), "Approved for 2026-27.");
+            }
+            services.hostelAllocations.availableBeds(null, null).stream()
+                    .filter(bed -> bed.roomNumber().equals(roomNumber) && bed.bedNumber().equals(bedNumber))
+                    .findFirst()
+                    .ifPresent(bed -> {
+                        HostelAllocationResponse allocation = services.hostelAllocations.allocate(admin.getId(), application.getId(),
+                                bed.bedId());
+                        services.hostelAllocations.checkIn(allocation.allocationId(), "Keys handed over.");
+                    });
+        });
+    }
+
     /** An admin deciding approval steps and completing requests with the permissions every ADMIN account receives. */
-    private static ApprovalActor adminActor(UserAccount admin) {
+    static ApprovalActor adminActor(UserAccount admin) {
         return new ApprovalActor(admin.getId(), Set.of("ADMIN"), true, true, true, true);
     }
 
     /** A hostel application for the session, unless the student already has a pending or approved one for it. */
-    private void hostelApplication(UserAccount student, StudentProfile profile, AcademicSession session, String note) {
+    void hostelApplication(UserAccount student, StudentProfile profile, AcademicSession session, String note) {
         createUnless(repositories.hostelApplications.existsCurrent(profile.getId(), session.getId()),
                 () -> services.hostelApplications.apply(student.getId(),
                         new CreateHostelApplicationRequest(session.getId(), note)));
     }
 
     /** An admin acting with the helpdesk permissions every ADMIN account receives. */
-    private static HelpdeskActor supportTeam(UserAccount admin) {
+    static HelpdeskActor supportTeam(UserAccount admin) {
         return new HelpdeskActor(admin == null ? null : admin.getId(), true, true, true, true, true, true);
     }
 
     /** A reviewed question of the course's bank, found by its text, added as the teacher would. */
-    private Long question(UserAccount faculty, Long lmsCourseId, QuestionType type, String text,
+    Long question(UserAccount faculty, Long lmsCourseId, QuestionType type, String text,
             List<LmsQuestionContent.Option> options, Boolean trueFalseAnswer, String guidance, String topic) {
         Optional<LmsQuestion> found = services.questionBank.list(faculty.getId(), lmsCourseId).stream()
                 .filter(question -> question.getText().equals(text))
@@ -1330,7 +1410,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** A published quiz with these bank questions in order, found by its title, built as the teacher would. */
-    private void quiz(UserAccount faculty, Long lmsCourseId, String title, LmsQuizSettings settings, List<Long> questionIds) {
+    void quiz(UserAccount faculty, Long lmsCourseId, String title, LmsQuizSettings settings, List<Long> questionIds) {
         boolean exists = services.quizzes.list(faculty.getId(), lmsCourseId).stream()
                 .anyMatch(summary -> summary.quiz().getTitle().equals(title));
         createUnless(exists, () -> {
@@ -1343,14 +1423,14 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** Publishes a gradebook column, as the teacher would; publishing again changes nothing. */
-    private void publishColumn(UserAccount faculty, Long lmsCourseId, GradeItemType type, Long sourceId) {
+    void publishColumn(UserAccount faculty, Long lmsCourseId, GradeItemType type, Long sourceId) {
         boolean published = services.gradebook.gradebook(faculty.getId(), lmsCourseId).gradebook().columns().stream()
                 .anyMatch(column -> column.type() == type && column.sourceId().equals(sourceId) && column.published());
         createUnless(published, () -> services.gradebook.publishColumn(faculty.getId(), lmsCourseId, type, sourceId));
     }
 
     /** A published manual gradebook item, found by its title, with one student's marks. */
-    private void manualGrade(UserAccount faculty, Long lmsCourseId, String title, String maxMarks, CourseEnrollment student,
+    void manualGrade(UserAccount faculty, Long lmsCourseId, String title, String maxMarks, CourseEnrollment student,
             String marks, String feedback) {
         boolean exists = services.gradebook.gradebook(faculty.getId(), lmsCourseId).gradebook().columns().stream()
                 .anyMatch(column -> column.type() == GradeItemType.MANUAL && column.title().equals(title));
@@ -1362,7 +1442,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     }
 
     /** A rubric of the course, found by its title, used by the assignment, as the teacher would set it up. */
-    private void rubric(UserAccount faculty, Long lmsCourseId, LmsAssignment assignment, RubricContent content) {
+    void rubric(UserAccount faculty, Long lmsCourseId, LmsAssignment assignment, RubricContent content) {
         boolean exists = services.rubrics.list(faculty.getId(), lmsCourseId).rubrics().stream()
                 .anyMatch(rubric -> rubric.getTitle().equals(content.title()));
         createUnless(exists, () -> {
@@ -1371,7 +1451,24 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         });
     }
 
-    private void createUnless(boolean exists, Runnable create) {
+    /** A blueprint with one row per kind of demo question and a draft paper built from it, found by the blueprint's title. */
+    void examPaper(UserAccount faculty, Long lmsCourseId) {
+        String title = "Unit 1 test blueprint";
+        boolean exists = services.examPapers.blueprints(faculty.getId(), lmsCourseId).stream()
+                .anyMatch(blueprint -> blueprint.getTitle().equals(title));
+        createUnless(exists, () -> {
+            String shortQuestions = "Section A: short questions";
+            Long blueprintId = services.examPapers.addBlueprint(faculty.getId(), lmsCourseId, title, List.of(
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.TRUE_FALSE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.SINGLE_CHOICE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput(shortQuestions, QuestionType.MULTIPLE_CHOICE, null, null, null, null, 1, new BigDecimal("2")),
+                    new LmsExamPaperService.RowInput("Section B: long answer", QuestionType.DESCRIPTIVE, null, null, null, null, 1,
+                            new BigDecimal("8")))).getId();
+            services.examPapers.buildPaper(faculty.getId(), blueprintId, "Unit 1 test", "Answer every question. Write clearly.", 45);
+        });
+    }
+
+    void createUnless(boolean exists, Runnable create) {
         if (exists) {
             existing++;
         } else {
@@ -1381,12 +1478,12 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         }
     }
 
-    private static String loginIdOf(AttendanceRecord record) {
+    static String loginIdOf(AttendanceRecord record) {
         return record.getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount().getLoginId();
     }
 
     /** A deadline at 23:00 India time, some days from today. */
-    private static Instant deadline(LocalDate today, int days) {
+    static Instant deadline(LocalDate today, int days) {
         return today.plusDays(days).atTime(17, 30).toInstant(ZoneOffset.UTC);
     }
 }

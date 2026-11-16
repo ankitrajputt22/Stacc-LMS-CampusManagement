@@ -4,7 +4,7 @@ Every Stacc page is shown inside one shared app shell, so ERP, LMS, hostel, and 
 
 ## App layout
 
-`frontend/src/layouts/AppLayout.tsx` combines the navigation rail (wide screens), the top bar and menu drawer (small screens), and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. `/` is the Dashboard, and any unknown URL shows the not-found page.
+`frontend/src/layouts/AppLayout.tsx` combines the navigation rail (wide screens), the top bar and menu drawer (small screens), and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. Every page except the sign-in page and the Dashboard is loaded on first use (`React.lazy` in `App.tsx`), so the first screen downloads only what it needs; `AppLayout`, `CourseLayout`, and `TeachingCourseLayout` wrap their outlet in `Suspense` with the shared `LoadingState`, so the navigation stays in place while a page loads. Add a new page the same way. A page that fails to render or load shows the shared error state from `PageErrorBoundary` (Retry reloads the browser page, which also picks up a new version after an update) instead of a blank screen; the layout's boundary is keyed by the address, so going to another page clears it. `/` is the Dashboard, and any unknown URL shows the not-found page.
 
 The whole layout is for signed-in users. It sits inside the `RequireAuth` route guard, so a visitor who is not signed in sees the sign-in page instead. `/login` is the one page outside the layout, with its own simple design. See `frontend-authentication.md`.
 
@@ -12,7 +12,7 @@ New pages go in `frontend/src/pages` and are added as routes inside the `AppLayo
 
 ## Navigation rail
 
-From the `lg` breakpoint, `components/navigation/GlobalNav.tsx` shows a narrow navy rail, Canvas style, with an icon above each label: the Stacc emblem (to the Dashboard), **Account**, **Dashboard**, one button per role section the account holds, named for the work done in it (**Academics** for `STUDENT`, **Teaching** for `FACULTY`, **Manage** for `ADMIN`, in that order; roadmap decision 9), then the Common items as direct links (**Calendar**, **Inbox** with the unread count, **Support**, **Campus**, **Search**). A role button and Account open a tray beside the rail: Account shows the initials, login ID, roles in plain words, **Sign out**, **Academic profile** (for students and faculty), **Change password**, and the Common links; a role tray lists that section's pages, with "Soon" items as plain text. A tray takes focus and closes with its Close button, Escape, a click outside, or a link, returning focus to its rail button. A role button is shown as current on any page of its section. Only features Stacc has appear; there is no Files, History, or settings tray.
+From the `lg` breakpoint a navy sidebar (`components/navigation/Sidebar.tsx`, v0.16) shows the Stacc emblem and name, **Overview**, then collapsible groups in a fixed order: **Learning** (`STUDENT`), **Teaching** (`FACULTY`), **ERP** (its title opens `/erp`), **Manage** (`ADMIN`), **Campus**, **Services**, and **Career**, each item with a line icon; the current page is a light-blue pill and empty groups are left out. A white top bar (`TopBar.tsx`) shows the page's place as a breadcrumb, then **Search**, **Calendar**, the **Inbox** with the shared unread count, and the account menu (the initials button named **Account**: name, login ID, roles, My profile, Academic profile, Account settings, Notification settings, Change password, and **Sign out**). The menu closes with Escape, a click outside, or moving to another page. Only features Stacc has appear.
 
 The items themselves are one list in `components/navigation/navigation.ts`, used by the rail and the mobile drawer alike, each with its rail icon. There is one navigation for every role, not one per role.
 
@@ -42,7 +42,7 @@ Below the `lg` breakpoint, `components/navigation/TopBar.tsx` is a navy bar with
 
 ## Mobile navigation
 
-Below the `lg` breakpoint the navigation is a navy drawer (`components/navigation/Sidebar.tsx`) opened from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link. It shows every section of the list with titles, and at its foot the login ID, the roles, and a **Sign out** button.
+Below the `lg` breakpoint the same groups open in a navy drawer from the menu button in the top bar. It closes with the close button, the Escape key, a tap outside it, or by choosing a link; the account menu stays in the top bar.
 
 ## Page look
 

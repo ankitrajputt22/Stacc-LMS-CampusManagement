@@ -65,14 +65,16 @@ class FakeModelProvider(ModelProvider):
 
     @staticmethod
     def _ask(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
-        question_words = set(words(parameters.get("question", "")))
+        question_words = set(words(parameters.get("question", "") + " " + parameters.get("followsUp", "")))
         supporting = [chunk for chunk in context if question_words & set(words(chunk.text + " " + chunk.title))]
         if not supporting:
             return {"insufficientContext": True, "answer": "", "sourceIds": []}
         best = supporting[0]
+        prefixes = {"SIMPLER": "Simply put, ", "EXAMPLE": "For example, ", "HINT": "Hint: look at "}
+        prefix = prefixes.get(parameters.get("style", ""), "")
         return {
             "insufficientContext": False,
-            "answer": f"According to {best.title}: {_first_sentence(best.text, 400)}",
+            "answer": f"{prefix}According to {best.title}: {_first_sentence(best.text, 400)}",
             "sourceIds": [chunk.ref for chunk in supporting[:2]],
         }
 
@@ -80,9 +82,12 @@ class FakeModelProvider(ModelProvider):
     def _summary(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
         if not context:
             return {"insufficientContext": True, "summary": "", "keyPoints": [], "sourceIds": []}
+        style = parameters.get("style", "BRIEF")
+        used = context[:4] if style == "DETAILED" else context[:2]
+        prefix = "Remember: " if style == "REVISION_NOTES" else ""
         return {
             "insufficientContext": False,
-            "summary": " ".join(_first_sentence(chunk.text) for chunk in context[:2]),
+            "summary": prefix + " ".join(_first_sentence(chunk.text) for chunk in used),
             "keyPoints": [_first_sentence(chunk.text, 160) for chunk in context[:3]],
             "sourceIds": [chunk.ref for chunk in context[:3]],
         }
@@ -100,6 +105,97 @@ class FakeModelProvider(ModelProvider):
                 "sourceIds": [chunk.ref],
             })
         return {"questions": questions}
+
+    @staticmethod
+    def _bank_questions(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("questionCount", 5))
+        kinds = [kind.strip() for kind in str(parameters.get("questionTypes", "SINGLE_CHOICE")).split(",")]
+        questions = []
+        for number in range(count):
+            chunk = context[number % len(context)]
+            kind = kinds[number % len(kinds)]
+            sentence = _first_sentence(chunk.text, 280)
+            question = {"questionType": kind, "text": f"Q{number + 1}. About {chunk.title}: which is stated?",
+                        "explanation": f"The source says: {sentence}", "suggestedMarks": 2, "sourceIds": [chunk.ref],
+                        "difficultySuggestion": "MEDIUM" if parameters.get("difficulty") == "MIXED"
+                        else parameters.get("difficulty", "MEDIUM"), "bloomSuggestion": "REMEMBER"}
+            if kind in ("SINGLE_CHOICE", "MULTIPLE_CHOICE"):
+                question["options"] = [{"text": sentence, "correct": True},
+                                       {"text": "Quokkas invented the abacus in 1066.", "correct": False}]
+            elif kind == "TRUE_FALSE":
+                question["text"] = sentence
+                question["trueFalseAnswer"] = True
+            elif kind == "SHORT_ANSWER":
+                question["acceptedAnswers"] = [" ".join(words(chunk.text)[:3])]
+            else:
+                question["answerGuidance"] = f"Look for: {sentence}"
+            questions.append(question)
+        return {"questions": questions}
+
+    @staticmethod
+    def _answer_check(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        """Marks an option or statement correct when nearly all its words are in the sources."""
+        known = set(words(" ".join(chunk.text for chunk in context)))
+
+        def supported(text: str) -> bool:
+            own = words(text)
+            return bool(own) and sum(word in known for word in own) / len(own) >= 0.8
+
+        options = parameters.get("options") or []
+        if not options:
+            statement = parameters.get("question", "").removeprefix("True or false: ")
+            return {"trueFalseAnswer": supported(statement)}
+        return {"chosenOptions": [number for number, text in enumerate(options, start=1) if supported(text)]}
+
+    @staticmethod
+    def _evaluate(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        """Marks by how many of the reference answer's words the student used."""
+        if not context:
+            return {"insufficientContext": True, "sourceIds": []}
+        reference = set(words(parameters.get("reference", "")))
+        given = set(words(parameters.get("studentAnswer", "")))
+        share = len(reference & given) / len(reference) if reference else 0
+        top = int(parameters.get("maxMarks", 1))
+        verdict = "CORRECT" if share >= 0.8 else "PARTLY_CORRECT" if share >= 0.3 else "INCORRECT"
+        missing = sorted(reference - given)[:5]
+        return {"insufficientContext": False, "marks": round(share * top, 1), "verdict": verdict,
+                "feedback": "Well done." if not missing else f"Your answer misses: {', '.join(missing)}.",
+                "followUpQuestion": f"Why does {context[0].title} matter?" if parameters.get("mode") == "VIVA" else None,
+                "sourceIds": [context[0].ref]}
+
+    @staticmethod
+    def _flashcards(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("cardCount", 5))
+        cards = []
+        for number in range(count):
+            chunk = context[number % len(context)]
+            cards.append({"front": f"Card {number + 1}: {chunk.title}?", "back": _first_sentence(chunk.text, 300),
+                          "sourceIds": [chunk.ref]})
+        return {"cards": cards}
+
+    @staticmethod
+    def _model_answer(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        if not context:
+            return {"insufficientContext": True, "answer": "", "keyPoints": [], "sourceIds": []}
+        return {"insufficientContext": False, "answer": " ".join(_first_sentence(chunk.text) for chunk in context[:2]),
+                "keyPoints": [_first_sentence(chunk.text, 160) for chunk in context[:3]],
+                "sourceIds": [chunk.ref for chunk in context[:2]]}
+
+    @staticmethod
+    def _rubric(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("criteriaCount", 3))
+        total = float(parameters.get("maxMarks", 10))
+        each = round(total / count, 2)
+        criteria = []
+        for number in range(count):
+            chunk = context[number % len(context)] if context else None
+            points = each if number < count - 1 else round(total - each * (count - 1), 2)
+            criteria.append({"title": f"Criterion {number + 1}: {chunk.title if chunk else 'Quality'}",
+                             "description": _first_sentence(chunk.text, 200) if chunk else None, "maxPoints": points,
+                             "levels": [{"title": "Excellent", "points": points},
+                                        {"title": "Developing", "points": round(points / 2, 2)},
+                                        {"title": "Missing", "points": 0}]})
+        return {"criteria": criteria, "sourceIds": [chunk.ref for chunk in context[:2]]}
 
     @staticmethod
     def _assessment_draft(context: tuple[ContextChunk, ...], parameters: dict) -> dict:

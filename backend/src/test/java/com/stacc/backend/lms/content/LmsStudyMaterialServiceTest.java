@@ -228,6 +228,18 @@ class LmsStudyMaterialServiceTest {
     }
 
     @Test
+    void aiExclusionIsSetAndClearedButNotOnArchivedMaterial() {
+        service.changeAiExclusion(ACCOUNT_ID, 7L, true);
+        assertEquals(true, first.isExcludedFromAi());
+        service.changeAiExclusion(ACCOUNT_ID, 7L, false);
+        assertEquals(false, first.isExcludedFromAi());
+
+        service.archiveMaterial(ACCOUNT_ID, 7L);
+        assertRefused(HttpStatus.CONFLICT, LmsStudyMaterialService.MATERIAL_ARCHIVED,
+                () -> service.changeAiExclusion(ACCOUNT_ID, 7L, true));
+    }
+
+    @Test
     void archivedMaterialCannotBeEditedOrPublished() {
         service.archiveMaterial(ACCOUNT_ID, 7L);
 

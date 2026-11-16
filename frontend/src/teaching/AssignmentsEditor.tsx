@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { isAssignmentDraftPrefill } from '../ai/assignmentPrefill'
@@ -78,13 +79,17 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
   }
 
   return (
-    <article aria-labelledby={`${key}-title`} className="px-4 py-3 sm:px-5">
+    <article
+      aria-labelledby={`${key}-title`}
+      className={`rounded-panel border border-l-4 border-line bg-surface px-4 py-3 sm:px-5 ${assignment.status === 'PUBLISHED' ? 'border-l-teal-600' : assignment.status === 'DRAFT' ? 'border-l-amber-400' : 'border-l-line-strong'}`}
+    >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <NavIcon name="assignments" className="size-5 shrink-0 text-ink-muted" />
         <h3
           id={`${key}-title`}
           tabIndex={-1}
           data-focus-key={`${key}-heading`}
-          className="text-sm font-semibold break-words text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+          className="text-lg font-bold break-words text-portal-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
         >
           {assignment.title}
         </h3>
@@ -315,7 +320,7 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
         )}
 
         {list !== null && list.length > 0 && (
-          <ol aria-label="Assignments" className="divide-y divide-line rounded-panel border border-line bg-surface">
+          <ol aria-label="Assignments" className="space-y-3">
             {list.map((assignment) => (
               <li key={assignment.id}>
                 <AssignmentItem

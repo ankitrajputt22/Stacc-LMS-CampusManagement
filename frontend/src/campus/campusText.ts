@@ -6,6 +6,8 @@ import type { CampusNoticeStatus, CampusRequestStatus } from '../types/campus'
 const REQUEST: Record<CampusRequestStatus, string> = {
   SUBMITTED: 'Submitted',
   APPROVED: 'Approved',
+  IN_PROGRESS: 'Being processed',
+  READY: 'Ready',
   REJECTED: 'Rejected',
   CANCELLED: 'Cancelled',
   COMPLETED: 'Completed',
@@ -13,7 +15,7 @@ const REQUEST: Record<CampusRequestStatus, string> = {
 
 const NOTICE: Record<CampusNoticeStatus, string> = { DRAFT: 'Draft', PUBLISHED: 'Published', ARCHIVED: 'Archived' }
 
-export const REQUEST_STATUSES: readonly CampusRequestStatus[] = ['SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED']
+export const REQUEST_STATUSES: readonly CampusRequestStatus[] = ['SUBMITTED', 'APPROVED', 'IN_PROGRESS', 'READY', 'REJECTED', 'CANCELLED', 'COMPLETED']
 export const NOTICE_STATUSES: readonly CampusNoticeStatus[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
 
 export const requestStatusLabel = (status: string) => REQUEST[status as CampusRequestStatus] ?? status

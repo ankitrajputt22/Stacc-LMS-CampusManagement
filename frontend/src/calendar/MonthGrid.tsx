@@ -2,14 +2,16 @@ import { Link } from 'react-router'
 import type { CalendarMonth } from './calendarDates'
 import { localDayOf } from './calendarDates'
 import type { MyCalendarResponse, PersonalCalendarEvent } from '../types/calendar'
+import type { GroupSession } from '../types/engagement'
 
-type DayItem = { key: string; label: string; to?: string; tone: 'event' | 'cancelled' | 'deadline' | 'personal' }
+type DayItem = { key: string; label: string; to?: string; tone: 'event' | 'cancelled' | 'deadline' | 'personal' | 'group' }
 
 const TONES: Record<DayItem['tone'], string> = {
   event: 'border-sky-200 bg-sky-50 text-ink',
   cancelled: 'border-line bg-surface-muted text-ink-muted line-through',
   deadline: 'border-amber-200 bg-amber-50 text-ink',
   personal: 'border-emerald-200 bg-emerald-50 text-ink',
+  group: 'border-violet-200 bg-violet-50 text-ink',
 }
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -22,6 +24,7 @@ function itemsByDay(
   month: CalendarMonth,
   calendar: MyCalendarResponse,
   personal: PersonalCalendarEvent[],
+  sessions: GroupSession[],
 ): Map<string, DayItem[]> {
   const days = new Map<string, DayItem[]>()
   const last = new Date(month.year, month.month, 0).getDate()
@@ -60,6 +63,9 @@ function itemsByDay(
     }),
   )
   personal.forEach((event) => spread(event.startDate, event.endDate, { key: `personal-${event.eventId}`, label: event.title, tone: 'personal' }))
+  sessions.forEach((session) =>
+    add(localDayOf(session.startsAt), { key: `session-${session.sessionId}`, label: `${session.groupName}: ${session.title}`, to: '/campus/clubs', tone: 'group' }),
+  )
   return days
 }
 
@@ -68,12 +74,15 @@ export function MonthGrid({
   month,
   calendar,
   personal,
+  sessions = [],
 }: {
   month: CalendarMonth
   calendar: MyCalendarResponse
   personal: PersonalCalendarEvent[]
+  /** Club and sports sessions of the account's groups. */
+  sessions?: GroupSession[]
 }) {
-  const days = itemsByDay(month, calendar, personal)
+  const days = itemsByDay(month, calendar, personal, sessions)
   const firstWeekday = (new Date(month.year, month.month - 1, 1).getDay() + 6) % 7
   const cells: (string | null)[] = [...Array<null>(firstWeekday).fill(null), ...days.keys()]
   while (cells.length % 7 !== 0) {

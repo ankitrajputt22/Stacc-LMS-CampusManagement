@@ -5,8 +5,13 @@ import java.util.List;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
+import com.stacc.backend.lms.api.LmsDiscussionResponses.HideRequest;
+import com.stacc.backend.lms.api.LmsDiscussionResponses.LockRequest;
 import com.stacc.backend.lms.api.LmsDiscussionResponses.PinRequest;
 import com.stacc.backend.lms.api.LmsDiscussionResponses.ReplyRequest;
+import com.stacc.backend.lms.api.LmsDiscussionResponses.Report;
+import com.stacc.backend.lms.api.LmsDiscussionResponses.ReportRequest;
+import com.stacc.backend.lms.api.LmsDiscussionResponses.ResolveRequest;
 import com.stacc.backend.lms.api.LmsDiscussionResponses.ThreadDetail;
 import com.stacc.backend.lms.api.LmsDiscussionResponses.ThreadRequest;
 import com.stacc.backend.lms.api.LmsDiscussionResponses.ThreadSummary;
@@ -49,6 +54,7 @@ public class LmsDiscussionController {
 
     private static final String STUDENT = "hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')";
     private static final String FACULTY = "hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_USE')";
+    private static final String MODERATE = "hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_DISCUSSION_MODERATE')";
     private static final String STUDENT_PATH = "/courses/{lmsCourseId}/discussions";
     private static final String FACULTY_PATH = "/faculty/courses/{lmsCourseId}/discussions";
 
@@ -147,6 +153,72 @@ public class LmsDiscussionController {
             @AuthenticationPrincipal Jwt token) {
         Viewer viewer = faculty(token);
         return ThreadDetail.of(discussions.pin(viewer, lmsCourseId, threadId, request.pinned()), viewer);
+    }
+
+    @PostMapping(FACULTY_PATH + "/{threadId}/hide")
+    @PreAuthorize(MODERATE)
+    @Operation(summary = "Hide or show a discussion",
+            description = "A hidden thread is kept but no longer shown to students; hiding it resolves its open reports.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public ThreadDetail hideThread(@PathVariable Long lmsCourseId, @PathVariable Long threadId, @Valid @RequestBody HideRequest request,
+            @AuthenticationPrincipal Jwt token) {
+        Viewer viewer = faculty(token);
+        return ThreadDetail.of(discussions.hideThread(viewer, lmsCourseId, threadId, request.hidden()), viewer);
+    }
+
+    @PostMapping(FACULTY_PATH + "/{threadId}/lock")
+    @PreAuthorize(MODERATE)
+    @Operation(summary = "Lock or open a discussion", description = "A locked thread takes no new replies.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public ThreadDetail lockThread(@PathVariable Long lmsCourseId, @PathVariable Long threadId, @Valid @RequestBody LockRequest request,
+            @AuthenticationPrincipal Jwt token) {
+        Viewer viewer = faculty(token);
+        return ThreadDetail.of(discussions.lockThread(viewer, lmsCourseId, threadId, request.locked()), viewer);
+    }
+
+    @PostMapping(FACULTY_PATH + "/{threadId}/replies/{replyId}/hide")
+    @PreAuthorize(MODERATE)
+    @Operation(summary = "Hide or show a reply",
+            description = "Students see a hidden reply only as hidden; it stops being the accepted answer, and its open reports are resolved.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public ThreadDetail hideReply(@PathVariable Long lmsCourseId, @PathVariable Long threadId, @PathVariable Long replyId,
+            @Valid @RequestBody HideRequest request, @AuthenticationPrincipal Jwt token) {
+        Viewer viewer = faculty(token);
+        return ThreadDetail.of(discussions.hideReply(viewer, lmsCourseId, threadId, replyId, request.hidden()), viewer);
+    }
+
+    @PostMapping(STUDENT_PATH + "/{threadId}/reports")
+    @PreAuthorize(STUDENT)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Report a post to the course's faculty",
+            description = "The thread, or one of its replies, with a reason. Faculty see the report without the reporter's ID.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "201", description = "The report was sent.")
+    @ApiResponse(responseCode = "409", description = "It is the reporter's own post, or they already reported it.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public void report(@PathVariable Long lmsCourseId, @PathVariable Long threadId, @Valid @RequestBody ReportRequest request,
+            @AuthenticationPrincipal Jwt token) {
+        discussions.report(student(token), lmsCourseId, threadId, request.replyId(), request.reason());
+    }
+
+    @GetMapping("/faculty/courses/{lmsCourseId}/discussion-reports")
+    @PreAuthorize(MODERATE)
+    @Operation(summary = "Open reports of a course's discussions", description = "Oldest first, without the reporters.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    public List<Report> reports(@PathVariable Long lmsCourseId, @AuthenticationPrincipal Jwt token) {
+        return discussions.openReports(faculty(token), lmsCourseId).stream().map(Report::of).toList();
+    }
+
+    @PostMapping("/faculty/courses/{lmsCourseId}/discussion-reports/{reportId}/resolve")
+    @PreAuthorize(MODERATE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Resolve a report",
+            description = "Hides the reported post, or dismisses its open reports. Every open report of the same post is resolved together.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "204", description = "Resolved.")
+    public void resolve(@PathVariable Long lmsCourseId, @PathVariable Long reportId, @Valid @RequestBody ResolveRequest request,
+            @AuthenticationPrincipal Jwt token) {
+        discussions.resolve(faculty(token), lmsCourseId, reportId, request.hide());
     }
 
     private List<ThreadSummary> list(Viewer viewer, Long lmsCourseId) {

@@ -11,11 +11,23 @@ import type {
   HostelApplicationSummary,
   HostelBed,
   HostelBedMap,
+  HostelNotice,
   HostelOccupancy,
   HostelQueuePlace,
   HostelRoom,
+  HostelVisit,
   HostelWardenAssignment,
+  ManagerMess,
+  Meal,
+  MessTemplateLine,
   Page,
+  RatedMeal,
+  ResidentMess,
+  RollCallDetail,
+  RollCallMark,
+  RollCallSummary,
+  RoomChange,
+  VisitingHours,
 } from '../types/hostel'
 import { apiClient } from './apiClient'
 
@@ -156,4 +168,146 @@ export async function endHostelWarden(assignmentId: number) {
 
 export async function getHostelQueuePlace(applicationId: number, signal?: AbortSignal) {
   return (await apiClient.get<HostelQueuePlace>(`/hostel/student/applications/${applicationId}/queue`, { signal })).data
+}
+
+// --- Room changes
+
+export async function getMyRoomChanges(signal?: AbortSignal) {
+  return (await apiClient.get<RoomChange[]>('/hostel/student/room-changes', { signal })).data
+}
+
+/** Asks to move; the warden decides, then the hostel office chooses the bed. */
+export async function requestRoomMove(reason: string, preference: string | null) {
+  return (await apiClient.post<RoomChange>('/hostel/student/room-changes/move', { reason, preference })).data
+}
+
+/** Proposes a bed swap with the resident whose college ID is given; they answer first. */
+export async function proposeRoomSwap(partnerLoginId: string, reason: string) {
+  return (await apiClient.post<RoomChange>('/hostel/student/room-changes/swap', { partnerLoginId, reason })).data
+}
+
+export async function answerRoomSwap(changeId: number, accept: boolean) {
+  return (await apiClient.post<RoomChange>(`/hostel/student/room-changes/${changeId}/answer`, { accept })).data
+}
+
+export async function cancelRoomChange(changeId: number) {
+  return (await apiClient.post<RoomChange>(`/hostel/student/room-changes/${changeId}/cancel`)).data
+}
+
+export async function getOpenRoomChanges(signal?: AbortSignal) {
+  return (await apiClient.get<RoomChange[]>('/hostel/admin/room-changes', { signal })).data
+}
+
+/** Carries out an approved change: a move to the chosen bed, or a swap of both beds. */
+export async function completeRoomChange(changeId: number, bedId: number | null) {
+  return (await apiClient.post<RoomChange>(`/hostel/admin/room-changes/${changeId}/complete`, { bedId })).data
+}
+
+// --- Night roll calls (wardens)
+
+export async function getRollCalls(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<RollCallSummary[]>(`/hostel/warden/hostels/${hostelId}/roll-calls`, { signal })).data
+}
+
+/** Opens a night's sheet; residents whose last gate movement was going out start as out, nobody as absent. */
+export async function openRollCall(hostelId: number, block: string | null, night: string | null) {
+  return (await apiClient.post<RollCallDetail>(`/hostel/warden/hostels/${hostelId}/roll-calls`, { block, night })).data
+}
+
+export async function getRollCall(rollCallId: number, signal?: AbortSignal) {
+  return (await apiClient.get<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}`, { signal })).data
+}
+
+export async function markRollCall(rollCallId: number, marks: { entryId: number; status: RollCallMark }[]) {
+  return (await apiClient.put<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}/marks`, { marks })).data
+}
+
+export async function finalizeRollCall(rollCallId: number) {
+  return (await apiClient.post<RollCallDetail>(`/hostel/warden/roll-calls/${rollCallId}/finalize`)).data
+}
+
+// --- Hostel notices
+
+export async function getManagedHostelNotices(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<HostelNotice[]>('/hostel/notices/manage', { params: { hostelId }, signal })).data
+}
+
+export async function addHostelNotice(input: { hostelId: number; block: string | null; title: string; message: string; emergency: boolean }) {
+  return (await apiClient.post<HostelNotice>('/hostel/notices/manage', input)).data
+}
+
+/** Publishes; an emergency notice also tells every resident it reaches, the first time. */
+export async function publishHostelNotice(noticeId: number) {
+  return (await apiClient.post<HostelNotice>(`/hostel/notices/manage/${noticeId}/publish`)).data
+}
+
+export async function archiveHostelNotice(noticeId: number) {
+  return (await apiClient.post<HostelNotice>(`/hostel/notices/manage/${noticeId}/archive`)).data
+}
+
+export async function getMyHostelNotices(signal?: AbortSignal) {
+  return (await apiClient.get<HostelNotice[]>('/hostel/student/notices', { signal })).data
+}
+
+// --- Mess
+
+export async function getMyMess(signal?: AbortSignal) {
+  return (await apiClient.get<ResidentMess>('/hostel/student/mess', { signal })).data
+}
+
+/** Rates a meal of today or the last seven days, once. */
+export async function rateMeal(date: string, meal: Meal, rating: number, comment: string | null) {
+  return (await apiClient.post<RatedMeal>('/hostel/student/mess/feedback', { date, meal, rating, comment })).data
+}
+
+export async function getManagedMess(hostelId: number, signal?: AbortSignal) {
+  return (await apiClient.get<ManagerMess>('/hostel/mess/manage', { params: { hostelId }, signal })).data
+}
+
+export async function setMessTemplate(hostelId: number, lines: MessTemplateLine[]) {
+  await apiClient.put('/hostel/mess/manage/template', { hostelId, lines })
+}
+
+export async function setMessChange(hostelId: number, date: string, meal: Meal, items: string, note: string | null) {
+  await apiClient.put('/hostel/mess/manage/changes', { hostelId, date, meal, items, note })
+}
+
+// --- Visitors
+
+export async function getMyVisitors(signal?: AbortSignal) {
+  return (await apiClient.get<HostelVisit[]>('/hostel/student/visitors', { signal })).data
+}
+
+export async function registerVisitor(visitorName: string, relation: string, expectedOn: string) {
+  return (await apiClient.post<HostelVisit>('/hostel/student/visitors', { visitorName, relation, expectedOn })).data
+}
+
+export async function cancelVisitor(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/hostel/student/visitors/${visitId}/cancel`)).data
+}
+
+export async function getTodaysVisitors(signal?: AbortSignal) {
+  return (await apiClient.get<HostelVisit[]>('/gate/visitors', { signal })).data
+}
+
+export async function recordVisitorArrival(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/gate/visitors/${visitId}/arrive`)).data
+}
+
+export async function recordVisitorLeaving(visitId: number) {
+  return (await apiClient.post<HostelVisit>(`/gate/visitors/${visitId}/leave`)).data
+}
+
+export async function recordWalkInVisitor(residentLoginId: string, visitorName: string, relation: string) {
+  return (await apiClient.post<HostelVisit>('/gate/visitors/walk-in', { residentLoginId, visitorName, relation })).data
+}
+
+/** The hostel's visiting hours, or null when none are set (it takes no visitors). */
+export async function getVisitingHours(hostelId: number, signal?: AbortSignal) {
+  const response = await apiClient.get<VisitingHours>(`/hostel/admin/hostels/${hostelId}/visiting-hours`, { signal })
+  return response.status === 204 ? null : response.data
+}
+
+export async function setVisitingHours(hostelId: number, opensAt: string, closesAt: string) {
+  return (await apiClient.put<VisitingHours>(`/hostel/admin/hostels/${hostelId}/visiting-hours`, { opensAt, closesAt })).data
 }

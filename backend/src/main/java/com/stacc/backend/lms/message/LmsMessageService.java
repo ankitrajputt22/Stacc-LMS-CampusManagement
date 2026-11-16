@@ -15,6 +15,7 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import com.stacc.backend.lms.discussion.AuthorKind;
 import com.stacc.backend.lms.discussion.LmsCourseParticipation;
 import com.stacc.backend.lms.discussion.LmsCourseParticipation.Viewer;
+import org.hibernate.Hibernate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,8 +88,11 @@ public class LmsMessageService {
     @Transactional(readOnly = true)
     public ConversationDetail detail(Viewer viewer, Long lmsCourseId, Long conversationId) {
         LmsConversation conversation = visible(viewer, lmsCourseId, conversationId);
-        return new ConversationDetail(conversation, messages.findAllForConversation(conversation.getId()),
-                attachments.findAllForConversation(conversation.getId()));
+        List<LmsConversationMessage> found = messages.findAllForConversation(conversation.getId());
+        // The answer is built after the transaction (open-in-view is off), so every person it shows is loaded now.
+        Hibernate.initialize(conversation.getStudent());
+        found.forEach(message -> Hibernate.initialize(message.getAuthor()));
+        return new ConversationDetail(conversation, found, attachments.findAllForConversation(conversation.getId()));
     }
 
     /** Opens a file of a conversation the caller may read; any other file answers the same 404. */

@@ -1,6 +1,7 @@
 package com.stacc.backend.lms.api;
 
 import java.time.Instant;
+import java.util.List;
 
 import com.stacc.backend.lms.announcement.LmsAnnouncement;
 import com.stacc.backend.lms.content.LmsContentStatus;
@@ -30,11 +31,22 @@ public record LmsFacultyAnnouncementResponse(
         @Schema(example = "2026-10-14T09:30:00Z")
         Instant updatedAt,
         @Schema(description = "How to show the text: PLAIN exactly as written, FORMATTED with the small formatting set. Never HTML.", allowableValues = {"PLAIN", "FORMATTED"})
-        LmsTextFormat messageFormat) {
+        LmsTextFormat messageFormat,
+
+        @Schema(description = "The files on the announcement, oldest first.")
+        List<LmsAnnouncementFileResponse> files) {
 
     static LmsFacultyAnnouncementResponse of(LmsAnnouncement announcement) {
+        return of(announcement, List.of());
+    }
+
+    static LmsFacultyAnnouncementResponse of(LmsAnnouncement announcement, List<LmsAnnouncementFileResponse> files) {
         return new LmsFacultyAnnouncementResponse(announcement.getId(), announcement.getTitle(), announcement.getMessage(),
                 announcement.getStatus(), announcement.getPublishedAt(), announcement.getCreatedAt(), announcement.getUpdatedAt(),
-                announcement.getMessageFormat());
+                announcement.getMessageFormat(), files);
+    }
+
+    LmsFacultyAnnouncementResponse withFiles(List<LmsAnnouncementFileResponse> listed) {
+        return new LmsFacultyAnnouncementResponse(id, title, message, status, publishedAt, createdAt, updatedAt, messageFormat, listed);
     }
 }

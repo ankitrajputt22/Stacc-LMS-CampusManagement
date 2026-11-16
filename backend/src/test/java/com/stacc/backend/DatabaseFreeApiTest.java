@@ -1,6 +1,7 @@
 package com.stacc.backend;
 
 import com.stacc.backend.lms.discussion.LmsDiscussionReplyRepository;
+import com.stacc.backend.lms.discussion.LmsDiscussionReportRepository;
 import com.stacc.backend.lms.discussion.LmsDiscussionThreadRepository;
 import com.stacc.backend.lms.message.LmsConversationMessageRepository;
 import com.stacc.backend.lms.message.LmsConversationRepository;
@@ -13,6 +14,8 @@ import com.stacc.backend.support.helpdesk.HelpdeskTeamMemberRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
 import com.stacc.backend.analytics.AnalyticsQueries;
+import com.stacc.backend.analytics.AreaAnalyticsQueries;
+import com.stacc.backend.analytics.DepartmentAnalyticsQueries;
 import com.stacc.backend.report.export.ReportExportRepository;
 import com.stacc.backend.documents.VaultDocumentRepository;
 import com.stacc.backend.documents.CertificateRequestRepository;
@@ -87,6 +90,18 @@ import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelRoomRepository;
 import com.stacc.backend.identity.faculty.FacultyProfileRepository;
 import com.stacc.backend.identity.person.PersonProfileRepository;
+import com.stacc.backend.identity.person.PersonEmergencyContactRepository;
+import com.stacc.backend.academic.timetable.ClassTimetableSlotRepository;
+import com.stacc.backend.academic.result.GradeScaleRepository;
+import com.stacc.backend.academic.curriculum.ProgramCreditRequirementRepository;
+import com.stacc.backend.academic.request.StudentRequestRepository;
+import com.stacc.backend.academic.exam.ExamSessionRepository;
+import com.stacc.backend.academic.exam.ExamSlotRepository;
+import com.stacc.backend.academic.exam.ExamSeatRepository;
+import com.stacc.backend.fees.FeeAdjustmentRepository;
+import com.stacc.backend.fees.FeePaymentRepository;
+import com.stacc.backend.fees.FeeStructureItemRepository;
+import com.stacc.backend.fees.FeeStructureRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.ai.AiCourseKnowledgeIndexRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
@@ -111,6 +126,64 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.stacc.backend.lms.announcement.LmsAnnouncementAttachmentRepository;
+import com.stacc.backend.hostel.HostelRoomChangeRepository;
+import com.stacc.backend.engagement.facilities.CampusFacilityClassHourRepository;
+import com.stacc.backend.engagement.fests.CampusFestRepository;
+import com.stacc.backend.engagement.fests.FestShiftRepository;
+import com.stacc.backend.engagement.fests.FestVolunteerRepository;
+import com.stacc.backend.engagement.teams.CampusTeamMemberRepository;
+import com.stacc.backend.engagement.teams.CampusTeamRepository;
+import com.stacc.backend.engagement.tournaments.CampusFixtureRepository;
+import com.stacc.backend.engagement.tournaments.CampusTournamentRepository;
+import com.stacc.backend.grievance.GrievanceCaseRepository;
+import com.stacc.backend.grievance.GrievanceCategoryRepository;
+import com.stacc.backend.grievance.GrievanceCommitteeMemberRepository;
+import com.stacc.backend.hackathon.HackathonJudgeRepository;
+import com.stacc.backend.hackathon.HackathonRepository;
+import com.stacc.backend.hackathon.HackathonScoreRepository;
+import com.stacc.backend.hackathon.HackathonSubmissionRepository;
+import com.stacc.backend.hackathon.HackathonTeamMemberRepository;
+import com.stacc.backend.hackathon.HackathonTeamRepository;
+import com.stacc.backend.innovation.InnovationIdeaRepository;
+import com.stacc.backend.innovation.InnovationReviewRepository;
+import com.stacc.backend.lms.ai.job.AiJobRepository;
+import com.stacc.backend.lms.ai.control.AiCourseControlRepository;
+import com.stacc.backend.lms.ai.control.AiRequestLogRepository;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexRepository;
+import com.stacc.backend.lms.ai.flashcards.AiFlashcardRepository;
+import com.stacc.backend.lms.ai.flashcards.AiFlashcardSetRepository;
+import com.stacc.backend.lms.ai.mastery.AiLearningEvidenceRepository;
+import com.stacc.backend.lms.ai.planner.AiStudySessionRepository;
+import com.stacc.backend.lms.ai.saved.AiSavedAnswerRepository;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteRepository;
+import com.stacc.backend.lms.ai.teacher.AiTeacherDocumentRepository;
+import com.stacc.backend.library.LibraryCopyRepository;
+import com.stacc.backend.library.LibraryHoldRepository;
+import com.stacc.backend.library.LibraryLoanRepository;
+import com.stacc.backend.library.LibraryResourceRepository;
+import com.stacc.backend.library.LibraryTitleRepository;
+import com.stacc.backend.mentoring.MentorAssignmentRepository;
+import com.stacc.backend.mentoring.MentoringActionItemRepository;
+import com.stacc.backend.mentoring.MentoringMeetingRepository;
+import com.stacc.backend.portfolio.PortfolioItemRepository;
+import com.stacc.backend.projects.ProjectMemberRepository;
+import com.stacc.backend.projects.ProjectMentorRepository;
+import com.stacc.backend.projects.ProjectRepository;
+import com.stacc.backend.engagement.groups.GroupAnnouncementRepository;
+import com.stacc.backend.engagement.groups.GroupSessionRepository;
+import com.stacc.backend.hostel.visitor.HostelVisitRepository;
+import com.stacc.backend.hostel.visitor.HostelVisitingHoursRepository;
+import com.stacc.backend.hostel.mess.MealFeedbackRepository;
+import com.stacc.backend.hostel.mess.MessMenuChangeRepository;
+import com.stacc.backend.hostel.mess.MessMenuItemRepository;
+import com.stacc.backend.hostel.notice.HostelNoticeRepository;
+import com.stacc.backend.hostel.rollcall.HostelRollCallEntryRepository;
+import com.stacc.backend.hostel.rollcall.HostelRollCallRepository;
+import com.stacc.backend.support.helpdesk.HelpdeskArticleRepository;
+import com.stacc.backend.lms.paper.LmsExamBlueprintRepository;
+import com.stacc.backend.lms.paper.LmsExamPaperQuestionRepository;
+import com.stacc.backend.lms.paper.LmsExamPaperRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -133,6 +206,16 @@ import org.springframework.web.context.WebApplicationContext;
 @MockitoBean(types = {
     AcademicCalendarEventRepository.class,
     AiCourseKnowledgeIndexRepository.class,
+    AiTeacherDocumentRepository.class,
+    AiStudentNoteRepository.class,
+    AiStudentNoteIndexRepository.class,
+    AiCourseControlRepository.class,
+    AiRequestLogRepository.class,
+    AiSavedAnswerRepository.class,
+    AiStudySessionRepository.class,
+    AiLearningEvidenceRepository.class,
+    AiFlashcardSetRepository.class,
+    AiFlashcardRepository.class,
     AcademicSessionRepository.class,
     com.stacc.backend.identity.admin.AccountSearchRepository.class,
     com.stacc.backend.auth.throttle.SignInThrottleRepository.class,
@@ -174,6 +257,18 @@ import org.springframework.web.context.WebApplicationContext;
     NotificationRecipientRepository.class,
     NotificationRepository.class,
     PersonProfileRepository.class,
+    PersonEmergencyContactRepository.class,
+    ClassTimetableSlotRepository.class,
+    GradeScaleRepository.class,
+    ProgramCreditRequirementRepository.class,
+    StudentRequestRepository.class,
+    ExamSessionRepository.class,
+    ExamSlotRepository.class,
+    ExamSeatRepository.class,
+    FeeStructureRepository.class,
+    FeeStructureItemRepository.class,
+    FeePaymentRepository.class,
+    FeeAdjustmentRepository.class,
     ProgramRepository.class,
     RoleRepository.class,
     SectionRepository.class,
@@ -199,6 +294,7 @@ import org.springframework.web.context.WebApplicationContext;
     LmsConversationRepository.class,
     LmsConversationMessageRepository.class,
     LmsMessageAttachmentRepository.class,
+    LmsDiscussionReportRepository.class,
     TodoDismissalRepository.class,
     TodoAssignmentQueries.class,
     PersonalCalendarEventRepository.class,
@@ -231,7 +327,57 @@ import org.springframework.web.context.WebApplicationContext;
     CareerOfferRepository.class,
     CareerPolicyRepository.class,
     AnalyticsQueries.class,
-    ReportExportRepository.class
+    DepartmentAnalyticsQueries.class,
+    AreaAnalyticsQueries.class,
+    AiJobRepository.class,
+    ReportExportRepository.class,
+    LmsAnnouncementAttachmentRepository.class,
+    HostelRoomChangeRepository.class,
+    CampusFestRepository.class,
+    FestShiftRepository.class,
+    FestVolunteerRepository.class,
+    CampusTeamRepository.class,
+    CampusTeamMemberRepository.class,
+    CampusTournamentRepository.class,
+    CampusFixtureRepository.class,
+    GrievanceCategoryRepository.class,
+    GrievanceCommitteeMemberRepository.class,
+    GrievanceCaseRepository.class,
+    MentorAssignmentRepository.class,
+    MentoringMeetingRepository.class,
+    MentoringActionItemRepository.class,
+    CampusFacilityClassHourRepository.class,
+    PortfolioItemRepository.class,
+    ProjectRepository.class,
+    ProjectMemberRepository.class,
+    ProjectMentorRepository.class,
+    InnovationIdeaRepository.class,
+    InnovationReviewRepository.class,
+    HackathonRepository.class,
+    HackathonTeamRepository.class,
+    HackathonTeamMemberRepository.class,
+    HackathonSubmissionRepository.class,
+    HackathonJudgeRepository.class,
+    HackathonScoreRepository.class,
+    LibraryTitleRepository.class,
+    LibraryCopyRepository.class,
+    LibraryLoanRepository.class,
+    LibraryHoldRepository.class,
+    LibraryResourceRepository.class,
+    GroupSessionRepository.class,
+    GroupAnnouncementRepository.class,
+    HostelVisitRepository.class,
+    HostelVisitingHoursRepository.class,
+    MessMenuItemRepository.class,
+    MessMenuChangeRepository.class,
+    MealFeedbackRepository.class,
+    HostelNoticeRepository.class,
+    HostelRollCallRepository.class,
+    HostelRollCallEntryRepository.class,
+    HelpdeskArticleRepository.class,
+    LmsExamBlueprintRepository.class,
+    LmsExamPaperRepository.class,
+    LmsExamPaperQuestionRepository.class
 })
 public abstract class DatabaseFreeApiTest {
 

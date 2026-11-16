@@ -1,12 +1,11 @@
 import { type FormEvent, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import { createHelpdeskTicket, getHelpdeskCategories } from '../api/helpdeskApi'
 import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { Button } from '../components/Button'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -22,6 +21,7 @@ import {
   SUBJECT_MAX,
 } from '../support/helpdeskText'
 import type { CreateHelpdeskTicketRequest, HelpdeskCategory } from '../types/helpdesk'
+import { SuggestedArticles } from '../support/SuggestedArticles'
 
 type Field = 'categoryId' | 'subject' | 'priority' | 'description'
 type Values = Record<Field, string>
@@ -48,6 +48,8 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
   const [errors, setErrors] = useState<Errors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // The subject as of the last time the field was left, for the help article suggestions.
+  const [suggestionSubject, setSuggestionSubject] = useState('')
 
   function change(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -181,6 +183,7 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
             aria-invalid={errors.subject ? true : undefined}
             aria-describedby={describedBy('subject', true)}
             onChange={(event) => change('subject', event.target.value)}
+            onBlur={() => setSuggestionSubject(values.subject.trim())}
             className={`h-11 ${fieldClasses} ${border(Boolean(errors.subject))}`}
           />
           <p id="new-ticket-subject-hint" className="mt-1 text-xs text-ink-muted">
@@ -188,6 +191,11 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
           </p>
           {errorText('subject')}
         </div>
+        <SuggestedArticles
+          className="sm:col-span-2"
+          categoryId={values.categoryId === '' ? null : Number(values.categoryId)}
+          subject={suggestionSubject}
+        />
         <div className="sm:col-span-2">
           <label htmlFor="new-ticket-description" className="block text-sm font-medium text-ink">
             Description
@@ -250,12 +258,17 @@ export function SupportNewTicketPage() {
   return (
     <>
       <title>New ticket · Stacc</title>
-      <Breadcrumb parent={{ to: '/support', label: 'Support' }} current="New ticket" />
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Create ticket</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        Describe the issue. You can follow the ticket and reply to the support team on its page.
+      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Create ticket</h1>
+      <p className="mt-2 text-[0.95rem] leading-6 text-ink-muted sm:text-base">
+        Raise a support ticket to get help from the right team. You can follow it and reply on its page.
       </p>
-      <div className="mt-6">
+      <Link
+        to="/support"
+        className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-control font-medium text-stacc-primary hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
+      >
+        <span aria-hidden="true">←</span> Back to Support
+      </Link>
+      <div className="mt-4 max-w-4xl">
         {content ? (
           <StatePanel>{content}</StatePanel>
         ) : (

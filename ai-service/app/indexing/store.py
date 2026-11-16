@@ -31,7 +31,7 @@ import numpy as np
 from app.errors import ServiceError, index_not_found
 from app.security import checked_course_key
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2  # 2: chunks measured in tokens and carrying their heading (v0.13.3).
 VERSION_NAME = re.compile(r"^v-[a-f0-9]{32}$")
 CACHE_SIZE = 16
 
@@ -40,12 +40,13 @@ CACHE_SIZE = 16
 class StoredChunk:
     sourceType: str
     sourceId: int
-    topicId: int
+    topicId: int | None
     title: str
     fileName: str | None
     pageNumber: int | None
     slideNumber: int | None
     text: str
+    heading: str | None = None
 
 
 @dataclass(frozen=True)
@@ -107,6 +108,18 @@ class IndexStore:
             finally:
                 shutil.rmtree(temporary, ignore_errors=True)
             self._remove_old_versions(course_dir, keep=version)
+
+    def delete(self, course_key: str) -> bool:
+        """Removes an index and every version of it from disk (v0.13.6), so deleted text is gone; whether one existed."""
+        course_dir = self._course_dir(course_key)
+        with self._lock(course_key):
+            with self._cache_guard:
+                for cached in [key for key in self._cache if key[0] == course_key]:
+                    del self._cache[cached]
+            if not course_dir.exists():
+                return False
+            shutil.rmtree(course_dir)
+            return True
 
     def load(self, course_key: str) -> CourseIndex:
         course_dir = self._course_dir(course_key)

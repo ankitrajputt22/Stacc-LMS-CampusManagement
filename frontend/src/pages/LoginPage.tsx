@@ -1,20 +1,10 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { LOGIN_PATH } from '../auth/RequireAuth'
-import { LibraryIllustration } from '../login/LibraryIllustration'
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 import { PortalEmblem } from '../login/PortalEmblem'
-import { ArrowCircleIcon, HelpIcon, HomeIcon, MenuLinesIcon } from '../login/PortalIcons'
-import { PortalMenu } from '../login/PortalMenu'
-import {
-  type Portal,
-  PORTAL_NAMES,
-  PORTAL_SUMMARIES,
-  PORTALS,
-  parsePortal,
-  portalHome,
-  portalPath,
-} from '../login/portal'
+import { landingFor } from '../login/landing'
 import { SignInForm } from '../login/SignInForm'
 
 // The page the visitor first asked for, if it is a page of this app; otherwise null.
@@ -37,204 +27,152 @@ function requestedPage(state: unknown): string | null {
   return target.pathname + target.search + target.hash
 }
 
-const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-portal-bar'
-const barLinkClasses =
-  'inline-flex h-full items-center px-3 text-sm font-bold tracking-[0.06em] text-portal-navy uppercase hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-portal-navy xl:px-5'
+type Help = { id: string; icon: NavIconName; title: string; summary: string; details: string[] }
 
-/** The two big buttons of the welcome view, one per portal. */
-function PortalButtons() {
-  const { state } = useLocation()
-  return (
-    <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-6">
-      {PORTALS.map((portal) => (
-        <Link
-          key={portal}
-          to={portalPath(portal)}
-          state={state}
-          className={`inline-flex min-h-16 items-center justify-between gap-6 bg-portal-cta px-6 py-3 text-lg font-semibold tracking-[0.14em] text-white uppercase hover:bg-portal-cta-hover sm:justify-start ${focusRing}`}
-        >
-          {PORTAL_NAMES[portal]} Login
-          <ArrowCircleIcon />
-        </Link>
-      ))}
-    </div>
-  )
-}
+const HELP: Help[] = [
+  {
+    id: 'password-help',
+    icon: 'grievances',
+    title: 'Password help',
+    summary: 'Reset or change your password',
+    details: [
+      'Stacc accounts are created by the college; there is no sign-up.',
+      'Forgotten your password? Ask the college administration office for a temporary password. You will choose a new one the first time you sign in with it.',
+    ],
+  },
+  {
+    id: 'session-help',
+    icon: 'support',
+    title: 'Questions about your session',
+    summary: 'Get help with sign-in and access',
+    details: [
+      'One college ID or employee ID opens everything: your courses, records, and campus services.',
+      'Your session ends when you sign out, or by itself after a while without activity. On a shared computer, always sign out.',
+    ],
+  },
+  {
+    id: 'bookmark-help',
+    icon: 'documents',
+    title: 'Bookmarks',
+    summary: 'Save important pages for quick access',
+    details: ['Bookmark the Stacc pages you use most. If you are not signed in, you will come here first and then go straight on to that page.'],
+  },
+]
 
-/** The chosen portal's sign-in card, with a way back and a way to the other portal. */
-function PortalSignIn({ portal }: { portal: Portal }) {
-  const { state } = useLocation()
-  const other: Portal = portal === 'erp' ? 'lms' : 'erp'
-  return (
-    <div className="w-full max-w-[28rem]">
-      <Link to="/login" state={state} className={`inline-flex min-h-11 items-center text-sm font-semibold text-white underline-offset-4 hover:underline ${focusRing}`}>
-        <span aria-hidden="true">←&nbsp;</span>All sign-in options
-      </Link>
-      <div className="mt-3 rounded-panel bg-surface p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-bold tracking-[0.14em] text-portal-cta uppercase">Stacc {PORTAL_NAMES[portal]}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">{PORTAL_NAMES[portal]} sign-in</h1>
-        <p className="mt-1.5 text-sm leading-6 text-ink-muted">{PORTAL_SUMMARIES[portal]}</p>
-        <SignInForm />
-        <p className="mt-5 text-sm leading-6 text-ink-muted">
-          One college account works for both.{' '}
-          <Link
-            to={portalPath(other)}
-            state={state}
-            className="font-medium text-stacc-primary underline underline-offset-4 hover:text-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
-          >
-            Use {PORTAL_NAMES[other]} Login instead
-          </Link>
-        </p>
-      </div>
-    </div>
-  )
-}
+const YEAR = new Date().getFullYear()
+const focusLight = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 
 /**
- * The public front page of Stacc at /login: choose ERP Login or LMS Login, then sign in. Both use the same college
- * account and the same sign-in form, which never chooses a role; the choice only decides where the visitor lands. The
- * portal is kept in the address (`?portal=erp` or `?portal=lms`), so refresh and Back keep it.
+ * The public front page of Stacc at /login: one sign-in for everything (courses, records, and campus services) with
+ * help for passwords, sessions, and bookmarks. The form never chooses a role; after signing in the visitor goes to the
+ * page they asked for, or to the Overview.
  */
 export function LoginPage() {
   const { isAuthenticated, account } = useAuth()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const portal = parsePortal(searchParams.get('portal'))
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const [openHelp, setOpenHelp] = useState<string | null>(null)
 
   // Covers both a visitor who is already signed in and the moment a login succeeds.
   if (isAuthenticated) {
-    return <Navigate to={requestedPage(location.state) ?? portalHome(portal, account?.roles ?? [])} replace />
+    return <Navigate to={requestedPage(location.state) ?? landingFor(searchParams.get('portal'), account?.roles ?? [])} replace />
   }
 
-  return (
-    <div className="min-h-screen bg-surface">
-      <title>{portal ? `${PORTAL_NAMES[portal]} sign-in · Stacc` : 'Sign in · Stacc'}</title>
+  function showHelp(id: string) {
+    setOpenHelp(id)
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 
-      <header className="relative bg-portal-navy text-white">
-        <div className="flex h-16 items-center lg:h-[6.75rem]">
-          <Link to="/login" state={location.state} className={`flex min-w-0 items-center gap-3 pl-4 sm:pl-6 lg:pl-[12.5rem] ${focusRing}`}>
-            <PortalEmblem className="size-11 shrink-0 lg:absolute lg:top-6 lg:left-8 lg:size-36" />
-            <span className="text-xl font-extrabold tracking-[0.14em] uppercase lg:text-3xl">Stacc</span>
-            <span aria-hidden="true" className="hidden h-10 w-px bg-white/60 sm:block" />
-            <span className="hidden text-base font-semibold tracking-[0.2em] text-portal-bar-strong uppercase sm:block lg:text-2xl">
-              ERP · LMS
-            </span>
-          </Link>
-          <button
-            ref={menuButtonRef}
-            type="button"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
-            className="ml-auto inline-flex h-full items-center gap-3 bg-portal-cta px-5 text-sm font-bold tracking-[0.14em] text-white uppercase hover:bg-portal-cta-hover focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white lg:px-10"
-          >
-            Menu
-            <MenuLinesIcon />
-          </button>
+  const shown = HELP.find((help) => help.id === openHelp)
+
+  return (
+    <div className="flex min-h-screen flex-col bg-portal-navy">
+      <title>Sign in · Stacc</title>
+
+      <header className="bg-surface">
+        <div className="flex h-20 items-center gap-4 px-4 sm:px-8">
+          <PortalEmblem className="size-12 shrink-0 sm:size-14" />
+          <span aria-hidden="true" className="h-11 w-px bg-portal-navy/60" />
+          <span className="leading-tight text-portal-navy">
+            <span className="block text-2xl font-extrabold tracking-[0.04em] sm:text-3xl">STACC</span>
+            <span className="block text-xs font-semibold tracking-[0.06em] sm:text-sm">COLLEGE ERP &amp; LMS</span>
+          </span>
         </div>
-        <nav aria-label="Sign-in options" className="hidden h-[6.75rem] lg:flex">
-          <div className="flex w-[25rem] shrink-0 items-center justify-end pr-6">
-            <Link
-              to="/login"
-              state={location.state}
-              className={`inline-flex min-h-11 items-center gap-2 text-base font-bold tracking-[0.12em] uppercase hover:text-portal-bar-strong ${focusRing}`}
-            >
-              <HomeIcon />
-              Site home
-            </Link>
-          </div>
-          <div className="flex min-w-0 flex-1 items-center bg-portal-bar px-3">
-            {PORTALS.map((option) => (
-              <Link
-                key={option}
-                to={portalPath(option)}
-                state={location.state}
-                aria-current={portal === option ? 'page' : undefined}
-                className={`${barLinkClasses} ${portal === option ? 'underline underline-offset-4' : ''}`}
-              >
-                {PORTAL_NAMES[option]} Login
-              </Link>
-            ))}
-            <a href="#help" className={barLinkClasses}>
-              Help
-            </a>
-          </div>
-          <a
-            href="#help"
-            aria-label="Help signing in"
-            className="flex w-[6.75rem] shrink-0 items-center justify-center bg-portal-bar-strong text-portal-navy hover:bg-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-portal-navy"
-          >
-            <HelpIcon />
-          </a>
-        </nav>
       </header>
 
-      <PortalMenu open={menuOpen} onClose={() => setMenuOpen(false)} returnFocusTo={menuButtonRef} />
+      <main className="relative flex-1 overflow-hidden">
+        <div className="relative mx-auto w-full max-w-[38rem] px-4 pt-10 pb-10 sm:pt-14">
+          <h1 className="text-center text-3xl font-bold text-white sm:text-5xl">Sign In to STACC</h1>
+          <p className="mt-3 text-center text-lg text-white/90 sm:text-xl">Access your college ERP &amp; LMS account</p>
+          <div className="mt-8 rounded-2xl bg-surface p-6 shadow-lg sm:p-9">
+            <SignInForm onForgotPassword={() => showHelp('password-help')} />
+          </div>
+        </div>
 
-      <div className="flex">
-        <main className="min-w-0 flex-1">
-          <section className="relative overflow-hidden bg-portal-hero text-white">
-            {/* Two broad, faint strokes behind the content, for a hand-made feel. Decorative only. */}
-            <svg aria-hidden="true" focusable="false" viewBox="0 0 1200 600" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full">
-              <path d="M80 640C160 420 120 160 260 -40" stroke="#ffffff" strokeOpacity="0.07" strokeWidth="150" fill="none" strokeLinecap="round" />
-              <path d="M900 640C980 470 1080 300 1240 220" stroke="#0b2545" strokeOpacity="0.18" strokeWidth="170" fill="none" strokeLinecap="round" />
-            </svg>
-            <div className="relative grid gap-10 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-12 lg:py-20 lg:pr-0 lg:pl-20">
-              <div>
-                {portal ? (
-                  <PortalSignIn portal={portal} />
-                ) : (
-                  <>
-                    <h1 className="text-sm font-bold tracking-[0.16em] text-portal-bar-strong uppercase">Welcome to Stacc</h1>
-                    <p className="mt-4 max-w-[36rem] text-xl leading-9 sm:text-2xl sm:leading-10">
-                      Students and faculty: choose <strong className="font-semibold">ERP Login</strong> for academic
-                      records and campus services, or <strong className="font-semibold">LMS Login</strong> for courses
-                      and teaching. Admins sign in through ERP.
-                    </p>
-                    <PortalButtons />
-                  </>
-                )}
-              </div>
-              <div className="hidden lg:block lg:self-stretch">
-                <LibraryIllustration className="h-full min-h-[22rem] w-full" />
-              </div>
+        <div className="relative mx-auto grid max-w-[96rem] gap-4 px-4 pb-10 sm:grid-cols-2 sm:px-8 xl:grid-cols-4 xl:px-12">
+          {HELP.map((help) => (
+            <div key={help.id} id={help.id} className="scroll-mt-6">
+              <button
+                type="button"
+                aria-expanded={openHelp === help.id}
+                aria-controls={`${help.id}-details`}
+                onClick={() => setOpenHelp(openHelp === help.id ? null : help.id)}
+                className={`flex h-full w-full items-start gap-4 rounded-xl bg-surface p-5 text-left hover:bg-surface-muted ${focusLight}`}
+              >
+                <NavIcon name={help.icon} className="mt-0.5 size-8 text-portal-navy" />
+                <span aria-hidden="true" className="h-12 w-px bg-line-strong" />
+                <span>
+                  <span className="block text-lg font-semibold text-ink">{help.title}</span>
+                  <span className="mt-1 block text-[0.95rem] text-ink-muted">{help.summary}</span>
+                </span>
+              </button>
             </div>
-          </section>
-
-          <section id="help" aria-labelledby="help-heading" className="scroll-mt-4 px-4 py-12 sm:px-8 lg:px-20">
-            <h2 id="help-heading" className="text-xl font-semibold tracking-tight text-ink">
-              Which login do I need?
-            </h2>
-            <div className="mt-6 grid max-w-4xl gap-4 sm:grid-cols-2">
-              {PORTALS.map((option) => (
-                <div key={option} className="rounded-panel border border-line border-t-4 border-t-portal-navy bg-surface p-5">
-                  <h3 className="text-base font-semibold text-ink">{PORTAL_NAMES[option]}</h3>
-                  <p className="mt-1.5 text-sm leading-6 text-ink-muted">{PORTAL_SUMMARIES[option]}</p>
-                  <Link
-                    to={portalPath(option)}
-                    state={location.state}
-                    className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-stacc-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
-                  >
-                    {PORTAL_NAMES[option]} Login
-                  </Link>
-                </div>
+          ))}
+          <Link
+            to="/verify-document"
+            className={`flex items-start gap-4 rounded-xl bg-surface p-5 hover:bg-surface-muted ${focusLight}`}
+          >
+            <NavIcon name="documents" className="mt-0.5 size-8 text-portal-navy" />
+            <span aria-hidden="true" className="h-12 w-px bg-line-strong" />
+            <span>
+              <span className="block text-lg font-semibold text-ink">Check a college document</span>
+              <span className="mt-1 block text-[0.95rem] text-ink-muted">See whether a document issued by the college is genuine</span>
+            </span>
+          </Link>
+          {shown && (
+            <div
+              id={`${shown.id}-details`}
+              role="region"
+              aria-label={shown.title}
+              className="rounded-xl bg-surface p-6 text-[0.95rem] leading-7 text-ink sm:col-span-2 xl:col-span-4"
+            >
+              <h2 className="text-lg font-semibold text-ink">{shown.title}</h2>
+              {shown.details.map((line) => (
+                <p key={line} className="mt-2">
+                  {line}
+                </p>
               ))}
             </div>
-            <p className="mt-6 max-w-4xl text-sm leading-6 text-ink-muted">
-              Both use the same college ID or employee ID and password. Accounts are issued by your college; if you cannot
-              sign in, contact the college administration.
-            </p>
-          </section>
-        </main>
+          )}
+        </div>
 
-        <aside aria-hidden="true" className="hidden w-[6.75rem] shrink-0 justify-center bg-portal-rail pt-16 lg:flex">
-          <span className="text-2xl font-extrabold tracking-[0.18em] text-portal-navy uppercase [writing-mode:vertical-rl]">
-            Stacc Campus Portal
-          </span>
-        </aside>
-      </div>
+        {/* Two flat waves at the foot of the page. Decorative only. */}
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 1440 120" preserveAspectRatio="none" className="pointer-events-none h-20 w-full sm:h-28">
+          <path d="M0 70C220 20 420 20 640 55s420 50 620 10c80-16 140-30 180-40v95H0z" fill="#1d3a66" />
+          <path d="M0 100c260-40 520-35 760-10s460 30 680-5v35H0z" fill="#2a4a7a" />
+        </svg>
+      </main>
+
+      <footer className="bg-portal-navy-deep px-4 py-5 text-sm text-white sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p>
+            STACC College ERP &amp; LMS <span aria-hidden="true">|</span> © {YEAR} All rights reserved.
+          </p>
+          <Link to="/verify-document" className={`rounded-sm hover:underline ${focusLight}`}>
+            Verify a document
+          </Link>
+        </div>
+      </footer>
     </div>
   )
 }

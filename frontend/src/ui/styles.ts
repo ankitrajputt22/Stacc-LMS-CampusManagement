@@ -19,7 +19,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 export type ButtonSize = 'md' | 'sm'
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'border-transparent bg-stacc-primary text-white hover:bg-stacc-primary-hover',
+  primary: 'border-transparent bg-portal-cta text-white hover:bg-portal-cta-hover',
   secondary: 'border-line-strong bg-surface text-ink hover:border-slate-400 hover:bg-surface-muted',
   danger: 'border-transparent bg-danger text-white hover:bg-red-800',
   ghost: 'border-transparent bg-transparent text-stacc-primary hover:bg-surface-muted',

@@ -1,3 +1,4 @@
+import { SupportHeader } from '../support/SupportHeader'
 import { type FormEvent, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { getAdminHelpdeskCategories, getAdminHelpdeskTickets } from '../api/helpdeskApi'
@@ -5,7 +6,6 @@ import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { ActionButton } from '../components/ActionButton'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -125,9 +125,7 @@ export function SupportQueuePage() {
   return (
     <>
       <title>Support Queue · Stacc</title>
-      <Breadcrumb parent={{ to: '/support', label: 'Support' }} current="Support Queue" />
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Support Queue</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Every support ticket, newest first.</p>
+      <SupportHeader title="Support Queue" description="Every support ticket, newest first." />
 
       {isAdmin && (
         <div role="group" aria-label="Filter tickets" className="mt-5 grid gap-3 rounded-panel border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">

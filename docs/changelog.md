@@ -1,5 +1,70 @@
 # Changelog
 
+## Unreleased
+
+- **0.4.4:** a k6 load test of course registration, run in CI on the end-to-end stack.
+- **0.7.9:** exam blueprints and a paper builder from the question bank, with a print view and Word export.
+- **0.7.11:** a k6 load test of quiz submissions in CI, and fixes for two races it found (an answer saved twice at once, and two students starting at once).
+- **0.8.3:** discussion moderation: faculty hide and lock, students report posts.
+- **0.8.5:** files on announcements and an Inbox notice when one is first published.
+- **0.9.6:** help articles per helpdesk category, suggested while a ticket is written.
+- **0.9.7:** campus service requests show "being processed" and "ready", and can be completed with an issued document.
+- **0.10.3:** hostel room moves and bed swaps, decided by the warden and carried out by the hostel office.
+- **0.10.7:** night roll calls for wardens, pre-filled from the gate log.
+- **0.10.9:** hostel and block notices, with emergency notices sent to every affected resident.
+- **0.10.10:** the hostel mess: weekly menus, changes for single days, and meal ratings.
+- **0.10.11:** hostel visitors: registration by residents, the security desk, and visiting hours.
+- **0.11.2:** club and sports group sessions on members' calendars, and group announcements.
+- **0.11.6:** event check-in by QR code or college ID, and certificate eligibility from attendance.
+- **0.11.7:** fests with a schedule of campus events, and volunteer shifts.
+- **0.11.8:** trials: events marked as trials with Selected or Not selected outcomes.
+- **0.11.9:** sports teams by season with rosters, a captain, and a vice-captain.
+- **0.11.10:** tournaments with matches, text scores, results, and standings worked out from them.
+- **0.12.3:** confidential grievances with category committees, one appeal, and response deadlines.
+- **0.12.4:** mentoring pairs, meetings with shared and private notes, and action items on the To-Do list.
+- **0.12.5:** classrooms and equipment on the facilities engine, with weekly class hours closed to bookings.
+- **0.12.9:** student portfolios with live records and items verified by a named faculty member.
+- **0.12.10:** student projects with join requests, member limits, and faculty mentors.
+- **0.12.11:** innovation ideas with faculty reviews and the campus office's decisions.
+- **0.12.12:** hackathons with teams, submissions, judges, and results hidden until released.
+- **0.12.13:** the library: catalog and copies, lending within limits, holds, renewals, and digital resources.
+- **0.13.1:** AI knowledge refreshes run as background jobs.
+- **0.13.2:** separate AI index kinds, and every AI request limited to the sources allowed right now.
+- **0.13.3:** better AI extraction: token-measured chunks that follow headings and slides, PDF header and footer cleaning, and "Exclude from AI" on study materials.
+- **0.13.4:** hybrid AI search: keyword matching for exact course terms merged with semantic search.
+- **0.13.5:** teacher-only documents that only Teacher AI read, in their own index.
+- **0.13.6:** private student notes with a "Course + my notes" mode, labelled citations, and true deletion.
+- **0.13.7:** AI controls and limits: a per-course switch, one request at a time per person with a queue, a request log without content, and AI health for admins.
+- **0.13.8:** an AI retrieval evaluation with expected sources, and leakage tests, run with the fake model.
+- **0.13.9:** Ask My Course: three search modes, a module scope, and source cards that link to their pages.
+- **0.14.1:** AI drafts go into the question bank as Needs review with their sources, after a self-check of every choice and true/false key.
+- **0.14.2:** quality checks on AI drafts: possible duplicates, matches in final papers, out-of-syllabus flags, and difficulty and Bloom suggestions.
+- **0.14.3:** draft quizzes built from reviewed bank questions first, with AI only for gaps.
+- **0.14.4:** exam paper sets from one blueprint, what the bank has per row, and AI drafts for short rows.
+- **0.14.5:** AI model answers for bank questions and rubric suggestions for assignments, shown only to the teacher.
+- **0.14.6:** one Teacher AI area per course with a tab per section, replacing the long AI tools page.
+- **0.15.1:** follow-ups within the page, Explain simpler and Give an example, and answers saved only when the student chooses.
+- **0.15.2:** summaries of a page, a module, or a file, brief, detailed, or as revision notes.
+- **0.15.3:** flashcard sets made with AI and reviewed with spaced repetition.
+- **0.15.4:** practice, mock exams, and viva with AI marking and mistake explanations, hint-only help for open assignments, and AI paused during a graded quiz.
+- **0.15.5:** learning evidence from practice and flashcards, with each student's own mastery per page.
+- **0.15.6:** adaptive practice weighted to weaker pages, and rule-based recommendations that say why.
+- **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
+- **0.15.8:** a student AI home across courses and a study area per course with a tab per section.
+- **AI study fixes:** recommendations and study plans skip assignments already handed in; adding a study plan to the calendar twice adds nothing new, and its own entries no longer count as busy days; viva follow-ups can be answered; empty mock exam answers score 0 without an AI check; every next step links to its page.
+- **0.16.10:** the courses pages in the new design: course cards, a course menu with icons and Back to Courses, the course home and module cards, and the faculty My Courses rows.
+- **0.16.9:** the hostel pages in the new design: a student Overview with a page per section, a warden dashboard with sections, the applications table, and the bed map as room cards; demo data makes Aarav a resident of A-101 with a weekly menu and hostel notices.
+- **0.16.8:** the student dashboard in two panels (Learning · LMS and Academic Records · ERP) with fee and exam previews and quick links; compact ERP tiles on phones.
+- **0.16.7:** fees as records: fee structures, payments with receipts, scholarships, refunds, and the accounts office's page; fee alerts on the ERP home.
+- **0.16.6:** examinations: exam sessions with halls and seat plans, the student's exam schedule, hall ticket, results with SGPA and CGPA history, grade cards, and revaluation; faculty marks entry with internal and external marks.
+- **0.16.5:** student requests: medical leave, attendance corrections, and revaluations, with the ERP office's queue; the new Attendance page with low-attendance alerts.
+- **0.16.1–0.16.4:** one sign-in and a new layout (navy sidebar with Learning, ERP, Campus, and Services; white top bar), and the ERP section: profile with mailing address and emergency contacts, registered courses, class timetable, degree progress, and SGPA/CGPA from the grade scale.
+- **0.15.12:** a new sign-in page: the ERP or LMS choice above one dark sign-in form with Show password, help cards for passwords, sessions, and bookmarks, and a footer.
+- **0.15.11:** a fuller local college for testing: an ECE department with its head and teachers, 27 more students, coursework, attendance, and results.
+- **0.16.3:** department analytics for heads of department.
+- **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
+- **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
+
 ## v1.0.0 (2026-11-11)
 
 First stable release, after release candidate `v1.0.0-rc.1`. Fixed during the candidate: editing a rubric while grading with it could deadlock; both now take the rubric row lock first, and a grade against criteria that just changed is refused cleanly.

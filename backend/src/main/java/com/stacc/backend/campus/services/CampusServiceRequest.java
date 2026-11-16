@@ -7,6 +7,7 @@ import com.stacc.backend.approval.ApprovalRequest;
 import com.stacc.backend.approval.ApprovalRequestStatus;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.common.validation.Require;
+import com.stacc.backend.documents.VaultDocument;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -71,6 +72,17 @@ public class CampusServiceRequest {
 
     @Column(name = "completed_at")
     private Instant completedAt;
+
+    @Column(name = "processing_at")
+    private Instant processingAt;
+
+    @Column(name = "ready_at")
+    private Instant readyAt;
+
+    // The document issued when the request was completed, kept in the requester's vault.
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issued_document_id", unique = true)
+    private VaultDocument issuedDocument;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -144,13 +156,57 @@ public class CampusServiceRequest {
         status = CampusServiceRequestStatus.CANCELLED;
     }
 
-    /** Completes an APPROVED request and records when, once. */
+    /** Completes an approved request (being processed or ready included) and records when, once. */
     public void complete(Instant at) {
-        if (status != CampusServiceRequestStatus.APPROVED) {
+        if (!status.isBeingHandled()) {
             throw new IllegalStateException("Only an approved request can be completed");
         }
         status = CampusServiceRequestStatus.COMPLETED;
         completedAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
+    }
+
+    /** Completes the request with the document issued for it. */
+    public void complete(Instant at, VaultDocument document) {
+        complete(at);
+        this.issuedDocument = Require.notNull(document, "document");
+    }
+
+    /** An approved request is being processed. Returns false when it already is. */
+    public boolean startProcessing(Instant at) {
+        if (status == CampusServiceRequestStatus.IN_PROGRESS) {
+            return false;
+        }
+        if (status != CampusServiceRequestStatus.APPROVED) {
+            throw new IllegalStateException("Only an approved request can be processed");
+        }
+        status = CampusServiceRequestStatus.IN_PROGRESS;
+        processingAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
+        return true;
+    }
+
+    /** An approved or processing request is ready. Returns false when it already is. */
+    public boolean markReady(Instant at) {
+        if (status == CampusServiceRequestStatus.READY) {
+            return false;
+        }
+        if (status != CampusServiceRequestStatus.APPROVED && status != CampusServiceRequestStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Only an approved or processing request can be ready");
+        }
+        status = CampusServiceRequestStatus.READY;
+        readyAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
+        return true;
+    }
+
+    public Instant getProcessingAt() {
+        return processingAt;
+    }
+
+    public Instant getReadyAt() {
+        return readyAt;
+    }
+
+    public VaultDocument getIssuedDocument() {
+        return issuedDocument;
     }
 
     public Long getId() {

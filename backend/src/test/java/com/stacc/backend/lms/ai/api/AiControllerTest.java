@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,7 +36,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 class AiControllerTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW", "AI_STUDY_USE");
-    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE");
+    private static final String FACULTY = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE",
+            "LMS_QUIZ_MANAGE");
 
     @MockitoBean
     private LmsStudentAccessService studentAccess;
@@ -69,13 +72,117 @@ class AiControllerTest extends DatabaseFreeApiTest {
     private static List<MockHttpServletRequestBuilder> studentRoutes() {
         return List.of(json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}"),
                 post("/api/v1/lms/courses/7/ai/topics/3/summary"),
-                json(post("/api/v1/lms/courses/7/ai/practice"), "{\"questionCount\":3}"));
+                json(post("/api/v1/lms/courses/7/ai/practice"), "{\"questionCount\":3}"),
+                json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\",\"includeMyNotes\":true}"));
+    }
+
+    private static List<MockHttpServletRequestBuilder> noteRoutes() {
+        return List.of(get("/api/v1/lms/courses/7/ai/notes"),
+                json(post("/api/v1/lms/courses/7/ai/notes"), "{\"title\":\"Mine\",\"content\":\"Text\"}"),
+                json(put("/api/v1/lms/courses/7/ai/notes/4"), "{\"title\":\"Mine\",\"content\":\"Text\"}"),
+                delete("/api/v1/lms/courses/7/ai/notes/4"));
+    }
+
+    @Test
+    void aiHealthIsForAdminsWithSystemHealthViewAndHoldsNumbersOnly() throws Exception {
+        assertThat(statusOf(get("/api/v1/admin/system/ai"), FACULTY)).isEqualTo(403);
+        assertThat(statusOf(get("/api/v1/admin/system/ai"), token(1, "ROLE_ADMIN"))).isEqualTo(403);
+        mockMvc.perform(get("/api/v1/admin/system/ai").header(HttpHeaders.AUTHORIZATION, token(1, "ROLE_ADMIN", "SYSTEM_HEALTH_VIEW")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(false))
+                .andExpect(jsonPath("$.reachable").value(false))
+                .andExpect(jsonPath("$.running").value(0));
+    }
+
+    @Test
+    void draftingIntoTheBankAlsoNeedsTheBankPermissionAndValidSettings() throws Exception {
+        String route = "/api/v1/lms/faculty/courses/7/ai/question-bank";
+        String body = "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}";
+        assertThat(statusOf(json(post(route), body), token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE"))).isEqualTo(403);
+        for (String bad : List.of("{\"questionCount\":0,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":11,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[\"ESSAY\"],\"difficulty\":\"EASY\"}",
+                "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"]}")) {
+            assertThat(statusOf(json(post(route), bad), FACULTY)).isEqualTo(400);
+        }
+        assertThat(statusOf(json(post(route), body), FACULTY)).isEqualTo(503);
+    }
+
+    @Test
+    void quizDraftsNeedTheQuizAndBankPermissionsAndValidSettings() throws Exception {
+        String route = "/api/v1/lms/faculty/courses/7/ai/quiz-draft";
+        String body = "{\"title\":\"Test\",\"type\":\"GRADED\",\"questionCount\":3,\"questionTypes\":[\"TRUE_FALSE\"],\"fillGapsWithAi\":false}";
+        assertThat(statusOf(json(post(route), body), token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE",
+                "LMS_QUESTION_BANK_MANAGE"))).isEqualTo(403);
+        for (String bad : List.of(body.replace("\"questionCount\":3", "\"questionCount\":31"), body.replace("Test", ""),
+                body.replace("[\"TRUE_FALSE\"]", "[]"), body.replace("GRADED", "EXAM"))) {
+            assertThat(statusOf(json(post(route), bad), FACULTY)).isEqualTo(400);
+        }
+    }
+
+    @Test
+    void suggestionsNeedTheirPermissionsAndAnswer404ForAQuestionOrAssignmentNotFound() throws Exception {
+        String answer = "/api/v1/lms/faculty/ai/questions/4/model-answer";
+        String rubric = "/api/v1/lms/faculty/ai/assignments/4/rubric-suggestion";
+        String basic = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE");
+        assertThat(statusOf(post(answer), basic)).isEqualTo(403);
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":3}"), basic)).isEqualTo(403);
+        String withRights = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE",
+                "LMS_ASSIGNMENT_MANAGE");
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":9}"), withRights)).isEqualTo(400);
+        // The stand-ins hold no question or assignment: the same 404 as for one the faculty member does not teach.
+        assertThat(statusOf(post(answer), withRights)).isEqualTo(404);
+        assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":3}"), withRights)).isEqualTo(404);
+    }
+
+    @Test
+    void theStudyHomeIsForStudentsWithStudentAi() throws Exception {
+        assertThat(statusOf(get("/api/v1/lms/ai/study-home"), FACULTY)).isEqualTo(403);
+        assertThat(statusOf(get("/api/v1/lms/ai/study-home"), token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW"))).isEqualTo(403);
+        mockMvc.perform(get("/api/v1/lms/ai/study-home").header(HttpHeaders.AUTHORIZATION, STUDENT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void theStudentAccessSwitchNeedsAValue() throws Exception {
+        assertThat(statusOf(json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{}"), FACULTY)).isEqualTo(400);
+    }
+
+    @Test
+    void noteRoutesAreTheStudentsOwnAnd404OtherwiseOrForAnotherCourse() throws Exception {
+        for (String denied : List.of(token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW"),
+                token(80, "ROLE_FACULTY", "LMS_COURSE_VIEW", "AI_STUDY_USE", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE"),
+                token(1, "ROLE_ADMIN", "LMS_COURSE_VIEW", "AI_STUDY_USE"))) {
+            for (MockHttpServletRequestBuilder route : noteRoutes()) {
+                assertThat(statusOf(route, denied)).isEqualTo(403);
+            }
+        }
+        // The note stand-in has no rows: a note that is missing or another student's is the same 404.
+        assertThat(statusOf(json(put("/api/v1/lms/courses/7/ai/notes/4"), "{\"title\":\"Mine\",\"content\":\"Text\"}"), STUDENT)).isEqualTo(404);
+        assertThat(statusOf(delete("/api/v1/lms/courses/7/ai/notes/4"), STUDENT)).isEqualTo(404);
+        assertThat(statusOf(get("/api/v1/lms/courses/7/ai/notes"), STUDENT)).isEqualTo(200);
+        for (String body : List.of("{\"title\":\"\",\"content\":\"Text\"}", "{\"title\":\"Mine\",\"content\":\"" + "x".repeat(10_001) + "\"}")) {
+            assertThat(statusOf(json(post("/api/v1/lms/courses/7/ai/notes"), body), STUDENT)).isEqualTo(400);
+        }
+        when(studentAccess.canAccessCourse(any(), any())).thenReturn(false);
+        for (MockHttpServletRequestBuilder route : noteRoutes()) {
+            assertThat(statusOf(route, STUDENT)).isEqualTo(404);
+        }
     }
 
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
         return List.of(get("/api/v1/lms/faculty/courses/7/ai/status"), post("/api/v1/lms/faculty/courses/7/ai/sync"),
                 json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
-                        "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}"));
+                        "{\"questionCount\":3,\"difficulty\":\"EASY\",\"questionType\":\"MCQ\"}"),
+                get("/api/v1/lms/faculty/courses/7/ai/teacher-documents"),
+                json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
+                json(put("/api/v1/lms/faculty/ai/teacher-documents/9"), "{\"title\":\"Notes\",\"content\":\"Text\"}"),
+                post("/api/v1/lms/faculty/ai/teacher-documents/9/archive"),
+                json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{\"enabled\":false}"),
+                json(post("/api/v1/lms/faculty/courses/7/ai/question-bank"),
+                        "{\"questionCount\":3,\"questionTypes\":[\"SINGLE_CHOICE\"],\"difficulty\":\"EASY\"}"));
     }
 
     private int statusOf(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -178,6 +285,10 @@ class AiControllerTest extends DatabaseFreeApiTest {
         }
         assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/assessment-draft"),
                 "{\"questionCount\":20,\"difficulty\":\"MIXED\",\"questionType\":\"MIXED\"}"), FACULTY)).isEqualTo(503);
+        for (String body : List.of("{\"title\":\"\",\"content\":\"Text\"}", "{\"title\":\"Notes\"}",
+                "{\"title\":\"Notes\",\"content\":\"" + "x".repeat(20_001) + "\"}")) {
+            assertThat(statusOf(json(post("/api/v1/lms/faculty/courses/7/ai/teacher-documents"), body), FACULTY)).isEqualTo(400);
+        }
     }
 
     @Test

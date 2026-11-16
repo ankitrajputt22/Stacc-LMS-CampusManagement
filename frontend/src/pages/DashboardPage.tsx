@@ -61,10 +61,10 @@ export function DashboardPage() {
       <>
         <title>Dashboard · Stacc</title>
         <PageHeader title={title} description={summary} />
-        <div className="mb-6">
+        <Part />
+        <div className="mt-6">
           <TodoList limit={5} />
         </div>
-        <Part />
       </>
     )
   }

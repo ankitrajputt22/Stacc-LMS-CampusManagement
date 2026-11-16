@@ -230,6 +230,12 @@ export async function publishMaterial(materialId: number): Promise<LmsFacultyMat
   return response.data
 }
 
+/** Keeps the material out of the course's AI knowledge, or brings it back. Students still see it. */
+export async function changeMaterialAiExclusion(materialId: number, excluded: boolean): Promise<LmsFacultyMaterial> {
+  const response = await apiClient.put<LmsFacultyMaterial>(`/lms/faculty/materials/${materialId}/ai-exclusion`, { excluded })
+  return response.data
+}
+
 /** Archives the material. Its record and stored file are kept, and it leaves the content list. */
 export async function archiveMaterial(materialId: number): Promise<LmsFacultyMaterial> {
   const response = await apiClient.post<LmsFacultyMaterial>(

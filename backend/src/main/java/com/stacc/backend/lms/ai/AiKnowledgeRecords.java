@@ -33,7 +33,17 @@ public class AiKnowledgeRecords {
 
     @Transactional(readOnly = true)
     public Optional<AiCourseKnowledgeIndex> find(Long lmsCourseId) {
-        return indexes.findByLmsCourseId(lmsCourseId);
+        return find(lmsCourseId, AiIndexKind.COURSE_CONTENT);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AiCourseKnowledgeIndex> find(Long lmsCourseId, AiIndexKind kind) {
+        return indexes.findByLmsCourseIdAndKind(lmsCourseId, kind);
+    }
+
+    @Transactional
+    public void claim(Long lmsCourseId) {
+        claim(lmsCourseId, AiIndexKind.COURSE_CONTENT);
     }
 
     /**
@@ -42,10 +52,10 @@ public class AiKnowledgeRecords {
      * inserts the row; two first refreshes at once meet the unique key, and the loser sees a conflict.
      */
     @Transactional
-    public void claim(Long lmsCourseId) {
-        Optional<AiCourseKnowledgeIndex> existing = indexes.findForUpdateByLmsCourseId(lmsCourseId);
+    public void claim(Long lmsCourseId, AiIndexKind kind) {
+        Optional<AiCourseKnowledgeIndex> existing = indexes.findForUpdateByLmsCourseIdAndKind(lmsCourseId, kind);
         if (existing.isEmpty()) {
-            indexes.saveAndFlush(new AiCourseKnowledgeIndex(lmsCourses.getReferenceById(lmsCourseId)));
+            indexes.saveAndFlush(new AiCourseKnowledgeIndex(lmsCourses.getReferenceById(lmsCourseId), kind));
             return;
         }
         AiCourseKnowledgeIndex index = existing.get();
@@ -59,18 +69,28 @@ public class AiKnowledgeRecords {
 
     @Transactional
     public AiCourseKnowledgeIndex markReady(Long lmsCourseId, String contentFingerprint) {
-        AiCourseKnowledgeIndex index = locked(lmsCourseId);
+        return markReady(lmsCourseId, AiIndexKind.COURSE_CONTENT, contentFingerprint);
+    }
+
+    @Transactional
+    public AiCourseKnowledgeIndex markReady(Long lmsCourseId, AiIndexKind kind, String contentFingerprint) {
+        AiCourseKnowledgeIndex index = locked(lmsCourseId, kind);
         index.ready(contentFingerprint, clock.instant());
         return index;
     }
 
     @Transactional
     public void markFailed(Long lmsCourseId, String message) {
-        locked(lmsCourseId).failed(message);
+        markFailed(lmsCourseId, AiIndexKind.COURSE_CONTENT, message);
     }
 
-    private AiCourseKnowledgeIndex locked(Long lmsCourseId) {
-        return indexes.findForUpdateByLmsCourseId(lmsCourseId)
+    @Transactional
+    public void markFailed(Long lmsCourseId, AiIndexKind kind, String message) {
+        locked(lmsCourseId, kind).failed(message);
+    }
+
+    private AiCourseKnowledgeIndex locked(Long lmsCourseId, AiIndexKind kind) {
+        return indexes.findForUpdateByLmsCourseIdAndKind(lmsCourseId, kind)
                 .orElseThrow(() -> new IllegalStateException("The refresh was not claimed"));
     }
 }

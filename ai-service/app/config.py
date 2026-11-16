@@ -45,6 +45,15 @@ def _float(env: Mapping[str, str], name: str, default: float, low: float, high: 
     return value
 
 
+def _bool(env: Mapping[str, str], name: str, default: bool) -> bool:
+    raw = _text(env, name).lower()
+    if not raw:
+        return default
+    if raw not in ("true", "false"):
+        raise SettingsError(f"{name} must be true or false")
+    return raw == "true"
+
+
 @dataclass(frozen=True)
 class Settings:
     provider: str
@@ -67,6 +76,7 @@ class Settings:
     embedding_batch_size: int
     top_k: int
     min_relevance: float
+    keyword_search: bool
     max_context_chunks: int
     # Generation.
     answer_temperature: float
@@ -86,10 +96,11 @@ class Settings:
         embedding_model = _text(env, "AI_EMBEDDING_MODEL")
         if provider == "ollama" and (not chat_model or not embedding_model):
             raise SettingsError("AI_CHAT_MODEL and AI_EMBEDDING_MODEL must be set for the ollama provider")
-        chunk_size = _int(env, "AI_CHUNK_SIZE", 1200, 300, 4000)
-        chunk_overlap = _int(env, "AI_CHUNK_OVERLAP", 200, 0, 1000)
+        # Chunks are measured in tokens (words and punctuation marks), not characters (v0.13.3).
+        chunk_size = _int(env, "AI_CHUNK_TOKENS", 300, 50, 1000)
+        chunk_overlap = _int(env, "AI_CHUNK_OVERLAP_TOKENS", 50, 0, 300)
         if chunk_overlap >= chunk_size // 2:
-            raise SettingsError("AI_CHUNK_OVERLAP must be less than half of AI_CHUNK_SIZE")
+            raise SettingsError("AI_CHUNK_OVERLAP_TOKENS must be less than half of AI_CHUNK_TOKENS")
         index_dir = _text(env, "AI_INDEX_DIR", "./data/indexes")
         return cls(
             provider=provider,
@@ -110,6 +121,7 @@ class Settings:
             embedding_batch_size=_int(env, "AI_EMBEDDING_BATCH_SIZE", 32, 1, 512),
             top_k=_int(env, "AI_TOP_K", 6, 1, 8),
             min_relevance=_float(env, "AI_MIN_RELEVANCE", 0.2, 0.0, 1.0),
+            keyword_search=_bool(env, "AI_KEYWORD_SEARCH", True),
             max_context_chunks=_int(env, "AI_MAX_CONTEXT_CHUNKS", 8, 1, 12),
             answer_temperature=_float(env, "AI_ANSWER_TEMPERATURE", 0.1, 0.0, 1.0),
             draft_temperature=_float(env, "AI_DRAFT_TEMPERATURE", 0.4, 0.0, 1.0),

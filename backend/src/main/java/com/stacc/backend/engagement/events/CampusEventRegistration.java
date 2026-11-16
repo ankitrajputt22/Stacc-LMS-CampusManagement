@@ -72,6 +72,65 @@ public class CampusEventRegistration {
         }
     }
 
+    public enum CheckInMethod { MANUAL, PASS }
+
+    public enum TrialOutcome { SELECTED, NOT_SELECTED }
+
+    @Column(name = "attended_at")
+    private Instant attendedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "check_in_method", length = 10)
+    private CheckInMethod checkInMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "checked_in_by_account_id")
+    private UserAccount checkedInBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trial_outcome", length = 20)
+    private TrialOutcome trialOutcome;
+
+    @Column(name = "trial_decided_at")
+    private Instant trialDecidedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trial_decided_by_account_id")
+    private UserAccount trialDecidedBy;
+
+    /** Records or corrects the trial outcome of a registered attendee. */
+    public void decideTrial(TrialOutcome outcome, UserAccount by, Instant at) {
+        if (status != Status.REGISTERED) {
+            throw new IllegalStateException("Only a registered attendee gets a trial outcome.");
+        }
+        if (outcome == null) {
+            throw new IllegalArgumentException("Choose Selected or Not selected.");
+        }
+        this.trialOutcome = outcome;
+        this.trialDecidedAt = at;
+        this.trialDecidedBy = by;
+    }
+
+    public TrialOutcome getTrialOutcome() { return trialOutcome; }
+    public Instant getTrialDecidedAt() { return trialDecidedAt; }
+
+    /** Records attending once: only a registered (not waitlisted or cancelled) attendee; again changes nothing. */
+    public boolean checkIn(CheckInMethod method, UserAccount by, Instant at) {
+        if (status != Status.REGISTERED) {
+            throw new IllegalStateException("Only a registered attendee can check in.");
+        }
+        if (attendedAt != null) {
+            return false;
+        }
+        this.attendedAt = at;
+        this.checkInMethod = method;
+        this.checkedInBy = by;
+        return true;
+    }
+
+    public Instant getAttendedAt() { return attendedAt; }
+    public CheckInMethod getCheckInMethod() { return checkInMethod; }
+
     public Long getId() { return id; }
     public CampusEvent getEvent() { return event; }
     public UserAccount getAccount() { return account; }

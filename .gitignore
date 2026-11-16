@@ -40,3 +40,6 @@ Desktop.ini
 *.temp
 *.bak
 *~
+
+# Design notes and mock-ups kept locally only
+Stacc Details/

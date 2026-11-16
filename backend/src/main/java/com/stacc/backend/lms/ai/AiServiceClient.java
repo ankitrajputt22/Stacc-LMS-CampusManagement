@@ -4,6 +4,8 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.AssessmentDraftResult;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftRequest;
+import com.stacc.backend.lms.ai.AiServiceMessages.BankDraftResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.PracticeResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.ReplaceIndexRequest;
@@ -26,6 +28,24 @@ public interface AiServiceClient {
     ReplaceIndexResult replaceIndex(String courseKey, ReplaceIndexRequest request);
 
     AskResult ask(String courseKey, AskRequest request);
+
+    /** Removes an index and all its files (v0.13.6), such as a student's notes index after their last note is deleted. */
+    void deleteIndex(String courseKey);
+
+    /** Questions in the bank's own types, with keyed ones checked by answering them again (v0.14.1). */
+    BankDraftResult questionBankDraft(String courseKey, BankDraftRequest request);
+
+    /** A model answer to a question, with sources (v0.14.5). */
+    AiServiceMessages.ModelAnswerResult modelAnswer(String courseKey, AiServiceMessages.ModelAnswerRequest request);
+
+    /** A rubric suggestion whose points add up to the assignment's maximum (v0.14.5). */
+    AiServiceMessages.RubricResult rubric(String courseKey, AiServiceMessages.RubricRequest request);
+
+    /** Marks a practice answer against its reference and the sources (v0.15.4). */
+    AiServiceMessages.EvaluateResult evaluate(String courseKey, AiServiceMessages.EvaluateRequest request);
+
+    /** Flashcards with sources (v0.15.3). */
+    AiServiceMessages.FlashcardResult flashcards(String courseKey, AiServiceMessages.FlashcardRequest request);
 
     SummaryResult summarize(String courseKey, SummaryRequest request);
 

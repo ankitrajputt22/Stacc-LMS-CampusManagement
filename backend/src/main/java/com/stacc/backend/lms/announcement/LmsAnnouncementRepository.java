@@ -2,15 +2,27 @@ package com.stacc.backend.lms.announcement;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import com.stacc.backend.lms.content.LmsContentStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface LmsAnnouncementRepository extends JpaRepository<LmsAnnouncement, Long> {
+
+    /** The course of the announcement, read without loading the announcement, so access is checked before the row is locked. */
+    @Query("select announcement.lmsCourse.id from LmsAnnouncement announcement where announcement.id = :announcementId")
+    Optional<Long> findLmsCourseIdById(@Param("announcementId") Long announcementId);
+
+    /** The announcement, locked for a change, with its course. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select announcement from LmsAnnouncement announcement join fetch announcement.lmsCourse where announcement.id = :announcementId")
+    Optional<LmsAnnouncement> findByIdForUpdate(@Param("announcementId") Long announcementId);
 
     /** For faculty: the course's announcements in these statuses, newest created first. */
     List<LmsAnnouncement> findAllByLmsCourseIdAndStatusInOrderByCreatedAtDescIdDesc(

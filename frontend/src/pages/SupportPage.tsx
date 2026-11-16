@@ -1,10 +1,12 @@
+import { SupportHeader } from '../support/SupportHeader'
+import { NavIcon } from '../components/navigation/navIcons'
 import { useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { getHelpdeskCategories, getMyHelpdeskTickets } from '../api/helpdeskApi'
 import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
-import { actionLinkClasses, primaryLinkClasses } from '../components/actionStyles'
+import { primaryLinkClasses } from '../components/actionStyles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -27,7 +29,6 @@ export function SupportPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []
   const hasSupport = hasAnyRole(roles, ['STUDENT', 'FACULTY', 'ADMIN'])
-  const isAdmin = hasAnyRole(roles, ['ADMIN'])
   const [searchParams, setSearchParams] = useSearchParams()
   const status = statusParam(searchParams.get('status'))
   const categoryId = idParam(searchParams.get('category'))
@@ -59,7 +60,7 @@ export function SupportPage() {
       onClick={() => update({ status: value, category: categoryId })}
       className={`h-11 rounded-control border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:h-9 ${
         status === value
-          ? 'border-stacc-primary bg-surface-muted text-ink underline underline-offset-4'
+          ? 'border-sky-300 bg-portal-bar-strong text-portal-navy'
           : 'border-line-strong bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink'
       }`}
     >
@@ -129,34 +130,24 @@ export function SupportPage() {
   return (
     <>
       <title>Support · Stacc</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Support</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        Get help with academic, LMS, technical, and campus-related issues.
-      </p>
+      <SupportHeader
+        title="Support"
+        description="Get help with academic, LMS, technical, and campus-related issues."
+        action={
+          hasSupport ? (
+            <Link to="/support/new" className={primaryLinkClasses}>
+              Create ticket
+            </Link>
+          ) : undefined
+        }
+      />
 
-      {hasSupport && (
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <Link to="/support/new" className={primaryLinkClasses}>
-            Create ticket
-          </Link>
-          {/* For the interface only: the backend decides who may use the queue and the categories. */}
-          {isAdmin && (
-            <>
-              <Link to="/support/admin" className={`${actionLinkClasses} justify-center`}>
-                Admin ticket queue
-              </Link>
-              <Link to="/support/admin/categories" className={`${actionLinkClasses} justify-center`}>
-                Manage categories
-              </Link>
-              <Link to="/support/admin/teams" className={`${actionLinkClasses} justify-center`}>
-                Manage teams
-              </Link>
-            </>
-          )}
-        </div>
-      )}
-
-      <h2 className="mt-8 text-lg font-semibold text-ink">My tickets</h2>
+      <section aria-labelledby="my-tickets-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <h2 id="my-tickets-heading" className="flex items-center gap-2 text-xl font-bold text-portal-navy">
+        <NavIcon name="support" className="size-6 text-ink-muted" />
+        My tickets
+      </h2>
+      <span aria-hidden="true" className="mt-2 block h-0.5 w-16 rounded bg-portal-cta" />
       {hasSupport && (
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
           <div role="group" aria-label="Show tickets by status" className="flex flex-wrap gap-2">
@@ -189,6 +180,7 @@ export function SupportPage() {
       <div ref={contentRef} className="mt-4">
         {content}
       </div>
+      </section>
     </>
   )
 }

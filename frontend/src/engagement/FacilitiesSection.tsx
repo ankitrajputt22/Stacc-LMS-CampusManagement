@@ -8,7 +8,7 @@ import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import type { CampusFacility } from '../types/engagement'
 import { Alert, Badge, Button, Card, TextField } from '../ui'
-import { BOOKING_LABEL, failureText, localToIso } from './engagementText'
+import { BOOKING_LABEL, DAY_LABEL, failureText, localToIso } from './engagementText'
 
 function FacilityRow({ facility, canBook }: { facility: CampusFacility; canBook: boolean }) {
   const queryClient = useQueryClient()
@@ -53,6 +53,12 @@ function FacilityRow({ facility, canBook }: { facility: CampusFacility; canBook:
         {facility.location && ` · ${facility.location}`}
         {facility.capacity && ` · up to ${facility.capacity} people`}
       </p>
+      {facility.classHours.length > 0 && (
+        <p className="text-sm text-ink-muted">
+          Class hours (no bookings):{' '}
+          {facility.classHours.map((slot) => `${DAY_LABEL[slot.dayOfWeek]} ${slot.startsAt.slice(0, 5)}–${slot.endsAt.slice(0, 5)} ${slot.label}`).join('; ')}
+        </p>
+      )}
       {facility.closures.map((closure) => (
         <p key={closure.closureId} className="text-sm text-warning">
           Closed {closure.startDate}

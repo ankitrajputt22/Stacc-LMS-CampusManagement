@@ -6,6 +6,8 @@ public enum NotificationType {
     ASSIGNMENT_PUBLISHED,
     /** A quiz was published for the first time. */
     QUIZ_PUBLISHED,
+    /** A course announcement was published for the first time. */
+    ANNOUNCEMENT_PUBLISHED,
     /** An attempt got its first grade, or its grade or feedback changed. */
     ASSIGNMENT_GRADED,
     /** An official calendar event was published for the first time. */
@@ -36,8 +38,16 @@ public enum NotificationType {
     HOSTEL_ALLOCATED,
     /** A student's active hostel allocation was vacated. */
     HOSTEL_VACATED,
+    /** An emergency notice of the student's hostel or block was published. */
+    HOSTEL_EMERGENCY,
     /** A campus notice was published for the first time. */
     CAMPUS_NOTICE_PUBLISHED,
+    /** A club or sports group the account belongs to posted an announcement. */
+    GROUP_ANNOUNCEMENT,
+    /** A campus service request is ready for its requester. */
+    CAMPUS_SERVICE_READY,
     /** A campus service request was completed. */
-    CAMPUS_SERVICE_COMPLETED
+    CAMPUS_SERVICE_COMPLETED,
+    /** The ERP office decided a student's request (v0.16.5). */
+    ERP_REQUEST_DECIDED
 }

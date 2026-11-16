@@ -130,3 +130,9 @@ Pages: **Results** on a published or archived quiz opens `/teaching/:lmsCourseId
 `student1` and `student2` can take it (two attempts each).
 
 Not in this phase: the gradebook (0.7.6), partial credit for multiple choice, AI marking, mark notifications, quizzes as module items, question pools or random selection, closing open attempts with a scheduler, extra time for individual students, and proctoring.
+
+## Load test
+
+`load/quiz-burst.js` (v0.7.11) builds a one-attempt graded quiz, then has many requests per student start or resume, answer, and hand in at once. Afterwards each student must hold exactly one handed-in attempt with full marks: starting, saving, and handing in never make a second attempt or lose an answer. CI runs it on the end-to-end stack; the result is in `load/README.md`.
+
+Its first runs found two races, now fixed and covered by `LmsQuizAttemptMySqlIT`: saving the same answer from two requests at once inserted its chosen options twice (the options were read from the transaction's snapshot from before the attempt row lock), and two students starting at once could deadlock on the gap locks of the attempts index. Starting and saving now run at READ COMMITTED; the course enrollment and attempt row locks still decide the order.

@@ -8,6 +8,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import { KIND_LABEL, outingStatusLabel } from '../hostel/outings/outingText'
+import { GateVisitors } from '../hostel/visitors/Visitors'
 import type { HostelOuting, PassCheck } from '../types/outings'
 import { Alert, Badge, Button, Card, PageHeader, TextField } from '../ui'
 
@@ -127,7 +128,7 @@ function Lookup() {
   const [rows, setRows] = useState<HostelOuting[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   return (
-    <Card title="Look up a student">
+    <Card title="Look up a student" icon="search">
       <form
         className="flex flex-wrap items-end gap-2"
         onSubmit={(event) => {
@@ -195,7 +196,8 @@ export function GatePage() {
       <title>Gate · Stacc</title>
       <PageHeader title="Gate" description="Check passes and record students going out and coming back." />
       <div className="mt-6 space-y-6">
-        <Card title="Check a pass">
+        <GateVisitors />
+        <Card title="Check a pass" icon="idCard">
           <div className="space-y-4">
             <CameraScanner onCode={(value) => void verify(value)} />
             <form className="flex flex-wrap items-end gap-2" onSubmit={submit}>
@@ -218,7 +220,7 @@ export function GatePage() {
           </div>
         </Card>
         <Lookup />
-        <Card title="Latest movements" padding="none">
+        <Card title="Latest movements" icon="reports" padding="none">
           {movements.status !== 'loaded' ? (
             <SectionState request={movements} what="movements" />
           ) : movements.data.length === 0 ? (

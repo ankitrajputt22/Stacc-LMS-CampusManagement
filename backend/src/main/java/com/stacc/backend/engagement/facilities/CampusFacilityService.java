@@ -1,6 +1,7 @@
 package com.stacc.backend.engagement.facilities;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Facilities and their bookings. A booking lies on one day inside opening hours (in the college's time zone), not on a
- * closed day, at most 12 hours, starting in the future. Booking locks the facility row and then reads overlapping
+ * closed day, outside the facility's weekly class hours (v0.12.5), at most 12 hours, starting in the future. Booking locks the facility row and then reads overlapping
  * bookings, so two bookings of the same time never both succeed. A booking needing approval holds its time while
  * pending; a rejected or cancelled approval frees it. The booker cancels their own booking before it starts.
  */
@@ -38,7 +39,11 @@ public class CampusFacilityService {
     public static final String SOURCE_TYPE = "FACILITY_BOOKING";
 
     public record FacilityView(Long facilityId, String code, String name, CampusFacility.Kind kind, String location, Integer capacity,
-            LocalTime opensAt, LocalTime closesAt, boolean needsApproval, boolean active, List<ClosureView> closures) {
+            LocalTime opensAt, LocalTime closesAt, boolean needsApproval, boolean active, List<ClosureView> closures,
+            List<ClassHourView> classHours) {
+    }
+
+    public record ClassHourView(Long classHourId, DayOfWeek dayOfWeek, LocalTime startsAt, LocalTime endsAt, String label) {
     }
 
     public record ClosureView(Long closureId, LocalDate startDate, LocalDate endDate, String reason) {
@@ -51,6 +56,7 @@ public class CampusFacilityService {
 
     private final CampusFacilityRepository facilities;
     private final CampusFacilityClosureRepository closures;
+    private final CampusFacilityClassHourRepository classHours;
     private final CampusBookingRepository bookings;
     private final UserAccountRepository accounts;
     private final ApprovalWorkflowService approvals;
@@ -59,10 +65,12 @@ public class CampusFacilityService {
     private final Clock clock;
 
     public CampusFacilityService(CampusFacilityRepository facilities, CampusFacilityClosureRepository closures,
-            CampusBookingRepository bookings, UserAccountRepository accounts, ApprovalWorkflowService approvals,
+            CampusFacilityClassHourRepository classHours, CampusBookingRepository bookings, UserAccountRepository accounts,
+            ApprovalWorkflowService approvals,
             ApprovalQueryService approvalQueries, EngagementProperties properties, Clock clock) {
         this.facilities = facilities;
         this.closures = closures;
+        this.classHours = classHours;
         this.bookings = bookings;
         this.accounts = accounts;
         this.approvals = approvals;
@@ -118,6 +126,27 @@ public class CampusFacilityService {
         return view(facility, LocalDate.now(clock.withZone(properties.zone())));
     }
 
+    /** Adds a weekly class slot; later bookings that overlap it are refused, earlier ones stay. */
+    public FacilityView addClassHour(Long facilityId, DayOfWeek day, LocalTime startsAt, LocalTime endsAt, String label) {
+        CampusFacility facility = locked(facilityId);
+        try {
+            classHours.saveAndFlush(new CampusFacilityClassHour(facility, day, startsAt, endsAt, label, now()));
+        } catch (IllegalArgumentException invalid) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "The class hours are not valid: " + invalid.getMessage() + ".");
+        }
+        return view(facility, LocalDate.now(clock.withZone(properties.zone())));
+    }
+
+    /** Removes a weekly class slot; the record is kept with its removal time. */
+    public FacilityView removeClassHour(Long classHourId) {
+        CampusFacilityClassHour slot = classHours.findById(classHourId == null ? -1L : classHourId).filter(found -> found.getRemovedAt() == null)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Class hours not found."));
+        CampusFacility facility = locked(slot.getFacility().getId());
+        slot.remove(now());
+        classHours.flush();
+        return view(facility, LocalDate.now(clock.withZone(properties.zone())));
+    }
+
     public BookingView book(Long accountId, Long facilityId, Instant startsAt, Instant endsAt, String purpose) {
         CampusFacility facility = locked(facilityId);
         if (!facility.isActive()) {
@@ -139,6 +168,11 @@ public class CampusFacilityService {
         if (closures.closedOn(facility.getId(), start.toLocalDate())) {
             throw new ApiException(HttpStatus.CONFLICT, "The facility is closed on that day.");
         }
+        classHours.findCurrentOn(facility.getId(), start.getDayOfWeek().getValue()).stream()
+                .filter(slot -> slot.overlaps(start.toLocalTime(), end.toLocalTime())).findFirst().ifPresent(slot -> {
+                    throw new ApiException(HttpStatus.CONFLICT, "Classes use this facility then: " + slot.getLabel() + ", "
+                            + slot.getStartsAt() + " to " + slot.getEndsAt() + " (" + zone.getId() + ").");
+                });
         boolean clash = bookings.findOverlapping(facility.getId(), startsAt, endsAt).stream()
                 .map(this::statusOf).anyMatch(status -> status.equals("CONFIRMED") || status.equals("PENDING"));
         if (clash) {
@@ -212,7 +246,9 @@ public class CampusFacilityService {
         return new FacilityView(f.getId(), f.getCode(), f.getName(), f.getKind(), f.getLocation(), f.getCapacity(), f.getOpensAt(),
                 f.getClosesAt(), f.isNeedsApproval(), f.isActive(),
                 f.getId() == null ? List.of() : closures.findFrom(f.getId(), today).stream()
-                        .map(c -> new ClosureView(c.getId(), c.getStartDate(), c.getEndDate(), c.getReason())).toList());
+                        .map(c -> new ClosureView(c.getId(), c.getStartDate(), c.getEndDate(), c.getReason())).toList(),
+                f.getId() == null ? List.of() : classHours.findCurrent(f.getId()).stream()
+                        .map(h -> new ClassHourView(h.getId(), h.getDayOfWeek(), h.getStartsAt(), h.getEndsAt(), h.getLabel())).toList());
     }
 
     private CampusFacility locked(Long facilityId) {

@@ -5,34 +5,27 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { creditsText } from '../courses/credits'
 import { CourseOutcomesCard } from '../courses/CourseOutcomesCard'
 import { SyllabusBody } from '../courses/SyllabusBody'
-import { Card, PageHeader } from '../ui'
+import { Card } from '../ui'
+import type { LmsCourseDetail } from '../types/lms'
 
-const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
-function Shell({ lmsCourseId, courseName, children }: { lmsCourseId: number | null; courseName?: string; children: ReactNode }) {
+function Shell({ course, children }: { course?: LmsCourseDetail; children: ReactNode }) {
   return (
-    <div className="max-w-3xl">
-      <title>{courseName ? `Syllabus · ${courseName} · Stacc` : 'Syllabus · Stacc'}</title>
-      <PageHeader
-        title="Syllabus"
-        breadcrumb={
-          <Breadcrumb
-            parent={lmsCourseId === null ? COURSES : [COURSES, { to: `/courses/${lmsCourseId}`, label: courseName ?? 'Course' }]}
-            current="Syllabus"
-          />
-        }
-      />
+    <div className="max-w-4xl">
+      <title>{course ? `Syllabus · ${course.courseName} · Stacc` : 'Syllabus · Stacc'}</title>
+      <CourseSectionHeader course={course && courseBanner(course)} title="Syllabus" />
       {children}
     </div>
   )
@@ -51,7 +44,7 @@ export function CourseSyllabusPage() {
 
   if (!isStudent) {
     return (
-      <Shell lmsCourseId={lmsCourseId}>
+      <Shell>
         <StatePanel>
           <AccessDeniedState title="Course syllabi are for student accounts." message={ASK_THE_COLLEGE} />
         </StatePanel>
@@ -61,7 +54,7 @@ export function CourseSyllabusPage() {
   const failed = course.status !== 'loaded' && course.status !== 'loading' ? course : undefined
   if (failed || course.status !== 'loaded') {
     return (
-      <Shell lmsCourseId={lmsCourseId}>
+      <Shell>
         <StatePanel>
           {!failed && <LoadingState label="Loading syllabus…" />}
           {failed?.status === 'failed' && (
@@ -78,7 +71,7 @@ export function CourseSyllabusPage() {
 
   const details = course.data
   return (
-    <Shell lmsCourseId={lmsCourseId} courseName={details.courseName}>
+    <Shell course={details}>
       <Card title="Course details">
         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
           {[

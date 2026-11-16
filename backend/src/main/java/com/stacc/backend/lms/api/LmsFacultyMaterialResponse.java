@@ -32,11 +32,13 @@ public record LmsFacultyMaterialResponse(
         @Schema(description = "DRAFT is hidden from students. PUBLISHED is shown once its topic and module are published.")
         LmsContentStatus status,
         @Schema(description = "When the file was uploaded.", example = "2026-10-14T09:30:00Z")
-        Instant uploadedAt) {
+        Instant uploadedAt,
+        @Schema(description = "True when faculty keep the file out of the course's AI knowledge. Students still see it.")
+        boolean excludedFromAi) {
 
     static LmsFacultyMaterialResponse of(LmsStudyMaterial material) {
         return new LmsFacultyMaterialResponse(material.getId(), material.getTitle(), material.getDescription(),
                 material.getOriginalFileName(), material.getContentType(), material.getSizeBytes(),
-                material.getPosition(), material.getStatus(), material.getCreatedAt());
+                material.getPosition(), material.getStatus(), material.getCreatedAt(), material.isExcludedFromAi());
     }
 }

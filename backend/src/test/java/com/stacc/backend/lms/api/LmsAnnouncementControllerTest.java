@@ -94,7 +94,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(studentToken(), get("/api/v1/lms/courses/7/announcements").param("accountId", "999")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].*", hasSize(5)))
+                .andExpect(jsonPath("$[0].*", hasSize(6)))
                 .andExpect(jsonPath("$[0].message").value("Monday at 9.\nRoom 4."))
                 .andExpect(jsonPath("$[0].publishedAt").value("2026-10-14T09:30:00Z"))
                 .andExpect(content().string(not(containsString("status"))));
@@ -130,7 +130,7 @@ class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$[0].publishedAt").doesNotExist())
-                .andExpect(jsonPath("$[0].*", hasSize(8)));
+                .andExpect(jsonPath("$[0].*", hasSize(9)));
         mockMvc.perform(get("/api/v1/lms/faculty/courses/7/announcements")).andExpect(status().isUnauthorized());
         for (String token : List.of(tokenWith("ROLE_FACULTY"), tokenWith("ROLE_FACULTY", "LMS_CONTENT_MANAGE"), studentToken(),
                 tokenWith("ROLE_ADMIN", "FACULTY_COURSE_VIEW", "LMS_CONTENT_MANAGE"))) {

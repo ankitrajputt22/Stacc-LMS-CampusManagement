@@ -66,6 +66,34 @@ public class AiStudyController {
         return study.summarize(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, topicId);
     }
 
+    @PostMapping("/summary")
+    @PreAuthorize(AiAccess.STUDENT)
+    @Operation(
+            summary = "Summarise a page, a module, or a file",
+            description = "A summary in a style (BRIEF, DETAILED, or REVISION_NOTES) of one published page, one module's "
+                    + "published pages and files, or one published file the student can see in this course, with citations. "
+                    + "Anything else answers 404 (v0.15.2).",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @StudentAiResponses
+    public AiSummaryResponse scopedSummary(@PathVariable Long lmsCourseId, @Valid @RequestBody AiSummaryRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return study.summarize(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
+    }
+
+    @PostMapping("/practice/evaluate")
+    @PreAuthorize(AiAccess.STUDENT)
+    @Operation(
+            summary = "Mark a practice answer",
+            description = "Practice only (v0.15.4): marks out of maxMarks against the reference answer and the course sources, "
+                    + "a verdict, feedback explaining each mistake, and in a viva the next question. Never an official mark; "
+                    + "nothing is stored.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @StudentAiResponses
+    public AiEvaluateResponse evaluate(@PathVariable Long lmsCourseId, @Valid @RequestBody AiEvaluateRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return study.evaluate(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
+    }
+
     @PostMapping("/practice")
     @PreAuthorize(AiAccess.STUDENT)
     @Operation(

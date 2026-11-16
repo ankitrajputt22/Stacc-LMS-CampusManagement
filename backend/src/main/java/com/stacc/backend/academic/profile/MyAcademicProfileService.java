@@ -90,6 +90,8 @@ public class MyAcademicProfileService {
         Map<Long, CourseResult> published = courseEnrollmentIds.isEmpty() ? Map.of()
                 : results.findAllByCourseEnrollmentIdIn(courseEnrollmentIds).stream().filter(CourseResult::isPublished)
                         .collect(Collectors.toMap(result -> result.getCourseEnrollment().getId(), Function.identity()));
+        Map<Long, List<String>> teachers = teachersOf(courses.values().stream().flatMap(List::stream)
+                .map(enrollment -> enrollment.getCourseOffering().getId()).distinct().toList());
         Current current = semesters.stream().filter(enrollment -> enrollment.getStatus() == SemesterEnrollmentStatus.ENROLLED)
                 .findFirst()
                 .map(enrollment -> new Current(enrollment.getSemester().getAcademicSession().getCode(),
@@ -104,7 +106,8 @@ public class MyAcademicProfileService {
                         enrollment.getSemester().getSemesterNumber(), enrollment.getSemester().getProgram().getCode(),
                         enrollment.getSection() == null ? null : enrollment.getSection().getCode(), enrollment.getStatus().name(),
                         courses.getOrDefault(enrollment.getId(), List.of()).stream()
-                                .map(course -> courseRecord(course, published.get(course.getId()))).toList()))
+                                .map(course -> courseRecord(course, published.get(course.getId()),
+                                        teachers.getOrDefault(course.getCourseOffering().getId(), List.of()))).toList()))
                         .toList(),
                 headOf(program.getDepartment().getId()));
     }
@@ -117,11 +120,32 @@ public class MyAcademicProfileService {
                 .orElse(null);
     }
 
-    private static CourseRecord courseRecord(CourseEnrollment enrollment, CourseResult result) {
+    /** The names of who actively teaches each offering, the primary teacher first, in two queries. */
+    private Map<Long, List<String>> teachersOf(List<Long> offeringIds) {
+        if (offeringIds.isEmpty()) {
+            return Map.of();
+        }
+        var active = assignments.findAllWithFacultyByCourseOfferingIdIn(offeringIds).stream()
+                .filter(assignment -> assignment.getStatus() == com.stacc.backend.academic.teaching.TeachingAssignmentStatus.ACTIVE)
+                .sorted(java.util.Comparator.comparing((com.stacc.backend.academic.teaching.TeachingAssignment assignment) -> assignment.getRole().name())
+                        .reversed())
+                .toList();
+        Map<Long, String> names = people.findAllByUserAccountIdIn(active.stream()
+                        .map(assignment -> assignment.getFacultyProfile().getUserAccount().getId()).distinct().toList())
+                .stream().collect(Collectors.toMap(person -> person.getUserAccount().getId(), PersonProfile::displayName));
+        return active.stream().collect(Collectors.groupingBy(assignment -> assignment.getCourseOffering().getId(),
+                Collectors.mapping(assignment -> {
+                    var account = assignment.getFacultyProfile().getUserAccount();
+                    return names.getOrDefault(account.getId(), account.getLoginId());
+                }, Collectors.toList())));
+    }
+
+    private static CourseRecord courseRecord(CourseEnrollment enrollment, CourseResult result, List<String> teachers) {
         var course = enrollment.getCourseOffering().getCourse();
         return new CourseRecord(course.getCode(), course.getName(), course.getCredits(), course.getCourseType().name(),
                 enrollment.getStatus().name(), result == null ? null
-                        : new Result(result.getMarksObtained(), result.getMaxMarks(), result.getGradeCode(), result.getPublishedAt()));
+                        : new Result(result.getMarksObtained(), result.getMaxMarks(), result.getGradeCode(), result.getPublishedAt()),
+                teachers);
     }
 
     private static Teaching teaching(CourseOffering offering, String role) {

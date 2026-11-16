@@ -11,9 +11,18 @@ public enum CampusServiceRequestStatus {
     SUBMITTED,
     /** Accepted for handling: approved, or needing no approval. */
     APPROVED,
+    /** Being processed by the campus office. */
+    IN_PROGRESS,
+    /** Ready for the requester, for example to collect. */
+    READY,
     REJECTED,
     CANCELLED,
     COMPLETED;
+
+    /** Accepted and not finished: approved, being processed, or ready. Such a request can be completed. */
+    public boolean isBeingHandled() {
+        return this == APPROVED || this == IN_PROGRESS || this == READY;
+    }
 
     public boolean isTerminal() {
         return this == REJECTED || this == CANCELLED || this == COMPLETED;

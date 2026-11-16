@@ -10,6 +10,7 @@
 | Work to grade | `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_ASSIGNMENT_GRADE` | Latest attempts without a grade, per published assignment of the open courses taught. |
 | Attendance to finish | `FACULTY`, `FACULTY_COURSE_VIEW`, and `ATTENDANCE_MANAGE` | `OPEN` attendance sessions of the offerings taught. |
 | Approvals | `APPROVAL_TASK_VIEW` | The approval engine's own task list. |
+| Mentoring action items | `STUDENT` or `FACULTY` with `MENTORING_USE` | Open action items the account owns in its active mentoring pairings (`MentoringService.openItems`, see `mentoring.md`). |
 
 - **Dismissals:** the only thing stored is a dismissal (`todo_dismissals`: account and item key). A grading key carries the waiting count, so new work shows up again.
 - **Pages:** the list is at `/todo` (To-Do in the Common links), and its first five items are on the dashboard.
@@ -28,3 +29,5 @@
   - A wrong or revoked link, a disabled account, or an account that lost `ACADEMIC_CALENDAR_VIEW` or `CALENDAR_PERSONAL_USE` gets the same 404.
 - **Permission:** the personal routes need `CALENDAR_PERSONAL_USE` (`V93`) with `ACADEMIC_CALENDAR_VIEW`.
 - **Calendar page:** `/calendar` now has Agenda and Month views (`?view=month`), My entries, and the subscription card.
+
+Study sessions (v0.15.7): a student who adds a study plan to their To-Do list sees each session (kind `STUDY`) from its planned day until they dismiss it; the To-Do part needs `STUDENT` and `AI_STUDY_USE`. Adding a plan to the calendar creates ordinary personal calendar entries. See `ai-learning.md`.

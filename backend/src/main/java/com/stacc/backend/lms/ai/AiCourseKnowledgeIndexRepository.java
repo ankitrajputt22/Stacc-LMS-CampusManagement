@@ -9,10 +9,17 @@ import org.springframework.data.repository.query.Param;
 
 public interface AiCourseKnowledgeIndexRepository extends JpaRepository<AiCourseKnowledgeIndex, Long> {
 
-    Optional<AiCourseKnowledgeIndex> findByLmsCourseId(Long lmsCourseId);
+    Optional<AiCourseKnowledgeIndex> findByLmsCourseIdAndKind(Long lmsCourseId, AiIndexKind kind);
 
-    /** The row locked for a change, so two refreshes of one course never run at once. */
+    /** Indexes of one kind by their latest refresh's status (v0.13.7). */
+    @Query("select cast(knowledge.status as string), count(knowledge) from AiCourseKnowledgeIndex knowledge"
+            + " where knowledge.kind = :kind group by knowledge.status")
+    java.util.List<Object[]> countByStatus(@Param("kind") AiIndexKind kind);
+
+    /** The row locked for a change, so two refreshes of one index never run at once. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select knowledge from AiCourseKnowledgeIndex knowledge where knowledge.lmsCourse.id = :lmsCourseId")
-    Optional<AiCourseKnowledgeIndex> findForUpdateByLmsCourseId(@Param("lmsCourseId") Long lmsCourseId);
+    @Query("select knowledge from AiCourseKnowledgeIndex knowledge where knowledge.lmsCourse.id = :lmsCourseId"
+            + " and knowledge.kind = :kind")
+    Optional<AiCourseKnowledgeIndex> findForUpdateByLmsCourseIdAndKind(@Param("lmsCourseId") Long lmsCourseId,
+            @Param("kind") AiIndexKind kind);
 }

@@ -5,7 +5,6 @@ import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { actionLinkClasses } from '../components/actionStyles'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -40,10 +39,10 @@ function TicketFacts({ ticket, showRequester }: { ticket: HelpdeskTicketDetail; 
     ...(ticket.closedAt ? [{ label: 'Closed', value: formatDateTime(ticket.closedAt), time: ticket.closedAt }] : []),
   ]
   return (
-    <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-panel border border-line bg-surface p-4 text-sm lg:grid-cols-3">
+    <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-line py-3 text-[0.95rem] sm:flex sm:flex-wrap sm:gap-x-0">
       {facts.map((fact) => (
-        <div key={fact.label} className="min-w-0">
-          <dt className="text-xs font-medium text-ink-muted">{fact.label}</dt>
+        <div key={fact.label} className="min-w-0 border-line sm:pr-6 sm:not-last:mr-6 sm:not-last:border-r">
+          <dt className="text-sm text-ink-muted">{fact.label}</dt>
           <dd className="break-words text-ink">{fact.time ? <time dateTime={fact.time}>{fact.value}</time> : fact.value}</dd>
         </div>
       ))}
@@ -133,9 +132,8 @@ export function SupportTicketPage() {
     const closed = ticket.status === 'CLOSED'
     content = (
       <>
-        <p className="font-mono text-sm text-ink-muted">{ticket.ticketNumber}</p>
-        <h1 ref={headingRef} tabIndex={-1} className="mt-1 text-3xl font-bold tracking-tight break-words text-portal-navy outline-none">
-          {ticket.subject}
+        <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight break-words text-portal-navy outline-none">
+          <span className="whitespace-nowrap">{ticket.ticketNumber}:</span> {ticket.subject}
         </h1>
         <div className="mt-2 flex flex-wrap gap-2">
           <TicketPriorityTag priority={ticket.priority} />
@@ -189,7 +187,12 @@ export function SupportTicketPage() {
   return (
     <>
       <title>{ticket ? `${ticket.ticketNumber} · Support · Stacc` : 'Ticket · Support · Stacc'}</title>
-      <Breadcrumb parent={{ to: '/support', label: 'Support' }} current={ticket?.ticketNumber} />
+      <Link
+        to={ticket?.supportSide && isAdmin ? '/support/admin' : '/support'}
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-control font-medium text-stacc-primary hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
+      >
+        <span aria-hidden="true">←</span> {ticket?.supportSide && isAdmin ? 'Support queue' : 'My tickets'}
+      </Link>
       {ticket === null && <h1 className="mt-2 text-3xl font-bold tracking-tight text-portal-navy">Support ticket</h1>}
       <div className={ticket === null ? 'mt-6' : 'mt-3'}>{content}</div>
     </>

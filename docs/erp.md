@@ -1,0 +1,55 @@
+# ERP section
+
+Since v0.16 Stacc has one sign-in and one app. The ERP is a section of it beside the LMS, reached from the ERP group of the sidebar. It holds a person's official records and student services. Every figure on its pages comes from the backend, worked out on read; nothing is made up in the browser.
+
+## Pages
+
+| Page | Address | What it shows |
+| --- | --- | --- |
+| ERP home | `/erp` | Alerts that need attention (attendance below 75%) and a tile per area with a live summary. |
+| My Profile | `/erp/profile` | The official details the college keeps (read-only), and what the person keeps: preferred name, phone, mailing address, and up to three emergency contacts. |
+| Academics | `/erp/academics` | Tabs: Registered courses (this semester, with credits, teachers, section, and status), Timetable, Degree progress, and Calendar. |
+| Attendance | `/erp/attendance` | Finalized attendance per course, with low attendance marked by the backend, and the student's medical leave and correction requests. `/erp/attendance/:courseOfferingId` lists each class with Request correction on an absence. |
+| Exams & Results | `/erp/exams` | Tabs: Exam schedule (published exams with hall and seat), Hall ticket (printable), Results (a semester's results with internal and external marks, grade, points, and SGPA; CGPA history), Grade cards (printable), and Revaluation. |
+| Marks Entry (faculty) | `/erp/marks` | Internal and external marks per student of an offering taught, saved as drafts and published together. |
+| Fees | `/erp/fees` | Tabs: Overview (total, paid, scholarship, due, next due date, instalments), Fee structure, Payments (history and printable receipts), Scholarships, and Refunds. |
+| Fees management (admin) | `/erp/fees-admin` | Fee structures per program and session, a student's ledger with Record payment, and scholarship and refund requests. |
+| Exams (admin) | `/erp/exam-admin` | A semester's exam sessions: exams with date, times, hall, and seats; seat plans; publishing. |
+| Timetable (faculty) | `/erp/timetable` | The classes a faculty member teaches. |
+| Requests (admin) | `/erp/requests` | The ERP office's queue: filter by kind, status, and college ID; review; approve or reject with a comment. |
+
+## Profile
+
+`PUT /api/v1/me/profile/mailing-address` changes the address (plain text up to 500 characters; blank clears it). `POST /api/v1/me/profile/emergency-contacts` adds a contact (name, relation, phone; at most three, counted under the profile row lock) and `DELETE /api/v1/me/profile/emergency-contacts/{id}` removes one of the person's own. Both answer the whole profile. Contact details are only ever the person's own.
+
+## Timetable
+
+A slot is one weekly class of a course offering: a day, a start and an end time in the college's time zone (between 06:00 and 22:00), a room, and a kind (lecture, tutorial, or lab). Admins list a semester's slots (`GET /api/v1/admin/academic/timetable?semesterId=`), add one (`POST`), and remove one (`POST …/{slotId}/remove`; kept as history). Adding locks the academic session's row and reads that day's slots, and refuses with 409 a room used twice at once or students with two classes at once (same semester, and the same section or a whole-semester offering). `GET /api/v1/timetable/me` gives `studying` (offerings the student is enrolled in now) and `teaching` (offerings taught now), each null without that role.
+
+## Grades, SGPA, and CGPA
+
+The grade scale is reference data from `V144`: O 10 (90%+), A+ 9 (80%+), A 8 (70%+), B+ 7 (60%+), B 6 (50%+), C 5 (45%+), P 4 (40%+), F 0. `GET /api/v1/academic/grade-scale` lists it. `GET /api/v1/results/student/me/standing` gives each published result with its grade and points, each semester's SGPA, and the CGPA: credit-weighted, rounded half up to two decimals, audit courses left out, never stored. A result's grade is its entered code when the scale knows it, otherwise the grade its percentage reaches; an unknown code is shown but left out of the averages. Results may record internal and external marks with their maximums (both parts or neither).
+
+## Degree progress
+
+A program needs credits of each course type (core, electives, labs, projects). Admins read and set them at `/api/v1/admin/academic/programs/{programId}/credit-requirements` with the academic master permissions; a listed type is added or changed, and none is removed. `GET /api/v1/academic/me/degree-progress` counts the credits of each passed, published course once, per type and in total, with the expected graduation year (admission year plus half the program's semesters).
+
+## Student requests
+
+A student asks the ERP office for medical leave (first and last day, at most 30 days within 60 days of today, and a reason), for the correction of one of their own finalized absences, or for the revaluation of one of their own published results (`/api/v1/erp/requests…`, `STUDENT` with `ERP_REQUEST_SUBMIT`). There is one open request per record or result, kept by a unique generated column. A student cancels their own request while it is pending.
+
+The office (`ADMIN` with `ERP_REQUEST_MANAGE`, `/api/v1/admin/erp/requests`) decides each request once under its row lock: approving a correction marks the class present (keeping who took the attendance); approving a revaluation with new marks applies them to the result, on the external part when the marks are split, and re-grades an entered grade from the scale; approving without new marks records "No change". A rejection always has a comment. The student hears of the decision in the Inbox (`ERP_REQUEST_DECIDED`). Requests are never deleted, and references read like `MED-000024`, `COR-000031`, or `REV-000044`.
+
+## Examinations
+
+An exam session belongs to one semester and starts as a draft. Admins (`ADMIN` with `EXAM_MANAGE`, `/api/v1/admin/erp/exams`) add exams (one per offering of the semester: a date, times in the college's time zone, a hall, and its seats), remove them (kept with `removed_at`), generate seat plans, and publish the session once. A seat plan locks the exam's row, reads its seats with a locking read, and seats every student enrolled now who has none yet, in college ID order after the seats already given; it never takes a seat back and refuses with 409 when the hall has too few seats. `GET /api/v1/erp/exams/me` (`STUDENT` with `EXAM_SCHEDULE_VIEW_OWN`) gives the published exams of the offerings the student is enrolled in now, with teachers, hall, and seat (or none yet). The hall ticket and grade card are printed from the page; nothing is stored for them.
+
+## Marks entry
+
+Faculty save a result's internal and external marks with their maximums through the usual result route (`PUT /api/v1/results/faculty/course-offerings/{id}/enrollments/{id}`): all four parts or none, each within its maximum, adding up to the totals. The Marks Entry page works out the grade from the scale as a preview and saves it with the marks; results stay drafts until published.
+
+## Fees
+
+Fees are records only: there is no payment gateway, and nothing on a page takes money. A program's fee structure for an academic session lists fee heads (tuition, examination, library, laboratory, hostel, mess, other) with amounts and one due date; the accounts office (`ADMIN` with `FEE_MANAGE`) sets it under the program row lock, adding or changing heads. A student's fees are those of their program for the session they are enrolled in now. The office records each payment once (amount, mode, reference, date not in the future) with a receipt number such as `RCP-2026-000045`; payments are never changed or deleted.
+
+Students (`STUDENT` with `FEE_VIEW_OWN`, `GET /api/v1/erp/fees/me`) see their fees, payments, scholarships, and refunds. What is due is worked out on read: the total, less payments and approved scholarships, plus approved refunds; a negative due is a credit, and only that credit can be asked back as a refund. Students apply for scholarships and ask for refunds; the office approves or rejects each once (a rejection needs a comment). Deciding locks the request row and then the student's account row before reading the ledger, so two refunds can never both take the same credit (`FeeRefundMySqlIT`).

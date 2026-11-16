@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet, useParams } from 'react-router'
+import { LoadingState } from '../components/states/LoadingState'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { parseCourseId } from './courseRoute'
@@ -25,6 +27,8 @@ export function CourseLayout() {
       nav={
         <CourseNav
           title={course.data.courseCode}
+          subtitle={course.data.courseName}
+          back={{ to: '/courses', label: 'Back to Courses' }}
           items={[
             { to: root, label: 'Home', end: true },
             { to: `${root}/modules`, label: 'Modules' },
@@ -42,7 +46,9 @@ export function CourseLayout() {
         />
       }
     >
-      <Outlet />
+      <Suspense fallback={<LoadingState />}>
+        <Outlet />
+      </Suspense>
     </CourseFrame>
   )
 }

@@ -12,7 +12,7 @@ const base: CampusEvent = {
   eventId: 1, title: 'Coding night', description: null, groupId: 2, groupName: 'Coding Club', organizerLoginId: 'student1', venue: 'Lab 3',
   startsAt: '2099-01-01T12:00:00Z', endsAt: '2099-01-01T14:00:00Z', capacity: 1, registrationOpensAt: null, registrationClosesAt: null,
   forStudents: true, forFaculty: false, membersOnly: false, status: 'PUBLISHED', registered: 1, waitlisted: 0, myRegistration: null,
-  myWaitlistPosition: null, cannotRegisterBecause: [], canManage: false,
+  myWaitlistPosition: null, cannotRegisterBecause: [], canManage: false, trial: false,
 }
 
 function renderEvents(events: CampusEvent[]) {

@@ -2,6 +2,8 @@ package com.stacc.backend.lms.ai.api;
 
 import com.stacc.backend.lms.ai.AiCourseKnowledge;
 import com.stacc.backend.lms.ai.AiServiceMessages.Citation;
+import com.stacc.backend.lms.ai.notes.AiStudentNoteKnowledge;
+import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.Set;
 final class AiResults {
 
     static final int ANSWER_MAX = 2000;
-    static final int SUMMARY_MAX = 1500;
+    static final int SUMMARY_MAX = 4000;
     static final int KEY_POINT_MAX = 300;
     static final int MAX_KEY_POINTS = 8;
     static final int QUESTION_MAX = 1500;
@@ -29,6 +31,19 @@ final class AiResults {
     }
 
     static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge) {
+        return citations(cited, knowledge, null, null);
+    }
+
+    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher) {
+        return citations(cited, knowledge, teacher, null);
+    }
+
+    /**
+     * As above, and also keeps citations of the teacher documents Teacher AI was allowed to use (v0.13.5). Without
+     * teacher knowledge, as for every student request, a teacher document citation is always dropped.
+     */
+    static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher,
+            AiStudentNoteKnowledge notes) {
         if (cited == null) {
             return List.of();
         }
@@ -42,10 +57,17 @@ final class AiResults {
             long id = citation.sourceId();
             if ("TOPIC".equals(citation.sourceType())) {
                 knowledge.topic(id).ifPresent(topic ->
-                        result.add(new AiCitationResponse("TOPIC", id, topic.title(), null, null, null)));
+                        result.add(new AiCitationResponse("TOPIC", id, topic.title(), null, null, null, id)));
             } else if ("STUDY_MATERIAL".equals(citation.sourceType())) {
                 knowledge.material(id).ifPresent(material -> result.add(new AiCitationResponse(
-                        "STUDY_MATERIAL", id, material.title(), material.fileName(), page, slide)));
+                        "STUDY_MATERIAL", id, material.title(), material.fileName(), page, slide, material.topicId())));
+            } else if (teacher != null && AiTeacherKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
+                teacher.document(id).ifPresent(document -> result.add(new AiCitationResponse(
+                        AiTeacherKnowledge.SOURCE_TYPE, id, document.title(), null, null, null)));
+            } else if (notes != null && AiStudentNoteKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
+                // Only the asking student's own notes, which the request carried (v0.13.6).
+                notes.note(id).ifPresent(note -> result.add(new AiCitationResponse(
+                        AiStudentNoteKnowledge.SOURCE_TYPE, id, note.title(), null, null, null)));
             }
         }
         return List.copyOf(result);

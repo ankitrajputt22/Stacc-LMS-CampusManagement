@@ -110,6 +110,8 @@ export type LmsFacultyTopic = {
 export type LmsFacultyMaterial = LmsCourseMaterial & {
   position: number
   status: LmsContentStatus
+  /** True when faculty keep the file out of the course's AI knowledge. Students still see it. */
+  excludedFromAi: boolean
 }
 
 /** One topic with its study materials that are not archived. */
@@ -179,6 +181,14 @@ export type LmsTopicInput = {
   contentFormat?: TextFormat
 }
 
+/** A file on an announcement, downloaded through its announcement's route. */
+export type LmsAnnouncementFile = {
+  id: number
+  fileName: string
+  contentType: string
+  sizeBytes: number
+}
+
 /** One published announcement of a course, as a student sees it. The message is plain text. */
 export type LmsCourseAnnouncement = {
   id: number
@@ -187,6 +197,7 @@ export type LmsCourseAnnouncement = {
   messageFormat: TextFormat
   /** When it was first published, as an ISO 8601 time in UTC. */
   publishedAt: string
+  files?: LmsAnnouncementFile[]
 }
 
 /** One announcement as faculty manage it. Archived announcements are not sent. */
@@ -200,6 +211,7 @@ export type LmsFacultyAnnouncement = {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+  files?: LmsAnnouncementFile[]
 }
 
 /** The title and message of an announcement, for adding or editing one. */
@@ -495,6 +507,8 @@ export type LmsFacultyCourseFile = Omit<LmsCourseFile, 'pageId' | 'pageTitle' | 
   pageStatus: LmsContentStatus
   moduleTitle: string
   moduleStatus: LmsContentStatus
+  /** True when faculty keep the file out of the course's AI knowledge. Students still see it. */
+  excludedFromAi: boolean
 }
 
 /** The Files list of a course a faculty member teaches. */
@@ -566,6 +580,29 @@ export type LmsQuestion = {
   /** A published or archived quiz uses the question, so it can no longer be edited. */
   inPublishedQuiz: boolean
   updatedAt: string
+  /** Drafted by AI (v0.14.1); it still needs review like any new question. */
+  aiGenerated?: boolean
+  /** For an AI draft, the course sources it was drafted from. */
+  sources?: LmsQuestionSource[]
+  /** For an AI draft, its quality checks when drafted (v0.14.2): flags and suggestions that decide nothing. */
+  aiChecks?: {
+    duplicateOfQuestionId: number | null
+    inPreviousPaper: boolean
+    outOfSyllabus: boolean
+    suggestedDifficulty: QuestionDifficulty | null
+    suggestedBloomLevel: BloomLevel | null
+  } | null
+}
+
+/** A course source an AI-drafted question was drafted from, as it was then (v0.14.1). */
+export type LmsQuestionSource = {
+  sourceType: 'TOPIC' | 'STUDY_MATERIAL' | 'TEACHER_DOCUMENT'
+  sourceId: number
+  title: string
+  fileName: string | null
+  pageNumber: number | null
+  slideNumber: number | null
+  pageId: number | null
 }
 
 /** What a faculty member writes when adding or editing a question. */
@@ -889,3 +926,91 @@ export type LmsRubricInput = {
   }[]
 }
 
+
+/** One row of an exam blueprint: how many bank questions a section takes, which ones, and the marks each carries. */
+export type ExamBlueprintRow = {
+  position: number
+  sectionTitle: string | null
+  questionType: QuestionType | null
+  difficulty: QuestionDifficulty | null
+  bloomLevel: BloomLevel | null
+  outcomeId: number | null
+  topic: string | null
+  questionCount: number
+  marksEach: number
+}
+
+export type ExamBlueprintRowInput = Omit<ExamBlueprintRow, 'position'>
+
+export type ExamBlueprint = {
+  id: number
+  title: string
+  status: 'ACTIVE' | 'ARCHIVED'
+  rows: ExamBlueprintRow[]
+  questionCount: number
+  totalMarks: number
+  updatedAt: string
+}
+
+export type ExamPaperStatus = 'DRAFT' | 'FINAL' | 'ARCHIVED'
+
+export type ExamPaperSummary = {
+  id: number
+  title: string
+  status: ExamPaperStatus
+  blueprintId: number | null
+  durationMinutes: number | null
+  questionCount: number
+  totalMarks: number
+  finalizedAt: string | null
+  updatedAt: string
+}
+
+/** One bank question in a paper, with its answers: only faculty who teach the course receive it. */
+export type ExamPaperQuestion = {
+  id: number
+  questionId: number
+  position: number
+  sectionTitle: string | null
+  marks: number
+  type: QuestionType
+  text: string
+  textFormat: TextFormat
+  explanation: string | null
+  options: LmsQuestionOption[]
+  trueFalseAnswer: boolean | null
+  answerGuidance: string | null
+  topic: string | null
+  difficulty: QuestionDifficulty
+  bloomLevel: BloomLevel | null
+  outcomeCode: string | null
+  reviewStatus: 'NEEDS_REVIEW' | 'REVIEWED'
+  status: 'ACTIVE' | 'ARCHIVED'
+}
+
+export type ExamPaper = {
+  id: number
+  title: string
+  instructions: string | null
+  durationMinutes: number | null
+  status: ExamPaperStatus
+  blueprintId: number | null
+  courseCode: string
+  courseName: string
+  totalMarks: number
+  finalizedAt: string | null
+  updatedAt: string
+  questions: ExamPaperQuestion[]
+}
+
+export type ExamPaperDetailsInput = {
+  title: string | null
+  instructions: string | null
+  durationMinutes: number | null
+}
+
+export type ExamPaperQuestionInput = {
+  questionId: number
+  sectionTitle: string | null
+  marks: number
+}

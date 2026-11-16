@@ -15,6 +15,7 @@ import type {
   Page,
 } from '../types/campus'
 import { apiClient } from './apiClient'
+import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
 // The client's base URL already ends in /api, and only the client sets the Authorization header. No request names a
 // requester, account, status, or approval request: the caller and its roles come from the access token. Approval
@@ -72,6 +73,23 @@ export async function getAdminCampusRequest(requestId: number, signal?: AbortSig
 
 export async function completeCampusRequest(requestId: number) {
   return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/complete`)).data
+}
+
+/** Completes the request with a document issued into the requester's vault. */
+export async function completeCampusRequestWithDocument(requestId: number, documentTitle: string, file: File) {
+  const form = new FormData()
+  form.append('documentTitle', documentTitle)
+  form.append('file', file)
+  return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/complete`, form, { timeout: FILE_TIMEOUT_MS })).data
+}
+
+export async function startProcessingCampusRequest(requestId: number) {
+  return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/start-processing`)).data
+}
+
+/** Marks the request ready; the requester is told the first time. */
+export async function markCampusRequestReady(requestId: number) {
+  return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/mark-ready`)).data
 }
 
 // --- Admin: notices

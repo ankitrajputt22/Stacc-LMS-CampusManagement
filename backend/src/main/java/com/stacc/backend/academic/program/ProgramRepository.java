@@ -11,6 +11,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProgramRepository extends JpaRepository<Program, Long> {
 
+    /** The program, locked, so changes to its degree requirements take turns. */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select p from Program p where p.id = :id")
+    java.util.Optional<Program> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
+
     Optional<Program> findByDepartmentIdAndCode(Long departmentId, String code);
 
     /** Every program with its department, in one query, by department code and then program code. */

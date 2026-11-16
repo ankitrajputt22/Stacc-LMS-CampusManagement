@@ -3,6 +3,8 @@ import { getApiError, getHttpStatus } from '../api/apiError'
 import { downloadSubmissionAttachment, submitAssignment } from '../api/lmsSubmissionsApi'
 import { ActionButton } from '../components/ActionButton'
 import { Button } from '../components/Button'
+import { NavIcon } from '../components/navigation/navIcons'
+import { Alert } from '../ui'
 import type { LmsSubmissionAttempt } from '../types/lms'
 import { AttemptFiles, GradeSummary, TimingTag } from './AttemptParts'
 import { formatDateTime, isPast } from './dates'
@@ -146,9 +148,10 @@ export function AssignmentSubmission({
 
   return (
     <section ref={sectionRef} aria-labelledby="your-submission-heading" className="mt-6 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
-      <h2 id="your-submission-heading" className="text-base font-semibold text-ink">
+      <h2 id="your-submission-heading" className="text-xl font-bold text-portal-navy">
         Your submission
       </h2>
+      <span aria-hidden="true" className="mt-2 block h-0.5 w-16 rounded bg-portal-cta" />
 
       <p role="status" className="sr-only">
         {announcement}
@@ -180,7 +183,10 @@ export function AssignmentSubmission({
 
         {attempts !== null && attempts.length === 0 && (
           <>
-            <p className="text-sm text-ink-muted">No submission yet.</p>
+            <p className="flex items-center gap-2 rounded-control bg-surface-muted px-3 py-2.5 text-[0.95rem] text-ink">
+              <NavIcon name="documents" className="size-5 shrink-0 text-ink-muted" />
+              No submission yet.
+            </p>
             {closedReason ? (
               <p className="text-sm text-ink">{closedReason}</p>
             ) : (
@@ -191,11 +197,19 @@ export function AssignmentSubmission({
 
         {latest !== null && (
           <>
-            <p className="text-sm leading-6 text-ink">
-              Latest: attempt {latest.attemptNumber}, submitted{' '}
-              <time dateTime={latest.submittedAt}>{formatDateTime(latest.submittedAt)}</time>,{' '}
-              {latest.late ? 'late' : 'on time'}.
-            </p>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 rounded-control border border-success-line bg-success-soft px-3 py-2.5 text-[0.95rem] text-ink">
+                <span aria-hidden="true" className="font-bold text-success">✓</span>
+                <span className="font-semibold">Latest attempt: Attempt {latest.attemptNumber}</span>
+                <span>
+                  Submitted <time dateTime={latest.submittedAt}>{formatDateTime(latest.submittedAt)}</time>
+                </span>
+                <TimingTag late={latest.late} />
+              </p>
+              {!closedReason && !formOpen && (
+                <Button onClick={() => setFormOpen(true)}>Submit another attempt</Button>
+              )}
+            </div>
             {closedReason ? (
               <p className="text-sm text-ink">{closedReason}</p>
             ) : formOpen ? (
@@ -205,20 +219,15 @@ export function AssignmentSubmission({
                 onSubmit={submit}
                 onCancel={() => setFormOpen(false)}
               />
-            ) : (
-              <div className="w-full sm:w-auto">
-                <Button variant="secondary" onClick={() => setFormOpen(true)}>
-                  Submit another attempt
-                </Button>
-              </div>
-            )}
+            ) : null}
           </>
         )}
 
         {attempts !== null && attempts.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-ink">Submission history</h3>
-            <p className="mt-0.5 text-xs text-ink-muted">Newest first. Earlier attempts are kept as they were.</p>
+            <h3 className="mt-2 text-lg font-bold text-portal-navy">Submission history</h3>
+            <span aria-hidden="true" className="mt-1.5 block h-0.5 w-12 rounded bg-portal-cta" />
+            <p className="mt-2 text-sm text-ink-muted">Newest first.</p>
             <ol aria-label="Submission history" className="mt-2 divide-y divide-line rounded-panel border border-line bg-surface">
               {attempts.map((attempt, index) => (
                 <li key={attempt.attemptId}>
@@ -226,6 +235,7 @@ export function AssignmentSubmission({
                 </li>
               ))}
             </ol>
+            <Alert tone="info" className="mt-3">Earlier attempts are kept as they were.</Alert>
           </div>
         )}
       </div>

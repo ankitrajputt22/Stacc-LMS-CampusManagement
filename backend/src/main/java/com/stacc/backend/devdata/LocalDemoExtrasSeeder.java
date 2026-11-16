@@ -25,11 +25,16 @@ import com.stacc.backend.engagement.groups.CampusGroup;
 import com.stacc.backend.engagement.groups.CampusGroupOfficer;
 import com.stacc.backend.engagement.groups.CampusGroupRepository;
 import com.stacc.backend.engagement.groups.CampusGroupService;
+import com.stacc.backend.grievance.GrievanceAdminService;
+import com.stacc.backend.grievance.GrievanceCategoryRepository;
 import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelWardenRepository;
 import com.stacc.backend.hostel.HostelWardenService;
 import com.stacc.backend.identity.person.PersonProfileRepository;
 import com.stacc.backend.identity.person.PersonProfileService;
+import com.stacc.backend.library.LibraryService;
+import com.stacc.backend.library.LibraryTitleRepository;
+import com.stacc.backend.mentoring.MentoringService;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTeamService;
 import org.slf4j.Logger;
@@ -78,6 +83,11 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
     private final CareerCompanyRepository companies;
     private final CareerOpportunityRepository opportunities;
     private final CareerService career;
+    private final GrievanceCategoryRepository grievanceCategories;
+    private final GrievanceAdminService grievanceAdmin;
+    private final MentoringService mentoring;
+    private final LibraryTitleRepository libraryTitles;
+    private final LibraryService library;
     private final Clock clock;
 
     public LocalDemoExtrasSeeder(Environment environment, TransactionTemplate transaction, PasswordEncoder passwordEncoder,
@@ -85,7 +95,9 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
             HostelRepository hostels, HostelWardenRepository wardens, HostelWardenService wardenService, HelpdeskTeamRepository teams,
             HelpdeskTeamService teamService, CampusGroupRepository groups, CampusGroupService groupService, CampusFacilityRepository facilities,
             CampusFacilityService facilityService, CampusEventRepository events, CampusEventService eventService,
-            CareerCompanyRepository companies, CareerOpportunityRepository opportunities, CareerService career, Clock clock) {
+            CareerCompanyRepository companies, CareerOpportunityRepository opportunities, CareerService career,
+            GrievanceCategoryRepository grievanceCategories, GrievanceAdminService grievanceAdmin, MentoringService mentoring,
+            LibraryTitleRepository libraryTitles, LibraryService library, Clock clock) {
         this.environment = environment;
         this.transaction = transaction;
         this.passwordEncoder = passwordEncoder;
@@ -107,6 +119,11 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
         this.companies = companies;
         this.opportunities = opportunities;
         this.career = career;
+        this.grievanceCategories = grievanceCategories;
+        this.grievanceAdmin = grievanceAdmin;
+        this.mentoring = mentoring;
+        this.libraryTitles = libraryTitles;
+        this.library = library;
         this.clock = clock;
     }
 
@@ -117,6 +134,8 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> hostelAndSupport());
         transaction.executeWithoutResult(status -> campus());
         transaction.executeWithoutResult(status -> placement());
+        transaction.executeWithoutResult(status -> grievances());
+        transaction.executeWithoutResult(status -> library());
         LOGGER.info("Local demo extras ({} profile) ready. Staff accounts: {}.", LocalTestDataSeeder.PROFILE, String.join(", ", STAFF_LOGIN_IDS));
     }
 
@@ -170,6 +189,32 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
                     "Talks and a first-contribution workshop. Development demo data.", null, "Seminar Hall", start,
                     start.plus(Duration.ofHours(3)), 30, null, null, true, true, false)).eventId();
             eventService.publish(viewer, id);
+        }
+    }
+
+    private void grievances() {
+        if (!grievanceCategories.existsByCode("ACADEMIC")) {
+            Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
+            Long categoryId = grievanceAdmin.create("ACADEMIC", "Academic matters", 14).categoryId();
+            grievanceAdmin.addMember(admin, categoryId, "faculty1");
+        }
+        if (mentoring.allPairings().stream().noneMatch(pairing -> pairing.mentorLoginId().equals("faculty1")
+                && pairing.menteeLoginId().equals("student1"))) {
+            mentoring.pair("faculty1", "student1");
+        }
+    }
+
+    private void library() {
+        if (!libraryTitles.existsByIsbn("9780262046305")) {
+            Long titleId = library.addTitle("Introduction to Algorithms", "Cormen, Leiserson, Rivest, Stein", "9780262046305", "MIT Press", 2022,
+                    "Computer science").titleId();
+            library.addCopy(titleId, "LIB-0001", "CS-A1");
+            library.addCopy(titleId, "LIB-0002", "CS-A1");
+        }
+        if (!libraryTitles.existsByIsbn("9780134685991")) {
+            Long titleId = library.addTitle("Effective Java", "Joshua Bloch", "9780134685991", "Addison-Wesley", 2018, "Programming").titleId();
+            library.addCopy(titleId, "LIB-0003", "CS-B2");
+            library.addResource("Open textbooks (development)", "Free textbooks. Development demo data.", "https://open.umn.edu/opentextbooks");
         }
     }
 

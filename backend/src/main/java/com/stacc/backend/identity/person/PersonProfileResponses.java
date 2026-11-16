@@ -19,15 +19,25 @@ public final class PersonProfileResponses {
             @Schema(nullable = true, description = "Chosen by the person.") String preferredName,
             @Schema(nullable = true, description = "As recorded by the college.") String email,
             @Schema(nullable = true, description = "Chosen by the person.") String phone,
-            @Schema(description = "Whether the college has added an official photo.") boolean hasPhoto) {
+            @Schema(description = "Whether the college has added an official photo.") boolean hasPhoto,
+            @Schema(nullable = true, description = "Chosen by the person; plain text with line breaks.") String mailingAddress,
+            @Schema(description = "Up to three, oldest first.") java.util.List<EmergencyContact> emergencyContacts) {
 
-        public static MyPersonProfile of(String loginId, PersonProfile profile) {
+        public static MyPersonProfile of(String loginId, PersonProfile profile, java.util.List<PersonEmergencyContact> contacts) {
             return new MyPersonProfile(loginId, profile.displayName(), true, profile.getFullName(),
-                    profile.getPreferredName(), profile.getEmail(), profile.getPhone(), profile.hasPhoto());
+                    profile.getPreferredName(), profile.getEmail(), profile.getPhone(), profile.hasPhoto(),
+                    profile.getMailingAddress(), contacts.stream().map(EmergencyContact::of).toList());
         }
 
         public static MyPersonProfile notRecorded(String loginId) {
-            return new MyPersonProfile(loginId, loginId, false, null, null, null, null, false);
+            return new MyPersonProfile(loginId, loginId, false, null, null, null, null, false, null, java.util.List.of());
+        }
+    }
+
+    public record EmergencyContact(Long contactId, String name, String relation, String phone) {
+
+        static EmergencyContact of(PersonEmergencyContact contact) {
+            return new EmergencyContact(contact.getId(), contact.getName(), contact.getRelation(), contact.getPhone());
         }
     }
 }

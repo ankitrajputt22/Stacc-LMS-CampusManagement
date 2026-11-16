@@ -45,7 +45,11 @@ public record StudentAttendanceResponse(List<Course> courses) {
             BigDecimal attendancePercentage,
 
             @Schema(description = "The sessions, latest class first.")
-            List<Session> sessions) {
+            List<Session> sessions,
+
+            @Schema(description = "True when the percentage is below the college's minimum of "
+                    + "StudentAttendanceQueryService.MINIMUM_PERCENT (75). Worked out on read, never stored.")
+            boolean lowAttendance) {
     }
 
     public record Session(
@@ -59,6 +63,9 @@ public record StudentAttendanceResponse(List<Course> courses) {
             String topic,
 
             @Schema(allowableValues = {"PRESENT", "ABSENT"}, example = "PRESENT")
-            String status) {
+            String status,
+
+            @Schema(description = "The student's own record, to ask for a correction of an absence.", example = "41")
+            Long attendanceRecordId) {
     }
 }

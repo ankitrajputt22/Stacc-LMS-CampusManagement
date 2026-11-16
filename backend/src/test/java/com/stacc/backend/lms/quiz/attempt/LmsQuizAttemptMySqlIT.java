@@ -90,4 +90,42 @@ class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
             assertThat(saved).isZero();
         }
     }
+
+    @Test
+    void twoStudentsStartingAndOneSavingTheSameAnswerAtOnceNeverFail() throws Exception {
+        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        Long first = accounts.findByLoginId("student1").orElseThrow().getId();
+        Long second = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long lmsCourseId = jdbc.queryForObject("""
+                select lms.id from lms_courses lms
+                join course_offerings offering on offering.id = lms.course_offering_id
+                join courses course on course.id = offering.course_id
+                where course.code = 'CS301' and lms.status = 'PUBLISHED'
+                """, Long.class);
+        Long questionId = bank.add(faculty, lmsCourseId, QuestionFixtures.singleChoice("Burst race question"), null).getId();
+        bank.markReviewed(faculty, questionId);
+        Long quizId = quizzes.create(faculty, lmsCourseId, new LmsQuizSettings("Burst race", null, LmsTextFormat.PLAIN,
+                QuizType.GRADED, null, null, null, null, 1, false, false, BigDecimal.ZERO)).getId();
+        Long quizQuestionId = quizzes.addQuestion(faculty, quizId, questionId, null).questions().getFirst().getId();
+        quizzes.publish(faculty, quizId);
+
+        // Two students' first starts share a gap of the attempts index; neither may deadlock the other.
+        List<Concurrently.Outcome<LmsQuizAttempt>> starts = Concurrently.run(
+                () -> attempts.start(first, lmsCourseId, quizId),
+                () -> attempts.start(second, lmsCourseId, quizId));
+        assertThat(starts).allMatch(Concurrently.Outcome::succeeded);
+        Long attemptId = starts.getFirst().result().getId();
+
+        // The same choice saved four times at once: one answer row with one chosen option, never a duplicate.
+        List<Concurrently.Outcome<LmsQuizAnswer>> saves = Concurrently.run(
+                () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)),
+                () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)),
+                () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)),
+                () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)));
+        assertThat(saves).allMatch(Concurrently.Outcome::succeeded);
+        assertThat(jdbc.queryForObject("""
+                select count(*) from lms_quiz_answer_options chosen join lms_quiz_answers answer on answer.id = chosen.lms_quiz_answer_id
+                where answer.lms_quiz_attempt_id = ?
+                """, Integer.class, attemptId)).isEqualTo(1);
+    }
 }

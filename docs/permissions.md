@@ -88,6 +88,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `LMS_QUESTION_BANK_MANAGE` | `FACULTY` | Reading and changing the question bank of the LMS courses taught: adding, editing, reviewing, offering for practice, and archiving questions with their answers. Added by `V84`. |
 | `LMS_QUIZ_MANAGE` | `FACULTY` | Reading and changing the quizzes of the LMS courses taught: settings, questions from the bank, publishing, and archiving. Added by `V85`. |
 | `LMS_QUIZ_TAKE` | `STUDENT` | Taking the published quizzes of courses the student may use: starting attempts, saving answers, and handing in. Added by `V86`. |
+| `LMS_DISCUSSION_MODERATE` | `FACULTY` | Moderating the discussions of the LMS courses taught: hiding and showing threads and replies, locking threads, and resolving students' reports. Added by `V103`. |
+| `LMS_EXAM_PAPER_MANAGE` | `FACULTY` | Exam blueprints and papers of the LMS courses taught: planning, building from the question bank, making final, archiving, the print view, and Word export with or without answers. Added by `V102`. |
 | `LMS_QUIZ_GRADE` | `FACULTY` | Reading the results of the quizzes of courses taught and marking answers: hand marks for written answers, regrades for others, and closing attempts whose time is up. Added by `V87`. |
 | `LMS_DISCUSSION_USE` | `STUDENT`, `FACULTY` | Reading and posting in the discussions of a course the account may open as a student or teaches; faculty also pin, and the asker or faculty accept an answer. Added by `V91`. |
 | `LMS_MESSAGE_USE` | `STUDENT`, `FACULTY` | Private conversations between a student and the faculty of a course. Added by `V91`. |
@@ -95,6 +97,40 @@ A permission is added by a new migration only when the real feature it protects 
 | `CALENDAR_PERSONAL_USE` | `STUDENT`, `FACULTY`, `ADMIN` | One's own personal calendar entries and private subscription link. Added by `V93`. |
 | `HELPDESK_TEAM_WORK` | `MAINTENANCE`, `WARDEN`, `LIBRARIAN` | Working the helpdesk tickets routed to one's own support teams, and no others. Added by `V96`, with `NOTIFICATION_VIEW` for these roles. |
 | `HOSTEL_WARDEN_VIEW` | `WARDEN` | The occupancy and bed map of one's own hostels, and checking students in there. Added by `V97`. |
+| `HOSTEL_VISITOR_REGISTER` | `STUDENT` | Registering and cancelling one's own hostel visitors. Added by `V111`. |
+| `HOSTEL_VISITOR_DESK` | `SECURITY` | Seeing today's hostel visitors and recording arrivals within visiting hours, departures, and walk-ins. Added by `V111`. |
+| `GRIEVANCE_SUBMIT` | `STUDENT`, `FACULTY` | Raising grievances and following, appealing, and accepting one's own. Added by `V118`. |
+| `GRIEVANCE_COMMITTEE_WORK` | `FACULTY`, `ADMIN` | Working the cases of the grievance committees one is named on; the committee membership decides which. Added by `V118`. |
+| `GRIEVANCE_MANAGE` | `ADMIN` | Managing grievance categories and committees, never reading cases. Added by `V118`. |
+| `MENTORING_USE` | `STUDENT`, `FACULTY` | Reading one's own mentoring pairings; mentors record meetings and action items, and either of the pair completes items. Added by `V119`. |
+| `MENTORING_MANAGE` | `ADMIN` | Pairing mentors with students and ending pairings, never reading meetings. Added by `V119`. |
+| `PORTFOLIO_USE` | `STUDENT` | Reading one's own portfolio and adding, hiding, and sending one's own items for verification. Added by `V121`. |
+| `PORTFOLIO_VERIFY` | `FACULTY` | Verifying or declining portfolio items one was named on. Added by `V121`. |
+| `PROJECT_USE` | `STUDENT`, `FACULTY` | Seeing projects; students start, join, and lead them, and faculty answer mentoring invitations. Added by `V122`. |
+| `INNOVATION_SUBMIT` | `STUDENT`, `FACULTY` | Submitting, following, and withdrawing one's own ideas. Added by `V123`. |
+| `INNOVATION_REVIEW` | `FACULTY` | Scoring and commenting on open ideas other than one's own. Added by `V123`. |
+| `INNOVATION_MANAGE` | `ADMIN` | Reading every idea with its reviews and deciding ideas. Added by `V123`. |
+| `HACKATHON_PARTICIPATE` | `STUDENT` | Forming and joining hackathon teams and handing in their work. Added by `V124`. |
+| `HACKATHON_JUDGE` | `FACULTY` | Scoring the submissions of hackathons one is named to judge. Added by `V124`. |
+| `HACKATHON_MANAGE` | `ADMIN` | Running hackathons: judges, publishing, releasing results, and archiving. Added by `V124`. |
+| `LIBRARY_USE` | `STUDENT`, `FACULTY` | Searching the library catalog, one's own loans and holds, renewing, and digital resources. Added by `V125`. |
+| `LIBRARY_MANAGE` | `LIBRARIAN` | The lending desk: catalog, copies, lending, taking back, and digital resources. Added by `V125`. |
+| `DEPARTMENT_ANALYTICS_VIEW` | `HOD` | Reading the analytics of the departments one heads now. Added by `V126`. |
+| `AREA_ANALYTICS_VIEW` | `ADMIN`, `LIBRARIAN`, `PLACEMENT_OFFICER` | Reading area analytics; each area's section also needs that area's own permission. Added by `V127`. |
+| `SYSTEM_HEALTH_VIEW` | `ADMIN` | Reading the system health page. Added by `V128`. |
+| `ACADEMIC_TIMETABLE_VIEW` | `ADMIN` | Reading a semester's class timetable. Added by `V143`. |
+| `ACADEMIC_TIMETABLE_MANAGE` | `ADMIN` | Adding and removing weekly classes, with clashes refused. Added by `V143`. |
+| `TIMETABLE_VIEW_OWN` | `STUDENT`, `FACULTY` | Reading one's own weekly timetable. Added by `V143`. |
+| `ERP_REQUEST_SUBMIT` | `STUDENT` | Asking for medical leave, an attendance correction, or a revaluation, and cancelling one's own pending requests. Added by `V146`. |
+| `EXAM_SCHEDULE_VIEW_OWN` | `STUDENT` | Reading one's own published exams with hall and seat. Added by `V147`. |
+| `EXAM_MANAGE` | `ADMIN` | Building exam sessions: exams, seat plans, and publishing. Added by `V147`. |
+| `FEE_VIEW_OWN` | `STUDENT` | Reading one's own fees and payments, applying for scholarships, and asking for refunds. Added by `V148`. |
+| `FEE_MANAGE` | `ADMIN` | The accounts office: fee structures, recording payments, and deciding scholarships and refunds. Added by `V148`. |
+| `ERP_REQUEST_MANAGE` | `ADMIN` | The ERP office's queue: reading every request and approving or rejecting each once. Added by `V146`. |
+| `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
+| `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
+| `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |
+| `HOSTEL_ROOM_CHANGE_REQUEST` | `STUDENT` | Asking to move to another hostel bed, proposing a bed swap with another resident, and answering swaps proposed to oneself. Added by `V107`. |
 | `HOSTEL_OUTING_REQUEST` | `STUDENT` | Asking for gate passes, leave, and extensions while living in a hostel, and opening one's own pass. Added by `V98`. |
 | `GATE_PASS_VERIFY` | `SECURITY` | Checking pass codes, recording gate movements, and looking students' outings up. Added by `V98`. |
 | `CAMPUS_ENGAGEMENT_USE` | `STUDENT`, `FACULTY` | Joining groups, registering for events, and booking facilities; officers and organizers manage their own groups' members and events. Added by `V99`. |
@@ -115,6 +151,22 @@ A permission is added by a new migration only when the real feature it protects 
 `FACULTY_COURSE_VIEW` works the same way for faculty. Which courses a faculty member gets is decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and an account that holds `FACULTY` as well as other roles gets it through `FACULTY`. A faculty member signed in before `V20` must sign in again to get it.
 
 `LMS_CONTENT_MANAGE` opens content changes, not the courses: which courses a faculty member may change is still decided by official teaching assignments. `STUDENT` and `ADMIN` do not hold it, and there is no admin pass. A faculty member signed in before `V22` must sign in again to get it. Students need no content permission: `LMS_COURSE_VIEW` also lets them read the published content of courses they may use and download its published study materials. Faculty download materials with `FACULTY_COURSE_VIEW`.
+
+Model answers and rubric suggestions (v0.14.5) added no permission: the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE` or `LMS_ASSIGNMENT_MANAGE`.
+
+Exam paper sets and AI for short rows (v0.14.4) added no permission: sets and the shortfall need `LMS_EXAM_PAPER_MANAGE`; AI drafting also needs the Teacher AI rule and `LMS_QUESTION_BANK_MANAGE`.
+
+Quiz drafts (v0.14.3) added no permission: they need the Teacher AI rule with `LMS_QUESTION_BANK_MANAGE` and `LMS_QUIZ_MANAGE`.
+
+Draft into the question bank (v0.14.1) added no permission: it needs the Teacher AI rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`) and `LMS_QUESTION_BANK_MANAGE` together.
+
+AI controls (v0.13.7) added no permission: the student assistant switch follows the Teacher AI rule (`FACULTY`, `FACULTY_COURSE_VIEW`, `AI_TEACHING_USE`, faculty access policy), and AI health uses `SYSTEM_HEALTH_VIEW` with `ADMIN`.
+
+Student notes (v0.13.6) added no permission: they are part of the AI Study Assistant and need `STUDENT`, `LMS_COURSE_VIEW`, and `AI_STUDY_USE` under the student access policy.
+
+Teacher-only documents (v0.13.5) added no permission: they are part of Teacher AI and need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE` under the faculty access policy.
+
+Keeping a study material out of AI knowledge (v0.13.3) added no permission: it is a content change and needs `LMS_CONTENT_MANAGE` under the faculty access policy.
 
 Announcements added no permission. Students read the published announcements of their courses with `LMS_COURSE_VIEW`, faculty list the announcements of courses they teach with `FACULTY_COURSE_VIEW`, and creating, editing, publishing, or archiving one needs `LMS_CONTENT_MANAGE`.
 

@@ -1,42 +1,46 @@
 import { Link } from 'react-router'
-import { courseColor } from '../dashboard/courseColors'
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 import type { LmsCourseSummary } from '../types/lms'
-import { CourseFacts } from './CourseFacts'
+import { formatCredits } from '../erp/erpData'
 
 type CourseSummaryProps = {
   course: LmsCourseSummary
 }
 
+function Fact({ icon, children }: { icon: NavIconName; children: string }) {
+  return (
+    <li className="flex items-center gap-3 text-[0.95rem] text-ink">
+      <NavIcon name={icon} className="size-5 text-ink-muted" />
+      {children}
+    </li>
+  )
+}
+
 /**
- * One course in the list, shown with exactly what the backend sent. The course name is a real
- * link to the course page, and its click area is stretched over the whole card, so screen
- * readers hear one clear link while the whole card can be clicked.
+ * One course in the list, shown with exactly what the backend sent: its code, its name as a real link to the course
+ * page (stretched over the whole card, so screen readers hear one clear link while the whole card can be clicked),
+ * credits, section, and teachers.
  */
 export function CourseSummary({ course }: CourseSummaryProps) {
+  const credits = Number(course.credits)
   return (
-    <article
-      style={{ borderTopColor: courseColor(course.lmsCourseId) }}
-      className="group relative h-full rounded-panel border border-t-4 border-line bg-surface px-4 py-3.5 hover:border-slate-400 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5 sm:py-4"
-    >
-      <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">
-        {course.courseCode}
-      </p>
-      <h3 className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
+    <article className="group relative h-full rounded-panel border border-t-4 border-line border-t-teal-600 bg-surface px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] hover:border-slate-400 hover:border-t-teal-600 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary">
+      <p className="text-lg font-bold break-words text-ink">{course.courseCode}</p>
+      <h3 className="text-xl leading-7 font-semibold break-words text-portal-navy">
         {/* The course route uses the LMS course ID, not the course or offering ID. */}
         <Link
           to={`/courses/${course.lmsCourseId}`}
-          className="after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:text-stacc-primary group-hover:underline group-hover:underline-offset-4"
+          className="underline underline-offset-4 after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:text-stacc-primary"
         >
           {course.courseName}
         </Link>
+        <span aria-hidden="true"> →</span>
       </h3>
-      <CourseFacts course={course} />
-      {course.faculty.length > 0 && (
-        <p className="text-sm leading-6 break-words text-ink-muted">
-          <span className="sr-only">Taught by </span>
-          {course.faculty.join(', ')}
-        </p>
-      )}
+      <ul className="mt-3 space-y-1.5">
+        <Fact icon="courses">{`${formatCredits(credits)} ${credits === 1 ? 'credit' : 'credits'}`}</Fact>
+        <Fact icon="clubs">{course.sectionCode ? `Section ${course.sectionCode}` : 'Whole semester'}</Fact>
+        {course.faculty.length > 0 && <Fact icon="profile">{course.faculty.join(', ')}</Fact>}
+      </ul>
     </article>
   )
 }
