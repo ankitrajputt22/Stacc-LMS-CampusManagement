@@ -22,3 +22,9 @@ Phase 0.12.4. Mentoring lives in the `mentoring` module.
 | `GET`/`POST /api/v1/admin/mentoring/pairings`, `POST …/pairings/{id}/end` | `ADMIN` with `MENTORING_MANAGE` |
 
 The demo data pairs `faculty1` as mentor with `student1`.
+
+## Pages (v0.16.13)
+
+- `/mentoring` lists the account's pairings (the other person, Active since or Ended, and View meetings or View history) and the action items still open for the account, each with Mark done and a link to the To-Do list.
+- `/mentoring/{assignmentId}` opens one pairing: for its active mentor the Record a meeting form, then each meeting newest first with its shared notes, the private notes (mentor only; students never see even the heading), its action items (who, due or completed, Open or Done, Mark done), and Add action item; beside them the pairing details and a timeline of the meetings. An ended pairing stays readable with no forms.
+- `/admin/mentoring` lists every pairing as a table (mentor, student, status, period, End while active) above the Pair form. Admins never see meetings, notes, or action items.

@@ -263,6 +263,9 @@ function App() {
           <Route path="id-card" element={<IdCardPage />} />
           <Route path="verify-id" element={<VerifyIdPage />} />
           <Route path="documents" element={<DocumentsPage />} />
+          <Route path="documents/upload" element={<DocumentsPage section="upload" />} />
+          <Route path="documents/requests" element={<DocumentsPage section="requests" />} />
+          <Route path="documents/requests/new" element={<DocumentsPage section="request" />} />
           <Route path="grievances" element={<GrievancesPage />} />
           <Route path="grievances/new" element={<GrievancesPage section="new" />} />
           <Route path="grievances/committee" element={<GrievancesPage section="committee" />} />
@@ -270,6 +273,7 @@ function App() {
           <Route path="grievances/:caseId" element={<GrievancesPage section="myCase" />} />
           <Route path="admin/grievances" element={<AdminGrievancesPage />} />
           <Route path="mentoring" element={<MentoringPage />} />
+          <Route path="mentoring/:assignmentId" element={<MentoringPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="innovation" element={<InnovationPage />} />
@@ -280,6 +284,7 @@ function App() {
           <Route path="admin/system" element={<SystemHealthPage />} />
           <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
+          <Route path="admin/certificates/:requestId" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />
           <Route path="placement" element={<PlacementPage />} />
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />

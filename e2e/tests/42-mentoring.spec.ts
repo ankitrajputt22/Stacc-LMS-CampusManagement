@@ -17,6 +17,7 @@ test('a mentor records a meeting and the student sees only the shared part and t
   const mentor = await browser.newPage()
   await signIn(mentor, 'erp', 'faculty2')
   await mentor.goto('/mentoring')
+  await mentor.getByRole('link', { name: 'View meetings with student2' }).click()
   const pair = mentor.getByRole('region', { name: 'Mentoring student2' })
   await pair.getByLabel('Meeting title').fill(title)
   await pair.getByLabel('Held at').fill('2026-11-05T09:00')
@@ -34,6 +35,7 @@ test('a mentor records a meeting and the student sees only the shared part and t
   await student.goto('/todo')
   await expect(student.getByRole('link', { name: `Mentoring: ${task}` })).toBeVisible()
   await student.goto('/mentoring')
+  await student.getByRole('link', { name: 'View meetings with faculty2' }).click()
   // This run's meeting, inside the pairing with faculty2.
   const mine = student.getByRole('region', { name: 'Your mentor faculty2' }).getByRole('region', { name: title })
   await expect(mine.getByText('Agreed to plan revision weekly.')).toBeVisible()
