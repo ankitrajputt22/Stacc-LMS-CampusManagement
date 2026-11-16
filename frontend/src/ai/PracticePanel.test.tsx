@@ -73,6 +73,26 @@ describe('PracticePanel', () => {
     expect(screen.getByText('Not answered · 0 practice marks')).toBeInTheDocument()
     expect(api.evaluatePracticeAnswer).toHaveBeenCalledTimes(1)
   })
+
+  it('lets a viva student answer the follow-up question next', async () => {
+    vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue(set)
+    vi.mocked(api.evaluatePracticeAnswer).mockReset()
+      .mockResolvedValueOnce(marked(2, { followUpQuestion: 'Why must it survive a crash?' }))
+      .mockResolvedValueOnce(marked(3))
+    const user = userEvent.setup()
+    renderPanel()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mode' }), 'Viva')
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    await user.type(await screen.findByRole('textbox', { name: /^Your answer/ }), 'Saves data.')
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(await screen.findByRole('button', { name: 'Answer the follow-up' }))
+    expect(screen.getByText('Question 2 of 3')).toBeInTheDocument()
+    await user.type(screen.getByRole('textbox', { name: /^Your answer/ }), 'Power can fail.')
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(api.evaluatePracticeAnswer).toHaveBeenLastCalledWith(3, {
+      question: 'Why must it survive a crash?', referenceAnswer: 'Makes changes durable.', studentAnswer: 'Power can fail.', maxMarks: 4, mode: 'VIVA',
+    })
+  })
 })
 
 describe('PracticePanel adaptive', () => {

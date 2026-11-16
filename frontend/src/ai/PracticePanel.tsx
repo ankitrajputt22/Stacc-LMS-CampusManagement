@@ -16,11 +16,13 @@ const ADAPTIVE = 'adaptive'
 
 /** Practice marks are out of this; they are practice only, never an official mark. */
 const MARKS_EACH = 4
+/** A viva grows by its follow-ups; it stops offering them at this many questions. */
+const MAX_VIVA_QUESTIONS = 20
 
 const MODES: { value: AiPracticeMode; label: string; hint: string }[] = [
   { value: 'PRACTICE', label: 'Practice', hint: 'One question at a time, with feedback after each answer.' },
   { value: 'MOCK_EXAM', label: 'Mock exam', hint: 'Answer every question, then hand in for marks and feedback.' },
-  { value: 'VIVA', label: 'Viva', hint: 'One question at a time, with a follow-up question after each answer.' },
+  { value: 'VIVA', label: 'Viva', hint: 'One question at a time, with a follow-up question after each answer that you can answer next.' },
 ]
 
 const VERDICT: Record<NonNullable<AiEvaluation['verdict']>, string> = {
@@ -66,6 +68,11 @@ function Feedback({ question, result }: { question: AiPracticeQuestion; result: 
       <AiCitations citations={result.citations} headingLevel={4} />
     </div>
   )
+}
+
+/** The viva follow-up question of a checked answer, if any. */
+function followUpOf(result: Result | undefined): string | null {
+  return typeof result === 'object' && result.followUpQuestion ? result.followUpQuestion : null
 }
 
 function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
@@ -139,6 +146,20 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     const result = await check(index)
     setResults((previous) => previous.map((item, position) => (position === index ? result : item)))
     setChecking(false)
+  }
+
+  /** Viva: the follow-up becomes the next question, checked against the same model answer and course sources. */
+  function answerFollowUp(index: number, followUpQuestion: string) {
+    const asked: AiPracticeQuestion = {
+      question: followUpQuestion,
+      suggestedAnswer: questions[index].suggestedAnswer,
+      citations: [],
+    }
+    const insert = <T,>(items: T[], item: T) => [...items.slice(0, index + 1), item, ...items.slice(index + 1)]
+    setQuestions((previous) => insert(previous, asked))
+    setAnswers((previous) => insert(previous, ''))
+    setResults((previous) => insert(previous, undefined))
+    setCurrent(index + 1)
   }
 
   async function handIn() {
@@ -226,6 +247,12 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
           ) : (
             <>
               <Feedback question={questions[current]} result={results[current] as Result} />
+              {activeMode === 'VIVA' && followUpOf(results[current]) && questions.length < MAX_VIVA_QUESTIONS
+                && questions[current + 1]?.question !== followUpOf(results[current]) && (
+                <Button className="mt-2 mr-2" size="sm" onClick={() => answerFollowUp(current, followUpOf(results[current]) as string)}>
+                  Answer the follow-up
+                </Button>
+              )}
               {current + 1 < questions.length && (
                 <Button className="mt-2" size="sm" variant="secondary" onClick={() => setCurrent(current + 1)}>Next question</Button>
               )}
