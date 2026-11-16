@@ -277,6 +277,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Styles.** `BRIEF` (about 200 words, up to 6 key points, the default), `DETAILED` (up to 500 words in the sources' order), and `REVISION_NOTES` (definitions and facts to remember). A summary may be up to 4,000 characters, and it still needs real citations.
 - The AI Study Assistant's Summaries panel offers A page, A module, or A file, from the course's own published content, and keeps nothing.
 
+### Flashcards (v0.15.3)
+
+- **Making a set.** A student asks for 3 to 30 cards from the whole course, a published page, a module, or a file (`POST /api/v1/lms/courses/{id}/ai/flashcard-sets`, the student AI rule, through `AiRequestGate` kind `FLASHCARDS`). Every card must cite a real allowed source; the card keeps that source's kind, ID, and title, and repeated fronts are dropped. A student keeps at most 20 sets per course, counted under the account row lock (`AiFlashcardMySqlIT`).
+- **Spaced repetition.** Reviewing a card (`POST .../flashcard-sets/{setId}/cards/{cardId}/review`, `AGAIN`, `HARD`, `GOOD`, or `EASY`) needs no AI and locks the card row. `SpacedRepetition` (a simplified SM-2) works out the next due day: Again shows the card again today, Good grows the gap from 1 day to 3 and then by the card's ease (1.3 to 3.0), Hard grows it a little, Easy more; gaps stop at a year. "Today" is the date in `COLLEGE_TIME_ZONE`.
+- **Ownership.** Only the student who made a set lists, opens, reviews, or deletes it; deleting removes the set and its cards for good.
+
 ### What a refresh does
 
 1. Faculty access is checked.

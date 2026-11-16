@@ -5,6 +5,9 @@ import type {
   AiAssessmentDraft,
   AiAssessmentDraftInput,
   AiCitation,
+  AiFlashcard,
+  AiFlashcardSet,
+  AiFlashcardSetSummary,
   AiFollowUpTurn,
   AiJob,
   AiKnowledgeStatus,
@@ -21,6 +24,7 @@ import type {
   AiSummaryStyle,
   AiTeacherDocument,
   AiTopicSummary,
+  ReviewRating,
 } from '../types/ai'
 import type { QuestionDifficulty, QuestionType } from '../types/lms'
 import { apiClient } from './apiClient'
@@ -201,5 +205,32 @@ export async function summarizeCourse(
   signal?: AbortSignal,
 ): Promise<AiSummary> {
   return (await apiClient.post<AiSummary>(`/lms/courses/${lmsCourseId}/ai/summary`, input, { signal })).data
+}
+
+/** The student's flashcard sets in the course (v0.15.3). */
+export async function getFlashcardSets(lmsCourseId: number, signal?: AbortSignal): Promise<AiFlashcardSetSummary[]> {
+  return (await apiClient.get<AiFlashcardSetSummary[]>(`/lms/courses/${lmsCourseId}/ai/flashcard-sets`, { signal })).data
+}
+
+export async function getFlashcardSet(lmsCourseId: number, setId: number, signal?: AbortSignal): Promise<AiFlashcardSet> {
+  return (await apiClient.get<AiFlashcardSet>(`/lms/courses/${lmsCourseId}/ai/flashcard-sets/${setId}`, { signal })).data
+}
+
+/** Makes a set with AI from a page, module, file, or the whole course. */
+export async function createFlashcardSet(
+  lmsCourseId: number,
+  input: { scope: 'COURSE' | 'TOPIC' | 'MODULE' | 'DOCUMENT'; id: number | null; cardCount: number },
+  signal?: AbortSignal,
+): Promise<AiFlashcardSet> {
+  return (await apiClient.post<AiFlashcardSet>(`/lms/courses/${lmsCourseId}/ai/flashcard-sets`, input, { signal })).data
+}
+
+export async function reviewFlashcard(lmsCourseId: number, setId: number, cardId: number, rating: ReviewRating): Promise<AiFlashcard> {
+  return (await apiClient.post<AiFlashcard>(`/lms/courses/${lmsCourseId}/ai/flashcard-sets/${setId}/cards/${cardId}/review`, { rating })).data
+}
+
+/** Deletes a set and its cards for good. */
+export async function deleteFlashcardSet(lmsCourseId: number, setId: number): Promise<void> {
+  await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/flashcard-sets/${setId}`)
 }
 

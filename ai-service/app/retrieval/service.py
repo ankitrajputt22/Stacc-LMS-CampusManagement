@@ -270,6 +270,32 @@ class LearningService:
                                                instructionsSuggestion=result.instructionsSuggestion or None,
                                                questions=accepted(result), insufficientContext=False)
 
+    # --- Flashcards (v0.15.3) ---------------------------------------------------------------------
+
+    def flashcards(self, course_key: str, request: schemas.FlashcardRequest) -> schemas.FlashcardResponse:
+        """Cited cards from the allowed sources (or one topic); repeated fronts are dropped."""
+        empty = schemas.FlashcardResponse(cards=[], insufficientContext=True)
+        chunks = self._selection(self._scopes(course_key, request), request.topicId)
+        if not chunks:
+            return empty
+        context = _Context(chunks)
+
+        def cited(out: schemas.FlashcardModelOutput) -> list[schemas.Flashcard]:
+            seen, cards = set(), []
+            for card in out.cards:
+                citations = context.citations(card.sourceIds)
+                key = " ".join(card.front.lower().split())
+                if citations and key not in seen:
+                    seen.add(key)
+                    cards.append(schemas.Flashcard(front=card.front, back=card.back, citations=citations))
+            return cards[:request.cardCount]
+
+        result = self._generate("flashcards", context, schemas.FlashcardModelOutput, self._settings.answer_temperature,
+                                {"cardCount": request.cardCount}, usable=lambda out: bool(cited(out)))
+        if result is None:
+            return empty
+        return schemas.FlashcardResponse(cards=cited(result), insufficientContext=False)
+
     # --- Model answers and rubric suggestions (v0.14.5) ---------------------------------------
 
     def model_answer(self, course_key: str, request: schemas.ModelAnswerRequest) -> schemas.ModelAnswerResponse:
