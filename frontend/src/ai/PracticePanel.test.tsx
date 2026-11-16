@@ -59,3 +59,16 @@ describe('PracticePanel', () => {
     expect(vi.mocked(api.evaluatePracticeAnswer).mock.calls.map((call) => call[1].mode)).toEqual(['MOCK_EXAM', 'MOCK_EXAM'])
   })
 })
+
+describe('PracticePanel adaptive', () => {
+  it('asks the backend to choose the page and says why', async () => {
+    vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue({ ...set, chosenTopicId: 31, reason: 'You have not practised this page yet.' })
+    const user = userEvent.setup()
+    render(<MemoryRouter><PracticePanel lmsCourseId={3} topics={[{ id: 31, title: 'Joins', moduleId: 7, moduleTitle: 'Unit 2' }]} /></MemoryRouter>)
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Topic' }), 'Focus on what I need')
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    expect(api.generateCoursePracticeQuestions).toHaveBeenLastCalledWith(3, 5, null, expect.anything(), true)
+    expect(await screen.findByText('Chosen for you: Joins. You have not practised this page yet.')).toBeInTheDocument()
+  })
+})
+

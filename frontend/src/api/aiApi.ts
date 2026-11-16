@@ -18,6 +18,7 @@ import type {
   AiPracticeSet,
   AiQuestionBankDraft,
   AiQuizDraft,
+  AiRecommendation,
   AiRubricSuggestion,
   AiSavedAnswer,
   AiStudentNote,
@@ -97,10 +98,10 @@ export async function generateCoursePracticeQuestions(
   questionCount: number,
   topicId: number | null,
   signal?: AbortSignal,
+  adaptive = false,
 ): Promise<AiPracticeSet> {
-  return (
-    await apiClient.post<AiPracticeSet>(`/lms/courses/${lmsCourseId}/ai/practice`, { questionCount, topicId }, { signal })
-  ).data
+  const body = adaptive ? { questionCount, adaptive: true } : { questionCount, topicId }
+  return (await apiClient.post<AiPracticeSet>(`/lms/courses/${lmsCourseId}/ai/practice`, body, { signal })).data
 }
 
 /** The course's active teacher-only documents (v0.13.5). */
@@ -255,5 +256,10 @@ export async function getMastery(lmsCourseId: number, signal?: AbortSignal): Pro
 /** Clears the student's learning evidence in the course for good. */
 export async function clearMastery(lmsCourseId: number): Promise<void> {
   await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/mastery`)
+}
+
+/** What to do next in the course, from fixed rules over the student's own records (v0.15.6). */
+export async function getRecommendations(lmsCourseId: number, signal?: AbortSignal): Promise<AiRecommendation[]> {
+  return (await apiClient.get<AiRecommendation[]>(`/lms/courses/${lmsCourseId}/ai/mastery/recommendations`, { signal })).data
 }
 

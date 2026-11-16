@@ -152,6 +152,19 @@ class AiStudyServiceTest {
     }
 
     @Test
+    void adaptivePracticeChoosesAPageAndSaysWhy() {
+        when(mastery.view(STUDENT_A, COURSE)).thenReturn(List.of(new AiMasteryService.TopicMastery(1L, "Database Normalization",
+                new com.stacc.backend.lms.ai.mastery.Mastery.Result(0, 0, com.stacc.backend.lms.ai.mastery.Mastery.Level.NOT_STARTED, 0, null))));
+        when(client.practice(anyString(), any())).thenReturn(new AiServiceMessages.PracticeResult(List.of(), true));
+        AiPracticeResponse response = service.practice(STUDENT_A, COURSE, new AiPracticeRequest(2, null, true));
+        assertThat(response.chosenTopicId()).isEqualTo(1L);
+        assertThat(response.reason()).isEqualTo("You have not practised this page yet.");
+        ArgumentCaptor<AiServiceMessages.PracticeRequest> sent = ArgumentCaptor.forClass(AiServiceMessages.PracticeRequest.class);
+        verify(client).practice(anyString(), sent.capture());
+        assertThat(sent.getValue().topicId()).isEqualTo(1L);
+    }
+
+    @Test
     void aGradedQuizInProgressPausesStudentAi() {
         org.mockito.Mockito.doThrow(new ApiException(HttpStatus.CONFLICT, AiQuizPause.PAUSED)).when(quizPause)
                 .requireNoQuizInProgress(STUDENT_A, COURSE);

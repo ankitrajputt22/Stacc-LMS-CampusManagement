@@ -7,6 +7,7 @@ import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
+import com.stacc.backend.lms.ai.mastery.AiRecommendationService;
 import com.stacc.backend.lms.ai.mastery.Mastery;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -48,9 +49,24 @@ public class AiMasteryController {
     }
 
     private final AiMasteryService mastery;
+    private final AiRecommendationService recommendations;
 
-    public AiMasteryController(AiMasteryService mastery) {
+    public AiMasteryController(AiMasteryService mastery, AiRecommendationService recommendations) {
         this.mastery = mastery;
+        this.recommendations = recommendations;
+    }
+
+    @GetMapping("/recommendations")
+    @PreAuthorize(AiAccess.STUDENT)
+    @Operation(summary = "What to do next",
+            description = "Up to six suggestions from fixed rules, each with its reason: the weakest pages, flashcards due "
+                    + "today, an assignment due within a week, pages not started, and mastered pages not practised for three "
+                    + "weeks (v0.15.6). Worked out on read from the student's own records; no AI is used.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The suggestions.")
+    public List<AiRecommendationService.Recommendation> recommendations(@PathVariable Long lmsCourseId,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return recommendations.recommend(AuthenticatedAccount.idFrom(accessToken), lmsCourseId);
     }
 
     @GetMapping

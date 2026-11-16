@@ -106,6 +106,17 @@ export type AiPracticeQuestion = {
 export type AiPracticeSet = {
   questions: AiPracticeQuestion[]
   insufficientContext: boolean
+  /** With adaptive practice (v0.15.6), the page chosen and why. */
+  chosenTopicId?: number | null
+  reason?: string | null
+}
+
+/** A suggestion of what to do next, from fixed rules, with its reason (v0.15.6). */
+export type AiRecommendation = {
+  kind: 'PRACTISE_WEAK' | 'START_PAGE' | 'REVIEW_FLASHCARDS' | 'ASSIGNMENT_SOON' | 'REFRESH_PAGE'
+  targetId: number | null
+  title: string
+  reason: string
 }
 
 export type AiKnowledgeIndexStatus = 'NOT_INDEXED' | 'BUILDING' | 'READY' | 'FAILED'
