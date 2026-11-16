@@ -10,7 +10,9 @@ Since v0.16 Stacc has one sign-in and one app. The ERP is a section of it beside
 | My Profile | `/erp/profile` | The official details the college keeps (read-only), and what the person keeps: preferred name, phone, mailing address, and up to three emergency contacts. |
 | Academics | `/erp/academics` | Tabs: Registered courses (this semester, with credits, teachers, section, and status), Timetable, Degree progress, and Calendar. |
 | Attendance | `/erp/attendance` | Finalized attendance per course, with low attendance marked by the backend, and the student's medical leave and correction requests. `/erp/attendance/:courseOfferingId` lists each class with Request correction on an absence. |
-| Exams & Results | `/erp/exams` | Published results. |
+| Exams & Results | `/erp/exams` | Tabs: Exam schedule (published exams with hall and seat), Hall ticket (printable), Results (a semester's results with internal and external marks, grade, points, and SGPA; CGPA history), Grade cards (printable), and Revaluation. |
+| Marks Entry (faculty) | `/erp/marks` | Internal and external marks per student of an offering taught, saved as drafts and published together. |
+| Exams (admin) | `/erp/exam-admin` | A semester's exam sessions: exams with date, times, hall, and seats; seat plans; publishing. |
 | Timetable (faculty) | `/erp/timetable` | The classes a faculty member teaches. |
 | Requests (admin) | `/erp/requests` | The ERP office's queue: filter by kind, status, and college ID; review; approve or reject with a comment. |
 
@@ -35,3 +37,11 @@ A program needs credits of each course type (core, electives, labs, projects). A
 A student asks the ERP office for medical leave (first and last day, at most 30 days within 60 days of today, and a reason), for the correction of one of their own finalized absences, or for the revaluation of one of their own published results (`/api/v1/erp/requests…`, `STUDENT` with `ERP_REQUEST_SUBMIT`). There is one open request per record or result, kept by a unique generated column. A student cancels their own request while it is pending.
 
 The office (`ADMIN` with `ERP_REQUEST_MANAGE`, `/api/v1/admin/erp/requests`) decides each request once under its row lock: approving a correction marks the class present (keeping who took the attendance); approving a revaluation with new marks applies them to the result, on the external part when the marks are split, and re-grades an entered grade from the scale; approving without new marks records "No change". A rejection always has a comment. The student hears of the decision in the Inbox (`ERP_REQUEST_DECIDED`). Requests are never deleted, and references read like `MED-000024`, `COR-000031`, or `REV-000044`.
+
+## Examinations
+
+An exam session belongs to one semester and starts as a draft. Admins (`ADMIN` with `EXAM_MANAGE`, `/api/v1/admin/erp/exams`) add exams (one per offering of the semester: a date, times in the college's time zone, a hall, and its seats), remove them (kept with `removed_at`), generate seat plans, and publish the session once. A seat plan locks the exam's row, reads its seats with a locking read, and seats every student enrolled now who has none yet, in college ID order after the seats already given; it never takes a seat back and refuses with 409 when the hall has too few seats. `GET /api/v1/erp/exams/me` (`STUDENT` with `EXAM_SCHEDULE_VIEW_OWN`) gives the published exams of the offerings the student is enrolled in now, with teachers, hall, and seat (or none yet). The hall ticket and grade card are printed from the page; nothing is stored for them.
+
+## Marks entry
+
+Faculty save a result's internal and external marks with their maximums through the usual result route (`PUT /api/v1/results/faculty/course-offerings/{id}/enrollments/{id}`): all four parts or none, each within its maximum, adding up to the totals. The Marks Entry page works out the grade from the scale as a preview and saves it with the marks; results stay drafts until published.

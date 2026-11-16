@@ -10,6 +10,9 @@ export const queryKeys = {
     degreeProgress: () => ['erp', 'degree-progress'] as const,
     standing: () => ['erp', 'standing'] as const,
     myRequests: () => ['erp', 'requests', 'mine'] as const,
+    myExams: () => ['erp', 'exams', 'mine'] as const,
+    gradeScale: () => ['erp', 'grade-scale'] as const,
+    examSessions: (semesterId: number) => ['erp', 'exam-sessions', semesterId] as const,
     queue: (kind: string, status: string, q: string) => ['erp', 'requests', 'queue', kind, status, q] as const,
   },
   me: {
@@ -187,6 +190,7 @@ export const queryKeys = {
     mine: () => ['attendance', 'me'] as const,
   },
   results: {
+    all: ['results'] as const,
     myCourses: () => ['results', 'my-courses'] as const,
     course: (courseOfferingId: number) => ['results', 'offerings', courseOfferingId] as const,
     mine: () => ['results', 'me'] as const,

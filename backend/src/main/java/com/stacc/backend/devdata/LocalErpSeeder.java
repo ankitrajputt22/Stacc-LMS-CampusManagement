@@ -16,6 +16,7 @@ import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.request.StudentRequestService;
+import com.stacc.backend.academic.exam.ExamService;
 import com.stacc.backend.academic.attendance.api.StudentAttendanceQueryService;
 import com.stacc.backend.academic.result.AcademicStandingService;
 import com.stacc.backend.academic.timetable.ClassTimetableSlot.Kind;
@@ -89,11 +90,12 @@ public class LocalErpSeeder implements ApplicationRunner {
     private final StudentRequestService requests;
     private final StudentAttendanceQueryService attendance;
     private final AcademicStandingService standing;
+    private final ExamService exams;
 
     public LocalErpSeeder(Environment environment, TransactionTemplate transaction, UserAccountRepository accounts,
             CourseEnrollmentRepository courseEnrollments, CourseOfferingRepository offerings, TimetableService timetable,
             DegreeProgressService degree, PersonProfileService people, StudentRequestService requests,
-            StudentAttendanceQueryService attendance, AcademicStandingService standing) {
+            StudentAttendanceQueryService attendance, AcademicStandingService standing, ExamService exams) {
         this.environment = environment;
         this.transaction = transaction;
         this.accounts = accounts;
@@ -105,6 +107,7 @@ public class LocalErpSeeder implements ApplicationRunner {
         this.requests = requests;
         this.attendance = attendance;
         this.standing = standing;
+        this.exams = exams;
     }
 
     @Override
@@ -116,6 +119,8 @@ public class LocalErpSeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> requirements("ece25001"));
         transaction.executeWithoutResult(status -> contacts());
         transaction.executeWithoutResult(status -> requests());
+        transaction.executeWithoutResult(status -> examSession("student1", "B-12"));
+        transaction.executeWithoutResult(status -> examSession("ece25001", "ECE-HALL-1"));
         LOGGER.info("Local ERP records ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
 
@@ -209,5 +214,32 @@ public class LocalErpSeeder implements ApplicationRunner {
                     .ifPresent(session -> requests.correction(account.getId(), session.attendanceRecordId(),
                             "I was in class for the whole lecture but was marked absent."));
         });
+    }
+
+    // The end-semester exams of the semester the student is enrolled in now: one exam every other weekday from 7 Dec,
+    // 10:00 to 13:00 (labs to 12:00), every student seated, published. Only when the semester has no exam session.
+    private void examSession(String loginId, String hall) {
+        accounts.findByLoginId(loginId).ifPresent(account -> courseEnrollments.findAllWithStudentByUserAccountId(account.getId()).stream()
+                .filter(enrollment -> enrollment.getStatus() == CourseEnrollmentStatus.ENROLLED).findFirst()
+                .ifPresent(enrollment -> {
+                    Long semesterId = enrollment.getCourseOffering().getSemester().getId();
+                    if (!exams.forSemester(semesterId).isEmpty()) {
+                        return;
+                    }
+                    Long sessionId = exams.createSession(semesterId, "End Semester Examinations — December 2026").examSessionId();
+                    var day = java.time.LocalDate.of(2026, 12, 7);
+                    var semesterOfferings = offerings.findAllWithContext(semesterId, null, null, null, Pageable.unpaged()).stream()
+                            .filter(offering -> offering.getSection() == null)
+                            .filter(offering -> offering.getStatus() != com.stacc.backend.academic.offering.CourseOfferingStatus.CLOSED)
+                            .toList();
+                    for (CourseOffering offering : semesterOfferings) {
+                        boolean lab = offering.getCourse().getCourseType() == CourseType.LAB;
+                        var exam = exams.addExam(sessionId, offering.getId(), day, LocalTime.of(10, 0), LocalTime.of(lab ? 12 : 13, 0),
+                                lab ? "LAB-02" : hall, 60);
+                        exams.seatPlan(exam.slotId());
+                        day = day.plusDays(day.getDayOfWeek() == DayOfWeek.FRIDAY ? 3 : 2);
+                    }
+                    exams.publish(sessionId);
+                }));
     }
 }

@@ -69,12 +69,62 @@ export type SemesterStanding = {
   semesterNumber: number
   creditsGraded: number
   creditsEarned: number
+  /** The sum of grade points times credits. */
+  weightedPoints: number
   sgpa: number | null
+  /** The CGPA counting this semester and every earlier one. */
+  cgpaAfter: number | null
   courses: CourseGrade[]
 }
 
 /** Semesters latest first; the CGPA is null until some graded credit exists. */
-export type Standing = { semesters: SemesterStanding[]; cgpa: number | null; creditsEarned: number }
+export type Standing = {
+  semesters: SemesterStanding[]
+  cgpa: number | null
+  creditsEarned: number
+  creditsGraded: number
+  weightedPoints: number
+}
+
+export type GradeScaleEntry = { code: string; points: number; minPercent: number; passing: boolean }
+
+/** One of the signed-in student's published exams; times are "HH:mm:ss" in the college's time zone. */
+export type MyExam = {
+  slotId: number
+  sessionName: string
+  courseCode: string
+  courseName: string
+  teachers: string[]
+  examDate: string
+  startsAt: string
+  endsAt: string
+  hall: string
+  /** Null until a seat plan gives one. */
+  seatNumber: number | null
+}
+
+export type ExamSlot = {
+  slotId: number
+  courseOfferingId: number
+  courseCode: string
+  courseName: string
+  sectionCode: string | null
+  examDate: string
+  startsAt: string
+  endsAt: string
+  hall: string
+  hallSeats: number
+  seatsGiven: number
+  studentsEnrolled: number
+}
+
+export type ExamSession = {
+  examSessionId: number
+  semesterId: number
+  name: string
+  status: 'DRAFT' | 'PUBLISHED'
+  exams: ExamSlot[]
+}
 
 export type RequestKind = 'MEDICAL_LEAVE' | 'ATTENDANCE_CORRECTION' | 'REVALUATION'
 export type RequestStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
