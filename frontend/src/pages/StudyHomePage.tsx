@@ -39,6 +39,11 @@ export function StudyHomePage() {
                   {levels.MASTERED} mastered · {levels.PRACTISING} practising · {levels.LEARNING} learning · {levels.NOT_STARTED} not started
                   {course.flashcardsDue > 0 && ` · ${course.flashcardsDue} flashcards due today`}
                 </p>
+                {!course.assistantOn && (
+                  <p className="mt-2 text-sm text-ink-muted">
+                    The AI Study Assistant is turned off for this course by its teachers. Your saved work and progress stay.
+                  </p>
+                )}
                 {course.nextStep && (
                   <p className="mt-2 text-sm">
                     <span className="font-medium text-ink">Next: </span>

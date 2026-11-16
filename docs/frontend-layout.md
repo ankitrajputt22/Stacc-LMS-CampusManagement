@@ -4,7 +4,7 @@ Every Stacc page is shown inside one shared app shell, so ERP, LMS, hostel, and 
 
 ## App layout
 
-`frontend/src/layouts/AppLayout.tsx` combines the navigation rail (wide screens), the top bar and menu drawer (small screens), and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. `/` is the Dashboard, and any unknown URL shows the not-found page.
+`frontend/src/layouts/AppLayout.tsx` combines the navigation rail (wide screens), the top bar and menu drawer (small screens), and the main content area. Routes are defined in `frontend/src/App.tsx` and render inside the layout. Every page except the sign-in page and the Dashboard is loaded on first use (`React.lazy` in `App.tsx`), so the first screen downloads only what it needs; `AppLayout`, `CourseLayout`, and `TeachingCourseLayout` wrap their outlet in `Suspense` with the shared `LoadingState`, so the navigation stays in place while a page loads. Add a new page the same way. A page that fails to render or load shows the shared error state from `PageErrorBoundary` (Retry reloads the browser page, which also picks up a new version after an update) instead of a blank screen; the layout's boundary is keyed by the address, so going to another page clears it. `/` is the Dashboard, and any unknown URL shows the not-found page.
 
 The whole layout is for signed-in users. It sits inside the `RequireAuth` route guard, so a visitor who is not signed in sees the sign-in page instead. `/login` is the one page outside the layout, with its own simple design. See `frontend-authentication.md`.
 

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { LOGIN_PATH, RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import { LoadingState } from './components/states/LoadingState'
+import { PageErrorBoundary } from './components/states/PageErrorBoundary'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { CourseLayout } from './courses/CourseLayout'
@@ -121,6 +122,7 @@ const QuizAttemptPage = lazy(() => import('./pages/CourseQuizPages').then((modul
 
 function App() {
   return (
+    <PageErrorBoundary>
     <Suspense fallback={<LoadingState />}>
     <Routes>
       {/* Public: the sign-in page has its own simple layout, without the app shell. */}
@@ -264,6 +266,7 @@ function App() {
       </Route>
     </Routes>
     </Suspense>
+    </PageErrorBoundary>
   )
 }
 
