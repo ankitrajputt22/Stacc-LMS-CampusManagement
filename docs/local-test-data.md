@@ -173,3 +173,10 @@ It only finds or creates, through the feature services, like the main seeder.
 **Also created:** the `ECE` department and `BTECH-ECE` program (24 credits a semester), its semesters 2 (last session, closed) and 3 (current, registration open), courses `EC201` to `EC305`, `emp3001` as head of ECE, two more finalized CS301 classes with the whole class, two ECE calendar events, three helpdesk tickets (open, in progress, and resolved), and two campus requests (a transport pass waiting for approval and an approved bonafide certificate).
 
 Attendance marks and marks are worked out from each student's login ID and place in the list, so a second run creates nothing and changes nothing.
+
+**Campus activity.** `LocalCampusActivitySeeder` runs last (order 20) and gives these people everyday activity, through the feature services and only when missing:
+
+- **Discussions:** in EC301, a question from `ece25003` answered by `emp3002` (accepted) with a student follow-up, a student question answered by another student, and the teacher's pinned office-hours notice; in CS301, a question from `cse25006` answered by `faculty1` (accepted).
+- **Clubs:** `cse25004` and `cse25005` are accepted into the Coding Club; `cse25009`, `cse25013`, and `ece25006` wait for its officers. Five students joined the Cricket Team.
+- **Mentoring:** `emp3001` mentors `ece25005` (with a first meeting, shared and private notes, and two action items that show on their To-Do lists) and `ece25012`; `emp2011` mentors `cse25008`.
+- **Library:** *Signals and Systems* (`LIB-0101`, `LIB-0102`) and *Microelectronic Circuits* (`LIB-0103`); `ece25003` and `ece25008` each have a book on loan.
