@@ -39,9 +39,9 @@ function TicketFacts({ ticket, showRequester }: { ticket: HelpdeskTicketDetail; 
     ...(ticket.closedAt ? [{ label: 'Closed', value: formatDateTime(ticket.closedAt), time: ticket.closedAt }] : []),
   ]
   return (
-    <dl className="mt-4 flex flex-wrap gap-y-3 border-y border-line py-3 text-[0.95rem]">
+    <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-line py-3 text-[0.95rem] sm:flex sm:flex-wrap sm:gap-x-0">
       {facts.map((fact) => (
-        <div key={fact.label} className="min-w-0 border-line pr-6 not-last:mr-6 not-last:border-r">
+        <div key={fact.label} className="min-w-0 border-line sm:pr-6 sm:not-last:mr-6 sm:not-last:border-r">
           <dt className="text-sm text-ink-muted">{fact.label}</dt>
           <dd className="break-words text-ink">{fact.time ? <time dateTime={fact.time}>{fact.value}</time> : fact.value}</dd>
         </div>
