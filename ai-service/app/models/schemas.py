@@ -364,6 +364,25 @@ class RubricResponse(BaseModel):
     insufficientContext: bool
 
 
+# --- Flashcards (v0.15.3) ----------------------------------------------------------------------------
+
+
+class FlashcardRequest(IndexedRequest):
+    cardCount: int = Field(ge=3, le=30)
+    topicId: int | None = Field(default=None, gt=0)
+
+
+class Flashcard(BaseModel):
+    front: str
+    back: str
+    citations: list[Citation]
+
+
+class FlashcardResponse(BaseModel):
+    cards: list[Flashcard]
+    insufficientContext: bool
+
+
 # --- What the model must return ----------------------------------------------------------------
 # Source references are the short labels ("S1", "S2", ...) the prompt gives each retrieved chunk.
 
@@ -488,4 +507,14 @@ class RubricModelCriterion(BaseModel):
 class RubricModelOutput(BaseModel):
     criteria: Annotated[list[RubricModelCriterion], Field(max_length=8)]
     sourceIds: SourceRefs = []
+
+
+class FlashcardModelCard(BaseModel):
+    front: Bounded(300, 1)
+    back: Bounded(1000, 1)
+    sourceIds: SourceRefs = []
+
+
+class FlashcardModelOutput(BaseModel):
+    cards: Annotated[list[FlashcardModelCard], Field(max_length=30)]
 

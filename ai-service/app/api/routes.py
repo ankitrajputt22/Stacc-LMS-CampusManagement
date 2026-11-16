@@ -33,6 +33,11 @@ def question_bank_draft(course_key: str, body: schemas.BankDraftRequest, request
     return request.app.state.learning.bank_draft(checked_course_key(course_key), body)
 
 
+@internal.post("/indexes/{course_key}/flashcards", response_model=schemas.FlashcardResponse)
+def flashcards(course_key: str, body: schemas.FlashcardRequest, request: Request):
+    return request.app.state.learning.flashcards(checked_course_key(course_key), body)
+
+
 @internal.post("/indexes/{course_key}/model-answer", response_model=schemas.ModelAnswerResponse)
 def model_answer(course_key: str, body: schemas.ModelAnswerRequest, request: Request):
     return request.app.state.learning.model_answer(checked_course_key(course_key), body)

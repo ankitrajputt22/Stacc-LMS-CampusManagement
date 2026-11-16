@@ -173,6 +173,16 @@ public final class AiServiceMessages {
     public record RubricResult(List<RubricCriterion> criteria, List<Citation> citations, Boolean insufficientContext) {
     }
 
+    /** Flashcards from the allowed sources or one topic (v0.15.3). */
+    public record FlashcardRequest(String indexFingerprint, int cardCount, Long topicId, List<SourceRef> allowedSources) {
+    }
+
+    public record Flashcard(String front, String back, List<Citation> citations) {
+    }
+
+    public record FlashcardResult(List<Flashcard> cards, Boolean insufficientContext) {
+    }
+
     record ErrorBody(String code, String message) {
     }
 }

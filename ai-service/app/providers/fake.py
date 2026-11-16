@@ -147,6 +147,16 @@ class FakeModelProvider(ModelProvider):
         return {"chosenOptions": [number for number, text in enumerate(options, start=1) if supported(text)]}
 
     @staticmethod
+    def _flashcards(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        count = int(parameters.get("cardCount", 5))
+        cards = []
+        for number in range(count):
+            chunk = context[number % len(context)]
+            cards.append({"front": f"Card {number + 1}: {chunk.title}?", "back": _first_sentence(chunk.text, 300),
+                          "sourceIds": [chunk.ref]})
+        return {"cards": cards}
+
+    @staticmethod
     def _model_answer(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
         if not context:
             return {"insufficientContext": True, "answer": "", "keyPoints": [], "sourceIds": []}

@@ -16,6 +16,21 @@ export type AiCitation = {
   pageId?: number | null
 }
 
+/** Flashcards (v0.15.3). */
+export type AiFlashcardSetSummary = { id: number; title: string; cards: number; dueToday: number }
+export type AiFlashcard = {
+  id: number
+  position: number
+  front: string
+  back: string
+  source: AiCitation
+  dueOn: string
+  intervalDays: number
+  repetitions: number
+}
+export type AiFlashcardSet = { id: number; title: string; cards: AiFlashcard[] }
+export type ReviewRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY'
+
 /** What a summary covers and how (v0.15.2). */
 export type AiSummaryScope = 'TOPIC' | 'MODULE' | 'DOCUMENT'
 export type AiSummaryStyle = 'BRIEF' | 'DETAILED' | 'REVISION_NOTES'
