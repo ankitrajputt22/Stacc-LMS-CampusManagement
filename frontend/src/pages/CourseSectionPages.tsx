@@ -13,12 +13,13 @@ import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { CourseProgressCard } from '../courses/CourseProgressCard'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseFactsLine } from '../courses/courseFactsLine'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseDetail } from '../types/lms'
-import { Badge, Card, DataTable, PageHeader } from '../ui'
+import { Badge, Card, DataTable } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 const COURSES = { to: '/courses', label: 'Courses' }
@@ -43,24 +44,29 @@ export function StudentCourseSection({
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
   const course = useLmsCourse(isStudent ? lmsCourseId : null)
 
-  const header = (courseName?: string) => (
-    <PageHeader
-      title={title}
-      breadcrumb={
-        <Breadcrumb
-          parent={
-            lmsCourseId === null
-              ? COURSES
-              : [
-                  COURSES,
-                  { to: `/courses/${lmsCourseId}`, label: courseName ?? 'Course' },
-                  ...(parent ? [{ to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }] : []),
-                ]
-          }
-          current={title}
-        />
-      }
-    />
+  // The course and its facts above the section's own title, which is the page's one h1. A page inside a section,
+  // such as one quiz, keeps a breadcrumb back to the section.
+  const header = (loaded?: LmsCourseDetail) => (
+    <header className="mb-6">
+      {loaded && (
+        <>
+          <p className="text-2xl font-bold break-words text-portal-navy sm:text-3xl">{`${loaded.courseCode} ${loaded.courseName}`}</p>
+          <p className="mt-1 break-words text-ink">{courseFactsLine(loaded)}</p>
+        </>
+      )}
+      {parent && lmsCourseId !== null && (
+        <div className="mt-4">
+          <Breadcrumb
+            parent={[COURSES, { to: `/courses/${lmsCourseId}`, label: loaded?.courseName ?? 'Course' }, { to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }]}
+            current={title}
+          />
+        </div>
+      )}
+      <h1 className="mt-4 flex items-center gap-3 text-3xl font-bold tracking-tight break-words text-ink">
+        <span aria-hidden="true" className="h-9 w-1.5 shrink-0 rounded bg-teal-600" />
+        {title}
+      </h1>
+    </header>
   )
   if (!isStudent || course.status !== 'loaded') {
     return (
@@ -84,7 +90,7 @@ export function StudentCourseSection({
   return (
     <>
       <title>{`${title} · ${course.data.courseName} · Stacc`}</title>
-      {header(course.data.courseName)}
+      {header(course.data)}
       {children(course.data)}
     </>
   )

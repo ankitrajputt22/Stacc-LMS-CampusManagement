@@ -7,8 +7,8 @@ import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
+import { courseFactsLine } from '../courses/courseFactsLine'
 import { parseCourseId } from '../courses/courseRoute'
-import { creditsText } from '../courses/credits'
 import { CourseAnnouncements } from '../courses/CourseAnnouncements'
 import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
@@ -73,19 +73,7 @@ type CourseHomeProps = {
 }
 
 /** "Section A · Taught by Meera Iyer and Rohan Gupta", from what the API sent; empty when it sent neither. */
-/** The course's official facts in one line: program, semester, section, session, credits, and who teaches it. */
-function factsLine(course: LmsCourseDetail): string {
-  return [
-    course.programCode,
-    `Semester ${course.semesterNumber}`,
-    course.sectionCode ? `Section ${course.sectionCode}` : null,
-    course.academicSessionCode,
-    creditsText(course.credits),
-    course.faculty.length > 0 ? listFormat.format(course.faculty) : null,
-  ].filter(Boolean).join(' · ')
-}
 
-const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
 
 /**
  * The course home: the official course details, then what the faculty chose students see first: the overview
@@ -98,7 +86,7 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
       <title>{`${course.courseName} · Stacc`}</title>
       <PageHeader
         title={`${course.courseCode} ${course.courseName}`}
-        description={<p className="break-words text-ink">{factsLine(course)}</p>}
+        description={<p className="break-words text-ink">{courseFactsLine(course)}</p>}
       />
 
       {course.homeView === 'SYLLABUS' && (
