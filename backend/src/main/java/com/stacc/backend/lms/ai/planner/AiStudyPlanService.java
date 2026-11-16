@@ -20,6 +20,7 @@ import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.ai.mastery.Mastery;
 import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
 import com.stacc.backend.lms.content.LmsContentStatus;
+import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,17 +37,22 @@ public class AiStudyPlanService {
     static final Duration REFRESH_AFTER = Duration.ofDays(21);
     static final String WRONG_LENGTH = "Plan 7 or 14 days.";
     static final String WRONG_MINUTES = "Plan from 30 to 240 minutes a day.";
+    /** Calendar entries added from a plan start with this; they never count as busy days for a later plan. */
+    static final String CALENDAR_PREFIX = "Study plan · ";
 
     private final AiMasteryService mastery;
     private final AiFlashcardStore flashcards;
     private final LmsAssignmentRepository assignments;
     private final PersonalCalendarService calendar;
     private final AiStudySessionRepository sessions;
+    private final LmsCourseRepository lmsCourses;
     private final EngagementProperties college;
     private final Clock clock;
 
     public AiStudyPlanService(AiMasteryService mastery, AiFlashcardStore flashcards, LmsAssignmentRepository assignments,
-            PersonalCalendarService calendar, AiStudySessionRepository sessions, EngagementProperties college, Clock clock) {
+            PersonalCalendarService calendar, AiStudySessionRepository sessions, LmsCourseRepository lmsCourses,
+            EngagementProperties college, Clock clock) {
+        this.lmsCourses = lmsCourses;
         this.mastery = mastery;
         this.flashcards = flashcards;
         this.assignments = assignments;
@@ -87,6 +93,9 @@ public class AiStudyPlanService {
                 .forEach(topic -> needs.add(new StudyPlanner.Need(StudyPlanner.Kind.REFRESH_PAGE, topic.topicId(), topic.title(), null)));
         Set<LocalDate> busy = new HashSet<>();
         for (PersonalCalendarEvent event : calendar.overlapping(accountId, start, end)) {
+            if (event.getTitle().startsWith(CALENDAR_PREFIX)) {
+                continue;
+            }
             for (LocalDate day = event.getStartDate().isBefore(start) ? start : event.getStartDate();
                     !day.isAfter(event.getEndDate()) && !day.isAfter(end); day = day.plusDays(1)) {
                 busy.add(day);
@@ -96,16 +105,30 @@ public class AiStudyPlanService {
         return StudyPlanner.plan(start, days, minutesPerDay, needs, busy, hasFlashcards);
     }
 
-    /** Adds one personal calendar entry per planned day; answers how many were added. */
+    /**
+     * Adds one personal calendar entry per planned day, named for the course, skipping days that already hold this
+     * course's plan, so adding twice adds nothing new; answers how many were added.
+     */
+    @Transactional
     public int addToCalendar(Long accountId, Long lmsCourseId, int days, int minutesPerDay) {
+        List<StudyPlanner.Day> planned = plan(accountId, lmsCourseId, days, minutesPerDay);
+        if (planned.isEmpty()) {
+            return 0;
+        }
+        String course = lmsCourses.findById(lmsCourseId).map(found -> found.getCourseOffering().getCourse().getCode()).orElse("course");
+        String prefix = CALENDAR_PREFIX + course + ":";
+        Set<LocalDate> alreadyPlanned = new HashSet<>();
+        calendar.overlapping(accountId, planned.getFirst().date(), planned.getLast().date()).stream()
+                .filter(event -> event.getTitle().startsWith(prefix))
+                .forEach(event -> alreadyPlanned.add(event.getStartDate()));
         int added = 0;
-        for (StudyPlanner.Day day : plan(accountId, lmsCourseId, days, minutesPerDay)) {
-            if (day.sessions().isEmpty()) {
+        for (StudyPlanner.Day day : planned) {
+            if (day.sessions().isEmpty() || alreadyPlanned.contains(day.date())) {
                 continue;
             }
             String notes = day.sessions().stream().map(session -> session.title() + " (" + session.minutes() + " min)")
                     .collect(Collectors.joining("\n"));
-            calendar.create(accountId, "Study plan: " + day.planned() + " min", notes.length() > PersonalCalendarEvent.MAX_NOTES_LENGTH
+            calendar.create(accountId, prefix + " " + day.planned() + " min", notes.length() > PersonalCalendarEvent.MAX_NOTES_LENGTH
                     ? notes.substring(0, PersonalCalendarEvent.MAX_NOTES_LENGTH) : notes, day.date(), day.date());
             added++;
         }
