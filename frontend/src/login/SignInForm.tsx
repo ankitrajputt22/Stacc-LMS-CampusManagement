@@ -55,21 +55,22 @@ function describeFailure(error: unknown): Failure {
   return { message: SERVER_PROBLEM, fields: {} }
 }
 
-// Dark fields on the portal's navy background; the label stays for screen readers, the placeholder says the same.
+// Dark navy fields inside the white sign-in card, with their labels shown above them.
 const inputClasses =
-  'block h-16 w-full border bg-portal-navy px-6 text-base text-white placeholder:text-white/80 placeholder:italic focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-portal-cta'
+  'mt-2 block h-14 w-full rounded-lg border bg-portal-navy px-5 text-base text-white placeholder:text-white/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-portal-cta'
 
 function inputBorder(hasError: boolean): string {
-  return hasError ? 'border-red-300' : 'border-portal-navy hover:border-white/40'
+  return hasError ? 'border-danger ring-2 ring-danger/30' : 'border-portal-navy'
 }
 
-const fieldErrorClasses = 'mt-2 text-sm font-medium text-red-200'
+const labelClasses = 'block text-base font-semibold text-ink'
+const fieldErrorClasses = 'mt-2 text-sm font-medium text-danger'
 
 /**
  * The one Stacc sign-in form: a college ID or employee ID and a password, sent to the one login endpoint. It never
  * chooses or sends a role. After a successful sign-in the page moves on, because the account is then signed in.
  */
-export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
+export function SignInForm({ autoFocus = true, onForgotPassword }: { autoFocus?: boolean; onForgotPassword?: () => void }) {
   const { login } = useAuth()
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
@@ -130,9 +131,9 @@ export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mt-8">
+    <form onSubmit={handleSubmit} noValidate>
       <div>
-        <label htmlFor="login-id" className="sr-only">
+        <label htmlFor="login-id" className={labelClasses}>
           College ID / Employee ID
         </label>
         <input
@@ -160,11 +161,11 @@ export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
         )}
       </div>
 
-      <div className="mt-5">
-        <label htmlFor="password" className="sr-only">
+      <div className="mt-6">
+        <label htmlFor="password" className={labelClasses}>
           Password
         </label>
-        <div className="relative">
+        <div className="relative mt-2">
           <input
             ref={passwordRef}
             id="password"
@@ -177,7 +178,7 @@ export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
             onChange={(event) => setPassword(event.target.value)}
             aria-invalid={fieldErrors.password ? true : undefined}
             aria-describedby={fieldErrors.password ? 'password-error' : undefined}
-            className={`${inputClasses} pr-16 ${inputBorder(Boolean(fieldErrors.password))}`}
+            className={`${inputClasses} mt-0 pr-16 ${inputBorder(Boolean(fieldErrors.password))}`}
           />
           <button
             type="button"
@@ -196,20 +197,20 @@ export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[0.95rem] text-white">
-        <span>One account for ERP and LMS</span>
-        <a
-          href="#password-help"
-          className="inline-flex min-h-11 items-center font-medium underline underline-offset-4 hover:text-portal-bar-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:min-h-0"
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="inline-flex min-h-11 items-center rounded-sm text-[0.95rem] font-medium text-stacc-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
         >
-          Forgot password
-        </a>
+          Forgot password?
+        </button>
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mx-auto mt-4 flex h-16 min-w-40 items-center justify-center bg-portal-cta px-8 text-base font-semibold text-white shadow-sm hover:bg-portal-cta-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:cursor-wait disabled:bg-portal-cta-hover"
+        className="mt-5 flex h-14 w-full items-center justify-center rounded-lg bg-portal-cta text-lg font-semibold text-white hover:bg-portal-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-portal-navy disabled:cursor-wait disabled:bg-portal-cta-hover"
       >
         {isSubmitting ? 'Signing in…' : 'Sign in'}
       </button>
@@ -217,7 +218,7 @@ export function SignInForm({ autoFocus = true }: { autoFocus?: boolean }) {
       {/* Always present, so screen readers announce a message the moment it appears. */}
       <div role="alert">
         {formError && (
-          <p className="mt-5 border-l-4 border-danger bg-white px-4 py-3 text-sm leading-5 text-danger">
+          <p className="mt-5 rounded-lg border border-danger/40 bg-danger/5 px-4 py-3 text-sm leading-5 text-danger">
             <span className="font-semibold">Sign-in failed. </span>
             {formError}
           </p>

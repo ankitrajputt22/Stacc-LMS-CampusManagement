@@ -21,7 +21,8 @@ class PersonProfileServiceTest {
 
     private final PersonProfileRepository profiles = mock(PersonProfileRepository.class);
     private final UserAccountRepository accounts = mock(UserAccountRepository.class);
-    private final PersonProfileService service = new PersonProfileService(profiles, accounts);
+    private final PersonProfileService service = new PersonProfileService(profiles, accounts,
+            mock(com.stacc.backend.identity.person.PersonEmergencyContactRepository.class), java.time.Clock.systemUTC());
 
     private static UserAccount account(long id, String loginId) {
         UserAccount account = new UserAccount(loginId, "hash");

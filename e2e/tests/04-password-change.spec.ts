@@ -7,7 +7,7 @@ const LOGIN_ID = 'student2'
 const NEW_PASSWORD = 'e2e river lamp cocoa 42'
 
 async function changePassword(page: Page, current: string, next: string) {
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Account' }).click()
+  await page.getByRole('button', { name: 'Account', exact: true }).click()
   await page.getByRole('link', { name: 'Change password' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Change password' })).toBeVisible()
   await page.getByLabel('Current password').fill(current)
@@ -34,7 +34,7 @@ test('changing the password keeps this device signed in and signs every other de
 
     // The old password no longer works, the new one does.
     await signOut(page)
-    await page.goto('/login?portal=erp')
+    await page.goto('/login')
     await page.getByLabel('College ID / Employee ID').fill(LOGIN_ID)
     await page.getByLabel('Password', { exact: true }).fill(password())
     await page.getByRole('button', { name: 'Sign in' }).click()

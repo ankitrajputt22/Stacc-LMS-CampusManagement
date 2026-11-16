@@ -46,6 +46,9 @@ public class PersonProfile {
     @Column(length = PersonProfileValues.MAX_PHONE)
     private String phone;
 
+    @Column(name = "mailing_address", length = PersonProfileValues.MAX_MAILING_ADDRESS)
+    private String mailingAddress;
+
     @Column(name = "photo_object_key")
     private String photoObjectKey;
 
@@ -81,6 +84,15 @@ public class PersonProfile {
     public void changePersonalDetails(String preferredName, String phone) {
         this.preferredName = PersonProfileValues.preferredName(preferredName);
         this.phone = PersonProfileValues.phone(phone);
+    }
+
+    /** The person changes their own mailing address. Blank clears it. */
+    public void changeMailingAddress(String mailingAddress) {
+        this.mailingAddress = PersonProfileValues.mailingAddress(mailingAddress);
+    }
+
+    public String getMailingAddress() {
+        return mailingAddress;
     }
 
     /** The college corrects the official full name and email. The person never changes these. */

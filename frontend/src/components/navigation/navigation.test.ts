@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { navigationFor } from './navigation'
+import { breadcrumbFor, navigationFor } from './navigation'
 
 function sectionIds(roles: Parameters<typeof navigationFor>[0]) {
   return navigationFor(roles).map((section) => section.id)
@@ -10,19 +10,30 @@ function labels(roles: Parameters<typeof navigationFor>[0]) {
 }
 
 describe('navigationFor', () => {
-  it('shows each role section the account holds, always in the order Student, Faculty, Admin', () => {
-    expect(sectionIds(['STUDENT'])).toEqual(['home', 'student', 'common'])
-    expect(sectionIds(['ADMIN', 'STUDENT', 'FACULTY'])).toEqual(['home', 'student', 'faculty', 'admin', 'common'])
+  it('shows the groups a student uses, Learning first and the ERP beside it', () => {
+    expect(sectionIds(['STUDENT'])).toEqual(['home', 'learning', 'erp', 'campus', 'services', 'career'])
+    expect(navigationFor(['STUDENT']).find((section) => section.id === 'erp')?.items.map((item) => item.label)).toEqual([
+      'My Profile',
+      'Academics',
+      'Attendance',
+      'Exams & Results',
+    ])
+  })
+
+  it('keeps the fixed order of groups whatever order the roles arrive in', () => {
+    expect(sectionIds(['ADMIN', 'STUDENT', 'FACULTY'])).toEqual([
+      'home', 'learning', 'teaching', 'erp', 'manage', 'campus', 'services', 'career',
+    ])
   })
 
   it('lists shared items once for an account with several roles', () => {
-    const shared = labels(['STUDENT', 'FACULTY', 'ADMIN']).filter((label) => label === 'Calendar' || label === 'Inbox')
-    expect(shared).toEqual(['Calendar', 'Inbox'])
+    const shared = labels(['STUDENT', 'FACULTY', 'ADMIN']).filter((label) => label === 'Support' || label === 'My Profile')
+    expect(shared).toEqual(['My Profile', 'Support'])
   })
 
-  it('gives an account without known roles only the shared entry points', () => {
-    expect(sectionIds([])).toEqual(['home', 'common'])
-    expect(labels([])).toEqual(['Dashboard'])
+  it('gives an account without known roles only the Overview, and drops empty groups', () => {
+    expect(sectionIds([])).toEqual(['home'])
+    expect(labels([])).toEqual(['Overview'])
   })
 
   it('links Users to user management for admins only', () => {
@@ -37,5 +48,18 @@ describe('navigationFor', () => {
       .map((item) => item.to)
       .filter((to): to is string => to !== undefined)
     expect(links.every((to) => to.startsWith('/') && !to.startsWith('//'))).toBe(true)
+  })
+})
+
+describe('breadcrumbFor', () => {
+  it('names the group and the page, using the closest match', () => {
+    expect(breadcrumbFor(['STUDENT'], '/erp/profile')).toEqual(['ERP', 'My Profile'])
+    expect(breadcrumbFor(['STUDENT'], '/erp')).toEqual(['ERP'])
+    expect(breadcrumbFor(['STUDENT'], '/courses/12/modules')).toEqual(['Learning', 'Courses'])
+    expect(breadcrumbFor(['STUDENT'], '/')).toEqual(['Overview'])
+  })
+
+  it('gives pages outside the navigation no trail', () => {
+    expect(breadcrumbFor(['STUDENT'], '/account')).toEqual([])
   })
 })

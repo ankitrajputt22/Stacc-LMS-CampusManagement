@@ -42,6 +42,8 @@ export type MyCourseRecord = {
   status: EnrollmentStatus
   /** The published result, or null when none is published. */
   result: { marksObtained: number; maxMarks: number; gradeCode: string | null; publishedAt: string } | null
+  /** Who teaches the offering now, primary teacher first, by name. */
+  teachers: string[]
 }
 
 export type MySemesterRecord = {

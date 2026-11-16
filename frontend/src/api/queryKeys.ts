@@ -4,6 +4,12 @@
  * account: the cache is emptied whenever a session ends or starts.
  */
 export const queryKeys = {
+  erp: {
+    all: ['erp'] as const,
+    timetable: () => ['erp', 'timetable'] as const,
+    degreeProgress: () => ['erp', 'degree-progress'] as const,
+    standing: () => ['erp', 'standing'] as const,
+  },
   me: {
     profile: () => ['me', 'profile'] as const,
     photo: () => ['me', 'photo'] as const,

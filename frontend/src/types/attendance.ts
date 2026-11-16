@@ -85,6 +85,8 @@ export type StudentCourseAttendance = {
   attendancePercentage: number | null
   /** Latest class first. */
   sessions: StudentAttendanceSession[]
+  /** Below the college's minimum of 75%, decided by the backend. */
+  lowAttendance: boolean
 }
 
 export type StudentAttendance = {

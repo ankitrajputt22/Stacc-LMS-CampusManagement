@@ -87,4 +87,49 @@ public class MyPersonProfileController {
         return profiles.changeMyPersonalDetails(AuthenticatedAccount.idFrom(accessToken), request.preferredName(),
                 request.phone());
     }
+
+    public record MailingAddressRequest(@jakarta.validation.constraints.Size(max = 500) String mailingAddress) {
+    }
+
+    public record EmergencyContactRequest(
+            @jakarta.validation.constraints.NotBlank(message = "Name is required") @jakarta.validation.constraints.Size(max = 150) String name,
+            @jakarta.validation.constraints.NotBlank(message = "Relation is required") @jakarta.validation.constraints.Size(max = 50) String relation,
+            @jakarta.validation.constraints.NotBlank(message = "Phone number is required") @jakarta.validation.constraints.Size(max = 20) String phone) {
+    }
+
+    @PutMapping("/mailing-address")
+    @PreAuthorize(EDIT)
+    @Operation(summary = "Change the signed-in person's mailing address",
+            description = "Plain text up to 500 characters with line breaks kept; blank clears it.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The changed profile.")
+    public MyPersonProfile changeMyMailingAddress(@AuthenticationPrincipal Jwt accessToken,
+            @Valid @RequestBody MailingAddressRequest request) {
+        return profiles.changeMyMailingAddress(AuthenticatedAccount.idFrom(accessToken), request.mailingAddress());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/emergency-contacts")
+    @PreAuthorize(EDIT)
+    @Operation(summary = "Add an emergency contact", description = "At most three; a fourth answers 409.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The changed profile.")
+    @ApiResponse(responseCode = "409", description = "Three contacts already, or no profile recorded yet.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public MyPersonProfile addMyEmergencyContact(@AuthenticationPrincipal Jwt accessToken,
+            @Valid @RequestBody EmergencyContactRequest request) {
+        return profiles.addMyEmergencyContact(AuthenticatedAccount.idFrom(accessToken), request.name(), request.relation(),
+                request.phone());
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/emergency-contacts/{contactId}")
+    @PreAuthorize(EDIT)
+    @Operation(summary = "Remove one of the signed-in person's emergency contacts",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @ApiResponse(responseCode = "200", description = "The changed profile.")
+    @ApiResponse(responseCode = "404", description = "No such contact of the signed-in person.",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public MyPersonProfile removeMyEmergencyContact(@AuthenticationPrincipal Jwt accessToken,
+            @org.springframework.web.bind.annotation.PathVariable Long contactId) {
+        return profiles.removeMyEmergencyContact(AuthenticatedAccount.idFrom(accessToken), contactId);
+    }
 }
