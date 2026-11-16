@@ -20,7 +20,7 @@ test('an admin checks a CSV file, sees its problems, and then imports it', async
   })
   await page.getByRole('button', { name: 'Check file' }).click()
   await expect(page.getByText('An account with this login ID already exists.').first()).toBeVisible()
-  await expect(page.getByRole('button', { name: /^Import \d+ accounts$/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^Import \d+ accounts?$/ })).toHaveCount(0)
 
   await page.getByLabel('File to import').setInputFiles({
     name: 'people.csv',
@@ -28,7 +28,7 @@ test('an admin checks a CSV file, sees its problems, and then imports it', async
     buffer: Buffer.from(`${HEADER}\nIMP${SUFFIX},Import Person,,ADMIN,,,,\n`),
   })
   await page.getByRole('button', { name: 'Check file' }).click()
-  await page.getByRole('button', { name: 'Import 1 accounts' }).click()
+  await page.getByRole('button', { name: 'Import 1 account' }).click()
   await page.getByRole('button', { name: 'Create accounts' }).click()
   await expect(page.getByText('1 account was created.', { exact: false })).toBeVisible()
 
