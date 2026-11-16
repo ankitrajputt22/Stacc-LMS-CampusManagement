@@ -81,3 +81,5 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 ## Look (v0.16.14)
 
 Clubs and Sports list each group as one row: name with Member or Asked to join, the joining policy as a tinted word (Open to join, Join on approval, Not taking members), description, members, officers, and Join, Ask to join, Leave, or Withdraw request; the search sits in the panel's header. A member's or officer's sessions, announcements, and teams open under the row as before.
+
+Events are one card each: the title with Cancelled, Trial, You’re going, or the waitlist place; the times, venue, and group with icons; places taken, waiting, and who may come; the description; and Register, Join the waitlist, Leave the waitlist, Give up my place, or the reasons someone cannot register. Tournaments sit in one panel, each with its matches and standings tables.
