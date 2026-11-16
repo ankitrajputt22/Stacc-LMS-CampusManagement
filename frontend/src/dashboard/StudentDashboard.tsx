@@ -12,6 +12,23 @@ import type { StudentDashboard as Dashboard } from '../types/dashboard'
 import { courseColor } from './courseColors'
 import { DashboardSection, PreviewNote, SectionEmpty } from './DashboardSection'
 import { PlannerList } from './PlannerList'
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
+import { StudentStrip } from '../erp/StudentStrip'
+import { ErpPreview, QuickLinks } from './StudentErpPreview'
+
+/** One of the two big panels of the student dashboard: a heading with a short tag, and its sections. */
+function Panel({ title, tag, icon, children }: { title: string; tag: string; icon: NavIconName; children: React.ReactNode }) {
+  return (
+    <div className="rounded-panel border border-line bg-surface shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+      <div className="relative mx-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pt-5 pb-3">
+        <span aria-hidden="true" className="absolute -bottom-px left-0 h-0.5 w-16 bg-portal-cta" />
+        <p className="flex items-center gap-3 text-2xl font-bold text-ink"><NavIcon name={icon} className="size-7" />{title}</p>
+        <span className="rounded-md bg-portal-bar-strong/60 px-2.5 py-1 text-xs text-portal-navy">{tag}</span>
+      </div>
+      <div className="space-y-4 p-4">{children}</div>
+    </div>
+  )
+}
 
 const itemLinkClasses =
   'font-medium break-words text-ink underline-offset-4 hover:text-stacc-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary'
@@ -24,29 +41,20 @@ function Courses({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
       {dashboard.courses.length === 0 ? (
         <SectionEmpty>No LMS courses available.</SectionEmpty>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="space-y-2.5">
           {dashboard.courses.map((course) => (
-            <li key={course.lmsCourseId} className="min-w-0 overflow-hidden rounded-panel border border-line bg-surface shadow-sm">
-              <span aria-hidden="true" className="block h-20" style={{ backgroundColor: courseColor(course.lmsCourseId) }} />
-              <div className="px-4 py-3">
-              {/* The course route uses the LMS course ID only. */}
-              <Link
-                to={`/courses/${course.lmsCourseId}`}
-                className="block text-sm font-semibold break-words uppercase underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
-                style={{ color: courseColor(course.lmsCourseId) }}
-              >
-                {course.courseCode}: {course.courseName}
-              </Link>
-              <p className="mt-1 text-xs leading-5 break-words text-ink-muted">
-                {course.programCode}
-                <span aria-hidden="true"> · </span>
-                <span className="sr-only">, </span>
-                Semester {course.semesterNumber}
-                <span aria-hidden="true"> · </span>
-                <span className="sr-only">, </span>
-                {course.academicSessionCode}
-              </p>
+            <li key={course.lmsCourseId} className="flex min-w-0 items-center gap-3 rounded-panel border border-line border-l-[6px] bg-surface px-4 py-2.5"
+              style={{ borderLeftColor: courseColor(course.lmsCourseId) }}>
+              <div className="min-w-0 flex-1">
+                {/* The course route uses the LMS course ID only. */}
+                <Link to={`/courses/${course.lmsCourseId}`} className={`text-[0.95rem] font-semibold ${itemLinkClasses}`}>
+                  {course.courseCode}: {course.courseName}
+                </Link>
+                <p className="text-sm break-words text-ink-muted">
+                  {course.programCode} · Semester {course.semesterNumber} · {course.academicSessionCode}
+                </p>
               </div>
+              <span aria-hidden="true" className="text-ink-muted">›</span>
             </li>
           ))}
         </ul>
@@ -111,7 +119,7 @@ function RecentAnnouncements({ dashboard, level }: { dashboard: Dashboard; level
 
 function Attendance({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection level={level} id="dashboard-attendance" title="Attendance" link={{ to: '/academic/attendance', label: 'View attendance' }}>
+    <DashboardSection level={level} id="dashboard-attendance" title="Attendance" link={{ to: '/erp/attendance', label: 'View attendance' }}>
       {dashboard.attendance.length === 0 ? (
         <SectionEmpty>No attendance recorded yet.</SectionEmpty>
       ) : (
@@ -143,7 +151,7 @@ function Attendance({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }
 
 function RecentResults({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
   return (
-    <DashboardSection level={level} id="dashboard-results" title="Recent Results" link={{ to: '/academic/results', label: 'View results' }}>
+    <DashboardSection level={level} id="dashboard-results" title="Recent Results" link={{ to: '/erp/exams/results', label: 'View results' }}>
       {dashboard.recentResults.length === 0 ? (
         <SectionEmpty>No published results available yet.</SectionEmpty>
       ) : (
@@ -210,25 +218,32 @@ export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {
 
   const data = dashboard.data
   return (
-    <div className="space-y-4">
-      {/* The two real counts, kept small; the sections below show their previews. */}
-      <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-        <div>
+    <div className="space-y-6">
+      <StudentStrip />
+      {/* The two real counts, kept small; the panels below show their previews. */}
+      <dl className="flex flex-wrap gap-x-8 gap-y-2">
+        <div className="flex items-baseline gap-3">
           <dt className="text-ink-muted">My Courses</dt>
-          <dd className="text-xl font-semibold text-ink">{data.courseCount}</dd>
+          <dd className="text-2xl font-semibold text-ink">{data.courseCount}</dd>
         </div>
-        <div>
+        <div className="flex items-baseline gap-3">
           <dt className="text-ink-muted">Upcoming Assignments</dt>
-          <dd className="text-xl font-semibold text-ink">{data.upcomingAssignmentCount}</dd>
+          <dd className="text-2xl font-semibold text-ink">{data.upcomingAssignmentCount}</dd>
         </div>
       </dl>
-      <Courses dashboard={data} level={level} />
-      <UpcomingAssignments dashboard={data} level={level} />
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <RecentAnnouncements dashboard={data} level={level} />
-        <Attendance dashboard={data} level={level} />
-        <RecentResults dashboard={data} level={level} />
+      <div className="grid items-start gap-6 xl:grid-cols-2">
+        <Panel title="Learning · LMS" tag="Courses, assignments, announcements" icon="courses">
+          <Courses dashboard={data} level={level} />
+          <UpcomingAssignments dashboard={data} level={level} />
+          <RecentAnnouncements dashboard={data} level={level} />
+        </Panel>
+        <Panel title="Academic Records · ERP" tag="Attendance, results, fees, exams" icon="academics">
+          <Attendance dashboard={data} level={level} />
+          <RecentResults dashboard={data} level={level} />
+          <ErpPreview level={level} />
+        </Panel>
       </div>
+      <QuickLinks />
     </div>
   )
 }
