@@ -95,7 +95,7 @@ function AccountMenu() {
         <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-full bg-portal-bar-strong text-sm font-bold text-portal-navy">
           {initialsOf(displayName)}
         </span>
-        <NavIcon name="chevronDown" className="size-4 text-ink-muted" />
+        <NavIcon name="chevronDown" className="hidden size-4 text-ink-muted sm:block" />
       </button>
       {open && (
         <div

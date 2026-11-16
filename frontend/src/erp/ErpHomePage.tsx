@@ -17,12 +17,12 @@ function Tile({ to, icon, title, summary }: { to: string; icon: NavIconName; tit
   return (
     <Link
       to={to}
-      className="group flex flex-col rounded-panel border border-line bg-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.05)] hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+      className="group flex flex-col rounded-panel border border-line bg-surface p-4 sm:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.05)] hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
     >
-      <NavIcon name={icon} className="size-11 text-ink" />
-      <span className="mt-4 text-2xl font-bold text-ink">{title}</span>
-      <span className="mt-1 min-h-7 text-lg text-ink-muted">{summary ?? ''}</span>
-      <span className="mt-4 flex items-center gap-1 border-t border-line pt-4 text-lg font-semibold text-portal-cta">
+      <NavIcon name={icon} className="size-8 text-ink sm:size-11" />
+      <span className="mt-3 text-xl font-bold text-ink sm:mt-4 sm:text-2xl">{title}</span>
+      <span className="mt-1 min-h-7 text-ink-muted sm:text-lg">{summary ?? ''}</span>
+      <span className="mt-3 flex items-center gap-1 border-t border-line pt-3 font-semibold text-portal-cta sm:mt-4 sm:pt-4 sm:text-lg">
         Open
         <NavIcon name="chevronRight" className="size-5 transition-transform group-hover:translate-x-0.5" />
       </span>
@@ -81,7 +81,7 @@ export function ErpHomePage() {
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3">
         <Tile
           to="/erp/profile"
           icon="profile"
