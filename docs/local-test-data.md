@@ -180,3 +180,14 @@ Attendance marks and marks are worked out from each student's login ID and place
 - **Clubs:** `cse25004` and `cse25005` are accepted into the Coding Club; `cse25009`, `cse25013`, and `ece25006` wait for its officers. Five students joined the Cricket Team.
 - **Mentoring:** `emp3001` mentors `ece25005` (with a first meeting, shared and private notes, and two action items that show on their To-Do lists) and `ece25012`; `emp2011` mentors `cse25008`.
 - **Library:** *Signals and Systems* (`LIB-0101`, `LIB-0102`) and *Microelectronic Circuits* (`LIB-0103`); `ece25003` and `ece25008` each have a book on loan.
+
+## ERP records (v0.16)
+
+`LocalErpSeeder` adds, once each:
+
+- Weekly timetables for the current CSE and ECE semesters (rooms such as `CSE-204` and `LAB-02`).
+- Degree requirements for both B.Tech programs: core 96, electives 42, labs 12, projects 10 credits.
+- Aarav's (`student1`) mailing address and two emergency contacts.
+- Pending requests: Aarav's medical leave and CS201 revaluation, and an attendance correction from `cse25008`.
+- A published "End Semester Examinations — December 2026" session for each current semester, every student seated.
+- Fee structures of ₹1,12,500 for both programs, due 15 Dec 2026. Aarav has paid ₹70,000 in three payments and holds a ₹10,000 merit scholarship, leaving ₹32,500 due.
