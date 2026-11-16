@@ -29,8 +29,19 @@ const VERDICT: Record<NonNullable<AiEvaluation['verdict']>, string> = {
   INCORRECT: 'Not correct',
 }
 
+/** A checked answer, a check that failed, or a mock exam question left empty. */
+type Result = AiEvaluation | 'failed' | 'unanswered'
+
 /** One question's marks, feedback, and the model answer after it was checked. */
-function Feedback({ question, result }: { question: AiPracticeQuestion; result: AiEvaluation | 'failed' }) {
+function Feedback({ question, result }: { question: AiPracticeQuestion; result: Result }) {
+  if (result === 'unanswered') {
+    return (
+      <div className="mt-2">
+        <p className="text-sm font-medium text-ink">Not answered · 0 practice marks</p>
+        <ModelAnswer question={question} />
+      </div>
+    )
+  }
   if (result === 'failed' || result.insufficientContext || result.marks === null) {
     return (
       <div className="mt-2">
@@ -78,7 +89,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
   const [count, setCount] = useState('5')
   const [questions, setQuestions] = useState<AiPracticeQuestion[]>([])
   const [answers, setAnswers] = useState<string[]>([])
-  const [results, setResults] = useState<(AiEvaluation | 'failed' | undefined)[]>([])
+  const [results, setResults] = useState<(Result | undefined)[]>([])
   const [current, setCurrent] = useState(0)
   const [checking, setChecking] = useState(false)
   const [note, setNote] = useState<string | null>(null)
@@ -138,7 +149,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     // One at a time: the backend runs one AI request per student at once.
     for (let index = 0; index < questions.length; index++) {
       if (answers[index].trim() === '') {
-        setResults((previous) => previous.map((item, position) => (position === index ? 'failed' : item)))
+        setResults((previous) => previous.map((item, position) => (position === index ? 'unanswered' : item)))
         continue
       }
       const result = await check(index)
@@ -214,7 +225,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
             </Button>
           ) : (
             <>
-              <Feedback question={questions[current]} result={results[current] as AiEvaluation | 'failed'} />
+              <Feedback question={questions[current]} result={results[current] as Result} />
               {current + 1 < questions.length && (
                 <Button className="mt-2" size="sm" variant="secondary" onClick={() => setCurrent(current + 1)}>Next question</Button>
               )}
@@ -232,7 +243,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
                   {index + 1}. {question.question}
                 </p>
                 {answerBox(index)}
-                {results[index] !== undefined && <Feedback question={question} result={results[index] as AiEvaluation | 'failed'} />}
+                {results[index] !== undefined && <Feedback question={question} result={results[index] as Result} />}
               </li>
             ))}
           </ol>

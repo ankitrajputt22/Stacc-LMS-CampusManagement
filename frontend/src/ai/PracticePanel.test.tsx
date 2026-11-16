@@ -58,6 +58,21 @@ describe('PracticePanel', () => {
     expect(await screen.findByText('Mock exam score: 5 of 8 practice marks')).toBeInTheDocument()
     expect(vi.mocked(api.evaluatePracticeAnswer).mock.calls.map((call) => call[1].mode)).toEqual(['MOCK_EXAM', 'MOCK_EXAM'])
   })
+
+  it('gives an empty mock exam answer no marks without asking AI', async () => {
+    vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue(set)
+    vi.mocked(api.evaluatePracticeAnswer).mockReset().mockResolvedValue(marked(3))
+    const user = userEvent.setup()
+    renderPanel()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mode' }), 'Mock exam')
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    const boxes = await screen.findAllByRole('textbox', { name: /^Your answer/ })
+    await user.type(boxes[0], 'Makes changes durable.')
+    await user.click(screen.getByRole('button', { name: 'Hand in mock exam' }))
+    expect(await screen.findByText('Mock exam score: 3 of 8 practice marks')).toBeInTheDocument()
+    expect(screen.getByText('Not answered · 0 practice marks')).toBeInTheDocument()
+    expect(api.evaluatePracticeAnswer).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('PracticePanel adaptive', () => {
