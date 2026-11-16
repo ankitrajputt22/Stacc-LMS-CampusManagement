@@ -27,3 +27,7 @@
 ## Hostel complaints
 
 `POST /api/v1/hostel/student/complaints` creates an ordinary helpdesk ticket of the `HOSTEL` category, which `V98` routes to the `MAINTENANCE` team, with the student's current room written at the top. Maintenance staff work it from Team tickets. The student follows it in Support, where they confirm it by rating it once it is resolved.
+
+## Look (v0.16.13)
+
+The ID card (`/id-card`) is one centred card: name, login ID, roles, program or department, the QR code, the code in groups of four, and New code now. Check an ID (`/verify-id`) shows a valid result as name, login ID, roles, and program or department, and an expired or unknown code as its message only. The gate's student lookup and latest movements are read-only tables (type, from, to, status, outside, overdue; date and time, login ID, direction, recorded by).

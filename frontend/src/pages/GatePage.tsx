@@ -9,8 +9,8 @@ import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import { KIND_LABEL, outingStatusLabel } from '../hostel/outings/outingText'
 import { GateVisitors } from '../hostel/visitors/Visitors'
-import type { HostelOuting, PassCheck } from '../types/outings'
-import { Alert, Badge, Button, Card, PageHeader, TextField } from '../ui'
+import type { GateMovement, HostelOuting, PassCheck } from '../types/outings'
+import { Alert, Badge, Button, Card, DataTable, PageHeader, TextField } from '../ui'
 
 type Detector = { detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]> }
 type DetectorConstructor = new (options: { formats: string[] }) => Detector
@@ -147,18 +147,28 @@ function Lookup() {
       </form>
       {error && <div className="mt-3"><Alert tone="error">{error}</Alert></div>}
       {rows && (
-        <ul className="mt-3 divide-y divide-line text-sm">
-          {rows.length === 0 && <li className="py-2 text-ink-muted">No outings.</li>}
-          {rows.map((row) => (
-            <li key={row.outingId} className="flex flex-wrap items-center gap-2 py-2">
-              <span className="font-medium text-ink">{KIND_LABEL[row.kind]}</span>
-              <span className="text-ink-muted">{formatDateTime(row.leaveFrom)} to {formatDateTime(row.leaveUntil)}</span>
-              <Badge tone="neutral">{outingStatusLabel(row.approvalStatus)}</Badge>
-              {row.outside && <Badge tone="warning">Outside</Badge>}
-              {row.overdue && <Badge tone="danger">Overdue</Badge>}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-4">
+          <p className="mb-2 text-sm text-ink-muted">Outings for {loginId.trim()}. Read only: movements are recorded from a pass.</p>
+          {rows.length === 0 ? (
+            <p className="text-sm text-ink-muted">No outings.</p>
+          ) : (
+            <div className="overflow-hidden rounded-control border border-line">
+              <DataTable<HostelOuting>
+                caption={`Outings for ${loginId.trim()}`}
+                rows={rows}
+                rowKey={(row) => row.outingId}
+                columns={[
+                  { key: 'kind', header: 'Type', primary: true, cell: (row) => KIND_LABEL[row.kind] },
+                  { key: 'from', header: 'From', cell: (row) => <time dateTime={row.leaveFrom}>{formatDateTime(row.leaveFrom)}</time> },
+                  { key: 'to', header: 'To', cell: (row) => <time dateTime={row.leaveUntil}>{formatDateTime(row.leaveUntil)}</time> },
+                  { key: 'status', header: 'Status', cell: (row) => <Badge tone="neutral">{outingStatusLabel(row.approvalStatus)}</Badge> },
+                  { key: 'outside', header: 'Outside', cell: (row) => (row.outside ? 'Outside' : '–') },
+                  { key: 'overdue', header: 'Overdue', cell: (row) => (row.overdue ? <Badge tone="danger">Overdue</Badge> : '–') },
+                ]}
+              />
+            </div>
+          )}
+        </div>
       )}
     </Card>
   )
@@ -192,7 +202,7 @@ export function GatePage() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-6xl">
       <title>Gate · Stacc</title>
       <PageHeader title="Gate" description="Check passes and record students going out and coming back." />
       <div className="mt-6 space-y-6">
@@ -220,23 +230,32 @@ export function GatePage() {
           </div>
         </Card>
         <Lookup />
-        <Card title="Latest movements" icon="reports" padding="none">
+        <Card title="Latest movements" icon="reports" description="Recent gate movements. They are never edited or deleted." padding="none">
           {movements.status !== 'loaded' ? (
             <SectionState request={movements} what="movements" />
           ) : movements.data.length === 0 ? (
             <EmptyState title="No movements yet." description="Recorded movements appear here." />
           ) : (
-            <ul className="divide-y divide-line text-sm">
-              {movements.data.map((movement) => (
-                <li key={movement.movementId} className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
-                  <Badge tone={movement.direction === 'OUT' ? 'warning' : 'success'}>{movement.direction === 'OUT' ? 'Out' : 'In'}</Badge>
-                  <span className="font-medium text-ink">{movement.studentLoginId}</span>
-                  <span className="text-ink-muted">
-                    {formatDateTime(movement.recordedAt)} · by {movement.recordedByLoginId}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <DataTable<GateMovement>
+              caption="Latest movements"
+              rows={movements.data}
+              rowKey={(movement) => movement.movementId}
+              columns={[
+                {
+                  key: 'at',
+                  header: 'Date and time',
+                  primary: true,
+                  cell: (movement) => <time dateTime={movement.recordedAt}>{formatDateTime(movement.recordedAt)}</time>,
+                },
+                { key: 'student', header: 'Login ID', cell: (movement) => movement.studentLoginId },
+                {
+                  key: 'direction',
+                  header: 'Direction',
+                  cell: (movement) => <Badge tone={movement.direction === 'OUT' ? 'warning' : 'success'}>{movement.direction === 'OUT' ? 'Out' : 'In'}</Badge>,
+                },
+                { key: 'by', header: 'Recorded by', cell: (movement) => movement.recordedByLoginId },
+              ]}
+            />
           )}
         </Card>
       </div>
