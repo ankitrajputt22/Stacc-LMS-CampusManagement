@@ -15,6 +15,17 @@ const ErpHomePage = lazy(() => import('./erp/ErpHomePage').then((module) => ({ d
 const ErpProfilePage = lazy(() => import('./erp/ErpProfilePage').then((module) => ({ default: module.ErpProfilePage })))
 const ErpTimetablePage = lazy(() => import('./erp/ErpTimetablePage').then((module) => ({ default: module.ErpTimetablePage })))
 const ErpDegreeProgressPage = lazy(() => import('./erp/ErpDegreeProgressPage').then((module) => ({ default: module.ErpDegreeProgressPage })))
+const ErpAttendancePage = lazy(() => import('./erp/ErpAttendancePage').then((module) => ({ default: module.ErpAttendancePage })))
+const ErpCourseAttendancePage = lazy(() => import('./erp/ErpCourseAttendancePage').then((module) => ({ default: module.ErpCourseAttendancePage })))
+const ErpRequestsPage = lazy(() => import('./erp/ErpRequestsPage').then((module) => ({ default: module.ErpRequestsPage })))
+const ErpExamSchedulePage = lazy(() => import('./erp/ErpExamSchedulePage').then((module) => ({ default: module.ErpExamSchedulePage })))
+const ErpHallTicketPage = lazy(() => import('./erp/ErpHallTicketPage').then((module) => ({ default: module.ErpHallTicketPage })))
+const ErpResultsPage = lazy(() => import('./erp/ErpResultsPage').then((module) => ({ default: module.ErpResultsPage })))
+const ErpGradeCardsPage = lazy(() => import('./erp/ErpGradeCardsPage').then((module) => ({ default: module.ErpGradeCardsPage })))
+const ErpRevaluationPage = lazy(() => import('./erp/ErpRevaluationPage').then((module) => ({ default: module.ErpRevaluationPage })))
+const ErpExamAdminPage = lazy(() => import('./erp/ErpExamAdminPage').then((module) => ({ default: module.ErpExamAdminPage })))
+const ErpMarksCoursesPage = lazy(() => import('./erp/ErpMarksEntryPage').then((module) => ({ default: module.ErpMarksCoursesPage })))
+const ErpMarksEntryPage = lazy(() => import('./erp/ErpMarksEntryPage').then((module) => ({ default: module.ErpMarksEntryPage })))
 const ErpAcademicsPage = lazy(() => import('./erp/ErpAcademicsPage').then((module) => ({ default: module.ErpAcademicsPage })))
 const AcademicProfilePage = lazy(() => import('./pages/AcademicProfilePage').then((module) => ({ default: module.AcademicProfilePage })))
 const CourseFilesPage = lazy(() => import('./pages/CourseFilesPage').then((module) => ({ default: module.CourseFilesPage })))
@@ -202,8 +213,17 @@ function App() {
           <Route path="erp/academics/timetable" element={<ErpTimetablePage />} />
           <Route path="erp/academics/degree-progress" element={<ErpDegreeProgressPage />} />
           <Route path="erp/timetable" element={<ErpTimetablePage teaching />} />
-          <Route path="erp/attendance" element={<StudentAttendancePage />} />
-          <Route path="erp/exams" element={<StudentResultsPage />} />
+          <Route path="erp/attendance" element={<ErpAttendancePage />} />
+          <Route path="erp/attendance/:courseOfferingId" element={<ErpCourseAttendancePage />} />
+          <Route path="erp/requests" element={<ErpRequestsPage />} />
+          <Route path="erp/exams" element={<ErpExamSchedulePage />} />
+          <Route path="erp/exams/hall-ticket" element={<ErpHallTicketPage />} />
+          <Route path="erp/exams/results" element={<ErpResultsPage />} />
+          <Route path="erp/exams/grade-cards" element={<ErpGradeCardsPage />} />
+          <Route path="erp/exams/revaluation" element={<ErpRevaluationPage />} />
+          <Route path="erp/exam-admin" element={<ErpExamAdminPage />} />
+          <Route path="erp/marks" element={<ErpMarksCoursesPage />} />
+          <Route path="erp/marks/:courseOfferingId" element={<ErpMarksEntryPage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />
           <Route path="academic/analytics" element={<StudentAnalyticsPage />} />

@@ -30,11 +30,17 @@ public record FacultyResultResponse(
         Instant publishedAt,
 
         @Schema(description = "When it was last saved.")
-        Instant updatedAt) {
+        Instant updatedAt,
+
+        @Schema(description = "The internal part, or null when the marks are not split.") BigDecimal internalMarks,
+        BigDecimal internalMax,
+        @Schema(description = "The external part, or null when the marks are not split.") BigDecimal externalMarks,
+        BigDecimal externalMax) {
 
     static FacultyResultResponse of(CourseResult result) {
         return result == null ? null : new FacultyResultResponse(result.getId(), result.getMarksObtained(),
                 result.getMaxMarks(), result.getGradeCode(), result.getRemarks(), result.getStatus().name(),
-                result.getPublishedAt(), result.getUpdatedAt());
+                result.getPublishedAt(), result.getUpdatedAt(), result.getInternalMarks(), result.getInternalMax(),
+                result.getExternalMarks(), result.getExternalMax());
     }
 }

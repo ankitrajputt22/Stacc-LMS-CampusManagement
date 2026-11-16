@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { getMyAcademicProfile } from '../api/academicProfileApi'
 import { getMyAttendance } from '../api/attendanceApi'
+import { getMyStanding } from '../api/erpApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
@@ -49,6 +50,7 @@ export function ErpHomePage() {
     getMyAcademicProfile,
   )
   const attendance = useApiQuery(student ? queryKeys.attendance.mine() : null, getMyAttendance)
+  const standing = useApiQuery(student ? queryKeys.erp.standing() : null, getMyStanding)
 
   const studentPart = academic.status === 'loaded' ? academic.data.student : null
   const low = attendance.status === 'loaded' ? attendance.data.courses.filter((course) => course.lowAttendance) : []
@@ -98,7 +100,7 @@ export function ErpHomePage() {
               to="/erp/exams"
               icon="exams"
               title="Exams & Results"
-              summary={studentPart ? `${studentPart.semesters.flatMap((semester) => semester.courses).filter((course) => course.result).length} published results` : null}
+              summary={standing.status !== 'loaded' ? null : standing.data.cgpa !== null ? `CGPA ${Number(standing.data.cgpa).toFixed(2)}` : 'No results published yet'}
             />
           </>
         )}

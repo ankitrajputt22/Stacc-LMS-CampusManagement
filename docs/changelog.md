@@ -52,6 +52,8 @@
 - **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
 - **0.15.8:** a student AI home across courses and a study area per course with a tab per section.
 - **AI study fixes:** recommendations and study plans skip assignments already handed in; adding a study plan to the calendar twice adds nothing new, and its own entries no longer count as busy days; viva follow-ups can be answered; empty mock exam answers score 0 without an AI check; every next step links to its page.
+- **0.16.6:** examinations: exam sessions with halls and seat plans, the student's exam schedule, hall ticket, results with SGPA and CGPA history, grade cards, and revaluation; faculty marks entry with internal and external marks.
+- **0.16.5:** student requests: medical leave, attendance corrections, and revaluations, with the ERP office's queue; the new Attendance page with low-attendance alerts.
 - **0.16.1–0.16.4:** one sign-in and a new layout (navy sidebar with Learning, ERP, Campus, and Services; white top bar), and the ERP section: profile with mailing address and emergency contacts, registered courses, class timetable, degree progress, and SGPA/CGPA from the grade scale.
 - **0.15.12:** a new sign-in page: the ERP or LMS choice above one dark sign-in form with Show password, help cards for passwords, sessions, and bookmarks, and a footer.
 - **0.15.11:** a fuller local college for testing: an ECE department with its head and teachers, 27 more students, coursework, attendance, and results.

@@ -121,6 +121,10 @@ A permission is added by a new migration only when the real feature it protects 
 | `ACADEMIC_TIMETABLE_VIEW` | `ADMIN` | Reading a semester's class timetable. Added by `V143`. |
 | `ACADEMIC_TIMETABLE_MANAGE` | `ADMIN` | Adding and removing weekly classes, with clashes refused. Added by `V143`. |
 | `TIMETABLE_VIEW_OWN` | `STUDENT`, `FACULTY` | Reading one's own weekly timetable. Added by `V143`. |
+| `ERP_REQUEST_SUBMIT` | `STUDENT` | Asking for medical leave, an attendance correction, or a revaluation, and cancelling one's own pending requests. Added by `V146`. |
+| `EXAM_SCHEDULE_VIEW_OWN` | `STUDENT` | Reading one's own published exams with hall and seat. Added by `V147`. |
+| `EXAM_MANAGE` | `ADMIN` | Building exam sessions: exams, seat plans, and publishing. Added by `V147`. |
+| `ERP_REQUEST_MANAGE` | `ADMIN` | The ERP office's queue: reading every request and approving or rejecting each once. Added by `V146`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |
 | `HOSTEL_ROLL_CALL` | `WARDEN` | Opening, marking, and finalizing night roll calls of the hostels one is warden of. Added by `V108`. |

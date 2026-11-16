@@ -23,17 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AcademicStandingService {
 
-    public record CourseGrade(String courseCode, String courseName, CourseType courseType, BigDecimal credits,
+    public record CourseGrade(Long courseResultId, String courseCode, String courseName, CourseType courseType, BigDecimal credits,
             BigDecimal internalMarks, BigDecimal internalMax, BigDecimal externalMarks, BigDecimal externalMax,
             BigDecimal marksObtained, BigDecimal maxMarks, String grade, BigDecimal gradePoints, boolean passed) {
     }
 
     public record SemesterStanding(String academicSessionCode, String programCode, int semesterNumber, BigDecimal creditsGraded,
-            BigDecimal creditsEarned, BigDecimal sgpa, List<CourseGrade> courses) {
+            BigDecimal creditsEarned, BigDecimal weightedPoints, BigDecimal sgpa, BigDecimal cgpaAfter, List<CourseGrade> courses) {
     }
 
     /** Semesters latest first; the CGPA is null until some graded credit exists. */
-    public record Standing(List<SemesterStanding> semesters, BigDecimal cgpa, BigDecimal creditsEarned) {
+    public record Standing(List<SemesterStanding> semesters, BigDecimal cgpa, BigDecimal creditsEarned, BigDecimal creditsGraded,
+            BigDecimal weightedPoints) {
     }
 
     private final CourseResultRepository results;
@@ -81,9 +82,20 @@ public class AcademicStandingService {
             totalCredits = totalCredits.add(credits);
             earned = earned.add(semesterEarned);
             semesters.add(new SemesterStanding(semester.getAcademicSession().getCode(), semester.getProgram().getCode(),
-                    semester.getSemesterNumber(), credits, semesterEarned, average(points, credits), courses));
+                    semester.getSemesterNumber(), credits, semesterEarned, points, average(points, credits), null, courses));
         }
-        return new Standing(semesters, average(totalPoints, totalCredits), earned);
+        // The CGPA after each semester counts that semester and every earlier one; the list is latest first.
+        List<SemesterStanding> withHistory = new ArrayList<>();
+        BigDecimal runningPoints = BigDecimal.ZERO;
+        BigDecimal runningCredits = BigDecimal.ZERO;
+        for (int index = semesters.size() - 1; index >= 0; index--) {
+            SemesterStanding one = semesters.get(index);
+            runningPoints = runningPoints.add(one.weightedPoints());
+            runningCredits = runningCredits.add(one.creditsGraded());
+            withHistory.add(0, new SemesterStanding(one.academicSessionCode(), one.programCode(), one.semesterNumber(), one.creditsGraded(),
+                    one.creditsEarned(), one.weightedPoints(), one.sgpa(), average(runningPoints, runningCredits), one.courses()));
+        }
+        return new Standing(withHistory, average(totalPoints, totalCredits), earned, totalCredits, totalPoints);
     }
 
     /** One published result with its grade and points under the scale. */
@@ -93,7 +105,7 @@ public class AcademicStandingService {
         var grade = grades.gradeOf(result.getGradeCode(), result.getMarksObtained(), result.getMaxMarks());
         String shown = result.getGradeCode() != null ? result.getGradeCode() : grade.map(GradeScale.Grade::code).orElse(null);
         boolean passed = grade.map(GradeScale.Grade::passing).orElse(false);
-        return new CourseGrade(course.getCode(), course.getName(), course.getCourseType(), course.getCredits(),
+        return new CourseGrade(result.getId(), course.getCode(), course.getName(), course.getCourseType(), course.getCredits(),
                 result.getInternalMarks(), result.getInternalMax(), result.getExternalMarks(), result.getExternalMax(),
                 result.getMarksObtained(), result.getMaxMarks(), shown, grade.map(GradeScale.Grade::points).orElse(null), passed);
     }

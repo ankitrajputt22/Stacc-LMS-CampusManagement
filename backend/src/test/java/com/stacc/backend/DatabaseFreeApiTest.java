@@ -94,6 +94,10 @@ import com.stacc.backend.identity.person.PersonEmergencyContactRepository;
 import com.stacc.backend.academic.timetable.ClassTimetableSlotRepository;
 import com.stacc.backend.academic.result.GradeScaleRepository;
 import com.stacc.backend.academic.curriculum.ProgramCreditRequirementRepository;
+import com.stacc.backend.academic.request.StudentRequestRepository;
+import com.stacc.backend.academic.exam.ExamSessionRepository;
+import com.stacc.backend.academic.exam.ExamSlotRepository;
+import com.stacc.backend.academic.exam.ExamSeatRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.ai.AiCourseKnowledgeIndexRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
@@ -253,6 +257,10 @@ import org.springframework.web.context.WebApplicationContext;
     ClassTimetableSlotRepository.class,
     GradeScaleRepository.class,
     ProgramCreditRequirementRepository.class,
+    StudentRequestRepository.class,
+    ExamSessionRepository.class,
+    ExamSlotRepository.class,
+    ExamSeatRepository.class,
     ProgramRepository.class,
     RoleRepository.class,
     SectionRepository.class,

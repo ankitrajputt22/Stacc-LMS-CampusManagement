@@ -224,14 +224,15 @@ class AttendanceControllerTest extends DatabaseFreeApiTest {
         when(studentQueries.getMyAttendance(STUDENT_ACCOUNT)).thenReturn(new StudentAttendanceResponse(List.of(
                 new StudentAttendanceResponse.Course(17L, "BCS301", "Data Structures", 3, "BTECH", "2026-27", 10, 8, 2,
                         new BigDecimal("80.00"), List.of(new StudentAttendanceResponse.Session(
-                                8L, Instant.parse("2026-10-19T04:30:00Z"), "Arrays introduction", "PRESENT")), false))));
+                                8L, Instant.parse("2026-10-19T04:30:00Z"), "Arrays introduction", "PRESENT", 41L)), false))));
 
         mockMvc.perform(as(student("ROLE_STUDENT", "ATTENDANCE_VIEW"), get("/api/v1/attendance/student/me?studentId=12&courseEnrollmentId=5")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courses[0].attendancePercentage").value(80.0))
                 .andExpect(jsonPath("$.courses[0].presentCount").value(8))
                 .andExpect(jsonPath("$.courses[0].sessions[0].status").value("PRESENT"))
-                .andExpect(jsonPath("$.courses[0].sessions[0].attendanceRecordId").doesNotExist());
+                // The student's own record ID is sent so they can ask for a correction (v0.16.5); never anyone else's.
+                .andExpect(jsonPath("$.courses[0].sessions[0].attendanceRecordId").value(41));
 
         verify(studentQueries).getMyAttendance(STUDENT_ACCOUNT);
     }

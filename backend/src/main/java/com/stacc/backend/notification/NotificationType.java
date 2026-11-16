@@ -47,5 +47,7 @@ public enum NotificationType {
     /** A campus service request is ready for its requester. */
     CAMPUS_SERVICE_READY,
     /** A campus service request was completed. */
-    CAMPUS_SERVICE_COMPLETED
+    CAMPUS_SERVICE_COMPLETED,
+    /** The ERP office decided a student's request (v0.16.5). */
+    ERP_REQUEST_DECIDED
 }

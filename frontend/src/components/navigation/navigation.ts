@@ -55,7 +55,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'My Courses', to: '/teaching', icon: 'courses' },
       { label: 'Assignments', to: '/assignments', icon: 'assignments' },
       { label: 'Attendance', to: '/attendance', icon: 'attendance' },
-      { label: 'Marks Entry', to: '/results', icon: 'exams' },
+      { label: 'Marks Entry', to: '/erp/marks', icon: 'exams' },
       // Who is registered in each offering taught; read-only.
       { label: 'Class Lists', to: '/class-lists', icon: 'clubs' },
       // Counts for the offerings taught; the backend decides access with FACULTY_REPORT_VIEW.
@@ -83,6 +83,9 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       { label: 'Academic Admin', to: '/admin/academic', icon: 'academics' },
       { label: 'Users', to: '/admin/users', icon: 'clubs' },
+      { label: 'Exams', to: '/erp/exam-admin', icon: 'calendar' },
+      // Medical leave, attendance corrections, and revaluations; the backend checks ERP_REQUEST_MANAGE.
+      { label: 'Requests', to: '/erp/requests', icon: 'assignments' },
       { label: 'Hostel Management', to: '/admin/hostel', icon: 'hostel' },
       { label: 'Campus Management', to: '/admin/campus', icon: 'campus' },
       // Categories and committees only; cases stay with their committees.

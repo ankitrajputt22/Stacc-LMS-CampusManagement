@@ -77,6 +77,41 @@ public class CourseResultManagementService {
      */
     public CourseResult save(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId, BigDecimal marksObtained,
             BigDecimal maxMarks, String gradeCode, String remarks) {
+        return save(userAccountId, courseOfferingId, courseEnrollmentId, marksObtained, maxMarks, gradeCode, remarks, null, null, null, null);
+    }
+
+    static final String SPLIT_INCOMPLETE = "Give the internal and external marks with their maximums, or none of them.";
+    static final String SPLIT_OVER = "A part's marks cannot exceed its maximum.";
+    static final String SPLIT_SUM = "The internal and external marks must add up to the totals.";
+
+    /**
+     * Saves a result as {@link #save(Long, Long, Long, BigDecimal, BigDecimal, String, String)} does, with the marks split
+     * into internal and external parts (v0.16.3): all four parts or none, each within its maximum, and adding up to the
+     * totals. Saving without parts clears an earlier split.
+     */
+    public CourseResult save(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId, BigDecimal marksObtained,
+            BigDecimal maxMarks, String gradeCode, String remarks, BigDecimal internalMarks, BigDecimal internalMax,
+            BigDecimal externalMarks, BigDecimal externalMax) {
+        long given = java.util.stream.Stream.of(internalMarks, internalMax, externalMarks, externalMax).filter(java.util.Objects::nonNull).count();
+        if (given != 0 && given != 4) {
+            throw badRequest(SPLIT_INCOMPLETE);
+        }
+        if (given == 4) {
+            if (internalMarks.compareTo(internalMax) > 0 || externalMarks.compareTo(externalMax) > 0) {
+                throw badRequest(SPLIT_OVER);
+            }
+            if (marksObtained == null || maxMarks == null || internalMarks.add(externalMarks).compareTo(marksObtained) != 0
+                    || internalMax.add(externalMax).compareTo(maxMarks) != 0) {
+                throw badRequest(SPLIT_SUM);
+            }
+        }
+        CourseResult saved = saveTotals(userAccountId, courseOfferingId, courseEnrollmentId, marksObtained, maxMarks, gradeCode, remarks);
+        saved.recordSplit(internalMarks, internalMax, externalMarks, externalMax);
+        return results.saveAndFlush(saved);
+    }
+
+    private CourseResult saveTotals(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId, BigDecimal marksObtained,
+            BigDecimal maxMarks, String gradeCode, String remarks) {
         TeachingAssignment teaching = teachingAccess.findCurrentTeachingAssignment(userAccountId, courseOfferingId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE));
         CourseEnrollment enrollment = enrollmentOf(courseOfferingId, courseEnrollmentId, true);
