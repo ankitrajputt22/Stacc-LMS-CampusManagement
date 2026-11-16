@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -46,11 +47,13 @@ export function CourseSettings({ course, reload }: CourseSettingsProps) {
     <section
       ref={sectionRef}
       aria-labelledby="course-settings-heading"
-      className="mt-6 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5"
+      className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5"
     >
-      <h2 id="course-settings-heading" className="text-lg font-semibold text-ink">
+      <h2 id="course-settings-heading" className="flex items-center gap-2 text-lg font-semibold text-ink">
+        <NavIcon name="health" className="size-5 text-ink-muted" />
         Course settings
       </h2>
+      <span aria-hidden="true" className="mt-2 block h-0.5 w-12 rounded bg-portal-cta" />
       <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
         <span aria-hidden="true">LMS status:</span>
         <StatusTag status={course.lmsCourseStatus} label="LMS status" />

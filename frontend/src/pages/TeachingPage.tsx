@@ -63,15 +63,17 @@ function ManagedCourses() {
   return (
     <div className="space-y-8">
       {groupByTerm(courses.data).map((term) => (
-        <section key={term.key} aria-labelledby={`term-${term.key}`}>
-          <h2 id={`term-${term.key}`} className="text-lg font-semibold text-ink">
-            {term.heading}
-            <span className="ml-2 text-sm font-normal text-ink-muted">
+        <section key={term.key} aria-labelledby={`term-${term.key}`} className="rounded-panel border border-line bg-surface p-4 sm:p-5">
+          <h2 id={`term-${term.key}`} className="flex items-center gap-3 text-2xl font-bold text-ink">
+            <span aria-hidden="true" className="h-8 w-1.5 rounded bg-teal-600" />
+            <span>
+              {term.heading}
+              <span aria-hidden="true"> · </span>
               <span className="sr-only">, program </span>
               {term.programCode}
             </span>
           </h2>
-          <ul aria-label={`Teaching courses of ${term.heading}`} className="mt-3 grid gap-3 lg:grid-cols-2">
+          <ul aria-label={`Teaching courses of ${term.heading}`} className="mt-4 space-y-3">
             {term.items.map((course) => (
               <li key={course.courseOfferingId}>
                 <ManagedCourseCard
@@ -109,9 +111,8 @@ export function TeachingPage() {
     <>
       <title>Teaching · Stacc</title>
       <PageHeader
-        eyebrow="LMS"
-        title="Teaching"
-        description={isFaculty ? 'The course offerings you are assigned to teach, by term, with their LMS courses.' : undefined}
+        title="My Courses"
+        description={isFaculty ? 'Courses you teach, by term, with their LMS courses.' : undefined}
       />
       <p role="status" className={archivedCourse ? 'mt-4 rounded-control border border-line-strong bg-surface-muted px-3 py-2.5 text-sm leading-5 text-ink' : 'sr-only'}>
         {archivedCourse ? `${archivedCourse} was archived. Its content and history are kept.` : ''}
