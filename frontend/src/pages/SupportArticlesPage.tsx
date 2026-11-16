@@ -1,3 +1,4 @@
+import { SupportHeader } from '../support/SupportHeader'
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
@@ -11,13 +12,12 @@ import {
 } from '../api/helpdeskApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import { refusalText } from '../support/helpdeskText'
 import type { AdminHelpArticle, AdminHelpdeskCategory, HelpArticleInput } from '../types/helpdesk'
-import { Alert, Badge, Button, Card, PageHeader, SelectField, TextAreaField, TextField } from '../ui'
+import { Alert, Badge, Button, Card, SelectField, TextAreaField, TextField } from '../ui'
 
 function StatusBadge({ status }: { status: AdminHelpArticle['status'] }) {
   return status === 'PUBLISHED' ? <Badge tone="success">Published</Badge> : status === 'ARCHIVED' ? <Badge tone="neutral">Archived</Badge> : <Badge tone="warning">Draft</Badge>
@@ -117,14 +117,13 @@ export function SupportArticlesPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <title>Help articles · Stacc</title>
-      <PageHeader
+      <SupportHeader
         title="Help articles"
-        breadcrumb={<Breadcrumb parent={{ to: '/support', label: 'Support' }} current="Help articles" />}
         description="Short answers to common problems. Published articles of a category are suggested to people writing a ticket in it."
       />
-      <div className="mt-6 space-y-6">
+      <div className="max-w-5xl space-y-6">
         <p role="status" className="sr-only">
           {message?.tone === 'success' ? message.text : ''}
         </p>

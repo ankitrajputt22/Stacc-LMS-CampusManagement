@@ -34,6 +34,7 @@ import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
 import { Card, PageHeader } from '../ui'
 import { CourseSectionHeader } from '../courses/CourseSectionHeader'
+import { teachingCourseBanner } from '../courses/courseFactsLine'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
 
@@ -54,11 +55,6 @@ function TeachingCourseState({ heading, srOnlyHeading = true, children }: { head
       <StatePanel>{children}</StatePanel>
     </>
   )
-}
-
-/** The official details of the course, from the academic records: program, semester, session, and credits. */
-function courseFacts(course: LmsFacultyCourseContent): string {
-  return [course.programCode, `Semester ${course.semesterNumber}`, course.academicSessionCode, creditsText(course.credits)].join(' · ')
 }
 
 /** A page of the course: its title and heading, and for a page inside a section, that section (such as Quizzes). */
@@ -126,7 +122,7 @@ function TeachingCourseFrame({
         <>
           <title>{`${section.title}${section.title === course.data.courseName ? '' : ` · ${course.data.courseName}`} · Teaching · Stacc`}</title>
           <CourseSectionHeader
-            course={{ name: `${course.data.courseCode} ${course.data.courseName}`, facts: courseFacts(course.data) }}
+            course={teachingCourseBanner(course.data)}
             title={section.heading === '' ? 'Course Home' : section.heading}
             description={section.heading === '' ? 'Publish or archive the course, and set what students see first.' : undefined}
             breadcrumb={

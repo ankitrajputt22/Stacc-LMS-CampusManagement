@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 import {
@@ -95,9 +96,11 @@ export function TicketManagement({ ticket, myLoginId, onUpdated, onStale, assign
 
   return (
     <section aria-labelledby="ticket-manage" className="rounded-panel border border-line-strong bg-surface p-4">
-      <h2 id="ticket-manage" className="text-base font-semibold text-ink">
+      <h2 id="ticket-manage" className="flex items-center gap-2 text-lg font-bold text-portal-navy">
+        <NavIcon name="health" className="size-5 text-ink-muted" />
         Manage ticket
       </h2>
+      <span aria-hidden="true" className="mt-2 block h-0.5 w-14 rounded bg-portal-cta" />
 
       <div className="mt-3">
         <label htmlFor="ticket-assignee" className="block text-sm font-medium text-ink">

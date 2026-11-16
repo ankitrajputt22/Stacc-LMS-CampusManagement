@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
-import { actionLinkClasses } from '../components/actionStyles'
 import { formatDateTime } from '../courses/dates'
 import type { HelpdeskTicketSummary } from '../types/helpdesk'
+import { DataTable } from '../ui'
+import { textLinkClasses } from '../ui/styles'
 import { TicketPriorityTag, TicketStatusTag } from './TicketTags'
 
 type TicketListProps = {
@@ -13,46 +14,58 @@ type TicketListProps = {
 }
 
 /**
- * Tickets as stacked rows that fit any screen: the number and tags, the subject, then the category and times. There is
- * never a description here. Each row has one descriptive link to the shared ticket page.
+ * Tickets as a table on wide screens and stacked records on phones: the number (the row's one link to the shared
+ * ticket page), the subject, the category, the tags, and when it last changed. There is never a description here.
  */
 export function TicketList({ tickets, label, queue = false }: TicketListProps) {
   return (
-    <ul aria-label={label} className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-      {tickets.map((ticket) => (
-        <li key={ticket.ticketId} className="px-4 py-3 sm:px-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs text-ink-muted">{ticket.ticketNumber}</span>
-                <TicketPriorityTag priority={ticket.priority} />
-                <TicketStatusTag status={ticket.status} />
-              </div>
-              <p className="mt-1 text-sm font-semibold break-words text-ink">{ticket.subject}</p>
-              <p className="mt-1 text-sm break-words text-ink-muted">
+    <div className="overflow-hidden rounded-panel border border-line bg-surface">
+      <DataTable<HelpdeskTicketSummary>
+        caption={label}
+        rows={tickets}
+        rowKey={(ticket) => ticket.ticketId}
+        columns={[
+          {
+            key: 'number',
+            header: 'Ticket ID',
+            primary: true,
+            cell: (ticket) => (
+              <Link to={`/support/tickets/${ticket.ticketId}`} className={`font-medium whitespace-nowrap ${textLinkClasses}`}>
+                {ticket.ticketNumber}
+                <span className="sr-only">: {ticket.subject}</span>
+              </Link>
+            ),
+          },
+          { key: 'subject', header: 'Subject', cell: (ticket) => <span className="break-words text-ink">{ticket.subject}</span> },
+          {
+            key: 'category',
+            header: 'Category',
+            cell: (ticket) => (
+              <>
                 {ticket.categoryName}
-                {queue && (
-                  <>
-                    {' · '}Raised by {ticket.requesterLoginId}
-                    {' · '}
-                    {ticket.assignedToLoginId ? `Assigned to ${ticket.assignedToLoginId}` : 'Unassigned'}
-                  </>
-                )}
-              </p>
-              <p className="mt-0.5 text-xs text-ink-muted">
-                Updated <time dateTime={ticket.updatedAt}>{formatDateTime(ticket.updatedAt)}</time>
-                {' · '}Created <time dateTime={ticket.createdAt}>{formatDateTime(ticket.createdAt)}</time>
-              </p>
-            </div>
-            <Link to={`/support/tickets/${ticket.ticketId}`} className={`${actionLinkClasses} shrink-0 self-start`}>
-              {queue ? 'Open' : 'View ticket'}
-              <span className="sr-only">
-                : {ticket.ticketNumber}, {ticket.subject}
-              </span>
-            </Link>
-          </div>
-        </li>
-      ))}
-    </ul>
+                <span className="block text-xs text-ink-muted">({ticket.categoryCode})</span>
+              </>
+            ),
+          },
+          ...(queue
+            ? [
+                { key: 'requester', header: 'Raised by', cell: (ticket: HelpdeskTicketSummary) => ticket.requesterLoginId },
+                {
+                  key: 'assignee',
+                  header: 'Assigned to',
+                  cell: (ticket: HelpdeskTicketSummary) => ticket.assignedToLoginId ?? 'Unassigned',
+                },
+              ]
+            : []),
+          { key: 'priority', header: 'Priority', cell: (ticket) => <TicketPriorityTag priority={ticket.priority} /> },
+          { key: 'status', header: 'Status', cell: (ticket) => <TicketStatusTag status={ticket.status} /> },
+          {
+            key: 'updated',
+            header: 'Updated',
+            cell: (ticket) => <time dateTime={ticket.updatedAt}>{formatDateTime(ticket.updatedAt)}</time>,
+          },
+        ]}
+      />
+    </div>
   )
 }

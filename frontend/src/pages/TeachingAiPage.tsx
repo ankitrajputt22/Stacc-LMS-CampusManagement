@@ -8,12 +8,14 @@ import { QuizDraftPanel } from '../ai/QuizDraftPanel'
 import { KnowledgePanel } from '../ai/KnowledgePanel'
 import { TeacherDocumentsPanel } from '../ai/TeacherDocumentsPanel'
 import { Breadcrumb } from '../components/navigation/Breadcrumb'
-import { Card, LinkTabs, PageHeader, textLinkClasses } from '../ui'
+import { Card, LinkTabs, textLinkClasses } from '../ui'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { teachingCourseBanner } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { useFacultyCourseContent } from '../teaching/useFacultyCourseContent'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
@@ -110,21 +112,8 @@ function FacultyTools({ lmsCourseId, section }: { lmsCourseId: number | null; se
       return (
         <>
           <title>{`Teacher AI · ${current.label} · ${course.data.courseName} · Stacc`}</title>
-          <PageHeader
-            breadcrumb={
-              <Breadcrumb
-                parent={[TEACHING, { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName }]}
-                current="Teacher AI"
-              />
-            }
-            eyebrow={
-              <>
-                {course.data.courseCode}
-                <span aria-hidden="true"> · </span>
-                <span className="sr-only">, </span>
-                {course.data.courseName}
-              </>
-            }
+          <CourseSectionHeader
+            course={teachingCourseBanner(course.data)}
             title="Teacher AI"
             description="AI help for this course, built only from its published content and your teacher-only documents. Everything AI makes is a draft for you to review; students use the AI Study Assistant from the course page."
           />
