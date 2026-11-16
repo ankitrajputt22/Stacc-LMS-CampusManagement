@@ -81,9 +81,12 @@ class FakeModelProvider(ModelProvider):
     def _summary(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
         if not context:
             return {"insufficientContext": True, "summary": "", "keyPoints": [], "sourceIds": []}
+        style = parameters.get("style", "BRIEF")
+        used = context[:4] if style == "DETAILED" else context[:2]
+        prefix = "Remember: " if style == "REVISION_NOTES" else ""
         return {
             "insufficientContext": False,
-            "summary": " ".join(_first_sentence(chunk.text) for chunk in context[:2]),
+            "summary": prefix + " ".join(_first_sentence(chunk.text) for chunk in used),
             "keyPoints": [_first_sentence(chunk.text, 160) for chunk in context[:3]],
             "sourceIds": [chunk.ref for chunk in context[:3]],
         }

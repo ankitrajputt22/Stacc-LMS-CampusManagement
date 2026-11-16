@@ -271,6 +271,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Explain simpler and Give an example.** They ask the last question again with `style` `SIMPLER` or `EXAMPLE`, which adds one line to the task; the answer still needs real citations.
 - **Saved answers.** Save answer keeps one question and answer (`ai_saved_answers`, at most 50 per student and course under the account row lock, `AiSavedAnswerMySqlIT`), with its sources rebuilt by the server from the course's published content and the student's own notes; a teacher document or unknown source is dropped. Only the student reads them (`GET`/`POST /api/v1/lms/courses/{id}/ai/saved-answers`, `DELETE .../{savedAnswerId}`, the student AI rule), and Delete removes one for good.
 
+### Summaries (v0.15.2)
+
+- **Scope.** `POST /api/v1/lms/courses/{id}/ai/summary` (the student AI rule) summarises one published page (`TOPIC`), one module's published pages and their files (`MODULE`, through `allowedSourcesInModule`), or one published file (`DOCUMENT`, its source alone). Anything the student cannot see answers 404. The older topic route stays as it was.
+- **Styles.** `BRIEF` (about 200 words, up to 6 key points, the default), `DETAILED` (up to 500 words in the sources' order), and `REVISION_NOTES` (definitions and facts to remember). A summary may be up to 4,000 characters, and it still needs real citations.
+- The AI Study Assistant's Summaries panel offers A page, A module, or A file, from the course's own published content, and keeps nothing.
+
 ### What a refresh does
 
 1. Faculty access is checked.

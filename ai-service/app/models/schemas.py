@@ -186,8 +186,18 @@ class AskResponse(BaseModel):
     citations: list[Citation]
 
 
+class SummaryStyle(StrEnum):
+    """How to summarise (v0.15.2)."""
+    BRIEF = "BRIEF"
+    DETAILED = "DETAILED"
+    REVISION_NOTES = "REVISION_NOTES"
+
+
 class SummaryRequest(IndexedRequest):
-    topicId: int = Field(gt=0)
+    """A topic's summary, or, without a topic, a summary of whatever the allowed sources hold, such as one module or one
+    document (v0.15.2)."""
+    topicId: int | None = Field(default=None, gt=0)
+    style: SummaryStyle = SummaryStyle.BRIEF
 
 
 class SummaryResponse(BaseModel):
@@ -368,7 +378,7 @@ class AskModelOutput(BaseModel):
 
 class SummaryModelOutput(BaseModel):
     insufficientContext: bool
-    summary: Bounded(1500) = ""
+    summary: Bounded(4000) = ""
     keyPoints: Annotated[list[Bounded(300)], Field(max_length=8)] = []
     sourceIds: SourceRefs = []
 

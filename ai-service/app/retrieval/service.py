@@ -211,7 +211,8 @@ class LearningService:
         if not chunks:
             return insufficient
         context = _Context(chunks)
-        result = self._generate("summary", context, schemas.SummaryModelOutput, self._settings.answer_temperature, {},
+        result = self._generate("summary", context, schemas.SummaryModelOutput, self._settings.answer_temperature,
+                                {"styleInstruction": prompts.SUMMARY_STYLES[request.style.value], "style": request.style.value},
                                 usable=lambda out: out.insufficientContext or bool(out.summary))
         if result is None or result.insufficientContext:
             return insufficient
