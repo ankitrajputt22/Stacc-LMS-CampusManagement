@@ -3,7 +3,9 @@ package com.stacc.backend.academic.timetable;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,7 +34,11 @@ public interface ClassTimetableSlotRepository extends JpaRepository<ClassTimetab
             """)
     List<ClassTimetableSlot> findActiveForSemester(@Param("semesterId") Long semesterId);
 
-    /** The slots in use of an academic session on one day, read after the session's row lock to check clashes. */
+    /**
+     * The slots in use of an academic session on one day, read after the session's row lock with a locking read, so the
+     * check sees every slot committed before the lock (a plain read could see an older snapshot).
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("""
             select slot from ClassTimetableSlot slot
             join fetch slot.courseOffering offering
