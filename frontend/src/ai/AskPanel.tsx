@@ -36,7 +36,12 @@ const STYLE_LABEL: Record<AiAnswerStyle, string> = { NORMAL: '', SIMPLER: 'Simpl
  * page only: follow-ups, Explain simpler, and Give an example send up to three earlier turns, and nothing is kept once
  * the page is left unless the student presses Save answer.
  */
-export function AskPanel({ lmsCourseId, modules = [] }: { lmsCourseId: number; modules?: AskModule[] }) {
+export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
+  lmsCourseId: number
+  modules?: AskModule[]
+  /** The course's published assignments still due; help with one is hints only (v0.15.4). */
+  assignments?: { id: number; title: string }[]
+}) {
   const id = useId()
   const queryClient = useQueryClient()
   const fieldRef = useRef<HTMLTextAreaElement>(null)
@@ -44,6 +49,7 @@ export function AskPanel({ lmsCourseId, modules = [] }: { lmsCourseId: number; m
   const [followUp, setFollowUp] = useState('')
   const [mode, setMode] = useState<AiAskMode>('COURSE')
   const [moduleId, setModuleId] = useState('')
+  const [assignmentId, setAssignmentId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [turns, setTurns] = useState<Turn[]>([])
   const [noAnswer, setNoAnswer] = useState(false)
@@ -57,7 +63,9 @@ export function AskPanel({ lmsCourseId, modules = [] }: { lmsCourseId: number; m
     setSaveMessage(null)
     const history = earlier.slice(-MAX_HISTORY).map((turn) => ({ question: turn.question, answer: turn.answer }))
     const answer = await run((signal) =>
-      askCourseAi(lmsCourseId, text, signal, { mode, moduleId: scoped ? Number(moduleId) : null, history, style }),
+      askCourseAi(lmsCourseId, text, signal, {
+        mode, moduleId: scoped ? Number(moduleId) : null, history, style, assignmentId: assignmentId ? Number(assignmentId) : null,
+      }),
     )
     if (answer === null) {
       return
@@ -157,6 +165,21 @@ export function AskPanel({ lmsCourseId, modules = [] }: { lmsCourseId: number; m
               </option>
             ))}
           </SelectField>
+        )}
+        {assignments.length > 0 && (
+          <div>
+            <SelectField
+              label="Help with an assignment"
+              value={assignmentId}
+              onChange={(event) => setAssignmentId(event.target.value)}
+              hint={assignmentId ? 'Answers will be hints and guiding questions only, never the solution.' : undefined}
+            >
+              <option value="">Not about an assignment</option>
+              {assignments.map((assignment) => (
+                <option key={assignment.id} value={assignment.id}>{assignment.title}</option>
+              ))}
+            </SelectField>
+          </div>
         )}
         <div>
           <label htmlFor={`${id}-question`} className={labelClasses}>

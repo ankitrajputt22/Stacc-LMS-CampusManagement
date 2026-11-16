@@ -80,6 +80,20 @@ public class AiStudyController {
         return study.summarize(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
     }
 
+    @PostMapping("/practice/evaluate")
+    @PreAuthorize(AiAccess.STUDENT)
+    @Operation(
+            summary = "Mark a practice answer",
+            description = "Practice only (v0.15.4): marks out of maxMarks against the reference answer and the course sources, "
+                    + "a verdict, feedback explaining each mistake, and in a viva the next question. Never an official mark; "
+                    + "nothing is stored.",
+            security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
+    @StudentAiResponses
+    public AiEvaluateResponse evaluate(@PathVariable Long lmsCourseId, @Valid @RequestBody AiEvaluateRequest request,
+            @AuthenticationPrincipal Jwt accessToken) {
+        return study.evaluate(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request);
+    }
+
     @PostMapping("/practice")
     @PreAuthorize(AiAccess.STUDENT)
     @Operation(

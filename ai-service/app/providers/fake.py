@@ -70,7 +70,8 @@ class FakeModelProvider(ModelProvider):
         if not supporting:
             return {"insufficientContext": True, "answer": "", "sourceIds": []}
         best = supporting[0]
-        prefix = {"SIMPLER": "Simply put, ", "EXAMPLE": "For example, "}.get(parameters.get("style", ""), "")
+        prefixes = {"SIMPLER": "Simply put, ", "EXAMPLE": "For example, ", "HINT": "Hint: look at "}
+        prefix = prefixes.get(parameters.get("style", ""), "")
         return {
             "insufficientContext": False,
             "answer": f"{prefix}According to {best.title}: {_first_sentence(best.text, 400)}",
@@ -145,6 +146,22 @@ class FakeModelProvider(ModelProvider):
             statement = parameters.get("question", "").removeprefix("True or false: ")
             return {"trueFalseAnswer": supported(statement)}
         return {"chosenOptions": [number for number, text in enumerate(options, start=1) if supported(text)]}
+
+    @staticmethod
+    def _evaluate(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
+        """Marks by how many of the reference answer's words the student used."""
+        if not context:
+            return {"insufficientContext": True, "sourceIds": []}
+        reference = set(words(parameters.get("reference", "")))
+        given = set(words(parameters.get("studentAnswer", "")))
+        share = len(reference & given) / len(reference) if reference else 0
+        top = int(parameters.get("maxMarks", 1))
+        verdict = "CORRECT" if share >= 0.8 else "PARTLY_CORRECT" if share >= 0.3 else "INCORRECT"
+        missing = sorted(reference - given)[:5]
+        return {"insufficientContext": False, "marks": round(share * top, 1), "verdict": verdict,
+                "feedback": "Well done." if not missing else f"Your answer misses: {', '.join(missing)}.",
+                "followUpQuestion": f"Why does {context[0].title} matter?" if parameters.get("mode") == "VIVA" else None,
+                "sourceIds": [context[0].ref]}
 
     @staticmethod
     def _flashcards(context: tuple[ContextChunk, ...], parameters: dict) -> dict:

@@ -62,6 +62,12 @@ public interface LmsQuizAttemptRepository extends JpaRepository<LmsQuizAttempt, 
     Optional<LmsQuizAttempt> findWithStudentById(@Param("attemptId") Long attemptId);
 
     /** The course of the attempt's quiz, read without loading the attempt. */
+    /** The enrollment's in-progress attempts at graded quizzes of the course (v0.15.4: AI pauses while one is open). */
+    @Query("select attempt from LmsQuizAttempt attempt join fetch attempt.quiz quiz where attempt.courseEnrollment.id = :enrollmentId"
+            + " and quiz.lmsCourse.id = :lmsCourseId and attempt.status = com.stacc.backend.lms.quiz.attempt.QuizAttemptStatus.IN_PROGRESS"
+            + " and quiz.type = com.stacc.backend.lms.quiz.QuizType.GRADED")
+    List<LmsQuizAttempt> findInProgressGraded(@Param("enrollmentId") Long enrollmentId, @Param("lmsCourseId") Long lmsCourseId);
+
     @Query("select attempt.quiz.lmsCourse.id from LmsQuizAttempt attempt where attempt.id = :attemptId")
     Optional<Long> findLmsCourseIdById(@Param("attemptId") Long attemptId);
 

@@ -16,6 +16,18 @@ export type AiCitation = {
   pageId?: number | null
 }
 
+/** A practice answer marked by AI (v0.15.4): practice only, never an official mark. */
+export type AiEvaluation = {
+  marks: number | null
+  maxMarks: number
+  verdict: 'CORRECT' | 'PARTLY_CORRECT' | 'INCORRECT' | null
+  feedback: string | null
+  followUpQuestion: string | null
+  citations: AiCitation[]
+  insufficientContext: boolean
+}
+export type AiPracticeMode = 'PRACTICE' | 'MOCK_EXAM' | 'VIVA'
+
 /** Flashcards (v0.15.3). */
 export type AiFlashcardSetSummary = { id: number; title: string; cards: number; dueToday: number }
 export type AiFlashcard = {

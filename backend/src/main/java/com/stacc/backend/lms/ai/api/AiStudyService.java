@@ -13,6 +13,12 @@ import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
+import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
+import com.stacc.backend.lms.content.LmsContentStatus;
+import java.time.Clock;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
 import com.stacc.backend.lms.ai.notes.AiStudentNoteIndexer;
@@ -44,6 +50,8 @@ public class AiStudyService {
     static final String QUESTION_LENGTH = "Enter a question of 2 to 1,000 characters.";
     static final String MODULE_UNAVAILABLE = "Module not found or unavailable.";
     static final String FILE_UNAVAILABLE = "File not found or unavailable.";
+    static final String ASSIGNMENT_UNAVAILABLE = "Assignment not found or unavailable.";
+    static final String ASSIGNMENT_NOT_OPEN = "This assignment is not taking work now, so there is nothing to help with.";
     static final String MODULE_WITH_NOTES_ONLY = "Choose a module only when asking about the course.";
 
     private final LmsStudentAccessService studentAccess;
@@ -53,9 +61,16 @@ public class AiStudyService {
     private final AiStudentNoteIndexer notes;
     private final AiCourseControlService controls;
     private final AiRequestGate gate;
+    private final AiQuizPause quizPause;
+    private final LmsAssignmentRepository assignments;
+    private final Clock clock;
 
     public AiStudyService(LmsStudentAccessService studentAccess, AiKnowledgeSources sources, AiKnowledgeRecords records,
-            AiServiceClient client, AiStudentNoteIndexer notes, AiCourseControlService controls, AiRequestGate gate) {
+            AiServiceClient client, AiStudentNoteIndexer notes, AiCourseControlService controls, AiRequestGate gate,
+            AiQuizPause quizPause, LmsAssignmentRepository assignments, Clock clock) {
+        this.quizPause = quizPause;
+        this.assignments = assignments;
+        this.clock = clock;
         this.notes = notes;
         this.controls = controls;
         this.gate = gate;
@@ -76,6 +91,8 @@ public class AiStudyService {
             throw new ApiException(HttpStatus.BAD_REQUEST, QUESTION_LENGTH);
         }
         AiAskMode mode = request.effectiveMode();
+        // Help with an open assignment (v0.15.4) is hints only, whatever style was asked for.
+        boolean hintOnly = request.assignmentId() != null && openAssignment(lmsCourseId, request.assignmentId());
         if (mode == AiAskMode.NOTES_ONLY && request.moduleId() != null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, MODULE_WITH_NOTES_ONLY);
         }
@@ -96,7 +113,7 @@ public class AiStudyService {
         List<IndexRef> additional = myNotes.map(scope -> List.of(scope.index())).orElse(List.of());
         AskResult result = call(() -> client.ask(AiCourseKeys.forLmsCourse(lmsCourseId),
                 new AskRequest(knowledge.fingerprint(), question, courseSources, additional, turns(request),
-                        request.style() == null ? AiAnswerStyle.NORMAL.name() : request.style().name())));
+                        hintOnly ? "HINT" : request.style() == null ? AiAnswerStyle.NORMAL.name() : request.style().name())));
         List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge, null,
                 myNotes.map(AiStudentNoteIndexer.Scope::knowledge).orElse(null));
         String answer = AiResults.text(result.answer(), AiResults.ANSWER_MAX);
@@ -212,6 +229,7 @@ public class AiStudyService {
             throw AiErrors.unavailable();
         }
         controls.requireStudentAi(lmsCourseId);
+        quizPause.requireNoQuizInProgress(accountId, lmsCourseId);
         AiCourseKnowledge knowledge = sources.publishedKnowledge(lmsCourseId);
         if (topicId != null && knowledge.topic(topicId).isEmpty()) {
             throw new ApiException(HttpStatus.NOT_FOUND, TOPIC_UNAVAILABLE);
@@ -221,6 +239,41 @@ public class AiStudyService {
             throw new ApiException(HttpStatus.CONFLICT, AiErrors.STUDY_NOT_READY);
         }
         return knowledge;
+    }
+
+    /**
+     * Whether the assignment is one the student sees in this course and still takes work (v0.15.4); anything else is
+     * the same 404, so the route never says which assignments exist.
+     */
+    private boolean openAssignment(Long lmsCourseId, Long assignmentId) {
+        LmsAssignment assignment = assignments.findById(assignmentId)
+                .filter(found -> found.getLmsCourse().getId().equals(lmsCourseId) && found.getStatus() == LmsContentStatus.PUBLISHED)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ASSIGNMENT_UNAVAILABLE));
+        if (assignment.submissionWindowAt(clock.instant()) != AssignmentSubmissionWindow.OPEN) {
+            throw new ApiException(HttpStatus.CONFLICT, ASSIGNMENT_NOT_OPEN);
+        }
+        return true;
+    }
+
+    /** Marks a practice answer (v0.15.4): practice only, cited, never stored or official. */
+    public AiEvaluateResponse evaluate(Long accountId, Long lmsCourseId, AiEvaluateRequest request) {
+        return gate.run(AiRequestLogEntry.Kind.EVALUATE, accountId, lmsCourseId, () -> {
+            AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId);
+            AiEvaluateRequest.Mode mode = request.mode() == null ? AiEvaluateRequest.Mode.PRACTICE : request.mode();
+            AiServiceMessages.EvaluateResult result = call(() -> client.evaluate(AiCourseKeys.forLmsCourse(lmsCourseId),
+                    new AiServiceMessages.EvaluateRequest(knowledge.fingerprint(), request.question(), request.referenceAnswer(),
+                            request.studentAnswer(), request.maxMarks(), mode.name(), knowledge.allowedSources())));
+            List<AiCitationResponse> citations = AiResults.citations(result.citations(), knowledge);
+            String feedback = AiResults.text(result.feedback(), 2000);
+            if (!Boolean.FALSE.equals(result.insufficientContext()) || feedback == null || citations.isEmpty() || result.marks() == null) {
+                return new AiEvaluateResponse(null, request.maxMarks(), null, null, null, List.of(), true);
+            }
+            java.math.BigDecimal marks = result.marks().max(java.math.BigDecimal.ZERO)
+                    .min(java.math.BigDecimal.valueOf(request.maxMarks())).setScale(1, java.math.RoundingMode.HALF_UP);
+            String verdict = java.util.Set.of("CORRECT", "PARTLY_CORRECT", "INCORRECT").contains(result.verdict()) ? result.verdict() : null;
+            return new AiEvaluateResponse(marks, request.maxMarks(), verdict, feedback,
+                    mode == AiEvaluateRequest.Mode.VIVA ? AiResults.text(result.followUpQuestion(), 500) : null, citations, false);
+        }, AiEvaluateResponse::insufficientContext);
     }
 
     /** The earlier turns the page sent (v0.15.1), trimmed and cut to the AI service's limits; never stored. */

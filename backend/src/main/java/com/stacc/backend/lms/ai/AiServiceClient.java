@@ -41,6 +41,9 @@ public interface AiServiceClient {
     /** A rubric suggestion whose points add up to the assignment's maximum (v0.14.5). */
     AiServiceMessages.RubricResult rubric(String courseKey, AiServiceMessages.RubricRequest request);
 
+    /** Marks a practice answer against its reference and the sources (v0.15.4). */
+    AiServiceMessages.EvaluateResult evaluate(String courseKey, AiServiceMessages.EvaluateRequest request);
+
     /** Flashcards with sources (v0.15.3). */
     AiServiceMessages.FlashcardResult flashcards(String courseKey, AiServiceMessages.FlashcardRequest request);
 

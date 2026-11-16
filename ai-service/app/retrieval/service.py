@@ -159,12 +159,14 @@ class LearningService:
     def _generate(self, task: str, context: _Context, output: type[Output], temperature: float,
                   parameters: dict, usable: Callable[[Output], bool] = lambda _: True,
                   question: str | None = None, teacher_note: str | None = None,
-                  history: tuple[tuple[str, str], ...] = (), style: str | None = None) -> Output | None:
+                  history: tuple[tuple[str, str], ...] = (), style: str | None = None,
+                  answer: str | None = None) -> Output | None:
         """Valid output, or None when two attempts gave valid JSON that was still unusable."""
         system = prompts.system_prompt(task, parameters)
         if style in prompts.STYLES:
             system += "\n" + prompts.STYLES[style]
-        user = prompts.user_prompt(context.for_prompt(), question=question, teacher_note=teacher_note, history=history)
+        user = prompts.user_prompt(context.for_prompt(), question=question, teacher_note=teacher_note, history=history,
+                                   answer=answer)
         schema = inline_schema(output)
         parsed_any = False
         for attempt in range(2):
@@ -269,6 +271,32 @@ class LearningService:
         return schemas.AssessmentDraftResponse(titleSuggestion=result.titleSuggestion,
                                                instructionsSuggestion=result.instructionsSuggestion or None,
                                                questions=accepted(result), insufficientContext=False)
+
+    # --- Practice evaluation (v0.15.4) ----------------------------------------------------------
+
+    def evaluate(self, course_key: str, request: schemas.EvaluateRequest) -> schemas.EvaluateResponse:
+        """Marks a practice answer against the reference and the sources; marks are capped at the maximum, feedback must
+        cite a source, and nothing is stored."""
+        insufficient = schemas.EvaluateResponse(marks=None, verdict=None, feedback=None, followUpQuestion=None, citations=[],
+                                                insufficientContext=True)
+        hits = self._search(self._scopes(course_key, request), request.question + "\n" + request.referenceAnswer)
+        if not hits:
+            return insufficient
+        context = _Context(hits)
+        result = self._generate(
+            "evaluate", context, schemas.EvaluateModelOutput, 0.0,
+            {"maxMarks": request.maxMarks, "modeInstruction": prompts.EVALUATE_MODES[request.mode.value],
+             "mode": request.mode.value,
+             "reference": request.referenceAnswer, "studentAnswer": request.studentAnswer},
+            usable=lambda out: out.insufficientContext or (bool(out.feedback) and bool(context.citations(out.sourceIds))),
+            question=request.question, teacher_note="Reference answer: " + request.referenceAnswer, answer=request.studentAnswer)
+        if result is None or result.insufficientContext:
+            return insufficient
+        marks = round(min(max(result.marks, 0), request.maxMarks) * 2) / 2
+        return schemas.EvaluateResponse(
+            marks=marks, verdict=result.verdict, feedback=result.feedback,
+            followUpQuestion=result.followUpQuestion if request.mode is schemas.PracticeMode.VIVA else None,
+            citations=context.citations(result.sourceIds), insufficientContext=False)
 
     # --- Flashcards (v0.15.3) ---------------------------------------------------------------------
 
