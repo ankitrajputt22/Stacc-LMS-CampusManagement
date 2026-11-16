@@ -54,7 +54,7 @@ Add a MySQL test whenever a phase adds a row-lock rule, a capacity limit, a uniq
 
 ## Frontend unit tests
 
-The frontend uses **Vitest** with **React Testing Library** in a simulated browser (jsdom). Tests sit next to the code they check, named `*.test.ts` or `*.test.tsx`, and never reach a server: the API client gets a placeholder address, and API answers are faked with an Axios adapter.
+The frontend uses **Vitest** with **React Testing Library** in a simulated browser (jsdom). Tests sit next to the code they check, named `*.test.ts` or `*.test.tsx`, and never reach a server: the API client gets a placeholder address, and API answers are faked with an Axios adapter. Tests run in the `vmThreads` pool: one jsdom per worker, while each test file keeps its own isolated modules, so the whole run takes seconds.
 
 ```bash
 cd frontend && npm test
