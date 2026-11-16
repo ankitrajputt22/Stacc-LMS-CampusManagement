@@ -22,6 +22,7 @@ import { CourseResultsPage } from './pages/CourseResultsPage'
 import { CourseAiPage } from './pages/CourseAiPage'
 import { CourseAssignmentPage } from './pages/CourseAssignmentPage'
 import { CoursePage } from './pages/CoursePage'
+import { StudyHomePage } from './pages/StudyHomePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { FacultyCourseReportPage } from './pages/FacultyCourseReportPage'
@@ -129,6 +130,7 @@ function App() {
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="courses" element={<CoursesPage />} />
+          <Route path="study" element={<StudyHomePage />} />
           {/* Every page of one course shares the course navigation. */}
           <Route path="courses/:lmsCourseId" element={<CourseLayout />}>
             <Route index element={<CoursePage />} />
@@ -149,6 +151,7 @@ function App() {
             <Route path="files" element={<CourseFilesPage />} />
             <Route path="syllabus" element={<CourseSyllabusPage />} />
             <Route path="ai" element={<CourseAiPage />} />
+            <Route path="ai/:section" element={<CourseAiPage />} />
           </Route>
           <Route path="teaching" element={<TeachingPage />} />
           <Route path="teaching/:lmsCourseId" element={<TeachingCourseLayout />}>

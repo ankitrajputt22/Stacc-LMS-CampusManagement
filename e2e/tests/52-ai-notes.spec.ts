@@ -30,6 +30,9 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'AI Study Assistant')
   await expect(page.getByText(DOCUMENT)).toHaveCount(0)
+  // The study area (v0.15.8) has a tab per section; Ask holds Ask My Course and Saved answers.
+  const studySections = page.getByRole('navigation', { name: 'Study sections' })
+  await studySections.getByRole('link', { name: 'Ask' }).click()
   // Ask My Course (v0.13.9) offers three searches and a module scope for course searches only.
   const ask = page.getByRole('region', { name: 'Ask My Course' })
   await expect(ask.getByRole('radio', { name: /^Course \+ my notes/ })).toBeVisible()
@@ -38,6 +41,7 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await expect(ask.getByRole('combobox', { name: 'Module' })).toHaveCount(0)
   // Saved answers (v0.15.1) start empty; nothing of a conversation is kept unless the student saves it.
   await expect(page.getByRole('region', { name: 'Saved answers' }).getByText(/No saved answers yet/)).toBeVisible()
+  await studySections.getByRole('link', { name: 'My notes' }).click()
   const myNotes = page.getByRole('region', { name: 'My notes' })
   await myNotes.getByRole('button', { name: 'Add note' }).click()
   await myNotes.getByRole('textbox', { name: 'Note title' }).fill(NOTE)
@@ -51,4 +55,9 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await myNotes.getByRole('button', { name: 'Delete note' }).click()
   await expect(myNotes.getByText(`Deleted ${NOTE}.`)).toBeVisible()
   await expect(myNotes.getByRole('listitem').filter({ hasText: NOTE })).toHaveCount(0)
+
+  // The AI Study home (v0.15.8) lists the student's courses, each with a link to its study area.
+  await page.getByRole('navigation').getByRole('link', { name: 'AI Study' }).first().click()
+  await expect(page.getByRole('heading', { level: 1, name: 'AI Study' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Open study area/ }).first()).toBeVisible()
 })

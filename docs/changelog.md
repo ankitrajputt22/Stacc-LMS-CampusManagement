@@ -50,6 +50,7 @@
 - **0.15.5:** learning evidence from practice and flashcards, with each student's own mastery per page.
 - **0.15.6:** adaptive practice weighted to weaker pages, and rule-based recommendations that say why.
 - **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
+- **0.15.8:** a student AI home across courses and a study area per course with a tab per section.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.
