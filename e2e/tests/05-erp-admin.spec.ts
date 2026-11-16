@@ -21,10 +21,11 @@ test('an admin filters the course catalog, sees the sections, opens a roster, an
 
   const tabs = page.getByRole('navigation', { name: 'Academic admin sections' })
 
-  // The demo semester has sections A and B, with two students placed in A.
+  // The CSE semester has sections A, B, and C, with two students placed in A. ECE has its own sections A and B.
   await tabs.getByRole('link', { name: 'Sections' }).click()
   const sections = page.getByRole('table', { name: 'Sections' })
-  await expect(sections.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /^A/ }) })).toContainText('2 of 60')
+  await expect(sections.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /^A/ }) }).filter({ hasText: 'BTECH-CSE' }))
+    .toContainText('2 of 60')
 
   await page.getByRole('navigation', { name: 'Academic admin areas' }).getByRole('link', { name: 'Teaching' }).click()
   const offerings = page.getByRole('table', { name: 'Course offerings' })
