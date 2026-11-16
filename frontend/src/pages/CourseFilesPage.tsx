@@ -11,6 +11,7 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
 import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { DownloadButton, FileTitle, UploadedAt } from '../courses/FileRowParts'
@@ -29,7 +30,7 @@ function Shell({ lmsCourseId, children }: { lmsCourseId: number | null; children
     <div>
       <title>{course.status === 'loaded' ? `Files · ${course.data.courseName} · Stacc` : 'Files · Stacc'}</title>
       <CourseSectionHeader
-        course={course.status === 'loaded' ? course.data : undefined}
+        course={course.status === 'loaded' ? courseBanner(course.data) : undefined}
         title="Files"
         description="Course files and reference materials, by page and module."
       />

@@ -54,7 +54,7 @@ export function CourseHomeSettings({ course }: { course: LmsFacultyCourseContent
   }
 
   return (
-    <Card title="Course home" description="What students see first when they open this course." className="mt-6">
+    <Card title="Course home" icon="home" description="What students see first when they open this course.">
       <SelectField
         label="Home shows"
         value={homeView}
@@ -69,6 +69,7 @@ export function CourseHomeSettings({ course }: { course: LmsFacultyCourseContent
           </option>
         ))}
       </SelectField>
+      <Alert tone="info" className="mt-3">Choosing a home view does not change official course details.</Alert>
       <div className="mt-4">
         <FormattedTextField
           id="course-welcome"

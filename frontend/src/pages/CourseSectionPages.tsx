@@ -13,6 +13,7 @@ import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { CourseProgressCard } from '../courses/CourseProgressCard'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
 import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
@@ -48,7 +49,7 @@ export function StudentCourseSection({
   // such as one quiz, keeps a breadcrumb back to the section.
   const header = (loaded?: LmsCourseDetail) => (
     <CourseSectionHeader
-      course={loaded}
+      course={loaded && courseBanner(loaded)}
       title={title}
       breadcrumb={
         parent && lmsCourseId !== null ? (

@@ -14,3 +14,8 @@ export function courseFactsLine(course: LmsCourseDetail): string {
     course.faculty.length > 0 ? listFormat.format(course.faculty) : null,
   ].filter(Boolean).join(' · ')
 }
+
+/** The course's code and name with its facts line, for the top of a course section. */
+export function courseBanner(course: LmsCourseDetail): { name: string; facts: string } {
+  return { name: `${course.courseCode} ${course.courseName}`, facts: courseFactsLine(course) }
+}

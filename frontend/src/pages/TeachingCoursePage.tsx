@@ -32,7 +32,8 @@ import { QuizResultsTable } from '../teaching/QuizResultsTable'
 import { QuizzesEditor } from '../teaching/QuizzesEditor'
 import { useFacultyCourse } from '../teaching/useFacultyCourse'
 import type { LmsFacultyCourseContent } from '../types/lms'
-import { PageHeader } from '../ui'
+import { Card, PageHeader } from '../ui'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
 
@@ -55,23 +56,9 @@ function TeachingCourseState({ heading, srOnlyHeading = true, children }: { head
   )
 }
 
-/** The official details of the course, from the academic records: code, program, semester, session, and credits. */
-function courseLine(course: LmsFacultyCourseContent): ReactNode {
-  return (
-      <>
-        <span className="sr-only">Program </span>
-        {course.programCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        Semester {course.semesterNumber}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, Academic session </span>
-        {course.academicSessionCode}
-        <span aria-hidden="true"> · </span>
-        <span className="sr-only">, </span>
-        {creditsText(course.credits)}
-      </>
-  )
+/** The official details of the course, from the academic records: program, semester, session, and credits. */
+function courseFacts(course: LmsFacultyCourseContent): string {
+  return [course.programCode, `Semester ${course.semesterNumber}`, course.academicSessionCode, creditsText(course.credits)].join(' · ')
 }
 
 /** A page of the course: its title and heading, and for a page inside a section, that section (such as Quizzes). */
@@ -138,26 +125,22 @@ function TeachingCourseFrame({
       return (
         <>
           <title>{`${section.title}${section.title === course.data.courseName ? '' : ` · ${course.data.courseName}`} · Teaching · Stacc`}</title>
-          <PageHeader
+          <CourseSectionHeader
+            course={{ name: `${course.data.courseCode} ${course.data.courseName}`, facts: courseFacts(course.data) }}
+            title={section.heading === '' ? 'Course Home' : section.heading}
+            description={section.heading === '' ? 'Publish or archive the course, and set what students see first.' : undefined}
             breadcrumb={
-              <Breadcrumb
-                parent={
-                  section.heading === ''
-                    ? TEACHING
-                    : [
-                        TEACHING,
-                        { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName },
-                        ...(section.parent
-                          ? [{ to: `/teaching/${course.data.lmsCourseId}/${section.parent.path}`, label: section.parent.label }]
-                          : []),
-                      ]
-                }
-                current={section.heading === '' ? course.data.courseName : section.heading}
-              />
+              section.parent ? (
+                <Breadcrumb
+                  parent={[
+                    TEACHING,
+                    { to: `/teaching/${course.data.lmsCourseId}`, label: course.data.courseName },
+                    { to: `/teaching/${course.data.lmsCourseId}/${section.parent.path}`, label: section.parent.label },
+                  ]}
+                  current={section.heading}
+                />
+              ) : undefined
             }
-            eyebrow={course.data.courseCode}
-            title={section.heading === '' ? course.data.courseName : section.heading}
-            description={section.heading === '' ? courseLine(course.data) : undefined}
           />
           {children(course.data, course.refresh)}
         </>
@@ -174,11 +157,30 @@ export function TeachingCoursePage() {
   return (
     <TeachingCourseFrame section={{ title: 'Course', heading: '' }}>
       {(course, reload) => (
-        <>
-          <CourseSettings course={course} reload={reload} />
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
           {/* Not keyed by the saved values: a save reloads the course, and remounting would drop "Course home saved." */}
           <CourseHomeSettings course={course} />
-        </>
+          <div className="space-y-6">
+            <Card title="Course details" icon="info">
+              <dl className="divide-y divide-line text-[0.95rem]">
+                {[
+                  ['Course code', course.courseCode],
+                  ['Course name', course.courseName],
+                  ['Program', course.programCode],
+                  ['Semester', `Semester ${course.semesterNumber}`],
+                  ['Academic session', course.academicSessionCode],
+                  ['Credits', creditsText(course.credits)],
+                ].map(([term, value]) => (
+                  <div key={term} className="grid grid-cols-[9rem_minmax(0,1fr)] gap-3 py-1.5">
+                    <dt className="text-ink-muted">{term}</dt>
+                    <dd className="break-words text-ink">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+            <CourseSettings course={course} reload={reload} />
+          </div>
+        </div>
       )}
     </TeachingCourseFrame>
   )

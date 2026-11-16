@@ -11,6 +11,7 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
 import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { creditsText } from '../courses/credits'
 import { CourseOutcomesCard } from '../courses/CourseOutcomesCard'
@@ -24,7 +25,7 @@ function Shell({ course, children }: { course?: LmsCourseDetail; children: React
   return (
     <div className="max-w-4xl">
       <title>{course ? `Syllabus · ${course.courseName} · Stacc` : 'Syllabus · Stacc'}</title>
-      <CourseSectionHeader course={course} title="Syllabus" />
+      <CourseSectionHeader course={course && courseBanner(course)} title="Syllabus" />
       {children}
     </div>
   )

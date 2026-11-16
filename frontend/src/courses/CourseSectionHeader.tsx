@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react'
-import type { LmsCourseDetail } from '../types/lms'
-import { courseFactsLine } from './courseFactsLine'
 
 /**
  * The top of a student course section: the course and its facts (once loaded), an optional breadcrumb, then the
@@ -12,7 +10,8 @@ export function CourseSectionHeader({
   description,
   breadcrumb,
 }: {
-  course?: LmsCourseDetail
+  /** The course's code and name, and its facts line, once loaded. */
+  course?: { name: string; facts: string }
   title: string
   description?: ReactNode
   breadcrumb?: ReactNode
@@ -21,8 +20,8 @@ export function CourseSectionHeader({
     <header className="mb-6">
       {course && (
         <>
-          <p className="text-2xl font-bold break-words text-portal-navy sm:text-3xl">{`${course.courseCode} ${course.courseName}`}</p>
-          <p className="mt-1 break-words text-ink">{courseFactsLine(course)}</p>
+          <p className="text-2xl font-bold break-words text-portal-navy sm:text-3xl">{course.name}</p>
+          <p className="mt-1 break-words text-ink">{course.facts}</p>
         </>
       )}
       {breadcrumb && <div className="mt-4">{breadcrumb}</div>}
