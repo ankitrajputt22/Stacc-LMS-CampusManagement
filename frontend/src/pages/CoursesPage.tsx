@@ -60,14 +60,16 @@ function MyCourses() {
     <div className="space-y-8">
       {groupByTerm(courses.data).map((term) => (
         <section key={term.key} aria-labelledby={`term-${term.key}`}>
-          <h2 id={`term-${term.key}`} className="text-lg font-semibold text-ink">
-            {term.heading}
-            <span className="ml-2 text-sm font-normal text-ink-muted">
+          <h2 id={`term-${term.key}`} className="flex items-center gap-3 border-b border-line pb-3 text-2xl font-bold text-ink">
+            <span aria-hidden="true" className="h-8 w-1.5 rounded bg-teal-600" />
+            <span>
+              {term.heading}
+              <span aria-hidden="true"> · </span>
               <span className="sr-only">, program </span>
               {term.programCode}
             </span>
           </h2>
-          <ul aria-label={`Courses of ${term.heading}`} className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ul aria-label={`Courses of ${term.heading}`} className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {term.items.map((course) => (
               <li key={course.lmsCourseId}>
                 <CourseSummary course={course} />
@@ -93,9 +95,8 @@ export function CoursesPage() {
     <>
       <title>Courses · Stacc</title>
       <PageHeader
-        eyebrow="LMS"
         title="Courses"
-        description={isStudent ? 'Your current courses, by term. You get each course while you are officially enrolled in it.' : undefined}
+        description={isStudent ? 'Your current courses, by term.' : undefined}
       />
 
       <div>

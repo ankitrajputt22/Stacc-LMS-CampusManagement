@@ -27,6 +27,8 @@ export function TeachingCourseLayout() {
       nav={
         <CourseNav
           title={course.data.courseCode}
+          subtitle={course.data.courseName}
+          back={{ to: '/teaching', label: 'Back to My Courses' }}
           items={[
             { to: root, label: 'Home', end: true },
             { to: `${root}/modules`, label: 'Modules' },

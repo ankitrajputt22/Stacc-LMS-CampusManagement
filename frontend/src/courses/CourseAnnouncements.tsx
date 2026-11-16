@@ -22,7 +22,7 @@ type CourseAnnouncementsProps = {
  */
 export function CourseAnnouncements({ announcements, lmsCourseId, standalone = false }: CourseAnnouncementsProps) {
   return (
-    <Card title={standalone ? undefined : 'Announcements'} padding="none" className={standalone ? '' : 'mt-6'}>
+    <Card title={standalone ? undefined : 'Announcements'} icon={standalone ? undefined : 'campus'} padding="none" className={standalone ? '' : 'mt-6'}>
       {announcements.status !== 'loaded' ? (
         <SectionState request={announcements} what="announcements" />
       ) : announcements.data.length === 0 ? (

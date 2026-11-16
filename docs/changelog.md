@@ -52,6 +52,7 @@
 - **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
 - **0.15.8:** a student AI home across courses and a study area per course with a tab per section.
 - **AI study fixes:** recommendations and study plans skip assignments already handed in; adding a study plan to the calendar twice adds nothing new, and its own entries no longer count as busy days; viva follow-ups can be answered; empty mock exam answers score 0 without an AI check; every next step links to its page.
+- **0.16.10:** the courses pages in the new design: course cards, a course menu with icons and Back to Courses, the course home and module cards, and the faculty My Courses rows.
 - **0.16.9:** the hostel pages in the new design: a student Overview with a page per section, a warden dashboard with sections, the applications table, and the bed map as room cards; demo data makes Aarav a resident of A-101 with a weekly menu and hostel notices.
 - **0.16.8:** the student dashboard in two panels (Learning · LMS and Academic Records · ERP) with fee and exam previews and quick links; compact ERP tiles on phones.
 - **0.16.7:** fees as records: fee structures, payments with receipts, scholarships, refunds, and the accounts office's page; fee alerts on the ERP home.

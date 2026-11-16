@@ -73,15 +73,16 @@ type CourseHomeProps = {
 }
 
 /** "Section A · Taught by Meera Iyer and Rohan Gupta", from what the API sent; empty when it sent neither. */
-function teachingLine(course: LmsCourseDetail): string {
-  const parts = []
-  if (course.sectionCode) {
-    parts.push(`Section ${course.sectionCode}`)
-  }
-  if (course.faculty.length > 0) {
-    parts.push(`Taught by ${listFormat.format(course.faculty)}`)
-  }
-  return parts.join(' · ')
+/** The course's official facts in one line: program, semester, section, session, credits, and who teaches it. */
+function factsLine(course: LmsCourseDetail): string {
+  return [
+    course.programCode,
+    `Semester ${course.semesterNumber}`,
+    course.sectionCode ? `Section ${course.sectionCode}` : null,
+    course.academicSessionCode,
+    creditsText(course.credits),
+    course.faculty.length > 0 ? listFormat.format(course.faculty) : null,
+  ].filter(Boolean).join(' · ')
 }
 
 const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
@@ -92,32 +93,12 @@ const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction
  * backend sent; the course navigation leads to everything else.
  */
 function CourseHome({ course, announcements, assignments, content }: CourseHomeProps) {
-  const teaching = teachingLine(course)
   return (
-    <div className="max-w-3xl">
+    <div>
       <title>{`${course.courseName} · Stacc`}</title>
       <PageHeader
-        breadcrumb={<CourseBreadcrumb courseName={course.courseName} />}
-        eyebrow={course.courseCode}
-        title={course.courseName}
-        description={
-          <>
-        <p className="break-words">
-          <span className="sr-only">Program </span>
-          {course.programCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          Semester {course.semesterNumber}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, Academic session </span>
-          {course.academicSessionCode}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">, </span>
-          {creditsText(course.credits)}
-        </p>
-        {teaching && <p className="mt-1 break-words text-ink">{teaching}</p>}
-          </>
-        }
+        title={`${course.courseCode} ${course.courseName}`}
+        description={<p className="break-words text-ink">{factsLine(course)}</p>}
       />
 
       {course.homeView === 'SYLLABUS' && (
@@ -139,13 +120,15 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
       {course.homeView === 'OVERVIEW' && (
         <>
           {course.welcomeMessage && (
-            <section aria-label="Welcome" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
-              <FormattedText text={course.welcomeMessage} format="FORMATTED" className="text-sm leading-6 text-ink" headingLevel={2} />
+            <section aria-label="Welcome" className="rounded-panel border border-line border-l-[6px] border-l-teal-600 bg-surface px-5 py-4">
+              <FormattedText text={course.welcomeMessage} format="FORMATTED" className="text-[0.95rem] leading-7 text-ink" headingLevel={2} />
             </section>
           )}
           <CourseProgressCard lmsCourseId={course.lmsCourseId} />
-          <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} />
-          <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
+          <div className="grid items-start gap-x-6 xl:grid-cols-2">
+            <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} />
+            <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} />
+          </div>
           <CourseContent lmsCourseId={course.lmsCourseId} content={content} />
         </>
       )}

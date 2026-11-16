@@ -1,3 +1,4 @@
+import { Badge, buttonClasses } from '../ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
@@ -5,12 +6,9 @@ import { getApiError, getHttpStatus } from '../api/apiError'
 import { createLmsCourse, publishLmsCourse } from '../api/lmsCourseManagementApi'
 import { queryKeys } from '../api/queryKeys'
 import { ActionButton } from '../components/ActionButton'
-import { actionLinkClasses } from '../components/actionStyles'
 import { Button } from '../components/Button'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { usePendingFocus } from '../components/usePendingFocus'
-import { CourseFacts } from '../courses/CourseFacts'
-import { courseColor } from '../dashboard/courseColors'
 import type { LmsCourseManagement, LmsManagedCourse } from '../types/lms'
 import { enrolledText, lifecycleRefusal, lmsStatusWord } from './lmsCourseText'
 
@@ -68,42 +66,32 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
     }
   }
 
+  const statusTone = status === 'PUBLISHED' ? 'success' : status === 'DRAFT' ? 'info' : 'neutral'
+  const credits = Number(course.credits)
   return (
     <article
       ref={cardRef}
       aria-labelledby={`${id}-name`}
-      style={{ borderTopColor: courseColor(course.courseOfferingId) }}
-      className="h-full rounded-panel border border-t-4 border-line bg-surface px-4 py-3.5 sm:px-5 sm:py-4"
+      className={`rounded-panel border border-line border-l-[6px] bg-surface px-4 py-3 ${status === 'ARCHIVED' ? 'border-l-slate-400' : 'border-l-teal-600'}`}
     >
-      <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
-      <h3 id={`${id}-name`} className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">
-        {course.courseName}
-      </h3>
-      <CourseFacts course={course} />
-      <p className="text-sm leading-6 text-ink-muted">
-        {course.enrolledCount === 1 ? '1 student enrolled' : `${course.enrolledCount} students enrolled`}
-        {course.teachingRole === 'CO_FACULTY' && (
-          <>
-            <span aria-hidden="true"> · </span>
-            <span className="sr-only">, </span>
-            You co-teach this course
-          </>
-        )}
-      </p>
-
-      <dl className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-        <dt className="text-ink-muted">LMS course</dt>
-        <dd>
-          <span className="inline-block rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink">
-            {lmsStatusWord(status)}
-          </span>
-        </dd>
-      </dl>
+      <div className="grid items-center gap-x-5 gap-y-2 md:grid-cols-[minmax(10rem,1.4fr)_auto_auto_minmax(8rem,1fr)_auto_auto] md:divide-x md:divide-line">
+        <div className="min-w-0">
+          <p className="text-lg font-bold break-words text-ink">{course.courseCode}</p>
+          <h3 id={`${id}-name`} className="text-[0.95rem] break-words text-ink">{course.courseName}</h3>
+        </div>
+        <p className="text-ink md:pl-5">{`${Number.isInteger(credits) ? credits : credits.toFixed(2)} ${credits === 1 ? 'credit' : 'credits'}`}</p>
+        <p className="text-ink md:pl-5">{course.sectionCode ? `Section ${course.sectionCode}` : 'Whole semester'}</p>
+        <p className="text-ink md:pl-5">{course.teachingRole === 'CO_FACULTY' ? 'Co-faculty' : 'Primary faculty'}</p>
+        <p className="text-ink md:pl-5">{`Enrolled ${course.enrolledCount}`}</p>
+        <p className="md:pl-5">
+          <Badge tone={statusTone}>{lmsStatusWord(status)}</Badge>
+        </p>
+      </div>
       {status === 'DRAFT' && (
-        <p className="mt-1 text-sm leading-6 text-ink-muted">Students can’t open it until it is published.</p>
+        <p className="mt-2 text-sm leading-6 text-ink-muted">Students can’t open it until it is published.</p>
       )}
       {status === 'ARCHIVED' && (
-        <p className="mt-1 text-sm leading-6 text-ink-muted">
+        <p className="mt-2 text-sm leading-6 text-ink-muted">
           This LMS course is archived. Its content and history are kept, but it can no longer be opened.
         </p>
       )}
@@ -118,7 +106,7 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
       </div>
 
       {!confirmingPublish && status !== 'ARCHIVED' && (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
           {status === null && (
             <Button variant="secondary" aria-disabled={creating || undefined} onClick={create}>
               {creating ? 'Creating LMS course…' : 'Create LMS course'}
@@ -127,8 +115,8 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
           )}
           {course.lmsCourseId !== null && (
             // The route uses the LMS course ID, never an offering or teaching assignment ID.
-            <Link to={`/teaching/${course.lmsCourseId}`} data-focus-key="open" className={actionLinkClasses}>
-              Open LMS course<span className="sr-only">{spokenName}</span>
+            <Link to={`/teaching/${course.lmsCourseId}`} data-focus-key="open" className={buttonClasses(status === 'DRAFT' ? 'secondary' : 'primary', 'sm')}>
+              Open<span className="sr-only"> LMS course</span><span className="sr-only">{spokenName}</span>
             </Link>
           )}
           {status === 'DRAFT' && (

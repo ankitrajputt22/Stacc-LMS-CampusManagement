@@ -40,7 +40,7 @@ export function CourseAssignments({ lmsCourseId, assignments, standalone = false
   const [now] = useState(() => Date.now())
 
   return (
-    <Card title={standalone ? undefined : 'Assignments'} padding="none" className={standalone ? '' : 'mt-6'}>
+    <Card title={standalone ? undefined : 'Assignments'} icon={standalone ? undefined : 'assignments'} padding="none" className={standalone ? '' : 'mt-6'}>
       {assignments.status !== 'loaded' ? (
         <SectionState request={assignments} what="assignments" />
       ) : assignments.data.length === 0 ? (

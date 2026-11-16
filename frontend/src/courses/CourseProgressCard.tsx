@@ -18,7 +18,7 @@ export function CourseProgressCard({ lmsCourseId }: { lmsCourseId: number }) {
   const { requiredPages, completedRequiredPages, next } = progress.data
   const percent = Math.round((completedRequiredPages / requiredPages) * 100)
   return (
-    <Card title="Your progress" className="mt-6">
+    <Card title="Your progress" icon="reports" className="mt-6">
       <p className="text-sm text-ink">
         {completedRequiredPages} of {requiredPages} required {requiredPages === 1 ? 'page' : 'pages'} completed
       </p>
