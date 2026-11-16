@@ -4,6 +4,7 @@ import { getRecommendations } from '../api/aiApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { textLinkClasses } from '../ui'
+import { recommendationLink } from './recommendationLink'
 import { hintClasses, panelClasses } from './aiStyles'
 
 /**
@@ -23,10 +24,8 @@ export function RecommendationsPanel({ lmsCourseId }: { lmsCourseId: number }) {
       <ul className="mt-3 space-y-2 text-sm">
         {recommendations.data.map((item) => (
           <li key={`${item.kind}-${item.targetId}`}>
-            {item.targetId !== null && (item.kind === 'PRACTISE_WEAK' || item.kind === 'START_PAGE' || item.kind === 'REFRESH_PAGE') ? (
-              <Link to={`/courses/${lmsCourseId}/pages/${item.targetId}`} className={textLinkClasses}>{item.title}</Link>
-            ) : item.kind === 'ASSIGNMENT_SOON' && item.targetId !== null ? (
-              <Link to={`/courses/${lmsCourseId}/assignments/${item.targetId}`} className={textLinkClasses}>{item.title}</Link>
+            {recommendationLink(lmsCourseId, item) ? (
+              <Link to={recommendationLink(lmsCourseId, item) as string} className={textLinkClasses}>{item.title}</Link>
             ) : (
               <span className="font-medium text-ink">{item.title}</span>
             )}
