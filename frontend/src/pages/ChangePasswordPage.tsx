@@ -100,6 +100,7 @@ export function ChangePasswordPage({ required = false }: ChangePasswordPageProps
 
   return (
     <div className="max-w-lg">
+      <title>Change password · Stacc</title>
       <PageHeader
         title="Change password"
         description={
