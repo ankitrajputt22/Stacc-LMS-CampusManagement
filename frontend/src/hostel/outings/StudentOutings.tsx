@@ -202,7 +202,16 @@ function RoomProblemForm() {
   )
 }
 
-/** A resident's gate passes and leave, with their passes as QR codes, and room problems sent to the helpdesk. */
+/** A room problem sent to hostel maintenance through Support, with the resident's room attached. */
+export function RoomProblemCard() {
+  return (
+    <Card title="Room problem" icon="warning" description="Sent to hostel maintenance through Support, with your room attached.">
+      <RoomProblemForm />
+    </Card>
+  )
+}
+
+/** A resident's gate passes and leave, with their passes as QR codes: the request form beside the requests. */
 export function StudentOutings() {
   const queryClient = useQueryClient()
   const outings = useApiQuery(queryKeys.hostel.outings(), (signal) => getMyOutings(signal))
@@ -216,10 +225,11 @@ export function StudentOutings() {
   return (
     <div className="space-y-6">
       {notice && <Alert tone="success">{notice}</Alert>}
-      <Card title="Gate passes and leave" description="Your hostel warden approves each request. Show the pass at the gate.">
+      <div className="grid items-start gap-6 xl:grid-cols-2">
+      <Card title="Request gate pass or leave" icon="documents" description="Your hostel warden approves each request. Show the pass at the gate.">
         <RequestForm onDone={changed} />
       </Card>
-      <Card title="Your requests" padding="none">
+      <Card title="Your requests" icon="campus" padding="none">
         {outings.status !== 'loaded' ? (
           <SectionState request={outings} what="your requests" />
         ) : outings.data.length === 0 ? (
@@ -232,9 +242,7 @@ export function StudentOutings() {
           </ul>
         )}
       </Card>
-      <Card title="Room problem" description="Sent to hostel maintenance through Support, with your room attached.">
-        <RoomProblemForm />
-      </Card>
+      </div>
     </div>
   )
 }

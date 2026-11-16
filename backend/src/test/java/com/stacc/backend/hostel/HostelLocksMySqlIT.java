@@ -29,7 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * The hostel's row-lock rules under truly simultaneous requests on MySQL: a student gets one current application per
  * session, a bed one active allocation, and an application one active allocation, whoever clicks first. Uses the demo
- * accounts student1 and studentfaculty1, which no other MySQL test touches.
+ * accounts cse25012 and studentfaculty1, which no other MySQL test touches.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HostelLocksMySqlIT extends MySqlIntegrationTest {
@@ -61,7 +61,7 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
     @Test
     @Order(1)
     void twoApplicationsAtOnceForTheSameSessionMakeOne() throws Exception {
-        Long student = accountId("student1");
+        Long student = accountId("cse25012");
         CreateHostelApplicationRequest request = new CreateHostelApplicationRequest(currentSessionId(student), null);
 
         List<Outcome<HostelApplicationDetail>> outcomes = Concurrently.run(

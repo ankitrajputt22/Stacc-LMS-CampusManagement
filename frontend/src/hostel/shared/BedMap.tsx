@@ -7,11 +7,12 @@ import { useApiQuery } from '../../api/useApiQuery'
 import { EmptyState } from '../../components/states/EmptyState'
 import { SectionState } from '../../courses/SectionState'
 import type { BedMapCell, BedMapRoom, BedOccupancy } from '../../types/hostel'
+import { NavIcon } from '../../components/navigation/navIcons'
 import { Alert, Badge, type BadgeTone, Button, Card, TextField } from '../../ui'
 
 const STATE: Record<BedOccupancy, { label: string; tone: BadgeTone }> = {
-  AVAILABLE: { label: 'Free', tone: 'success' },
-  OCCUPIED: { label: 'Occupied', tone: 'brand' },
+  AVAILABLE: { label: 'Free', tone: 'info' },
+  OCCUPIED: { label: 'Occupied', tone: 'success' },
   MAINTENANCE: { label: 'Maintenance', tone: 'warning' },
   INACTIVE: { label: 'Not in use', tone: 'neutral' },
 }
@@ -32,7 +33,7 @@ function RoomDetailsForm({ room, onSaved }: { room: BedMapRoom; onSaved: () => P
   const [error, setError] = useState<string | null>(null)
   return (
     <form
-      className="grid gap-2 sm:grid-cols-[1fr_6rem_1fr_auto] sm:items-end"
+      className="grid gap-2"
       onSubmit={(event) => {
         event.preventDefault()
         if (floor !== '' && !/^-?\d{1,3}$/.test(floor)) {
@@ -56,8 +57,25 @@ function RoomDetailsForm({ room, onSaved }: { room: BedMapRoom; onSaved: () => P
       <Button type="submit" variant="secondary" size="sm">
         Save details
       </Button>
-      {error && <p className="text-sm text-danger sm:col-span-4">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </form>
+  )
+}
+
+/** Room details behind a toggle, so the map stays a map. */
+function RoomDetails({ room, onSaved }: { room: BedMapRoom; onSaved: () => Promise<void> }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mt-3 border-t border-line pt-3">
+      <Button variant="ghost" size="sm" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        {open ? 'Close details' : 'Edit details'}<span className="sr-only">{` of room ${room.roomNumber}`}</span>
+      </Button>
+      {open && (
+        <div className="mt-2">
+          <RoomDetailsForm room={room} onSaved={async () => { await onSaved(); setOpen(false) }} />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -68,40 +86,42 @@ function BedButton({ side, bed, onChanged }: { side: 'admin' | 'warden'; bed: Be
       .then(() => onChanged(done))
       .catch((caught: unknown) => setError(failure(caught)))
   return (
-    <li className="rounded-control border border-line p-2 text-sm">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-medium text-ink">Bed {bed.bedNumber}</span>
-        <Badge tone={STATE[bed.state].tone}>{STATE[bed.state].label}</Badge>
-      </div>
-      {bed.studentLoginId && (
-        <p className="mt-1 text-ink">
-          {bed.studentLoginId}
-          <span className="text-ink-muted">{bed.checkedIn ? ' · checked in' : ' · not checked in yet'}</span>
-        </p>
+    <li className="flex flex-wrap items-center gap-3 rounded-panel border border-line px-3 py-2.5 text-sm">
+      <NavIcon name="hostel" className="size-5 text-portal-navy" />
+      <span className="text-base font-semibold text-ink">{bed.bedNumber}<span className="sr-only">{` (bed ${bed.bedNumber})`}</span></span>
+      <span aria-hidden="true" className="h-8 w-px bg-line" />
+      <span className="min-w-0 flex-1">
+        {bed.studentLoginId ? (
+          <>
+            <span className="block font-semibold text-ink">{bed.studentLoginId}</span>
+            <span className="block text-xs text-ink-muted">{bed.checkedIn ? 'Checked in' : 'Not checked in yet'}</span>
+          </>
+        ) : (
+          <span className="sr-only">No resident</span>
+        )}
+      </span>
+      <Badge tone={STATE[bed.state].tone}>{STATE[bed.state].label}</Badge>
+      {bed.allocationId !== null && !bed.checkedIn && (
+        <Button size="sm" variant="secondary" onClick={() => act(() => checkInAllocation(side, bed.allocationId!, null), `Checked in ${bed.studentLoginId}.`)}>
+          Check in<span className="sr-only">{` ${bed.studentLoginId}`}</span>
+        </Button>
       )}
-      <div className="mt-2 flex flex-wrap gap-2">
-        {bed.allocationId !== null && !bed.checkedIn && (
-          <Button size="sm" variant="secondary" onClick={() => act(() => checkInAllocation(side, bed.allocationId!, null), `Checked in ${bed.studentLoginId}.`)}>
-            Check in<span className="sr-only">{` ${bed.studentLoginId}`}</span>
-          </Button>
-        )}
-        {side === 'admin' && (bed.state === 'AVAILABLE' || bed.state === 'MAINTENANCE') && (
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              act(
-                () => setBedMaintenance(bed.bedId, bed.state !== 'MAINTENANCE'),
-                bed.state === 'MAINTENANCE' ? `Bed ${bed.bedNumber} is back in use.` : `Bed ${bed.bedNumber} is under maintenance.`,
-              )
-            }
-          >
-            {bed.state === 'MAINTENANCE' ? 'Back in use' : 'Maintenance'}
-            <span className="sr-only">{`: bed ${bed.bedNumber}`}</span>
-          </Button>
-        )}
-      </div>
-      {error && <p className="mt-1 text-danger">{error}</p>}
+      {side === 'admin' && (bed.state === 'AVAILABLE' || bed.state === 'MAINTENANCE') && (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() =>
+            act(
+              () => setBedMaintenance(bed.bedId, bed.state !== 'MAINTENANCE'),
+              bed.state === 'MAINTENANCE' ? `Bed ${bed.bedNumber} is back in use.` : `Bed ${bed.bedNumber} is under maintenance.`,
+            )
+          }
+        >
+          {bed.state === 'MAINTENANCE' ? 'Back in use' : 'Maintenance'}
+          <span className="sr-only">{`: bed ${bed.bedNumber}`}</span>
+        </Button>
+      )}
+      {error && <p className="w-full text-danger">{error}</p>}
     </li>
   )
 }
@@ -122,7 +142,7 @@ export function BedMap({ side, hostelId }: { side: 'admin' | 'warden'; hostelId:
 
   if (map.status !== 'loaded') {
     return (
-      <Card title="Bed map">
+      <Card title="Bed map" icon="hostel">
         <SectionState request={map} what="the bed map" />
       </Card>
     )
@@ -135,7 +155,8 @@ export function BedMap({ side, hostelId }: { side: 'admin' | 'warden'; hostelId:
           <EmptyState title="No rooms yet." description="Add rooms and beds under Hostels & Rooms." />
         </Card>
       ) : (
-        map.data.rooms.map((room) => (
+        <div className="grid items-start gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        {map.data.rooms.map((room) => (
           <Card
             key={room.roomId}
             title={`Room ${room.roomNumber}`}
@@ -143,18 +164,15 @@ export function BedMap({ side, hostelId }: { side: 'admin' | 'warden'; hostelId:
               .filter(Boolean)
               .join(' · ')}
           >
-            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="space-y-2">
               {room.beds.map((bed) => (
                 <BedButton key={bed.bedId} side={side} bed={bed} onChanged={changed} />
               ))}
             </ul>
-            {side === 'admin' && (
-              <div className="mt-3 border-t border-line pt-3">
-                <RoomDetailsForm room={room} onSaved={() => changed(`Saved the details of room ${room.roomNumber}.`)} />
-              </div>
-            )}
+            {side === 'admin' && <RoomDetails room={room} onSaved={() => changed(`Saved the details of room ${room.roomNumber}.`)} />}
           </Card>
-        ))
+        ))}
+        </div>
       )}
     </div>
   )

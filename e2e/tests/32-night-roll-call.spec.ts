@@ -6,7 +6,7 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   const night = `2040-${String((Date.now() % 12) + 1).padStart(2, '0')}-${String((Date.now() % 28) + 1).padStart(2, '0')}`
 
   await signIn(page, 'erp', 'warden1')
-  await page.goto('/warden')
+  await page.goto('/warden/roll-call')
   const card = page.getByRole('region', { name: 'Night roll call' })
   await card.getByLabel('Night').fill(night)
   await card.getByRole('button', { name: 'Open roll call' }).click()

@@ -21,7 +21,7 @@ export function WardenOutings() {
   return (
     <div className="space-y-6">
       {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
-      <Card title="Requests to decide" padding="none">
+      <Card title="Requests to decide" icon="documents" padding="none">
         {tasks.status !== 'loaded' ? (
           <SectionState request={tasks} what="requests" />
         ) : outingTasks.length === 0 ? (
@@ -50,7 +50,7 @@ export function WardenOutings() {
           </ul>
         )}
       </Card>
-      <Card title="Overdue students" padding="none">
+      <Card title="Overdue students" icon="warning" padding="none">
         {overdue.status !== 'loaded' ? (
           <SectionState request={overdue} what="overdue students" />
         ) : overdue.data.length === 0 ? (

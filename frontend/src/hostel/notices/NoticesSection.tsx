@@ -11,14 +11,14 @@ export function NoticesSection() {
   const hostels = useApiQuery(queryKeys.hostel.occupancy('admin'), (signal) => getHostelOccupancy('admin', signal))
   if (hostels.status !== 'loaded') {
     return (
-      <Card title="Hostel notices">
+      <Card title="Hostel notices" icon="campus">
         <SectionState request={hostels} what="hostels" />
       </Card>
     )
   }
   if (hostels.data.length === 0) {
     return (
-      <Card title="Hostel notices">
+      <Card title="Hostel notices" icon="campus">
         <EmptyState title="No hostels yet." description="Add a hostel under Hostels & Rooms first." />
       </Card>
     )

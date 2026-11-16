@@ -101,7 +101,7 @@ export function ResidentMessCard() {
   }
   if (mess.status !== 'loaded') {
     return (
-      <Card title="Mess">
+      <Card title="Mess" icon="todo">
         <SectionState request={mess} what="the mess menu" />
       </Card>
     )
@@ -111,7 +111,7 @@ export function ResidentMessCard() {
   const rated = new Set(mess.data.rated.map((given) => `${given.date}:${given.meal}`))
   const toRate = (todays?.meals ?? []).filter((line) => canRate(today, today) && !rated.has(`${today}:${line.meal}`))
   return (
-    <Card title="Mess" description={`${mess.data.hostelName}: this week’s menu. Changes for a single day are marked.`} padding="none">
+    <Card title="Mess" icon="todo" description={`${mess.data.hostelName}: this week’s menu. Changes for a single day are marked.`} padding="none">
       <p role="status" className="sr-only">
         {message}
       </p>
@@ -246,7 +246,7 @@ export function MessManager({ hostels }: { hostels: { hostelId: number; name: st
   }
 
   return (
-    <Card title="Mess" description="The weekly menu, changes for single days, and what residents think." padding="none">
+    <Card title="Mess" icon="todo" description="The weekly menu, changes for single days, and what residents think." padding="none">
       <p role="status" className="sr-only">
         {message}
       </p>

@@ -138,7 +138,7 @@ export function WardenRollCall({ hostels }: { hostels: HostelOccupancy[] }) {
   }
 
   return (
-    <Card title="Night roll call" description="One sheet per hostel or block and night. Residents who went out at the gate start as out; nobody starts as absent." padding="none">
+    <Card title="Night roll call" icon="attendance" description="One sheet per hostel or block and night. Residents who went out at the gate start as out; nobody starts as absent." padding="none">
       <p role="status" className="sr-only">
         {message?.tone === 'success' ? message.text : ''}
       </p>

@@ -1,15 +1,18 @@
 import type { HostelOccupancy } from '../../types/hostel'
-import { Badge, Button } from '../../ui'
+import { Badge, Button, ButtonLink } from '../../ui'
 
 /** Occupancy per hostel as the API counts it; choosing a hostel opens its bed map. */
 export function OccupancyTable({
   rows,
   selected,
   onSelect,
+  linkTo,
 }: {
   rows: HostelOccupancy[]
   selected: number | null
   onSelect: (hostelId: number) => void
+  /** When given, each row links to this bed map page instead of choosing the hostel here. */
+  linkTo?: string
 }) {
   return (
     <div className="overflow-x-auto rounded-panel border border-line bg-surface">
@@ -37,9 +40,15 @@ export function OccupancyTable({
               <td className="px-4 py-2">{row.maintenance}</td>
               <td className="px-4 py-2">{row.available}</td>
               <td className="px-4 py-2">
-                <Button size="sm" variant={selected === row.hostelId ? 'primary' : 'secondary'} onClick={() => onSelect(row.hostelId)}>
-                  Bed map<span className="sr-only">{` of ${row.name}`}</span>
-                </Button>
+                {linkTo ? (
+                  <ButtonLink to={linkTo} size="sm" variant="secondary">
+                    View bed map<span className="sr-only">{` of ${row.name}`}</span>
+                  </ButtonLink>
+                ) : (
+                  <Button size="sm" variant={selected === row.hostelId ? 'primary' : 'secondary'} onClick={() => onSelect(row.hostelId)}>
+                    Bed map<span className="sr-only">{` of ${row.name}`}</span>
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

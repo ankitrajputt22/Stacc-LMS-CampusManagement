@@ -3,7 +3,7 @@ import { signIn, signOut } from './support'
 
 test('a resident asks to move, and the hostel office sees the request waiting for the warden', async ({ page }) => {
   await signIn(page, 'erp', 'student2')
-  await page.goto('/hostel')
+  await page.goto('/hostel/room-changes')
   const card = page.getByRole('region', { name: 'Room change' })
   await card.getByRole('button', { name: 'Ask to move' }).click()
   await card.getByLabel('Reason').fill('The room is too noisy at night.')
@@ -21,7 +21,7 @@ test('a resident asks to move, and the hostel office sees the request waiting fo
 
   // The resident cancels it, so the demo bed stays free of open changes.
   await signIn(page, 'erp', 'student2')
-  await page.goto('/hostel')
+  await page.goto('/hostel/room-changes')
   const mine = page.getByRole('region', { name: 'Room change' }).getByRole('listitem').filter({ hasText: 'Waiting for the warden' }).first()
   await mine.getByRole('button', { name: 'Cancel request' }).click()
   await mine.getByRole('button', { name: 'Cancel room change' }).click()

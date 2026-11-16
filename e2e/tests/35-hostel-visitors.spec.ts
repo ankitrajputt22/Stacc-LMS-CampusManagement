@@ -5,7 +5,7 @@ test('a resident registers a visitor, security sees them, and the hostel office 
   const visitor = `Asha ${Date.now()}`
 
   await signIn(page, 'erp', 'student2')
-  await page.goto('/hostel')
+  await page.goto('/hostel/visitors')
   const card = page.getByRole('region', { name: 'Visitors' })
   await card.getByLabel('Visitor’s name').fill(visitor)
   await card.getByLabel('Relation').fill('Mother')

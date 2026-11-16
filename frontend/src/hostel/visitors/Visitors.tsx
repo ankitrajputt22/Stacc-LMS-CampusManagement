@@ -88,7 +88,7 @@ export function ResidentVisitors() {
   }
 
   return (
-    <Card title="Visitors" description="Register visitors ahead. Only their name and relation are kept." padding="none">
+    <Card title="Visitors" icon="clubs" description="Register visitors ahead. Only their name and relation are kept." padding="none">
       <p role="status" className="sr-only">
         {message?.tone === 'success' ? message.text : ''}
       </p>
@@ -145,7 +145,7 @@ export function GateVisitors() {
   }
 
   return (
-    <Card title="Visitors today" description="Arrivals are taken only within the hostel’s visiting hours." padding="none">
+    <Card title="Visitors today" icon="clubs" description="Arrivals are taken only within the hostel’s visiting hours." padding="none">
       <p role="status" className="sr-only">
         {message?.tone === 'success' ? message.text : ''}
       </p>
@@ -244,21 +244,21 @@ export function VisitingHoursSection() {
   const [hostelId, setHostelId] = useState<number | null>(null)
   if (hostels.status !== 'loaded') {
     return (
-      <Card title="Visiting hours">
+      <Card title="Visiting hours" icon="calendar">
         <SectionState request={hostels} what="hostels" />
       </Card>
     )
   }
   if (hostels.data.length === 0) {
     return (
-      <Card title="Visiting hours">
+      <Card title="Visiting hours" icon="calendar">
         <EmptyState title="No hostels yet." />
       </Card>
     )
   }
   const chosen = hostelId ?? hostels.data[0].hostelId
   return (
-    <Card title="Visiting hours" description="When each hostel takes visitors every day. Security records arrivals only within them.">
+    <Card title="Visiting hours" icon="calendar" description="When each hostel takes visitors every day. Security records arrivals only within them.">
       <div className="space-y-4">
         <SelectField label="Hostel" value={String(chosen)} onChange={(event) => setHostelId(Number(event.target.value))}>
           {hostels.data.map((hostel) => (

@@ -75,7 +75,7 @@ export function HostelNoticeManager({ hostels }: { hostels: { hostelId: number; 
   }
 
   return (
-    <Card title="Hostel notices" description="Notices for a hostel or one block. An emergency notice is also sent to every resident it reaches." padding="none">
+    <Card title="Hostel notices" icon="campus" description="Notices for a hostel or one block. An emergency notice is also sent to every resident it reaches." padding="none">
       <p role="status" className="sr-only">
         {message?.tone === 'success' ? message.text : ''}
       </p>
@@ -172,7 +172,7 @@ export function ResidentHostelNotices() {
     return null
   }
   return (
-    <Card title="Hostel notices" padding="none">
+    <Card title="Hostel notices" icon="campus" padding="none">
       <ul className="divide-y divide-line">
         {notices.data.map((notice) => (
           <li key={notice.noticeId} className="px-4 py-4 sm:px-5">

@@ -11,11 +11,10 @@ import { ErrorState } from '../../components/states/ErrorState'
 import { LoadingState } from '../../components/states/LoadingState'
 import { StatePanel } from '../../components/states/StatePanel'
 import { usePendingFocus } from '../../components/usePendingFocus'
-import { formatDateTime } from '../../courses/dates'
 import { Pager } from '../../support/Pager'
 import { border, fieldClasses } from '../../teaching/formStyles'
 import type { ApprovalStatus } from '../../types/approvals'
-import { APPROVAL_STATUSES, approvalStatusLabel, approvalTagClasses, plainTagClasses, SIGN_IN_AGAIN } from '../hostelText'
+import { APPROVAL_STATUSES, approvalStatusLabel, approvalTagClasses, SIGN_IN_AGAIN } from '../hostelText'
 
 const PAGE_SIZE = 20
 const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
@@ -72,35 +71,46 @@ export function ApplicationsSection() {
   } else {
     content = (
       <>
-        <ul aria-label="Hostel applications" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-          {request.data.items.map((item) => (
-            <li key={item.applicationId} className="px-4 py-3 sm:px-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm text-ink">{item.applicationNumber}</span>
+        <div className="overflow-x-auto rounded-panel border border-line bg-surface">
+          <table className="w-full min-w-[44rem] text-left text-[0.95rem]">
+            <caption className="sr-only">Hostel applications</caption>
+            <thead className="bg-surface-muted">
+              <tr>
+                <th scope="col" className="px-4 py-3 font-semibold">Application</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Student</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Session</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Approval</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Allocation</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {request.data.items.map((item) => (
+                <tr key={item.applicationId} className="border-t border-line">
+                  <th scope="row" className="px-4 py-2.5 font-mono font-medium">{item.applicationNumber}</th>
+                  <td className="px-4 py-2.5">{item.studentLoginId}</td>
+                  <td className="px-4 py-2.5">{item.academicSessionCode}</td>
+                  <td className="px-4 py-2.5">
                     <span className={approvalTagClasses(item.approvalStatus)}>
                       <span className="sr-only">Approval status: </span>
                       {approvalStatusLabel(item.approvalStatus)}
                     </span>
-                    {item.activeAllocation && <span className={plainTagClasses()}>Allocated</span>}
-                  </div>
-                  <p className="mt-0.5 text-sm break-words text-ink">
-                    {item.studentLoginId} · {item.academicSessionCode}
-                    {item.activeAllocation &&
-                      ` · ${item.activeAllocation.hostelName}, Room ${item.activeAllocation.roomNumber}, Bed ${item.activeAllocation.bedNumber}`}
-                  </p>
-                  <p className="text-xs text-ink-muted">
-                    Submitted <time dateTime={item.submittedAt}>{formatDateTime(item.submittedAt)}</time>
-                  </p>
-                </div>
-                <Link to={`/admin/hostel/applications/${item.applicationId}`} className={`${actionLinkClasses} shrink-0 self-start`}>
-                  Review<span className="sr-only">: {item.applicationNumber}, {item.studentLoginId}</span>
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    {item.activeAllocation
+                      ? `${item.activeAllocation.hostelName} / ${item.activeAllocation.roomNumber} / ${item.activeAllocation.bedNumber}`
+                      : item.approvalStatus === 'APPROVED' ? 'Waiting' : '—'}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <Link to={`/admin/hostel/applications/${item.applicationId}`} className={actionLinkClasses}>
+                      Review<span className="sr-only">: {item.applicationNumber}, {item.studentLoginId}</span>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <Pager
           page={request.data.page}
           totalPages={request.data.totalPages}

@@ -259,3 +259,9 @@ Payments and fees, mess, visitors, maintenance requests, room preferences or stu
 - The hostel office sets each hostel's daily visiting hours (Hostel Management, Visitors; `PUT /api/v1/hostel/admin/hostels/{id}/visiting-hours`, `HOSTEL_MANAGE`), read in `COLLEGE_TIME_ZONE`. A hostel without hours takes no visitors (`V111`).
 - A resident registers a visitor for today or a day in the next 30 days and cancels while expected (the Visitors card on `/hostel`; `/api/v1/hostel/student/visitors`, `STUDENT` and `HOSTEL_VISITOR_REGISTER`). Only the visitor's name and relation are kept.
 - Security sees today's visitors on `/gate` and records arrivals (only within the hostel's visiting hours), departures, and walk-ins for a resident by college ID (`/api/v1/gate/visitors`, `SECURITY` and `HOSTEL_VISITOR_DESK`). A visit moves forward only (expected, inside, left; or cancelled) under its row lock, and is never deleted.
+
+## Pages (v0.16.9)
+
+- Students: `/hostel` is the Overview (their allocation and application, hostel notices, tonight's dinner, and their latest outing), with a page per section: `/hostel/applications` (apply, the three steps from application to bed, and their applications with approval progress), `/hostel/room-changes`, `/hostel/outings` (gate passes and leave beside their requests and passes), `/hostel/mess`, `/hostel/visitors`, and `/hostel/room-problem`. A student never chooses a bed.
+- Wardens: `/warden` is the Overview (their hostels with occupancy, requests to decide, and overdue students), with `/warden/roll-call`, `/warden/notices`, `/warden/mess`, and `/warden/bed-map`.
+- The hostel office: `/admin/hostel/:section` keeps its nine sections; applications are a table with the allocation in words, and Occupancy & Bed Map opens on the first hostel with its counts and its rooms as cards.

@@ -255,6 +255,10 @@ function App() {
           <Route path="inbox" element={<InboxPage />} />
           <Route path="todo" element={<TodoPage />} />
           <Route path="warden" element={<WardenPage />} />
+          <Route path="warden/roll-call" element={<WardenPage section="roll-call" />} />
+          <Route path="warden/notices" element={<WardenPage section="notices" />} />
+          <Route path="warden/mess" element={<WardenPage section="mess" />} />
+          <Route path="warden/bed-map" element={<WardenPage section="bed-map" />} />
           <Route path="gate" element={<GatePage />} />
           <Route path="id-card" element={<IdCardPage />} />
           <Route path="verify-id" element={<VerifyIdPage />} />
@@ -291,6 +295,12 @@ function App() {
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
           {/* Hostel: the student's page, and the hostel office's sections; the applications section opens first. */}
           <Route path="hostel" element={<StudentHostelPage />} />
+          <Route path="hostel/applications" element={<StudentHostelPage section="applications" />} />
+          <Route path="hostel/room-changes" element={<StudentHostelPage section="room-changes" />} />
+          <Route path="hostel/outings" element={<StudentHostelPage section="outings" />} />
+          <Route path="hostel/mess" element={<StudentHostelPage section="mess" />} />
+          <Route path="hostel/visitors" element={<StudentHostelPage section="visitors" />} />
+          <Route path="hostel/room-problem" element={<StudentHostelPage section="room-problem" />} />
           <Route path="admin/hostel" element={<Navigate to="/admin/hostel/applications" replace />} />
           <Route path="admin/hostel/:section" element={<AdminHostelPage />} />
           <Route path="admin/hostel/applications/:applicationId" element={<AdminHostelPage review />} />

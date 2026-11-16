@@ -5,7 +5,7 @@ test('a warden publishes an emergency notice for their hostel', async ({ page })
   const title = `Fire drill ${Date.now()}`
 
   await signIn(page, 'erp', 'warden1')
-  await page.goto('/warden')
+  await page.goto('/warden/notices')
   const card = page.getByRole('region', { name: 'Hostel notices' })
   await card.getByLabel('Notice title').fill(title)
   await card.getByLabel('Notice message').fill('Leave by the nearest stairs at 6 pm.')
