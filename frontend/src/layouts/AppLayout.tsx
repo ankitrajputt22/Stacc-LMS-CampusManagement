@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router'
 import { GlobalNav } from '../components/navigation/GlobalNav'
 import { Sidebar } from '../components/navigation/Sidebar'
 import { TopBar } from '../components/navigation/TopBar'
+import { LoadingState } from '../components/states/LoadingState'
 import { UnreadCountProvider } from '../notifications/UnreadCountProvider'
 
 const NAVIGATION_ID = 'app-navigation'
@@ -72,7 +73,9 @@ export function AppLayout() {
             className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8"
           >
             <div className="max-w-6xl">
-              <Outlet />
+              <Suspense fallback={<LoadingState />}>
+                <Outlet />
+              </Suspense>
             </div>
           </main>
         </div>
