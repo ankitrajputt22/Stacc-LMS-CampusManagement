@@ -270,6 +270,7 @@ function App() {
           <Route path="grievances/:caseId" element={<GrievancesPage section="myCase" />} />
           <Route path="admin/grievances" element={<AdminGrievancesPage />} />
           <Route path="mentoring" element={<MentoringPage />} />
+          <Route path="mentoring/:assignmentId" element={<MentoringPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="innovation" element={<InnovationPage />} />
