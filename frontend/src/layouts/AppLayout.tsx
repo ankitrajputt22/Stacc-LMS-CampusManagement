@@ -1,9 +1,10 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { GlobalNav } from '../components/navigation/GlobalNav'
 import { Sidebar } from '../components/navigation/Sidebar'
 import { TopBar } from '../components/navigation/TopBar'
 import { LoadingState } from '../components/states/LoadingState'
+import { PageErrorBoundary } from '../components/states/PageErrorBoundary'
 import { UnreadCountProvider } from '../notifications/UnreadCountProvider'
 
 const NAVIGATION_ID = 'app-navigation'
@@ -12,6 +13,7 @@ const NAVIGATION_ID = 'app-navigation'
 const DESKTOP_QUERY = '(min-width: 64rem)'
 
 export function AppLayout() {
+  const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -73,9 +75,12 @@ export function AppLayout() {
             className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8"
           >
             <div className="max-w-6xl">
-              <Suspense fallback={<LoadingState />}>
-                <Outlet />
-              </Suspense>
+              {/* Keyed by the address, so moving to another page clears an earlier failure. */}
+              <PageErrorBoundary key={location.pathname}>
+                <Suspense fallback={<LoadingState />}>
+                  <Outlet />
+                </Suspense>
+              </PageErrorBoundary>
             </div>
           </main>
         </div>
