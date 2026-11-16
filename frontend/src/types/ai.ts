@@ -111,6 +111,15 @@ export type AiPracticeSet = {
   reason?: string | null
 }
 
+/** One day of a study plan, scheduled by code (v0.15.7). */
+export type AiStudyPlanDay = {
+  date: string
+  busy: boolean
+  budget: number
+  planned: number
+  sessions: { kind: 'ASSIGNMENT' | 'PRACTISE_WEAK' | 'START_PAGE' | 'REFRESH_PAGE' | 'FLASHCARDS'; targetId: number | null; title: string; minutes: number }[]
+}
+
 /** A suggestion of what to do next, from fixed rules, with its reason (v0.15.6). */
 export type AiRecommendation = {
   kind: 'PRACTISE_WEAK' | 'START_PAGE' | 'REVIEW_FLASHCARDS' | 'ASSIGNMENT_SOON' | 'REFRESH_PAGE'

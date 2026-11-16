@@ -49,6 +49,7 @@
 - **0.15.4:** practice, mock exams, and viva with AI marking and mistake explanations, hint-only help for open assignments, and AI paused during a graded quiz.
 - **0.15.5:** learning evidence from practice and flashcards, with each student's own mastery per page.
 - **0.15.6:** adaptive practice weighted to weaker pages, and rule-based recommendations that say why.
+- **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

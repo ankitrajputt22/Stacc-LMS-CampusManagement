@@ -29,3 +29,5 @@
   - A wrong or revoked link, a disabled account, or an account that lost `ACADEMIC_CALENDAR_VIEW` or `CALENDAR_PERSONAL_USE` gets the same 404.
 - **Permission:** the personal routes need `CALENDAR_PERSONAL_USE` (`V93`) with `ACADEMIC_CALENDAR_VIEW`.
 - **Calendar page:** `/calendar` now has Agenda and Month views (`?view=month`), My entries, and the subscription card.
+
+Study sessions (v0.15.7): a student who adds a study plan to their To-Do list sees each session (kind `STUDY`) from its planned day until they dismiss it; the To-Do part needs `STUDENT` and `AI_STUDY_USE`. Adding a plan to the calendar creates ordinary personal calendar entries. See `ai-learning.md`.

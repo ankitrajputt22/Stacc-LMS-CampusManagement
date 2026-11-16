@@ -17,6 +17,7 @@ const KIND: Record<TodoKind, { label: string; tone: BadgeTone }> = {
   ATTENDANCE: { label: 'Attendance', tone: 'info' },
   APPROVAL: { label: 'Approval', tone: 'neutral' },
   MENTORING: { label: 'Mentoring', tone: 'info' },
+  STUDY: { label: 'Study plan', tone: 'brand' },
 }
 
 /** Whether a due time has passed. Display only; the backend decides what is listed. */
