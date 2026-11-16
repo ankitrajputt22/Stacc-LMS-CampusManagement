@@ -45,6 +45,9 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
       setQueue((current) => [...current.slice(1), ...(next.dueOn <= today ? [next] : [])])
       setShown(false)
       setReviewed((count) => count + 1)
+      // A review is learning evidence: mastery and next steps may have changed.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
     } catch (failure) {
       if (getHttpStatus(failure) !== 401) {

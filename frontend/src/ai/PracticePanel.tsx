@@ -1,5 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useId, useState } from 'react'
 import { evaluatePracticeAnswer, generateCoursePracticeQuestions } from '../api/aiApi'
+import { queryKeys } from '../api/queryKeys'
 import { Button } from '../components/Button'
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { AiEvaluation, AiPracticeMode, AiPracticeQuestion, AiPracticeSet } from '../types/ai'
@@ -91,6 +93,7 @@ function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
  */
 export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; topics: CourseTopicChoice[] }) {
   const id = useId()
+  const queryClient = useQueryClient()
   const [mode, setMode] = useState<AiPracticeMode>('PRACTICE')
   const [topicId, setTopicId] = useState('')
   const [count, setCount] = useState('5')
@@ -138,6 +141,12 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     }
   }
 
+  /** A marked answer is learning evidence, so the student's mastery and next steps may have changed. */
+  function refreshProgress() {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
+  }
+
   async function checkOne(index: number) {
     if (checking || answers[index].trim() === '') {
       return
@@ -146,6 +155,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     const result = await check(index)
     setResults((previous) => previous.map((item, position) => (position === index ? result : item)))
     setChecking(false)
+    refreshProgress()
   }
 
   /** Viva: the follow-up becomes the next question, checked against the same model answer and course sources. */
@@ -177,6 +187,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
       setResults((previous) => previous.map((item, position) => (position === index ? result : item)))
     }
     setChecking(false)
+    refreshProgress()
   }
 
   const scored = results.filter((result): result is AiEvaluation => typeof result === 'object' && result.marks !== null)

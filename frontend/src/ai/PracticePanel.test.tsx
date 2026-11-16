@@ -1,9 +1,11 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/aiApi'
 import type { AiEvaluation } from '../types/ai'
+import { testQueryClient } from '../test/queryTestUtils'
 import { PracticePanel } from './PracticePanel'
 
 vi.mock('../api/aiApi')
@@ -21,7 +23,7 @@ const marked = (marks: number, extra: Partial<AiEvaluation> = {}): AiEvaluation 
 })
 
 function renderPanel() {
-  render(<MemoryRouter><PracticePanel lmsCourseId={3} topics={[]} /></MemoryRouter>)
+  render(<QueryClientProvider client={testQueryClient()}><MemoryRouter><PracticePanel lmsCourseId={3} topics={[]} /></MemoryRouter></QueryClientProvider>)
 }
 
 describe('PracticePanel', () => {
@@ -99,7 +101,7 @@ describe('PracticePanel adaptive', () => {
   it('asks the backend to choose the page and says why', async () => {
     vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue({ ...set, chosenTopicId: 31, reason: 'You have not practised this page yet.' })
     const user = userEvent.setup()
-    render(<MemoryRouter><PracticePanel lmsCourseId={3} topics={[{ id: 31, title: 'Joins', moduleId: 7, moduleTitle: 'Unit 2' }]} /></MemoryRouter>)
+    render(<QueryClientProvider client={testQueryClient()}><MemoryRouter><PracticePanel lmsCourseId={3} topics={[{ id: 31, title: 'Joins', moduleId: 7, moduleTitle: 'Unit 2' }]} /></MemoryRouter></QueryClientProvider>)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Topic' }), 'Focus on what I need')
     await user.click(screen.getByRole('button', { name: 'Start' }))
     expect(api.generateCoursePracticeQuestions).toHaveBeenLastCalledWith(3, 5, null, expect.anything(), true)
