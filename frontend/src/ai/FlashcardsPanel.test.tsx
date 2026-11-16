@@ -49,6 +49,6 @@ describe('FlashcardsPanel', () => {
     expect(screen.getByText('Back 1')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Good' }))
     expect(api.reviewFlashcard).toHaveBeenCalledWith(3, 5, 1, 'GOOD')
-    expect(await screen.findByText(/Nothing is due today/)).toBeInTheDocument()
+    expect(await screen.findByText(/Done for today: you made 1 review\./)).toBeInTheDocument()
   })
 })

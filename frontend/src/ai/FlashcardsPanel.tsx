@@ -30,6 +30,7 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
   const [shown, setShown] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [reviewed, setReviewed] = useState(0)
   const card = queue[0]
 
   async function rate(rating: ReviewRating) {
@@ -43,6 +44,7 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
       // A card rated Again is due today, so it comes round once more at the end.
       setQueue((current) => [...current.slice(1), ...(next.dueOn <= today ? [next] : [])])
       setShown(false)
+      setReviewed((count) => count + 1)
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
     } catch (failure) {
       if (getHttpStatus(failure) !== 401) {
@@ -57,7 +59,11 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
     <div className="mt-3 rounded-control border border-line p-3 text-sm">
       <p className="font-medium text-ink">Reviewing: {set.title}</p>
       {!card ? (
-        <p className="mt-2 text-ink-muted">Nothing is due today in this set. Come back when cards are due.</p>
+        <p className="mt-2 text-ink-muted">
+          {reviewed > 0
+            ? `Done for today: you made ${reviewed} ${reviewed === 1 ? 'review' : 'reviews'}. Nothing more is due in this set.`
+            : 'Nothing is due today in this set. Come back when cards are due.'}
+        </p>
       ) : (
         <div className="mt-2 space-y-2">
           <p className="text-ink-muted">{queue.length} {queue.length === 1 ? 'card' : 'cards'} left today</p>
