@@ -7,7 +7,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import type { CampusFest, FestShift } from '../types/engagement'
-import { Alert, Badge, Button, Card, TextField } from '../ui'
+import { Alert, Badge, Button, Card, DataTable, TextField } from '../ui'
 import { failureText, VOLUNTEER_LABEL } from './engagementText'
 
 type Notify = (text: string, error?: boolean) => void
@@ -25,15 +25,16 @@ function Shift({ shift, canVolunteer, notify }: { shift: FestShift; canVolunteer
       .finally(() => setBusy(false))
   }
   return (
-    <li className="space-y-2 px-4 py-3 sm:px-5">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-semibold text-ink">{shift.roleTitle}</span>
-        <span className="text-ink-muted">
-          <time dateTime={shift.startsAt}>{formatDateTime(shift.startsAt)}</time> to <time dateTime={shift.endsAt}>{formatDateTime(shift.endsAt)}</time>
-        </span>
-        <span className="text-ink-muted">{shift.accepted} of {shift.places} places taken</span>
+    <li className="grid gap-2 px-4 py-3 sm:px-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_9rem_minmax(0,2fr)] lg:items-center lg:gap-4">
+      <span className="flex flex-wrap items-center gap-2 font-semibold text-ink">
+        {shift.roleTitle}
         {shift.myApplication && <Badge tone={shift.myApplication === 'ACCEPTED' ? 'success' : 'neutral'}>{VOLUNTEER_LABEL[shift.myApplication]}</Badge>}
-      </div>
+      </span>
+      <span className="text-sm text-ink">
+        <time dateTime={shift.startsAt}>{formatDateTime(shift.startsAt)}</time> to <time dateTime={shift.endsAt}>{formatDateTime(shift.endsAt)}</time>
+      </span>
+      <span className="text-sm text-ink">{shift.accepted} of {shift.places} places taken</span>
+      <div className="min-w-0">
       {canVolunteer && live && shift.myApplicationId !== null && (
         <Button variant="secondary" disabled={busy} onClick={() => run(() => withdrawFestApplication(shift.myApplicationId as number), 'Application withdrawn.', 'Couldn’t withdraw.')}>
           Withdraw
@@ -47,34 +48,49 @@ function Shift({ shift, canVolunteer, notify }: { shift: FestShift; canVolunteer
             run(() => applyForFestShift(shift.shiftId, note.trim() || null), 'Applied. The campus office will accept or decline.', 'Couldn’t apply.')
           }}
         >
-          <TextField label={`Note for ${shift.roleTitle} (optional)`} value={note} maxLength={500} onChange={(event) => setNote(event.target.value)} />
+          <div className="min-w-48 flex-1">
+            <TextField label={`Note for ${shift.roleTitle} (optional)`} value={note} maxLength={500} onChange={(event) => setNote(event.target.value)} />
+          </div>
           <Button type="submit" disabled={busy}>Volunteer</Button>
         </form>
       )}
+      </div>
     </li>
   )
 }
 
+function SubHeading({ children }: { children: string }) {
+  return (
+    <div className="border-t border-line px-4 pt-4 pb-2 sm:px-5">
+      <h3 className="text-lg font-bold text-portal-navy">{children}</h3>
+      <span aria-hidden="true" className="mt-1 block h-0.5 w-12 rounded bg-portal-cta" />
+    </div>
+  )
+}
+
+type FestScheduleItem = CampusFest['schedule'][number]
+
 function Fest({ fest, canVolunteer, notify }: { fest: CampusFest; canVolunteer: boolean; notify: Notify }) {
   return (
     <Card title={fest.name} description={`${fest.startsOn} to ${fest.endsOn}`} padding="none">
-      {fest.description && <p className="px-4 pb-3 text-sm whitespace-pre-wrap text-ink sm:px-5">{fest.description}</p>}
-      <h3 className="border-t border-line px-4 pt-3 text-sm font-semibold text-ink sm:px-5">Schedule</h3>
+      {fest.description && <p className="px-4 pb-3 text-[0.95rem] whitespace-pre-wrap text-ink sm:px-5">{fest.description}</p>}
+      <SubHeading>Schedule</SubHeading>
       {fest.schedule.length === 0 ? (
         <p className="px-4 py-3 text-sm text-ink-muted sm:px-5">No events on the schedule yet.</p>
       ) : (
-        <ul className="divide-y divide-line text-sm">
-          {fest.schedule.map((item) => (
-            <li key={item.eventId} className="flex flex-wrap gap-2 px-4 py-2 sm:px-5">
-              <span className="font-medium text-ink">{item.title}</span>
-              <time className="text-ink-muted" dateTime={item.startsAt}>{formatDateTime(item.startsAt)}</time>
-              {item.venue && <span className="text-ink-muted">{item.venue}</span>}
-              {item.status === 'CANCELLED' && <Badge tone="warning">Cancelled</Badge>}
-            </li>
-          ))}
-        </ul>
+        <DataTable<FestScheduleItem>
+          caption={`Schedule of ${fest.name}`}
+          rows={fest.schedule}
+          rowKey={(item) => item.eventId}
+          columns={[
+            { key: 'title', header: 'Activity', primary: true, cell: (item) => item.title },
+            { key: 'when', header: 'When', cell: (item) => <time dateTime={item.startsAt}>{formatDateTime(item.startsAt)}</time> },
+            { key: 'venue', header: 'Venue', cell: (item) => item.venue ?? '—' },
+            { key: 'status', header: 'Status', cell: (item) => (item.status === 'CANCELLED' ? <Badge tone="warning">Cancelled</Badge> : 'On') },
+          ]}
+        />
       )}
-      <h3 className="border-t border-line px-4 pt-3 text-sm font-semibold text-ink sm:px-5">Volunteer shifts</h3>
+      <SubHeading>Volunteer shifts</SubHeading>
       {fest.shifts.length === 0 ? (
         <p className="px-4 py-3 text-sm text-ink-muted sm:px-5">No volunteer shifts yet.</p>
       ) : (
