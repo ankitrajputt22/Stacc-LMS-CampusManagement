@@ -158,6 +158,7 @@ class AnswerStyle(StrEnum):
     NORMAL = "NORMAL"
     SIMPLER = "SIMPLER"
     EXAMPLE = "EXAMPLE"
+    HINT = "HINT"
 
 
 class Turn(Strict):
@@ -364,6 +365,38 @@ class RubricResponse(BaseModel):
     insufficientContext: bool
 
 
+# --- Practice evaluation (v0.15.4) -----------------------------------------------------------------
+
+
+class PracticeMode(StrEnum):
+    PRACTICE = "PRACTICE"
+    MOCK_EXAM = "MOCK_EXAM"
+    VIVA = "VIVA"
+
+
+class EvaluateRequest(IndexedRequest):
+    question: str = Field(min_length=1, max_length=1500)
+    referenceAnswer: str = Field(min_length=1, max_length=2000)
+    studentAnswer: str = Field(min_length=1, max_length=4000)
+    maxMarks: int = Field(ge=1, le=10)
+    mode: PracticeMode = PracticeMode.PRACTICE
+
+
+class Verdict(StrEnum):
+    CORRECT = "CORRECT"
+    PARTLY_CORRECT = "PARTLY_CORRECT"
+    INCORRECT = "INCORRECT"
+
+
+class EvaluateResponse(BaseModel):
+    marks: float | None
+    verdict: Verdict | None
+    feedback: str | None
+    followUpQuestion: str | None
+    citations: list[Citation]
+    insufficientContext: bool
+
+
 # --- Flashcards (v0.15.3) ----------------------------------------------------------------------------
 
 
@@ -517,4 +550,13 @@ class FlashcardModelCard(BaseModel):
 
 class FlashcardModelOutput(BaseModel):
     cards: Annotated[list[FlashcardModelCard], Field(max_length=30)]
+
+
+class EvaluateModelOutput(BaseModel):
+    insufficientContext: bool
+    marks: float = Field(default=0, ge=0, le=10)
+    verdict: Verdict = Verdict.INCORRECT
+    feedback: Bounded(2000) = ""
+    followUpQuestion: Bounded(500) | None = None
+    sourceIds: SourceRefs = []
 

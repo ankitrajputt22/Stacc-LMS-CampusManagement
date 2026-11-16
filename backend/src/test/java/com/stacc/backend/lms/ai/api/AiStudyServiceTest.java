@@ -20,6 +20,11 @@ import com.stacc.backend.lms.ai.AiKnowledgeRecords;
 import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
+import com.stacc.backend.lms.assignment.LmsAssignment;
+import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
+import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.ai.control.AiLimitProperties;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLimiter;
@@ -38,6 +43,7 @@ import com.stacc.backend.lms.ai.AiServiceMessages.PracticeResult;
 import com.stacc.backend.lms.ai.AiServiceMessages.SummaryResult;
 import com.stacc.backend.lms.content.ContentFixtures;
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,9 +69,11 @@ class AiStudyServiceTest {
     private final AiStudentNoteIndexer notes = mock(AiStudentNoteIndexer.class);
     private final AiCourseControlService controls = mock(AiCourseControlService.class);
     private final AiRequestLogRepository requestLog = mock(AiRequestLogRepository.class);
+    private final AiQuizPause quizPause = mock(AiQuizPause.class);
+    private final LmsAssignmentRepository assignmentRepository = mock(LmsAssignmentRepository.class);
     private final AiStudyService service = new AiStudyService(access, sources, records, client, notes, controls,
             new AiRequestGate(new AiRequestLimiter(new AiLimitProperties(4, java.time.Duration.ofSeconds(5), null)), requestLog,
-                    client, java.time.Clock.systemUTC()));
+                    client, java.time.Clock.systemUTC()), quizPause, assignmentRepository, java.time.Clock.systemUTC());
 
     private static Citation topicCitation(long id) {
         return new Citation("TOPIC", id, id, "From the AI service", null, null, null);
@@ -138,6 +146,50 @@ class AiStudyServiceTest {
         verify(client).ask(anyString(), sent.capture());
         assertThat(sent.getValue().history()).containsExactly(new AiServiceMessages.Turn("What is 3NF?", "It removes transitive dependencies."));
         assertThat(sent.getValue().style()).isEqualTo("SIMPLER");
+    }
+
+    @Test
+    void aGradedQuizInProgressPausesStudentAi() {
+        org.mockito.Mockito.doThrow(new ApiException(HttpStatus.CONFLICT, AiQuizPause.PAUSED)).when(quizPause)
+                .requireNoQuizInProgress(STUDENT_A, COURSE);
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("What is a key?")))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getMessage()).isEqualTo(AiQuizPause.PAUSED));
+        verify(client, never()).ask(anyString(), any());
+    }
+
+    @Test
+    void helpWithAnOpenAssignmentIsHintsOnlyAndOtherAssignmentsAre404() {
+        LmsAssignment open = org.mockito.Mockito.mock(LmsAssignment.class);
+        when(open.getLmsCourse()).thenReturn(ContentFixtures.lmsCourse(COURSE));
+        when(open.getStatus()).thenReturn(LmsContentStatus.PUBLISHED);
+        when(open.submissionWindowAt(any())).thenReturn(AssignmentSubmissionWindow.OPEN);
+        when(assignmentRepository.findById(5L)).thenReturn(Optional.of(open));
+        when(client.ask(anyString(), any())).thenReturn(new AskResult(null, true, List.of()));
+        service.ask(STUDENT_A, COURSE, new AiAskRequest("How do I start?", null, null, null, null, AiAnswerStyle.EXAMPLE, 5L));
+        ArgumentCaptor<AskRequest> sent = ArgumentCaptor.forClass(AskRequest.class);
+        verify(client).ask(anyString(), sent.capture());
+        assertThat(sent.getValue().style()).isEqualTo("HINT");
+
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("How?", null, null, null, null, null, 6L)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+        when(open.submissionWindowAt(any())).thenReturn(AssignmentSubmissionWindow.CLOSED);
+        assertThatThrownBy(() -> service.ask(STUDENT_A, COURSE, new AiAskRequest("How?", null, null, null, null, null, 5L)))
+                .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+    }
+
+    @Test
+    void practiceAnswersAreMarkedWithinTheMaximumAndCited() {
+        when(client.evaluate(anyString(), any())).thenReturn(new AiServiceMessages.EvaluateResult(new java.math.BigDecimal("7.26"),
+                "PARTLY_CORRECT", "You missed durability.", "Why?", List.of(topicCitation(1)), false));
+        AiEvaluateResponse marked = service.evaluate(STUDENT_A, COURSE, new AiEvaluateRequest("What is commit?", "Makes changes durable.",
+                "Saves data.", 4, AiEvaluateRequest.Mode.PRACTICE));
+        assertThat(marked.marks()).isEqualByComparingTo("4.0");
+        assertThat(marked.followUpQuestion()).isNull();
+        assertThat(marked.citations()).isNotEmpty();
+
+        when(client.evaluate(anyString(), any())).thenReturn(new AiServiceMessages.EvaluateResult(BigDecimal.ONE, "INCORRECT",
+                "Uncited.", null, List.of(), false));
+        assertThat(service.evaluate(STUDENT_A, COURSE, new AiEvaluateRequest("Q?", "R.", "A.", 4, null)).insufficientContext()).isTrue();
     }
 
     @Test

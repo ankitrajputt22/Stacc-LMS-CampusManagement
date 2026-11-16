@@ -26,7 +26,14 @@ public record AiAskRequest(
         @Schema(description = "Up to three earlier turns from the open page, oldest first, for a follow-up (v0.15.1). "
                 + "The page sends them; nothing is stored.", nullable = true)
         @Size(max = 3) List<@Valid AiFollowUpTurn> history,
-        @Schema(description = "NORMAL (the default), SIMPLER, or EXAMPLE (v0.15.1).", nullable = true) AiAnswerStyle style) {
+        @Schema(description = "NORMAL (the default), SIMPLER, or EXAMPLE (v0.15.1).", nullable = true) AiAnswerStyle style,
+        @Schema(description = "An open assignment the student is working on (v0.15.4): the answer is then hints only.",
+                nullable = true) @Positive Long assignmentId) {
+
+    public AiAskRequest(String question, Boolean includeMyNotes, AiAskMode mode, Long moduleId, List<AiFollowUpTurn> history,
+            AiAnswerStyle style) {
+        this(question, includeMyNotes, mode, moduleId, history, style, null);
+    }
 
     public AiAskRequest(String question) {
         this(question, null, null, null);

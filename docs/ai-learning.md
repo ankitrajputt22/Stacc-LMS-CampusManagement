@@ -283,6 +283,13 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Spaced repetition.** Reviewing a card (`POST .../flashcard-sets/{setId}/cards/{cardId}/review`, `AGAIN`, `HARD`, `GOOD`, or `EASY`) needs no AI and locks the card row. `SpacedRepetition` (a simplified SM-2) works out the next due day: Again shows the card again today, Good grows the gap from 1 day to 3 and then by the card's ease (1.3 to 3.0), Hard grows it a little, Easy more; gaps stop at a year. "Today" is the date in `COLLEGE_TIME_ZONE`.
 - **Ownership.** Only the student who made a set lists, opens, reviews, or deletes it; deleting removes the set and its cards for good.
 
+### Practice (v0.15.4)
+
+- **One practice model.** The Practice panel has three modes over the same questions (from the existing practice route): Practice (one question at a time, feedback after each answer), Mock exam (answer everything, then hand in for marks, feedback, and a total), and Viva (one at a time, with a follow-up question after each answer).
+- **Marking and mistakes.** `POST /api/v1/lms/courses/{id}/ai/practice/evaluate` (the student AI rule, `AiRequestGate` kind `EVALUATE`) marks the student's answer out of 1 to 10 against the model answer and the course sources: marks (capped, in halves, rounded to one place), a verdict, feedback explaining each mistake, a viva follow-up, and citations, or insufficient context. The answer is fenced as data. Practice marks are never official marks, and nothing is stored.
+- **Hint-only for open assignments.** A question about an assignment (`assignmentId` on ask: a published assignment of the course whose submission window is open now; otherwise 404 or 409) is always answered in the `HINT` style: hints, guiding questions, and pointers only, never a solution or text to hand in.
+- **AI off during an official quiz.** While the student has an attempt at a graded quiz of the course that still takes answers, `AiQuizPause` makes their questions, summaries, practice, marking, and flashcard making in that course answer 409. It is worked out live from the attempts; practice quizzes do not pause AI.
+
 ### What a refresh does
 
 1. Faculty access is checked.

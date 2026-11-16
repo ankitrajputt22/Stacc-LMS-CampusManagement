@@ -173,6 +173,15 @@ public final class AiServiceMessages {
     public record RubricResult(List<RubricCriterion> criteria, List<Citation> citations, Boolean insufficientContext) {
     }
 
+    /** A practice answer to mark (v0.15.4). */
+    public record EvaluateRequest(String indexFingerprint, String question, String referenceAnswer, String studentAnswer,
+            int maxMarks, String mode, List<SourceRef> allowedSources) {
+    }
+
+    public record EvaluateResult(BigDecimal marks, String verdict, String feedback, String followUpQuestion,
+            List<Citation> citations, Boolean insufficientContext) {
+    }
+
     /** Flashcards from the allowed sources or one topic (v0.15.3). */
     public record FlashcardRequest(String indexFingerprint, int cardCount, Long topicId, List<SourceRef> allowedSources) {
     }

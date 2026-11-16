@@ -35,7 +35,7 @@ describe('AskPanel', () => {
     await user.type(screen.getByRole('textbox', { name: 'Question' }), 'What is a join?')
     await user.click(screen.getByRole('button', { name: 'Ask' }))
     expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What is a join?', expect.anything(),
-      { mode: 'COURSE_AND_NOTES', moduleId: 7, history: [], style: 'NORMAL' })
+      { mode: 'COURSE_AND_NOTES', moduleId: 7, history: [], style: 'NORMAL', assignmentId: null })
     expect(await screen.findByRole('link', { name: /^Open page/ })).toHaveAttribute('href', '/courses/3/pages/31')
     await user.click(screen.getByRole('radio', { name: /^My notes only/ }))
     expect(screen.queryByRole('combobox', { name: 'Module' })).not.toBeInTheDocument()
@@ -55,7 +55,7 @@ describe('AskPanel', () => {
 
     await user.click(screen.getByRole('button', { name: 'Explain simpler' }))
     expect(api.askCourseAi).toHaveBeenLastCalledWith(3, 'What is a join?', expect.anything(), {
-      mode: 'COURSE', moduleId: null, history: [{ question: 'What is a join?', answer: 'A join combines rows.' }], style: 'SIMPLER',
+      mode: 'COURSE', moduleId: null, history: [{ question: 'What is a join?', answer: 'A join combines rows.' }], style: 'SIMPLER', assignmentId: null,
     })
     await screen.findByText('Simply put, a join puts rows together.')
 
@@ -68,5 +68,22 @@ describe('AskPanel', () => {
     await user.click(screen.getAllByRole('button', { name: /^Save answer/ })[0])
     expect(api.saveAnswer).toHaveBeenCalledWith(3, 'What is a join?', 'A join combines rows.', answer('').citations)
     expect(await screen.findByText('Saved. You can find it under Saved answers.')).toBeInTheDocument()
+  })
+})
+
+describe('AskPanel hints', () => {
+  it('asks for hints only when the question is about an assignment', async () => {
+    vi.mocked(api.askCourseAi).mockResolvedValue(answer('Hint: look at Joins.'))
+    const user = userEvent.setup()
+    render(
+      <QueryClientProvider client={testQueryClient()}>
+        <MemoryRouter><AskPanel lmsCourseId={3} assignments={[{ id: 9, title: 'Lab 2' }]} /></MemoryRouter>
+      </QueryClientProvider>,
+    )
+    await user.selectOptions(screen.getByRole('combobox', { name: /^Help with an assignment/ }), 'Lab 2')
+    expect(screen.getByText(/hints and guiding questions only/)).toBeInTheDocument()
+    await user.type(screen.getByRole('textbox', { name: 'Question' }), 'How do I start?')
+    await user.click(screen.getByRole('button', { name: 'Ask' }))
+    expect(vi.mocked(api.askCourseAi).mock.lastCall?.[3]).toMatchObject({ assignmentId: 9 })
   })
 })

@@ -183,6 +183,11 @@ public class HttpAiServiceClient implements AiServiceClient {
     }
 
     @Override
+    public AiServiceMessages.EvaluateResult evaluate(String courseKey, AiServiceMessages.EvaluateRequest request) {
+        return post(client, courseKey, "evaluate", request, AiServiceMessages.EvaluateResult.class);
+    }
+
+    @Override
     public AiServiceMessages.FlashcardResult flashcards(String courseKey, AiServiceMessages.FlashcardRequest request) {
         return post(client, courseKey, "flashcards", request, AiServiceMessages.FlashcardResult.class);
     }

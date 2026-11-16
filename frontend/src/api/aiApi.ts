@@ -8,11 +8,13 @@ import type {
   AiFlashcard,
   AiFlashcardSet,
   AiFlashcardSetSummary,
+  AiEvaluation,
   AiFollowUpTurn,
   AiJob,
   AiKnowledgeStatus,
   AiKnowledgeSync,
   AiModelAnswer,
+  AiPracticeMode,
   AiPracticeSet,
   AiQuestionBankDraft,
   AiQuizDraft,
@@ -64,7 +66,7 @@ export async function askCourseAi(
   lmsCourseId: number,
   question: string,
   signal?: AbortSignal,
-  options: { mode?: AiAskMode; moduleId?: number | null; history?: AiFollowUpTurn[]; style?: AiAnswerStyle } = {},
+  options: { mode?: AiAskMode; moduleId?: number | null; history?: AiFollowUpTurn[]; style?: AiAnswerStyle; assignmentId?: number | null } = {},
 ): Promise<AiAnswer> {
   const body = {
     question,
@@ -72,6 +74,7 @@ export async function askCourseAi(
     ...(options.moduleId ? { moduleId: options.moduleId } : {}),
     ...(options.history && options.history.length > 0 ? { history: options.history } : {}),
     ...(options.style && options.style !== 'NORMAL' ? { style: options.style } : {}),
+    ...(options.assignmentId ? { assignmentId: options.assignmentId } : {}),
   }
   return (await apiClient.post<AiAnswer>(`/lms/courses/${lmsCourseId}/ai/ask`, body, { signal })).data
 }
@@ -232,5 +235,14 @@ export async function reviewFlashcard(lmsCourseId: number, setId: number, cardId
 /** Deletes a set and its cards for good. */
 export async function deleteFlashcardSet(lmsCourseId: number, setId: number): Promise<void> {
   await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/flashcard-sets/${setId}`)
+}
+
+/** Marks a practice answer against its reference and the course sources (v0.15.4); nothing is stored. */
+export async function evaluatePracticeAnswer(
+  lmsCourseId: number,
+  input: { question: string; referenceAnswer: string; studentAnswer: string; maxMarks: number; mode: AiPracticeMode },
+  signal?: AbortSignal,
+): Promise<AiEvaluation> {
+  return (await apiClient.post<AiEvaluation>(`/lms/courses/${lmsCourseId}/ai/practice/evaluate`, input, { signal })).data
 }
 

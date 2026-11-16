@@ -18,6 +18,7 @@ import com.stacc.backend.lms.ai.AiServiceException;
 import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.FlashcardResult;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
+import com.stacc.backend.lms.ai.control.AiQuizPause;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcard;
@@ -45,12 +46,14 @@ public class AiFlashcardService {
     private final AiServiceClient client;
     private final AiRequestGate gate;
     private final AiFlashcardStore store;
+    private final AiQuizPause quizPause;
     private final EngagementProperties college;
     private final Clock clock;
 
     public AiFlashcardService(LmsStudentAccessService studentAccess, AiCourseControlService controls, AiKnowledgeSources sources,
             AiKnowledgeRecords records, AiServiceClient client, AiRequestGate gate, AiFlashcardStore store,
-            EngagementProperties college, Clock clock) {
+            EngagementProperties college, Clock clock, AiQuizPause quizPause) {
+        this.quizPause = quizPause;
         this.studentAccess = studentAccess;
         this.controls = controls;
         this.sources = sources;
@@ -90,6 +93,7 @@ public class AiFlashcardService {
                 throw AiErrors.unavailable();
             }
             controls.requireStudentAi(lmsCourseId);
+            quizPause.requireNoQuizInProgress(accountId, lmsCourseId);
             AiCourseKnowledge knowledge = sources.publishedKnowledge(lmsCourseId);
             if (!records.find(lmsCourseId).map(index -> index.answersFor(knowledge.fingerprint())).orElse(false)) {
                 throw new ApiException(HttpStatus.CONFLICT, AiErrors.STUDY_NOT_READY);

@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
-import { aiFailure, STUDENT_AI_TURNED_OFF } from './aiText'
+import { AI_PAUSED_FOR_QUIZ, aiFailure, STUDENT_AI_TURNED_OFF } from './aiText'
 
 function refused(status: number, message: string): AxiosError {
   const config = { headers: new AxiosHeaders() }
@@ -15,6 +15,7 @@ describe('aiFailure', () => {
     expect(aiFailure(refused(429, 'AI is busy right now. Try again in a minute.'), 'student')).toEqual({
       kind: 'busy', message: 'AI is busy right now. Try again in a minute.',
     })
-    expect(aiFailure(refused(409, 'Something else.'), 'student')?.kind).toBe('notReady')
+    expect(aiFailure(refused(409, 'Something else.'), 'student')).toEqual({ kind: 'notReady', message: 'Something else.' })
+    expect(aiFailure(refused(409, AI_PAUSED_FOR_QUIZ), 'student')?.kind).toBe('paused')
   })
 })

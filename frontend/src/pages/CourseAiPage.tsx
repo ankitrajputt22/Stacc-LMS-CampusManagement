@@ -16,6 +16,9 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { getCourseAssignments } from '../api/lmsAssignmentsApi'
+import { queryKeys } from '../api/queryKeys'
+import { useApiQuery } from '../api/useApiQuery'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseContent, LmsCourseDetail } from '../types/lms'
@@ -55,6 +58,13 @@ function summaryChoices(content: LmsCourseContent): SummaryChoices {
 }
 
 function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsCourseContent }) {
+  // Assignments still due, for hint-only help (v0.15.4); the backend decides whether each is open.
+  const assignments = useApiQuery(queryKeys.lms.courseAssignments(course.lmsCourseId),
+    (signal) => getCourseAssignments(course.lmsCourseId, signal))
+  const dueAssignments = assignments.status === 'loaded'
+    ? assignments.data.filter((assignment) => new Date(assignment.dueAt).getTime() > Date.now())
+      .map((assignment) => ({ id: assignment.id, title: assignment.title }))
+    : []
   const topics = useMemo(() => publishedTopics(content), [content])
   return (
     <div className="max-w-3xl">
@@ -81,7 +91,11 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
         <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
-        <AskPanel lmsCourseId={course.lmsCourseId} modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))} />
+        <AskPanel
+          lmsCourseId={course.lmsCourseId}
+          modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))}
+          assignments={dueAssignments}
+        />
         <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
         <MyNotesPanel lmsCourseId={course.lmsCourseId} />
         <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
