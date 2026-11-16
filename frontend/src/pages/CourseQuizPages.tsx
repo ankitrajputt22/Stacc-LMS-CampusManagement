@@ -17,6 +17,7 @@ import { FormattedText } from '../formatting/FormattedText'
 import type { LmsCourseDetail, QuizAttemptSummary, StudentQuiz } from '../types/lms'
 import { Alert, Badge, Button, ButtonLink, Card, DataTable } from '../ui'
 import { textLinkClasses } from '../ui/styles'
+import { NavIcon } from '../components/navigation/navIcons'
 import { StudentCourseSection } from './CourseSectionPages'
 
 const QUIZZES = { path: 'quizzes', label: 'Quizzes' }
@@ -30,38 +31,85 @@ function QuizList({ course }: { course: LmsCourseDetail }) {
     getStudentQuizzes(course.lmsCourseId, signal),
   )
   return (
-    <Card title="Quizzes" padding="none">
+    <div className="space-y-4">
+      <p className="text-[0.95rem] text-ink-muted">Take graded quizzes and practice quizzes for this course.</p>
       {quizzes.status !== 'loaded' ? (
-        <SectionState request={quizzes} what="quizzes" />
+        <Card>
+          <SectionState request={quizzes} what="quizzes" />
+        </Card>
       ) : quizzes.data.length === 0 ? (
-        <EmptyState title="No quizzes yet." description="Quizzes appear here once your teacher publishes them." />
+        <Card>
+          <EmptyState title="No quizzes yet." description="Quizzes appear here once your teacher publishes them." />
+        </Card>
       ) : (
-        <ul className="divide-y divide-line">
-          {quizzes.data.map((quiz) => (
-            <li key={quiz.id} className="space-y-1.5 px-4 py-4 sm:px-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Link to={`/courses/${course.lmsCourseId}/quizzes/${quiz.id}`} className={`font-semibold ${textLinkClasses}`}>
-                  {quiz.title}
-                </Link>
-                <Badge tone="brand">{quizTypeWord(quiz)}</Badge>
-                {quiz.openAttemptId !== null && <Badge tone="info">In progress</Badge>}
-              </div>
-              <p className="text-sm text-ink-muted">
-                {[
-                  `${quiz.questionCount} ${quiz.questionCount === 1 ? 'question' : 'questions'}`,
-                  quiz.timeLimitMinutes === null ? 'No time limit' : `${quiz.timeLimitMinutes} minutes`,
-                  quiz.dueAt && `Due ${formatDateTime(quiz.dueAt)}`,
-                  attemptsText(quiz),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
-              <p className="text-sm text-ink">{quizStatusText(quiz)}</p>
-            </li>
-          ))}
+        <ul className="space-y-4">
+          {quizzes.data.map((quiz) => {
+            const latest = quiz.attempts.reduce<QuizAttemptSummary | null>(
+              (found, attempt) => (found === null || attempt.attemptNumber > found.attemptNumber ? attempt : found),
+              null,
+            )
+            const open = quiz.startable || quiz.openAttemptId !== null
+            return (
+              <li
+                key={quiz.id}
+                className={`group relative grid gap-4 rounded-panel border bg-surface px-5 py-4 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary md:grid-cols-[minmax(0,1fr)_11rem_10rem] md:items-center ${
+                  open ? 'border-portal-cta/60 bg-orange-50/40' : 'border-line'
+                }`}
+              >
+                <div className="flex min-w-0 gap-3">
+                  <NavIcon name="documents" className="mt-0.5 size-6 shrink-0 text-ink-muted" />
+                  <div className="min-w-0 space-y-1.5">
+                    <h3 className="text-lg font-bold break-words text-portal-navy">
+                      {/* The title is the one link; its click area covers the whole card. */}
+                      <Link
+                        to={`/courses/${course.lmsCourseId}/quizzes/${quiz.id}`}
+                        className="after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:underline group-hover:underline-offset-4"
+                      >
+                        {quiz.title}
+                      </Link>
+                    </h3>
+                    <p className="flex flex-wrap gap-x-3 gap-y-1 text-[0.95rem] text-ink">
+                      <span>{quizTypeWord(quiz)}</span>
+                      <span aria-hidden="true" className="text-line-strong">|</span>
+                      <span>{quiz.totalMarks} marks</span>
+                      <span aria-hidden="true" className="text-line-strong">|</span>
+                      <span>{`${quiz.questionCount} ${quiz.questionCount === 1 ? 'question' : 'questions'}`}</span>
+                      <span aria-hidden="true" className="text-line-strong">|</span>
+                      <span>{quiz.timeLimitMinutes === null ? 'No time limit' : `${quiz.timeLimitMinutes} minutes`}</span>
+                    </p>
+                    {quiz.dueAt && <p className="text-sm text-ink-muted">Due {formatDateTime(quiz.dueAt)}</p>}
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm md:border-l md:border-line md:pl-5 md:text-center">
+                  {latest !== null && latest.resultStatus === 'RELEASED' ? (
+                    <>
+                      <p className="text-ink-muted">Latest result</p>
+                      <p className="inline-block rounded-control bg-success-soft px-3 py-1 text-lg font-bold text-success tabular-nums">
+                        {attemptResultText(latest, quiz.totalMarks)}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      {quiz.openAttemptId !== null && <Badge tone="info">In progress</Badge>}
+                      <p className="text-ink">{quizStatusText(quiz)}</p>
+                    </>
+                  )}
+                  <p className="text-ink-muted">{attemptsText(quiz)}</p>
+                </div>
+                <span
+                  aria-hidden="true"
+                  className={`inline-flex h-10 items-center justify-center gap-1 justify-self-start rounded-control px-4 text-sm font-medium md:justify-self-end ${
+                    open ? 'bg-portal-cta text-white group-hover:bg-portal-cta-hover' : 'bg-sky-100 text-portal-navy group-hover:bg-sky-200'
+                  }`}
+                >
+                  {quiz.openAttemptId !== null ? 'Continue' : open ? 'Open quiz' : 'View quiz'} ›
+                </span>
+              </li>
+            )
+          })}
         </ul>
       )}
-    </Card>
+    </div>
   )
 }
 

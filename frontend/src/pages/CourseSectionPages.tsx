@@ -13,7 +13,7 @@ import { CourseAssignments } from '../courses/CourseAssignments'
 import { CourseContent } from '../courses/CourseContent'
 import { CourseProgressCard } from '../courses/CourseProgressCard'
 import { parseCourseId } from '../courses/courseRoute'
-import { courseFactsLine } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { useCourseAnnouncements } from '../courses/useCourseAnnouncements'
 import { useCourseAssignments } from '../courses/useCourseAssignments'
 import { useLmsCourse } from '../courses/useLmsCourse'
@@ -47,26 +47,18 @@ export function StudentCourseSection({
   // The course and its facts above the section's own title, which is the page's one h1. A page inside a section,
   // such as one quiz, keeps a breadcrumb back to the section.
   const header = (loaded?: LmsCourseDetail) => (
-    <header className="mb-6">
-      {loaded && (
-        <>
-          <p className="text-2xl font-bold break-words text-portal-navy sm:text-3xl">{`${loaded.courseCode} ${loaded.courseName}`}</p>
-          <p className="mt-1 break-words text-ink">{courseFactsLine(loaded)}</p>
-        </>
-      )}
-      {parent && lmsCourseId !== null && (
-        <div className="mt-4">
+    <CourseSectionHeader
+      course={loaded}
+      title={title}
+      breadcrumb={
+        parent && lmsCourseId !== null ? (
           <Breadcrumb
             parent={[COURSES, { to: `/courses/${lmsCourseId}`, label: loaded?.courseName ?? 'Course' }, { to: `/courses/${lmsCourseId}/${parent.path}`, label: parent.label }]}
             current={title}
           />
-        </div>
-      )}
-      <h1 className="mt-4 flex items-center gap-3 text-3xl font-bold tracking-tight break-words text-ink">
-        <span aria-hidden="true" className="h-9 w-1.5 shrink-0 rounded bg-teal-600" />
-        {title}
-      </h1>
-    </header>
+        ) : undefined
+      }
+    />
   )
   if (!isStudent || course.status !== 'loaded') {
     return (

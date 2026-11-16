@@ -5,35 +5,33 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
+import { useLmsCourse } from '../courses/useLmsCourse'
 import { DownloadButton, FileTitle, UploadedAt } from '../courses/FileRowParts'
 import { matchesFile } from '../courses/fileSearch'
 import { useMaterialDownload } from '../courses/useMaterialDownload'
 import type { LmsCourseFile } from '../types/lms'
-import { Card, DataTable, PageHeader, TextField } from '../ui'
+import { Card, DataTable, TextField } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
-const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
-function crumbs(lmsCourseId: number | null) {
-  return lmsCourseId === null ? COURSES : [COURSES, { to: `/courses/${lmsCourseId}`, label: 'Course' }]
-}
-
 function Shell({ lmsCourseId, children }: { lmsCourseId: number | null; children: ReactNode }) {
+  // The course itself comes from the shared cache the course layout already filled.
+  const course = useLmsCourse(lmsCourseId)
   return (
-    <div className="max-w-5xl">
-      <title>Files · Stacc</title>
-      <PageHeader
+    <div>
+      <title>{course.status === 'loaded' ? `Files · ${course.data.courseName} · Stacc` : 'Files · Stacc'}</title>
+      <CourseSectionHeader
+        course={course.status === 'loaded' ? course.data : undefined}
         title="Files"
-        breadcrumb={<Breadcrumb parent={crumbs(lmsCourseId)} current="Files" />}
-        description="Every published file of this course, with the page it is on."
+        description="Course files and reference materials, by page and module."
       />
       {children}
     </div>
