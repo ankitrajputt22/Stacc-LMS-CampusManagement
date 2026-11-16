@@ -129,6 +129,8 @@ export type AiCourseStudy = {
   pagesByLevel: Record<'NOT_STARTED' | 'LEARNING' | 'PRACTISING' | 'MASTERED', number>
   flashcardsDue: number
   nextStep: AiRecommendation | null
+  /** False when the course's teachers have turned the student assistant off. */
+  assistantOn: boolean
 }
 
 /** A suggestion of what to do next, from fixed rules, with its reason (v0.15.6). */

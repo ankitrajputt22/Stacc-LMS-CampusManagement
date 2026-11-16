@@ -11,6 +11,7 @@ import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
 import com.stacc.backend.engagement.EngagementProperties;
+import com.stacc.backend.lms.ai.control.AiCourseControlService;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.ai.mastery.AiRecommendationService;
@@ -43,18 +44,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiStudyHomeController {
 
     public record CourseStudy(long lmsCourseId, String courseCode, String courseName, Map<Mastery.Level, Integer> pagesByLevel,
-            long flashcardsDue, @Schema(nullable = true) AiRecommendationService.Recommendation nextStep) {
+            long flashcardsDue, @Schema(nullable = true) AiRecommendationService.Recommendation nextStep,
+            @Schema(description = "False when the course's teachers have turned the student assistant off.") boolean assistantOn) {
     }
 
     private final LmsStudentCourseQueryService courses;
     private final AiMasteryService mastery;
     private final AiRecommendationService recommendations;
     private final AiFlashcardStore flashcards;
+    private final AiCourseControlService controls;
     private final Clock clock;
     private final EngagementProperties college;
 
     public AiStudyHomeController(LmsStudentCourseQueryService courses, AiMasteryService mastery, AiRecommendationService recommendations,
-            AiFlashcardStore flashcards, Clock clock, EngagementProperties college) {
+            AiFlashcardStore flashcards, AiCourseControlService controls, Clock clock, EngagementProperties college) {
+        this.controls = controls;
         this.courses = courses;
         this.mastery = mastery;
         this.recommendations = recommendations;
@@ -85,7 +89,7 @@ public class AiStudyHomeController {
             long due = sets.stream().mapToLong(AiFlashcardStore.SetSummary::due).sum();
             List<AiRecommendationService.Recommendation> next = recommendations.recommend(accountId, course.lmsCourseId(), topics, sets);
             result.add(new CourseStudy(course.lmsCourseId(), course.courseCode(), course.courseName(), levels, due,
-                    next.isEmpty() ? null : next.get(0)));
+                    next.isEmpty() ? null : next.get(0), controls.studentAiEnabled(course.lmsCourseId())));
         }
         return List.copyOf(result);
     }
