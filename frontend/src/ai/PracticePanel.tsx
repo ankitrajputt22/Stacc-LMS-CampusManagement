@@ -1,5 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useId, useState } from 'react'
 import { evaluatePracticeAnswer, generateCoursePracticeQuestions } from '../api/aiApi'
+import { queryKeys } from '../api/queryKeys'
 import { Button } from '../components/Button'
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { AiEvaluation, AiPracticeMode, AiPracticeQuestion, AiPracticeSet } from '../types/ai'
@@ -16,11 +18,13 @@ const ADAPTIVE = 'adaptive'
 
 /** Practice marks are out of this; they are practice only, never an official mark. */
 const MARKS_EACH = 4
+/** A viva grows by its follow-ups; it stops offering them at this many questions. */
+const MAX_VIVA_QUESTIONS = 20
 
 const MODES: { value: AiPracticeMode; label: string; hint: string }[] = [
   { value: 'PRACTICE', label: 'Practice', hint: 'One question at a time, with feedback after each answer.' },
   { value: 'MOCK_EXAM', label: 'Mock exam', hint: 'Answer every question, then hand in for marks and feedback.' },
-  { value: 'VIVA', label: 'Viva', hint: 'One question at a time, with a follow-up question after each answer.' },
+  { value: 'VIVA', label: 'Viva', hint: 'One question at a time, with a follow-up question after each answer that you can answer next.' },
 ]
 
 const VERDICT: Record<NonNullable<AiEvaluation['verdict']>, string> = {
@@ -29,8 +33,19 @@ const VERDICT: Record<NonNullable<AiEvaluation['verdict']>, string> = {
   INCORRECT: 'Not correct',
 }
 
+/** A checked answer, a check that failed, or a mock exam question left empty. */
+type Result = AiEvaluation | 'failed' | 'unanswered'
+
 /** One question's marks, feedback, and the model answer after it was checked. */
-function Feedback({ question, result }: { question: AiPracticeQuestion; result: AiEvaluation | 'failed' }) {
+function Feedback({ question, result }: { question: AiPracticeQuestion; result: Result }) {
+  if (result === 'unanswered') {
+    return (
+      <div className="mt-2">
+        <p className="text-sm font-medium text-ink">Not answered · 0 practice marks</p>
+        <ModelAnswer question={question} />
+      </div>
+    )
+  }
   if (result === 'failed' || result.insufficientContext || result.marks === null) {
     return (
       <div className="mt-2">
@@ -57,6 +72,11 @@ function Feedback({ question, result }: { question: AiPracticeQuestion; result: 
   )
 }
 
+/** The viva follow-up question of a checked answer, if any. */
+function followUpOf(result: Result | undefined): string | null {
+  return typeof result === 'object' && result.followUpQuestion ? result.followUpQuestion : null
+}
+
 function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
   return (
     <details className="text-sm">
@@ -73,12 +93,13 @@ function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
  */
 export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; topics: CourseTopicChoice[] }) {
   const id = useId()
+  const queryClient = useQueryClient()
   const [mode, setMode] = useState<AiPracticeMode>('PRACTICE')
   const [topicId, setTopicId] = useState('')
   const [count, setCount] = useState('5')
   const [questions, setQuestions] = useState<AiPracticeQuestion[]>([])
   const [answers, setAnswers] = useState<string[]>([])
-  const [results, setResults] = useState<(AiEvaluation | 'failed' | undefined)[]>([])
+  const [results, setResults] = useState<(Result | undefined)[]>([])
   const [current, setCurrent] = useState(0)
   const [checking, setChecking] = useState(false)
   const [note, setNote] = useState<string | null>(null)
@@ -120,6 +141,12 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     }
   }
 
+  /** A marked answer is learning evidence, so the student's mastery and next steps may have changed. */
+  function refreshProgress() {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
+  }
+
   async function checkOne(index: number) {
     if (checking || answers[index].trim() === '') {
       return
@@ -128,6 +155,21 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     const result = await check(index)
     setResults((previous) => previous.map((item, position) => (position === index ? result : item)))
     setChecking(false)
+    refreshProgress()
+  }
+
+  /** Viva: the follow-up becomes the next question, checked against the same model answer and course sources. */
+  function answerFollowUp(index: number, followUpQuestion: string) {
+    const asked: AiPracticeQuestion = {
+      question: followUpQuestion,
+      suggestedAnswer: questions[index].suggestedAnswer,
+      citations: [],
+    }
+    const insert = <T,>(items: T[], item: T) => [...items.slice(0, index + 1), item, ...items.slice(index + 1)]
+    setQuestions((previous) => insert(previous, asked))
+    setAnswers((previous) => insert(previous, ''))
+    setResults((previous) => insert(previous, undefined))
+    setCurrent(index + 1)
   }
 
   async function handIn() {
@@ -138,13 +180,14 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     // One at a time: the backend runs one AI request per student at once.
     for (let index = 0; index < questions.length; index++) {
       if (answers[index].trim() === '') {
-        setResults((previous) => previous.map((item, position) => (position === index ? 'failed' : item)))
+        setResults((previous) => previous.map((item, position) => (position === index ? 'unanswered' : item)))
         continue
       }
       const result = await check(index)
       setResults((previous) => previous.map((item, position) => (position === index ? result : item)))
     }
     setChecking(false)
+    refreshProgress()
   }
 
   const scored = results.filter((result): result is AiEvaluation => typeof result === 'object' && result.marks !== null)
@@ -214,7 +257,13 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
             </Button>
           ) : (
             <>
-              <Feedback question={questions[current]} result={results[current] as AiEvaluation | 'failed'} />
+              <Feedback question={questions[current]} result={results[current] as Result} />
+              {activeMode === 'VIVA' && followUpOf(results[current]) && questions.length < MAX_VIVA_QUESTIONS
+                && questions[current + 1]?.question !== followUpOf(results[current]) && (
+                <Button className="mt-2 mr-2" size="sm" onClick={() => answerFollowUp(current, followUpOf(results[current]) as string)}>
+                  Answer the follow-up
+                </Button>
+              )}
               {current + 1 < questions.length && (
                 <Button className="mt-2" size="sm" variant="secondary" onClick={() => setCurrent(current + 1)}>Next question</Button>
               )}
@@ -232,7 +281,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
                   {index + 1}. {question.question}
                 </p>
                 {answerBox(index)}
-                {results[index] !== undefined && <Feedback question={question} result={results[index] as AiEvaluation | 'failed'} />}
+                {results[index] !== undefined && <Feedback question={question} result={results[index] as Result} />}
               </li>
             ))}
           </ol>

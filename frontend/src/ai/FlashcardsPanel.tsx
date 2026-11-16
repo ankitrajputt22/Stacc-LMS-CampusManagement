@@ -24,12 +24,13 @@ const RATINGS: { value: ReviewRating; label: string }[] = [
 /** Reviews the cards of one set that are due today, one at a time: show the front, then the answer, then rate it. */
 function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFlashcardSet; onClose: () => void }) {
   const queryClient = useQueryClient()
-  // The local day (YYYY-MM-DD); the backend decides due days in the college's time zone.
-  const today = new Date().toLocaleDateString('en-CA')
+  // The college's day, as the backend counts due cards.
+  const today = set.today
   const [queue, setQueue] = useState<AiFlashcard[]>(() => set.cards.filter((card) => card.dueOn <= today))
   const [shown, setShown] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [reviewed, setReviewed] = useState(0)
   const card = queue[0]
 
   async function rate(rating: ReviewRating) {
@@ -43,6 +44,10 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
       // A card rated Again is due today, so it comes round once more at the end.
       setQueue((current) => [...current.slice(1), ...(next.dueOn <= today ? [next] : [])])
       setShown(false)
+      setReviewed((count) => count + 1)
+      // A review is learning evidence: mastery and next steps may have changed.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
     } catch (failure) {
       if (getHttpStatus(failure) !== 401) {
@@ -57,7 +62,11 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
     <div className="mt-3 rounded-control border border-line p-3 text-sm">
       <p className="font-medium text-ink">Reviewing: {set.title}</p>
       {!card ? (
-        <p className="mt-2 text-ink-muted">Nothing is due today in this set. Come back when cards are due.</p>
+        <p className="mt-2 text-ink-muted">
+          {reviewed > 0
+            ? `Done for today: you made ${reviewed} ${reviewed === 1 ? 'review' : 'reviews'}. Nothing more is due in this set.`
+            : 'Nothing is due today in this set. Come back when cards are due.'}
+        </p>
       ) : (
         <div className="mt-2 space-y-2">
           <p className="text-ink-muted">{queue.length} {queue.length === 1 ? 'card' : 'cards'} left today</p>
@@ -118,7 +127,7 @@ export function FlashcardsPanel({ lmsCourseId, choices }: { lmsCourseId: number;
       createFlashcardSet(lmsCourseId, { scope, id: scope === 'COURSE' ? null : Number(chosen), cardCount: Number(count) }, signal),
     )
     if (made) {
-      setAnnouncement(`Made “${made.title}” with ${made.cards.length} cards.`)
+      setAnnouncement(`Made “${made.title}” with ${made.cards.length} ${made.cards.length === 1 ? 'card' : 'cards'}.`)
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
     }
   }

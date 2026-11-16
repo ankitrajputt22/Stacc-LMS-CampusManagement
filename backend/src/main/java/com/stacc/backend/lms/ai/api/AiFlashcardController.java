@@ -57,10 +57,11 @@ public class AiFlashcardController {
         }
     }
 
-    public record SetResponse(long id, String title, List<CardResponse> cards) {
+    /** {@code today} is the college's date, so the student's review shows the cards the server counts as due. */
+    public record SetResponse(long id, String title, List<CardResponse> cards, LocalDate today) {
 
-        static SetResponse of(AiFlashcardSet set) {
-            return new SetResponse(set.getId(), set.getTitle(), set.getCards().stream().map(CardResponse::of).toList());
+        static SetResponse of(AiFlashcardSet set, LocalDate today) {
+            return new SetResponse(set.getId(), set.getTitle(), set.getCards().stream().map(CardResponse::of).toList(), today);
         }
     }
 
@@ -98,7 +99,7 @@ public class AiFlashcardController {
             content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public SetResponse create(@PathVariable Long lmsCourseId, @Valid @RequestBody AiFlashcardSetRequest request,
             @AuthenticationPrincipal Jwt accessToken) {
-        return SetResponse.of(flashcards.create(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request));
+        return SetResponse.of(flashcards.create(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, request), flashcards.today());
     }
 
     @GetMapping("/{setId}")
@@ -107,7 +108,7 @@ public class AiFlashcardController {
             security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
     @ApiResponse(responseCode = "200", description = "The set.")
     public SetResponse get(@PathVariable Long lmsCourseId, @PathVariable Long setId, @AuthenticationPrincipal Jwt accessToken) {
-        return SetResponse.of(flashcards.get(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, setId));
+        return SetResponse.of(flashcards.get(AuthenticatedAccount.idFrom(accessToken), lmsCourseId, setId), flashcards.today());
     }
 
     @PostMapping("/{setId}/cards/{cardId}/review")

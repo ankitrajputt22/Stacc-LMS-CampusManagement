@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { recommendationLink } from '../ai/recommendationLink'
 import { getStudyHome } from '../api/aiApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
@@ -41,8 +42,8 @@ export function StudyHomePage() {
                 {course.nextStep && (
                   <p className="mt-2 text-sm">
                     <span className="font-medium text-ink">Next: </span>
-                    {course.nextStep.targetId !== null && course.nextStep.kind !== 'REVIEW_FLASHCARDS' && course.nextStep.kind !== 'ASSIGNMENT_SOON' ? (
-                      <Link to={`/courses/${course.lmsCourseId}/pages/${course.nextStep.targetId}`} className={textLinkClasses}>
+                    {recommendationLink(course.lmsCourseId, course.nextStep) ? (
+                      <Link to={recommendationLink(course.lmsCourseId, course.nextStep) as string} className={textLinkClasses}>
                         {course.nextStep.title}
                       </Link>
                     ) : (

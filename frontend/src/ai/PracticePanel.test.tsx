@@ -1,9 +1,11 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/aiApi'
 import type { AiEvaluation } from '../types/ai'
+import { testQueryClient } from '../test/queryTestUtils'
 import { PracticePanel } from './PracticePanel'
 
 vi.mock('../api/aiApi')
@@ -21,7 +23,7 @@ const marked = (marks: number, extra: Partial<AiEvaluation> = {}): AiEvaluation 
 })
 
 function renderPanel() {
-  render(<MemoryRouter><PracticePanel lmsCourseId={3} topics={[]} /></MemoryRouter>)
+  render(<QueryClientProvider client={testQueryClient()}><MemoryRouter><PracticePanel lmsCourseId={3} topics={[]} /></MemoryRouter></QueryClientProvider>)
 }
 
 describe('PracticePanel', () => {
@@ -58,13 +60,48 @@ describe('PracticePanel', () => {
     expect(await screen.findByText('Mock exam score: 5 of 8 practice marks')).toBeInTheDocument()
     expect(vi.mocked(api.evaluatePracticeAnswer).mock.calls.map((call) => call[1].mode)).toEqual(['MOCK_EXAM', 'MOCK_EXAM'])
   })
+
+  it('gives an empty mock exam answer no marks without asking AI', async () => {
+    vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue(set)
+    vi.mocked(api.evaluatePracticeAnswer).mockReset().mockResolvedValue(marked(3))
+    const user = userEvent.setup()
+    renderPanel()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mode' }), 'Mock exam')
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    const boxes = await screen.findAllByRole('textbox', { name: /^Your answer/ })
+    await user.type(boxes[0], 'Makes changes durable.')
+    await user.click(screen.getByRole('button', { name: 'Hand in mock exam' }))
+    expect(await screen.findByText('Mock exam score: 3 of 8 practice marks')).toBeInTheDocument()
+    expect(screen.getByText('Not answered · 0 practice marks')).toBeInTheDocument()
+    expect(api.evaluatePracticeAnswer).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets a viva student answer the follow-up question next', async () => {
+    vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue(set)
+    vi.mocked(api.evaluatePracticeAnswer).mockReset()
+      .mockResolvedValueOnce(marked(2, { followUpQuestion: 'Why must it survive a crash?' }))
+      .mockResolvedValueOnce(marked(3))
+    const user = userEvent.setup()
+    renderPanel()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mode' }), 'Viva')
+    await user.click(screen.getByRole('button', { name: 'Start' }))
+    await user.type(await screen.findByRole('textbox', { name: /^Your answer/ }), 'Saves data.')
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(await screen.findByRole('button', { name: 'Answer the follow-up' }))
+    expect(screen.getByText('Question 2 of 3')).toBeInTheDocument()
+    await user.type(screen.getByRole('textbox', { name: /^Your answer/ }), 'Power can fail.')
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(api.evaluatePracticeAnswer).toHaveBeenLastCalledWith(3, {
+      question: 'Why must it survive a crash?', referenceAnswer: 'Makes changes durable.', studentAnswer: 'Power can fail.', maxMarks: 4, mode: 'VIVA',
+    })
+  })
 })
 
 describe('PracticePanel adaptive', () => {
   it('asks the backend to choose the page and says why', async () => {
     vi.mocked(api.generateCoursePracticeQuestions).mockResolvedValue({ ...set, chosenTopicId: 31, reason: 'You have not practised this page yet.' })
     const user = userEvent.setup()
-    render(<MemoryRouter><PracticePanel lmsCourseId={3} topics={[{ id: 31, title: 'Joins', moduleId: 7, moduleTitle: 'Unit 2' }]} /></MemoryRouter>)
+    render(<QueryClientProvider client={testQueryClient()}><MemoryRouter><PracticePanel lmsCourseId={3} topics={[{ id: 31, title: 'Joins', moduleId: 7, moduleTitle: 'Unit 2' }]} /></MemoryRouter></QueryClientProvider>)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Topic' }), 'Focus on what I need')
     await user.click(screen.getByRole('button', { name: 'Start' }))
     expect(api.generateCoursePracticeQuestions).toHaveBeenLastCalledWith(3, 5, null, expect.anything(), true)

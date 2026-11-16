@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/aiApi'
 import { ModelAnswerSuggestion } from './ModelAnswerSuggestion'
-import { rubricDraftOf } from './RubricSuggestionPanel'
+import { rubricDraftOf } from './rubricDraftOf'
 
 vi.mock('../api/aiApi')
 

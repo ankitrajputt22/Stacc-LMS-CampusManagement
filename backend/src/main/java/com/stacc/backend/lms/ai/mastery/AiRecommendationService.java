@@ -12,8 +12,6 @@ import java.util.Locale;
 import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.assignment.LmsAssignment;
-import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
-import com.stacc.backend.lms.content.LmsContentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,15 +36,15 @@ public class AiRecommendationService {
 
     private final AiMasteryService mastery;
     private final AiFlashcardStore flashcards;
-    private final LmsAssignmentRepository assignments;
+    private final AiOpenAssignments openAssignments;
     private final EngagementProperties college;
     private final Clock clock;
 
-    public AiRecommendationService(AiMasteryService mastery, AiFlashcardStore flashcards, LmsAssignmentRepository assignments,
+    public AiRecommendationService(AiMasteryService mastery, AiFlashcardStore flashcards, AiOpenAssignments openAssignments,
             EngagementProperties college, Clock clock) {
         this.mastery = mastery;
         this.flashcards = flashcards;
-        this.assignments = assignments;
+        this.openAssignments = openAssignments;
         this.college = college;
         this.clock = clock;
     }
@@ -55,6 +53,17 @@ public class AiRecommendationService {
     @Transactional(readOnly = true)
     public List<Recommendation> recommend(Long accountId, Long lmsCourseId) {
         List<AiMasteryService.TopicMastery> topics = mastery.view(accountId, lmsCourseId);
+        return recommend(accountId, lmsCourseId, topics,
+                flashcards.list(accountId, lmsCourseId, clock.instant().atZone(college.zone()).toLocalDate()));
+    }
+
+    /**
+     * The same rules over a mastery view and flashcard sets the caller already read for the student, so a page that
+     * shows them too reads them once. The caller has checked the student's access through {@link AiMasteryService#view}.
+     */
+    @Transactional(readOnly = true)
+    public List<Recommendation> recommend(Long accountId, Long lmsCourseId, List<AiMasteryService.TopicMastery> topics,
+            List<AiFlashcardStore.SetSummary> sets) {
         Instant now = clock.instant();
         ZoneId zone = college.zone();
         List<Recommendation> result = new ArrayList<>();
@@ -65,12 +74,12 @@ public class AiRecommendationService {
                 .forEach(topic -> result.add(new Recommendation(Kind.PRACTISE_WEAK, topic.topicId(), "Practise " + topic.title(),
                         AdaptiveChoice.reason(topic.result()))));
         // 2. Flashcards due today.
-        flashcards.list(accountId, lmsCourseId, now.atZone(zone).toLocalDate()).stream().filter(set -> set.due() > 0).limit(1)
+        sets.stream().filter(set -> set.due() > 0).limit(1)
                 .forEach(set -> result.add(new Recommendation(Kind.REVIEW_FLASHCARDS, set.set().getId(), "Review " + set.set().getTitle(),
                         set.due() + (set.due() == 1 ? " card is" : " cards are") + " due today.")));
-        // 3. Published assignments due within a week.
-        assignments.findAllByLmsCourseIdAndStatusInOrderByDueAtAscIdAsc(lmsCourseId, List.of(LmsContentStatus.PUBLISHED)).stream()
-                .filter(assignment -> assignment.getDueAt().isAfter(now) && assignment.getDueAt().isBefore(now.plus(ASSIGNMENT_SOON)))
+        // 3. Published assignments due within a week and not handed in yet.
+        openAssignments.stillToHandIn(accountId, lmsCourseId, now).stream()
+                .filter(assignment -> assignment.getDueAt().isBefore(now.plus(ASSIGNMENT_SOON)))
                 .limit(1)
                 .forEach((LmsAssignment assignment) -> result.add(new Recommendation(Kind.ASSIGNMENT_SOON, assignment.getId(),
                         "Prepare for " + assignment.getTitle(), "It is due " + DAY.format(assignment.getDueAt().atZone(zone)) + ".")));

@@ -50,7 +50,9 @@ export function StudyPlanPanel({ lmsCourseId }: { lmsCourseId: number }) {
     setMessage(null)
     try {
       const added = await addStudyPlan(lmsCourseId, to, Number(days), Number(minutes))
-      setMessage(to === 'calendar'
+      setMessage(added === 0
+        ? `This plan is already in your ${to === 'calendar' ? 'calendar' : 'To-Do list'}.`
+        : to === 'calendar'
         ? `Added ${added} study ${added === 1 ? 'day' : 'days'} to your calendar.`
         : `Added ${added} study ${added === 1 ? 'session' : 'sessions'} to your To-Do list.`)
     } catch (failure) {

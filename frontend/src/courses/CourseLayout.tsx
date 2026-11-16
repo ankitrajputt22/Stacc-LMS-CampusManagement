@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet, useParams } from 'react-router'
+import { LoadingState } from '../components/states/LoadingState'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { parseCourseId } from './courseRoute'
@@ -42,7 +44,9 @@ export function CourseLayout() {
         />
       }
     >
-      <Outlet />
+      <Suspense fallback={<LoadingState />}>
+        <Outlet />
+      </Suspense>
     </CourseFrame>
   )
 }

@@ -131,7 +131,7 @@ export function WardenRollCall({ hostels }: { hostels: HostelOccupancy[] }) {
     try {
       const opened = await openRollCall(hostelId, block.trim() || null, night || null)
       setOpenId(opened.summary.rollCallId)
-      await refreshed(`Roll call opened with ${opened.entries.length} residents.`)
+      await refreshed(`Roll call opened with ${opened.entries.length} ${opened.entries.length === 1 ? 'resident' : 'residents'}.`)
     } catch (failure) {
       setMessage({ tone: 'error', text: refusal(failure, 'open the roll call') })
     }

@@ -54,6 +54,7 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
   const [turns, setTurns] = useState<Turn[]>([])
   const [noAnswer, setNoAnswer] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [saving, setSaving] = useState<number | null>(null)
   const { state, run } = useAiAction<AiAnswer>('student')
   const running = state.status === 'running'
   const scoped = mode !== 'NOTES_ONLY' && moduleId !== ''
@@ -113,6 +114,10 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
 
   async function save(index: number) {
     const turn = turns[index]
+    if (saving !== null || turn.saved) {
+      return
+    }
+    setSaving(index)
     try {
       await saveAnswer(lmsCourseId, turn.question, turn.answer, turn.citations)
       setTurns((current) => current.map((item, position) => (position === index ? { ...item, saved: true } : item)))
@@ -124,6 +129,8 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
         const message = getApiError(failure)?.message
         setSaveMessage(message && status !== null && status < 500 ? message : 'Couldn’t save the answer. Try again.')
       }
+    } finally {
+      setSaving(null)
     }
   }
 
@@ -229,8 +236,8 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
               <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{turn.answer}</p>
               <AiCitations citations={turn.citations} pageLink={(pageId) => `/courses/${lmsCourseId}/pages/${pageId}`} />
               <div className="mt-2">
-                <Button size="sm" variant="ghost" disabled={turn.saved} onClick={() => void save(index)}>
-                  {turn.saved ? 'Saved' : 'Save answer'}
+                <Button size="sm" variant="ghost" disabled={turn.saved || saving !== null} onClick={() => void save(index)}>
+                  {turn.saved ? 'Saved' : saving === index ? 'Saving…' : 'Save answer'}
                   {!turn.saved && <span className="sr-only">{` to “${turn.question}”`}</span>}
                 </Button>
               </div>

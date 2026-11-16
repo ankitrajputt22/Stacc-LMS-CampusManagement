@@ -1,5 +1,7 @@
 package com.stacc.backend.lms.ai.api;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.Map;
 import com.stacc.backend.auth.security.AuthenticatedAccount;
 import com.stacc.backend.common.config.OpenApiConfig;
 import com.stacc.backend.common.error.ApiErrorResponse;
+import com.stacc.backend.engagement.EngagementProperties;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.ai.mastery.AiRecommendationService;
@@ -47,11 +50,11 @@ public class AiStudyHomeController {
     private final AiMasteryService mastery;
     private final AiRecommendationService recommendations;
     private final AiFlashcardStore flashcards;
-    private final java.time.Clock clock;
-    private final com.stacc.backend.engagement.EngagementProperties college;
+    private final Clock clock;
+    private final EngagementProperties college;
 
     public AiStudyHomeController(LmsStudentCourseQueryService courses, AiMasteryService mastery, AiRecommendationService recommendations,
-            AiFlashcardStore flashcards, java.time.Clock clock, com.stacc.backend.engagement.EngagementProperties college) {
+            AiFlashcardStore flashcards, Clock clock, EngagementProperties college) {
         this.courses = courses;
         this.mastery = mastery;
         this.recommendations = recommendations;
@@ -69,16 +72,18 @@ public class AiStudyHomeController {
     @ApiResponse(responseCode = "200", description = "One entry per course.")
     public List<CourseStudy> home(@AuthenticationPrincipal Jwt accessToken) {
         Long accountId = AuthenticatedAccount.idFrom(accessToken);
-        java.time.LocalDate today = clock.instant().atZone(college.zone()).toLocalDate();
+        LocalDate today = clock.instant().atZone(college.zone()).toLocalDate();
         List<CourseStudy> result = new ArrayList<>();
         for (LmsCourseSummaryResponse course : courses.getAccessibleCourses(accountId)) {
             Map<Mastery.Level, Integer> levels = new EnumMap<>(Mastery.Level.class);
             for (Mastery.Level level : Mastery.Level.values()) {
                 levels.put(level, 0);
             }
-            mastery.view(accountId, course.lmsCourseId()).forEach(topic -> levels.merge(topic.result().level(), 1, Integer::sum));
-            long due = flashcards.list(accountId, course.lmsCourseId(), today).stream().mapToLong(AiFlashcardStore.SetSummary::due).sum();
-            List<AiRecommendationService.Recommendation> next = recommendations.recommend(accountId, course.lmsCourseId());
+            List<AiMasteryService.TopicMastery> topics = mastery.view(accountId, course.lmsCourseId());
+            topics.forEach(topic -> levels.merge(topic.result().level(), 1, Integer::sum));
+            List<AiFlashcardStore.SetSummary> sets = flashcards.list(accountId, course.lmsCourseId(), today);
+            long due = sets.stream().mapToLong(AiFlashcardStore.SetSummary::due).sum();
+            List<AiRecommendationService.Recommendation> next = recommendations.recommend(accountId, course.lmsCourseId(), topics, sets);
             result.add(new CourseStudy(course.lmsCourseId(), course.courseCode(), course.courseName(), levels, due,
                     next.isEmpty() ? null : next.get(0)));
         }

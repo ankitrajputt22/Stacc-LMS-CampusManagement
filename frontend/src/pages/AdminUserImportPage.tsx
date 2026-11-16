@@ -146,8 +146,8 @@ function ImportForm() {
           title="Check result"
           description={
             ready
-              ? `All ${checked.rows.length} rows are ready. Nothing has been created yet.`
-              : `${checked.rowsWithErrors} of ${checked.rows.length} rows have problems. Fix the file and check it again; nothing is created while any row has a problem.`
+              ? `${checked.rows.length === 1 ? 'The row is' : `All ${checked.rows.length} rows are`} ready. Nothing has been created yet.`
+              : `${checked.rowsWithErrors} of ${checked.rows.length} ${checked.rows.length === 1 ? 'row has' : 'rows have'} problems. Fix the file and check it again; nothing is created while any row has a problem.`
           }
           padding="none"
         >
@@ -156,7 +156,7 @@ function ImportForm() {
             <div className="border-t border-line px-4 py-4 sm:px-5">
               {confirming ? (
                 <StatusConfirmation
-                  question={`Create ${checked.rows.length} accounts?`}
+                  question={`Create ${accounts(checked.rows.length)}?`}
                   detail="Every account is created with its roles and profiles, all at once, and each must change the temporary password at first sign-in. Accounts are never deleted; they can only be disabled."
                   confirmLabel="Create accounts"
                   busyLabel="Creating accounts…"
@@ -178,7 +178,7 @@ function ImportForm() {
                   describeRefusal={refusal}
                 />
               ) : (
-                <Button onClick={() => setConfirming(true)}>Import {checked.rows.length} accounts</Button>
+                <Button onClick={() => setConfirming(true)}>Import {accounts(checked.rows.length)}</Button>
               )}
             </div>
           )}
@@ -186,6 +186,10 @@ function ImportForm() {
       )}
     </div>
   )
+}
+
+function accounts(count: number) {
+  return count === 1 ? '1 account' : `${count} accounts`
 }
 
 /** /admin/users/import: check a CSV file of accounts, then create them all at once. */

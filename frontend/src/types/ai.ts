@@ -51,7 +51,8 @@ export type AiFlashcard = {
   intervalDays: number
   repetitions: number
 }
-export type AiFlashcardSet = { id: number; title: string; cards: AiFlashcard[] }
+/** `today` is the college's date (YYYY-MM-DD), which decides which cards are due. */
+export type AiFlashcardSet = { id: number; title: string; cards: AiFlashcard[]; today: string }
 export type ReviewRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY'
 
 /** What a summary covers and how (v0.15.2). */

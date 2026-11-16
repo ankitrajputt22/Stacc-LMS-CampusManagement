@@ -10,7 +10,7 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   const card = page.getByRole('region', { name: 'Night roll call' })
   await card.getByLabel('Night').fill(night)
   await card.getByRole('button', { name: 'Open roll call' }).click()
-  await expect(card.getByRole('status').filter({ hasText: /Roll call opened with \d+ residents\./ })).toHaveCount(1)
+  await expect(card.getByRole('status').filter({ hasText: /Roll call opened with \d+ residents?\./ })).toHaveCount(1)
 
   const sheet = card.getByRole('listitem').filter({ hasText: night })
   // The sheet loads after the list; wait for it before collecting its residents.

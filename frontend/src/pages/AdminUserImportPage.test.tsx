@@ -68,7 +68,7 @@ describe('AdminUserImportPage', () => {
     renderPage()
     const user = await chooseFileAndCheck()
 
-    await user.click(await screen.findByRole('button', { name: 'Import 1 accounts' }))
+    await user.click(await screen.findByRole('button', { name: 'Import 1 account' }))
     await user.click(screen.getByRole('button', { name: 'Create accounts' }))
 
     expect(adminUsersApi.importUsers).toHaveBeenLastCalledWith(expect.any(File), 'Bright-Lantern-2047', false)
