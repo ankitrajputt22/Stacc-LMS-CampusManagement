@@ -88,7 +88,7 @@ export function WardensSection() {
   const hostels = useApiQuery(['hostel', 'list'], (signal) => getHostels(signal))
   const [hostelId, setHostelId] = useState<number | null>(null)
   return (
-    <Card title="Wardens">
+    <Card title="Wardens" icon="profile">
       {hostels.status !== 'loaded' ? (
         <SectionState request={hostels} what="hostels" />
       ) : (

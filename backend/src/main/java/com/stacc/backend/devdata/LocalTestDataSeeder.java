@@ -776,7 +776,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
 
         // --- Hostel: a small inventory to try applications and allocations. Real hostels are added by admins.
         Long mainHostel = hostel("MAIN", "Main Hostel", "Development test hostel.");
-        for (String roomNumber : List.of("A-101", "A-102")) {
+        for (String roomNumber : List.of("A-101", "A-102", "A-103")) {
             Long roomId = hostelRoom(mainHostel, roomNumber);
             hostelBed(roomId, "B1");
             hostelBed(roomId, "B2");
@@ -818,6 +818,9 @@ public class LocalTestDataSeeder implements ApplicationRunner {
             services.campusRequests.cancel(studentFaculty.getId(), withdrawn);
         }
         hostelAllocationHistory(admin1, student2Profile);
+        // Aarav lives in Main Hostel, room A-101, bed B1 (v0.16 hostel pages): applied, approved, allocated, checked in.
+        hostelApplication(student1, student1Profile, current, "I need accommodation for this academic session.");
+        hostelResident(admin1, student1Profile, "A-101", "B1");
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.
@@ -1343,6 +1346,34 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                     beds.get(0).bedId());
             services.hostelAllocations.vacate(admin.getId(), first.allocationId());
             services.hostelAllocations.allocate(admin.getId(), application.getId(), beds.get(1).bedId());
+        });
+    }
+
+    /**
+     * Approves the student's first hostel application when it is still pending and allocates the named bed, then
+     * records the check-in. Nothing is done when the application already has an allocation or the bed is taken.
+     */
+    void hostelResident(UserAccount admin, StudentProfile student, String roomNumber, String bedNumber) {
+        HostelApplication application = repositories.hostelApplications.findAllForStudent(student.getId()).stream()
+                .findFirst().orElse(null);
+        if (application == null) {
+            return;
+        }
+        boolean exists = !repositories.hostelAllocations.findAllForApplications(List.of(application.getId())).isEmpty();
+        createUnless(exists, () -> {
+            if (application.approvalStatus() == ApprovalRequestStatus.PENDING) {
+                CurrentApprovalStep step = services.approvalQueries.currentStep(application.getApprovalRequest().getId())
+                        .orElseThrow(() -> new IllegalStateException("The hostel application has no current step"));
+                services.approvals.approveStep(adminActor(admin), step.approvalRequestStepId(), "Approved for 2026-27.");
+            }
+            services.hostelAllocations.availableBeds(null, null).stream()
+                    .filter(bed -> bed.roomNumber().equals(roomNumber) && bed.bedNumber().equals(bedNumber))
+                    .findFirst()
+                    .ifPresent(bed -> {
+                        HostelAllocationResponse allocation = services.hostelAllocations.allocate(admin.getId(), application.getId(),
+                                bed.bedId());
+                        services.hostelAllocations.checkIn(allocation.allocationId(), "Keys handed over.");
+                    });
         });
     }
 

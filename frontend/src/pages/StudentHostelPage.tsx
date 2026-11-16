@@ -36,10 +36,12 @@ import {
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { EligibleHostelSession, HostelApplicationDetail, StudentHostelAllocation } from '../types/hostel'
 import { TextField } from '../ui'
-import { StudentOutings } from '../hostel/outings/StudentOutings'
+import { RoomProblemCard, StudentOutings } from '../hostel/outings/StudentOutings'
 import { ResidentMessCard } from '../hostel/mess/Mess'
 import { ResidentVisitors } from '../hostel/visitors/Visitors'
-import { ResidentHostelNotices } from '../hostel/notices/HostelNotices'
+import { StudentHostelOverview } from '../hostel/student/StudentHostelOverview'
+import { Card, LinkTabs } from '../ui'
+import { useMyProfile } from '../person/useDisplayName'
 import { StudentRoomChanges } from '../hostel/rooms/RoomChanges'
 
 function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[]; onApplied: (applicationId: number) => void }) {
@@ -284,15 +286,49 @@ function ApplicationPanel({ detail, onChanged }: { detail: HostelApplicationDeta
  * approval progress from the approval engine, and their allocation. Students never choose a hostel, room, or bed, and
  * nothing here decides an approval. Only accounts holding STUDENT see it; the backend checks every request.
  */
-export function StudentHostelPage() {
+export type HostelSection = 'overview' | 'applications' | 'room-changes' | 'outings' | 'mess' | 'visitors' | 'room-problem'
+
+const SECTIONS: { section: HostelSection; to: string; label: string }[] = [
+  { section: 'overview', to: '/hostel', label: 'Overview' },
+  { section: 'applications', to: '/hostel/applications', label: 'Applications' },
+  { section: 'room-changes', to: '/hostel/room-changes', label: 'Room changes' },
+  { section: 'outings', to: '/hostel/outings', label: 'Outings' },
+  { section: 'mess', to: '/hostel/mess', label: 'Mess' },
+  { section: 'visitors', to: '/hostel/visitors', label: 'Visitors' },
+  { section: 'room-problem', to: '/hostel/room-problem', label: 'Room problem' },
+]
+
+const PROCESS = [
+  { title: 'Submit application', text: 'Choose the session, add an optional note and a room preference (a wish only).' },
+  { title: 'Approval', text: 'The hostel administration reviews your application and approves or rejects it.' },
+  { title: 'Hostel office allocates a bed', text: 'After approval, the hostel office assigns you a bed from the beds available.' },
+]
+
+/** The resident's name, college ID, and roll number under the page title. */
+function IdentityLine() {
+  const person = useMyProfile()
+  const { account } = useAuth()
+  if (!account) {
+    return null
+  }
+  const name = person.status === 'loaded' ? (person.data.fullName ?? person.data.displayName) : null
+  return <p className="mt-1 text-[0.95rem] text-ink">{[name, account.loginId].filter(Boolean).join(' · ')}</p>
+}
+
+/**
+ * The student's hostel area, one section per page: Overview, Applications, Room changes, Outings, Mess, Visitors, and
+ * Room problem. Approval and allocation stay separate, and a student never chooses a bed.
+ */
+export function StudentHostelPage({ section = 'overview' }: { section?: HostelSection }) {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
   const [searchParams, setSearchParams] = useSearchParams()
-  const sessions = useApiRequest(isStudent ? getEligibleHostelSessions : null)
-  const list = useApiRequest(isStudent ? getMyHostelApplications : null)
+  const sessions = useApiRequest(isStudent && section === 'applications' ? getEligibleHostelSessions : null)
+  const list = useApiRequest(isStudent && (section === 'applications' || section === 'overview') ? getMyHostelApplications : null)
   const applications = list.status === 'loaded' ? list.data : null
   const chosen = Number(searchParams.get('application'))
-  const selectedId = applications?.some((item) => item.applicationId === chosen) ? chosen : applications?.[0]?.applicationId
+  const selectedId = applications?.some((item) => item.applicationId === chosen) ? chosen
+    : (applications?.find((item) => item.hasActiveAllocation) ?? applications?.[0])?.applicationId
   const loadDetail = useMemo(
     () => (selectedId === undefined ? null : (signal: AbortSignal) => getMyHostelApplication(selectedId, signal)),
     [selectedId],
@@ -315,7 +351,17 @@ export function StudentHostelPage() {
         <AccessDeniedState title="The Hostel page is for student accounts." />
       </StatePanel>
     )
-  } else if (list.status === 'loading' || sessions.status === 'loading') {
+  } else if (section === 'room-changes') {
+    content = <StudentRoomChanges />
+  } else if (section === 'outings') {
+    content = <StudentOutings />
+  } else if (section === 'mess') {
+    content = <ResidentMessCard />
+  } else if (section === 'visitors') {
+    content = <ResidentVisitors />
+  } else if (section === 'room-problem') {
+    content = <RoomProblemCard />
+  } else if (list.status === 'loading' || (section === 'applications' && sessions.status === 'loading')) {
     content = (
       <StatePanel>
         <LoadingState label="Loading hostel information…" />
@@ -327,7 +373,7 @@ export function StudentHostelPage() {
         <AccessDeniedState title="You don’t have access to hostel applications." message={SIGN_IN_AGAIN} />
       </StatePanel>
     )
-  } else if (applications === null || sessions.status !== 'loaded') {
+  } else if (applications === null || (section === 'applications' && sessions.status !== 'loaded')) {
     content = (
       <StatePanel>
         <ErrorState
@@ -340,31 +386,37 @@ export function StudentHostelPage() {
         />
       </StatePanel>
     )
+  } else if (section === 'overview') {
+    content = (
+      <StudentHostelOverview detail={applications.length === 0 ? null : detail.status === 'loaded' ? detail.data : null} />
+    )
   } else {
     content = (
-      <>
-        <section aria-labelledby="hostel-apply" className="rounded-panel border border-line bg-surface p-4 sm:p-5">
-          <h2 id="hostel-apply" className="text-base font-semibold text-ink">
-            Apply for hostel
-          </h2>
-          <div className="mt-3">
-            <ApplyForm sessions={sessions.data} onApplied={(id) => changed(id)} />
-          </div>
-        </section>
-
-        <section aria-labelledby="hostel-applications" className="mt-6">
-          <h2 id="hostel-applications" className="text-base font-semibold text-ink">
-            Your applications
-          </h2>
+      <div className="space-y-6">
+        <div className="grid items-start gap-6 xl:grid-cols-2">
+          <Card title="Apply for hostel" icon="hostel">
+            {sessions.status === 'loaded' && <ApplyForm sessions={sessions.data} onApplied={(id) => changed(id)} />}
+          </Card>
+          <Card title="Application process" icon="academics">
+            <ol className="space-y-5">
+              {PROCESS.map((step, index) => (
+                <li key={step.title} className="flex gap-4">
+                  <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-portal-bar-strong font-semibold text-portal-navy">{index + 1}</span>
+                  <span>
+                    <span className="block text-lg font-semibold text-ink">{step.title}</span>
+                    <span className="block text-ink-muted">{step.text}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </div>
+        <Card title="Your applications" icon="documents">
           {applications.length === 0 ? (
-            <div className="mt-3">
-              <StatePanel>
-                <EmptyState title="You do not have a hostel application yet." />
-              </StatePanel>
-            </div>
+            <EmptyState title="You do not have a hostel application yet." />
           ) : (
             <>
-              <ul aria-label="Hostel applications" className="mt-3 divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
+              <ul aria-label="Hostel applications" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
                 {applications.map((item) => (
                   <li key={item.applicationId} className={`px-4 py-3 sm:px-5 ${item.applicationId === selectedId ? 'bg-surface-muted' : ''}`}>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -397,19 +449,15 @@ export function StudentHostelPage() {
                 {detail.status === 'loaded' ? (
                   <ApplicationPanel detail={detail.data} onChanged={() => changed()} />
                 ) : detail.status === 'loading' ? (
-                  <StatePanel>
-                    <LoadingState label="Loading hostel information…" />
-                  </StatePanel>
+                  <LoadingState label="Loading hostel information…" />
                 ) : (
-                  <StatePanel>
-                    <ErrorState title="Couldn’t load this application." message="Try again." onRetry={detail.retry} />
-                  </StatePanel>
+                  <ErrorState title="Couldn’t load this application." message="Try again." onRetry={detail.retry} />
                 )}
               </div>
             </>
           )}
-        </section>
-      </>
+        </Card>
+      </div>
     )
   }
 
@@ -417,21 +465,14 @@ export function StudentHostelPage() {
     <>
       <title>Hostel · Stacc</title>
       <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Hostel</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">View and manage your hostel application and allocation.</p>
-      <div className="mt-6">{content}</div>
+      <p className="mt-2 text-[0.95rem] leading-6 text-ink-muted sm:text-base">Your room, requests, and hostel life.</p>
+      <IdentityLine />
       {isStudent && (
-        <div className="mt-10 space-y-6 border-t border-line pt-6">
-          <ResidentHostelNotices />
-          <ResidentMessCard />
-          <ResidentVisitors />
-          <StudentRoomChanges />
+        <div className="mt-5">
+          <LinkTabs label="Hostel sections" tabs={SECTIONS.map(({ to, label }) => ({ to, label, end: true }))} />
         </div>
       )}
-      {isStudent && (
-        <section aria-label="Outings and room problems" className="mt-10 border-t border-line pt-6">
-          <StudentOutings />
-        </section>
-      )}
+      <div className={isStudent ? '' : 'mt-6'}>{content}</div>
     </>
   )
 }

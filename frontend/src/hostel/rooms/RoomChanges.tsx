@@ -219,7 +219,7 @@ export function RoomChangesSection() {
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
   return (
-    <Card title="Room changes" description="Moves and swaps waiting for the warden or for you. Only an approved change can be carried out." padding="none">
+    <Card title="Room changes" icon="projects" description="Moves and swaps waiting for the warden or for you. Only an approved change can be carried out." padding="none">
       <p role="status" className="sr-only">
         {message?.tone === 'success' ? message.text : ''}
       </p>

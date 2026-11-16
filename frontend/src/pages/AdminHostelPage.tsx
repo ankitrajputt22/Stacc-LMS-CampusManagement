@@ -1,4 +1,4 @@
-import { NavLink, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
@@ -14,6 +14,7 @@ import { VisitingHoursSection } from '../hostel/visitors/Visitors'
 import { NoticesSection } from '../hostel/notices/NoticesSection'
 import { RoomChangesSection } from '../hostel/rooms/RoomChanges'
 import { NotFoundPage } from './NotFoundPage'
+import { LinkTabs, PageHeader } from '../ui'
 
 const SECTIONS = [
   { path: 'applications', label: 'Applications', Section: ApplicationsSection },
@@ -45,31 +46,14 @@ export function AdminHostelPage({ review = false }: { review?: boolean }) {
   return (
     <>
       <title>{`${current.label} · Hostel Management · Stacc`}</title>
-      <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Hostel Management</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">
-        Review hostel applications, manage hostels, rooms, and beds, and allocate approved students.
-      </p>
+      <PageHeader title="Hostel Management" description="Manage hostel applications, allocations and hostel operations." />
       {isAdmin ? (
         <>
-          <nav aria-label="Hostel management sections" className="mt-6 border-b border-line">
-            <ul className="-mb-px flex flex-wrap gap-x-1">
-              {SECTIONS.map((item) => (
-                <li key={item.path}>
-                  <NavLink
-                    to={`/admin/hostel/${item.path}`}
-                    className={({ isActive }) =>
-                      `inline-flex min-h-11 items-center border-b-2 px-3 text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary ${
-                        isActive ? 'border-stacc-primary font-semibold text-stacc-primary' : 'border-transparent text-ink hover:border-line-strong'
-                      }`
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <div className="mt-6">{review ? <ApplicationReview /> : <current.Section />}</div>
+          <LinkTabs
+            label="Hostel management sections"
+            tabs={SECTIONS.map((item) => ({ to: `/admin/hostel/${item.path}`, label: item.label }))}
+          />
+          <div>{review ? <ApplicationReview /> : <current.Section />}</div>
         </>
       ) : (
         <div className="mt-6">

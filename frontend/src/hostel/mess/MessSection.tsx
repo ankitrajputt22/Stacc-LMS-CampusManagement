@@ -11,14 +11,14 @@ export function MessSection() {
   const hostels = useApiQuery(queryKeys.hostel.occupancy('admin'), (signal) => getHostelOccupancy('admin', signal))
   if (hostels.status !== 'loaded') {
     return (
-      <Card title="Mess">
+      <Card title="Mess" icon="todo">
         <SectionState request={hostels} what="hostels" />
       </Card>
     )
   }
   if (hostels.data.length === 0) {
     return (
-      <Card title="Mess">
+      <Card title="Mess" icon="todo">
         <EmptyState title="No hostels yet." description="Add a hostel under Hostels & Rooms first." />
       </Card>
     )

@@ -18,6 +18,10 @@ import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.request.StudentRequestService;
 import com.stacc.backend.academic.exam.ExamService;
 import com.stacc.backend.fees.FeePayment;
+import com.stacc.backend.hostel.HostelRepository;
+import com.stacc.backend.hostel.mess.Meal;
+import com.stacc.backend.hostel.mess.MessService;
+import com.stacc.backend.hostel.notice.HostelNoticeService;
 import com.stacc.backend.fees.FeeService;
 import com.stacc.backend.fees.FeeStructureItem;
 import com.stacc.backend.academic.attendance.api.StudentAttendanceQueryService;
@@ -95,11 +99,15 @@ public class LocalErpSeeder implements ApplicationRunner {
     private final AcademicStandingService standing;
     private final ExamService exams;
     private final FeeService fees;
+    private final HostelRepository hostels;
+    private final MessService mess;
+    private final HostelNoticeService hostelNotices;
 
     public LocalErpSeeder(Environment environment, TransactionTemplate transaction, UserAccountRepository accounts,
             CourseEnrollmentRepository courseEnrollments, CourseOfferingRepository offerings, TimetableService timetable,
             DegreeProgressService degree, PersonProfileService people, StudentRequestService requests,
-            StudentAttendanceQueryService attendance, AcademicStandingService standing, ExamService exams, FeeService fees) {
+            StudentAttendanceQueryService attendance, AcademicStandingService standing, ExamService exams, FeeService fees,
+            HostelRepository hostels, MessService mess, HostelNoticeService hostelNotices) {
         this.environment = environment;
         this.transaction = transaction;
         this.accounts = accounts;
@@ -113,6 +121,9 @@ public class LocalErpSeeder implements ApplicationRunner {
         this.standing = standing;
         this.exams = exams;
         this.fees = fees;
+        this.hostels = hostels;
+        this.mess = mess;
+        this.hostelNotices = hostelNotices;
     }
 
     @Override
@@ -129,6 +140,7 @@ public class LocalErpSeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> feeStructure("student1"));
         transaction.executeWithoutResult(status -> feeStructure("ece25001"));
         transaction.executeWithoutResult(status -> aaravsFees());
+        transaction.executeWithoutResult(status -> hostelLife());
         LOGGER.info("Local ERP records ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
 
@@ -288,6 +300,45 @@ public class LocalErpSeeder implements ApplicationRunner {
             Long scholarship = fees.applyForScholarship(account.getId(), "Merit Scholarship", new BigDecimal("10000"),
                     "Top 5% of the department in the first year.").adjustmentId();
             fees.decide(office, scholarship, true, "Awarded for 2026-27.");
+        });
+    }
+
+    private static final String[][] MENU = {
+            {"Poha, banana, tea", "Rajma chawal, roti, salad", "Samosa, tea", "Dal, rice, roti and vegetables"},
+            {"Idli, sambar, coffee", "Chole, rice, roti, curd", "Biscuits, tea", "Paneer butter masala, roti, rice"},
+            {"Upma, boiled egg, tea", "Veg biryani, raita", "Pakora, tea", "Dal tadka, jeera rice, roti"},
+            {"Paratha, curd, tea", "Kadhi chawal, roti", "Sandwich, tea", "Mixed vegetables, dal, roti, rice"},
+            {"Dosa, chutney, coffee", "Sambar rice, poriyal", "Fruit, tea", "Egg curry or paneer, rice, roti"},
+            {"Puri, aloo sabzi, tea", "Pulao, dal, salad", "Bhel puri, tea", "Chicken or soya curry, rice, roti"},
+            {"Bread, omelette, tea", "Special thali", "Cake, tea", "Khichdi, papad, pickle"}};
+
+    // Main Hostel's weekly menu and two published notices, set as the hostel office would, when none exist yet.
+    private void hostelLife() {
+        Long office = accounts.findByLoginId("admin1").map(UserAccount::getId).orElse(null);
+        hostels.findByCode("MAIN").ifPresent(hostel -> {
+            if (office == null) {
+                return;
+            }
+            var manager = new MessService.Manager(office, true);
+            if (mess.forManager(manager, hostel.getId(), java.time.LocalDate.now()).template().isEmpty()) {
+                List<MessService.TemplateLine> lines = new java.util.ArrayList<>();
+                Meal[] meals = {Meal.BREAKFAST, Meal.LUNCH, Meal.SNACKS, Meal.DINNER};
+                for (int day = 1; day <= 7; day++) {
+                    for (int meal = 0; meal < meals.length; meal++) {
+                        lines.add(new MessService.TemplateLine(day, meals[meal], MENU[day - 1][meal]));
+                    }
+                }
+                mess.setTemplate(manager, hostel.getId(), lines);
+            }
+            var notices = new HostelNoticeService.Manager(office, true);
+            if (hostelNotices.forHostel(notices, hostel.getId()).isEmpty()) {
+                Long water = hostelNotices.add(notices, hostel.getId(), "A", "Water supply maintenance",
+                        "Water will be off in Block A on Tuesday from 10:00 to 12:00 while the tanks are cleaned.", false).noticeId();
+                hostelNotices.publish(notices, water);
+                Long drill = hostelNotices.add(notices, hostel.getId(), null, "Emergency assembly drill",
+                        "When the alarm sounds, assemble in the courtyard and wait for the hostel staff.", true).noticeId();
+                hostelNotices.publish(notices, drill);
+            }
         });
     }
 }
