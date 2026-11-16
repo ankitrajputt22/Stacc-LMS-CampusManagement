@@ -17,7 +17,7 @@ import { StatePanel } from '../components/states/StatePanel'
 import { SectionState } from '../courses/SectionState'
 import { failureText } from '../engagement/engagementText'
 import type { GrievanceCategoryAdmin } from '../types/grievances'
-import { Alert, Badge, Button, Card, PageHeader, TextField } from '../ui'
+import { Alert, Badge, Button, Card, DataTable, PageHeader, TextField } from '../ui'
 
 type Notify = (text: string, error?: boolean) => void
 
@@ -27,58 +27,122 @@ function attempt(action: () => Promise<unknown>, done: string, fallback: string,
     .catch((caught: unknown) => notify(failureText(caught, fallback) ?? '', true))
 }
 
+function SubHeading({ children }: { children: string }) {
+  return (
+    <>
+      <h3 className="text-base font-bold text-portal-navy">{children}</h3>
+      <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
+    </>
+  )
+}
+
 function CategoryCard({ category, notify }: { category: GrievanceCategoryAdmin; notify: Notify }) {
   const [loginId, setLoginId] = useState('')
   return (
     <Card
       title={category.name}
-      description={`${category.code} · answer within ${category.responseDays} days`}
+      description={
+        <>
+          Category: <span className="font-semibold text-ink">{category.code}</span>
+          <span aria-hidden="true"> · </span>
+          <span className="sr-only">, </span>
+          Answer within: {category.responseDays} days
+        </>
+      }
       action={!category.active ? <Badge tone="neutral">Not taking new cases</Badge> : undefined}
     >
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-ink">Committee</h3>
-        {category.committee.length === 0 ? (
-          <p className="text-sm text-ink-muted">Nobody yet: cases in this category cannot be answered until someone is added.</p>
-        ) : (
-          <ul className="flex flex-wrap gap-2 text-sm">
-            {category.committee.map((member) => (
-              <li key={member.memberId} className="inline-flex items-center gap-2 rounded-control border border-line px-2 py-1">
-                <span className="font-mono">{member.loginId}</span>
-                <Button size="sm" variant="secondary" onClick={() => attempt(() => endGrievanceCommitteeMember(member.memberId), `${member.loginId} is no longer on the committee.`, 'Couldn’t change the committee.', notify)}>
-                  Remove<span className="sr-only">{` ${member.loginId} from ${category.name}`}</span>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="space-y-5">
+        <div>
+          <SubHeading>Committee members</SubHeading>
+          {category.committee.length === 0 ? (
+            <p className="rounded-control border border-line px-3 py-4 text-center text-sm text-ink">
+              <span className="font-semibold">Nobody yet:</span> cases in this category cannot be answered until someone is added.
+            </p>
+          ) : (
+            <ul className="divide-y divide-line rounded-control border border-line text-sm">
+              {category.committee.map((member) => (
+                <li key={member.memberId} className="flex items-center justify-between gap-3 px-3 py-2">
+                  <span className="text-ink">{member.loginId}</span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      attempt(
+                        () => endGrievanceCommitteeMember(member.memberId),
+                        `${member.loginId} is no longer on the committee.`,
+                        'Couldn’t change the committee.',
+                        notify,
+                      )
+                    }
+                  >
+                    Remove<span className="sr-only">{` ${member.loginId} from ${category.name}`}</span>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <form
-          className="flex flex-wrap items-end gap-2"
+          className="space-y-2"
           onSubmit={(event) => {
             event.preventDefault()
             if (loginId.trim() !== '') {
-              attempt(() => addGrievanceCommitteeMember(category.categoryId, loginId.trim()).then(() => setLoginId('')), `${loginId.trim()} added to the ${category.name} committee.`, 'Couldn’t add the member.', notify)
+              attempt(
+                () => addGrievanceCommitteeMember(category.categoryId, loginId.trim()).then(() => setLoginId('')),
+                `${loginId.trim()} added to the ${category.name} committee.`,
+                'Couldn’t add the member.',
+                notify,
+              )
             }
           }}
         >
+          <SubHeading>Add member</SubHeading>
           <TextField label={`Faculty or admin login ID for ${category.name}`} value={loginId} maxLength={100} onChange={(event) => setLoginId(event.target.value)} />
-          <Button type="submit" size="sm">Add to committee</Button>
+          <Button type="submit">Add to committee</Button>
         </form>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() =>
-            attempt(
-              () => changeGrievanceCategory(category.categoryId, { name: category.name, responseDays: category.responseDays, active: !category.active }),
-              category.active ? 'Category closed to new cases.' : 'Category open to new cases.',
-              'Couldn’t change the category.',
-              notify,
-            )
-          }
-        >
-          {category.active ? 'Stop new cases' : 'Take new cases'}
-          <span className="sr-only">{` in ${category.name}`}</span>
-        </Button>
+        <div className="border-t border-line pt-4">
+          <SubHeading>Category</SubHeading>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              attempt(
+                () => changeGrievanceCategory(category.categoryId, { name: category.name, responseDays: category.responseDays, active: !category.active }),
+                category.active ? 'Category closed to new cases.' : 'Category open to new cases.',
+                'Couldn’t change the category.',
+                notify,
+              )
+            }
+          >
+            {category.active ? 'Stop new cases' : 'Take new cases'}
+            <span className="sr-only">{` in ${category.name}`}</span>
+          </Button>
+          <p className="mt-3 text-sm text-ink-muted">Committee members can open this category’s cases. Admin setup never shows case details.</p>
+        </div>
       </div>
+    </Card>
+  )
+}
+
+/** One row per category: what it is, how fast it is answered, who answers it, and whether it takes new cases. */
+function CategorySummary({ categories }: { categories: GrievanceCategoryAdmin[] }) {
+  return (
+    <Card title="Existing categories" padding="none">
+      <DataTable<GrievanceCategoryAdmin>
+        caption="Grievance categories"
+        rows={categories}
+        rowKey={(category) => category.categoryId}
+        columns={[
+          { key: 'code', header: 'Code', primary: true, cell: (category) => <span className="font-semibold">{category.code}</span> },
+          { key: 'name', header: 'Name', cell: (category) => category.name },
+          { key: 'days', header: 'Answer within', cell: (category) => `${category.responseDays} days` },
+          {
+            key: 'committee',
+            header: 'Committee',
+            cell: (category) => (category.committee.length === 0 ? 'Nobody yet' : category.committee.map((member) => member.loginId).join(', ')),
+          },
+          { key: 'new', header: 'New cases', cell: (category) => (category.active ? 'Taking new cases' : 'Not taking new cases') },
+        ]}
+      />
     </Card>
   )
 }
@@ -108,7 +172,7 @@ export function AdminGrievancesPage() {
             {message && <Alert tone={message.tone}>{message.text}</Alert>}
             <Card title="Add a category">
               <form
-                className="grid gap-3 sm:grid-cols-3"
+                className="grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)_10rem_auto] sm:items-end"
                 onSubmit={(event) => {
                   event.preventDefault()
                   attempt(() => createGrievanceCategory({ code: form.code.trim(), name: form.name.trim(), responseDays: Number(form.responseDays) }), 'Category added.', 'Couldn’t add the category.', notify)
@@ -125,7 +189,14 @@ export function AdminGrievancesPage() {
             ) : categories.data.length === 0 ? (
               <EmptyState title="No categories yet." description="Add one above, then name its committee." />
             ) : (
-              categories.data.map((category) => <CategoryCard key={category.categoryId} category={category} notify={notify} />)
+              <>
+                <CategorySummary categories={categories.data} />
+                <div className="grid items-start gap-6 xl:grid-cols-2">
+                  {categories.data.map((category) => (
+                    <CategoryCard key={category.categoryId} category={category} notify={notify} />
+                  ))}
+                </div>
+              </>
             )}
           </>
         )}

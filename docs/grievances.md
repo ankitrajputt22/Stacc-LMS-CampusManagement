@@ -29,3 +29,9 @@ Phase 0.12.3. Grievances live in the `grievance` module. They are confidential c
 | `GET`/`POST /api/v1/admin/grievances/categories`, `PUT …/categories/{id}`, `POST …/categories/{id}/committee`, `POST /api/v1/admin/grievances/committee/{id}/end` | `ADMIN` with `GRIEVANCE_MANAGE` |
 
 The demo data adds the `ACADEMIC` category (14 days) with `faculty1` on its committee.
+
+## Pages (v0.16.12)
+
+- `/grievances` lists one's own cases as a table (case number as the row's one link, subject, category, status, and the answer-due time only while submitted or appealed), with Raise a grievance (`/grievances/new`) and the note that only the complainant and the category's committee can open a case. Accounts that can also sit on a committee get the tabs My grievances and Committee cases (`/grievances/committee`); an admin-only account goes straight to its committee cases.
+- A case opens on its own page (`/grievances/{id}` for the complainant, `/grievances/committee/{id}` for the committee): the number and subject, the status, the case's dates in one row, the original details, resolution, appeal, and decision as plain text, and beside them the next step (accept or appeal; take under review, resolve, or decide the appeal) and a case timeline built only from the stored dates. The complainant's login ID is shown to the committee only, and committee members are never shown to the complainant.
+- `/admin/grievances` adds categories, sums them up in one table, and gives each category a card with its committee members, Add member, and Stop or Take new cases. It never shows cases.

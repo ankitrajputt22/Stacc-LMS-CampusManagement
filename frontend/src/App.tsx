@@ -264,6 +264,10 @@ function App() {
           <Route path="verify-id" element={<VerifyIdPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="grievances" element={<GrievancesPage />} />
+          <Route path="grievances/new" element={<GrievancesPage section="new" />} />
+          <Route path="grievances/committee" element={<GrievancesPage section="committee" />} />
+          <Route path="grievances/committee/:caseId" element={<GrievancesPage section="committeeCase" />} />
+          <Route path="grievances/:caseId" element={<GrievancesPage section="myCase" />} />
           <Route path="admin/grievances" element={<AdminGrievancesPage />} />
           <Route path="mentoring" element={<MentoringPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />
