@@ -15,6 +15,9 @@ import com.stacc.backend.academic.enrollment.CourseEnrollmentRepository;
 import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
+import com.stacc.backend.academic.request.StudentRequestService;
+import com.stacc.backend.academic.attendance.api.StudentAttendanceQueryService;
+import com.stacc.backend.academic.result.AcademicStandingService;
 import com.stacc.backend.academic.timetable.ClassTimetableSlot.Kind;
 import com.stacc.backend.academic.timetable.TimetableService;
 import com.stacc.backend.auth.account.UserAccount;
@@ -83,10 +86,14 @@ public class LocalErpSeeder implements ApplicationRunner {
     private final TimetableService timetable;
     private final DegreeProgressService degree;
     private final PersonProfileService people;
+    private final StudentRequestService requests;
+    private final StudentAttendanceQueryService attendance;
+    private final AcademicStandingService standing;
 
     public LocalErpSeeder(Environment environment, TransactionTemplate transaction, UserAccountRepository accounts,
             CourseEnrollmentRepository courseEnrollments, CourseOfferingRepository offerings, TimetableService timetable,
-            DegreeProgressService degree, PersonProfileService people) {
+            DegreeProgressService degree, PersonProfileService people, StudentRequestService requests,
+            StudentAttendanceQueryService attendance, AcademicStandingService standing) {
         this.environment = environment;
         this.transaction = transaction;
         this.accounts = accounts;
@@ -95,6 +102,9 @@ public class LocalErpSeeder implements ApplicationRunner {
         this.timetable = timetable;
         this.degree = degree;
         this.people = people;
+        this.requests = requests;
+        this.attendance = attendance;
+        this.standing = standing;
     }
 
     @Override
@@ -105,6 +115,7 @@ public class LocalErpSeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> requirements("student1"));
         transaction.executeWithoutResult(status -> requirements("ece25001"));
         transaction.executeWithoutResult(status -> contacts());
+        transaction.executeWithoutResult(status -> requests());
         LOGGER.info("Local ERP records ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
 
@@ -170,6 +181,33 @@ public class LocalErpSeeder implements ApplicationRunner {
                 people.addMyEmergencyContact(account.getId(), "Priya Sharma", "Mother", "+91 98220 41736");
                 people.addMyEmergencyContact(account.getId(), "Rajesh Sharma", "Father", "+91 98220 41737");
             }
+        });
+    }
+
+    // A few requests waiting for the office: leave and a revaluation from Aarav, a correction from a student who often
+    // misses class. Only when the student has none yet.
+    private void requests() {
+        accounts.findByLoginId("student1").ifPresent(account -> {
+            if (!requests.mine(account.getId()).isEmpty()) {
+                return;
+            }
+            var today = java.time.LocalDate.now();
+            requests.medicalLeave(account.getId(), today.plusDays(2), today.plusDays(3),
+                    "I have a fever and the doctor has advised two days of rest.");
+            standing.standing(account.getId()).semesters().stream().flatMap(semester -> semester.courses().stream())
+                    .filter(course -> course.courseCode().equals("CS201")).findFirst()
+                    .ifPresent(course -> requests.revaluation(account.getId(), course.courseResultId(),
+                            "I expected higher marks in the second long answer; please check it again."));
+        });
+        accounts.findByLoginId("cse25008").ifPresent(account -> {
+            if (!requests.mine(account.getId()).isEmpty()) {
+                return;
+            }
+            attendance.getMyAttendance(account.getId()).courses().stream()
+                    .flatMap(course -> course.sessions().stream())
+                    .filter(session -> session.status().equals("ABSENT")).findFirst()
+                    .ifPresent(session -> requests.correction(account.getId(), session.attendanceRecordId(),
+                            "I was in class for the whole lecture but was marked absent."));
         });
     }
 }

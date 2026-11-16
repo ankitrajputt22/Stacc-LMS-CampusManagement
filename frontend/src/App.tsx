@@ -15,6 +15,9 @@ const ErpHomePage = lazy(() => import('./erp/ErpHomePage').then((module) => ({ d
 const ErpProfilePage = lazy(() => import('./erp/ErpProfilePage').then((module) => ({ default: module.ErpProfilePage })))
 const ErpTimetablePage = lazy(() => import('./erp/ErpTimetablePage').then((module) => ({ default: module.ErpTimetablePage })))
 const ErpDegreeProgressPage = lazy(() => import('./erp/ErpDegreeProgressPage').then((module) => ({ default: module.ErpDegreeProgressPage })))
+const ErpAttendancePage = lazy(() => import('./erp/ErpAttendancePage').then((module) => ({ default: module.ErpAttendancePage })))
+const ErpCourseAttendancePage = lazy(() => import('./erp/ErpCourseAttendancePage').then((module) => ({ default: module.ErpCourseAttendancePage })))
+const ErpRequestsPage = lazy(() => import('./erp/ErpRequestsPage').then((module) => ({ default: module.ErpRequestsPage })))
 const ErpAcademicsPage = lazy(() => import('./erp/ErpAcademicsPage').then((module) => ({ default: module.ErpAcademicsPage })))
 const AcademicProfilePage = lazy(() => import('./pages/AcademicProfilePage').then((module) => ({ default: module.AcademicProfilePage })))
 const CourseFilesPage = lazy(() => import('./pages/CourseFilesPage').then((module) => ({ default: module.CourseFilesPage })))
@@ -202,7 +205,9 @@ function App() {
           <Route path="erp/academics/timetable" element={<ErpTimetablePage />} />
           <Route path="erp/academics/degree-progress" element={<ErpDegreeProgressPage />} />
           <Route path="erp/timetable" element={<ErpTimetablePage teaching />} />
-          <Route path="erp/attendance" element={<StudentAttendancePage />} />
+          <Route path="erp/attendance" element={<ErpAttendancePage />} />
+          <Route path="erp/attendance/:courseOfferingId" element={<ErpCourseAttendancePage />} />
+          <Route path="erp/requests" element={<ErpRequestsPage />} />
           <Route path="erp/exams" element={<StudentResultsPage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
           <Route path="academic/results" element={<StudentResultsPage />} />

@@ -83,6 +83,8 @@ const navigationSections: readonly NavigationSection[] = [
     items: [
       { label: 'Academic Admin', to: '/admin/academic', icon: 'academics' },
       { label: 'Users', to: '/admin/users', icon: 'clubs' },
+      // Medical leave, attendance corrections, and revaluations; the backend checks ERP_REQUEST_MANAGE.
+      { label: 'Requests', to: '/erp/requests', icon: 'assignments' },
       { label: 'Hostel Management', to: '/admin/hostel', icon: 'hostel' },
       { label: 'Campus Management', to: '/admin/campus', icon: 'campus' },
       // Categories and committees only; cases stay with their committees.

@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AcademicStandingService {
 
-    public record CourseGrade(String courseCode, String courseName, CourseType courseType, BigDecimal credits,
+    public record CourseGrade(Long courseResultId, String courseCode, String courseName, CourseType courseType, BigDecimal credits,
             BigDecimal internalMarks, BigDecimal internalMax, BigDecimal externalMarks, BigDecimal externalMax,
             BigDecimal marksObtained, BigDecimal maxMarks, String grade, BigDecimal gradePoints, boolean passed) {
     }
@@ -93,7 +93,7 @@ public class AcademicStandingService {
         var grade = grades.gradeOf(result.getGradeCode(), result.getMarksObtained(), result.getMaxMarks());
         String shown = result.getGradeCode() != null ? result.getGradeCode() : grade.map(GradeScale.Grade::code).orElse(null);
         boolean passed = grade.map(GradeScale.Grade::passing).orElse(false);
-        return new CourseGrade(course.getCode(), course.getName(), course.getCourseType(), course.getCredits(),
+        return new CourseGrade(result.getId(), course.getCode(), course.getName(), course.getCourseType(), course.getCredits(),
                 result.getInternalMarks(), result.getInternalMax(), result.getExternalMarks(), result.getExternalMax(),
                 result.getMarksObtained(), result.getMaxMarks(), shown, grade.map(GradeScale.Grade::points).orElse(null), passed);
     }

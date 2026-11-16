@@ -9,6 +9,8 @@ export const queryKeys = {
     timetable: () => ['erp', 'timetable'] as const,
     degreeProgress: () => ['erp', 'degree-progress'] as const,
     standing: () => ['erp', 'standing'] as const,
+    myRequests: () => ['erp', 'requests', 'mine'] as const,
+    queue: (kind: string, status: string, q: string) => ['erp', 'requests', 'queue', kind, status, q] as const,
   },
   me: {
     profile: () => ['me', 'profile'] as const,

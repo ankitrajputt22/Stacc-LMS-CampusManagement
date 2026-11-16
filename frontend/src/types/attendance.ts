@@ -68,6 +68,8 @@ export type StudentAttendanceSession = {
   heldAt: string
   topic: string | null
   status: 'PRESENT' | 'ABSENT'
+  /** The student's own record, for asking to correct an absence. */
+  attendanceRecordId: number
 }
 
 /** A student's finalized attendance in one course offering, from GET /api/v1/attendance/student/me. */

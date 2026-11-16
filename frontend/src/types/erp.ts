@@ -46,6 +46,7 @@ export type DegreeProgress = {
 }
 
 export type CourseGrade = {
+  courseResultId: number
   courseCode: string
   courseName: string
   courseType: CourseType
@@ -74,3 +75,27 @@ export type SemesterStanding = {
 
 /** Semesters latest first; the CGPA is null until some graded credit exists. */
 export type Standing = { semesters: SemesterStanding[]; cgpa: number | null; creditsEarned: number }
+
+export type RequestKind = 'MEDICAL_LEAVE' | 'ATTENDANCE_CORRECTION' | 'REVALUATION'
+export type RequestStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+
+/** A student's request to the ERP office, as the backend sends it. */
+export type StudentRequest = {
+  requestId: number
+  reference: string
+  kind: RequestKind
+  status: RequestStatus
+  requesterLoginId: string
+  courseCode: string | null
+  courseName: string | null
+  classHeldAt: string | null
+  fromDate: string | null
+  toDate: string | null
+  marksObtained: number | null
+  maxMarks: number | null
+  reason: string
+  outcome: string | null
+  decisionComment: string | null
+  createdAt: string
+  decidedAt: string | null
+}

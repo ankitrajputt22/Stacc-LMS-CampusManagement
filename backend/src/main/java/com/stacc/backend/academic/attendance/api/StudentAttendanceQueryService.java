@@ -86,7 +86,8 @@ public class StudentAttendanceQueryService {
                         record.getAttendanceSession().getId(),
                         record.getAttendanceSession().getHeldAt(),
                         record.getAttendanceSession().getTopic(),
-                        record.getStatus().name()))
+                        record.getStatus().name(),
+                        record.getId()))
                 .toList();
         return new StudentAttendanceResponse.Course(
                 offering.getId(),

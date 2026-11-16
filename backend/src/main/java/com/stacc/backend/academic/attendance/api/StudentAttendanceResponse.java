@@ -63,6 +63,9 @@ public record StudentAttendanceResponse(List<Course> courses) {
             String topic,
 
             @Schema(allowableValues = {"PRESENT", "ABSENT"}, example = "PRESENT")
-            String status) {
+            String status,
+
+            @Schema(description = "The student's own record, to ask for a correction of an absence.", example = "41")
+            Long attendanceRecordId) {
     }
 }
