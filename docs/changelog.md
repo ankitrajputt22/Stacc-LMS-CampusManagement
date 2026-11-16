@@ -43,6 +43,7 @@
 - **0.14.4:** exam paper sets from one blueprint, what the bank has per row, and AI drafts for short rows.
 - **0.14.5:** AI model answers for bank questions and rubric suggestions for assignments, shown only to the teacher.
 - **0.14.6:** one Teacher AI area per course with a tab per section, replacing the long AI tools page.
+- **0.15.1:** follow-ups within the page, Explain simpler and Give an example, and answers saved only when the student chooses.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

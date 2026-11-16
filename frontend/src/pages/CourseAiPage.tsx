@@ -5,6 +5,7 @@ import { hasAnyRole } from '../auth/roles'
 import { AiMessage } from '../ai/AiMessage'
 import { AskPanel } from '../ai/AskPanel'
 import { MyNotesPanel } from '../ai/MyNotesPanel'
+import { SavedAnswersPanel } from '../ai/SavedAnswersPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
 import { PracticePanel } from '../ai/PracticePanel'
 import { TopicSummaryPanel } from '../ai/TopicSummaryPanel'
@@ -70,6 +71,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
         <AskPanel lmsCourseId={course.lmsCourseId} modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))} />
+        <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
         <MyNotesPanel lmsCourseId={course.lmsCourseId} />
         <TopicSummaryPanel lmsCourseId={course.lmsCourseId} topics={topics} />
         <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />

@@ -1,8 +1,11 @@
 import type {
   AiAnswer,
+  AiAnswerStyle,
   AiAskMode,
   AiAssessmentDraft,
   AiAssessmentDraftInput,
+  AiCitation,
+  AiFollowUpTurn,
   AiJob,
   AiKnowledgeStatus,
   AiKnowledgeSync,
@@ -11,6 +14,7 @@ import type {
   AiQuestionBankDraft,
   AiQuizDraft,
   AiRubricSuggestion,
+  AiSavedAnswer,
   AiStudentNote,
   AiTeacherDocument,
   AiTopicSummary,
@@ -53,9 +57,15 @@ export async function askCourseAi(
   lmsCourseId: number,
   question: string,
   signal?: AbortSignal,
-  options: { mode?: AiAskMode; moduleId?: number | null } = {},
+  options: { mode?: AiAskMode; moduleId?: number | null; history?: AiFollowUpTurn[]; style?: AiAnswerStyle } = {},
 ): Promise<AiAnswer> {
-  const body = { question, mode: options.mode ?? 'COURSE', ...(options.moduleId ? { moduleId: options.moduleId } : {}) }
+  const body = {
+    question,
+    mode: options.mode ?? 'COURSE',
+    ...(options.moduleId ? { moduleId: options.moduleId } : {}),
+    ...(options.history && options.history.length > 0 ? { history: options.history } : {}),
+    ...(options.style && options.style !== 'NORMAL' ? { style: options.style } : {}),
+  }
   return (await apiClient.post<AiAnswer>(`/lms/courses/${lmsCourseId}/ai/ask`, body, { signal })).data
 }
 
@@ -162,3 +172,22 @@ export async function suggestRubric(assignmentId: number, criteriaCount: number,
   return (await apiClient.post<AiRubricSuggestion>(`/lms/faculty/ai/assignments/${assignmentId}/rubric-suggestion`, { criteriaCount },
     { signal })).data
 }
+
+/** The signed-in student's saved answers in the course, newest first (v0.15.1). */
+export async function getSavedAnswers(lmsCourseId: number, signal?: AbortSignal): Promise<AiSavedAnswer[]> {
+  return (await apiClient.get<AiSavedAnswer[]>(`/lms/courses/${lmsCourseId}/ai/saved-answers`, { signal })).data
+}
+
+/** Saves an answer; the backend rebuilds its sources from what the student may use now. */
+export async function saveAnswer(lmsCourseId: number, question: string, answer: string, citations: AiCitation[]): Promise<AiSavedAnswer> {
+  const sources = citations.map((citation) => ({
+    sourceType: citation.sourceType, sourceId: citation.sourceId, pageNumber: citation.pageNumber, slideNumber: citation.slideNumber,
+  }))
+  return (await apiClient.post<AiSavedAnswer>(`/lms/courses/${lmsCourseId}/ai/saved-answers`, { question, answer, sources })).data
+}
+
+/** Deletes a saved answer for good. */
+export async function deleteSavedAnswer(lmsCourseId: number, savedAnswerId: number): Promise<void> {
+  await apiClient.delete(`/lms/courses/${lmsCourseId}/ai/saved-answers/${savedAnswerId}`)
+}
+

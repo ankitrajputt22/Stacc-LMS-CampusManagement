@@ -158,10 +158,13 @@ class LearningService:
 
     def _generate(self, task: str, context: _Context, output: type[Output], temperature: float,
                   parameters: dict, usable: Callable[[Output], bool] = lambda _: True,
-                  question: str | None = None, teacher_note: str | None = None) -> Output | None:
+                  question: str | None = None, teacher_note: str | None = None,
+                  history: tuple[tuple[str, str], ...] = (), style: str | None = None) -> Output | None:
         """Valid output, or None when two attempts gave valid JSON that was still unusable."""
         system = prompts.system_prompt(task, parameters)
-        user = prompts.user_prompt(context.for_prompt(), question=question, teacher_note=teacher_note)
+        if style in prompts.STYLES:
+            system += "\n" + prompts.STYLES[style]
+        user = prompts.user_prompt(context.for_prompt(), question=question, teacher_note=teacher_note, history=history)
         schema = inline_schema(output)
         parsed_any = False
         for attempt in range(2):
@@ -185,14 +188,18 @@ class LearningService:
 
     def ask(self, course_key: str, request: schemas.AskRequest) -> schemas.AskResponse:
         insufficient = schemas.AskResponse(answer=None, insufficientContext=True, citations=[])
-        hits = self._search(self._scopes(course_key, request), request.question)
+        # A follow-up (v0.15.1) is searched together with the question it follows, so "and why?" still finds sources.
+        search_text = request.question if not request.history else request.history[-1].question + "\n" + request.question
+        hits = self._search(self._scopes(course_key, request), search_text)
         if not hits:
             return insufficient
         context = _Context(hits)
         result = self._generate(
-            "ask", context, schemas.AskModelOutput, self._settings.answer_temperature, {},
+            "ask", context, schemas.AskModelOutput, self._settings.answer_temperature, {"style": request.style.value,
+             "followsUp": request.history[-1].question if request.history else ""},
             usable=lambda out: out.insufficientContext or (bool(out.answer) and bool(context.citations(out.sourceIds))),
-            question=request.question)
+            question=request.question, history=tuple((turn.question, turn.answer) for turn in request.history),
+            style=request.style.value)
         if result is None or result.insufficientContext:
             return insufficient
         return schemas.AskResponse(answer=result.answer, insufficientContext=False,

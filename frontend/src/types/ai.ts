@@ -16,6 +16,15 @@ export type AiCitation = {
   pageId?: number | null
 }
 
+/** How to answer (v0.15.1). */
+export type AiAnswerStyle = 'NORMAL' | 'SIMPLER' | 'EXAMPLE'
+
+/** An earlier question and answer on the open page, sent with a follow-up; nothing is stored (v0.15.1). */
+export type AiFollowUpTurn = { question: string; answer: string }
+
+/** An AI answer the student chose to save (v0.15.1). */
+export type AiSavedAnswer = { id: number; question: string; answer: string; citations: AiCitation[]; savedAt: string }
+
 /** What a question searches (v0.13.9). */
 export type AiAskMode = 'COURSE' | 'COURSE_AND_NOTES' | 'NOTES_ONLY'
 

@@ -265,6 +265,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **One area.** The course navigation's Teacher AI item opens one area at `/teaching/:lmsCourseId/ai` with a tab per section, each its own address: Knowledge (status, the student assistant switch, refresh, and teacher-only documents), Question bank (`/ai/bank`, draft into the bank), Quizzes (`/ai/quizzes`, build a draft quiz), Assignments (`/ai/assignments`, the assessment draft and Use in assignment form), and More (`/ai/more`, links to the AI help on the Question bank, Rubrics, Exam papers, and Files pages).
 - It replaces the single long page of panels; every panel, route, and rule is unchanged.
 
+### Saving and follow-ups (v0.15.1, decision 6)
+
+- **No automatic history.** A conversation lives only on the open page. A follow-up sends up to three earlier turns (`history`, each a question up to 1,000 characters and an answer up to 2,000) with the new question; the AI service searches the follow-up together with the question it follows and fences the earlier turns as context, never instructions or sources. Nothing about them is stored or logged.
+- **Explain simpler and Give an example.** They ask the last question again with `style` `SIMPLER` or `EXAMPLE`, which adds one line to the task; the answer still needs real citations.
+- **Saved answers.** Save answer keeps one question and answer (`ai_saved_answers`, at most 50 per student and course under the account row lock, `AiSavedAnswerMySqlIT`), with its sources rebuilt by the server from the course's published content and the student's own notes; a teacher document or unknown source is dropped. Only the student reads them (`GET`/`POST /api/v1/lms/courses/{id}/ai/saved-answers`, `DELETE .../{savedAnswerId}`, the student AI rule), and Delete removes one for good.
+
 ### What a refresh does
 
 1. Faculty access is checked.

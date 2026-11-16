@@ -56,12 +56,25 @@ public final class AiServiceMessages {
     public record IndexRef(String indexKey, String indexFingerprint, List<SourceRef> allowedSources) {
     }
 
+    /**
+     * A question, with up to three earlier turns from the student's open page and a style (v0.15.1). The page sends the
+     * turns; nothing is stored.
+     */
     public record AskRequest(String indexFingerprint, String question, List<SourceRef> allowedSources,
-            List<IndexRef> additionalIndexes) {
+            List<IndexRef> additionalIndexes, List<Turn> history, String style) {
+
+        public AskRequest(String indexFingerprint, String question, List<SourceRef> allowedSources,
+                List<IndexRef> additionalIndexes) {
+            this(indexFingerprint, question, allowedSources, additionalIndexes, List.of(), "NORMAL");
+        }
 
         public AskRequest(String indexFingerprint, String question, List<SourceRef> allowedSources) {
             this(indexFingerprint, question, allowedSources, List.of());
         }
+    }
+
+    /** An earlier question and answer on the student's open page (v0.15.1). */
+    public record Turn(String question, String answer) {
     }
 
     public record AskResult(String answer, Boolean insufficientContext, List<Citation> citations) {

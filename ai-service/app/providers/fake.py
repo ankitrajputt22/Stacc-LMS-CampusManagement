@@ -65,14 +65,15 @@ class FakeModelProvider(ModelProvider):
 
     @staticmethod
     def _ask(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
-        question_words = set(words(parameters.get("question", "")))
+        question_words = set(words(parameters.get("question", "") + " " + parameters.get("followsUp", "")))
         supporting = [chunk for chunk in context if question_words & set(words(chunk.text + " " + chunk.title))]
         if not supporting:
             return {"insufficientContext": True, "answer": "", "sourceIds": []}
         best = supporting[0]
+        prefix = {"SIMPLER": "Simply put, ", "EXAMPLE": "For example, "}.get(parameters.get("style", ""), "")
         return {
             "insufficientContext": False,
-            "answer": f"According to {best.title}: {_first_sentence(best.text, 400)}",
+            "answer": f"{prefix}According to {best.title}: {_first_sentence(best.text, 400)}",
             "sourceIds": [chunk.ref for chunk in supporting[:2]],
         }
 

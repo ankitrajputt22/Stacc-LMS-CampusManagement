@@ -244,7 +244,7 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 
 | Phase | Name | Work |
 | --- | --- | --- |
-| ★ 0.15.1 | Saving and follow-ups | Explicit saving, follow-ups within the page, "Explain simpler" and "Give an example" (decision 6). |
+| ★ 0.15.1 | Saving and follow-ups | Explicit saving, follow-ups within the page, "Explain simpler" and "Give an example" (decision 6). Done (`V137`). |
 | 0.15.2 | Summaries | Module, topic, and document summaries in a few styles. |
 | 0.15.3 | Flashcards | Generated sets with spaced-repetition review. |
 | ★ 0.15.4 | Practice | One practice model for practice, mock exams, and viva, with scoring, mistake explanations, hint-only mode for open assignments, and AI off during an official quiz. |
@@ -298,4 +298,4 @@ The v0.4 specification keeps prerequisites, curriculum rules, elective groups, m
 | v0.12 Student services and career | Done (0.12.1 to 0.12.13) |
 | v0.16 Analytics and operations | Done (0.16.1 to 0.16.8) |
 | v1.0 Stable release | Done: released as `v1.0.0` |
-| v0.13 – v0.15 AI | v0.13 and v0.14 done; v0.15 later |
+| v0.13 – v0.15 AI | v0.13, v0.14, and 0.15.1 done; the rest later |
