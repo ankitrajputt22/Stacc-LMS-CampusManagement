@@ -124,6 +124,8 @@ A permission is added by a new migration only when the real feature it protects 
 | `ERP_REQUEST_SUBMIT` | `STUDENT` | Asking for medical leave, an attendance correction, or a revaluation, and cancelling one's own pending requests. Added by `V146`. |
 | `EXAM_SCHEDULE_VIEW_OWN` | `STUDENT` | Reading one's own published exams with hall and seat. Added by `V147`. |
 | `EXAM_MANAGE` | `ADMIN` | Building exam sessions: exams, seat plans, and publishing. Added by `V147`. |
+| `FEE_VIEW_OWN` | `STUDENT` | Reading one's own fees and payments, applying for scholarships, and asking for refunds. Added by `V148`. |
+| `FEE_MANAGE` | `ADMIN` | The accounts office: fee structures, recording payments, and deciding scholarships and refunds. Added by `V148`. |
 | `ERP_REQUEST_MANAGE` | `ADMIN` | The ERP office's queue: reading every request and approving or rejecting each once. Added by `V146`. |
 | `HOSTEL_MESS_MANAGE` | `ADMIN`, `WARDEN` | Managing the weekly mess menu and single-day changes, and reading meal feedback without names: the hostel office for every hostel, a warden for their own. Added by `V110`. |
 | `HOSTEL_NOTICE_MANAGE` | `ADMIN`, `WARDEN` | Writing, publishing, and archiving hostel notices: the hostel office for every hostel, a warden for their own. Added by `V109`. |

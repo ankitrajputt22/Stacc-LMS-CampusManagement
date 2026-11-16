@@ -98,6 +98,10 @@ import com.stacc.backend.academic.request.StudentRequestRepository;
 import com.stacc.backend.academic.exam.ExamSessionRepository;
 import com.stacc.backend.academic.exam.ExamSlotRepository;
 import com.stacc.backend.academic.exam.ExamSeatRepository;
+import com.stacc.backend.fees.FeeAdjustmentRepository;
+import com.stacc.backend.fees.FeePaymentRepository;
+import com.stacc.backend.fees.FeeStructureItemRepository;
+import com.stacc.backend.fees.FeeStructureRepository;
 import com.stacc.backend.identity.student.StudentProfileRepository;
 import com.stacc.backend.lms.ai.AiCourseKnowledgeIndexRepository;
 import com.stacc.backend.lms.announcement.LmsAnnouncementRepository;
@@ -261,6 +265,10 @@ import org.springframework.web.context.WebApplicationContext;
     ExamSessionRepository.class,
     ExamSlotRepository.class,
     ExamSeatRepository.class,
+    FeeStructureRepository.class,
+    FeeStructureItemRepository.class,
+    FeePaymentRepository.class,
+    FeeAdjustmentRepository.class,
     ProgramRepository.class,
     RoleRepository.class,
     SectionRepository.class,

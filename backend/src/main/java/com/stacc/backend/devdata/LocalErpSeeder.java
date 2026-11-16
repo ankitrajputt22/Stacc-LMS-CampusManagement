@@ -17,6 +17,9 @@ import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.offering.CourseOfferingRepository;
 import com.stacc.backend.academic.request.StudentRequestService;
 import com.stacc.backend.academic.exam.ExamService;
+import com.stacc.backend.fees.FeePayment;
+import com.stacc.backend.fees.FeeService;
+import com.stacc.backend.fees.FeeStructureItem;
 import com.stacc.backend.academic.attendance.api.StudentAttendanceQueryService;
 import com.stacc.backend.academic.result.AcademicStandingService;
 import com.stacc.backend.academic.timetable.ClassTimetableSlot.Kind;
@@ -91,11 +94,12 @@ public class LocalErpSeeder implements ApplicationRunner {
     private final StudentAttendanceQueryService attendance;
     private final AcademicStandingService standing;
     private final ExamService exams;
+    private final FeeService fees;
 
     public LocalErpSeeder(Environment environment, TransactionTemplate transaction, UserAccountRepository accounts,
             CourseEnrollmentRepository courseEnrollments, CourseOfferingRepository offerings, TimetableService timetable,
             DegreeProgressService degree, PersonProfileService people, StudentRequestService requests,
-            StudentAttendanceQueryService attendance, AcademicStandingService standing, ExamService exams) {
+            StudentAttendanceQueryService attendance, AcademicStandingService standing, ExamService exams, FeeService fees) {
         this.environment = environment;
         this.transaction = transaction;
         this.accounts = accounts;
@@ -108,6 +112,7 @@ public class LocalErpSeeder implements ApplicationRunner {
         this.attendance = attendance;
         this.standing = standing;
         this.exams = exams;
+        this.fees = fees;
     }
 
     @Override
@@ -121,6 +126,9 @@ public class LocalErpSeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> requests());
         transaction.executeWithoutResult(status -> examSession("student1", "B-12"));
         transaction.executeWithoutResult(status -> examSession("ece25001", "ECE-HALL-1"));
+        transaction.executeWithoutResult(status -> feeStructure("student1"));
+        transaction.executeWithoutResult(status -> feeStructure("ece25001"));
+        transaction.executeWithoutResult(status -> aaravsFees());
         LOGGER.info("Local ERP records ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
 
@@ -241,5 +249,45 @@ public class LocalErpSeeder implements ApplicationRunner {
                     }
                     exams.publish(sessionId);
                 }));
+    }
+
+    private static final List<FeeService.Item> BTECH_FEES = List.of(
+            new FeeService.Item(FeeStructureItem.Head.TUITION, new BigDecimal("60000")),
+            new FeeService.Item(FeeStructureItem.Head.EXAMINATION, new BigDecimal("4000")),
+            new FeeService.Item(FeeStructureItem.Head.LIBRARY, new BigDecimal("2000")),
+            new FeeService.Item(FeeStructureItem.Head.LABORATORY, new BigDecimal("5000")),
+            new FeeService.Item(FeeStructureItem.Head.HOSTEL, new BigDecimal("30000")),
+            new FeeService.Item(FeeStructureItem.Head.MESS, new BigDecimal("11500")));
+
+    // The program's fees for the session the student is enrolled in now, due on 15 Dec 2026, when none are set yet.
+    private void feeStructure(String loginId) {
+        accounts.findByLoginId(loginId).ifPresent(account -> courseEnrollments.findAllWithStudentByUserAccountId(account.getId()).stream()
+                .filter(enrollment -> enrollment.getStatus() == CourseEnrollmentStatus.ENROLLED).findFirst()
+                .ifPresent(enrollment -> {
+                    Long programId = enrollment.getSemesterEnrollment().getStudentProfile().getProgram().getId();
+                    Long sessionId = enrollment.getCourseOffering().getSemester().getAcademicSession().getId();
+                    if (fees.structure(programId, sessionId).items().isEmpty()) {
+                        fees.setStructure(programId, sessionId, java.time.LocalDate.of(2026, 12, 15), BTECH_FEES);
+                    }
+                }));
+    }
+
+    // Aarav has paid three instalments and holds a merit scholarship, leaving the rest due on 15 Dec.
+    private void aaravsFees() {
+        Long office = accounts.findByLoginId("admin1").map(UserAccount::getId).orElse(null);
+        accounts.findByLoginId("student1").ifPresent(account -> {
+            if (office == null || !fees.mine(account.getId()).payments().isEmpty()) {
+                return;
+            }
+            fees.recordPayment(office, "student1", new BigDecimal("40000"), FeePayment.Mode.BANK_TRANSFER, "BANK-2026-0841",
+                    java.time.LocalDate.of(2026, 8, 10));
+            fees.recordPayment(office, "student1", new BigDecimal("20000"), FeePayment.Mode.UPI, "UPI-2026-0976",
+                    java.time.LocalDate.of(2026, 9, 1));
+            fees.recordPayment(office, "student1", new BigDecimal("10000"), FeePayment.Mode.UPI, "UPI-2026-1102",
+                    java.time.LocalDate.of(2026, 11, 2));
+            Long scholarship = fees.applyForScholarship(account.getId(), "Merit Scholarship", new BigDecimal("10000"),
+                    "Top 5% of the department in the first year.").adjustmentId();
+            fees.decide(office, scholarship, true, "Awarded for 2026-27.");
+        });
     }
 }

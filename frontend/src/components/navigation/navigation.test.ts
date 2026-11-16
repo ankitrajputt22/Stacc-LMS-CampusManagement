@@ -17,6 +17,7 @@ describe('navigationFor', () => {
       'Academics',
       'Attendance',
       'Exams & Results',
+      'Fees',
     ])
   })
 
