@@ -23,7 +23,7 @@ test('a librarian catalogs a book and lends it, and the student sees the loan', 
   await librarian.getByLabel('Borrower’s college ID').fill('student1')
   await librarian.getByRole('button', { name: 'Lend', exact: true }).click()
   await expect(librarian.getByRole('status').filter({ hasText: 'Copy lent for two weeks.' })).toHaveCount(1)
-  await expect(librarian.getByRole('region', { name: 'Out on loan' }).getByText(barcode)).toBeVisible()
+  await expect(librarian.getByRole('table', { name: 'Out on loan' }).getByText(barcode)).toBeVisible()
 
   const student = await browser.newPage()
   await signIn(student, 'erp', 'student1')
