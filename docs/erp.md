@@ -12,6 +12,8 @@ Since v0.16 Stacc has one sign-in and one app. The ERP is a section of it beside
 | Attendance | `/erp/attendance` | Finalized attendance per course, with low attendance marked by the backend, and the student's medical leave and correction requests. `/erp/attendance/:courseOfferingId` lists each class with Request correction on an absence. |
 | Exams & Results | `/erp/exams` | Tabs: Exam schedule (published exams with hall and seat), Hall ticket (printable), Results (a semester's results with internal and external marks, grade, points, and SGPA; CGPA history), Grade cards (printable), and Revaluation. |
 | Marks Entry (faculty) | `/erp/marks` | Internal and external marks per student of an offering taught, saved as drafts and published together. |
+| Fees | `/erp/fees` | Tabs: Overview (total, paid, scholarship, due, next due date, instalments), Fee structure, Payments (history and printable receipts), Scholarships, and Refunds. |
+| Fees management (admin) | `/erp/fees-admin` | Fee structures per program and session, a student's ledger with Record payment, and scholarship and refund requests. |
 | Exams (admin) | `/erp/exam-admin` | A semester's exam sessions: exams with date, times, hall, and seats; seat plans; publishing. |
 | Timetable (faculty) | `/erp/timetable` | The classes a faculty member teaches. |
 | Requests (admin) | `/erp/requests` | The ERP office's queue: filter by kind, status, and college ID; review; approve or reject with a comment. |
@@ -45,3 +47,9 @@ An exam session belongs to one semester and starts as a draft. Admins (`ADMIN` w
 ## Marks entry
 
 Faculty save a result's internal and external marks with their maximums through the usual result route (`PUT /api/v1/results/faculty/course-offerings/{id}/enrollments/{id}`): all four parts or none, each within its maximum, adding up to the totals. The Marks Entry page works out the grade from the scale as a preview and saves it with the marks; results stay drafts until published.
+
+## Fees
+
+Fees are records only: there is no payment gateway, and nothing on a page takes money. A program's fee structure for an academic session lists fee heads (tuition, examination, library, laboratory, hostel, mess, other) with amounts and one due date; the accounts office (`ADMIN` with `FEE_MANAGE`) sets it under the program row lock, adding or changing heads. A student's fees are those of their program for the session they are enrolled in now. The office records each payment once (amount, mode, reference, date not in the future) with a receipt number such as `RCP-2026-000045`; payments are never changed or deleted.
+
+Students (`STUDENT` with `FEE_VIEW_OWN`, `GET /api/v1/erp/fees/me`) see their fees, payments, scholarships, and refunds. What is due is worked out on read: the total, less payments and approved scholarships, plus approved refunds; a negative due is a credit, and only that credit can be asked back as a refund. Students apply for scholarships and ask for refunds; the office approves or rejects each once (a rejection needs a comment). Deciding locks the request row and then the student's account row before reading the ledger, so two refunds can never both take the same credit (`FeeRefundMySqlIT`).

@@ -74,6 +74,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Timetable', to: '/erp/timetable', roles: ['FACULTY'], icon: 'calendar' },
       { label: 'Attendance', to: '/erp/attendance', roles: ['STUDENT'], icon: 'attendance' },
       { label: 'Exams & Results', to: '/erp/exams', roles: ['STUDENT'], icon: 'exams' },
+      { label: 'Fees', to: '/erp/fees', roles: ['STUDENT'], icon: 'fees' },
     ],
   },
   {
@@ -84,6 +85,7 @@ const navigationSections: readonly NavigationSection[] = [
       { label: 'Academic Admin', to: '/admin/academic', icon: 'academics' },
       { label: 'Users', to: '/admin/users', icon: 'clubs' },
       { label: 'Exams', to: '/erp/exam-admin', icon: 'calendar' },
+      { label: 'Fees Management', to: '/erp/fees-admin', icon: 'fees' },
       // Medical leave, attendance corrections, and revaluations; the backend checks ERP_REQUEST_MANAGE.
       { label: 'Requests', to: '/erp/requests', icon: 'assignments' },
       { label: 'Hostel Management', to: '/admin/hostel', icon: 'hostel' },

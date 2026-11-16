@@ -2,6 +2,9 @@ import { Link } from 'react-router'
 import { getMyAcademicProfile } from '../api/academicProfileApi'
 import { getMyAttendance } from '../api/attendanceApi'
 import { getMyStanding } from '../api/erpApi'
+import { getMyFees } from '../api/feesApi'
+import { rupees } from './money'
+import { formatDay } from './requestWords'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useAuth } from '../auth/AuthContext'
@@ -51,6 +54,8 @@ export function ErpHomePage() {
   )
   const attendance = useApiQuery(student ? queryKeys.attendance.mine() : null, getMyAttendance)
   const standing = useApiQuery(student ? queryKeys.erp.standing() : null, getMyStanding)
+  const fees = useApiQuery(student ? queryKeys.erp.myFees() : null, getMyFees)
+  const ledger = fees.status === 'loaded' ? fees.data : null
 
   const studentPart = academic.status === 'loaded' ? academic.data.student : null
   const low = attendance.status === 'loaded' ? attendance.data.courses.filter((course) => course.lowAttendance) : []
@@ -61,8 +66,13 @@ export function ErpHomePage() {
       <title>ERP · Stacc</title>
       <PageHeader title="ERP" description="Your academic, attendance, exams and fee information in one place." />
 
-      {low.length > 0 && (
+      {(low.length > 0 || (ledger && ledger.due > 0)) && (
         <div role="status" className="mb-6 space-y-3">
+          {ledger && ledger.due > 0 && (
+            <Banner tone={ledger.overdue ? 'danger' : 'warning'}>
+              {`Fee ${ledger.overdue ? 'overdue since' : 'instalment due'} ${ledger.dueDate ? formatDay(ledger.dueDate) : ''} — ${rupees(ledger.due)}`}
+            </Banner>
+          )}
           {low.map((course) => (
             <Banner key={course.courseOfferingId} tone="danger">
               {`Attendance below 75% in ${course.courseCode} — ${Math.round(course.attendancePercentage ?? 0)}%`}
@@ -101,6 +111,12 @@ export function ErpHomePage() {
               icon="exams"
               title="Exams & Results"
               summary={standing.status !== 'loaded' ? null : standing.data.cgpa !== null ? `CGPA ${Number(standing.data.cgpa).toFixed(2)}` : 'No results published yet'}
+            />
+            <Tile
+              to="/erp/fees"
+              icon="fees"
+              title="Fees"
+              summary={!ledger ? null : ledger.due > 0 ? `${rupees(ledger.due)} due` : ledger.total > 0 ? 'Paid in full' : 'No fees recorded yet'}
             />
           </>
         )}

@@ -26,6 +26,8 @@ const ErpRevaluationPage = lazy(() => import('./erp/ErpRevaluationPage').then((m
 const ErpExamAdminPage = lazy(() => import('./erp/ErpExamAdminPage').then((module) => ({ default: module.ErpExamAdminPage })))
 const ErpMarksCoursesPage = lazy(() => import('./erp/ErpMarksEntryPage').then((module) => ({ default: module.ErpMarksCoursesPage })))
 const ErpMarksEntryPage = lazy(() => import('./erp/ErpMarksEntryPage').then((module) => ({ default: module.ErpMarksEntryPage })))
+const ErpFeesPage = lazy(() => import('./erp/ErpFeesPage').then((module) => ({ default: module.ErpFeesPage })))
+const ErpFeesAdminPage = lazy(() => import('./erp/ErpFeesAdminPage').then((module) => ({ default: module.ErpFeesAdminPage })))
 const ErpAcademicsPage = lazy(() => import('./erp/ErpAcademicsPage').then((module) => ({ default: module.ErpAcademicsPage })))
 const AcademicProfilePage = lazy(() => import('./pages/AcademicProfilePage').then((module) => ({ default: module.AcademicProfilePage })))
 const CourseFilesPage = lazy(() => import('./pages/CourseFilesPage').then((module) => ({ default: module.CourseFilesPage })))
@@ -222,6 +224,12 @@ function App() {
           <Route path="erp/exams/grade-cards" element={<ErpGradeCardsPage />} />
           <Route path="erp/exams/revaluation" element={<ErpRevaluationPage />} />
           <Route path="erp/exam-admin" element={<ErpExamAdminPage />} />
+          <Route path="erp/fees" element={<ErpFeesPage />} />
+          <Route path="erp/fees/structure" element={<ErpFeesPage tab="structure" />} />
+          <Route path="erp/fees/payments" element={<ErpFeesPage tab="payments" />} />
+          <Route path="erp/fees/scholarships" element={<ErpFeesPage tab="scholarships" />} />
+          <Route path="erp/fees/refunds" element={<ErpFeesPage tab="refunds" />} />
+          <Route path="erp/fees-admin" element={<ErpFeesAdminPage />} />
           <Route path="erp/marks" element={<ErpMarksCoursesPage />} />
           <Route path="erp/marks/:courseOfferingId" element={<ErpMarksEntryPage />} />
           <Route path="academic/attendance" element={<StudentAttendancePage />} />
