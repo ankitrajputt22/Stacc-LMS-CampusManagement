@@ -67,7 +67,7 @@ function AssignmentUnavailable({ lmsCourseId }: { lmsCourseId: number | null }) 
 
 function Fact({ icon, term, children }: { icon: NavIconName; term: string; children: ReactNode }) {
   return (
-    <div className="flex min-w-0 gap-2.5 py-2 sm:pr-5">
+    <div className="flex min-w-0 gap-2.5 py-2">
       <NavIcon name={icon} className="mt-0.5 size-5 shrink-0 text-ink-muted" />
       <div className="min-w-0">
         <dt className="text-sm font-semibold text-ink">{term}</dt>
@@ -103,7 +103,7 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
           <span aria-hidden="true" className="h-9 w-1.5 shrink-0 rounded bg-teal-600" />
           {assignment.title}
         </h1>
-        <dl className="mt-3 grid gap-x-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 2xl:divide-x 2xl:divide-line [&>*:not(:first-child)]:2xl:pl-5">
+        <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-1">
           <Fact icon="calendar" term="Due">
             <time dateTime={assignment.dueAt}>{formatDateTime(assignment.dueAt)}</time>
             {isPast(assignment.dueAt, now) && <PastDueLabel />}

@@ -19,6 +19,8 @@ import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { parseCourseId } from '../courses/courseRoute'
+import { courseBanner } from '../courses/courseFactsLine'
+import { CourseSectionHeader } from '../courses/CourseSectionHeader'
 import { getCourseAssignments } from '../api/lmsAssignmentsApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
@@ -85,23 +87,10 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
     : []
   const topics = useMemo(() => publishedTopics(content), [content])
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <title>{`AI Study Assistant · ${course.courseName} · Stacc`}</title>
-      <PageHeader
-        breadcrumb={
-          <Breadcrumb
-            parent={[COURSES, { to: `/courses/${course.lmsCourseId}`, label: course.courseName }]}
-            current="AI Study Assistant"
-          />
-        }
-        eyebrow={
-          <>
-            {course.courseCode}
-            <span aria-hidden="true"> · </span>
-            <span className="sr-only">, </span>
-            {course.courseName}
-          </>
-        }
+      <CourseSectionHeader
+        course={courseBanner(course)}
         title="AI Study Assistant"
         description="Ask, summarise, practise, and plan from your published course materials."
       />
