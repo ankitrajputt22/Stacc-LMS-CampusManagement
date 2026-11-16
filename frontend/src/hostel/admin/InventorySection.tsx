@@ -179,7 +179,7 @@ export function InventorySection() {
                             <p className="mt-1 text-sm font-semibold break-words text-ink">{row.name}</p>
                             {row.description && <p className="text-sm break-words text-ink-muted">{row.description}</p>}
                             <p className="mt-0.5 text-xs text-ink-muted">
-                              {row.roomCount} rooms · {row.activeBedCount} active beds · {row.occupiedBedCount} occupied
+                              {row.roomCount} {row.roomCount === 1 ? 'room' : 'rooms'} · {row.activeBedCount} active {row.activeBedCount === 1 ? 'bed' : 'beds'} · {row.occupiedBedCount} occupied
                             </p>
                           </div>
                           <div className="flex flex-wrap gap-2">
