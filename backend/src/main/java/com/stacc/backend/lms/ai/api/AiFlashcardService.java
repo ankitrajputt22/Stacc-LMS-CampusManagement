@@ -19,6 +19,8 @@ import com.stacc.backend.lms.ai.AiServiceMessages;
 import com.stacc.backend.lms.ai.AiServiceMessages.FlashcardResult;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
 import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.ai.mastery.AiLearningEvidence;
+import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.ai.control.AiRequestGate;
 import com.stacc.backend.lms.ai.control.AiRequestLogEntry;
 import com.stacc.backend.lms.ai.flashcards.AiFlashcard;
@@ -47,12 +49,14 @@ public class AiFlashcardService {
     private final AiRequestGate gate;
     private final AiFlashcardStore store;
     private final AiQuizPause quizPause;
+    private final AiMasteryService mastery;
     private final EngagementProperties college;
     private final Clock clock;
 
     public AiFlashcardService(LmsStudentAccessService studentAccess, AiCourseControlService controls, AiKnowledgeSources sources,
             AiKnowledgeRecords records, AiServiceClient client, AiRequestGate gate, AiFlashcardStore store,
-            EngagementProperties college, Clock clock, AiQuizPause quizPause) {
+            EngagementProperties college, Clock clock, AiQuizPause quizPause, AiMasteryService mastery) {
+        this.mastery = mastery;
         this.quizPause = quizPause;
         this.studentAccess = studentAccess;
         this.controls = controls;
@@ -77,7 +81,15 @@ public class AiFlashcardService {
 
     public AiFlashcard review(Long accountId, Long lmsCourseId, Long setId, Long cardId, ReviewRating rating) {
         requireCourse(accountId, lmsCourseId);
-        return store.review(accountId, lmsCourseId, setId, cardId, rating, today(), clock.instant());
+        AiFlashcard card = store.review(accountId, lmsCourseId, setId, cardId, rating, today(), clock.instant());
+        // Learning evidence (v0.15.5) for the page the card came from.
+        mastery.record(accountId, lmsCourseId, card.getPageId(), AiLearningEvidence.Kind.FLASHCARD_REVIEW, switch (rating) {
+            case AGAIN -> 0.0;
+            case HARD -> 0.4;
+            case GOOD -> 0.8;
+            case EASY -> 1.0;
+        });
+        return card;
     }
 
     public void delete(Long accountId, Long lmsCourseId, Long setId) {

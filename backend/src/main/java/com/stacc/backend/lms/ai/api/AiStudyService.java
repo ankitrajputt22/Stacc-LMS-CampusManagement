@@ -14,6 +14,8 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
 import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.ai.mastery.AiLearningEvidence;
+import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
@@ -62,12 +64,14 @@ public class AiStudyService {
     private final AiCourseControlService controls;
     private final AiRequestGate gate;
     private final AiQuizPause quizPause;
+    private final AiMasteryService mastery;
     private final LmsAssignmentRepository assignments;
     private final Clock clock;
 
     public AiStudyService(LmsStudentAccessService studentAccess, AiKnowledgeSources sources, AiKnowledgeRecords records,
             AiServiceClient client, AiStudentNoteIndexer notes, AiCourseControlService controls, AiRequestGate gate,
-            AiQuizPause quizPause, LmsAssignmentRepository assignments, Clock clock) {
+            AiQuizPause quizPause, LmsAssignmentRepository assignments, Clock clock, AiMasteryService mastery) {
+        this.mastery = mastery;
         this.quizPause = quizPause;
         this.assignments = assignments;
         this.clock = clock;
@@ -270,6 +274,9 @@ public class AiStudyService {
             }
             java.math.BigDecimal marks = result.marks().max(java.math.BigDecimal.ZERO)
                     .min(java.math.BigDecimal.valueOf(request.maxMarks())).setScale(1, java.math.RoundingMode.HALF_UP);
+            // Learning evidence (v0.15.5): the score as a share of the maximum, for the page the first source is on.
+            mastery.record(accountId, lmsCourseId, citations.get(0).pageId(), AiLearningEvidence.Kind.PRACTICE_ANSWER,
+                    marks.doubleValue() / request.maxMarks());
             String verdict = java.util.Set.of("CORRECT", "PARTLY_CORRECT", "INCORRECT").contains(result.verdict()) ? result.verdict() : null;
             return new AiEvaluateResponse(marks, request.maxMarks(), verdict, feedback,
                     mode == AiEvaluateRequest.Mode.VIVA ? AiResults.text(result.followUpQuestion(), 500) : null, citations, false);

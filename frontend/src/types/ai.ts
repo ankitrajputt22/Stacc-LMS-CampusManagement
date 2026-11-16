@@ -28,6 +28,17 @@ export type AiEvaluation = {
 }
 export type AiPracticeMode = 'PRACTICE' | 'MOCK_EXAM' | 'VIVA'
 
+/** One published page's mastery for the signed-in student (v0.15.5), worked out from their own evidence. */
+export type AiTopicMastery = {
+  topicId: number
+  title: string
+  level: 'NOT_STARTED' | 'LEARNING' | 'PRACTISING' | 'MASTERED'
+  mastery: number
+  confidence: number
+  evidence: number
+  lastPractisedAt: string | null
+}
+
 /** Flashcards (v0.15.3). */
 export type AiFlashcardSetSummary = { id: number; title: string; cards: number; dueToday: number }
 export type AiFlashcard = {

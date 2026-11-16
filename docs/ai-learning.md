@@ -290,6 +290,12 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Hint-only for open assignments.** A question about an assignment (`assignmentId` on ask: a published assignment of the course whose submission window is open now; otherwise 404 or 409) is always answered in the `HINT` style: hints, guiding questions, and pointers only, never a solution or text to hand in.
 - **AI off during an official quiz.** While the student has an attempt at a graded quiz of the course that still takes answers, `AiQuizPause` makes their questions, summaries, practice, marking, and flashcard making in that course answer 409. It is worked out live from the attempts; practice quizzes do not pause AI.
 
+### Mastery (v0.15.5)
+
+- **Evidence.** Each practice answer marked and each flashcard reviewed adds one `ai_learning_evidence` row: the student, the course, the published page it was about (a practice answer's first source, a card's source), the kind, and a score from 0 to 1 (the share of practice marks; Again 0, Hard 0.4, Good 0.8, Easy 1). Numbers only, never the question or answer. Recording is its own short transaction and never decides whether the request works.
+- **Mastery and confidence.** `Mastery` works them out on every read, never stored: the average score with the 20 newest pieces weighted, each older one 0.8 times the next; confidence n / (n + 3). Levels: Not started, Learning (under 0.5), Practising, and Mastered (at least 0.8 with confidence at least 0.6).
+- **The view.** My mastery on the AI Study Assistant lists every published page in course order with its level, percentage, and confidence in words (`GET /api/v1/lms/courses/{id}/ai/mastery`, the student AI rule; no AI needed). Only the student sees it; Clear my evidence (`DELETE` on the same route, confirmed first) removes their evidence in the course for good. It is the student's own view, so percentages are allowed (decision 7); no one else sees it, and nothing is ranked.
+
 ### What a refresh does
 
 1. Faculty access is checked.

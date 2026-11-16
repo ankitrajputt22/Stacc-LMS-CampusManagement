@@ -21,6 +21,8 @@ import com.stacc.backend.lms.ai.AiKnowledgeSources;
 import com.stacc.backend.lms.ai.AiServiceClient;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
 import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.ai.mastery.AiLearningEvidence;
+import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import com.stacc.backend.lms.assignment.LmsAssignmentRepository;
@@ -70,10 +72,11 @@ class AiStudyServiceTest {
     private final AiCourseControlService controls = mock(AiCourseControlService.class);
     private final AiRequestLogRepository requestLog = mock(AiRequestLogRepository.class);
     private final AiQuizPause quizPause = mock(AiQuizPause.class);
+    private final AiMasteryService mastery = mock(AiMasteryService.class);
     private final LmsAssignmentRepository assignmentRepository = mock(LmsAssignmentRepository.class);
     private final AiStudyService service = new AiStudyService(access, sources, records, client, notes, controls,
             new AiRequestGate(new AiRequestLimiter(new AiLimitProperties(4, java.time.Duration.ofSeconds(5), null)), requestLog,
-                    client, java.time.Clock.systemUTC()), quizPause, assignmentRepository, java.time.Clock.systemUTC());
+                    client, java.time.Clock.systemUTC()), quizPause, assignmentRepository, java.time.Clock.systemUTC(), mastery);
 
     private static Citation topicCitation(long id) {
         return new Citation("TOPIC", id, id, "From the AI service", null, null, null);
@@ -186,6 +189,7 @@ class AiStudyServiceTest {
         assertThat(marked.marks()).isEqualByComparingTo("4.0");
         assertThat(marked.followUpQuestion()).isNull();
         assertThat(marked.citations()).isNotEmpty();
+        verify(mastery).record(STUDENT_A, COURSE, 1L, AiLearningEvidence.Kind.PRACTICE_ANSWER, 1.0);
 
         when(client.evaluate(anyString(), any())).thenReturn(new AiServiceMessages.EvaluateResult(BigDecimal.ONE, "INCORRECT",
                 "Uncited.", null, List.of(), false));
