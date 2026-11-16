@@ -52,6 +52,7 @@
 - **0.15.7:** study plans scheduled by code around deadlines and the student's calendar, added to the calendar and To-Do on request.
 - **0.15.8:** a student AI home across courses and a study area per course with a tab per section.
 - **AI study fixes:** recommendations and study plans skip assignments already handed in; adding a study plan to the calendar twice adds nothing new, and its own entries no longer count as busy days; viva follow-ups can be answered; empty mock exam answers score 0 without an AI check; every next step links to its page.
+- **0.15.11:** a fuller local college for testing: an ECE department with its head and teachers, 27 more students, coursework, attendance, and results.
 - **0.16.3:** department analytics for heads of department.
 - **0.16.4:** area analytics for hostel, helpdesk, campus, placement, library, and AI indexes.
 - **0.16.7:** monitoring: Prometheus metrics in an optional profile, short health paths, and a system health page.

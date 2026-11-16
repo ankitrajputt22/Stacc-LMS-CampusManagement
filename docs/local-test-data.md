@@ -152,3 +152,24 @@ The data lives in your local database. To start from an empty database with Dock
 - **A placement:** Acme Software's open Graduate Software Engineer placement.
 
 It only finds or creates, through the feature services, like the main seeder.
+
+## A fuller college (v0.15.11)
+
+`LocalCollegePopulation` runs inside the main seeder, after its data and in its own transaction, under the same profile and password. It gives every feature a realistic class to work with: full class lists, attendance percentages with gaps, class groups large enough for analytics (at least five), grading queues, and a second department with its own head. Names are made up; addresses use the reserved `.example` domain like the rest.
+
+**People.** Login IDs are college IDs for students and employee IDs for staff. Every account uses `STACC_TEST_PASSWORD`.
+
+| Login IDs | Who | Useful for testing |
+| --- | --- | --- |
+| `cse25004` to `cse25015` | Twelve Computer Science students (roll numbers `25CSE004` to `25CSE015`), section C of semester 3 | Class lists and attendance in CS301 with 15 students; warm-up hand-ins (some ungraded, two missing); linked list hand-ins; a published CS201 result from last semester each. `cse25008` misses most classes. |
+| `ece25001` to `ece25015` | Fifteen Electronics and Communication students (`25ECE001` to `25ECE015`), sections A (`001` to `008`) and B | Signals and Systems and Analog Electronic Circuits as published courses; problem set hand-ins and grades; five and three finalized classes; a published EC201 result each. `ece25005` and `ece25012` miss most classes. `ece25001`, `ece25006`, `ece25011`, and `ece25014` have hostel applications waiting for a decision. |
+| `emp2011` | Anil Deshpande, CSE | Co-teaches CS301 with `faculty1`. |
+| `emp2012` | Farah Siddiqui, CSE | Co-teaches CS304. |
+| `emp3001` | Prakash Raman, `FACULTY` and `HOD` | Heads ECE (department analytics with 15 students); teaches EC304, which has no LMS course yet. |
+| `emp3002` | Divya Srinivasan, ECE | Teaches EC301 Signals and Systems: two published units with plain and formatted pages, a syllabus, announcements, a past and a future assignment with a grading queue, and a draft. |
+| `emp3003` | Manoj Tiwari, ECE | Teaches EC302 (published, an open attendance class to take) and last semester's EC201. |
+| `emp3004` | Kavya Nair, ECE | Teaches EC303 (a draft LMS course) and the open elective EC305 (40 places, registration open). |
+
+**Also created:** the `ECE` department and `BTECH-ECE` program (24 credits a semester), its semesters 2 (last session, closed) and 3 (current, registration open), courses `EC201` to `EC305`, `emp3001` as head of ECE, two more finalized CS301 classes with the whole class, two ECE calendar events, three helpdesk tickets (open, in progress, and resolved), and two campus requests (a transport pass waiting for approval and an approved bonafide certificate).
+
+Attendance marks and marks are worked out from each student's login ID and place in the list, so a second run creates nothing and changes nothing.
