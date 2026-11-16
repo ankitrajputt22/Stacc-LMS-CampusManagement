@@ -12,5 +12,7 @@ export default defineConfig({
     // A public placeholder, so code that needs an API address can be imported. Tests never reach a server.
     env: { VITE_API_BASE_URL: 'http://localhost:8080/api' },
     restoreMocks: true,
+    // One jsdom per worker, each test file still isolated: about three times faster than a new jsdom per file.
+    pool: 'vmThreads',
   },
 })
