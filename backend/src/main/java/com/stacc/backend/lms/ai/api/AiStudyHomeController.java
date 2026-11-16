@@ -79,9 +79,11 @@ public class AiStudyHomeController {
             for (Mastery.Level level : Mastery.Level.values()) {
                 levels.put(level, 0);
             }
-            mastery.view(accountId, course.lmsCourseId()).forEach(topic -> levels.merge(topic.result().level(), 1, Integer::sum));
-            long due = flashcards.list(accountId, course.lmsCourseId(), today).stream().mapToLong(AiFlashcardStore.SetSummary::due).sum();
-            List<AiRecommendationService.Recommendation> next = recommendations.recommend(accountId, course.lmsCourseId());
+            List<AiMasteryService.TopicMastery> topics = mastery.view(accountId, course.lmsCourseId());
+            topics.forEach(topic -> levels.merge(topic.result().level(), 1, Integer::sum));
+            List<AiFlashcardStore.SetSummary> sets = flashcards.list(accountId, course.lmsCourseId(), today);
+            long due = sets.stream().mapToLong(AiFlashcardStore.SetSummary::due).sum();
+            List<AiRecommendationService.Recommendation> next = recommendations.recommend(accountId, course.lmsCourseId(), topics, sets);
             result.add(new CourseStudy(course.lmsCourseId(), course.courseCode(), course.courseName(), levels, due,
                     next.isEmpty() ? null : next.get(0)));
         }

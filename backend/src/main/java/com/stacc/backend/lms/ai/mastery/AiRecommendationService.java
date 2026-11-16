@@ -53,6 +53,17 @@ public class AiRecommendationService {
     @Transactional(readOnly = true)
     public List<Recommendation> recommend(Long accountId, Long lmsCourseId) {
         List<AiMasteryService.TopicMastery> topics = mastery.view(accountId, lmsCourseId);
+        return recommend(accountId, lmsCourseId, topics,
+                flashcards.list(accountId, lmsCourseId, clock.instant().atZone(college.zone()).toLocalDate()));
+    }
+
+    /**
+     * The same rules over a mastery view and flashcard sets the caller already read for the student, so a page that
+     * shows them too reads them once. The caller has checked the student's access through {@link AiMasteryService#view}.
+     */
+    @Transactional(readOnly = true)
+    public List<Recommendation> recommend(Long accountId, Long lmsCourseId, List<AiMasteryService.TopicMastery> topics,
+            List<AiFlashcardStore.SetSummary> sets) {
         Instant now = clock.instant();
         ZoneId zone = college.zone();
         List<Recommendation> result = new ArrayList<>();
@@ -63,7 +74,7 @@ public class AiRecommendationService {
                 .forEach(topic -> result.add(new Recommendation(Kind.PRACTISE_WEAK, topic.topicId(), "Practise " + topic.title(),
                         AdaptiveChoice.reason(topic.result()))));
         // 2. Flashcards due today.
-        flashcards.list(accountId, lmsCourseId, now.atZone(zone).toLocalDate()).stream().filter(set -> set.due() > 0).limit(1)
+        sets.stream().filter(set -> set.due() > 0).limit(1)
                 .forEach(set -> result.add(new Recommendation(Kind.REVIEW_FLASHCARDS, set.set().getId(), "Review " + set.set().getTitle(),
                         set.due() + (set.due() == 1 ? " card is" : " cards are") + " due today.")));
         // 3. Published assignments due within a week and not handed in yet.
