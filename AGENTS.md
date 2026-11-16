@@ -56,6 +56,7 @@
 - Maintain a coherent Stacc identity across the UI. Google Stitch may provide approved design references.
 - Frontend pages reuse the shared `AppLayout`. Do not create separate global navigation for each module.
 - Reuse `LoadingState`, `EmptyState`, and `ErrorState` for page states.
+- `App.tsx` loads every page except sign-in and the Dashboard on first use (`React.lazy`); the layouts wrap their outlet in `Suspense` with `LoadingState` and in `PageErrorBoundary`, so a failed page shows the shared error state, never a blank screen. Add new pages the same way. See `docs/frontend-layout.md`.
 - Build pages from the shared components in `frontend/src/ui` (`PageHeader`, `Card`, `Button`, `ButtonLink`, `TextField`, `TextAreaField`, `SelectField`, `Badge`, `Alert`, `LinkTabs`, `Tabs`, `DataTable`, `Pagination`, `Timeline` for every history or step list) and the class lists in `ui/styles.ts`, instead of writing new class lists per page. See `docs/ui-design.md`.
 - Avoid generic dashboard-template styling such as heavy gradients, glass effects, glows, and decorative animation.
 - App-wide backend tests extend `DatabaseFreeApiTest` and run without a database. When a new service needs repositories, list them there as stand-ins, or those tests cannot start.
