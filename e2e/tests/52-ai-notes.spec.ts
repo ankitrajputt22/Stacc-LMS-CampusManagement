@@ -57,7 +57,8 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await expect(myNotes.getByRole('listitem').filter({ hasText: NOTE })).toHaveCount(0)
 
   // The AI Study home (v0.15.8) lists the student's courses, each with a link to its study area.
-  await page.getByRole('navigation').getByRole('link', { name: 'AI Study' }).first().click()
-  await expect(page.getByRole('heading', { level: 1, name: 'AI Study' })).toBeVisible()
+  // Names match exactly: the course's own "AI Study Assistant" link and heading must not count.
+  await page.goto('/study')
+  await expect(page.getByRole('heading', { level: 1, name: 'AI Study', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: /^Open study area/ }).first()).toBeVisible()
 })
