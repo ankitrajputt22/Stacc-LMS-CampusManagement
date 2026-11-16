@@ -2,9 +2,9 @@ import { type FormEvent, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { getAdminCampusRequests, getAdminCampusServices } from '../../api/campusApi'
 import { useApiRequest } from '../../api/useApiRequest'
-import { SIGN_IN_AGAIN } from '../../approvals/approvalText'
+import { SIGN_IN_AGAIN, approvalStatusLabel, approvalTagClasses } from '../../approvals/approvalText'
 import { ActionButton } from '../../components/ActionButton'
-import { actionLinkClasses } from '../../components/actionStyles'
+import { primaryLinkClasses } from '../../components/actionStyles'
 import { AccessDeniedState } from '../../components/states/AccessDeniedState'
 import { EmptyState } from '../../components/states/EmptyState'
 import { ErrorState } from '../../components/states/ErrorState'
@@ -14,8 +14,8 @@ import { usePendingFocus } from '../../components/usePendingFocus'
 import { formatDateTime } from '../../courses/dates'
 import { Pager } from '../../support/Pager'
 import { border, fieldClasses } from '../../teaching/formStyles'
-import type { CampusRequestStatus } from '../../types/campus'
-import { RequestTags } from '../RequestTags'
+import type { AdminCampusRequestSummary, CampusRequestStatus } from '../../types/campus'
+import { DataTable } from '../../ui'
 import { REQUEST_STATUSES, requestStatusLabel } from '../campusText'
 
 const PAGE_SIZE = 20
@@ -73,30 +73,45 @@ export function RequestsSection() {
   } else {
     content = (
       <>
-        <ul aria-label="Campus service requests" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-          {requests.data.items.map((item) => (
-            <li key={item.requestId} className="px-4 py-3 sm:px-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm text-ink">{item.requestNumber}</span>
-                    <RequestTags status={item.status} approvalStatus={item.approvalStatus} />
-                  </div>
-                  <p className="mt-0.5 text-sm break-words text-ink">
-                    {item.requesterLoginId} · {item.serviceName}
-                  </p>
-                  <p className="text-sm break-words text-ink-muted">{item.subject}</p>
-                  <p className="text-xs text-ink-muted">
-                    Submitted <time dateTime={item.submittedAt}>{formatDateTime(item.submittedAt)}</time>
-                  </p>
-                </div>
-                <Link to={`/admin/campus/requests/${item.requestId}`} className={`${actionLinkClasses} shrink-0 self-start`}>
-                  Review<span className="sr-only">: {item.requestNumber}, {item.requesterLoginId}</span>
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-hidden rounded-panel border border-line bg-surface">
+          <DataTable<AdminCampusRequestSummary>
+            caption="Campus service requests"
+            rows={requests.data.items}
+            rowKey={(item) => item.requestId}
+            columns={[
+              { key: 'number', header: 'Request', primary: true, cell: (item) => <span className="font-mono">{item.requestNumber}</span> },
+              { key: 'requester', header: 'Requester', cell: (item) => item.requesterLoginId },
+              { key: 'service', header: 'Service', cell: (item) => item.serviceName },
+              { key: 'subject', header: 'Subject', cell: (item) => <span className="break-words">{item.subject}</span> },
+              {
+                key: 'status',
+                header: 'Request status',
+                cell: (item) => (
+                  <span className={approvalTagClasses(item.status)}>
+                    <span className="sr-only">Request status: </span>
+                    {requestStatusLabel(item.status)}
+                  </span>
+                ),
+              },
+              {
+                key: 'approval',
+                header: 'Approval',
+                cell: (item) =>
+                  item.approvalStatus ? <span className={approvalTagClasses(item.approvalStatus)}>{approvalStatusLabel(item.approvalStatus)}</span> : 'Not needed',
+              },
+              { key: 'submitted', header: 'Submitted', cell: (item) => <time dateTime={item.submittedAt}>{formatDateTime(item.submittedAt)}</time> },
+              {
+                key: 'review',
+                header: 'Action',
+                cell: (item) => (
+                  <Link to={`/admin/campus/requests/${item.requestId}`} className={primaryLinkClasses}>
+                    Review<span className="sr-only">: {item.requestNumber}, {item.requesterLoginId}</span>
+                  </Link>
+                ),
+              },
+            ]}
+          />
+        </div>
         <Pager
           page={requests.data.page}
           totalPages={requests.data.totalPages}

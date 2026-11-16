@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { type FormEvent, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { getApiError, getHttpStatus } from '../api/apiError'
@@ -134,23 +135,24 @@ export function ServicesSection() {
     content = <StatePanel><EmptyState title="No campus services are currently available." /></StatePanel>
   } else {
     content = (
-      <ul aria-label="Campus services" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
+      <ul aria-label="Campus services" className="space-y-3">
         {services.data.map((service) => (
-          <li key={service.serviceId} className="px-4 py-3 sm:px-5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold break-words text-ink">{service.name}</h3>
-                  {service.approvalRequired && <span className={plainTagClasses()}>Approval required</span>}
-                </div>
+          <li key={service.serviceId} className="rounded-panel border border-line bg-surface px-4 py-3 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <span aria-hidden="true" className="hidden size-12 shrink-0 items-center justify-center rounded-control bg-surface-muted text-ink-muted sm:flex">
+                <NavIcon name="documents" className="size-6" />
+              </span>
+              <div className="min-w-0 flex-1 sm:border-l sm:border-line sm:pl-4">
+                <h3 className="text-base font-bold break-words text-ink">{service.name}</h3>
                 {service.description && (
                   <p className="mt-0.5 text-sm leading-6 break-words whitespace-pre-wrap text-ink-muted">{service.description}</p>
                 )}
               </div>
+              {service.approvalRequired && <span className={`${plainTagClasses()} self-start sm:self-center`}>Approval required</span>}
               {open !== service.serviceId && (
-                <ActionButton className="shrink-0 self-start" onClick={() => setOpen(service.serviceId)}>
+                <Button className="shrink-0 self-start sm:self-center" onClick={() => setOpen(service.serviceId)}>
                   Request service<span className="sr-only">: {service.name}</span>
-                </ActionButton>
+                </Button>
               )}
             </div>
             {open === service.serviceId && <RequestForm service={service} onClose={() => setOpen(null)} />}
@@ -161,11 +163,12 @@ export function ServicesSection() {
   }
 
   return (
-    <section aria-labelledby="campus-services-heading">
-      <h2 id="campus-services-heading" className="text-base font-semibold text-ink">
+    <section aria-labelledby="campus-services-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <h2 id="campus-services-heading" className="text-xl font-bold text-portal-navy">
         Campus Services
       </h2>
-      <div className="mt-3">{content}</div>
+      <span aria-hidden="true" className="mt-1.5 block h-0.5 w-16 rounded bg-portal-cta" />
+      <div className="mt-4">{content}</div>
     </section>
   )
 }

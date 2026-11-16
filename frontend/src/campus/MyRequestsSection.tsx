@@ -12,7 +12,10 @@ import { StatePanel } from '../components/states/StatePanel'
 import { usePendingFocus } from '../components/usePendingFocus'
 import { formatDateTime } from '../courses/dates'
 import { Pager } from '../support/Pager'
-import { RequestTags } from './RequestTags'
+import { approvalStatusLabel, approvalTagClasses } from '../approvals/approvalText'
+import type { CampusRequestSummary } from '../types/campus'
+import { DataTable } from '../ui'
+import { requestStatusLabel } from './campusText'
 
 const PAGE_SIZE = 20
 
@@ -40,29 +43,39 @@ export function MyRequestsSection() {
   } else {
     content = (
       <>
-        <ul aria-label="My service requests" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-          {requests.data.items.map((item) => (
-            <li key={item.requestId} className="px-4 py-3 sm:px-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm text-ink">{item.requestNumber}</span>
-                    <RequestTags status={item.status} approvalStatus={item.approvalStatus} />
-                  </div>
-                  <p className="mt-0.5 text-sm break-words text-ink">
-                    {item.serviceName} · {item.subject}
-                  </p>
-                  <p className="text-xs text-ink-muted">
-                    Submitted <time dateTime={item.submittedAt}>{formatDateTime(item.submittedAt)}</time>
-                  </p>
-                </div>
-                <Link to={`/campus/requests/${item.requestId}`} className={`${actionLinkClasses} shrink-0 self-start`}>
-                  View<span className="sr-only"> request {item.requestNumber}</span>
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-hidden rounded-panel border border-line">
+          <DataTable<CampusRequestSummary>
+            caption="My service requests"
+            rows={requests.data.items}
+            rowKey={(item) => item.requestId}
+            columns={[
+              { key: 'number', header: 'Request', primary: true, cell: (item) => <span className="font-mono">{item.requestNumber}</span> },
+              { key: 'service', header: 'Service', cell: (item) => item.serviceName },
+              { key: 'subject', header: 'Subject', cell: (item) => <span className="break-words">{item.subject}</span> },
+              {
+                key: 'status',
+                header: 'Request status',
+                cell: (item) => (
+                  <span className={approvalTagClasses(item.status)}>
+                    <span className="sr-only">Request status: </span>
+                    {requestStatusLabel(item.status)}
+                  </span>
+                ),
+              },
+              { key: 'approval', header: 'Approval', cell: (item) => (item.approvalStatus ? approvalStatusLabel(item.approvalStatus) : 'Not needed') },
+              { key: 'submitted', header: 'Submitted', cell: (item) => <time dateTime={item.submittedAt}>{formatDateTime(item.submittedAt)}</time> },
+              {
+                key: 'view',
+                header: 'Action',
+                cell: (item) => (
+                  <Link to={`/campus/requests/${item.requestId}`} className={actionLinkClasses}>
+                    View<span className="sr-only"> request {item.requestNumber}</span>
+                  </Link>
+                ),
+              },
+            ]}
+          />
+        </div>
         <Pager
           page={requests.data.page}
           totalPages={requests.data.totalPages}
@@ -77,11 +90,12 @@ export function MyRequestsSection() {
   }
 
   return (
-    <section aria-labelledby="campus-requests-heading">
-      <h2 id="campus-requests-heading" className="text-base font-semibold text-ink">
+    <section aria-labelledby="campus-requests-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <h2 id="campus-requests-heading" className="text-xl font-bold text-portal-navy">
         My Service Requests
       </h2>
-      <div ref={contentRef} className="mt-3">
+      <span aria-hidden="true" className="mt-1.5 block h-0.5 w-16 rounded bg-portal-cta" />
+      <div ref={contentRef} className="mt-4">
         {content}
       </div>
     </section>

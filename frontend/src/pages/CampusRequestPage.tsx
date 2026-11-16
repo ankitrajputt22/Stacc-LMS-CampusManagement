@@ -8,7 +8,6 @@ import { approvalStatusLabel, refusalText, SIGN_IN_AGAIN } from '../approvals/ap
 import { RequestTags } from '../campus/RequestTags'
 import { requestStatusLabel } from '../campus/campusText'
 import { ActionButton } from '../components/ActionButton'
-import { Breadcrumb } from '../components/navigation/Breadcrumb'
 import { StatusConfirmation } from '../components/StatusConfirmation'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
@@ -24,28 +23,28 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
   const [confirming, setConfirming] = useState(false)
   return (
     <>
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-panel border border-line bg-surface p-4 text-sm lg:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-3 border-b border-line pb-4 text-[0.95rem] sm:flex sm:flex-wrap sm:gap-x-0 sm:[&>div]:pr-5 sm:[&>div:not(:last-child)]:mr-5 sm:[&>div:not(:last-child)]:border-r [&>div]:border-line">
         <div className="min-w-0">
-          <dt className="text-xs font-medium text-ink-muted">Service</dt>
+          <dt className="text-sm text-ink-muted">Service</dt>
           <dd className="break-words text-ink">{detail.serviceName}</dd>
         </div>
         <div>
-          <dt className="text-xs font-medium text-ink-muted">Request status</dt>
+          <dt className="text-sm text-ink-muted">Request status</dt>
           <dd className="text-ink">{requestStatusLabel(detail.status)}</dd>
         </div>
         <div>
-          <dt className="text-xs font-medium text-ink-muted">Submitted</dt>
+          <dt className="text-sm text-ink-muted">Submitted</dt>
           <dd className="text-ink"><time dateTime={detail.submittedAt}>{formatDateTime(detail.submittedAt)}</time></dd>
         </div>
         {detail.readyAt && !detail.completedAt && (
           <div>
-            <dt className="text-xs font-medium text-ink-muted">Ready since</dt>
+            <dt className="text-sm text-ink-muted">Ready since</dt>
             <dd className="text-ink"><time dateTime={detail.readyAt}>{formatDateTime(detail.readyAt)}</time></dd>
           </div>
         )}
         {detail.completedAt && (
           <div>
-            <dt className="text-xs font-medium text-ink-muted">Completed</dt>
+            <dt className="text-sm text-ink-muted">Completed</dt>
             <dd className="text-ink"><time dateTime={detail.completedAt}>{formatDateTime(detail.completedAt)}</time></dd>
           </div>
         )}
@@ -60,14 +59,18 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
         </p>
       )}
 
-      <section aria-labelledby="campus-request-subject" className="mt-4 rounded-panel border border-line bg-surface p-4">
-        <h2 id="campus-request-subject" className="text-sm font-semibold break-words text-ink">{detail.subject}</h2>
+      <section aria-labelledby="campus-request-subject" className="mt-5">
+        <p className="text-lg font-bold text-portal-navy">Subject</p>
+        <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
+        <h2 id="campus-request-subject" className="text-[0.95rem] break-words text-ink">{detail.subject}</h2>
+        <p className="mt-5 text-lg font-bold text-portal-navy">Details</p>
+        <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
         {/* Plain text: React shows it as text, never as HTML. */}
-        <p className="mt-1 text-sm leading-6 break-words whitespace-pre-wrap text-ink">{detail.details}</p>
+        <p className="text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{detail.details}</p>
       </section>
 
-      <section aria-labelledby="campus-request-approval" className="mt-4 rounded-panel border border-line bg-surface p-4">
-        <h2 id="campus-request-approval" className="text-sm font-semibold text-ink">Approval</h2>
+      <section aria-labelledby="campus-request-approval" className="mt-6 rounded-panel border border-line bg-surface-muted p-4">
+        <h2 id="campus-request-approval" className="text-lg font-bold text-ink">Approval</h2>
         {detail.approvalStatus ? (
           <>
             <p className="mt-1 text-sm text-ink">Approval: {approvalStatusLabel(detail.approvalStatus)}</p>
@@ -167,7 +170,13 @@ export function CampusRequestPage() {
   return (
     <>
       <title>{`${detail?.requestNumber ?? 'Service request'} · Campus · Stacc`}</title>
-      <Breadcrumb parent={{ to: '/campus', label: 'Campus' }} current={detail?.requestNumber} />
+      <div className="max-w-4xl rounded-panel border border-line bg-surface px-4 py-4 sm:px-6">
+      <Link
+        to="/campus/services"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-control font-medium text-stacc-primary hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
+      >
+        <span aria-hidden="true">←</span> Back to Campus services
+      </Link>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <h1 className="font-mono text-3xl font-bold tracking-tight text-portal-navy">{detail?.requestNumber ?? 'Service request'}</h1>
         {detail && <RequestTags status={detail.status} approvalStatus={detail.approvalStatus} />}
@@ -181,6 +190,7 @@ export function CampusRequestPage() {
         )}
       </div>
       <div className="mt-4">{content}</div>
+      </div>
     </>
   )
 }
