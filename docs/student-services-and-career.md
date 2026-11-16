@@ -24,3 +24,9 @@
 - **Placement policy:** one row. With "one accepted placement", a student who accepted a placement offer can neither apply to nor accept another placement.
 - **Applicant export:** CSV of the applicants who consented only (login ID, name, program, status, stage, resume label). It is built per request, never stored, with formula-like cells neutralised.
 - **Pages:** `/career` for students and `/placement` for the placement office.
+
+## Document pages (v0.16.13)
+
+- `/documents` has two tabs. My documents is a table (title with the verification code of an issued document, origin and Withdrawn, created, file and size, Download), with Upload a document (`/documents/upload`) and Request a certificate. Certificate requests (`/documents/requests`) lists each request (number, certificate, purpose with any decision note, requested, status, and Cancel request with a confirmation while requested); the form is `/documents/requests/new`.
+- `/admin/certificates` lists waiting requests as a table; each opens at `/admin/certificates/{requestId}` with its details beside Issue certificate (title and file, into the requester's documents) and Reason to refuse.
+- `/verify-document` is the public check on its own Stacc header: the code, Verify, and only whether it is authentic, its title, and its issue date.

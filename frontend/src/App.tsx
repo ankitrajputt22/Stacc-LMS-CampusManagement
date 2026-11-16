@@ -263,6 +263,9 @@ function App() {
           <Route path="id-card" element={<IdCardPage />} />
           <Route path="verify-id" element={<VerifyIdPage />} />
           <Route path="documents" element={<DocumentsPage />} />
+          <Route path="documents/upload" element={<DocumentsPage section="upload" />} />
+          <Route path="documents/requests" element={<DocumentsPage section="requests" />} />
+          <Route path="documents/requests/new" element={<DocumentsPage section="request" />} />
           <Route path="grievances" element={<GrievancesPage />} />
           <Route path="grievances/new" element={<GrievancesPage section="new" />} />
           <Route path="grievances/committee" element={<GrievancesPage section="committee" />} />
@@ -281,6 +284,7 @@ function App() {
           <Route path="admin/system" element={<SystemHealthPage />} />
           <Route path="admin/mentoring" element={<AdminMentoringPage />} />
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
+          <Route path="admin/certificates/:requestId" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />
           <Route path="placement" element={<PlacementPage />} />
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />
