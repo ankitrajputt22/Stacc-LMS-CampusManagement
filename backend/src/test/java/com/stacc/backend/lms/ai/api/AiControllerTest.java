@@ -137,6 +137,15 @@ class AiControllerTest extends DatabaseFreeApiTest {
     }
 
     @Test
+    void theStudyHomeIsForStudentsWithStudentAi() throws Exception {
+        assertThat(statusOf(get("/api/v1/lms/ai/study-home"), FACULTY)).isEqualTo(403);
+        assertThat(statusOf(get("/api/v1/lms/ai/study-home"), token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW"))).isEqualTo(403);
+        mockMvc.perform(get("/api/v1/lms/ai/study-home").header(HttpHeaders.AUTHORIZATION, STUDENT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
     void theStudentAccessSwitchNeedsAValue() throws Exception {
         assertThat(statusOf(json(put("/api/v1/lms/faculty/courses/7/ai/student-access"), "{}"), FACULTY)).isEqualTo(400);
     }

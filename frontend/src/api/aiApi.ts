@@ -5,6 +5,7 @@ import type {
   AiAssessmentDraft,
   AiAssessmentDraftInput,
   AiCitation,
+  AiCourseStudy,
   AiFlashcard,
   AiFlashcardSet,
   AiFlashcardSetSummary,
@@ -272,5 +273,10 @@ export async function planStudy(lmsCourseId: number, days: number, minutesPerDay
 /** Adds the plan's days to the personal calendar or its sessions to the To-Do list; answers how many were added. */
 export async function addStudyPlan(lmsCourseId: number, to: 'calendar' | 'todo', days: number, minutesPerDay: number): Promise<number> {
   return (await apiClient.post<{ added: number }>(`/lms/courses/${lmsCourseId}/ai/study-plan/${to}`, { days, minutesPerDay })).data.added
+}
+
+/** The student AI home: each course with mastery counts, flashcards due, and the next step (v0.15.8). */
+export async function getStudyHome(signal?: AbortSignal): Promise<AiCourseStudy[]> {
+  return (await apiClient.get<AiCourseStudy[]>('/lms/ai/study-home', { signal })).data
 }
 

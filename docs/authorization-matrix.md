@@ -364,6 +364,7 @@ services still check each record (owner, teacher, officer, warden, team) and ans
 | `/api/v1/library/resources` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
 | `/api/v1/library/titles` | GET | `(hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')) or (hasRole('LIBRARIAN') and hasAuthority('LIBRARY_MANAGE'))` | LibraryController |
 | `/api/v1/library/titles/{titleId}/hold` | POST | `hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('LIBRARY_USE')` | LibraryController |
+| `/api/v1/lms/ai/study-home` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyHomeController |
 | `/api/v1/lms/courses/{lmsCourseId}` | GET | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')` | LmsStudentCourseController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/ask` | POST | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiStudyController |
 | `/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets/{setId}` | DELETE | `hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('AI_STUDY_USE')` | AiFlashcardController |

@@ -306,6 +306,11 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Scheduled by code.** `StudyPlanner` plans the next 7 or 14 days within 30 to 240 minutes a day, halved on days with an entry in the student's own personal calendar. In order: a 10-minute flashcard review each day when the student has sets, two 45-minute sessions for each published assignment due in the window on the latest days before its due day, then 25 minutes for each weak page and each page not started, then 15 minutes for pages to refresh, each on the earliest day with room. No model is involved, and the plan is never stored (`POST /api/v1/lms/courses/{id}/ai/study-plan`, the student AI rule).
 - **On request only.** Add to my calendar (`.../study-plan/calendar`, also `CALENDAR_PERSONAL_USE`) creates one personal calendar entry per planned day. Add to my To-Do (`.../study-plan/todo`, also `TODO_VIEW`) saves the sessions (`ai_study_sessions`); each appears on the To-Do list (kind `STUDY`, for accounts holding `STUDENT` and `AI_STUDY_USE`) from its day until dismissed. Both work the plan out again on the server; a session already saved is skipped.
 
+### Student AI home (v0.15.8)
+
+- **One study area per course.** `/courses/:lmsCourseId/ai` has a tab per section, each its own address: Overview (What to do next, My mastery, Study plan), Ask (`/ai/ask`: Ask My Course and Saved answers), Summaries, Practice, Flashcards, and My notes.
+- **An overall AI study page.** AI Study (`/study`, in the Academics tray for `STUDENT`) shows one card per course the student may open now, from `GET /api/v1/lms/ai/study-home` (the student AI rule): pages at each mastery level, flashcards due today, and the first recommendation with its reason, with Open study area. It reads the same services as each course's study area; no AI is used and nothing is stored or ranked.
+
 ### What a refresh does
 
 1. Faculty access is checked.

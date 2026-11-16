@@ -120,6 +120,16 @@ export type AiStudyPlanDay = {
   sessions: { kind: 'ASSIGNMENT' | 'PRACTISE_WEAK' | 'START_PAGE' | 'REFRESH_PAGE' | 'FLASHCARDS'; targetId: number | null; title: string; minutes: number }[]
 }
 
+/** One course on the student AI home (v0.15.8). */
+export type AiCourseStudy = {
+  lmsCourseId: number
+  courseCode: string
+  courseName: string
+  pagesByLevel: Record<'NOT_STARTED' | 'LEARNING' | 'PRACTISING' | 'MASTERED', number>
+  flashcardsDue: number
+  nextStep: AiRecommendation | null
+}
+
 /** A suggestion of what to do next, from fixed rules, with its reason (v0.15.6). */
 export type AiRecommendation = {
   kind: 'PRACTISE_WEAK' | 'START_PAGE' | 'REVIEW_FLASHCARDS' | 'ASSIGNMENT_SOON' | 'REFRESH_PAGE'

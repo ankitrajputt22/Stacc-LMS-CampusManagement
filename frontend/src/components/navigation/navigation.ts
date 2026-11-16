@@ -42,6 +42,8 @@ const navigationSections: readonly NavigationSection[] = [
     icon: 'student',
     items: [
       { label: 'Courses', to: '/courses' },
+      // One AI study page across courses (v0.15.8); each course has its own study area.
+      { label: 'AI Study', to: '/study' },
       // Choosing courses for the semester while registration is open.
       { label: 'Registration', to: '/academic/registration' },
       // The student's academic records: one real link each, no separate menu.

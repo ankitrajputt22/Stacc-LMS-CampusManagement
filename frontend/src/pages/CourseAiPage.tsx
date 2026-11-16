@@ -25,7 +25,7 @@ import { useApiQuery } from '../api/useApiQuery'
 import { useLmsCourse } from '../courses/useLmsCourse'
 import { useLmsCourseContent } from '../courses/useLmsCourseContent'
 import type { LmsCourseContent, LmsCourseDetail } from '../types/lms'
-import { ButtonLink, PageHeader } from '../ui'
+import { ButtonLink, LinkTabs, PageHeader } from '../ui'
 
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
@@ -60,7 +60,20 @@ function summaryChoices(content: LmsCourseContent): SummaryChoices {
   }
 }
 
+/** The course's study sections (v0.15.8), each its own address. */
+const STUDY_SECTIONS = [
+  { key: '', label: 'Overview' },
+  { key: 'ask', label: 'Ask' },
+  { key: 'summaries', label: 'Summaries' },
+  { key: 'practice', label: 'Practice' },
+  { key: 'flashcards', label: 'Flashcards' },
+  { key: 'notes', label: 'My notes' },
+] as const
+
 function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsCourseContent }) {
+  const { section } = useParams()
+  const root = `/courses/${course.lmsCourseId}/ai`
+  const current = STUDY_SECTIONS.find((choice) => choice.key === (section ?? '')) ?? STUDY_SECTIONS[0]
   // Assignments still due, for hint-only help (v0.15.4); the backend decides whether each is open.
   const assignments = useApiQuery(queryKeys.lms.courseAssignments(course.lmsCourseId),
     (signal) => getCourseAssignments(course.lmsCourseId, signal))
@@ -88,25 +101,37 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
           </>
         }
         title="AI Study Assistant"
-        description="Ask questions based on your published course materials."
+        description="Ask, summarise, practise, and plan from your published course materials."
+      />
+      <LinkTabs
+        label="Study sections"
+        tabs={STUDY_SECTIONS.map((choice) => ({ to: choice.key ? `${root}/${choice.key}` : root, label: choice.label, end: true }))}
       />
       <div>
         <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
-        <RecommendationsPanel lmsCourseId={course.lmsCourseId} />
-        <AskPanel
-          lmsCourseId={course.lmsCourseId}
-          modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))}
-          assignments={dueAssignments}
-        />
-        <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
-        <MyNotesPanel lmsCourseId={course.lmsCourseId} />
-        <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
-        <FlashcardsPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />
-        <MasteryPanel lmsCourseId={course.lmsCourseId} />
-        <StudyPlanPanel lmsCourseId={course.lmsCourseId} />
-        <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />
+        {current.key === '' && (
+          <>
+            <RecommendationsPanel lmsCourseId={course.lmsCourseId} />
+            <MasteryPanel lmsCourseId={course.lmsCourseId} />
+            <StudyPlanPanel lmsCourseId={course.lmsCourseId} />
+          </>
+        )}
+        {current.key === 'ask' && (
+          <>
+            <AskPanel
+              lmsCourseId={course.lmsCourseId}
+              modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))}
+              assignments={dueAssignments}
+            />
+            <SavedAnswersPanel lmsCourseId={course.lmsCourseId} />
+          </>
+        )}
+        {current.key === 'summaries' && <SummaryPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />}
+        {current.key === 'practice' && <PracticePanel lmsCourseId={course.lmsCourseId} topics={topics} />}
+        {current.key === 'flashcards' && <FlashcardsPanel lmsCourseId={course.lmsCourseId} choices={summaryChoices(content)} />}
+        {current.key === 'notes' && <MyNotesPanel lmsCourseId={course.lmsCourseId} />}
       </div>
     </div>
   )
