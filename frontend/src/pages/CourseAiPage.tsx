@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
@@ -77,8 +77,10 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
   // Assignments still due, for hint-only help (v0.15.4); the backend decides whether each is open.
   const assignments = useApiQuery(queryKeys.lms.courseAssignments(course.lmsCourseId),
     (signal) => getCourseAssignments(course.lmsCourseId, signal))
+  // The time the page opened; a deadline passing while it is open only matters to the backend.
+  const [openedAt] = useState(() => Date.now())
   const dueAssignments = assignments.status === 'loaded'
-    ? assignments.data.filter((assignment) => new Date(assignment.dueAt).getTime() > Date.now())
+    ? assignments.data.filter((assignment) => new Date(assignment.dueAt).getTime() > openedAt)
       .map((assignment) => ({ id: assignment.id, title: assignment.title }))
     : []
   const topics = useMemo(() => publishedTopics(content), [content])
