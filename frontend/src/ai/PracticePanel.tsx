@@ -11,6 +11,9 @@ import { hintClasses, labelClasses, panelClasses } from './aiStyles'
 import { type CourseTopicChoice, CourseTopicOptions } from './CourseTopicOptions'
 import { useAiAction } from './useAiAction'
 
+/** The topic choice for adaptive practice (v0.15.6): the backend picks a page weighted to the student's weaker ones. */
+const ADAPTIVE = 'adaptive'
+
 /** Practice marks are out of this; they are practice only, never an official mark. */
 const MARKS_EACH = 4
 
@@ -85,7 +88,8 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
   async function start(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const set = await generate.run((signal) =>
-      generateCoursePracticeQuestions(lmsCourseId, Number(count), topicId === '' ? null : Number(topicId), signal),
+      generateCoursePracticeQuestions(lmsCourseId, Number(count), topicId === '' || topicId === ADAPTIVE ? null : Number(topicId),
+        signal, topicId === ADAPTIVE),
     )
     if (set) {
       setQuestions(set.insufficientContext ? [] : set.questions)
@@ -93,7 +97,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
       setResults(set.questions.map(() => undefined))
       setCurrent(0)
       setActiveMode(mode)
-      setNote(null)
+      setNote(set.reason && !set.insufficientContext ? `Chosen for you: ${topics.find((topic) => topic.id === set.chosenTopicId)?.title ?? 'a page'}. ${set.reason}` : null)
     }
   }
 
@@ -181,6 +185,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
           <select id={`${id}-topic`} value={topicId} onChange={(event) => setTopicId(event.target.value)}
             className={`${fieldClasses} ${border(false)} h-11 sm:h-9`}>
             <option value="">The whole course</option>
+            <option value={ADAPTIVE}>Focus on what I need</option>
             <CourseTopicOptions topics={topics} />
           </select>
         </div>

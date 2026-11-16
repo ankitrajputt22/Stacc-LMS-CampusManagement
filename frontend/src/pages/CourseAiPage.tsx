@@ -6,6 +6,7 @@ import { AiMessage } from '../ai/AiMessage'
 import { AskPanel } from '../ai/AskPanel'
 import { FlashcardsPanel } from '../ai/FlashcardsPanel'
 import { MasteryPanel } from '../ai/MasteryPanel'
+import { RecommendationsPanel } from '../ai/RecommendationsPanel'
 import { MyNotesPanel } from '../ai/MyNotesPanel'
 import { SavedAnswersPanel } from '../ai/SavedAnswersPanel'
 import type { CourseTopicChoice } from '../ai/CourseTopicOptions'
@@ -92,6 +93,7 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
         <AiMessage tone="warning">
           AI answers may contain mistakes. Check the cited course sources.
         </AiMessage>
+        <RecommendationsPanel lmsCourseId={course.lmsCourseId} />
         <AskPanel
           lmsCourseId={course.lmsCourseId}
           modules={content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title }))}

@@ -296,6 +296,11 @@ The old `POST …/ai/sync`, which refreshes inside the request, still works but 
 - **Mastery and confidence.** `Mastery` works them out on every read, never stored: the average score with the 20 newest pieces weighted, each older one 0.8 times the next; confidence n / (n + 3). Levels: Not started, Learning (under 0.5), Practising, and Mastered (at least 0.8 with confidence at least 0.6).
 - **The view.** My mastery on the AI Study Assistant lists every published page in course order with its level, percentage, and confidence in words (`GET /api/v1/lms/courses/{id}/ai/mastery`, the student AI rule; no AI needed). Only the student sees it; Clear my evidence (`DELETE` on the same route, confirmed first) removes their evidence in the course for good. It is the student's own view, so percentages are allowed (decision 7); no one else sees it, and nothing is ranked.
 
+### Adaptive practice and recommendations (v0.15.6)
+
+- **Adaptive practice.** Practice's "Focus on what I need" (`adaptive: true`) lets `AdaptiveChoice` pick the page: weighted at random by need (a page not started weighs 1, others 1 minus mastery, at least 0.05), from the student's own mastery. The reply names the page and says why in words.
+- **Recommendations.** `GET /api/v1/lms/courses/{id}/ai/mastery/recommendations` (the student AI rule; no AI) gives up to six suggestions from fixed rules, in this order: the two weakest pages (Learning), flashcards due today, a published assignment due within 7 days, up to two pages not started, and a mastered page not practised for 21 days. Each has a reason in words and links to the page or assignment, which check access again. Worked out on read; nothing is stored or ranked.
+
 ### What a refresh does
 
 1. Faculty access is checked.

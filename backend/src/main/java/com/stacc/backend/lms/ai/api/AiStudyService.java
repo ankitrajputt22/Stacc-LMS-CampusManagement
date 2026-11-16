@@ -14,6 +14,7 @@ import com.stacc.backend.lms.ai.AiServiceMessages.AskRequest;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexRef;
 import com.stacc.backend.lms.ai.control.AiCourseControlService;
 import com.stacc.backend.lms.ai.control.AiQuizPause;
+import com.stacc.backend.lms.ai.mastery.AdaptiveChoice;
 import com.stacc.backend.lms.ai.mastery.AiLearningEvidence;
 import com.stacc.backend.lms.ai.mastery.AiMasteryService;
 import com.stacc.backend.lms.assignment.AssignmentSubmissionWindow;
@@ -49,6 +50,7 @@ public class AiStudyService {
 
     static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
     static final String TOPIC_UNAVAILABLE = "Topic not found or unavailable.";
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
     static final String QUESTION_LENGTH = "Enter a question of 2 to 1,000 characters.";
     static final String MODULE_UNAVAILABLE = "Module not found or unavailable.";
     static final String FILE_UNAVAILABLE = "File not found or unavailable.";
@@ -197,9 +199,13 @@ public class AiStudyService {
 
     private AiPracticeResponse practiceSet(Long accountId, Long lmsCourseId, AiPracticeRequest request) {
         int count = request.questionCountOrDefault();
-        AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, request.topicId());
+        // Adaptive practice (v0.15.6): the page is chosen by weakness from the student's own mastery.
+        AdaptiveChoice.Choice choice = Boolean.TRUE.equals(request.adaptive())
+                ? AdaptiveChoice.choose(mastery.view(accountId, lmsCourseId), RANDOM).orElse(null) : null;
+        Long topicId = choice != null ? Long.valueOf(choice.topicId()) : Boolean.TRUE.equals(request.adaptive()) ? null : request.topicId();
+        AiCourseKnowledge knowledge = readyKnowledge(accountId, lmsCourseId, topicId);
         PracticeResult result = call(() -> client.practice(AiCourseKeys.forLmsCourse(lmsCourseId),
-                new PracticeRequest(knowledge.fingerprint(), count, request.topicId(), knowledge.allowedSources())));
+                new PracticeRequest(knowledge.fingerprint(), count, topicId, knowledge.allowedSources())));
         List<AiPracticeQuestionResponse> questions = new ArrayList<>();
         if (result.questions() != null) {
             for (PracticeQuestion question : result.questions()) {
@@ -214,7 +220,8 @@ public class AiStudyService {
                 }
             }
         }
-        return new AiPracticeResponse(List.copyOf(questions), questions.isEmpty());
+        return new AiPracticeResponse(List.copyOf(questions), questions.isEmpty(), choice == null ? null : choice.topicId(),
+                choice == null ? null : choice.reason());
     }
 
     private AiCourseKnowledge readyKnowledge(Long accountId, Long lmsCourseId) {
