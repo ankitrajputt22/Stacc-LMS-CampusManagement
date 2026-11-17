@@ -68,3 +68,8 @@ For an account holding `STUDENT`, the Dashboard is the student dashboard (see `s
 ## Deployment note
 
 The app uses browser URLs such as `/courses`, so the production web server must serve `index.html` for unknown paths.
+
+## Account menu look
+
+The Account tray shows the person's name in bold with "Login ID:" and the roles under it, then the account pages as a
+plain list between dividers, and Sign out as the orange main button at the bottom.
