@@ -59,8 +59,8 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
   }
 
   return (
-    <div className="mt-3 rounded-control border border-line p-3 text-sm">
-      <p className="font-medium text-ink">Reviewing: {set.title}</p>
+    <div className="mt-4 rounded-panel border border-line p-4 text-[0.95rem] sm:p-5">
+      <p className="text-2xl font-bold text-ink">Reviewing: {set.title}</p>
       {!card ? (
         <p className="mt-2 text-ink-muted">
           {reviewed > 0
@@ -68,16 +68,25 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
             : 'Nothing is due today in this set. Come back when cards are due.'}
         </p>
       ) : (
-        <div className="mt-2 space-y-2">
+        <div className="mt-1 space-y-3">
           <p className="text-ink-muted">{queue.length} {queue.length === 1 ? 'card' : 'cards'} left today</p>
-          <p className="text-base font-medium text-ink">{card.front}</p>
+          <div className="rounded-panel border border-line px-4 py-4">
+            <p className="text-lg font-bold text-ink" aria-hidden="true">Question</p>
+            <p className="text-base text-ink">{card.front}</p>
+            {shown && (
+              <>
+                <p className="mt-3 text-lg font-bold text-ink" aria-hidden="true">Answer</p>
+                <p className="leading-6 whitespace-pre-line text-ink">{card.back}</p>
+                <p className="mt-2 text-ink-muted">From {card.source.title}</p>
+              </>
+            )}
+          </div>
           {shown ? (
             <>
-              <p className="leading-6 whitespace-pre-line text-ink">{card.back}</p>
-              <p className="text-ink-muted">From {card.source.title}</p>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="How well did you know it?">
+              <div className="flex flex-wrap gap-3 border-t border-line pt-3 sm:grid sm:grid-cols-4" role="group" aria-label="How well did you know it?">
+                <p aria-hidden="true" className="w-full text-lg font-bold text-ink sm:col-span-4">How well did you know it?</p>
                 {RATINGS.map((rating) => (
-                  <Button key={rating.value} size="sm" variant="secondary" disabled={busy} onClick={() => void rate(rating.value)}>
+                  <Button key={rating.value} variant={rating.value === 'EASY' ? 'primary' : 'secondary'} disabled={busy} onClick={() => void rate(rating.value)}>
                     {rating.label}
                   </Button>
                 ))}
@@ -89,7 +98,9 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
         </div>
       )}
       {error && <Alert tone="error" className="mt-2">{error}</Alert>}
-      <Button size="sm" variant="ghost" className="mt-2" onClick={onClose}>Close review</Button>
+      <div className="mt-4 border-t border-line pt-4">
+        <Button onClick={onClose}>Close review</Button>
+      </div>
     </div>
   )
 }

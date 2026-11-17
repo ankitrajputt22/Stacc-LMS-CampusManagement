@@ -456,3 +456,7 @@ All need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE`, and access thr
 AI Study lists each course as a card with its mastery counts as large figures, the next step beside a "Next" tag, and
 Open study area as the main button; a course whose assistant is off says so in a tinted note. Every AI panel heading is
 large and bold. What to do next lists each suggestion with its reason and a main button to open it.
+
+Ask shows each turn as a card: "You asked" in bold with the question, then the Answer and its Sources as bold headings,
+and Save answer as the main button. Flashcard review shows the card as a Question and Answer box with its source, the
+four ratings in one row (Easy as the main button), and Close review below.
