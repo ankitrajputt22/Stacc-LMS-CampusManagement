@@ -13,7 +13,32 @@ export type LinkTab = { to: string; label: string; end?: boolean; current?: bool
  * Tabs that are pages, such as a course's Home, Modules, and Grades: each is a link with its own address, and the
  * current one is marked as the current page. Use these when each view should be bookmarkable.
  */
-export function LinkTabs({ label, tabs }: { label: string; tabs: readonly LinkTab[] }) {
+export function LinkTabs({ label, tabs, variant = 'underline' }: { label: string; tabs: readonly LinkTab[]; variant?: 'underline' | 'pill' }) {
+  if (variant === 'pill') {
+    // Pills: the current page is a filled light-blue tab, the others plain words with thin dividers between them.
+    return (
+      <nav aria-label={label} className="mb-5 overflow-x-auto">
+        <ul className="flex items-center">
+          {tabs.map((tab) => (
+            <li key={tab.to} className="flex items-center not-first:before:mx-1.5 not-first:before:h-5 not-first:before:w-px not-first:before:bg-line-strong not-first:before:content-['']">
+              <NavLink
+                to={tab.to}
+                end={tab.end}
+                aria-current={tab.current === undefined ? undefined : tab.current ? 'page' : false}
+                className={({ isActive }) =>
+                  `inline-flex min-h-11 shrink-0 items-center rounded-control px-4 text-[0.95rem] whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-10 ${
+                    (tab.current ?? isActive) ? 'bg-sky-100 font-bold text-portal-navy' : 'font-medium text-ink hover:bg-surface-muted'
+                  }`
+                }
+              >
+                {tab.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
   return (
     <nav aria-label={label} className="mb-6 overflow-x-auto border-b border-line">
       <ul className="flex gap-1">

@@ -266,7 +266,7 @@ export function MasterSection<T>({
         padding="none"
       >
         {(toolbar || (rows !== null && rows.length > 0)) && (
-          <div className="grid gap-4 border-b border-line px-4 py-4 sm:grid-cols-2 sm:px-5 lg:grid-cols-4">
+          <div className="grid gap-4 border-b border-line px-4 py-4 sm:grid-cols-2 sm:px-5 lg:grid-cols-4 xl:grid-cols-5">
             {toolbar}
             {rows !== null && rows.length > 0 && (
               <>

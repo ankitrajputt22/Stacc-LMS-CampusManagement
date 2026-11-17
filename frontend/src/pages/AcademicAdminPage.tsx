@@ -72,13 +72,13 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
     <div className="max-w-6xl">
       <title>{`${roster ? 'Offering Roster' : current.label} · Academic Admin · Stacc`}</title>
       <PageHeader
-        eyebrow="ERP"
         title="Academic Admin"
-        description="Manage the academic structure, course offerings and who teaches them, students, faculty, department heads, and official enrollment, and the academic calendar."
+        description="Manage academic structure, teaching, students and faculty, enrollment, and the academic calendar."
       />
       {isAdmin ? (
         <>
           <LinkTabs
+            variant="pill"
             label="Academic admin areas"
             tabs={GROUPS.map((group) => ({
               to: `/admin/academic/${SECTIONS.find((candidate) => candidate.group === group.id)?.path}`,
@@ -87,8 +87,9 @@ export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
             }))}
           />
           {SECTIONS.filter((candidate) => candidate.group === current.group).length > 1 && (
-            <div className="-mt-3">
+            <div className="border-b border-line">
               <LinkTabs
+                variant="pill"
                 label="Academic admin sections"
                 tabs={SECTIONS.filter((candidate) => candidate.group === current.group).map((candidate) => ({
                   to: `/admin/academic/${candidate.path}`,
