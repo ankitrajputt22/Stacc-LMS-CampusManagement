@@ -55,12 +55,14 @@ function Feedback({ question, result }: { question: AiPracticeQuestion; result: 
     )
   }
   return (
-    <div className="mt-2 space-y-2 text-sm">
+    <div className="mt-3 space-y-3 text-[0.95rem]">
       <p className="font-medium text-ink">
         {result.verdict ? VERDICT[result.verdict] : 'Checked'} · {result.marks} of {result.maxMarks} practice marks
       </p>
-      {/* Plain text only. */}
-      <p className="leading-6 break-words whitespace-pre-line text-ink">{result.feedback}</p>
+      <div className="rounded-panel bg-success-soft px-4 py-3">
+        <p aria-hidden="true" className="font-bold text-success">Feedback</p>
+        <p className="leading-6 break-words whitespace-pre-line text-ink">{result.feedback}</p>
+      </div>
       {result.followUpQuestion && (
         <p className="text-ink">
           <span className="font-medium">Follow-up:</span> {result.followUpQuestion}
@@ -79,9 +81,9 @@ function followUpOf(result: Result | undefined): string | null {
 
 function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
   return (
-    <details className="text-sm">
-      <summary className="cursor-pointer font-medium text-stacc-primary">Model answer</summary>
-      <p className="mt-1 leading-6 break-words whitespace-pre-line text-ink">{question.suggestedAnswer}</p>
+    <details className="mt-3 rounded-panel border border-line text-[0.95rem]">
+      <summary className="cursor-pointer px-4 py-3 text-lg font-bold text-ink">Model answer</summary>
+      <p className="px-4 pb-3 leading-6 break-words whitespace-pre-line text-ink">{question.suggestedAnswer}</p>
     </details>
   )
 }
@@ -248,8 +250,8 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
 
       {questions.length > 0 && activeMode !== 'MOCK_EXAM' && (
         <div className="mt-4 rounded-control border border-line px-3 py-3" aria-live="polite">
-          <p className="text-sm text-ink-muted">Question {current + 1} of {questions.length}</p>
-          <p className="mt-1 text-sm leading-6 font-medium break-words whitespace-pre-line text-ink">{questions[current].question}</p>
+          <p className="text-[0.95rem] font-semibold text-ink-muted">Question {current + 1} of {questions.length}</p>
+          <p className="mt-1 text-2xl leading-8 font-bold break-words whitespace-pre-line text-ink">{questions[current].question}</p>
           {answerBox(current)}
           {results[current] === undefined ? (
             <Button className="mt-2" size="sm" disabled={checking || answers[current].trim() === ''} onClick={() => void checkOne(current)}>
