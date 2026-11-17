@@ -35,3 +35,8 @@ Faculty and student assignment answers now carry `bloomLevel` and `outcomes`.
 - Students: the **Syllabus** page lists the course outcomes; an assignment's page shows its outcomes and Bloom level.
 
 Not in this phase: program outcomes, outcome attainment calculations, or outcome reports.
+
+## Look
+
+Course outcomes are listed under a tinted header row (Outcome code, Outcome description, Status), each with an Active or
+Archived tag; an active one has Edit as the main button and Archive beside it.

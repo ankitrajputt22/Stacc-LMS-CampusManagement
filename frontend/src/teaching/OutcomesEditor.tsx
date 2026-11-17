@@ -151,6 +151,13 @@ export function OutcomesEditor({ lmsCourseId }: { lmsCourseId: number }) {
         ) : outcomes.data.length === 0 ? (
           <EmptyState title="No outcomes yet." description="Add the course’s learning outcomes, then align assignments with them." />
         ) : (
+          <>
+          <div aria-hidden="true" className="hidden border-b border-line bg-sky-50/70 px-4 py-3 text-sm font-bold text-ink sm:grid sm:grid-cols-[7rem_minmax(0,1fr)_7rem_11rem] sm:gap-4 sm:px-5">
+            <span>Outcome code</span>
+            <span>Outcome description</span>
+            <span>Status</span>
+            <span />
+          </div>
           <ol className="divide-y divide-line">
             {outcomes.data.map((outcome) => (
               <li key={outcome.id} className="px-4 py-3 sm:px-5">
@@ -167,14 +174,13 @@ export function OutcomesEditor({ lmsCourseId }: { lmsCourseId: number }) {
                     }}
                   />
                 ) : (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <p className="text-sm break-words text-ink">
-                      <span className="font-semibold">{outcome.code}</span> {outcome.description}{' '}
-                      {outcome.status === 'ARCHIVED' && <Badge tone="neutral">Archived</Badge>}
-                    </p>
+                  <div className="grid gap-2 text-[0.95rem] text-ink sm:grid-cols-[7rem_minmax(0,1fr)_7rem_11rem] sm:items-center sm:gap-4">
+                    <p className="font-semibold">{outcome.code}</p>
+                    <p className="break-words">{outcome.description}</p>
+                    <p>{outcome.status === 'ARCHIVED' ? <Badge tone="neutral">Archived</Badge> : <Badge tone="success">Active</Badge>}</p>
                     {outcome.status === 'ACTIVE' && (
-                      <div className="flex shrink-0 gap-2">
-                        <Button variant="secondary" size="sm" onClick={() => setEditing(outcome.id)}>
+                      <div className="flex shrink-0 gap-2 sm:justify-end">
+                        <Button size="sm" onClick={() => setEditing(outcome.id)}>
                           Edit<span className="sr-only"> {outcome.code}</span>
                         </Button>
                         <Button variant="secondary" size="sm" onClick={() => setArchiving(outcome)}>
@@ -187,6 +193,7 @@ export function OutcomesEditor({ lmsCourseId }: { lmsCourseId: number }) {
               </li>
             ))}
           </ol>
+          </>
         )}
       </Card>
       {outcomes.status === 'loaded' && outcomes.data.some((outcome) => outcome.status === 'ACTIVE') && (

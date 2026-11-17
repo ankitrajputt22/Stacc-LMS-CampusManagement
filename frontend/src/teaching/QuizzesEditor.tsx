@@ -7,25 +7,21 @@ import { useApiQuery } from '../api/useApiQuery'
 import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import type { LmsContentStatus } from '../types/lms'
-import { Badge, Button, Card, textLinkClasses } from '../ui'
+import { Badge, Button, Card, DataTable, textLinkClasses } from '../ui'
 import { emptySettings, quizFacts, quizTypeLabel, quizWindow } from './quizSettings'
 import { QuizSettingsForm } from './QuizSettingsForm'
 
 export function QuizStatusBadge({ status }: { status: LmsContentStatus }) {
   switch (status) {
     case 'PUBLISHED':
-      return <Badge tone="success">Published</Badge>
+      return <Badge tone="info">Published</Badge>
     case 'ARCHIVED':
       return <Badge tone="neutral">Archived</Badge>
     default:
-      return <Badge tone="warning">Draft</Badge>
+      return <Badge tone="neutral">Draft</Badge>
   }
 }
 
-/**
- * The course's quizzes as faculty manage them: New quiz (a draft without questions, then opened to add questions), and
- * every quiz with its type, status, size, and times, each opening its own page. Nothing is deleted.
- */
 export function QuizzesEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -65,24 +61,35 @@ export function QuizzesEditor({ lmsCourseId }: { lmsCourseId: number }) {
         ) : quizzes.data.length === 0 ? (
           <EmptyState title="No quizzes yet." description="Create a quiz, then add reviewed questions from the question bank." />
         ) : (
-          <ol className="divide-y divide-line">
-            {quizzes.data.map((quiz) => {
-              const window = quizWindow(quiz)
-              return (
-                <li key={quiz.id} className="space-y-1.5 px-4 py-4 sm:px-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}`} className={`font-semibold ${textLinkClasses}`}>
-                      {quiz.title}
-                    </Link>
-                    <Badge tone="brand">{quizTypeLabel(quiz.type)}</Badge>
-                    <QuizStatusBadge status={quiz.status} />
-                  </div>
-                  <p className="text-sm text-ink-muted">{quizFacts(quiz)}</p>
-                  {window && <p className="text-sm text-ink-muted">{window}</p>}
-                </li>
-              )
-            })}
-          </ol>
+          <DataTable<(typeof quizzes.data)[number]>
+            caption="Quizzes"
+            rows={quizzes.data}
+            rowKey={(quiz) => quiz.id}
+            columns={[
+              {
+                key: 'title',
+                header: 'Quiz title',
+                primary: true,
+                cell: (quiz) => (
+                  <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}`} className={`font-semibold ${textLinkClasses}`}>
+                    {quiz.title}
+                  </Link>
+                ),
+              },
+              { key: 'type', header: 'Type', cell: (quiz) => quizTypeLabel(quiz.type) },
+              { key: 'status', header: 'Status', cell: (quiz) => <QuizStatusBadge status={quiz.status} /> },
+              {
+                key: 'facts',
+                header: 'Details',
+                cell: (quiz) => (
+                  <>
+                    <span className="block">{quizFacts(quiz)}</span>
+                    {quizWindow(quiz) && <span className="block text-ink-muted">{quizWindow(quiz)}</span>}
+                  </>
+                ),
+              },
+            ]}
+          />
         )}
       </Card>
     </>
