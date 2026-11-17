@@ -75,12 +75,12 @@ export function StatusConfirmation({
           onCancel()
         }
       }}
-      className="mt-3 rounded-panel border border-amber-300 bg-amber-50 p-3 sm:p-4"
+      className="mt-3 rounded-panel border border-amber-400 bg-amber-50/70 p-4 sm:p-5"
     >
-      <p id={`${id}-question`} className="text-sm font-semibold text-ink">
+      <p id={`${id}-question`} className="text-xl font-bold text-ink">
         {question}
       </p>
-      <p id={`${id}-detail`} className="mt-1 text-sm leading-6 text-ink">
+      <p id={`${id}-detail`} className="mt-1 text-[0.95rem] leading-6 text-ink">
         {detail}
       </p>
       {error && (
@@ -88,7 +88,7 @@ export function StatusConfirmation({
           {error}
         </Alert>
       )}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-3">
         <Button ref={confirmRef} size="sm" aria-disabled={busy || undefined} onClick={confirm}>
           {busy ? busyLabel : confirmLabel}
         </Button>

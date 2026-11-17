@@ -41,3 +41,10 @@ The ERP pages (academic admin, attendance, results, and the calendar) are built 
 - Status is always written in words, never shown by colour alone.
 - Focus is always visible (`focusRing`), and touch targets are at least 44 px on phones.
 - Tables have a caption for screen readers and row headers; on phones they become labelled records, so no page scrolls sideways.
+
+## Shared look (v0.16 consistency pass)
+
+Alerts carry an icon and a thin divider before their text: green for saved, blue for information, amber for something
+to check, red for a failure. Page states (loading, empty, error, no access) are left-aligned with a bold title and the
+error's Retry as the main button. Field labels are bold; read-only fields are grey. Buttons use semibold text.
+Confirmations are an amber box with the question as a large bold line, the reason under it, then the action and Cancel.
