@@ -68,34 +68,26 @@ function Answers({ question }: { question: LmsQuestion }) {
   }
 }
 
-/** One question with its facts and answers. */
 function QuestionSummary({ question }: { question: LmsQuestion }) {
-  const facts = [
-    question.topic,
-    difficultyLabel(question.difficulty),
-    `${question.marks} ${question.marks === 1 ? 'mark' : 'marks'}`,
-    question.outcome && question.outcome.code,
-    question.bloomLevel && `Bloom level ${bloomLabel(question.bloomLevel)}`,
-  ].filter((fact): fact is string => Boolean(fact))
+  const facts: [string, string][] = [
+    ['Type', questionTypeLabel(question.type)],
+    ...(question.topic ? [['Topic', question.topic] as [string, string]] : []),
+    ['Difficulty', difficultyLabel(question.difficulty)],
+    ['Marks', `${question.marks} ${question.marks === 1 ? 'mark' : 'marks'}`],
+    ...(question.outcome ? [['Outcome code', question.outcome.code] as [string, string]] : []),
+    ...(question.bloomLevel ? [['Bloom level', bloomLabel(question.bloomLevel)] as [string, string]] : []),
+  ]
   return (
-    <div className="min-w-0 space-y-2">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Badge tone="brand">{questionTypeLabel(question.type)}</Badge>
-        {question.status === 'ARCHIVED' ? (
-          <Badge tone="neutral">Archived</Badge>
-        ) : question.reviewStatus === 'REVIEWED' ? (
-          <Badge tone="success">Reviewed</Badge>
-        ) : (
-          <Badge tone="warning">Needs review</Badge>
-        )}
-        {question.practiceAllowed && <Badge tone="info">OK for practice</Badge>}
-        {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
-        {question.aiGenerated && <Badge tone="info">AI draft</Badge>}
-        {question.aiChecks?.duplicateOfQuestionId != null && (
-          <Badge tone="warning">{question.aiChecks.inPreviousPaper ? 'Like a question in a final paper' : 'Possible duplicate'}</Badge>
-        )}
-        {question.aiChecks?.outOfSyllabus && <Badge tone="warning">May be outside the course content</Badge>}
-      </div>
+    <div className="min-w-0 space-y-3">
+      <FormattedText text={question.text} format={question.textFormat} className="text-lg leading-7 font-bold text-ink" headingLevel={4} />
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 xl:grid-cols-6">
+        {facts.map(([label, value]) => (
+          <div key={label} className="min-w-0">
+            <dt className="text-sm text-ink-muted">{label}</dt>
+            <dd className="text-[0.95rem] break-words text-ink">{value}</dd>
+          </div>
+        ))}
+      </dl>
       {question.aiChecks && (question.aiChecks.suggestedDifficulty || question.aiChecks.suggestedBloomLevel) && (
         <p className="text-sm text-ink-muted">
           AI suggestions only:
@@ -103,7 +95,6 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
           {question.aiChecks.suggestedBloomLevel && ` · Bloom level ${bloomLabel(question.aiChecks.suggestedBloomLevel)}`}
         </p>
       )}
-      <FormattedText text={question.text} format={question.textFormat} className="text-sm leading-6 text-ink" headingLevel={4} />
       <Answers question={question} />
       {question.explanation && (
         <div className="text-sm text-ink-muted">
@@ -111,7 +102,6 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
           <FormattedText text={question.explanation} format={question.textFormat} className="leading-6" headingLevel={5} />
         </div>
       )}
-      <p className="text-sm text-ink-muted">{facts.join(' · ')}</p>
       {question.aiGenerated && question.sources && question.sources.length > 0 && (
         <div className="text-sm text-ink-muted">
           <p className="font-medium">Drafted from</p>
@@ -128,6 +118,22 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
           </ul>
         </div>
       )}
+      <div className="flex flex-wrap items-center gap-2">
+        {question.status === 'ARCHIVED' ? (
+          <Badge tone="neutral">Archived</Badge>
+        ) : question.reviewStatus === 'REVIEWED' ? (
+          <Badge tone="success">Reviewed</Badge>
+        ) : (
+          <Badge tone="warning">Needs review</Badge>
+        )}
+        {question.practiceAllowed && <Badge tone="success">OK for practice</Badge>}
+        {question.inPublishedQuiz && <Badge tone="neutral">In a published quiz</Badge>}
+        {question.aiGenerated && <Badge tone="info">AI draft</Badge>}
+        {question.aiChecks?.duplicateOfQuestionId != null && (
+          <Badge tone="danger">{question.aiChecks.inPreviousPaper ? 'Like a question in a final paper' : 'Possible duplicate'}</Badge>
+        )}
+        {question.aiChecks?.outOfSyllabus && <Badge tone="warning">May be outside the course content</Badge>}
+      </div>
     </div>
   )
 }
@@ -285,11 +291,11 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
             <p className="px-4 pt-3 text-sm text-ink-muted sm:px-5">
               Showing {shown.length} of {questions.data.length} {questions.data.length === 1 ? 'question' : 'questions'}.
             </p>
-            <ol className="divide-y divide-line">
+            <ol className="space-y-3 px-4 pb-4 sm:px-5">
               {shown.map((question) => {
                 const name = questionName(question)
                 return (
-                  <li key={question.id} className="px-4 py-4 sm:px-5">
+                  <li key={question.id} className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
                     {editing === question.id ? (
                       <QuestionForm
                         initial={draftOf(question)}
@@ -303,7 +309,7 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
                         }}
                       />
                     ) : (
-                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                         <div className="min-w-0 flex-1">
                           <QuestionSummary question={question} />
                           {question.status === 'ACTIVE' && (question.type === 'DESCRIPTIVE' || question.type === 'SHORT_ANSWER') && (
@@ -312,9 +318,8 @@ export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
                         </div>
                         {question.status === 'ACTIVE' && (
                           <div className="flex shrink-0 flex-wrap gap-2">
-                            {/* A published quiz keeps asking what it asked, so its questions are not edited. */}
                             {!question.inPublishedQuiz && (
-                              <Button variant="secondary" size="sm" onClick={() => setEditing(question.id)}>
+                              <Button size="sm" onClick={() => setEditing(question.id)}>
                                 Edit<span className="sr-only"> question “{name}”</span>
                               </Button>
                             )}

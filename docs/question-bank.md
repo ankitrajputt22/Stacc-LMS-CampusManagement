@@ -64,3 +64,9 @@ Teacher AI' Draft into the question bank (`POST /api/v1/lms/faculty/courses/{id}
 Quality checks (v0.14.2), worked out once when an AI draft is made and kept with it: a possible duplicate of a bank question by meaning (embeddings) or wording (word overlap), shown as "Like a question in a final paper" when the match is in a paper made final; "May be outside the course content" when the question is far from every allowed course source and shares no word with them; repeats within one request are dropped; and the model's difficulty and Bloom level, shown as suggestions only. They decide nothing.
 
 Not in this phase: "Used in" counts, question pools, import or export.
+
+## Look
+
+Each question is its own card: the question text in bold, then its Type, Topic, Difficulty, Marks, Outcome code, and
+Bloom level as a small facts grid, then its tags (review, practice, AI draft, possible duplicate), with Edit as the main
+button and Archive beside it.

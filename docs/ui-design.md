@@ -41,3 +41,8 @@ The ERP pages (academic admin, attendance, results, and the calendar) are built 
 - Status is always written in words, never shown by colour alone.
 - Focus is always visible (`focusRing`), and touch targets are at least 44 px on phones.
 - Tables have a caption for screen readers and row headers; on phones they become labelled records, so no page scrolls sideways.
+
+## Status badges
+
+`Badge` and the teaching `StatusTag` are soft tinted pills with no border: grey for Draft and Closed, light blue for
+Published, green for Active, amber for things to review, and red for Rejected. The word always carries the meaning.
