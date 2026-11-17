@@ -142,7 +142,11 @@ function Judging({ run }: { run: Run }) {
     return <SectionState request={judging} what="judging" />
   }
   if (judging.data.length === 0) {
-    return null
+    return (
+      <Card title="Judging">
+        <EmptyState title="You are not judging any hackathon." description="The campus office names the judges of each hackathon." />
+      </Card>
+    )
   }
   return (
     <Card title="Judging" description="Scores stay hidden from participants until the results are released.">
