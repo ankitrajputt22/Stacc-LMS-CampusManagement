@@ -129,7 +129,7 @@ function AuditLog() {
             autoComplete="off"
             onChange={(event) => setText(event.target.value)}
           />
-          <Button type="submit" variant="secondary">
+          <Button type="submit">
             Find
           </Button>
         </form>
