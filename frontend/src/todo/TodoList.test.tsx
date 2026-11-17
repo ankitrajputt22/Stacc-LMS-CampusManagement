@@ -23,7 +23,7 @@ describe('TodoList', () => {
       </QueryClientProvider>,
     )
     expect(await screen.findByRole('link', { name: 'Submit: Lab 2' })).toHaveAttribute('href', '/courses/1/assignments/4')
-    expect(screen.getByText('Approve: Hostel', { selector: 'span.font-semibold' })).toBeInTheDocument()
+    expect(screen.getByText('Approve: Hostel', { selector: 'p > span' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /Approve: Hostel/ }))
     expect(api.dismissTodo).toHaveBeenCalledWith('APPROVAL:9')
   })

@@ -31,3 +31,7 @@
 - **Calendar page:** `/calendar` now has Agenda and Month views (`?view=month`), My entries, and the subscription card.
 
 Study sessions (v0.15.7): a student who adds a study plan to their To-Do list sees each session (kind `STUDY`) from its planned day until they dismiss it; the To-Do part needs `STUDENT` and `AI_STUDY_USE`. Adding a plan to the calendar creates ordinary personal calendar entries. See `ai-learning.md`.
+
+## Look (v0.16.22)
+
+The calendar agenda gives each day a heading and lists its entries as cards: the category (or Assignment due, Teaching deadline) and Cancelled on the left, then the title, dates or due time, scope, and description. The To-Do list shows each item in columns: its kind, the title (a link when it has one) with its context, the due or class time, and Dismiss.
