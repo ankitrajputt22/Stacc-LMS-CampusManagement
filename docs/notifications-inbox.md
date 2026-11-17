@@ -147,3 +147,10 @@ On a fresh local database, the `dev-seed` profile creates its demo data through 
 ## Not built yet
 
 Email, SMS, browser or mobile push, real-time delivery (WebSocket, Server-Sent Events), notification preferences or muting, digests, deleting or archiving notifications, announcement notifications, and messages written by users.
+
+## Look
+
+The Inbox lists each notification as one row: a dot and a type icon for unread rows, the title with an Unread or Read tag,
+the message and time, the action as the main orange button, and Mark as read or Mark as unread as a quiet link.
+All and Unread are a two-part switch, Mark all as read is the main button, and Notification settings sits top right.
+Notification settings is one "What you get" card with a row per category, an In the Inbox tick, an Email choice, and Save settings.
