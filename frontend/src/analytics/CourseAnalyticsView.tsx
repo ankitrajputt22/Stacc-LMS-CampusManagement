@@ -4,7 +4,7 @@ import { useApiQuery } from '../api/useApiQuery'
 import { EmptyState } from '../components/states/EmptyState'
 import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
-import { Alert, Card } from '../ui'
+import { Alert, Card, DataTable } from '../ui'
 import { ExportsPanel } from './ExportsPanel'
 import { Percent } from './Percent'
 
@@ -21,29 +21,29 @@ export function CourseAnalyticsView({ lmsCourseId }: { lmsCourseId: number }) {
     <div className="space-y-6">
       {a.note && <Alert tone="info">{a.note} This course has {a.enrolled} enrolled, so only counts are shown.</Alert>}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card title="Enrolled"><p className="text-3xl font-bold text-portal-navy">{a.enrolled}</p></Card>
-        <Card title="Attendance"><p className="text-3xl font-bold text-portal-navy"><Percent value={a.attendancePercent} hidden={SMALL} /></p></Card>
+        <section aria-label="Enrolled" className="rounded-panel border border-line bg-surface px-5 py-4">
+          <h2 className="text-lg font-bold text-ink">Enrolled</h2>
+          <p className="mt-1 text-4xl font-bold text-ink">{a.enrolled}</p>
+        </section>
+        <section aria-label="Attendance" className="rounded-panel border border-line bg-surface px-5 py-4">
+          <h2 className="text-lg font-bold text-ink">Attendance</h2>
+          <p className="mt-1 text-4xl font-bold text-ink"><Percent value={a.attendancePercent} hidden={SMALL} /></p>
+        </section>
       </div>
-      <Card title="Assignments" padding="none">
+      <Card title="Assignments">
         {a.assignments.length === 0 ? <EmptyState title="No published assignments." description="They appear here once published." /> : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-line bg-surface-muted text-xs text-ink-muted">
-                <tr><th scope="col" className="px-4 py-2">Assignment</th><th scope="col" className="px-4 py-2">Due</th><th scope="col" className="px-4 py-2">Handed in</th><th scope="col" className="px-4 py-2">Late</th><th scope="col" className="px-4 py-2">Average mark</th></tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {a.assignments.map((line) => (
-                  <tr key={line.assignmentId}>
-                    <th scope="row" className="px-4 py-2 font-medium text-ink">{line.title}</th>
-                    <td className="px-4 py-2">{formatDateTime(line.dueAt)}</td>
-                    <td className="px-4 py-2">{line.submitted} (<Percent value={line.submittedPercent} hidden={SMALL} />)</td>
-                    <td className="px-4 py-2">{line.late}</td>
-                    <td className="px-4 py-2"><Percent value={line.averagePercent} hidden={SMALL} /> of {line.graded} graded</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            caption="Assignments"
+            rows={a.assignments}
+            rowKey={(line) => line.assignmentId}
+            columns={[
+              { key: 'title', header: 'Assignment', primary: true, cell: (line) => <span className="font-bold">{line.title}</span> },
+              { key: 'due', header: 'Due', cell: (line) => formatDateTime(line.dueAt) },
+              { key: 'handed', header: 'Handed in', cell: (line) => <>{line.submitted} (<Percent value={line.submittedPercent} hidden={SMALL} />)</> },
+              { key: 'late', header: 'Late', cell: (line) => line.late },
+              { key: 'average', header: 'Average mark', cell: (line) => <><Percent value={line.averagePercent} hidden={SMALL} /> of {line.graded} graded</> },
+            ]}
+          />
         )}
       </Card>
       {a.quizzes.map((quiz) => (
@@ -59,16 +59,18 @@ export function CourseAnalyticsView({ lmsCourseId }: { lmsCourseId: number }) {
           </ol>
         </Card>
       ))}
-      <Card title="Required pages" padding="none">
+      <Card title="Required pages">
         {a.requiredPages.length === 0 ? <EmptyState title="No required pages." description="Pages marked required appear here." /> : (
-          <ul className="divide-y divide-line text-sm">
-            {a.requiredPages.map((page) => (
-              <li key={page.pageId} className="flex justify-between px-4 py-2 sm:px-5">
-                <span className="text-ink">{page.title}</span>
-                <span className="text-ink-muted">{page.completed} completed · <Percent value={page.completedPercent} hidden={SMALL} /></span>
-              </li>
-            ))}
-          </ul>
+          <DataTable
+            caption="Required pages"
+            rows={a.requiredPages}
+            rowKey={(page) => page.pageId}
+            columns={[
+              { key: 'page', header: 'Page', primary: true, cell: (page) => <span className="font-bold">{page.title}</span> },
+              { key: 'completed', header: 'Completed', cell: (page) => page.completed },
+              { key: 'percent', header: 'Completion', cell: (page) => <Percent value={page.completedPercent} hidden={SMALL} /> },
+            ]}
+          />
         )}
       </Card>
       <ExportsPanel kind="COURSE_ANALYTICS" parameter={lmsCourseId} label="Export these analytics (Excel)" />

@@ -5,7 +5,7 @@ test('a head of department sees their department and a faculty member does not',
   const head = await browser.newPage()
   await signIn(head, 'erp', 'hod1')
   await head.goto('/department')
-  const department = head.getByRole('region', { name: /Computer Science and Engineering \(CSE\)/ })
+  const department = head.getByRole('region', { name: /Computer Science and Engineering/ })
   await expect(department.getByRole('table', { name: 'Course offerings of CSE' })).toBeVisible()
   await expect(department.getByRole('table', { name: 'Students by program in CSE' })).toBeVisible()
 
