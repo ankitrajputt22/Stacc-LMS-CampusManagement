@@ -49,7 +49,7 @@ describe('ProjectsPage', () => {
 
   it('offers no join form on a full project and shows the lead tools to the lead', async () => {
     renderPage([{ ...project, activeMembers: 3 }, { ...project, projectId: 4, title: 'Mine', iAmLead: true }])
-    expect(await screen.findByText('Lead tools')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Join requests' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Ask to join' })).not.toBeInTheDocument()
   })
 })
