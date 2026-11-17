@@ -47,3 +47,8 @@ The faculty assignment list, the faculty submission detail, and the student assi
 The CS301 warm-up assignment uses "Array exercises rubric": Correct answers (12, with three levels) and Clear working (8, with two levels).
 
 Not in this phase: rubric templates shared across courses, copying rubrics, rubrics for quizzes or manual gradebook items, peer or self assessment, and weighted criteria.
+
+## Look
+
+Each rubric is its own card with its title, its points and Used for grading as tags, Edit as the main button, and its
+criteria below.
