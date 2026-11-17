@@ -21,6 +21,7 @@ export function statusAction(actions: RowActions, toggle: Toggle): ReactNode {
     <Button
       variant="secondary"
       size="sm"
+      className={toggle.active ? 'border-portal-cta! text-portal-cta! hover:bg-orange-50!' : ''}
       data-focus-key={toggle.focusKey}
       onClick={() =>
         actions.confirm(

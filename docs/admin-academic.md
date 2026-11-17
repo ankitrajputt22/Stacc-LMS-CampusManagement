@@ -174,3 +174,10 @@ Every section is built from the shared components in `src/ui` (see `ui-design.md
 - Teaching assignments, student and faculty profiles, and accounts (later phases). LMS courses are created by faculty, not here.
 - Bulk or CSV enrollment, select-all actions, timetables, fees, and admissions.
 - Deletion and change history.
+
+## Look
+
+Academic Admin's two tab rows are pills (`LinkTabs` with `variant="pill"`): the current area or page is a light-blue
+filled tab and the others plain words with thin dividers. Each list is one card with its Add button, search, filters,
+and a table whose header row is tinted and bold (the shared `DataTable` look). Deactivate is an orange outlined button;
+Edit stays a plain outlined one.

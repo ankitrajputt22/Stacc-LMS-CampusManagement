@@ -39,12 +39,12 @@ export function DataTable<Row>({ caption, columns, rows, rowKey, empty }: DataTa
         <table className="w-full border-collapse text-left text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead>
-            <tr className="border-b border-line-strong">
+            <tr className="border-b border-line bg-sky-50/70">
               {columns.map((column) => (
                 <th
                   key={column.key}
                   scope="col"
-                  className={`px-4 py-2.5 text-xs font-semibold tracking-[0.04em] text-ink-muted uppercase ${column.align === 'right' ? 'text-right' : ''}`}
+                  className={`px-4 py-3 text-sm font-bold text-ink ${column.align === 'right' ? 'text-right' : ''}`}
                 >
                   {column.header}
                 </th>
