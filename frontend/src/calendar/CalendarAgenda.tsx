@@ -77,17 +77,20 @@ function Separator() {
   )
 }
 
+const itemClasses = 'grid gap-2 rounded-control border border-line px-3 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center sm:gap-4'
+
 function EventItem({ event }: { event: AcademicCalendarEventSummary }) {
   const cancelled = event.status === 'CANCELLED'
   return (
-    <li className={`border-l-2 py-1 pl-3 ${cancelled ? 'border-line-strong' : 'border-stacc-primary'}`}>
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <li className={`${itemClasses} ${cancelled ? 'bg-surface-muted' : ''}`}>
+      <span className="flex flex-wrap gap-1.5 sm:flex-col sm:items-start">
         <Badge tone="info">{categoryLabel(event.category)}</Badge>
         {/* Cancelled is said in words, not only by colour or a line through the title. */}
         {cancelled && <Badge tone="neutral">Cancelled</Badge>}
-        <span className={`text-sm font-semibold break-words ${cancelled ? 'text-ink-muted' : 'text-ink'}`}>{event.title}</span>
-      </p>
-      <p className="mt-0.5 text-sm leading-5 break-words text-ink-muted">
+      </span>
+      <div className="min-w-0 sm:border-l sm:border-line sm:pl-4">
+      <p className={`text-base font-bold break-words ${cancelled ? 'text-ink-muted' : 'text-ink'}`}>{event.title}</p>
+      <p className="mt-0.5 text-sm leading-5 break-words text-ink">
         {dateRangeText(event.startDate, event.endDate)}
         <Separator />
         {scopeText(event)}
@@ -96,34 +99,39 @@ function EventItem({ event }: { event: AcademicCalendarEventSummary }) {
       {event.description && (
         <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{event.description}</p>
       )}
+      </div>
     </li>
   )
 }
 
 function StudentDeadlineItem({ deadline, label }: { deadline: StudentAssignmentDeadline; label: string }) {
   return (
-    <li className="border-l-2 border-line-strong py-1 pl-3">
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <li className={itemClasses}>
+      <span>
         <Badge tone="warning">{label}</Badge>
-        <Link to={`/courses/${deadline.lmsCourseId}/assignments/${deadline.assignmentId}`} className={`text-sm ${itemLinkClasses}`}>
+      </span>
+      <div className="min-w-0 sm:border-l sm:border-line sm:pl-4">
+      <p>
+        <Link to={`/courses/${deadline.lmsCourseId}/assignments/${deadline.assignmentId}`} className={`text-base ${itemLinkClasses}`}>
           {deadline.title}
           <span className="sr-only">, {deadline.courseName}</span>
         </Link>
       </p>
-      <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm leading-5 text-ink-muted">
+      <p className="mt-0.5 flex flex-wrap gap-x-3 text-sm leading-5 text-ink">
         <span>{deadline.courseCode}</span>
         <span>
           Due <time dateTime={deadline.dueAt}>{timeText(deadline.dueAt)}</time>
         </span>
         <span>{marksText(deadline.maxMarks)}</span>
       </p>
+      </div>
     </li>
   )
 }
 
 function FacultyDeadlineItem({ deadline }: { deadline: FacultyAssignmentDeadline }) {
   return (
-    <li className="flex flex-col gap-2 border-l-2 border-line-strong py-1 pl-3 sm:flex-row sm:items-start sm:justify-between">
+    <li className="flex flex-col gap-2 rounded-control border border-line px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Badge tone="warning">Teaching deadline</Badge>
@@ -165,13 +173,14 @@ export function CalendarAgenda({ calendar, alsoTeaches }: CalendarAgendaProps) {
         <section
           key={day.date}
           aria-labelledby={`day-${day.date}`}
-          className="rounded-panel border border-line bg-surface px-4 py-3 sm:px-5"
+          className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5"
         >
-          <h3 id={`day-${day.date}`} className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
+          <h3 id={`day-${day.date}`} className="flex flex-wrap items-center gap-2 text-lg font-bold text-portal-navy">
             <time dateTime={day.date}>{dayHeading(day.date)}</time>
             {day.date === today && <Badge tone="brand">Today</Badge>}
           </h3>
-          <ul className="mt-2 space-y-3">
+          <span aria-hidden="true" className="mt-1 block h-0.5 w-12 rounded bg-portal-cta" />
+          <ul className="mt-3 space-y-3">
             {day.items.map((item) =>
               item.kind === 'event' ? (
                 <EventItem key={item.key} event={item.event} />

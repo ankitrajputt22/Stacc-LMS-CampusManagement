@@ -61,30 +61,33 @@ export function TodoList({ limit, level = 2 }: { limit?: number; level?: 2 | 3 }
       ) : (
         <ul className="divide-y divide-line">
           {items.map((item) => (
-            <li key={item.key} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-5">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={KIND[item.kind].tone}>{KIND[item.kind].label}</Badge>
+            <li key={item.key} className="grid gap-2 px-4 py-3 sm:px-5 md:grid-cols-[9rem_minmax(0,1fr)_14rem_auto] md:items-center md:gap-4">
+              <span>
+                <Badge tone={KIND[item.kind].tone}>{KIND[item.kind].label}</Badge>
+              </span>
+              <div className="min-w-0 md:border-l md:border-line md:pl-4">
+                <p className="flex flex-wrap items-center gap-2">
                   {item.actionPath ? (
-                    <Link to={item.actionPath} className="font-semibold break-words text-stacc-primary underline-offset-4 hover:underline">
+                    <Link to={item.actionPath} className="text-base font-bold break-words text-stacc-primary underline-offset-4 hover:underline">
                       {item.title}
                     </Link>
                   ) : (
-                    <span className="font-semibold break-words text-ink">{item.title}</span>
+                    <span className="text-base font-bold break-words text-ink">{item.title}</span>
                   )}
                   {pastDue(item) && <Badge tone="danger">Past due</Badge>}
-                </div>
-                <p className="mt-0.5 text-sm text-ink-muted">
-                  {item.context}
-                  {item.dueAt && (
-                    <>
-                      {' · '}
-                      {item.kind === 'ATTENDANCE' ? 'Class ' : 'Due '}
-                      <time dateTime={item.dueAt}>{formatDateTime(item.dueAt)}</time>
-                    </>
-                  )}
                 </p>
+                {item.context && <p className="mt-0.5 text-sm text-ink-muted">{item.context}</p>}
               </div>
+              <p className="text-[0.95rem] text-ink">
+                {item.dueAt ? (
+                  <>
+                    {item.kind === 'ATTENDANCE' ? 'Class ' : 'Due '}
+                    <time dateTime={item.dueAt}>{formatDateTime(item.dueAt)}</time>
+                  </>
+                ) : (
+                  <span className="text-ink-muted">No due date</span>
+                )}
+              </p>
               <Button variant="secondary" size="sm" onClick={() => void dismiss(item)}>
                 Dismiss<span className="sr-only">{` ${item.title}`}</span>
               </Button>
