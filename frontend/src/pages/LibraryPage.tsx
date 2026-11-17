@@ -41,9 +41,11 @@ function titleLine(title: LibraryTitle) {
 function SearchForm({ label, onSearch }: { label: string; onSearch: (q: string) => void }) {
   const [text, setText] = useState('')
   return (
-    <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); onSearch(text.trim()) }}>
-      <TextField label={label} value={text} maxLength={100} onChange={(event) => setText(event.target.value)} />
-      <Button type="submit" size="sm">Search</Button>
+    <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); onSearch(text.trim()) }}>
+      <div className="min-w-56 flex-1 sm:max-w-2xl">
+        <TextField label={label} type="search" value={text} maxLength={100} onChange={(event) => setText(event.target.value)} />
+      </div>
+      <Button type="submit">Search</Button>
     </form>
   )
 }
@@ -90,7 +92,7 @@ function Catalog({ run }: { run: Run }) {
                     title.myHoldPosition !== null ? (
                       <span className="text-ink">You are number {title.myHoldPosition}</span>
                     ) : (
-                      <Button size="sm" variant="secondary" onClick={() => run(() => placeLibraryHold(title.titleId), 'You joined the queue.', 'Couldn’t join the queue.')}>
+                      <Button size="sm" onClick={() => run(() => placeLibraryHold(title.titleId), 'You joined the queue.', 'Couldn’t join the queue.')}>
                         Join queue<span className="sr-only">{` for ${title.title}`}</span>
                       </Button>
                     ),
@@ -137,7 +139,7 @@ function Mine({ run }: { run: Run }) {
                   header: 'Action',
                   cell: (loan) =>
                     !loan.renewed && !loan.overdue ? (
-                      <Button size="sm" variant="secondary" onClick={() => run(() => renewLibraryLoan(loan.loanId), 'Loan renewed for two more weeks.', 'Couldn’t renew.')}>
+                      <Button size="sm" onClick={() => run(() => renewLibraryLoan(loan.loanId), 'Loan renewed for two more weeks.', 'Couldn’t renew.')}>
                         Renew<span className="sr-only">{` ${loan.title}`}</span>
                       </Button>
                     ) : (
@@ -148,16 +150,23 @@ function Mine({ run }: { run: Run }) {
             />
           </div>
         )}
-        <ul className="space-y-2">
-          {mine.data.holds.map((hold) => (
-            <li key={hold.holdId} className="flex flex-wrap items-center gap-2">
-              <span className="text-ink">{`Queue for ${hold.title}: number ${hold.position}`}</span>
-              <Button size="sm" variant="secondary" onClick={() => run(() => cancelLibraryHold(hold.holdId), 'You left the queue.', 'Couldn’t leave the queue.')}>
-                Leave queue<span className="sr-only">{` for ${hold.title}`}</span>
-              </Button>
-            </li>
-          ))}
-        </ul>
+        {mine.data.holds.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold text-portal-navy">Holds</h3>
+            <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
+            <ul aria-label="My holds" className="divide-y divide-line rounded-control border border-line">
+              {mine.data.holds.map((hold) => (
+                <li key={hold.holdId} className="grid gap-2 px-3 py-2.5 sm:grid-cols-[minmax(0,1fr)_8rem_auto] sm:items-center sm:gap-4">
+                  <span className="font-semibold text-ink">Queue for {hold.title}</span>
+                  <span className="text-ink">Number {hold.position}</span>
+                  <Button size="sm" onClick={() => run(() => cancelLibraryHold(hold.holdId), 'You left the queue.', 'Couldn’t leave the queue.')}>
+                    Leave queue<span className="sr-only">{` for ${hold.title}`}</span>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </Card>
   )
@@ -192,22 +201,38 @@ function DeskTitle({ title, run }: { title: LibraryTitle; run: Run }) {
   return (
     <li className="space-y-2 py-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{title.title}</span>
+        <span className="text-base font-bold text-ink">{title.title}</span>
         <span className="text-ink-muted">{titleLine(title)}</span>
-        <Badge tone="neutral">{`${title.available} of ${title.copies} available`}</Badge>
+        <Badge tone={title.available > 0 ? 'success' : 'neutral'}>{`${title.available} of ${title.copies} available`}</Badge>
         <Button size="sm" variant="secondary" onClick={() => setOpen(!open)}>
           {open ? 'Hide copies' : 'Copies'}<span className="sr-only">{` of ${title.title}`}</span>
         </Button>
       </div>
       {open && (
-        <div className="space-y-2 pl-3">
-          {copies.status === 'loaded' && copies.data.map((item) => (
-            <p key={item.copyId} className="text-ink-muted">
-              <span className="font-mono text-ink">{item.barcode}</span>
-              {item.shelf && ` · shelf ${item.shelf}`}
-              {item.withdrawn ? ' · withdrawn' : item.borrowerLoginId ? ` · with ${item.borrowerLoginId}, due ${formatDateTime(item.dueAt ?? '')}` : ' · on the shelf'}
-            </p>
-          ))}
+        <div className="space-y-4 rounded-control border border-line px-3 py-3 sm:px-4">
+          {copies.status === 'loaded' && copies.data.length > 0 && (
+            <ul aria-label={`Copies of ${title.title}`} className="divide-y divide-line rounded-control border border-line">
+              {copies.data.map((item) => (
+                <li key={item.copyId} className="grid gap-1 px-3 py-2 sm:grid-cols-[9rem_8rem_minmax(0,1fr)] sm:items-center sm:gap-4">
+                  <span className="font-mono text-ink">{item.barcode}</span>
+                  <span className="text-ink">{item.shelf ? `Shelf ${item.shelf}` : 'No shelf'}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    {item.withdrawn ? (
+                      <span className="rounded-sm border border-line-strong bg-surface-muted px-1.5 py-0.5 text-xs font-medium text-ink-muted">Withdrawn</span>
+                    ) : item.borrowerLoginId ? (
+                      <>
+                        <span className="rounded-sm border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-xs font-medium text-ink">Issued to {item.borrowerLoginId}</span>
+                        <span className="text-ink-muted">Due {formatDateTime(item.dueAt ?? '')}</span>
+                      </>
+                    ) : (
+                      <span className="rounded-sm border border-success-line bg-success-soft px-1.5 py-0.5 text-xs font-medium text-ink">On the shelf</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-sm font-semibold text-ink">New copy</p>
           <form
             className="flex flex-wrap items-end gap-2"
             onSubmit={(event) => {
@@ -217,7 +242,7 @@ function DeskTitle({ title, run }: { title: LibraryTitle; run: Run }) {
           >
             <TextField label={`New copy barcode for ${title.title}`} value={copy.barcode} maxLength={40} onChange={(event) => setCopy({ ...copy, barcode: event.target.value })} />
             <TextField label="Shelf (optional)" value={copy.shelf} maxLength={50} onChange={(event) => setCopy({ ...copy, shelf: event.target.value })} />
-            <Button type="submit" size="sm" variant="secondary">Add copy</Button>
+            <Button type="submit" size="sm">Add copy</Button>
           </form>
         </div>
       )}
