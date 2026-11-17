@@ -9,7 +9,7 @@ export const textLinkClasses = `rounded-sm font-medium text-stacc-primary underl
 
 /** A form control: text input, textarea, or select. Add `controlBorder(hasError)` and a height or padding. */
 export const controlClasses =
-  'mt-1.5 block w-full rounded-control border bg-surface px-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-stacc-primary disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-muted sm:text-sm'
+  'mt-1.5 block w-full rounded-control border bg-surface px-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-stacc-primary disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-muted [&[readonly]]:bg-surface-muted sm:text-[0.95rem]'
 
 export function controlBorder(hasError: boolean): string {
   return hasError ? 'border-danger' : 'border-line-strong hover:border-slate-400'
@@ -34,7 +34,7 @@ const BUTTON_SIZES: Record<ButtonSize, string> = {
 /** The classes of a button, or of a link that looks like one. */
 export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSize = 'md', fullWidth = false): string {
   return [
-    'inline-flex items-center justify-center gap-2 rounded-control border font-medium transition-colors',
+    'inline-flex items-center justify-center gap-2 rounded-control border font-semibold transition-colors',
     'disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60',
     focusRing,
     BUTTON_VARIANTS[variant],

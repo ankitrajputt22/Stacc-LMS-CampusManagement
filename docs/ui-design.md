@@ -46,3 +46,10 @@ The ERP pages (academic admin, attendance, results, and the calendar) are built 
 
 `Badge` and the teaching `StatusTag` are soft tinted pills with no border: grey for Draft and Closed, light blue for
 Published, green for Active, amber for things to review, and red for Rejected. The word always carries the meaning.
+
+## Shared look (v0.16 consistency pass)
+
+Alerts carry an icon and a thin divider before their text: green for saved, blue for information, amber for something
+to check, red for a failure. Page states (loading, empty, error, no access) are left-aligned with a bold title and the
+error's Retry as the main button. Field labels are bold; read-only fields are grey. Buttons use semibold text.
+Confirmations are an amber box with the question as a large bold line, the reason under it, then the action and Cancel.

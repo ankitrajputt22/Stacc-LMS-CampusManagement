@@ -15,7 +15,7 @@ type FieldLabelProps = {
 function FieldFrame({ id, label, hint, error, className = '', children }: FieldLabelProps & { id: string; children: ReactNode }) {
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-ink">
+      <label htmlFor={id} className="block text-[0.95rem] font-bold text-ink">
         {label}
       </label>
       {children}
