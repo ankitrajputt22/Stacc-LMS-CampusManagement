@@ -11,7 +11,7 @@ import { SectionState } from '../courses/SectionState'
 import { failureText } from '../engagement/engagementText'
 import { safeUrl } from '../formatting/safeUrl'
 import type { PortfolioItem, PortfolioKind, PortfolioRecord, PortfolioVerification } from '../types/portfolio'
-import { Alert, Badge, Button, Card, PageHeader, SelectField, TextAreaField, TextField } from '../ui'
+import { Alert, Button, Card, PageHeader, SelectField, TextAreaField, TextField } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 type Notify = (text: string, error?: boolean) => void
@@ -35,20 +35,41 @@ function useRun(notify: Notify) {
       .catch((caught: unknown) => notify(failureText(caught, fallback) ?? '', true))
 }
 
+const VERIFICATION_TONE: Record<PortfolioItem['verification'], string> = {
+  NONE: 'border-line-strong bg-surface-muted text-ink-muted',
+  REQUESTED: 'border-amber-300 bg-amber-50 text-ink',
+  VERIFIED: 'border-success-line bg-success-soft text-ink',
+  DECLINED: 'border-danger/40 bg-danger/5 text-danger',
+}
+
 function Item({ item, notify }: { item: PortfolioItem; notify: Notify }) {
   const run = useRun(notify)
   const [verifier, setVerifier] = useState('')
   const link = item.link ? safeUrl(item.link) : null
   return (
-    <li className="space-y-2 px-4 py-4 sm:px-5">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-base font-bold break-words text-portal-navy">{item.title}</span>
-        <span className="rounded-sm border border-line-strong bg-surface-muted px-1.5 py-0.5 text-xs font-medium text-ink">{KIND_LABEL[item.kind]}</span>
-        {item.occurredOn && <span className="text-ink-muted">{item.occurredOn}</span>}
-        <Badge tone={item.verification === 'VERIFIED' ? 'success' : item.verification === 'DECLINED' ? 'warning' : 'neutral'}>
-          {VERIFICATION_LABEL[item.verification]}
-          {item.verifierLoginId && item.verification !== 'NONE' ? ` · ${item.verifierLoginId}` : ''}
-        </Badge>
+    <li className="space-y-3 px-4 py-4 sm:px-5">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_13rem_minmax(0,1.3fr)] lg:items-start lg:gap-6">
+        <div className="min-w-0">
+          <p className="text-lg font-bold break-words text-portal-navy">{item.title}</p>
+          <p className="text-[0.95rem] text-ink">
+            {KIND_LABEL[item.kind]}
+            {item.occurredOn && ` · ${item.occurredOn}`}
+          </p>
+        </div>
+        <div className="lg:border-l lg:border-line lg:pl-5">
+          <span className={`inline-block rounded-sm border px-2 py-0.5 text-sm font-medium ${VERIFICATION_TONE[item.verification]}`}>
+            {VERIFICATION_LABEL[item.verification]}
+            {item.verifierLoginId && item.verification !== 'NONE' ? ` · ${item.verifierLoginId}` : ''}
+          </span>
+        </div>
+        <p className="text-[0.95rem] break-words text-ink">
+          {item.verificationNote ? (
+            <>
+              <span className="font-semibold">Note: </span>
+              {item.verificationNote}
+            </>
+          ) : null}
+        </p>
       </div>
       {item.description && <p className="text-sm break-words whitespace-pre-wrap text-ink">{item.description}</p>}
       {link && (
@@ -56,7 +77,6 @@ function Item({ item, notify }: { item: PortfolioItem; notify: Notify }) {
           {item.link}
         </a>
       )}
-      {item.verificationNote && <p className="text-sm text-ink-muted">Note: {item.verificationNote}</p>}
       <div className="flex flex-wrap items-end gap-2">
         {item.verification === 'NONE' && (
           <form
@@ -93,16 +113,24 @@ function Student({ notify }: { notify: Notify }) {
         {portfolio.data.records.length === 0 ? (
           <EmptyState title="No records yet." description="Issued documents, events you attended, volunteering, and teams appear here." />
         ) : (
-          <ul className="divide-y divide-line text-sm">
+          <>
+          <div aria-hidden="true" className="hidden grid-cols-[10rem_minmax(0,1.4fr)_minmax(0,1.2fr)_12rem] gap-4 bg-surface-muted px-5 py-2.5 text-sm font-semibold text-ink md:grid">
+            <span>Source</span>
+            <span>Title</span>
+            <span>Detail</span>
+            <span>Date</span>
+          </div>
+          <ul aria-label="From college records" className="divide-y divide-line text-sm">
             {portfolio.data.records.map((record, index) => (
               <li key={`${record.source}-${index}`} className="grid gap-1 px-4 py-3 sm:px-5 md:grid-cols-[10rem_minmax(0,1.4fr)_minmax(0,1.2fr)_12rem] md:items-center md:gap-4">
-                <span><Badge tone="info">{SOURCE_LABEL[record.source]}</Badge></span>
-                <span className="font-medium break-words text-ink">{record.title}</span>
+                <span className="text-ink">{SOURCE_LABEL[record.source]}</span>
+                <span className="font-semibold break-words text-ink">{record.title}</span>
                 <span className="text-ink-muted">{record.detail}</span>
                 {record.at && <time className="text-ink-muted" dateTime={record.at}>{formatDateTime(record.at)}</time>}
               </li>
             ))}
           </ul>
+          </>
         )}
       </Card>
       <Card title="Add to your portfolio">
@@ -154,16 +182,25 @@ function Verifier({ notify }: { notify: Notify }) {
       ) : (
         <ul className="divide-y divide-line">
           {waiting.data.map((item) => (
-            <li key={item.itemId} className="space-y-2 px-4 py-3 sm:px-5">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-mono text-ink">{item.ownerLoginId}</span>
-                <span className="font-semibold break-words text-ink">{item.title}</span>
-                <span className="text-ink-muted">{KIND_LABEL[item.kind]}</span>
-                {item.occurredOn && <span className="text-ink-muted">{item.occurredOn}</span>}
+            <li key={item.itemId} className="space-y-3 px-4 py-4 sm:px-5">
+              <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)_10rem] md:items-center md:gap-0 md:[&>*:not(:first-child)]:border-l md:[&>*:not(:first-child)]:border-line md:[&>*:not(:first-child)]:pl-5">
+                <span className="flex items-center gap-3">
+                  <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-full bg-portal-bar-strong text-sm font-bold text-portal-navy uppercase">
+                    {item.ownerLoginId.slice(0, 2)}
+                  </span>
+                  <span className="font-semibold text-ink">{item.ownerLoginId}</span>
+                </span>
+                <span className="min-w-0 md:pr-5">
+                  <span className="block text-base font-bold break-words text-ink">{item.title}</span>
+                  {item.description && <span className="block text-sm break-words whitespace-pre-wrap text-ink-muted">{item.description}</span>}
+                </span>
+                <span className="text-sm text-ink">
+                  {KIND_LABEL[item.kind]}
+                  {item.occurredOn && <span className="block">{item.occurredOn}</span>}
+                </span>
               </div>
-              {item.description && <p className="text-sm break-words whitespace-pre-wrap text-ink">{item.description}</p>}
               <TextField label={`Note for ${item.ownerLoginId} (optional)`} value={notes[item.itemId] ?? ''} maxLength={1000} onChange={(event) => setNotes({ ...notes, [item.itemId]: event.target.value })} />
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => run(() => decidePortfolioItem(item.itemId, true, notes[item.itemId]?.trim() || null), 'Item verified.', 'Couldn’t save the decision.')}>
                   Verify<span className="sr-only">{` ${item.title}`}</span>
                 </Button>
