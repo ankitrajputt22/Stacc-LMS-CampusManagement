@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import * as api from '../api/systemApi'
 import { AuthContext, type AuthContextValue } from '../auth/AuthContext'
@@ -34,8 +34,12 @@ describe('SystemHealthPage', () => {
       </QueryClientProvider>,
     )
     expect(await screen.findByText('Answering')).toBeInTheDocument()
-    expect(screen.getByText('1 running · 0 waiting')).toBeInTheDocument()
-    expect(screen.getByText('Busy 1 · Succeeded 10')).toBeInTheDocument()
+    const now = screen.getByRole('region', { name: 'Requests now' })
+    expect(within(now).getByText('Running')).toBeInTheDocument()
+    expect(within(now).getByText('Waiting')).toBeInTheDocument()
+    const outcomes = screen.getByRole('region', { name: 'Requests in the last 24 hours' })
+    expect(within(outcomes).getByText('Busy')).toBeInTheDocument()
+    expect(within(outcomes).getByText('10')).toBeInTheDocument()
     expect(screen.getByText('2.4 s')).toBeInTheDocument()
   })
 })

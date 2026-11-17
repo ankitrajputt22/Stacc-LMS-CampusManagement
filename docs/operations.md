@@ -57,3 +57,10 @@ docker compose logs backend | grep a1b2c3d4e5f60718
 ```
 
 The ID is only a reference: it grants nothing, decides nothing, and holds no personal data. Never log request bodies, passwords, tokens, or private content next to it.
+
+## Look
+
+System Health has two columns: Overall (a large status with Check again) above Parts (a row per part with a status pill),
+and Application as label and value rows. The AI part shows whether the service answers, then its numbers as divided rows
+of large figures, with the AI knowledge counts beside them. The audit log keeps its filters on one row with Find as the
+main button and the tinted table.
