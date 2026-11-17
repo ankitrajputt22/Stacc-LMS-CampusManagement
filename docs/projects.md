@@ -12,3 +12,7 @@ Phase 0.12.10. Projects live in the `projects` module and use one team model for
 | `GET /api/v1/projects` | `STUDENT` or `FACULTY` with `PROJECT_USE` |
 | `POST /api/v1/projects`, `PUT …/{id}`, `POST …/{id}/status`, `POST …/{id}/join`, `POST …/members/{id}/decision`, `POST …/members/{id}/leave`, `POST …/{id}/mentors` | `STUDENT` with `PROJECT_USE`; the lead or the member comes from the token |
 | `POST /api/v1/projects/mentors/{id}/answer`, `POST …/mentors/{id}/step-down` | `FACULTY` with `PROJECT_USE`, and the invited account |
+
+## Look (v0.16.19)
+
+Each project is a card: its title, then whether it is taking members, the lead, and the member count; the summary; Members and Mentors by login ID; and Ask to join with a message box when the student may. The lead also sees Join requests (initials, login ID, message, Accept, Decline), the mentor invitation, and Stop or Take members again.
