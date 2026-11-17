@@ -37,3 +37,11 @@ The home page, `/`, shows "Faculty Dashboard" for an account holding `FACULTY` (
 ## Not built yet
 
 - Class averages, ranks, pass rates, engagement or performance scores, predictions, recommendations, charts, calendars, and notifications.
+
+## Look
+
+The faculty dashboard opens with three count tiles (Teaching Courses, Needs Grading, Open Attendance), then the teaching
+courses as a table with a tinted LMS status and Open LMS course as the main button. The admin dashboard shows the master
+and operation counts as divided rows of large figures with text links under them, and the offering preview as a table
+with View roster. An account with several roles gets each part in its own card under the To-Do list; an account with
+none of these roles sees "Welcome to Stacc." and the roles it holds.
