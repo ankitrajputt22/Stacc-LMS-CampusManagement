@@ -286,6 +286,9 @@ function App() {
           <Route path="admin/certificates" element={<CertificateDeskPage />} />
           <Route path="admin/certificates/:requestId" element={<CertificateDeskPage />} />
           <Route path="career" element={<CareerPage />} />
+          <Route path="career/resumes" element={<CareerPage section="resumes" />} />
+          <Route path="career/opportunities" element={<CareerPage section="opportunities" />} />
+          <Route path="career/applications" element={<CareerPage section="applications" />} />
           <Route path="placement" element={<PlacementPage />} />
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />
           <Route path="account" element={<AccountSettingsPage />} />

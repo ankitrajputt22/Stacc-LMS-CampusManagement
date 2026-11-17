@@ -38,14 +38,29 @@ function Applicants({ opportunity, notify }: { opportunity: Opportunity; notify:
     return <p className="text-sm text-ink-muted">No applicants yet.</p>
   }
   return (
-    <ul className="divide-y divide-line rounded-control border border-line text-sm">
+    <div className="overflow-hidden rounded-control border border-line">
+    <div aria-hidden="true" className="hidden grid-cols-[10rem_9rem_9rem_minmax(0,1fr)] gap-4 bg-surface-muted px-3 py-2 text-sm font-semibold text-ink lg:grid">
+      <span>Login ID</span>
+      <span>Status</span>
+      <span>Stage</span>
+      <span>Notes</span>
+    </div>
+    <ul aria-label={`Applicants for ${opportunity.title}`} className="divide-y divide-line text-sm">
       {applicants.data.map((a) => (
-        <li key={a.applicationId} className="space-y-2 px-3 py-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium text-ink">{a.applicantLoginId}</span>
-            <Badge tone="neutral">{a.status.replace('_', ' ').toLowerCase()}</Badge>
-            <span className="text-ink-muted">Stage: {a.stage}{a.resumeLabel && ` · resume: ${a.resumeLabel}`}{!a.shareConsent && ' · did not consent to sharing'}</span>
-            {a.offer && <Badge tone="success">Offer {a.offer.status.toLowerCase()}</Badge>}
+        <li key={a.applicationId} className="space-y-2 px-3 py-2.5">
+          <div className="grid gap-1 lg:grid-cols-[10rem_9rem_9rem_minmax(0,1fr)] lg:items-center lg:gap-4">
+            <span className="font-semibold text-ink">{a.applicantLoginId}</span>
+            <span>
+              <Badge tone={a.status === 'SELECTED' ? 'success' : a.status === 'IN_PROGRESS' ? 'info' : 'neutral'}>
+                {a.status.charAt(0) + a.status.slice(1).replace('_', ' ').toLowerCase()}
+              </Badge>
+            </span>
+            <span className="text-ink">{a.stage}</span>
+            <span className="flex flex-wrap items-center gap-2 text-ink-muted">
+              {a.resumeLabel ? `Resume: ${a.resumeLabel}` : 'No resume'}
+              {!a.shareConsent && ' · did not consent to sharing'}
+              {a.offer && <Badge tone="success">Offer {a.offer.status.toLowerCase()}</Badge>}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {(a.status === 'APPLIED' || a.status === 'IN_PROGRESS') && (
@@ -71,6 +86,7 @@ function Applicants({ opportunity, notify }: { opportunity: Opportunity; notify:
         </li>
       ))}
     </ul>
+    </div>
   )
 }
 
@@ -80,11 +96,20 @@ function OpportunityAdmin({ opportunity, notify }: { opportunity: Opportunity; n
   const [when, setWhen] = useState('')
   const [venue, setVenue] = useState('')
   return (
-    <li className="space-y-2 px-4 py-4 text-sm sm:px-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{opportunity.title}</span>
-        <Badge tone={opportunity.status === 'OPEN' ? 'success' : 'neutral'}>{opportunity.status.toLowerCase()}</Badge>
-        <span className="text-ink-muted">{opportunity.kind.toLowerCase()} · {opportunity.company ?? opportunity.organization ?? ''} · by {formatDateTime(opportunity.deadline)} · {opportunity.applicants} applicants</span>
+    <li className="space-y-3 px-4 py-4 text-sm sm:px-5">
+      <div>
+        <p className="text-xs font-semibold tracking-[0.06em] text-ink-muted uppercase">{opportunity.kind}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-xl font-bold break-words text-portal-navy">{opportunity.title}</h3>
+          <Badge tone={opportunity.status === 'OPEN' ? 'success' : 'neutral'}>{opportunity.status.charAt(0) + opportunity.status.slice(1).toLowerCase()}</Badge>
+        </div>
+        <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[0.95rem] text-ink">
+          <span>{opportunity.company ?? opportunity.organization ?? 'College'}</span>
+          <span aria-hidden="true" className="text-line-strong">|</span>
+          <span>Apply by {formatDateTime(opportunity.deadline)}</span>
+          <span aria-hidden="true" className="text-line-strong">|</span>
+          <span>{opportunity.applicants === 1 ? '1 applicant' : `${opportunity.applicants} applicants`}</span>
+        </p>
       </div>
       <div className="flex flex-wrap gap-2">
         {opportunity.status === 'DRAFT' && <Button size="sm" onClick={() => void setOpportunityOpen(opportunity.opportunityId, true).then(() => notify('Opened for applications.'))}>Open</Button>}
@@ -111,7 +136,17 @@ function OpportunityAdmin({ opportunity, notify }: { opportunity: Opportunity; n
               void scheduleRound(opportunity.opportunityId, { stageIndex: Number(stage), startsAt, venue: venue.trim() || null }).then(() => notify('Round scheduled.'))
             }}>Schedule round</Button>
           </div>
-          {opportunity.rounds.map((round) => <p key={round.stageIndex} className="text-ink-muted">{round.stage}: {formatDateTime(round.startsAt)}{round.venue && ` · ${round.venue}`}</p>)}
+          {opportunity.rounds.length > 0 && (
+            <ul aria-label={`Rounds of ${opportunity.title}`} className="divide-y divide-line rounded-control border border-line">
+              {opportunity.rounds.map((round) => (
+                <li key={round.stageIndex} className="grid gap-1 px-3 py-2 sm:grid-cols-[10rem_minmax(0,1fr)_minmax(0,1fr)] sm:gap-4">
+                  <span className="font-semibold text-ink">{round.stage}</span>
+                  <span className="text-ink">{formatDateTime(round.startsAt)}</span>
+                  <span className="text-ink">{round.venue ?? '—'}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           <Applicants opportunity={opportunity} notify={notify} />
         </div>
       )}

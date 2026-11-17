@@ -30,3 +30,7 @@
 - `/documents` has two tabs. My documents is a table (title with the verification code of an issued document, origin and Withdrawn, created, file and size, Download), with Upload a document (`/documents/upload`) and Request a certificate. Certificate requests (`/documents/requests`) lists each request (number, certificate, purpose with any decision note, requested, status, and Cancel request with a confirmation while requested); the form is `/documents/requests/new`.
 - `/admin/certificates` lists waiting requests as a table; each opens at `/admin/certificates/{requestId}` with its details beside Issue certificate (title and file, into the requester's documents) and Reason to refuse.
 - `/verify-document` is the public check on its own Stacc header: the code, Verify, and only whether it is authentic, its title, and its issue date.
+
+## Career pages (v0.16.17)
+
+`/career` has four tabs: Profile (headline, skills, links), Resumes (`/career/resumes`: each version with Download and Archive, then Add resume), Opportunities (`/career/opportunities`: kind, company, deadline, the stages as numbered steps, rounds, and Apply, Already applied, or why not eligible), and My applications (`/career/applications`: status and stage as words, any offer, Accept or Decline offer, and Withdraw). The placement office sees each opportunity with its kind, status, company, deadline, and applicant count, its rounds as rows, and its applicants as rows of login ID, status, stage, and notes.
