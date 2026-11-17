@@ -9,7 +9,7 @@ import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import { failureText } from '../engagement/engagementText'
 import type { Idea, IdeaStatus } from '../types/innovation'
-import { Alert, Badge, Button, Card, PageHeader, SelectField, TextAreaField, TextField } from '../ui'
+import { Alert, Button, Card, PageHeader, SelectField, TextAreaField, TextField } from '../ui'
 
 type Run = (action: () => Promise<unknown>, done: string, fallback: string) => void
 
@@ -17,17 +17,35 @@ const STATUS_LABEL: Record<IdeaStatus, string> = {
   SUBMITTED: 'Under review', SHORTLISTED: 'Shortlisted', ACCEPTED: 'Accepted', NOT_SELECTED: 'Not selected', WITHDRAWN: 'Withdrawn',
 }
 
+const STATUS_TONE: Record<IdeaStatus, string> = {
+  SUBMITTED: 'border-orange-200 bg-orange-50 text-ink',
+  SHORTLISTED: 'border-sky-200 bg-sky-50 text-ink',
+  ACCEPTED: 'border-success-line bg-success-soft text-ink',
+  NOT_SELECTED: 'border-danger/40 bg-danger/5 text-danger',
+  WITHDRAWN: 'border-line-strong bg-surface-muted text-ink-muted',
+}
+
+const ideaItemClasses = 'space-y-3 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5'
+
 function IdeaText({ idea }: { idea: Idea }) {
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-semibold break-words text-ink">{idea.title}</span>
-        {idea.submitterLoginId && <span className="font-mono text-ink-muted">{idea.submitterLoginId}</span>}
-        <Badge tone={idea.status === 'ACCEPTED' ? 'success' : idea.status === 'SHORTLISTED' ? 'info' : 'neutral'}>{STATUS_LABEL[idea.status]}</Badge>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="text-xl font-bold break-words text-portal-navy">{idea.title}</span>
+        <span className={`rounded-sm border px-2 py-0.5 text-sm font-medium ${STATUS_TONE[idea.status]}`}>{STATUS_LABEL[idea.status]}</span>
       </div>
-      <p className="text-sm break-words whitespace-pre-wrap text-ink"><span className="font-medium">Problem: </span>{idea.problem}</p>
-      <p className="text-sm break-words whitespace-pre-wrap text-ink"><span className="font-medium">Idea: </span>{idea.solution}</p>
-      {idea.decisionNote && <p className="text-sm text-ink-muted">Decision note: {idea.decisionNote}</p>}
+      {idea.submitterLoginId && <p className="text-sm text-ink-muted">By {idea.submitterLoginId}</p>}
+      <div>
+        <p className="text-sm font-semibold text-ink">Problem</p>
+        <p className="text-[0.95rem] break-words whitespace-pre-wrap text-ink">{idea.problem}</p>
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-ink">Idea</p>
+        <p className="text-[0.95rem] break-words whitespace-pre-wrap text-ink">{idea.solution}</p>
+      </div>
+      {idea.decisionNote && (
+        <p className="rounded-control bg-surface-muted px-3 py-2 text-[0.95rem] text-ink">{`Decision note: ${idea.decisionNote}`}</p>
+      )}
     </>
   )
 }
@@ -58,17 +76,22 @@ function Mine({ run }: { run: Run }) {
         ) : ideas.data.length === 0 ? (
           <EmptyState title="No ideas yet." />
         ) : (
-          <ul className="divide-y divide-line">
+          <ul className="space-y-3 px-4 py-4 sm:px-5">
             {ideas.data.map((idea) => (
-              <li key={idea.ideaId} className="space-y-2 px-4 py-3 sm:px-5">
+              <li key={idea.ideaId} className={ideaItemClasses}>
                 <IdeaText idea={idea} />
                 {idea.reviews.length > 0 && (
-                  <ul className="list-disc pl-5 text-sm text-ink-muted">
-                    {idea.reviews.map((review, index) => <li key={index} className="break-words whitespace-pre-wrap">{review.comment}</li>)}
-                  </ul>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Reviewers’ comments</p>
+                    <ul className="mt-1 space-y-2 text-[0.95rem] text-ink">
+                      {idea.reviews.map((review, index) => (
+                        <li key={index} className="rounded-control border border-line bg-surface-muted px-3 py-2 break-words whitespace-pre-wrap">{review.comment}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
                 {(idea.status === 'SUBMITTED' || idea.status === 'SHORTLISTED') && (
-                  <Button size="sm" variant="secondary" onClick={() => run(() => withdrawIdea(idea.ideaId), 'Idea withdrawn.', 'Couldn’t withdraw the idea.')}>
+                  <Button size="sm" onClick={() => run(() => withdrawIdea(idea.ideaId), 'Idea withdrawn.', 'Couldn’t withdraw the idea.')}>
                     Withdraw<span className="sr-only">{` ${idea.title}`}</span>
                   </Button>
                 )}
@@ -111,9 +134,9 @@ function Reviews({ run }: { run: Run }) {
       ) : ideas.data.length === 0 ? (
         <EmptyState title="Nothing to review." />
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className="space-y-3 px-4 py-4 sm:px-5">
           {ideas.data.map((idea) => (
-            <li key={idea.ideaId} className="space-y-2 px-4 py-3 sm:px-5">
+            <li key={idea.ideaId} className={ideaItemClasses}>
               <IdeaText idea={idea} />
               <ReviewForm idea={idea} run={run} />
             </li>
@@ -134,29 +157,37 @@ function Office({ run }: { run: Run }) {
       ) : ideas.data.length === 0 ? (
         <EmptyState title="No ideas submitted yet." />
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className="space-y-3 px-4 py-4 sm:px-5">
           {ideas.data.map((idea) => {
             const open = idea.status === 'SUBMITTED' || idea.status === 'SHORTLISTED'
             const note = notes[idea.ideaId]?.trim() || null
             return (
-              <li key={idea.ideaId} className="space-y-2 px-4 py-3 sm:px-5">
+              <li key={idea.ideaId} className={ideaItemClasses}>
                 <IdeaText idea={idea} />
                 {idea.reviews.length > 0 && (
-                  <ul className="list-disc pl-5 text-sm text-ink-muted">
-                    {idea.reviews.map((review) => (
-                      <li key={review.reviewerLoginId} className="break-words">{`${review.reviewerLoginId}: ${review.score} of 5 — ${review.comment}`}</li>
-                    ))}
-                  </ul>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Reviews</p>
+                    <ul className="mt-1 space-y-2 text-[0.95rem] text-ink">
+                      {idea.reviews.map((review) => (
+                        <li key={review.reviewerLoginId} className="flex items-start gap-3 rounded-control border border-line bg-surface-muted px-3 py-2">
+                          <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-portal-bar-strong text-xs font-bold text-portal-navy uppercase">
+                            {(review.reviewerLoginId ?? '').slice(0, 2)}
+                          </span>
+                          <span className="min-w-0 break-words">{`${review.reviewerLoginId}: ${review.score} of 5 — ${review.comment}`}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
                 {open && (
-                  <div className="flex flex-wrap items-end gap-2">
+                  <div className="flex flex-wrap items-end gap-2 border-t border-line pt-3">
                     <TextField label={`Decision note for ${idea.title} (optional)`} value={notes[idea.ideaId] ?? ''} maxLength={1000} onChange={(event) => setNotes({ ...notes, [idea.ideaId]: event.target.value })} />
                     {idea.status === 'SUBMITTED' && (
-                      <Button size="sm" variant="secondary" onClick={() => run(() => decideIdea(idea.ideaId, 'SHORTLISTED', note), 'Idea shortlisted.', 'Couldn’t decide.')}>
+                      <Button size="sm" onClick={() => run(() => decideIdea(idea.ideaId, 'SHORTLISTED', note), 'Idea shortlisted.', 'Couldn’t decide.')}>
                         Shortlist<span className="sr-only">{` ${idea.title}`}</span>
                       </Button>
                     )}
-                    <Button size="sm" onClick={() => run(() => decideIdea(idea.ideaId, 'ACCEPTED', note), 'Idea accepted.', 'Couldn’t decide.')}>
+                    <Button size="sm" variant="secondary" onClick={() => run(() => decideIdea(idea.ideaId, 'ACCEPTED', note), 'Idea accepted.', 'Couldn’t decide.')}>
                       Accept<span className="sr-only">{` ${idea.title}`}</span>
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => run(() => decideIdea(idea.ideaId, 'NOT_SELECTED', note), 'Idea marked not selected.', 'Couldn’t decide.')}>

@@ -13,3 +13,7 @@ Phase 0.12.11. Ideas live in the `innovation` module, at `/innovation`, with one
 | `GET /api/v1/innovation/ideas/me`, `POST /api/v1/innovation/ideas`, `POST …/ideas/{id}/withdraw` | `STUDENT` or `FACULTY` with `INNOVATION_SUBMIT`; the submitter comes from the token |
 | `GET /api/v1/innovation/reviews`, `POST …/ideas/{id}/review` | `FACULTY` with `INNOVATION_REVIEW` |
 | `GET /api/v1/admin/innovation/ideas`, `POST …/ideas/{id}/decision` | `ADMIN` with `INNOVATION_MANAGE` |
+
+## Look (v0.16.20)
+
+Each idea is a card: its title and status as a tinted word (Under review, Shortlisted, Accepted, Not selected, Withdrawn), who submitted it (office and reviewers only), Problem and Idea as labelled paragraphs, and any decision note. Students see reviewers' comments without names once decided; reviewers score and comment under the idea; the office sees each review with the reviewer's initials and score, then the decision note with Shortlist, Accept, and Not selected.
