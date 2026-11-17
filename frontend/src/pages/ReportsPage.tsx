@@ -30,7 +30,7 @@ export function ReportsPage() {
           <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">{intro}</p>
           <div className="mt-6 space-y-10">
             {faculty && <FacultyReportsSection />}
-            {admin && <AdminReportsSection />}
+            {admin && <AdminReportsSection showHeading={faculty} />}
             {admin && <ExportsPanel kind="ADMIN_ENROLLMENTS" parameter={null} label="Export all enrollments (Excel)" />}
           </div>
         </>

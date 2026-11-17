@@ -17,7 +17,7 @@ import { Pager } from '../support/Pager'
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { AdminReportOverview, ReportFilterQuery } from '../types/reports'
 import { formatCount } from './reportFormat'
-import { ReportSection, ReportStats } from './ReportStats'
+import { ReportSection, ReportStats, ReportSubheading } from './ReportStats'
 
 const PAGE_SIZE = 20
 const SIGN_IN_AGAIN = 'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
@@ -55,7 +55,7 @@ function Filters({ applied, onApply }: { applied: ReportFilterQuery; onApply: (n
         event.preventDefault()
         onApply({ academicSessionId: idParam(session), programId: idParam(program), semesterId: idParam(semester) })
       }}
-      className="grid gap-3 rounded-panel border border-line bg-surface p-4 sm:grid-cols-3"
+      className="grid gap-3 rounded-panel border border-line bg-surface p-4 sm:grid-cols-3 sm:p-5 xl:grid-cols-[1fr_1fr_1fr_auto] xl:items-end xl:gap-4"
     >
       <div>
         <label htmlFor="report-filter-session" className="block text-sm font-medium text-ink">Academic Session</label>
@@ -80,7 +80,7 @@ function Filters({ applied, onApply }: { applied: ReportFilterQuery; onApply: (n
           ))}
         </select>
       </div>
-      <div className="flex flex-col gap-2 sm:col-span-3 sm:flex-row">
+      <div className="flex flex-col gap-2 sm:col-span-3 sm:flex-row xl:col-span-1">
         <Button type="submit">Apply filters</Button>
         <ActionButton
           onClick={() => {
@@ -110,7 +110,7 @@ function Overview({ overview }: { overview: AdminReportOverview }) {
         ]} />
       </ReportSection>
       <ReportSection id="admin-report-enrollment" title="Enrollment summary" note="By exact status, within the filters.">
-        <h4 className="text-xs font-semibold text-ink">Semester Enrollments</h4>
+        <ReportSubheading>Semester</ReportSubheading>
         <div className="mt-1">
           <ReportStats label="Semester enrollments" items={[
             { label: 'Enrolled', value: enrollment.semesterEnrollments.enrolledCount },
@@ -118,7 +118,9 @@ function Overview({ overview }: { overview: AdminReportOverview }) {
             { label: 'Withdrawn', value: enrollment.semesterEnrollments.withdrawnCount },
           ]} />
         </div>
-        <h4 className="mt-4 text-xs font-semibold text-ink">Course Enrollments</h4>
+        <div className="mt-4">
+          <ReportSubheading>Course</ReportSubheading>
+        </div>
         <div className="mt-1">
           <ReportStats label="Course enrollments" items={[
             { label: 'Enrolled', value: enrollment.courseEnrollments.enrolledCount },
@@ -280,7 +282,7 @@ function EnrollmentReport({ filters, page, onPage }: { filters: ReportFilterQuer
  * Admin reports: filters in the address (session, program, semester, page), the overview, operational sections the
  * backend returned, and the per-offering enrollment report with its CSV export.
  */
-export function AdminReportsSection() {
+export function AdminReportsSection({ showHeading = false }: { showHeading?: boolean }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const sessionParam = searchParams.get('session')
   const programParam = searchParams.get('program')
@@ -325,9 +327,11 @@ export function AdminReportsSection() {
 
   return (
     <section aria-labelledby="admin-reports-heading">
-      <h2 id="admin-reports-heading" className="text-base font-semibold text-ink">
+      {/* Shown when the account also has the faculty part, so the two parts read apart; said to screen readers always. */}
+      <h2 id="admin-reports-heading" className={showHeading ? 'text-2xl font-bold text-ink' : 'sr-only'}>
         Academic and Operational Reports
       </h2>
+      {showHeading && <span aria-hidden="true" className="mt-1.5 block h-0.5 w-12 rounded bg-portal-cta" />}
       <div className="mt-3">
         {/* Keyed by the address, so Back and Forward show the filters they lead to. */}
         <Filters key={`${sessionParam}|${programParam}|${semesterParam}`} applied={filters} onApply={(next) => apply(next)} />
