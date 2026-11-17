@@ -1,8 +1,8 @@
-import { type FormEvent, useMemo, useRef, useState } from 'react'
+import { type FormEvent, type ReactNode, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { searchStacc, searchStaccByType } from '../api/searchApi'
 import { useApiRequest } from '../api/useApiRequest'
-import { actionLinkClasses } from '../components/actionStyles'
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 import { Button } from '../components/Button'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
@@ -15,6 +15,7 @@ import { isSearchable, normalizeQuery, parseType, SEARCH_MAX, searchPath } from 
 import { Pager } from '../support/Pager'
 import { border, fieldClasses } from '../teaching/formStyles'
 import type { SearchResultItem, SearchResultType } from '../types/search'
+import { textLinkClasses } from '../ui/styles'
 
 const PAGE_SIZE = 20
 
@@ -30,55 +31,98 @@ function SearchForm({ initial, type }: { initial: string; type: SearchResultType
   }
 
   return (
-    <form role="search" aria-label="Search page" onSubmit={submit} className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end">
-      <div className="min-w-0 flex-1">
-        <label htmlFor="search-page-q" className="block text-sm font-medium text-ink">
-          Search Stacc
-        </label>
+    <form role="search" aria-label="Search page" onSubmit={submit} className="mt-4 flex max-w-4xl flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+      <label htmlFor="search-page-q" className="sr-only">
+        Search Stacc
+      </label>
+      <div className="relative min-w-0 flex-1">
+        <NavIcon name="search" className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-ink" />
         <input
           id="search-page-q"
           type="search"
           autoComplete="off"
           maxLength={SEARCH_MAX}
           value={query}
+          placeholder="Search courses, assignments, notices, tickets…"
           onChange={(event) => setQuery(event.target.value)}
-          className={`h-11 ${fieldClasses} ${border(false)}`}
+          className={`h-12 pl-11 text-base ${fieldClasses} ${border(false)}`}
         />
       </div>
-      <Button type="submit">Search</Button>
+      <Button type="submit" className="h-12 px-8 text-base">Search</Button>
     </form>
   )
 }
 
-/** One result: its title as the link, its context, a short plain-text snippet, and a date when it has one. */
+const TYPE_ICON: Partial<Record<SearchResultType, NavIconName>> = {
+  COURSE: 'courses',
+  TEACHING_COURSE: 'courses',
+  CATALOG_COURSE: 'courses',
+  COURSE_OFFERING: 'courses',
+  ANNOUNCEMENT: 'inbox',
+  TEACHING_ANNOUNCEMENT: 'inbox',
+  ACADEMIC_CALENDAR_EVENT: 'calendar',
+  CAMPUS_NOTICE: 'campus',
+  HELPDESK_TICKET: 'support',
+  CAMPUS_SERVICE_REQUEST: 'campus',
+  HOSTEL_APPLICATION: 'hostel',
+  DEPARTMENT: 'academics',
+  PROGRAM: 'academics',
+  ACADEMIC_SESSION: 'calendar',
+  SEMESTER: 'calendar',
+}
+
+/** One result: an icon, its title as the link, its context and a short plain-text snippet, and a date when it has one. */
 function ResultRow({ item, typeLabel }: { item: SearchResultItem; typeLabel: string }) {
   return (
-    <li className="px-4 py-3 sm:px-5">
-      <Link to={item.actionPath} className="text-sm font-medium break-words text-stacc-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary">
-        {item.title}
-        <span className="sr-only">, {typeLabel}</span>
-      </Link>
-      {item.subtitle && <p className="mt-0.5 text-sm break-words text-ink">{item.subtitle}</p>}
-      {/* Plain text: React shows it as text, never as HTML. */}
-      {item.snippet && <p className="mt-0.5 text-sm leading-6 break-words text-ink-muted">{item.snippet}</p>}
-      {item.occurredAt && (
-        <p className="text-xs text-ink-muted">
-          <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
-        </p>
-      )}
+    <li className="flex gap-4 py-3">
+      <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-panel bg-sky-100 text-portal-navy">
+        <NavIcon name={TYPE_ICON[item.type] ?? 'documents'} className="size-6" />
+      </span>
+      <div className="min-w-0 border-l border-line pl-4">
+        <Link to={item.actionPath} className="text-base font-bold break-words text-stacc-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary">
+          {item.title}
+          <span className="sr-only">, {typeLabel}</span>
+        </Link>
+        {(item.subtitle || item.snippet) && (
+          <p className="mt-0.5 text-[0.95rem] break-words text-ink">
+            {item.subtitle}
+            {item.subtitle && item.snippet && <span aria-hidden="true"> · </span>}
+            {/* Plain text: React shows it as text, never as HTML. */}
+            {item.snippet && <span className="text-ink-muted">{item.snippet}</span>}
+          </p>
+        )}
+        {item.occurredAt && (
+          <p className="text-sm text-ink-muted">
+            <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
+          </p>
+        )}
+      </div>
     </li>
   )
 }
 
 function Results({ items, typeLabel, label }: { items: SearchResultItem[]; typeLabel: string; label: string }) {
   return (
-    <ul aria-label={label} className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
+    <ul aria-label={label} className="divide-y divide-line">
       {items.map((item, index) => (
         <ResultRow key={`${item.actionPath}-${index}`} item={item} typeLabel={typeLabel} />
       ))}
     </ul>
   )
 }
+
+function SectionHeading({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <div>
+      <h3 id={id} className="text-xl font-bold break-words text-ink">
+        {children}
+      </h3>
+      <span aria-hidden="true" className="mt-1.5 block h-0.5 w-12 rounded bg-portal-cta" />
+    </div>
+  )
+}
+
+const sectionCardClasses = 'rounded-panel border border-line bg-surface px-4 py-4 sm:px-5'
 
 function noResults(query: string) {
   return (
@@ -124,22 +168,24 @@ function GroupedResults({ query }: { query: string }) {
     return noResults(query)
   }
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {sections.map((section) => (
-        <section key={section.type} aria-labelledby={`search-section-${section.type}`}>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 id={`search-section-${section.type}`} className="text-base font-semibold text-ink">
-              {section.label} <span className="text-sm font-normal text-ink-muted">({section.totalCount})</span>
-            </h3>
-            {section.totalCount > section.items.length && (
-              <Link to={searchPath(query, section.type)} className={actionLinkClasses}>
-                View all<span className="sr-only"> {section.totalCount} {section.label.toLowerCase()}</span>
-              </Link>
-            )}
-          </div>
+        <section key={section.type} aria-labelledby={`search-section-${section.type}`} className={sectionCardClasses}>
+          <SectionHeading id={`search-section-${section.type}`}>
+            {section.label} ({section.totalCount})
+          </SectionHeading>
           <div className="mt-2">
             <Results items={section.items} typeLabel={section.label} label={section.label} />
           </div>
+          {section.totalCount > section.items.length && (
+            <Link
+              to={searchPath(query, section.type)}
+              className="mt-2 inline-block rounded-sm font-semibold text-portal-cta underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary"
+            >
+              View all ({section.totalCount})<span className="sr-only"> {section.label.toLowerCase()}</span>{' '}
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
         </section>
       ))}
     </div>
@@ -169,7 +215,9 @@ function TypeResults({ query, type, page }: { query: string; type: SearchResultT
   } else {
     content = (
       <>
-        <Results items={request.data.items} typeLabel={request.data.label} label={request.data.label} />
+        <div className={sectionCardClasses}>
+          <Results items={request.data.items} typeLabel={request.data.label} label={request.data.label} />
+        </div>
         <Pager
           page={request.data.page}
           totalPages={request.data.totalPages}
@@ -186,14 +234,12 @@ function TypeResults({ query, type, page }: { query: string; type: SearchResultT
   const label = request.status === 'loaded' ? request.data.label : 'Results'
   return (
     <>
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold break-words text-ink">
-          {label} matching “{query}”
-        </h2>
-        <Link to={searchPath(query)} className={actionLinkClasses}>
-          Back to all results
-        </Link>
-      </div>
+      <Link to={searchPath(query)} className={textLinkClasses}>
+        ← Back to all results
+      </Link>
+      <h2 className="mt-2 text-2xl font-bold break-words text-ink">
+        {label} matching “{query}”
+      </h2>
       <div ref={contentRef} className="mt-3">
         {content}
       </div>
@@ -231,7 +277,7 @@ export function SearchPage() {
   } else {
     content = (
       <>
-        <h2 className="text-lg font-semibold break-words text-ink">Results for “{query}”</h2>
+        <h2 className="text-2xl font-bold break-words text-ink">Results for “{query}”</h2>
         <div className="mt-3">
           <GroupedResults query={query} />
         </div>

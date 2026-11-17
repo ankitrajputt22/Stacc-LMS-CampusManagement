@@ -131,3 +131,9 @@ A preview runs at most one bounded, paged query and one count query for each kin
 ## Development data
 
 Under `dev-seed` (`docs/local-test-data.md`), the seeder adds searchable requests through their services: a campus request each for `student1` and `faculty1`, and a pending hostel application for `student2`. Courses, assignments, announcements, calendar events, notices, and tickets were already seeded. Study materials need object storage, so they are not seeded; upload one at `/teaching/:lmsCourseId` to try material search.
+
+## Look
+
+The search field has a search icon and an orange Search button. Grouped results show each kind as its own card headed
+"Kind (count)" with the orange underline; each result has an icon tile, its title as the link, and its context and snippet
+on one line. View all (count) sits under the card's results. A View all page links back with "← Back to all results".
