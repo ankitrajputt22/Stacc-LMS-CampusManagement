@@ -2,6 +2,8 @@ import { Link } from 'react-router'
 import { getFacultyDashboard } from '../api/dashboardApi'
 import { useApiRequest } from '../api/useApiRequest'
 import { actionLinkClasses } from '../components/actionStyles'
+import { buttonClasses } from '../ui/styles'
+import { DataTable } from '../ui'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
@@ -15,27 +17,31 @@ import { PlannerList } from './PlannerList'
 
 type Level = 2 | 3
 
-const tagClasses = 'inline-block shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-xs font-medium text-ink'
+const primarySmallClasses = buttonClasses('primary', 'sm')
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** Where a teaching course leads: its LMS course when faculty can open it, otherwise the Teaching page. */
 function CourseAction({ course }: { course: FacultyDashboardCourse }) {
   const name = <span className="sr-only"> {course.courseCode}</span>
   if (course.lmsCourseId !== null && (course.lmsCourseStatus === 'DRAFT' || course.lmsCourseStatus === 'PUBLISHED')) {
     return (
-      <Link to={`/teaching/${course.lmsCourseId}`} className={actionLinkClasses}>
+      <Link to={`/teaching/${course.lmsCourseId}`} className={primarySmallClasses}>
         Open LMS course{name}
       </Link>
     )
   }
-  // No LMS course yet: Teaching is where one is created. Archived: Teaching shows it, and nothing opens it.
   return (
-    <Link to="/teaching" className={actionLinkClasses}>
+    <Link to="/teaching" className={primarySmallClasses}>
       {course.lmsCourseStatus === null ? 'Manage teaching' : 'View teaching'}
       {name}
     </Link>
   )
+}
+
+const LMS_TONE: Record<string, string> = {
+  PUBLISHED: 'bg-success-soft text-ink',
+  DRAFT: 'bg-amber-50 text-ink',
+  ARCHIVED: 'bg-surface-muted text-ink-muted',
 }
 
 function TeachingCourses({ dashboard, level }: { dashboard: Dashboard; level: Level }) {
@@ -44,33 +50,28 @@ function TeachingCourses({ dashboard, level }: { dashboard: Dashboard; level: Le
       {dashboard.teachingCourses.length === 0 ? (
         <SectionEmpty>No teaching courses available.</SectionEmpty>
       ) : (
-        <ul className="divide-y divide-line">
-          {dashboard.teachingCourses.map((course) => (
-            <li key={course.courseOfferingId} className="flex flex-col gap-2 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm break-words text-ink">
-                  <span className="font-semibold">{course.courseCode}</span>
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  {course.courseName}
-                </p>
-                <p className="text-xs leading-5 break-words text-ink-muted">
-                  {course.programCode}
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  Semester {course.semesterNumber}
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  {course.academicSessionCode}
-                </p>
-                <p className="mt-1 flex items-center gap-2 text-xs text-ink-muted">
-                  LMS course <span className={tagClasses}>{lmsStatusWord(course.lmsCourseStatus)}</span>
-                </p>
-              </div>
-              <CourseAction course={course} />
-            </li>
-          ))}
-        </ul>
+        <DataTable<FacultyDashboardCourse>
+          caption="Teaching courses"
+          rows={dashboard.teachingCourses}
+          rowKey={(course) => course.courseOfferingId}
+          columns={[
+            { key: 'code', header: 'Course code', primary: true, cell: (course) => <span className="font-bold">{course.courseCode}</span> },
+            { key: 'name', header: 'Course title', cell: (course) => course.courseName },
+            { key: 'program', header: 'Program', cell: (course) => course.programCode },
+            { key: 'semester', header: 'Semester', cell: (course) => `Semester ${course.semesterNumber}` },
+            { key: 'session', header: 'Academic year', cell: (course) => course.academicSessionCode },
+            {
+              key: 'lms',
+              header: 'LMS status',
+              cell: (course) => (
+                <span className={`inline-block rounded-sm px-2 py-0.5 text-sm font-medium ${LMS_TONE[course.lmsCourseStatus ?? ''] ?? 'bg-surface-muted text-ink'}`}>
+                  {lmsStatusWord(course.lmsCourseStatus)}
+                </span>
+              ),
+            },
+            { key: 'action', header: 'Action', cell: (course) => <CourseAction course={course} /> },
+          ]}
+        />
       )}
       <PreviewNote shown={dashboard.teachingCourses.length} total={dashboard.teachingCourseCount} />
     </DashboardSection>
@@ -91,7 +92,6 @@ function UpcomingAssignments({ dashboard, level }: { dashboard: Dashboard; level
             courseCode: assignment.courseCode,
             courseName: assignment.courseName,
             title: assignment.title,
-            // The course page's Assignments section is where assignments are managed.
             to: `/teaching/${assignment.lmsCourseId}#assignments`,
             dueAt: assignment.dueAt,
             maxMarks: assignment.maxMarks,
@@ -127,7 +127,6 @@ function NeedsGrading({ dashboard, level }: { dashboard: Dashboard; level: Level
                   <TimingTag late={pending.latestLate} />
                 </p>
               </div>
-              {/* The existing grading page opens this submission with ?submission=. */}
               <Link
                 to={`/teaching/${pending.lmsCourseId}/assignments/${pending.assignmentId}/submissions?submission=${pending.submissionId}`}
                 className={actionLinkClasses}
@@ -178,7 +177,6 @@ function OpenAttendance({ dashboard, level }: { dashboard: Dashboard; level: Lev
                 </p>
                 <p className="text-xs text-ink">{markingText(session)}</p>
               </div>
-              {/* The existing attendance page opens this session with ?session=. */}
               <Link to={`/attendance/${session.courseOfferingId}?session=${session.attendanceSessionId}`} className={actionLinkClasses}>
                 Continue<span className="sr-only"> {session.courseCode} attendance of {formatDateTime(session.heldAt)}</span>
               </Link>
@@ -191,11 +189,6 @@ function OpenAttendance({ dashboard, level }: { dashboard: Dashboard; level: Lev
   )
 }
 
-/**
- * The faculty dashboard: what GET /api/v1/dashboard/faculty sends, as short previews that open the existing Teaching,
- * assignment, grading, and attendance pages. The backend already decided what is visible; nothing is filtered,
- * calculated, or invented here.
- */
 export function FacultyDashboard({ level = 2 }: { level?: Level }) {
   const dashboard = useApiRequest(getFacultyDashboard)
 
@@ -224,20 +217,17 @@ export function FacultyDashboard({ level = 2 }: { level?: Level }) {
   const data = dashboard.data
   return (
     <div className="space-y-4">
-      {/* Three real counts, kept small; the sections below show their previews. */}
-      <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-        <div>
-          <dt className="text-ink-muted">Teaching Courses</dt>
-          <dd className="text-xl font-semibold text-ink">{data.teachingCourseCount}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">Needs Grading</dt>
-          <dd className="text-xl font-semibold text-ink">{data.needsGradingCount}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">Open Attendance</dt>
-          <dd className="text-xl font-semibold text-ink">{data.openAttendanceCount}</dd>
-        </div>
+      <dl className="grid gap-4 sm:grid-cols-3">
+        {([
+          ['Teaching Courses', data.teachingCourseCount],
+          ['Needs Grading', data.needsGradingCount],
+          ['Open Attendance', data.openAttendanceCount],
+        ] as const).map(([label, value]) => (
+          <div key={label} className="rounded-panel border border-line bg-surface px-5 py-4">
+            <dt className="text-lg font-bold text-ink">{label}</dt>
+            <dd className="mt-1 text-4xl font-bold text-ink tabular-nums">{value}</dd>
+          </div>
+        ))}
       </dl>
       <TeachingCourses dashboard={data} level={level} />
       <UpcomingAssignments dashboard={data} level={level} />

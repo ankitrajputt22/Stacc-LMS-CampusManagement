@@ -1,13 +1,14 @@
 import { Link } from 'react-router'
 import { getAdminDashboard } from '../api/dashboardApi'
 import { useApiRequest } from '../api/useApiRequest'
-import { actionLinkClasses } from '../components/actionStyles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { ErrorState } from '../components/states/ErrorState'
 import { LoadingState } from '../components/states/LoadingState'
 import { StatePanel } from '../components/states/StatePanel'
 import { creditsText } from '../courses/credits'
 import type { AdminDashboard as Dashboard } from '../types/dashboard'
+import { DataTable, textLinkClasses } from '../ui'
+import { buttonClasses } from '../ui/styles'
 import { DashboardSection, PreviewNote, SectionEmpty } from './DashboardSection'
 
 type Level = 2 | 3
@@ -15,14 +16,13 @@ type Level = 2 | 3
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** Label and value rows, read in that order. A zero is shown as 0. */
 function Counts({ rows }: { rows: [string, number][] }) {
   return (
-    <dl className="divide-y divide-line">
+    <dl className="grid grid-cols-2 gap-y-4 sm:flex sm:flex-wrap">
       {rows.map(([label, value]) => (
-        <div key={label} className="flex items-baseline justify-between gap-4 py-2 first:pt-0">
-          <dt className="text-sm text-ink-muted">{label}</dt>
-          <dd className="text-base font-semibold text-ink tabular-nums">{value}</dd>
+        <div key={label} className="min-w-28 flex-1 border-line px-4 text-center sm:not-first:border-l">
+          <dt className="text-[0.95rem] text-ink">{label}</dt>
+          <dd className="mt-1 text-4xl font-bold text-ink tabular-nums">{value}</dd>
         </div>
       ))}
     </dl>
@@ -31,13 +31,15 @@ function Counts({ rows }: { rows: [string, number][] }) {
 
 function Actions({ links }: { links: { to: string; label: string }[] }) {
   return (
-    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+    <ul className="mt-5 flex flex-wrap items-center gap-y-2">
       {links.map((link) => (
-        <Link key={link.to} to={link.to} className={actionLinkClasses}>
-          {link.label}
-        </Link>
+        <li key={link.to} className="flex items-center not-first:before:mx-4 not-first:before:h-5 not-first:before:w-px not-first:before:bg-line-strong not-first:before:content-['']">
+          <Link key={link.to} to={link.to} className={`text-[0.95rem] ${textLinkClasses}`}>
+            {link.label}
+          </Link>
+        </li>
       ))}
-    </div>
+    </ul>
   )
 }
 
@@ -102,49 +104,38 @@ function CourseOfferings({ dashboard, level }: { dashboard: Dashboard; level: Le
       {dashboard.courseOfferings.length === 0 ? (
         <SectionEmpty>No course offerings available.</SectionEmpty>
       ) : (
-        <ul className="divide-y divide-line">
-          {dashboard.courseOfferings.map((offering) => (
-            <li key={offering.courseOfferingId} className="flex flex-col gap-2 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm break-words text-ink">
-                  <span className="font-semibold">{offering.courseCode}</span>
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  {offering.courseName}
-                </p>
-                <p className="text-xs leading-5 break-words text-ink-muted">
-                  {offering.programCode}
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  Semester {offering.semesterNumber}
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  {offering.academicSessionCode}
-                  <span aria-hidden="true"> · </span>
-                  <span className="sr-only">, </span>
-                  {creditsText(offering.credits)}
-                </p>
-              </div>
-              <Link to={`/admin/academic/offerings/${offering.courseOfferingId}/enrollments`} className={actionLinkClasses}>
-                View roster
-                <span className="sr-only">
-                  {' '}
-                  of {offering.courseCode} in semester {offering.semesterNumber}, {offering.academicSessionCode}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <DataTable<Dashboard['courseOfferings'][number]>
+          caption="Course offerings"
+          rows={dashboard.courseOfferings}
+          rowKey={(offering) => offering.courseOfferingId}
+          columns={[
+            { key: 'code', header: 'Course code', primary: true, cell: (offering) => offering.courseCode },
+            { key: 'name', header: 'Course name', cell: (offering) => offering.courseName },
+            { key: 'program', header: 'Program', cell: (offering) => offering.programCode },
+            { key: 'semester', header: 'Semester', cell: (offering) => `Semester ${offering.semesterNumber}` },
+            { key: 'session', header: 'Academic session', cell: (offering) => offering.academicSessionCode },
+            { key: 'credits', header: 'Credits', cell: (offering) => creditsText(offering.credits) },
+            {
+              key: 'roster',
+              header: 'Action',
+              cell: (offering) => (
+                <Link to={`/admin/academic/offerings/${offering.courseOfferingId}/enrollments`} className={buttonClasses('primary', 'sm')}>
+                  View roster
+                  <span className="sr-only">
+                    {' '}
+                    of {offering.courseCode} in semester {offering.semesterNumber}, {offering.academicSessionCode}
+                  </span>
+                </Link>
+              ),
+            },
+          ]}
+        />
       )}
       <PreviewNote shown={dashboard.courseOfferings.length} total={dashboard.academicOperations.courseOfferingCount} />
     </DashboardSection>
   )
 }
 
-/**
- * The admin dashboard: the counts and offering preview GET /api/v1/dashboard/admin sends, with links to the existing
- * Academic Admin pages. Nothing is filtered, calculated, or invented here.
- */
 export function AdminDashboard({ level = 2 }: { level?: Level }) {
   const dashboard = useApiRequest(getAdminDashboard)
 
@@ -173,10 +164,8 @@ export function AdminDashboard({ level = 2 }: { level?: Level }) {
   const data = dashboard.data
   return (
     <div className="space-y-4">
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <AcademicMasters dashboard={data} level={level} />
-        <AcademicOperations dashboard={data} level={level} />
-      </div>
+      <AcademicMasters dashboard={data} level={level} />
+      <AcademicOperations dashboard={data} level={level} />
       <CourseOfferings dashboard={data} level={level} />
     </div>
   )
