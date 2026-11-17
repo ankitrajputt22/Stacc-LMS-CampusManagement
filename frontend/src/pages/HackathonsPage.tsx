@@ -26,6 +26,7 @@ import { safeUrl } from '../formatting/safeUrl'
 import type { Hackathon, HackathonResult, JudgeItem } from '../types/hackathons'
 import { Alert, Badge, Button, Card, DataTable, PageHeader, TextAreaField, TextField } from '../ui'
 import { textLinkClasses } from '../ui/styles'
+import { NavIcon } from '../components/navigation/navIcons'
 
 type Run = (action: () => Promise<unknown>, done: string, fallback: string) => void
 
@@ -46,45 +47,89 @@ function Results({ title, rows }: { title: string; rows: HackathonResult[] }) {
   )
 }
 
+function SubHeading({ children }: { children: string }) {
+  return (
+    <>
+      <h3 className="text-lg font-bold text-portal-navy">{children}</h3>
+      <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
+    </>
+  )
+}
+
 function StudentHackathon({ hackathon, run }: { hackathon: Hackathon; run: Run }) {
   const [teamName, setTeamName] = useState('')
   const myTeam = hackathon.teams.find((team) => team.teamId === hackathon.myTeamId) ?? null
   const [work, setWork] = useState({ title: myTeam?.submission?.title ?? '', summary: myTeam?.submission?.summary ?? '', link: myTeam?.submission?.link ?? '' })
   const link = myTeam?.submission?.link ? safeUrl(myTeam.submission.link) : null
   return (
-    <Card title={hackathon.title} description={`${formatDateTime(hackathon.startsAt)} to ${formatDateTime(hackathon.endsAt)} · teams of up to ${hackathon.maxTeamSize}`}>
-      <div className="space-y-4">
-        {hackathon.description && <p className="text-sm break-words whitespace-pre-wrap text-ink">{hackathon.description}</p>}
-        {hackathon.status === 'RESULTS_RELEASED' && <Results title={hackathon.title} rows={hackathon.results} />}
-        <ul className="space-y-1 text-sm">
-          {hackathon.teams.map((team) => (
-            <li key={team.teamId} className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-ink">{team.name}</span>
-              <span className="text-ink-muted">{team.memberLoginIds.join(', ')}</span>
-              {team.submitted && <Badge tone="success">Submitted</Badge>}
-              {hackathon.takingWork && hackathon.myTeamId === null && team.memberLoginIds.length < hackathon.maxTeamSize && (
-                <Button size="sm" variant="secondary" onClick={() => run(() => joinHackathonTeam(team.teamId), `You joined ${team.name}.`, 'Couldn’t join the team.')}>
-                  Join<span className="sr-only">{` ${team.name}`}</span>
-                </Button>
-              )}
-            </li>
-          ))}
-        </ul>
+    <Card title={hackathon.title}>
+      <div className="space-y-5">
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] text-ink">
+          <span className="inline-flex items-center gap-1.5">
+            <NavIcon name="calendar" className="size-4 text-ink-muted" />
+            {formatDateTime(hackathon.startsAt)} to {formatDateTime(hackathon.endsAt)}
+          </span>
+          <span aria-hidden="true" className="text-line-strong">|</span>
+          <span className="inline-flex items-center gap-1.5">
+            <NavIcon name="profile" className="size-4 text-ink-muted" />
+            Teams of up to {hackathon.maxTeamSize}
+          </span>
+        </p>
+        {hackathon.description && <p className="text-[0.95rem] break-words whitespace-pre-wrap text-ink">{hackathon.description}</p>}
+        {hackathon.status === 'RESULTS_RELEASED' && (
+          <div>
+            <SubHeading>Results</SubHeading>
+            <div className="overflow-hidden rounded-control border border-line">
+              <Results title={hackathon.title} rows={hackathon.results} />
+            </div>
+          </div>
+        )}
+        <div>
+          <SubHeading>Teams</SubHeading>
+          {hackathon.teams.length === 0 ? (
+            <p className="text-sm text-ink-muted">No teams yet.</p>
+          ) : (
+            <ul className="divide-y divide-line rounded-control border border-line text-sm">
+              {hackathon.teams.map((team) => {
+                const full = team.memberLoginIds.length >= hackathon.maxTeamSize
+                return (
+                  <li key={team.teamId} className="grid gap-2 px-3 py-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_auto] sm:items-center sm:gap-4">
+                    <span className="flex flex-wrap items-center gap-2 text-base font-bold text-ink">
+                      {team.name}
+                      {team.submitted && <Badge tone="success">Submitted</Badge>}
+                    </span>
+                    <span className="text-ink">{team.memberLoginIds.join(', ')}</span>
+                    <span>
+                      {hackathon.takingWork && hackathon.myTeamId === null && !full && (
+                        <Button size="sm" onClick={() => run(() => joinHackathonTeam(team.teamId), `You joined ${team.name}.`, 'Couldn’t join the team.')}>
+                          Join<span className="sr-only">{` ${team.name}`}</span>
+                        </Button>
+                      )}
+                      {full && <span className="rounded-sm bg-surface-muted px-2 py-0.5 text-xs font-semibold text-ink-muted uppercase">Full</span>}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
         {hackathon.takingWork && hackathon.myTeamId === null && (
           <form
-            className="flex flex-wrap items-end gap-2"
+            className="flex flex-wrap items-end gap-3 border-t border-line pt-4"
             onSubmit={(event) => {
               event.preventDefault()
               run(() => formHackathonTeam(hackathon.hackathonId, teamName.trim()), 'Team formed.', 'Couldn’t form the team.')
             }}
           >
-            <TextField label={`New team name for ${hackathon.title}`} value={teamName} maxLength={100} onChange={(event) => setTeamName(event.target.value)} />
-            <Button type="submit" size="sm">Form team</Button>
+            <div className="min-w-56 flex-1 sm:max-w-md">
+              <TextField label={`New team name for ${hackathon.title}`} hint="You don’t have a team yet." value={teamName} maxLength={100} onChange={(event) => setTeamName(event.target.value)} />
+            </div>
+            <Button type="submit">Form team</Button>
           </form>
         )}
         {myTeam && (
-          <div className="space-y-3 rounded-control border border-line p-3">
-            <h3 className="text-sm font-semibold text-ink">Your team: {myTeam.name}</h3>
+          <div className="space-y-3 rounded-panel border border-line bg-surface-muted/50 px-4 py-4">
+            <h3 className="text-lg font-bold text-portal-navy">Your team: {myTeam.name}</h3>
             {myTeam.submission && (
               <p className="text-sm text-ink-muted">
                 Handed in {formatDateTime(myTeam.submission.submittedAt)}
@@ -208,10 +253,28 @@ function Office({ run }: { run: Run }) {
         <EmptyState title="No hackathons yet." />
       ) : (
         all.data.map((hackathon) => (
-          <Card key={hackathon.hackathonId} title={hackathon.title} description={`${formatDateTime(hackathon.startsAt)} to ${formatDateTime(hackathon.endsAt)} · ${hackathon.teams} team(s)`}
-            action={<Badge tone="neutral">{hackathon.status.replace('_', ' ').toLowerCase()}</Badge>}>
-            <div className="space-y-3">
-              <p className="text-sm text-ink-muted">Judges: {hackathon.judgeLoginIds.length === 0 ? 'none yet' : hackathon.judgeLoginIds.join(', ')}</p>
+          <Card key={hackathon.hackathonId} title={hackathon.title}
+            action={
+              <Badge tone={hackathon.status === 'DRAFT' ? 'neutral' : 'success'}>
+                {hackathon.status.charAt(0) + hackathon.status.slice(1).replace('_', ' ').toLowerCase()}
+              </Badge>
+            }>
+            <div className="space-y-4">
+              <dl className="grid grid-cols-2 gap-3 text-[0.95rem] sm:flex sm:flex-wrap sm:gap-0 sm:[&>div]:pr-6 sm:[&>div:not(:last-child)]:mr-6 sm:[&>div:not(:last-child)]:border-r sm:[&>div]:border-line">
+                <div>
+                  <dt className="text-sm text-ink-muted">Start</dt>
+                  <dd className="text-ink">{formatDateTime(hackathon.startsAt)}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-ink-muted">End</dt>
+                  <dd className="text-ink">{formatDateTime(hackathon.endsAt)}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-ink-muted">Teams</dt>
+                  <dd className="text-ink">{hackathon.teams}</dd>
+                </div>
+              </dl>
+              <p className="text-[0.95rem] text-ink">Judges: {hackathon.judgeLoginIds.length === 0 ? 'none yet' : hackathon.judgeLoginIds.join(', ')}</p>
               <div className="flex flex-wrap items-end gap-2">
                 {hackathon.status === 'DRAFT' && (
                   <Button size="sm" onClick={() => run(() => publishHackathon(hackathon.hackathonId), 'Hackathon published.', 'Couldn’t publish.')}>

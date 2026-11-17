@@ -13,3 +13,7 @@ Phase 0.12.12. Hackathons live in the `hackathon` module, at `/hackathons`, with
 | `GET /api/v1/hackathons`, `POST …/{id}/teams`, `POST …/teams/{id}/join`, `POST …/{id}/leave`, `POST …/{id}/submission` | `STUDENT` with `HACKATHON_PARTICIPATE` |
 | `GET /api/v1/hackathons/judging`, `POST …/submissions/{id}/score` | `FACULTY` with `HACKATHON_JUDGE`, named on the hackathon |
 | `GET`/`POST /api/v1/admin/hackathons`, `POST …/{id}/publish`, `…/judges`, `…/release`, `…/archive` | `ADMIN` with `HACKATHON_MANAGE` |
+
+## Look (v0.16.21)
+
+A student's hackathon card shows its dates and team size with icons, the description, released results as a table, Teams as rows (name with Submitted, members, Join or Full), Form team with a wider name field, and their own team's hand-in box. The office's card shows its status, Start, End, and Teams in one row, the judges, Name judge, and its lifecycle buttons.
