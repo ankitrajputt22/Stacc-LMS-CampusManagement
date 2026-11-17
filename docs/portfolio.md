@@ -24,3 +24,7 @@ The records cannot be edited from the portfolio, and they change only when their
 | --- | --- |
 | `GET /api/v1/portfolio/me`, `POST /api/v1/portfolio/items`, `PUT …/items/{id}`, `POST …/items/{id}/hide`, `POST …/items/{id}/verification` | `STUDENT` with `PORTFOLIO_USE`; the owner comes from the token |
 | `GET /api/v1/portfolio/verifications`, `POST …/verifications/{id}/decision` | `FACULTY` with `PORTFOLIO_VERIFY`, and named on the item |
+
+## Look (v0.16.18)
+
+College records are rows under Source, Title, Detail, and Date. Each own item shows its title with kind and date, its verification as a tinted word with the verifier (Waiting for verification, Verified, Declined), the verifier's note, and Ask to verify or Hide. A faculty member's requests show the student's initials and login ID, the item and its description, its kind and date, then the note, Verify, and Decline.
