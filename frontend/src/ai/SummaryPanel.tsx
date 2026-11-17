@@ -55,7 +55,7 @@ export function SummaryPanel({ lmsCourseId, choices }: { lmsCourseId: number; ch
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Summaries
       </h2>
       <p className={hintClasses}>Summarise a page, a whole module, or one file, from the course’s published content.</p>

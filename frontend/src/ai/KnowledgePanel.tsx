@@ -13,8 +13,8 @@ import { useAiAction } from './useAiAction'
 function Row({ term, children }: { term: string; children: ReactNode }) {
   return (
     <div className="grid gap-0.5 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="text-sm text-ink-muted">{term}</dt>
-      <dd className="flex flex-wrap items-center gap-2 text-sm text-ink">{children}</dd>
+      <dt className="text-[0.95rem] text-ink">{term}</dt>
+      <dd className="flex flex-wrap items-center gap-2 text-[0.95rem] text-ink">{children}</dd>
     </div>
   )
 }
@@ -109,7 +109,7 @@ export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
 
   return (
     <section aria-labelledby={`${id}-heading`} aria-busy={running} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Course AI Knowledge
       </h2>
       <p className={hintClasses}>

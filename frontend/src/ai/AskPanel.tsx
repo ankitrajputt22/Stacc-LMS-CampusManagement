@@ -136,7 +136,7 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Ask My Course
       </h2>
       <form noValidate onSubmit={submit} className="mt-3 grid gap-3">

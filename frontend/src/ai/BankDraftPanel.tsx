@@ -55,7 +55,7 @@ export function BankDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
 
   return (
     <section aria-labelledby={`${id}-heading`} aria-busy={running} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Draft into the question bank
       </h2>
       <p className={hintClasses}>

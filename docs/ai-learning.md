@@ -450,3 +450,9 @@ All need `FACULTY`, `FACULTY_COURSE_VIEW`, and `AI_TEACHING_USE`, and access thr
 - Refreshing is manual: there is no automatic re-indexing.
 - A refresh request waits until indexing finishes.
 - Answers are only as good as the chosen local model.
+
+## Look
+
+AI Study lists each course as a card with its mastery counts as large figures, the next step beside a "Next" tag, and
+Open study area as the main button; a course whose assistant is off says so in a tinted note. Every AI panel heading is
+large and bold. What to do next lists each suggestion with its reason and a main button to open it.

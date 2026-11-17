@@ -3,14 +3,10 @@ import { Link } from 'react-router'
 import { getRecommendations } from '../api/aiApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
-import { textLinkClasses } from '../ui'
+import { primaryLinkClasses } from '../components/actionStyles'
 import { recommendationLink } from './recommendationLink'
 import { hintClasses, panelClasses } from './aiStyles'
 
-/**
- * What to do next (v0.15.6): up to six suggestions from fixed rules over the student's own mastery, flashcards, and the
- * course's assignments, each saying why. No AI is used; pages and assignments open through their own access checks.
- */
 export function RecommendationsPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const recommendations = useApiQuery(queryKeys.lms.recommendations(lmsCourseId), (signal) => getRecommendations(lmsCourseId, signal))
@@ -19,19 +15,25 @@ export function RecommendationsPanel({ lmsCourseId }: { lmsCourseId: number }) {
   }
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">What to do next</h2>
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">What to do next</h2>
       <p className={hintClasses}>Suggestions from your own practice, flashcards, and deadlines, each with its reason.</p>
-      <ul className="mt-3 space-y-2 text-sm">
-        {recommendations.data.map((item) => (
-          <li key={`${item.kind}-${item.targetId}`}>
-            {recommendationLink(lmsCourseId, item) ? (
-              <Link to={recommendationLink(lmsCourseId, item) as string} className={textLinkClasses}>{item.title}</Link>
-            ) : (
-              <span className="font-medium text-ink">{item.title}</span>
-            )}
-            <span className="block text-ink-muted">{item.reason}</span>
-          </li>
-        ))}
+      <ul className="mt-3 divide-y divide-line">
+        {recommendations.data.map((item) => {
+          const to = recommendationLink(lmsCourseId, item)
+          return (
+            <li key={`${item.kind}-${item.targetId}`} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p aria-hidden={to ? true : undefined} className="text-lg font-bold break-words text-ink">{item.title}</p>
+                <p className="text-[0.95rem] text-ink-muted">Reason: <span>{item.reason}</span></p>
+              </div>
+              {to && (
+                <Link to={to} className={`${primaryLinkClasses} shrink-0 self-start sm:self-center`}>
+                  {item.title}
+                </Link>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

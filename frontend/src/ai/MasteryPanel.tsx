@@ -33,7 +33,7 @@ export function MasteryPanel({ lmsCourseId }: { lmsCourseId: number }) {
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">My mastery</h2>
+        <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">My mastery</h2>
         <Button size="sm" variant="ghost" onClick={() => void mastery.refresh()}>Update</Button>
       </div>
       <p className={hintClasses}>
