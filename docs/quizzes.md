@@ -140,4 +140,4 @@ Its first runs found two races, now fixed and covered by `LmsQuizAttemptMySqlIT`
 ## Look
 
 The faculty quiz list is a table: the title (opening the quiz), type, status, size and times, then View results for a
-published or archived quiz and Open for every quiz.
+published or archived quiz.

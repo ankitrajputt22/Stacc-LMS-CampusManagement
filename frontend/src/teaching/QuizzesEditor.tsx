@@ -93,16 +93,13 @@ export function QuizzesEditor({ lmsCourseId }: { lmsCourseId: number }) {
                 key: 'action',
                 header: 'Action',
                 cell: (quiz) => (
-                  <span className="flex flex-wrap gap-2">
-                    {quiz.status !== 'DRAFT' && (
-                      <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}/results`} className={buttonClasses('primary', 'sm')}>
-                        View results<span className="sr-only"> of {quiz.title}</span>
-                      </Link>
-                    )}
-                    <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}`} className={buttonClasses('secondary', 'sm')}>
-                      Open<span className="sr-only"> {quiz.title}</span>
+                  quiz.status !== 'DRAFT' ? (
+                    <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}/results`} className={buttonClasses('primary', 'sm')}>
+                      View results
                     </Link>
-                  </span>
+                  ) : (
+                    <span aria-label="None">–</span>
+                  )
                 ),
               },
             ]}
