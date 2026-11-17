@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { getFacultyReportCourses } from '../api/reportsApi'
 import { useApiRequest } from '../api/useApiRequest'
-import { actionLinkClasses } from '../components/actionStyles'
+import { primaryLinkClasses } from '../components/actionStyles'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
 import { ErrorState } from '../components/states/ErrorState'
@@ -30,30 +30,34 @@ export function FacultyReportsSection() {
     content = <StatePanel><EmptyState title="No teaching courses available for reports." /></StatePanel>
   } else {
     content = (
-      <ul aria-label="Teaching courses" className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
+      <ul aria-label="Teaching courses" className="space-y-3">
         {courses.data.map((course) => (
-          <li key={course.courseOfferingId} className="px-4 py-3 sm:px-5">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold break-words text-ink">
-                  <span className="font-mono">{course.courseCode}</span> {course.courseName}
-                </p>
-                <p className="text-xs text-ink-muted">
-                  {course.programCode} · Semester {course.semesterNumber} · {course.academicSessionCode}
-                </p>
-                <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
-                  <div><dt className="text-xs text-ink-muted">Enrolled students</dt><dd className="font-semibold text-ink tabular-nums">{formatCount(course.activeCourseEnrollmentCount)}</dd></div>
-                  <div>
-                    <dt className="text-xs text-ink-muted">Assignments</dt>
-                    <dd className="font-semibold text-ink tabular-nums">
-                      {course.assignmentCount === null ? <span className="text-xs font-normal text-ink-muted">No open LMS course</span> : formatCount(course.assignmentCount)}
-                    </dd>
-                  </div>
-                  <div><dt className="text-xs text-ink-muted">Finalized attendance</dt><dd className="font-semibold text-ink tabular-nums">{formatCount(course.finalizedAttendanceSessionCount)}</dd></div>
-                  <div><dt className="text-xs text-ink-muted">Published results</dt><dd className="font-semibold text-ink tabular-nums">{formatCount(course.publishedResultCount)}</dd></div>
-                </dl>
+          <li key={course.courseOfferingId} className="rounded-panel border border-line bg-surface p-4">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_auto] lg:items-center">
+              <div className="flex min-w-0 items-center gap-4">
+                <span aria-hidden="true" className="flex size-20 shrink-0 items-center justify-center rounded-panel bg-sky-100 text-lg font-bold text-portal-navy">
+                  {course.courseCode}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold break-words text-ink">{course.courseCode}</p>
+                  <p className="text-[0.95rem] break-words text-ink">{course.courseName}</p>
+                  <p className="text-sm text-ink-muted">
+                    {course.programCode} · Semester {course.semesterNumber} · {course.academicSessionCode}
+                  </p>
+                </div>
               </div>
-              <Link to={`/reports/faculty/course-offerings/${course.courseOfferingId}`} className={`${actionLinkClasses} shrink-0 self-start md:self-center`}>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:gap-0 sm:[&>div]:border-l sm:[&>div]:border-line sm:[&>div]:px-4">
+                <div><dt className="text-sm text-ink">Enrolled students</dt><dd className="text-3xl font-bold text-ink tabular-nums">{formatCount(course.activeCourseEnrollmentCount)}</dd></div>
+                <div>
+                  <dt className="text-sm text-ink">Assignments</dt>
+                  <dd className="text-3xl font-bold text-ink tabular-nums">
+                    {course.assignmentCount === null ? <span className="text-sm font-normal text-ink-muted">No open LMS course</span> : formatCount(course.assignmentCount)}
+                  </dd>
+                </div>
+                <div><dt className="text-sm text-ink">Finalized attendance</dt><dd className="text-3xl font-bold text-ink tabular-nums">{formatCount(course.finalizedAttendanceSessionCount)}</dd></div>
+                <div><dt className="text-sm text-ink">Published results</dt><dd className="text-3xl font-bold text-ink tabular-nums">{formatCount(course.publishedResultCount)}</dd></div>
+              </dl>
+              <Link to={`/reports/faculty/course-offerings/${course.courseOfferingId}`} className={`${primaryLinkClasses} shrink-0 self-start lg:self-center`}>
                 View report<span className="sr-only">: {course.courseCode} {course.courseName}</span>
               </Link>
             </div>
@@ -64,11 +68,12 @@ export function FacultyReportsSection() {
   }
 
   return (
-    <section aria-labelledby="faculty-reports-heading">
-      <h2 id="faculty-reports-heading" className="text-base font-semibold text-ink">
+    <section aria-labelledby="faculty-reports-heading" className="rounded-panel border border-line bg-surface p-4 sm:p-5">
+      <h2 id="faculty-reports-heading" className="text-2xl font-bold text-ink">
         Teaching Reports
       </h2>
-      <div className="mt-3">{content}</div>
+      <span aria-hidden="true" className="mt-1.5 block h-0.5 w-12 rounded bg-portal-cta" />
+      <div className="mt-4">{content}</div>
     </section>
   )
 }

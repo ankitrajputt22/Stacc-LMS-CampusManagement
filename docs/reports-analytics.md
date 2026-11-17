@@ -104,3 +104,11 @@ The reports use grouped counts over the existing foreign-key indexes (course off
 - Student reports, user or account reports, and people directories.
 - Saved, scheduled, emailed, or PDF reports, and report history.
 - Charts, trends, comparisons over time, and any analytics beyond counts.
+
+## Look
+
+Report sections are white cards with a bold title and the orange underline; their counts are label-and-number rows
+(`ReportStats`), and enrollment counts sit under tinted Semester and Course bands. The filters share one row on wide
+screens with Apply filters and Clear filters. Teaching Reports shows each course as a card with a course-code tile, four
+large counts, and View report as the main button. The admin heading shows only beside the faculty part; alone it is
+read to screen readers only.
