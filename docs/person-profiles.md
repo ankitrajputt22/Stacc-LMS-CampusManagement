@@ -33,3 +33,7 @@ The person always comes from the access token; no route takes an account or prof
 ## In the interface
 
 The Account tray in the navigation rail, and the account part of the phone drawer, show the display name with the login ID beneath it, and the avatar shows its initials. **Account settings** in the Account tray (`/account`, v0.2.10) shows the official photo, login ID, full name, and email as recorded, lets the person change the preferred name and phone, links to Change password, and lists where the account is signed in (see `authentication.md`). Photos are loaded through the API as image data and shown from a temporary object URL; no storage address ever reaches the browser.
+
+## Look (v0.16.23)
+
+Account settings shows the official photo (or "No official photo yet") beside the login ID, full name, and email, then the preferred name and phone fields with Save details. Where you are signed in is a list under Browser and platform, Signed in, and Last active, with This browser marked and Sign out for every other session, then Sign out everywhere.

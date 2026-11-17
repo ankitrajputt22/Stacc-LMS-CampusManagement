@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
@@ -63,31 +64,32 @@ function ProfileCard({ profile }: { profile: MyPersonProfile }) {
       <div className="flex flex-col gap-6 sm:flex-row">
         <div className="shrink-0">
           {photoUrl ? (
-            <img src={photoUrl} alt="Your official photo" className="size-28 rounded-panel border border-line object-cover" />
+            <img src={photoUrl} alt="Your official photo" className="size-36 rounded-panel border border-line object-cover" />
           ) : (
-            <div className="flex size-28 items-center justify-center rounded-panel border border-dashed border-line-strong text-center text-xs text-ink-muted">
+            <div className="flex size-36 flex-col items-center justify-center gap-2 rounded-panel border border-line bg-surface-muted text-center text-sm text-ink-muted">
+              <NavIcon name="profile" className="size-10" />
               No official photo yet
             </div>
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-4">
-          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+          <dl className="space-y-3 text-[0.95rem]">
             <div>
               <dt className="text-ink-muted">Login ID</dt>
-              <dd className="font-medium break-words text-ink">{profile.loginId}</dd>
+              <dd className="text-base font-bold break-words text-ink">{profile.loginId}</dd>
             </div>
             <div>
               <dt className="text-ink-muted">Full name</dt>
-              <dd className="font-medium break-words text-ink">{profile.fullName ?? 'Not recorded yet'}</dd>
+              <dd className="text-base font-bold break-words text-ink">{profile.fullName ?? 'Not recorded yet'}</dd>
             </div>
             <div>
               <dt className="text-ink-muted">Email</dt>
-              <dd className="font-medium break-words text-ink">{profile.email ?? 'None'}</dd>
+              <dd className="text-base font-bold break-words text-ink">{profile.email ?? 'None'}</dd>
             </div>
           </dl>
           {profile.recorded ? (
             <form noValidate onSubmit={submit} className="space-y-3">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid max-w-2xl gap-4 border-t border-line pt-4">
                 <TextField
                   label="Preferred name (optional)"
                   hint="Shown instead of your full name. Leave empty to use your full name."
@@ -110,7 +112,7 @@ function ProfileCard({ profile }: { profile: MyPersonProfile }) {
                   <span role="status">Your details are saved.</span>
                 </Alert>
               )}
-              <Button type="submit" variant="secondary" aria-disabled={busy || undefined}>
+              <Button type="submit" aria-disabled={busy || undefined}>
                 {busy ? 'Saving…' : 'Save details'}
               </Button>
             </form>
@@ -138,23 +140,36 @@ function SessionsCard() {
     body = <ErrorState title="Couldn’t load your sessions." message="Check your connection and try again." onRetry={sessions.retry} />
   } else {
     body = (
-      <ul className="divide-y divide-line rounded-control border border-line">
+      <div className="overflow-hidden rounded-control border border-line">
+      <div aria-hidden="true" className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_7rem] gap-4 bg-surface-muted px-4 py-2.5 text-sm font-semibold text-ink md:grid">
+        <span>Browser and platform</span>
+        <span>Signed in</span>
+        <span>Last active</span>
+        <span />
+      </div>
+      <ul aria-label="Where you are signed in" className="divide-y divide-line">
         {sessions.data.map((session) => (
           <li key={session.sessionId} className="px-4 py-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 text-sm">
-                <p className="font-medium text-ink">
-                  {session.device ?? 'Unknown browser'} {session.current && <Badge tone="success">This browser</Badge>}
-                </p>
-                <p className="text-ink-muted">
-                  Signed in {formatDateTime(session.signedInAt)} · last active {formatDateTime(session.lastSeenAt)}
-                </p>
-              </div>
-              {!session.current && ending !== session.sessionId && (
-                <Button variant="secondary" size="sm" onClick={() => setEnding(session.sessionId)}>
-                  Sign out<span className="sr-only"> {session.device ?? 'this session'}</span>
-                </Button>
-              )}
+            <div className="grid gap-2 text-sm md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_7rem] md:items-center md:gap-4">
+              <p className="flex flex-wrap items-center gap-2 text-base font-semibold text-ink">
+                {session.device ?? 'Unknown browser'}
+                {session.current && <Badge tone="info">This browser</Badge>}
+              </p>
+              <p className="text-ink">
+                <span className="md:sr-only">Signed in </span>
+                <time dateTime={session.signedInAt}>{formatDateTime(session.signedInAt)}</time>
+              </p>
+              <p className="text-ink">
+                <span className="md:sr-only">Last active </span>
+                <time dateTime={session.lastSeenAt}>{formatDateTime(session.lastSeenAt)}</time>
+              </p>
+              <span>
+                {!session.current && ending !== session.sessionId && (
+                  <Button size="sm" onClick={() => setEnding(session.sessionId)}>
+                    Sign out<span className="sr-only"> {session.device ?? 'this session'}</span>
+                  </Button>
+                )}
+              </span>
             </div>
             {ending === session.sessionId && (
               <StatusConfirmation
@@ -175,6 +190,7 @@ function SessionsCard() {
           </li>
         ))}
       </ul>
+      </div>
     )
   }
 
