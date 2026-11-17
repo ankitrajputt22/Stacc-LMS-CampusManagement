@@ -34,7 +34,6 @@ function Tool({ to, icon, label, badge }: { to: string; icon: NavIconName; label
   )
 }
 
-/** The person's initials and a menu with who is signed in, their account pages, and Sign out. */
 function AccountMenu() {
   const { account, logout } = useAuth()
   const displayName = useDisplayName()
@@ -77,7 +76,7 @@ function AccountMenu() {
   if (!account || !displayName) {
     return null
   }
-  const linkClasses = `block rounded-md px-3 py-2 text-sm text-ink hover:bg-surface-muted ${focusRing}`
+  const linkClasses = `block rounded-md px-3 py-2 text-[0.95rem] text-ink hover:bg-surface-muted ${focusRing}`
   return (
     <div className="relative">
       <button
@@ -105,14 +104,14 @@ function AccountMenu() {
           className="absolute right-0 z-40 mt-2 w-72 rounded-panel border border-line bg-surface p-3 shadow-lg"
         >
           <div className="border-b border-line px-3 pt-1 pb-3">
-            <p className="font-semibold break-words text-ink">
+            <p className="text-lg font-bold break-words text-ink">
               <span className="sr-only">Signed in as </span>
               {displayName}
             </p>
-            {displayName !== account.loginId && <p className="text-sm break-all text-ink-muted">{account.loginId}</p>}
-            <AccountRoles roles={account.roles} className="text-sm text-ink-muted" />
+            {displayName !== account.loginId && <p className="text-sm break-all text-ink">Login ID: <span>{account.loginId}</span></p>}
+            <AccountRoles roles={account.roles} className="text-sm text-ink" />
           </div>
-          <div className="py-2">
+          <div className="border-b border-line py-2">
             <Link to="/erp/profile" className={linkClasses}>
               My profile
             </Link>
@@ -134,7 +133,7 @@ function AccountMenu() {
           <button
             type="button"
             onClick={logout}
-            className={`w-full rounded-md border border-line-strong px-3 py-2 text-sm font-medium text-ink hover:bg-surface-muted ${focusRing}`}
+            className={`mt-1 w-full rounded-control border border-transparent bg-portal-cta px-3 py-2.5 text-[0.95rem] font-semibold text-white hover:bg-portal-cta-hover ${focusRing}`}
           >
             Sign out
           </button>
