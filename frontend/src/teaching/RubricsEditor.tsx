@@ -286,20 +286,20 @@ export function RubricsEditor({ lmsCourseId }: { lmsCourseId: number }) {
         ) : rubrics.data.length === 0 ? (
           <EmptyState title="No rubrics yet." description="Create a rubric, then choose it for an assignment under Assignments." />
         ) : (
-          <ul className="divide-y divide-line">
+          <ul className="space-y-3 px-4 pb-4 sm:px-5">
             {rubrics.data.map((rubric) => (
-              <li key={rubric.id} className="space-y-3 px-4 py-4 sm:px-5">
+              <li key={rubric.id} className="space-y-3 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-ink">{rubric.title}</h3>
-                    <span className="text-sm text-ink-muted">{rubric.totalPoints} points</span>
+                    <h3 className="text-xl font-bold text-ink">{rubric.title}</h3>
+                    <Badge tone="neutral">{rubric.totalPoints} points</Badge>
                     {rubric.status === 'ARCHIVED' && <Badge tone="neutral">Archived</Badge>}
                     {rubric.inUse && <Badge tone="info">Used for grading</Badge>}
                   </div>
                   {rubric.status === 'ACTIVE' && editing !== rubric.id && (
                     <div className="flex flex-wrap gap-2">
                       {!rubric.inUse && (
-                        <Button variant="secondary" size="sm" onClick={() => setEditing(rubric.id)}>
+                        <Button size="sm" onClick={() => setEditing(rubric.id)}>
                           Edit<span className="sr-only">{` rubric ${rubric.title}`}</span>
                         </Button>
                       )}

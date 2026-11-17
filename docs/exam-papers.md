@@ -53,3 +53,8 @@ CS301 has the blueprint "Unit 1 test blueprint" (one row per kind of demo questi
 - **What the bank has.** Check the bank (`GET .../exam-blueprints/{id}/shortfall`) lists each row's needed and available reviewed questions, counted the way a build takes them. It only reads.
 - **AI for the gap.** Draft the missing questions with AI (`POST /api/v1/lms/faculty/ai/exam-blueprints/{id}/fill-shortfall`, the Teacher AI rule plus `LMS_QUESTION_BANK_MANAGE` and `LMS_EXAM_PAPER_MANAGE`) drafts up to 10 questions per short row into the bank, with the row's type, difficulty, topic, Bloom level, and outcome, through Draft into the question bank: Needs review, with sources and checks. Papers still use only reviewed questions, so the teacher reviews the drafts and then builds.
 
+
+## Look
+
+Each blueprint is its own card with its title, an Active or Archived tag, and its size, then its rows in a bordered list
+and its actions. Papers are rows of title, status (Draft grey, Final green), and marks, each with Open.

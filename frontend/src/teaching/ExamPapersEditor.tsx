@@ -28,12 +28,13 @@ import type {
   QuestionType,
 } from '../types/lms'
 import { Alert, Badge, Button, Card, SelectField, TextAreaField, TextField, textLinkClasses } from '../ui'
+import { buttonClasses } from '../ui/styles'
 import { BlueprintShortfall, PaperSetsForm } from './BlueprintTools'
 import { blueprintRowText, PAPER_FORBIDDEN, paperFacts, paperRefusal, paperStatusLabel, parseMarks } from './examPaperText'
 import { DIFFICULTIES, QUESTION_TYPES } from './questionText'
 
 export function PaperStatusBadge({ status }: { status: ExamPaperStatus }) {
-  const tone = status === 'FINAL' ? 'success' : status === 'ARCHIVED' ? 'neutral' : 'warning'
+  const tone = status === 'FINAL' ? 'success' : 'neutral'
   return <Badge tone={tone}>{paperStatusLabel(status)}</Badge>
 }
 
@@ -427,15 +428,15 @@ export function ExamPapersEditor({ lmsCourseId }: { lmsCourseId: number }) {
         ) : blueprints.data.length === 0 ? (
           <EmptyState title="No blueprints yet." description="Create a blueprint, then build papers from it." />
         ) : (
-          <ol className="divide-y divide-line">
+          <ol className="space-y-3 px-4 pb-4 sm:px-5">
             {blueprints.data.map((blueprint) => (
-              <li key={blueprint.id} className="space-y-3 px-4 py-4 sm:px-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold text-ink">{blueprint.title}</h3>
-                  {blueprint.status === 'ARCHIVED' && <Badge tone="neutral">Archived</Badge>}
+              <li key={blueprint.id} className="space-y-3 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-xl font-bold text-ink">{blueprint.title}</h3>
+                  {blueprint.status === 'ARCHIVED' ? <Badge tone="neutral">Archived</Badge> : <Badge tone="success">Active</Badge>}
+                  <span className="text-[0.95rem] text-ink">{paperFacts({ ...blueprint, durationMinutes: null })}</span>
                 </div>
-                <p className="text-sm text-ink-muted">{paperFacts({ ...blueprint, durationMinutes: null })}</p>
-                <ol className="list-inside list-decimal space-y-1 text-sm text-ink">
+                <ol className="list-inside list-decimal divide-y divide-line rounded-panel border border-line text-[0.95rem] text-ink [&>li]:px-4 [&>li]:py-2.5">
                   {blueprint.rows.map((row) => (
                     <li key={row.position}>
                       {row.sectionTitle && <span className="font-medium">{row.sectionTitle}: </span>}
@@ -548,14 +549,15 @@ export function ExamPapersEditor({ lmsCourseId }: { lmsCourseId: number }) {
         ) : (
           <ol className="divide-y divide-line">
             {papers.data.map((paper) => (
-              <li key={paper.id} className="space-y-1.5 px-4 py-4 sm:px-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link to={`/teaching/${lmsCourseId}/papers/${paper.id}`} className={`font-semibold ${textLinkClasses}`}>
-                    {paper.title}
-                  </Link>
-                  <PaperStatusBadge status={paper.status} />
-                </div>
-                <p className="text-sm text-ink-muted">{paperFacts(paper)}</p>
+              <li key={paper.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:px-5">
+                <Link to={`/teaching/${lmsCourseId}/papers/${paper.id}`} className={`font-semibold ${textLinkClasses}`}>
+                  {paper.title}
+                </Link>
+                <span><PaperStatusBadge status={paper.status} /></span>
+                <span className="text-[0.95rem] text-ink">{paperFacts(paper)}</span>
+                <Link to={`/teaching/${lmsCourseId}/papers/${paper.id}`} aria-hidden="true" tabIndex={-1} className={buttonClasses('primary', 'sm')}>
+                  Open
+                </Link>
               </li>
             ))}
           </ol>
