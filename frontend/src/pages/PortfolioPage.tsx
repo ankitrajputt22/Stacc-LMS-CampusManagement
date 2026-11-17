@@ -40,10 +40,10 @@ function Item({ item, notify }: { item: PortfolioItem; notify: Notify }) {
   const [verifier, setVerifier] = useState('')
   const link = item.link ? safeUrl(item.link) : null
   return (
-    <li className="space-y-2 px-4 py-3 sm:px-5">
+    <li className="space-y-2 px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-semibold break-words text-ink">{item.title}</span>
-        <span className="text-ink-muted">{KIND_LABEL[item.kind]}</span>
+        <span className="text-base font-bold break-words text-portal-navy">{item.title}</span>
+        <span className="rounded-sm border border-line-strong bg-surface-muted px-1.5 py-0.5 text-xs font-medium text-ink">{KIND_LABEL[item.kind]}</span>
         {item.occurredOn && <span className="text-ink-muted">{item.occurredOn}</span>}
         <Badge tone={item.verification === 'VERIFIED' ? 'success' : item.verification === 'DECLINED' ? 'warning' : 'neutral'}>
           {VERIFICATION_LABEL[item.verification]}
@@ -95,8 +95,8 @@ function Student({ notify }: { notify: Notify }) {
         ) : (
           <ul className="divide-y divide-line text-sm">
             {portfolio.data.records.map((record, index) => (
-              <li key={`${record.source}-${index}`} className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-5">
-                <Badge tone="info">{SOURCE_LABEL[record.source]}</Badge>
+              <li key={`${record.source}-${index}`} className="grid gap-1 px-4 py-3 sm:px-5 md:grid-cols-[10rem_minmax(0,1.4fr)_minmax(0,1.2fr)_12rem] md:items-center md:gap-4">
+                <span><Badge tone="info">{SOURCE_LABEL[record.source]}</Badge></span>
                 <span className="font-medium break-words text-ink">{record.title}</span>
                 <span className="text-ink-muted">{record.detail}</span>
                 {record.at && <time className="text-ink-muted" dateTime={record.at}>{formatDateTime(record.at)}</time>}

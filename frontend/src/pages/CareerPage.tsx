@@ -109,15 +109,26 @@ function OpportunityRow({ opportunity, profile, notify }: { opportunity: Opportu
   const [note, setNote] = useState('')
   const [consent, setConsent] = useState(false)
   return (
-    <li className="space-y-2 px-4 py-4 text-sm sm:px-5">
+    <li className="space-y-3 rounded-panel border border-line bg-surface px-4 py-4 text-sm sm:px-5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{opportunity.title}</span>
+        <h3 className="text-lg font-bold break-words text-portal-navy">{opportunity.title}</h3>
         <Badge tone="brand">{KIND[opportunity.kind]}</Badge>
         {opportunity.myApplicationStatus && <Badge tone="info">{STATUS[opportunity.myApplicationStatus as keyof typeof STATUS] ?? opportunity.myApplicationStatus}</Badge>}
       </div>
-      <p className="text-ink-muted">
-        {opportunity.company ?? opportunity.organization ?? 'College'} · apply by {formatDateTime(opportunity.deadline)} · stages: {opportunity.stages.join(' → ')}
+      <p className="text-[0.95rem] text-ink">
+        {opportunity.company ?? opportunity.organization ?? 'College'}
+        <span aria-hidden="true"> · </span>
+        <span className="sr-only">, </span>
+        Apply by <time dateTime={opportunity.deadline}>{formatDateTime(opportunity.deadline)}</time>
       </p>
+      <ol aria-label={`Stages of ${opportunity.title}`} className="flex flex-wrap items-center gap-1.5">
+        {opportunity.stages.map((stage, index) => (
+          <li key={`${stage}-${index}`} className="flex items-center gap-1.5">
+            {index > 0 && <span aria-hidden="true" className="text-ink-muted">→</span>}
+            <span className="rounded-sm border border-line-strong bg-surface-muted px-2 py-0.5 text-xs font-medium text-ink">{stage}</span>
+          </li>
+        ))}
+      </ol>
       {opportunity.rounds.map((round) => (
         <p key={round.stageIndex} className="text-ink-muted">
           {round.stage}: {formatDateTime(round.startsAt)}
@@ -149,7 +160,7 @@ function OpportunityRow({ opportunity, profile, notify }: { opportunity: Opportu
           </Button>
         </div>
       ) : (
-        <Button size="sm" onClick={() => setApplying(true)}>
+        <Button onClick={() => setApplying(true)}>
           Apply<span className="sr-only">{` to ${opportunity.title}`}</span>
         </Button>
       ))}
@@ -184,7 +195,7 @@ export function CareerPage() {
           ) : opportunities.data.length === 0 ? (
             <EmptyState title="Nothing open right now." description="New opportunities appear here." />
           ) : (
-            <ul className="divide-y divide-line">
+            <ul className="space-y-3 px-4 py-4 sm:px-5">
               {opportunities.data.map((opportunity) => (
                 <OpportunityRow key={opportunity.opportunityId} opportunity={opportunity} profile={profile.status === 'loaded' ? profile.data : null} notify={notify} />
               ))}
@@ -199,9 +210,9 @@ export function CareerPage() {
           ) : (
             <ul className="divide-y divide-line text-sm">
               {applications.data.map((application) => (
-                <li key={application.applicationId} className="space-y-1 px-4 py-3 sm:px-5">
+                <li key={application.applicationId} className="space-y-2 px-4 py-3 sm:px-5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-ink">{application.opportunityTitle}</span>
+                    <span className="text-base font-bold text-ink">{application.opportunityTitle}</span>
                     <Badge tone={application.status === 'SELECTED' ? 'success' : application.status === 'REJECTED' || application.status === 'WITHDRAWN' ? 'neutral' : 'info'}>{STATUS[application.status]}</Badge>
                     <span className="text-ink-muted">Stage: {application.stage}</span>
                   </div>

@@ -27,8 +27,8 @@ import { formatDateTime } from '../courses/dates'
 import { SectionState } from '../courses/SectionState'
 import { failureText } from '../engagement/engagementText'
 import { safeUrl } from '../formatting/safeUrl'
-import type { LibraryTitle } from '../types/library'
-import { Alert, Badge, Button, Card, PageHeader, TextField } from '../ui'
+import type { LibraryLoan, LibraryTitle } from '../types/library'
+import { Alert, Badge, Button, Card, DataTable, PageHeader, TextField } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
 type Run = (action: () => Promise<unknown>, done: string | ((result: unknown) => string), fallback: string) => void
@@ -60,23 +60,44 @@ function Catalog({ run }: { run: Run }) {
         ) : titles.data.length === 0 ? (
           <EmptyState title="No titles found." />
         ) : (
-          <ul className="divide-y divide-line text-sm">
-            {titles.data.map((title) => (
-              <li key={title.titleId} className="flex flex-wrap items-center gap-2 py-2">
-                <span className="font-semibold text-ink">{title.title}</span>
-                <span className="text-ink-muted">{titleLine(title)}</span>
-                <Badge tone={title.available > 0 ? 'success' : 'neutral'}>{`${title.available} of ${title.copies} available`}</Badge>
-                {title.holdsWaiting > 0 && <span className="text-ink-muted">{title.holdsWaiting} in the queue</span>}
-                {title.myHoldPosition !== null ? (
-                  <span className="text-ink">You are number {title.myHoldPosition}</span>
-                ) : (
-                  <Button size="sm" variant="secondary" onClick={() => run(() => placeLibraryHold(title.titleId), 'You joined the queue.', 'Couldn’t join the queue.')}>
-                    Join queue<span className="sr-only">{` for ${title.title}`}</span>
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-hidden rounded-control border border-line">
+            <DataTable<LibraryTitle>
+              caption="Catalog"
+              rows={titles.data}
+              rowKey={(title) => title.titleId}
+              columns={[
+                {
+                  key: 'title',
+                  header: 'Title',
+                  primary: true,
+                  cell: (title) => (
+                    <>
+                      <span className="font-semibold text-ink">{title.title}</span>
+                      <span className="block text-xs text-ink-muted">{titleLine(title)}</span>
+                    </>
+                  ),
+                },
+                {
+                  key: 'available',
+                  header: 'Availability',
+                  cell: (title) => <Badge tone={title.available > 0 ? 'success' : 'neutral'}>{`${title.available} of ${title.copies} available`}</Badge>,
+                },
+                { key: 'queue', header: 'Queue', cell: (title) => (title.holdsWaiting > 0 ? `${title.holdsWaiting} waiting` : '—') },
+                {
+                  key: 'action',
+                  header: 'Action',
+                  cell: (title) =>
+                    title.myHoldPosition !== null ? (
+                      <span className="text-ink">You are number {title.myHoldPosition}</span>
+                    ) : (
+                      <Button size="sm" variant="secondary" onClick={() => run(() => placeLibraryHold(title.titleId), 'You joined the queue.', 'Couldn’t join the queue.')}>
+                        Join queue<span className="sr-only">{` for ${title.title}`}</span>
+                      </Button>
+                    ),
+                },
+              ]}
+            />
+          </div>
         )}
       </div>
     </Card>
@@ -92,21 +113,41 @@ function Mine({ run }: { run: Run }) {
     <Card title="My loans and holds">
       <div className="space-y-3 text-sm">
         {mine.data.loans.length === 0 && mine.data.holds.length === 0 && <p className="text-ink-muted">Nothing borrowed or held.</p>}
-        <ul className="space-y-2">
-          {mine.data.loans.map((loan) => (
-            <li key={loan.loanId} className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-ink">{loan.title}</span>
-              <span className="font-mono text-ink-muted">{loan.barcode}</span>
-              <span className="text-ink-muted">due {formatDateTime(loan.dueAt)}</span>
-              {loan.overdue && <Badge tone="danger">Overdue</Badge>}
-              {!loan.renewed && !loan.overdue && (
-                <Button size="sm" variant="secondary" onClick={() => run(() => renewLibraryLoan(loan.loanId), 'Loan renewed for two more weeks.', 'Couldn’t renew.')}>
-                  Renew<span className="sr-only">{` ${loan.title}`}</span>
-                </Button>
-              )}
-            </li>
-          ))}
-        </ul>
+        {mine.data.loans.length > 0 && (
+          <div className="overflow-hidden rounded-control border border-line">
+            <DataTable<LibraryLoan>
+              caption="My loans"
+              rows={mine.data.loans}
+              rowKey={(loan) => loan.loanId}
+              columns={[
+                { key: 'title', header: 'Title', primary: true, cell: (loan) => <span className="font-medium text-ink">{loan.title}</span> },
+                { key: 'barcode', header: 'Copy', cell: (loan) => <span className="font-mono">{loan.barcode}</span> },
+                {
+                  key: 'due',
+                  header: 'Due',
+                  cell: (loan) => (
+                    <span className="flex flex-wrap items-center gap-2">
+                      <time dateTime={loan.dueAt}>{formatDateTime(loan.dueAt)}</time>
+                      {loan.overdue && <Badge tone="danger">Overdue</Badge>}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'action',
+                  header: 'Action',
+                  cell: (loan) =>
+                    !loan.renewed && !loan.overdue ? (
+                      <Button size="sm" variant="secondary" onClick={() => run(() => renewLibraryLoan(loan.loanId), 'Loan renewed for two more weeks.', 'Couldn’t renew.')}>
+                        Renew<span className="sr-only">{` ${loan.title}`}</span>
+                      </Button>
+                    ) : (
+                      <span className="text-ink-muted">{loan.renewed ? 'Renewed once' : 'Return it to the desk'}</span>
+                    ),
+                },
+              ]}
+            />
+          </div>
+        )}
         <ul className="space-y-2">
           {mine.data.holds.map((hold) => (
             <li key={hold.holdId} className="flex flex-wrap items-center gap-2">
@@ -220,17 +261,26 @@ function Desk({ run }: { run: Run }) {
         ) : loans.data.length === 0 ? (
           <EmptyState title="Nothing on loan." />
         ) : (
-          <ul className="divide-y divide-line text-sm">
-            {loans.data.map((loan) => (
-              <li key={loan.loanId} className="flex flex-wrap items-center gap-2 px-4 py-2 sm:px-5">
-                <span className="font-mono text-ink">{loan.barcode}</span>
-                <span className="text-ink">{loan.title}</span>
-                <span className="font-mono text-ink-muted">{loan.borrowerLoginId}</span>
-                <span className="text-ink-muted">due {formatDateTime(loan.dueAt)}</span>
-                {loan.overdue && <Badge tone="danger">Overdue</Badge>}
-              </li>
-            ))}
-          </ul>
+          <DataTable<(typeof loans.data)[number]>
+            caption="Out on loan"
+            rows={loans.data}
+            rowKey={(loan) => loan.loanId}
+            columns={[
+              { key: 'barcode', header: 'Copy', primary: true, cell: (loan) => <span className="font-mono">{loan.barcode}</span> },
+              { key: 'title', header: 'Title', cell: (loan) => loan.title },
+              { key: 'borrower', header: 'Borrower', cell: (loan) => <span className="font-mono">{loan.borrowerLoginId}</span> },
+              {
+                key: 'due',
+                header: 'Due',
+                cell: (loan) => (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <time dateTime={loan.dueAt}>{formatDateTime(loan.dueAt)}</time>
+                    {loan.overdue && <Badge tone="danger">Overdue</Badge>}
+                  </span>
+                ),
+              },
+            ]}
+          />
         )}
       </Card>
       <Card title="Catalog">
