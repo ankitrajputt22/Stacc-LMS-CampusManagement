@@ -64,7 +64,7 @@ export function QuizDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
 
   return (
     <section aria-labelledby={`${id}-heading`} aria-busy={running} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Build a draft quiz
       </h2>
       <p className={hintClasses}>

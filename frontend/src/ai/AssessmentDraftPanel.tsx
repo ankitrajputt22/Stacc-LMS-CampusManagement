@@ -225,7 +225,7 @@ export function AssessmentDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Assessment Draft Generator
       </h2>
       <p className={hintClasses}>

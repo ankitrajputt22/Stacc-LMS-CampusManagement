@@ -109,7 +109,7 @@ export function TeacherDocumentsPanel({ lmsCourseId }: { lmsCourseId: number }) 
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Teacher-only documents
       </h2>
       <p className={hintClasses}>

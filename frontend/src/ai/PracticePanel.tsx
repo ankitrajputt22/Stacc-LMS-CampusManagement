@@ -215,7 +215,7 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Practice
       </h2>
       <p className={hintClasses}>Practice marks are for your own practice only. They are never official marks, and nothing is kept.</p>

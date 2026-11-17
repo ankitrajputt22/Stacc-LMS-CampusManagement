@@ -142,7 +142,7 @@ export function FlashcardsPanel({ lmsCourseId, choices }: { lmsCourseId: number;
 
   return (
     <section aria-labelledby={`${id}-heading`} className={panelClasses}>
-      <h2 id={`${id}-heading`} className="text-base font-semibold text-ink">
+      <h2 id={`${id}-heading`} className="text-2xl font-bold text-ink">
         Flashcards
       </h2>
       <p className={hintClasses}>Make cards from your course with AI, then review the ones due each day. Your sets are your own.</p>
