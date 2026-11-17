@@ -53,25 +53,31 @@ function SettingsForm({ settings }: { settings: NotificationSettings }) {
       {!settings.emailAvailable && (
         <Alert tone="info">Email is not switched on for the college yet. Your email choices are kept and used once it is.</Alert>
       )}
-      <Card title="What you get" padding="none">
-        <ul className="divide-y divide-line">
+      <Card title="What you get">
+        <div aria-hidden="true" className="hidden border-b border-line pb-2 text-base font-bold text-ink sm:grid sm:grid-cols-[minmax(0,1fr)_8rem_14rem] sm:gap-4">
+          <span />
+          <span className="text-center">In the Inbox</span>
+          <span>Email</span>
+        </div>
+        <ul className="divide-y divide-line border-b border-line">
           {choices.map((choice) => (
-            <li key={choice.category} className="grid gap-3 px-4 py-4 sm:grid-cols-[1fr_auto_12rem] sm:items-center sm:px-5">
-              <div>
-                <p className="font-semibold text-ink">{CATEGORIES[choice.category].label}</p>
-                <p className="text-sm text-ink-muted">{CATEGORIES[choice.category].detail}</p>
+            <li key={choice.category} className="grid gap-3 px-1 py-4 sm:grid-cols-[minmax(0,1fr)_8rem_14rem] sm:items-center sm:gap-4 sm:px-3">
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-ink">{CATEGORIES[choice.category].label}</p>
+                <p className="text-[0.95rem] text-ink">{CATEGORIES[choice.category].detail}</p>
               </div>
-              <label className="inline-flex items-center gap-2 text-sm text-ink">
+              <label className="inline-flex items-center gap-2 text-sm text-ink sm:justify-center">
                 <input
                   type="checkbox"
                   checked={choice.inApp}
                   onChange={(event) => change(choice.category, { inApp: event.target.checked })}
-                  className="size-4"
+                  className="size-5 accent-stacc-primary"
                 />
-                In the Inbox
+                <span className="sm:sr-only">In the Inbox</span>
+                <span className="sr-only"> for {CATEGORIES[choice.category].label}</span>
               </label>
               <SelectField
-                label={`Email for ${CATEGORIES[choice.category].label}`}
+                label={<span className="sm:sr-only">{`Email for ${CATEGORIES[choice.category].label}`}</span>}
                 value={choice.email}
                 onChange={(event) => change(choice.category, { email: event.target.value as EmailDelivery })}
               >
@@ -84,12 +90,18 @@ function SettingsForm({ settings }: { settings: NotificationSettings }) {
             </li>
           ))}
         </ul>
+        <p className="mt-4 text-[0.95rem] text-ink">Emails go to the address the college recorded for you.</p>
+        {message && (
+          <div className="mt-3">
+            <Alert tone={message.tone}>{message.text}</Alert>
+          </div>
+        )}
+        <div className="mt-4">
+          <Button type="submit" disabled={busy}>
+            {busy ? 'Saving…' : 'Save settings'}
+          </Button>
+        </div>
       </Card>
-      <p className="text-sm text-ink-muted">Emails go to the address the college recorded for you.</p>
-      {message && <Alert tone={message.tone}>{message.text}</Alert>}
-      <Button type="submit" disabled={busy}>
-        {busy ? 'Saving…' : 'Save settings'}
-      </Button>
     </form>
   )
 }
@@ -98,7 +110,7 @@ function SettingsForm({ settings }: { settings: NotificationSettings }) {
 export function NotificationSettingsPage() {
   const settings = useApiQuery(queryKeys.me.notificationSettings(), (signal) => getNotificationSettings(signal))
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <title>Notification settings · Stacc</title>
       <PageHeader
         title="Notification settings"

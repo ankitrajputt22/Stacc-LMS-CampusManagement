@@ -1,3 +1,4 @@
+import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { getHttpStatus } from '../api/apiError'
@@ -11,7 +12,7 @@ import { useApiRequest } from '../api/useApiRequest'
 import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { ActionButton } from '../components/ActionButton'
-import { actionLinkClasses } from '../components/actionStyles'
+import { primaryLinkClasses } from '../components/actionStyles'
 import { Button } from '../components/Button'
 import { AccessDeniedState } from '../components/states/AccessDeniedState'
 import { EmptyState } from '../components/states/EmptyState'
@@ -75,42 +76,64 @@ type RowProps = {
   onOpen: () => void
 }
 
+function iconFor(type: string): NavIconName {
+  if (type.startsWith('ASSIGNMENT') || type.startsWith('QUIZ')) return 'assignments'
+  if (type.startsWith('HELPDESK')) return 'support'
+  if (type.startsWith('ACADEMIC_CALENDAR')) return 'calendar'
+  if (type.startsWith('ATTENDANCE')) return 'attendance'
+  if (type.startsWith('RESULT')) return 'exams'
+  if (type.startsWith('APPROVAL')) return 'todo'
+  if (type.startsWith('HOSTEL')) return 'hostel'
+  if (type.startsWith('CAMPUS') || type.startsWith('ANNOUNCEMENT')) return 'campus'
+  return 'inbox'
+}
+
 function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
   const unread = item.readAt === null
   return (
-    <li className={`px-4 py-3 sm:px-5 ${unread ? 'bg-surface-muted' : ''}`}>
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Unread is said in words, not only by the background. */}
-        <span
-          className={`inline-block shrink-0 rounded-sm border px-1.5 py-0.5 text-xs font-medium ${
-            unread ? 'border-stacc-primary text-stacc-primary' : 'border-line-strong text-ink-muted'
-          }`}
-        >
-          {unread ? 'Unread' : 'Read'}
-        </span>
-        <h2 className={`text-sm break-words text-ink ${unread ? 'font-semibold' : 'font-medium'}`}>{item.title}</h2>
+    <li className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[1rem_3rem_minmax(0,1fr)_auto_auto] md:items-center ${unread ? 'bg-sky-50/60' : ''}`}>
+      <span aria-hidden="true" className={`hidden size-2.5 rounded-full md:block ${unread ? 'bg-stacc-primary' : ''}`} />
+      <span aria-hidden="true" className="hidden size-12 items-center justify-center rounded-panel bg-surface-muted text-ink-muted md:flex">
+        <NavIcon name={iconFor(item.type)} className="size-6" />
+      </span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className={`text-base break-words text-ink ${unread ? 'font-bold' : 'font-semibold'}`}>{item.title}</h2>
+          {/* Unread is said in words, not only by the background or the dot. */}
+          <span
+            className={`inline-block shrink-0 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${
+              unread ? 'bg-sky-100 text-portal-navy' : 'bg-success-soft text-ink'
+            }`}
+          >
+            {unread ? 'Unread' : 'Read'}
+          </span>
+        </div>
+        {/* Plain text: React shows it as text, never as HTML. */}
+        <p className="mt-1 text-[0.95rem] leading-6 break-words whitespace-pre-line text-ink">{item.message}</p>
+        <p className="mt-0.5 text-sm text-ink-muted">
+          <time dateTime={item.createdAt}>{formatDateTime(item.createdAt)}</time>
+        </p>
       </div>
-      {/* Plain text: React shows it as text, never as HTML. */}
-      <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{item.message}</p>
-      <p className="mt-1 text-xs text-ink-muted">
-        <time dateTime={item.createdAt}>{formatDateTime(item.createdAt)}</time>
-      </p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <span>
         {isInternalPath(item.actionPath) && (
-          <Link to={item.actionPath} onClick={onOpen} className={actionLinkClasses}>
+          <Link to={item.actionPath} onClick={onOpen} className={primaryLinkClasses}>
             {ACTION_LABELS[item.type] ?? 'Open'}
             <span className="sr-only">: {item.title}</span>
           </Link>
         )}
-        <ActionButton
-          focusKey={`toggle-${item.notificationRecipientId}`}
+      </span>
+      <span>
+        <button
+          type="button"
+          data-focus-key={`toggle-${item.notificationRecipientId}`}
           aria-disabled={busy || undefined}
           onClick={onToggleRead}
+          className="min-h-11 rounded-control px-1 text-sm font-medium text-stacc-primary underline underline-offset-4 hover:text-stacc-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary aria-disabled:opacity-60 sm:min-h-0"
         >
           {busy ? 'Saving…' : unread ? 'Mark as read' : 'Mark as unread'}
           <span className="sr-only">: {item.title}</span>
-        </ActionButton>
-      </div>
+        </button>
+      </span>
     </li>
   )
 }
@@ -231,7 +254,7 @@ export function InboxPage() {
       aria-pressed={unreadOnly === value}
       onClick={() => chooseFilter(value)}
       className={`h-11 flex-1 border-l border-line-strong px-4 text-sm font-medium first:rounded-l-[3px] first:border-l-0 last:rounded-r-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:h-9 sm:flex-none ${
-        unreadOnly === value ? 'bg-surface-muted text-ink underline underline-offset-4' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
+        unreadOnly === value ? 'bg-portal-navy text-white' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
       }`}
     >
       {label}
@@ -337,15 +360,17 @@ export function InboxPage() {
   return (
     <>
       <title>Inbox · Stacc</title>
-      <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight text-portal-navy outline-none">
-        Inbox
-      </h1>
-      <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Updates from your courses and academic activity.</p>
-      <p className="mt-2">
-        <Link to="/inbox/settings" className="text-sm font-medium text-stacc-primary underline-offset-4 hover:underline">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight text-portal-navy outline-none">
+            Inbox
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-ink-muted sm:text-base">Updates from your courses and academic activity.</p>
+        </div>
+        <Link to="/inbox/settings" className="mt-2 text-base font-medium text-stacc-primary underline underline-offset-4 hover:text-stacc-primary-hover">
           Notification settings
         </Link>
-      </p>
+      </div>
       <p role="status" className="sr-only">
         {announcement}
       </p>
@@ -358,7 +383,7 @@ export function InboxPage() {
           </div>
           {unreadCount !== null && unreadCount > 0 && (
             <div className="w-full sm:w-auto">
-              <Button variant="secondary" aria-disabled={busy === 'all' || undefined} onClick={markAll}>
+              <Button aria-disabled={busy === 'all' || undefined} onClick={markAll}>
                 {busy === 'all' ? 'Marking…' : 'Mark all as read'}
               </Button>
             </div>
