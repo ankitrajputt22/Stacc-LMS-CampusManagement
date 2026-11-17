@@ -129,15 +129,15 @@ public class LocalErpSeeder implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments arguments) {
         LocalTestDataSeeder.checkedPassword(environment);
-        transaction.executeWithoutResult(status -> week("student1", CSE_WEEK));
+        transaction.executeWithoutResult(status -> week("cse24001", CSE_WEEK));
         transaction.executeWithoutResult(status -> week("ece25001", ECE_WEEK));
-        transaction.executeWithoutResult(status -> requirements("student1"));
+        transaction.executeWithoutResult(status -> requirements("cse24001"));
         transaction.executeWithoutResult(status -> requirements("ece25001"));
         transaction.executeWithoutResult(status -> contacts());
         transaction.executeWithoutResult(status -> requests());
-        transaction.executeWithoutResult(status -> examSession("student1", "B-12"));
+        transaction.executeWithoutResult(status -> examSession("cse24001", "B-12"));
         transaction.executeWithoutResult(status -> examSession("ece25001", "ECE-HALL-1"));
-        transaction.executeWithoutResult(status -> feeStructure("student1"));
+        transaction.executeWithoutResult(status -> feeStructure("cse24001"));
         transaction.executeWithoutResult(status -> feeStructure("ece25001"));
         transaction.executeWithoutResult(status -> aaravsFees());
         transaction.executeWithoutResult(status -> hostelLife());
@@ -194,7 +194,7 @@ public class LocalErpSeeder implements ApplicationRunner {
     }
 
     private void contacts() {
-        accounts.findByLoginId("student1").ifPresent(account -> {
+        accounts.findByLoginId("cse24001").ifPresent(account -> {
             var profile = people.myProfile(account.getId());
             if (!profile.recorded()) {
                 return;
@@ -212,7 +212,7 @@ public class LocalErpSeeder implements ApplicationRunner {
     // A few requests waiting for the office: leave and a revaluation from Aarav, a correction from a student who often
     // misses class. Only when the student has none yet.
     private void requests() {
-        accounts.findByLoginId("student1").ifPresent(account -> {
+        accounts.findByLoginId("cse24001").ifPresent(account -> {
             if (!requests.mine(account.getId()).isEmpty()) {
                 return;
             }
@@ -286,16 +286,16 @@ public class LocalErpSeeder implements ApplicationRunner {
 
     // Aarav has paid three instalments and holds a merit scholarship, leaving the rest due on 15 Dec.
     private void aaravsFees() {
-        Long office = accounts.findByLoginId("admin1").map(UserAccount::getId).orElse(null);
-        accounts.findByLoginId("student1").ifPresent(account -> {
+        Long office = accounts.findByLoginId("adm1001").map(UserAccount::getId).orElse(null);
+        accounts.findByLoginId("cse24001").ifPresent(account -> {
             if (office == null || !fees.mine(account.getId()).payments().isEmpty()) {
                 return;
             }
-            fees.recordPayment(office, "student1", new BigDecimal("40000"), FeePayment.Mode.BANK_TRANSFER, "BANK-2026-0841",
+            fees.recordPayment(office, "cse24001", new BigDecimal("40000"), FeePayment.Mode.BANK_TRANSFER, "BANK-2026-0841",
                     java.time.LocalDate.of(2026, 8, 10));
-            fees.recordPayment(office, "student1", new BigDecimal("20000"), FeePayment.Mode.UPI, "UPI-2026-0976",
+            fees.recordPayment(office, "cse24001", new BigDecimal("20000"), FeePayment.Mode.UPI, "UPI-2026-0976",
                     java.time.LocalDate.of(2026, 9, 1));
-            fees.recordPayment(office, "student1", new BigDecimal("10000"), FeePayment.Mode.UPI, "UPI-2026-1102",
+            fees.recordPayment(office, "cse24001", new BigDecimal("10000"), FeePayment.Mode.UPI, "UPI-2026-1102",
                     java.time.LocalDate.of(2026, 11, 2));
             Long scholarship = fees.applyForScholarship(account.getId(), "Merit Scholarship", new BigDecimal("10000"),
                     "Top 5% of the department in the first year.").adjustmentId();
@@ -314,7 +314,7 @@ public class LocalErpSeeder implements ApplicationRunner {
 
     // Main Hostel's weekly menu and two published notices, set as the hostel office would, when none exist yet.
     private void hostelLife() {
-        Long office = accounts.findByLoginId("admin1").map(UserAccount::getId).orElse(null);
+        Long office = accounts.findByLoginId("adm1001").map(UserAccount::getId).orElse(null);
         hostels.findByCode("MAIN").ifPresent(hostel -> {
             if (office == null) {
                 return;

@@ -22,7 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Starting twice at once makes one attempt (the second start resumes it), and an answer saved while the attempt is handed
- * in is either taken before the hand-in or refused after it. Uses its own quiz in CS301, taken by student2, whom no
+ * in is either taken before the hand-in or refused after it. Uses its own quiz in CS301, taken by cse24002, whom no
  * other quiz test uses.
  */
 class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
@@ -44,8 +44,8 @@ class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void simultaneousStartsMakeOneAttemptAndNoAnswerIsTakenAfterHandingIn() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long student = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id
@@ -93,9 +93,9 @@ class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void twoStudentsStartingAndOneSavingTheSameAnswerAtOnceNeverFail() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long first = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long second = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long first = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long second = accounts.findByLoginId("cse24003").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

@@ -110,7 +110,7 @@ public final class CampusServiceResponses {
     public record AdminCampusRequestSummary(
             Long requestId,
             @Schema(example = "CSR-000001") String requestNumber,
-            @Schema(example = "student1") String requesterLoginId,
+            @Schema(example = "cse24001") String requesterLoginId,
             Long serviceId,
             String serviceCode,
             String serviceName,

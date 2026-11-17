@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
 test('a student opens their academic profile and sees where they study and their published results', async ({ page }) => {
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
 
   await page.getByRole('button', { name: 'Account', exact: true }).click()
   await page.getByRole('link', { name: 'Academic profile' }).click()

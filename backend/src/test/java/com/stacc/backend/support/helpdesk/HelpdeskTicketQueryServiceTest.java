@@ -34,7 +34,7 @@ class HelpdeskTicketQueryServiceTest {
                     mock(HelpdeskTeamMemberRepository.class));
 
     private final HelpdeskTicket ticket = HelpdeskFixtures.ticket(42,
-            HelpdeskFixtures.account(70, "student1", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
+            HelpdeskFixtures.account(70, "cse24001", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
 
     private static void assertRefused(Runnable call, HttpStatus status) {
         assertThatThrownBy(call::run)
@@ -51,7 +51,7 @@ class HelpdeskTicketQueryServiceTest {
 
         assertThat(page.items()).singleElement().satisfies(item -> {
             assertThat(item.ticketNumber()).isEqualTo("STC-000042");
-            assertThat(item.requesterLoginId()).isEqualTo("student1");
+            assertThat(item.requesterLoginId()).isEqualTo("cse24001");
         });
         assertThat(page.page()).isEqualTo(1);
         assertThat(page.size()).isEqualTo(5);
@@ -75,10 +75,10 @@ class HelpdeskTicketQueryServiceTest {
     void theQueueFiltersByAssigneeOnlyForAssignedToMe() {
         when(tickets.findQueue(any(), any(), any(), any(), any(), any())).thenReturn(new PageImpl<>(List.of()));
 
-        service.queue(HelpdeskFixtures.admin(1), HelpdeskTicketStatus.IN_PROGRESS, null, null, true, " student1 ", 0, 20);
+        service.queue(HelpdeskFixtures.admin(1), HelpdeskTicketStatus.IN_PROGRESS, null, null, true, " cse24001 ", 0, 20);
         service.queue(HelpdeskFixtures.admin(1), null, null, null, false, " ", 0, 100);
 
-        verify(tickets).findQueue(HelpdeskTicketStatus.IN_PROGRESS, null, null, 1L, "student1", PageRequest.of(0, 20));
+        verify(tickets).findQueue(HelpdeskTicketStatus.IN_PROGRESS, null, null, 1L, "cse24001", PageRequest.of(0, 20));
         verify(tickets).findQueue(null, null, null, null, null, PageRequest.of(0, 100));
     }
 
@@ -119,10 +119,10 @@ class HelpdeskTicketQueryServiceTest {
     @Test
     void assigneesAreActiveAdminLoginIdsForManagersOnly() {
         when(accounts.findLoginIdsByRoleNameAndStatus(RoleName.ADMIN, AccountStatus.ACTIVE))
-                .thenReturn(List.of("admin1", "facultyadmin1"));
+                .thenReturn(List.of("adm1001", "emp1005"));
 
         assertThat(service.assignees(HelpdeskFixtures.admin(1))).extracting(HelpdeskAssigneeResponse::loginId)
-                .containsExactly("admin1", "facultyadmin1");
+                .containsExactly("adm1001", "emp1005");
 
         assertRefused(() -> service.assignees(HelpdeskFixtures.actor(1, "ROLE_ADMIN", HelpdeskActor.VIEW_ALL)),
                 HttpStatus.FORBIDDEN);

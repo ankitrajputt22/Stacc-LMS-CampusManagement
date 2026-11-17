@@ -76,23 +76,23 @@ class DepartmentHeadServiceTest {
     void assigningANewHeadEndsTheCurrentTermAndStartsANewOne() {
         DepartmentHead current = id(new DepartmentHead(cse, account(10, "hod0", RoleName.HOD), NOW.minusSeconds(86_400)), 1);
         when(heads.findActiveByDepartmentId(3L)).thenReturn(Optional.of(current));
-        when(accounts.findById(12L)).thenReturn(Optional.of(account(12, "hod1", RoleName.FACULTY, RoleName.HOD)));
+        when(accounts.findById(12L)).thenReturn(Optional.of(account(12, "emp1003", RoleName.FACULTY, RoleName.HOD)));
 
         DepartmentHeadRow row = service.assign(99L, 3L, new AssignDepartmentHead(12L));
 
         assertThat(current.getStatus()).isEqualTo(DepartmentHeadStatus.ENDED);
         assertThat(current.getEndedAt()).isEqualTo(NOW);
-        assertThat(row.head().loginId()).isEqualTo("hod1");
+        assertThat(row.head().loginId()).isEqualTo("emp1003");
         assertThat(row.head().startedAt()).isEqualTo(NOW);
         assertThat(row.head().counts()).isTrue();
         assertThat(row.head().name()).isNull();
         verify(audit).record(99L, AuditAction.DEPARTMENT_HEAD_ENDED, "DEPARTMENT", 3L, "hod0 no longer heads CSE.");
-        verify(audit).record(99L, AuditAction.DEPARTMENT_HEAD_ASSIGNED, "DEPARTMENT", 3L, "hod1 now heads CSE.");
+        verify(audit).record(99L, AuditAction.DEPARTMENT_HEAD_ASSIGNED, "DEPARTMENT", 3L, "emp1003 now heads CSE.");
     }
 
     @Test
     void theSameHeadAgainChangesNothing() {
-        UserAccount hod = account(12, "hod1", RoleName.HOD);
+        UserAccount hod = account(12, "emp1003", RoleName.HOD);
         when(heads.findActiveByDepartmentId(3L)).thenReturn(Optional.of(new DepartmentHead(cse, hod, NOW)));
         when(accounts.findById(12L)).thenReturn(Optional.of(hod));
 
@@ -105,7 +105,7 @@ class DepartmentHeadServiceTest {
     @Test
     void onlyAnActiveAccountHoldingHodCanHeadAnActiveDepartment() {
         when(heads.findActiveByDepartmentId(3L)).thenReturn(Optional.empty());
-        when(accounts.findById(20L)).thenReturn(Optional.of(account(20, "faculty1", RoleName.FACULTY)));
+        when(accounts.findById(20L)).thenReturn(Optional.of(account(20, "emp1021", RoleName.FACULTY)));
         UserAccount disabled = account(21, "hod2", RoleName.HOD);
         disabled.setStatus(AccountStatus.DISABLED);
         when(accounts.findById(21L)).thenReturn(Optional.of(disabled));
@@ -126,12 +126,12 @@ class DepartmentHeadServiceTest {
 
     @Test
     void endingKeepsTheTermAndEndingNothingChangesNothing() {
-        DepartmentHead current = new DepartmentHead(cse, account(12, "hod1", RoleName.HOD), NOW.minusSeconds(60));
+        DepartmentHead current = new DepartmentHead(cse, account(12, "emp1003", RoleName.HOD), NOW.minusSeconds(60));
         when(heads.findActiveByDepartmentId(3L)).thenReturn(Optional.of(current), Optional.empty());
 
         assertThat(service.end(99L, 3L).head()).isNull();
         assertThat(current.getStatus()).isEqualTo(DepartmentHeadStatus.ENDED);
-        verify(audit).record(99L, AuditAction.DEPARTMENT_HEAD_ENDED, "DEPARTMENT", 3L, "hod1 no longer heads CSE.");
+        verify(audit).record(99L, AuditAction.DEPARTMENT_HEAD_ENDED, "DEPARTMENT", 3L, "emp1003 no longer heads CSE.");
 
         service.end(99L, 3L);
         verify(heads).saveAndFlush(current);
@@ -140,7 +140,7 @@ class DepartmentHeadServiceTest {
 
     @Test
     void anActiveTermWhoseAccountLostTheRoleIsShownAsNotCounting() {
-        DepartmentHead current = new DepartmentHead(cse, account(12, "hod1", RoleName.FACULTY), NOW);
+        DepartmentHead current = new DepartmentHead(cse, account(12, "emp1003", RoleName.FACULTY), NOW);
         when(heads.findAllActive()).thenReturn(List.of(current));
         when(departments.findAllByOrderByCodeAscIdAsc()).thenReturn(List.of(cse));
 

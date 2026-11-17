@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * Editing a bank question and publishing a quiz that uses it, at the same moment, never both succeed: either the edit
  * finishes first and publishing finds the question needing review, or publishing finishes first and the edit finds
  * the quiz published. Either way a published quiz asks exactly the reviewed question. Uses CS302's draft LMS course of
- * faculty2, whose question bank and quizzes no other test reads.
+ * emp1022, whose question bank and quizzes no other test reads.
  */
 class LmsQuizMySqlIT extends MySqlIntegrationTest {
 
@@ -38,7 +38,7 @@ class LmsQuizMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anEditAndAPublicationAtOnceNeverBothSucceed() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

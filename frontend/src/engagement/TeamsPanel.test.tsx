@@ -10,7 +10,7 @@ vi.mock('../api/engagementApi')
 
 const teams: GroupTeams = {
   canManage: false,
-  teams: [{ teamId: 1, name: 'First XI', season: '2026-27', active: true, players: [{ playerId: 5, loginId: 'student2', role: 'CAPTAIN', joinedAt: '2026-11-01T00:00:00Z' }] }],
+  teams: [{ teamId: 1, name: 'First XI', season: '2026-27', active: true, players: [{ playerId: 5, loginId: 'cse24002', role: 'CAPTAIN', joinedAt: '2026-11-01T00:00:00Z' }] }],
 }
 
 function renderTeams(answer: GroupTeams) {
@@ -34,9 +34,9 @@ describe('TeamsPanel', () => {
     vi.mocked(api.addTeamPlayer).mockResolvedValue(teams.teams[0])
     renderTeams({ ...teams, canManage: true })
     await userEvent.click(screen.getByRole('button', { name: /^Teams\s*of Cricket Team$/ }))
-    await userEvent.type(await screen.findByRole('textbox', { name: /college ID for First XI/ }), 'student1')
+    await userEvent.type(await screen.findByRole('textbox', { name: /college ID for First XI/ }), 'cse24001')
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Role' }), 'VICE_CAPTAIN')
     await userEvent.click(screen.getByRole('button', { name: 'Add player' }))
-    expect(api.addTeamPlayer).toHaveBeenCalledWith(1, 'student1', 'VICE_CAPTAIN')
+    expect(api.addTeamPlayer).toHaveBeenCalledWith(1, 'cse24001', 'VICE_CAPTAIN')
   })
 })

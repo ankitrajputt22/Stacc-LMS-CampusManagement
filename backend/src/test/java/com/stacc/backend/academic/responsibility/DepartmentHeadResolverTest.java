@@ -41,7 +41,7 @@ class DepartmentHeadResolverTest {
 
     @Test
     void theHeadCountsOnlyWhileTheAccountIsActiveAndHoldsHod() {
-        UserAccount hod = id(new UserAccount("hod1", "example-hash-value"), 12);
+        UserAccount hod = id(new UserAccount("emp1003", "example-hash-value"), 12);
         hod.assignRole(new Role(RoleName.HOD));
         termOf(hod);
         assertThat(resolver.headOf(3L)).contains(hod);
@@ -56,13 +56,13 @@ class DepartmentHeadResolverTest {
 
     @Test
     void aStudentsHeadIsTheHeadOfTheirProgramsDepartment() {
-        UserAccount hod = id(new UserAccount("hod1", "example-hash-value"), 12);
+        UserAccount hod = id(new UserAccount("emp1003", "example-hash-value"), 12);
         hod.assignRole(new Role(RoleName.HOD));
         termOf(hod);
         Program btech = new Program(cse, "BTECH-CSE", "B.Tech CSE", 8);
         AcademicSession session = new AcademicSession("2026-27", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30));
         when(students.findWithContextByUserAccountId(70L)).thenReturn(Optional.of(
-                new StudentProfile(id(new UserAccount("student1", "example-hash-value"), 70), btech, session)));
+                new StudentProfile(id(new UserAccount("cse24001", "example-hash-value"), 70), btech, session)));
 
         assertThat(resolver.headForStudent(70L)).contains(hod);
         assertThat(resolver.headForStudent(71L)).isEmpty();
@@ -70,7 +70,7 @@ class DepartmentHeadResolverTest {
 
     @Test
     void anEndedTermIsHistoryAndCanNotBeReopened() {
-        DepartmentHead head = new DepartmentHead(cse, new UserAccount("hod1", "example-hash-value"),
+        DepartmentHead head = new DepartmentHead(cse, new UserAccount("emp1003", "example-hash-value"),
                 Instant.parse("2026-07-01T00:00:00Z"));
         head.end(Instant.parse("2026-08-01T00:00:00Z"));
         head.end(Instant.parse("2026-09-01T00:00:00Z"));

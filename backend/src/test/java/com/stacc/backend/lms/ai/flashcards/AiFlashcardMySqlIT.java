@@ -45,7 +45,7 @@ class AiFlashcardMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void setsStayWithinTheQuotaAndReviewsNeverLoseEachOther() throws Exception {
-        Long student = accounts.findByLoginId("student1").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> studentAccess.canAccessCourse(student, id)).findFirst().orElseThrow();
         for (long i = sets.countByLmsCourseIdAndUserAccountId(course, student); i < AiFlashcardStore.MAX_SETS - 1; i++) {

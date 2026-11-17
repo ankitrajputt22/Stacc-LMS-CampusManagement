@@ -17,7 +17,7 @@ vi.mock('../api/lmsSyllabusApi', () => ({
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 21, loginId: 'faculty1', roles: ['FACULTY'] },
+  account: { accountId: 21, loginId: 'emp1021', roles: ['FACULTY'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,

@@ -95,7 +95,7 @@ final class LocalCollegePopulation {
         Instant now = clock.instant().truncatedTo(ChronoUnit.MINUTES);
         Instant registrationOpened = now.minus(1, ChronoUnit.DAYS);
 
-        UserAccount admin = seed.account("admin1", password, RoleName.ADMIN);
+        UserAccount admin = seed.account("adm1001", password, RoleName.ADMIN);
         AcademicSession previous = seed.session(startYear - 1, AcademicSession::close);
         AcademicSession current = seed.session(startYear, session -> {
             session.markActive();
@@ -122,7 +122,7 @@ final class LocalCollegePopulation {
                 CourseOffering::markActive);
         Section sectionC = seed.section(third, "C", 60);
 
-        UserAccount faculty1 = seed.account("faculty1", password, RoleName.FACULTY);
+        UserAccount emp1021 = seed.account("emp1021", password, RoleName.FACULTY);
         FacultyProfile coTeacher = teacher(password, CSE_CO_TEACHER, cse);
         FacultyProfile discreteTeacher = teacher(password, CSE_TEACHER, cse);
         seed.teaching(coTeacher, cs301, TeachingRole.CO_FACULTY);
@@ -137,7 +137,7 @@ final class LocalCollegePopulation {
             // Last semester: Object-Oriented Programming, completed with a published result.
             SemesterEnrollment last = seed.semesterEnrollment(profile, previousSecond, SemesterEnrollment::markCompleted);
             CourseEnrollment oop = seed.courseEnrollment(last, cs201, CourseEnrollment::markCompleted);
-            seed.result(faculty1, cs201, oop, String.valueOf(58 + (index * 7) % 40), "100", GRADES[index % GRADES.length],
+            seed.result(emp1021, cs201, oop, String.valueOf(58 + (index * 7) % 40), "100", GRADES[index % GRADES.length],
                     null, true);
             // This semester: section C, three courses.
             SemesterEnrollment now3 = seed.semesterEnrollment(profile, third, enrollment -> enrollment.placeIn(sectionC));
@@ -149,11 +149,11 @@ final class LocalCollegePopulation {
 
         // Coursework in Data Structures: most handed in the warm-up (late, its deadline has passed) and were graded;
         // a few have started the linked list implementation.
-        Long lms301 = seed.lmsCourse(faculty1, cs301, LmsCourseStatus.PUBLISHED);
-        LmsAssignment warmUp = seed.assignment(faculty1, lms301, "Array warm-up exercises",
+        Long lms301 = seed.lmsCourse(emp1021, cs301, LmsCourseStatus.PUBLISHED);
+        LmsAssignment warmUp = seed.assignment(emp1021, lms301, "Array warm-up exercises",
                 "Solve problems 1 to 5 from the arrays worksheet.", LocalTestDataSeeder.deadline(today, -5), "20",
                 LmsContentStatus.PUBLISHED);
-        LmsAssignment linkedList = seed.assignment(faculty1, lms301, "Linked list implementation",
+        LmsAssignment linkedList = seed.assignment(emp1021, lms301, "Linked list implementation",
                 "Implement a singly linked list with insert, delete, and search.", LocalTestDataSeeder.deadline(today, 9), "50",
                 LmsContentStatus.PUBLISHED);
         for (int index = 0; index < students.size(); index++) {
@@ -162,7 +162,7 @@ final class LocalCollegePopulation {
             if (index % 6 != 5) {
                 seed.submit(student, lms301, warmUp, enrollment, WARM_UP_ANSWERS[index % WARM_UP_ANSWERS.length]);
                 if (index % 4 != 3) {
-                    seed.grade(faculty1, warmUp, enrollment, 1, String.valueOf(9 + (index * 5) % 12),
+                    seed.grade(emp1021, warmUp, enrollment, 1, String.valueOf(9 + (index * 5) % 12),
                             WARM_UP_FEEDBACK[index % WARM_UP_FEEDBACK.length]);
                 }
             }
@@ -173,9 +173,9 @@ final class LocalCollegePopulation {
         }
 
         // Attendance: two more finalized classes with the whole class, so percentages are worth reading.
-        seed.attendance(faculty1, cs301, "Queues and circular buffers", now.minus(4, ChronoUnit.DAYS),
+        seed.attendance(emp1021, cs301, "Queues and circular buffers", now.minus(4, ChronoUnit.DAYS),
                 loginId -> mark(loginId, 1), true);
-        seed.attendance(faculty1, cs301, "Recursion and the call stack", now.minus(3, ChronoUnit.DAYS),
+        seed.attendance(emp1021, cs301, "Recursion and the call stack", now.minus(3, ChronoUnit.DAYS),
                 loginId -> mark(loginId, 2), true);
     }
 

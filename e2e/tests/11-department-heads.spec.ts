@@ -2,15 +2,15 @@ import { expect, test } from '@playwright/test'
 import { signIn, signOut } from './support'
 
 test('a student sees their head of department, and an admin ends the term and sets the head again', async ({ page }) => {
-  // The demo head of CSE is hod1, Lakshmi Menon; student1 studies in a CSE program.
-  await signIn(page, 'erp', 'student1')
+  // The demo head of CSE is emp1003, Lakshmi Menon; cse24001 studies in a CSE program.
+  await signIn(page, 'erp', 'cse24001')
   await page.goto('/academic/profile')
   const facts = page.getByRole('region', { name: 'As a student' })
   await expect(facts.getByText('Head of department')).toBeVisible()
   await expect(facts.getByText('Lakshmi Menon')).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/academic/department-heads')
   const table = page.getByRole('table', { name: 'Department Heads' })
   const cse = table.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /CSE/ }) })
@@ -24,7 +24,7 @@ test('a student sees their head of department, and an admin ends the term and se
 
   // Setting a head again starts a new term; both terms are listed.
   await cse.getByRole('button', { name: /Edit\s*head of CSE/ }).click()
-  await page.getByLabel('Head of department').selectOption({ label: 'Lakshmi Menon (hod1)' })
+  await page.getByLabel('Head of department').selectOption({ label: 'Lakshmi Menon (emp1003)' })
   await page.getByRole('button', { name: 'Save head' }).click()
   await expect(cse).toContainText('Lakshmi Menon')
   await cse.getByRole('button', { name: /Edit\s*head of CSE/ }).click()

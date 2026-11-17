@@ -29,7 +29,7 @@ class ApprovalNotificationsTest {
     private final ApprovalNotifications notifications = new ApprovalNotifications(service, accounts);
     private final ApprovalRequest request = ApprovalFixtures.request(12,
             ApprovalFixtures.workflow(4, "TWO_STEP", RoleName.FACULTY, RoleName.ADMIN),
-            ApprovalFixtures.account(80, "faculty1", RoleName.FACULTY));
+            ApprovalFixtures.account(80, "emp1021", RoleName.FACULTY));
 
     @Test
     @SuppressWarnings("unchecked")

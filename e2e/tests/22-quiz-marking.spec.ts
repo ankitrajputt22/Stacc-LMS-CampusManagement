@@ -4,8 +4,8 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 const QUIZ = 'Stacks and queues check'
 
 test('a teacher marks a written quiz answer and the student then sees the score', async ({ page }) => {
-  // student2 takes the quiz and answers only the written question.
-  await signIn(page, 'lms', 'student2')
+  // cse24002 takes the quiz and answers only the written question.
+  await signIn(page, 'lms', 'cse24002')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Quizzes')
   await page.getByRole('link', { name: QUIZ }).click()
@@ -21,14 +21,14 @@ test('a teacher marks a written quiz answer and the student then sees the score'
   await expect(page.getByText('Your result appears once your teacher has marked the written answers.')).toBeVisible()
   await signOut(page)
 
-  // faculty1 marks it.
-  await signIn(page, 'lms', 'faculty1')
+  // emp1021 marks it.
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Quizzes')
   await page.getByRole('link', { name: QUIZ }).click()
   await page.getByRole('link', { name: 'Results' }).click()
   await expect(page.getByRole('heading', { name: 'Quiz results', level: 1 })).toBeVisible()
-  await page.getByRole('link', { name: /^student2\s*,\s*attempt\s*1/ }).click()
+  await page.getByRole('link', { name: /^cse24002\s*,\s*attempt\s*1/ }).click()
   await expect(page.getByText('A linked list grows without copying.')).toBeVisible()
   await page.getByLabel('Marks for question 4').fill('3')
   await page.getByLabel('Feedback for question 4 (optional)').fill('Mention insertion in the middle.')
@@ -36,8 +36,8 @@ test('a teacher marks a written quiz answer and the student then sees the score'
   await expect(page.getByText(/Score 3\.00 \/ 10\.00|Score 3 \/ 10/)).toBeVisible()
   await signOut(page)
 
-  // student2 sees the result.
-  await signIn(page, 'lms', 'student2')
+  // cse24002 sees the result.
+  await signIn(page, 'lms', 'cse24002')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Quizzes')
   await page.getByRole('link', { name: QUIZ }).click()

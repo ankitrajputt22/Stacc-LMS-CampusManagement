@@ -273,7 +273,7 @@ class StudentRegistrationServiceTest {
     }
 
     private StudentProfile student(long accountId, long profileId) {
-        UserAccount account = withId(new UserAccount("student1", "example-hash-value"), accountId);
+        UserAccount account = withId(new UserAccount("cse24001", "example-hash-value"), accountId);
         return withId(new StudentProfile(account, btech, session), profileId);
     }
 

@@ -13,7 +13,7 @@ vi.mock('../api/adminUsersApi', () => ({ importUsers: vi.fn() }))
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 1, loginId: 'admin1', roles: ['ADMIN'] },
+  account: { accountId: 1, loginId: 'adm1001', roles: ['ADMIN'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -50,7 +50,7 @@ describe('AdminUserImportPage', () => {
       dryRun: true, created: 0, rowsWithErrors: 1,
       rows: [
         { line: 2, loginId: '26CSE001', errors: [] },
-        { line: 3, loginId: 'student1', errors: ['An account with this login ID already exists.'] },
+        { line: 3, loginId: 'cse24001', errors: ['An account with this login ID already exists.'] },
       ],
     })
     renderPage()

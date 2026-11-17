@@ -10,7 +10,7 @@ vi.mock('../api/innovationApi')
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 7, loginId: 'student1', roles: ['STUDENT'] },
+  account: { accountId: 7, loginId: 'cse24001', roles: ['STUDENT'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,

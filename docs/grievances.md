@@ -28,7 +28,7 @@ Phase 0.12.3. Grievances live in the `grievance` module. They are confidential c
 | `GET /api/v1/grievances/committee`, `GET …/committee/{id}`, `POST …/committee/{id}/review`, `…/resolve`, `…/appeal-decision` | `FACULTY` or `ADMIN` with `GRIEVANCE_COMMITTEE_WORK`, and on the case's committee |
 | `GET`/`POST /api/v1/admin/grievances/categories`, `PUT …/categories/{id}`, `POST …/categories/{id}/committee`, `POST /api/v1/admin/grievances/committee/{id}/end` | `ADMIN` with `GRIEVANCE_MANAGE` |
 
-The demo data adds the `ACADEMIC` category (14 days) with `faculty1` on its committee.
+The demo data adds the `ACADEMIC` category (14 days) with `emp1021` on its committee.
 
 ## Pages (v0.16.12)
 

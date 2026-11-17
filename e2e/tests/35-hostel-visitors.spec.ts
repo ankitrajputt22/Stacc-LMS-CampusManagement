@@ -4,7 +4,7 @@ import { signIn, signOut } from './support'
 test('a resident registers a visitor, security sees them, and the hostel office sets visiting hours', async ({ page }) => {
   const visitor = `Asha ${Date.now()}`
 
-  await signIn(page, 'erp', 'student2')
+  await signIn(page, 'erp', 'cse24002')
   await page.goto('/hostel/visitors')
   const card = page.getByRole('region', { name: 'Visitors' })
   await card.getByLabel('Visitor’s name').fill(visitor)
@@ -14,12 +14,12 @@ test('a resident registers a visitor, security sees them, and the hostel office 
   await expect(card.getByRole('listitem').filter({ hasText: visitor }).getByText('Expected')).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'security1')
+  await signIn(page, 'erp', 'stf2012')
   await page.goto('/gate')
   await expect(page.getByRole('region', { name: 'Visitors today' }).getByRole('listitem').filter({ hasText: visitor })).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/hostel/visitors')
   await page.getByLabel('Visitors from').fill('16:00')
   await page.getByLabel('Visitors until').fill('19:00')

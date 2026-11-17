@@ -34,8 +34,8 @@ class AiSavedAnswerMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void theFiftiethPlaceIsTakenOnceAndDeletingRemovesTheRow() throws Exception {
-        Long student = accounts.findByLoginId("student1").orElseThrow().getId();
-        // The first course student1 may use; the notes test uses the last one, and no other test saves answers.
+        Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        // The first course cse24001 may use; the notes test uses the last one, and no other test saves answers.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> studentAccess.canAccessCourse(student, id)).findFirst().orElseThrow();
         for (long i = answers.countByLmsCourseIdAndUserAccountId(course, student); i < AiSavedAnswerService.MAX_SAVED - 1; i++) {

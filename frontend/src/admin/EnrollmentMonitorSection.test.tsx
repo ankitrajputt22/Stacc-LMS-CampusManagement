@@ -16,7 +16,7 @@ vi.mock('../api/adminAcademicApi', () => ({
 vi.mock('../api/adminEnrollmentApi', () => ({ searchCourseEnrollments: vi.fn() }))
 
 const row = {
-  courseEnrollmentId: 501, studentProfileId: 57, loginId: 'student1', name: 'Aarav Sharma', rollNumber: '25CSE001',
+  courseEnrollmentId: 501, studentProfileId: 57, loginId: 'cse24001', name: 'Aarav Sharma', rollNumber: '25CSE001',
   courseCode: 'CS305', courseName: 'Software Engineering', credits: 3, academicSessionCode: '2026-27',
   programCode: 'BTECH-CSE', semesterNumber: 3, sectionCode: 'A', status: 'DROPPED' as const,
   registeredAt: '2026-07-02T05:00:00Z', droppedAt: '2026-07-03T05:00:00Z',

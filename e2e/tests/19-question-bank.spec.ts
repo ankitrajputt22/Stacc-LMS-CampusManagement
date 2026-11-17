@@ -4,7 +4,7 @@ import { COURSE_CODE, openCourseSection, signIn } from './support'
 const QUESTION = 'A primary key may contain null values.'
 
 test('a faculty member adds a question to the bank, reviews it, offers it for practice, and archives it', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Question bank')
   await expect(page.getByRole('heading', { name: 'Question bank', level: 1 })).toBeVisible()

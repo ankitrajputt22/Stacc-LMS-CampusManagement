@@ -4,7 +4,7 @@ import { signIn } from './support'
 test('the campus office turns a coming event into a trial', async ({ page }) => {
   const title = `Cricket trial ${Date.now()}`
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/campus/events')
   const organizer = page.getByRole('region', { name: 'Organize events' })
   await organizer.getByLabel('Title').fill(title)

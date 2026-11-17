@@ -16,7 +16,7 @@ const logoutEverywhere = vi.fn().mockResolvedValue(undefined)
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 7, loginId: 'student1', roles: ['STUDENT'] },
+  account: { accountId: 7, loginId: 'cse24001', roles: ['STUDENT'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -26,7 +26,7 @@ const auth: AuthContextValue = {
 }
 
 const profile = {
-  loginId: 'student1', displayName: 'Aarav Sharma', recorded: true, fullName: 'Aarav Sharma', preferredName: null,
+  loginId: 'cse24001', displayName: 'Aarav Sharma', recorded: true, fullName: 'Aarav Sharma', preferredName: null,
   email: 'aarav@college.example', phone: null, hasPhoto: false, mailingAddress: null, emergencyContacts: [],
 }
 

@@ -26,15 +26,15 @@ class TeamCaptainMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aTeamNeverHasTwoCaptains() throws Exception {
-        Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
-        Long first = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long second = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
+        Long first = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long second = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Long groupId = groups.create("RACE_TEAM_SPORT", "Race Team Sport", CampusGroup.Kind.SPORT, null, CampusGroup.JoinPolicy.OPEN).groupId();
         groups.join(first, groupId);
         groups.join(second, groupId);
         Long teamId = teams.create(admin, true, groupId, "First team", "2026-27").teamId();
-        teams.addPlayer(admin, true, teamId, "student1", CampusTeamMember.Role.PLAYER);
-        List<TeamService.PlayerView> roster = teams.addPlayer(admin, true, teamId, "student2", CampusTeamMember.Role.PLAYER).players();
+        teams.addPlayer(admin, true, teamId, "cse24001", CampusTeamMember.Role.PLAYER);
+        List<TeamService.PlayerView> roster = teams.addPlayer(admin, true, teamId, "cse24002", CampusTeamMember.Role.PLAYER).players();
 
         List<Concurrently.Outcome<TeamService.TeamView>> outcomes = Concurrently.run(
                 () -> teams.changeRole(admin, true, roster.get(0).playerId(), CampusTeamMember.Role.CAPTAIN),

@@ -152,8 +152,8 @@ class UserAdminServiceTest {
 
     @Test
     void creationIsRefusedForTakenIdsMissingProfilesAndWeakPasswords() {
-        when(accounts.existsByLoginId("student1")).thenReturn(true);
-        assertRefused(HttpStatus.CONFLICT, UserAdminService.LOGIN_TAKEN, () -> service.create(ADMIN, new UserCreate("student1",
+        when(accounts.existsByLoginId("cse24001")).thenReturn(true);
+        assertRefused(HttpStatus.CONFLICT, UserAdminService.LOGIN_TAKEN, () -> service.create(ADMIN, new UserCreate("cse24001",
                 "A B", null, Set.of(RoleName.ADMIN), TEMPORARY, null, null)));
 
         when(people.existsByEmail("taken@college.example")).thenReturn(true);
@@ -182,7 +182,7 @@ class UserAdminServiceTest {
     @Test
     void disablingEndsEverySessionAndAnAdminCannotDisableThemselves() {
         UserAccount account = stored(57L, "25CSE104", RoleName.STUDENT);
-        stored(ADMIN, "admin1", RoleName.ADMIN);
+        stored(ADMIN, "adm1001", RoleName.ADMIN);
 
         assertEquals("DISABLED", service.updateStatus(ADMIN, 57L, AccountStatus.DISABLED).status());
         verify(userSessions).endAll(57L, SessionEndReason.ENDED_BY_COLLEGE);
@@ -198,7 +198,7 @@ class UserAdminServiceTest {
     @Test
     void changingRolesEndsSessionsKeepsTheSameSetAsANoOpAndProtectsTheOwnAdminRole() {
         UserAccount account = stored(57L, "EMP204", RoleName.FACULTY);
-        stored(ADMIN, "admin1", RoleName.ADMIN, RoleName.FACULTY);
+        stored(ADMIN, "adm1001", RoleName.ADMIN, RoleName.FACULTY);
 
         assertEquals(List.of("FACULTY"), service.updateRoles(ADMIN, 57L, Set.of(RoleName.FACULTY)).roles());
         verify(userSessions, never()).endAll(anyLong(), any());

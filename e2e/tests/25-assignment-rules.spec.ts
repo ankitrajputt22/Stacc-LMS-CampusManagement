@@ -11,7 +11,7 @@ function inDays(days: number): string {
 }
 
 test('a faculty member allows one attempt and no late work, and the student can hand in only once', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Assignments')
 
@@ -32,7 +32,7 @@ test('a faculty member allows one attempt and no late work, and the student can 
   await expect(item.getByRole('button', { name: /^Publish/ })).toHaveCount(0)
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await page.getByRole('link', { name: TITLE }).first().click()
   await expect(page.getByText('Not accepted after the due date')).toBeVisible()

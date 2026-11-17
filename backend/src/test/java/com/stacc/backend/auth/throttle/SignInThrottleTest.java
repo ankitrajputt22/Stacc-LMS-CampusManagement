@@ -83,7 +83,7 @@ class SignInThrottleTest {
 
     @Test
     void keysAreHashedAndLoginIdsIgnoreCaseAndSpaces() {
-        assertEquals(SignInThrottleService.accountKey(" Student1 "), SignInThrottleService.accountKey("student1"));
+        assertEquals(SignInThrottleService.accountKey(" CSE24001 "), SignInThrottleService.accountKey("cse24001"));
         assertEquals(64, SignInThrottleService.addressKey("203.0.113.5").length());
         assertEquals(false, SignInThrottleService.accountKey("x").equals(SignInThrottleService.addressKey("x")));
     }

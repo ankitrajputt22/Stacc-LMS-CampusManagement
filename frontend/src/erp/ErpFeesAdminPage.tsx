@@ -202,7 +202,7 @@ function StudentLedger() {
   return (
     <Card title="Student ledger" icon="profile">
       <form onSubmit={(event) => { event.preventDefault(); setLoginId(search.trim()) }} className="mb-4 flex items-end gap-3">
-        <TextField label="College ID" className="flex-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="For example: student1" />
+        <TextField label="College ID" className="flex-1" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="For example: cse24001" />
         <Button type="submit" variant="secondary">Find</Button>
       </form>
       {loginId && (ledger.status === 'loaded' ? <LedgerView ledger={ledger.data} />

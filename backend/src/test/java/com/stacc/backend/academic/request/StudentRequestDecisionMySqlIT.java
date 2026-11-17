@@ -23,7 +23,7 @@ class StudentRequestDecisionMySqlIT extends MySqlIntegrationTest {
     @Test
     void aRequestIsDecidedOnce() throws Exception {
         Long student = accounts.findByLoginId("cse25015").orElseThrow().getId();
-        Long office = accounts.findByLoginId("admin1").orElseThrow().getId();
+        Long office = accounts.findByLoginId("adm1001").orElseThrow().getId();
         LocalDate today = LocalDate.now();
         Long requestId = requests.medicalLeave(student, today, today.plusDays(1), "Fever, advised rest").requestId();
 

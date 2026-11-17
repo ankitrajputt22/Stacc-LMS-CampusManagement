@@ -34,8 +34,8 @@ class AiStudentNoteMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void theTwentiethPlaceIsTakenOnce() throws Exception {
-        Long student = accounts.findByLoginId("student1").orElseThrow().getId();
-        // The last course student1 may use; no other test writes notes.
+        Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        // The last course cse24001 may use; no other test writes notes.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> studentAccess.canAccessCourse(student, id)).reduce((first, second) -> second).orElseThrow();
         for (long i = notes.countByLmsCourseIdAndUserAccountId(course, student); i < AiStudentNoteService.MAX_NOTES - 1; i++) {

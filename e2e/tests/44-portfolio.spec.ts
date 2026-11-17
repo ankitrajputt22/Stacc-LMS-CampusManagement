@@ -5,22 +5,22 @@ test('a student adds a portfolio item and the named faculty member verifies it',
   const title = `Robotics finalist ${Date.now()}`
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/portfolio')
   await student.getByLabel('Title', { exact: true }).fill(title)
   await student.getByLabel('Link (optional)').fill('https://example.org/robotics')
   await student.getByRole('button', { name: 'Add item' }).click()
   await expect(student.getByRole('status').filter({ hasText: 'Item added.' })).toHaveCount(1)
-  await student.getByLabel(`Faculty employee ID to verify ${title}`).fill('faculty1')
+  await student.getByLabel(`Faculty employee ID to verify ${title}`).fill('emp1021')
   await student.getByRole('listitem').filter({ hasText: title }).getByRole('button', { name: 'Ask to verify' }).click()
-  await expect(student.getByRole('status').filter({ hasText: 'Sent to faculty1 for verification.' })).toHaveCount(1)
+  await expect(student.getByRole('status').filter({ hasText: 'Sent to emp1021 for verification.' })).toHaveCount(1)
 
   const faculty = await browser.newPage()
-  await signIn(faculty, 'erp', 'faculty1')
+  await signIn(faculty, 'erp', 'emp1021')
   await faculty.goto('/portfolio')
   await faculty.getByRole('button', { name: new RegExp(`^Verify\\s*${title}$`) }).click()
   await expect(faculty.getByRole('status').filter({ hasText: 'Item verified.' })).toHaveCount(1)
 
   await student.reload()
-  await expect(student.getByText(/Verified · faculty1/).first()).toBeVisible()
+  await expect(student.getByText(/Verified · emp1021/).first()).toBeVisible()
 })

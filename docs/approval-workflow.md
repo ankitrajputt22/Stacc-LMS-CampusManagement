@@ -215,7 +215,7 @@ Campus service requests (`docs/campus-services.md`) use the engine only when the
 
 ## Local test data
 
-The `dev-seed` profile creates one clearly labelled demo workflow, `DEMO_TWO_STEP_APPROVAL` (Faculty review, then Administrative approval), and three demo requests by `student1`, `student2`, and `studentfaculty1`, each waiting at the faculty step. They are started through the engine with source type `DEV_DEMO`. It is development data only, never a migration or production data. See `local-test-data.md`.
+The `dev-seed` profile creates one clearly labelled demo workflow, `DEMO_TWO_STEP_APPROVAL` (Faculty review, then Administrative approval), and three demo requests by `cse24001`, `cse24002`, and `cse24003`, each waiting at the faculty step. They are started through the engine with source type `DEV_DEMO`. It is development data only, never a migration or production data. See `local-test-data.md`.
 
 ## Not built yet
 

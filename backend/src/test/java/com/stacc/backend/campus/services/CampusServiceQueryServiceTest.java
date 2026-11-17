@@ -33,8 +33,8 @@ class CampusServiceQueryServiceTest {
     private final ApprovalQueryService approvals = mock(ApprovalQueryService.class);
     private final CampusServiceQueryService service = new CampusServiceQueryService(requests, approvals);
 
-    private final UserAccount student = CampusFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = CampusFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount student = CampusFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = CampusFixtures.account(1, "adm1001", RoleName.ADMIN);
     private final CampusServiceDefinition idCard = CampusFixtures.service(1, "ID_CARD", true, false, "CAMPUS_SERVICE_REQUEST");
     private final CampusServiceDefinition general = CampusFixtures.service(2, "GENERAL_ADMIN", true, true, null);
 
@@ -46,7 +46,7 @@ class CampusServiceQueryServiceTest {
 
     private static ApprovalRequestStepResponse step(String status, String comment) {
         return new ApprovalRequestStepResponse(1, "Administrative Approval", "ADMIN", status,
-                status.equals("PENDING") ? null : "admin1", status.equals("PENDING") ? null : Instant.EPOCH, comment);
+                status.equals("PENDING") ? null : "adm1001", status.equals("PENDING") ? null : Instant.EPOCH, comment);
     }
 
     @Test
@@ -144,7 +144,7 @@ class CampusServiceQueryServiceTest {
 
         var decider = service.adminRequest(CampusFixtures.approvalActor(1, "ROLE_ADMIN", "CAMPUS_SERVICE_MANAGE",
                 "APPROVAL_TASK_DECIDE"), 42L);
-        assertThat(decider.requesterLoginId()).isEqualTo("student1");
+        assertThat(decider.requesterLoginId()).isEqualTo("cse24001");
         assertThat(decider.currentApprovalStep().approvalRequestStepId()).isEqualTo(121L);
         assertThat(decider.canDecide()).isTrue();
         assertThat(decider.canComplete()).isFalse();
@@ -174,11 +174,11 @@ class CampusServiceQueryServiceTest {
         when(requests.findQueue(any(), any(), any(), any(), any())).thenReturn(new PageImpl<>(List.of(
                 CampusFixtures.request(43, general, student, null))));
 
-        var page = service.adminRequests(2L, CampusServiceRequestStatus.REJECTED, "  student1 ", 0, 20);
+        var page = service.adminRequests(2L, CampusServiceRequestStatus.REJECTED, "  cse24001 ", 0, 20);
 
-        verify(requests).findQueue(2L, "student1", CampusServiceRequestStatus.REJECTED, ApprovalRequestStatus.REJECTED,
+        verify(requests).findQueue(2L, "cse24001", CampusServiceRequestStatus.REJECTED, ApprovalRequestStatus.REJECTED,
                 PageRequest.of(0, 20));
-        assertThat(page.items()).singleElement().satisfies(item -> assertThat(item.requesterLoginId()).isEqualTo("student1"));
+        assertThat(page.items()).singleElement().satisfies(item -> assertThat(item.requesterLoginId()).isEqualTo("cse24001"));
         service.adminRequests(null, null, " ", 0, 20);
         verify(requests).findQueue(null, null, null, null, PageRequest.of(0, 20));
     }

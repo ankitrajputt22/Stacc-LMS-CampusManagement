@@ -4,7 +4,7 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 test('a student reads a formatted course page, and a faculty member saves formatted text and previews a draft page', async ({ page }) => {
   // The demo page "Complexity cheat sheet" is formatted: a heading, a table, a list, code, and maths. The course home
   // lists it as a link; the page itself shows the text, with the pages before and after it.
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await page.getByRole('link', { name: 'Complexity cheat sheet' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Complexity cheat sheet' })).toBeVisible()
@@ -16,7 +16,7 @@ test('a student reads a formatted course page, and a faculty member saves format
   await expect(page.getByRole('heading', { level: 1, name: 'Choosing between arrays and linked lists' })).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Announcements')
   await page.getByRole('button', { name: 'Add announcement' }).click()

@@ -30,8 +30,8 @@ class HostelQueryServiceTest {
     private final ApprovalQueryService approvals = mock(ApprovalQueryService.class);
     private final HostelQueryService service = new HostelQueryService(applications, allocations, studentProfiles, approvals);
 
-    private final UserAccount studentAccount = HostelFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = HostelFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount studentAccount = HostelFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = HostelFixtures.account(1, "adm1001", RoleName.ADMIN);
     private final StudentProfile student = HostelFixtures.student(5, studentAccount);
     private final ApprovalRequest pending = HostelFixtures.approval(12, studentAccount);
     private HostelApplication application;
@@ -82,7 +82,7 @@ class HostelQueryServiceTest {
         ApprovalActor requester = HostelFixtures.actor(70, "ROLE_STUDENT", "ROLE_ADMIN", ApprovalActor.TASK_DECIDE, "HOSTEL_MANAGE");
 
         HostelAdminApplicationDetail detail = service.adminApplication(decider, 42L);
-        assertThat(detail.studentLoginId()).isEqualTo("student1");
+        assertThat(detail.studentLoginId()).isEqualTo("cse24001");
         assertThat(detail.currentApprovalStep().approvalRequestStepId()).isEqualTo(121L);
         assertThat(detail.canDecideCurrentStep()).isTrue();
         assertThat(detail.canAllocate()).isFalse();

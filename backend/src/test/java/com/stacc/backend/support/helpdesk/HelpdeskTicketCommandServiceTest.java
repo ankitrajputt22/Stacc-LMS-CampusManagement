@@ -36,11 +36,11 @@ class HelpdeskTicketCommandServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-10-25T09:30:00.123456789Z");
 
-    private final UserAccount student = HelpdeskFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount otherStudent = HelpdeskFixtures.account(71, "student2", RoleName.STUDENT);
-    private final UserAccount admin = HelpdeskFixtures.account(1, "admin1", RoleName.ADMIN);
-    private final UserAccount secondAdmin = HelpdeskFixtures.account(2, "facultyadmin1", RoleName.FACULTY, RoleName.ADMIN);
-    private final UserAccount faculty = HelpdeskFixtures.account(80, "faculty1", RoleName.FACULTY);
+    private final UserAccount student = HelpdeskFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount otherStudent = HelpdeskFixtures.account(71, "cse24002", RoleName.STUDENT);
+    private final UserAccount admin = HelpdeskFixtures.account(1, "adm1001", RoleName.ADMIN);
+    private final UserAccount secondAdmin = HelpdeskFixtures.account(2, "emp1005", RoleName.FACULTY, RoleName.ADMIN);
+    private final UserAccount faculty = HelpdeskFixtures.account(80, "emp1021", RoleName.FACULTY);
     private final HelpdeskCategory lms = HelpdeskFixtures.category(3, "LMS", true);
     private final HelpdeskCategory retired = HelpdeskFixtures.category(4, "OLD", false);
 
@@ -112,11 +112,11 @@ class HelpdeskTicketCommandServiceTest {
         assertThat(created.status()).isEqualTo("OPEN");
         assertThat(created.priority()).isEqualTo("NORMAL");
         assertThat(created.subject()).isEqualTo("Cannot open CS302");
-        assertThat(created.requesterLoginId()).isEqualTo("student1");
+        assertThat(created.requesterLoginId()).isEqualTo("cse24001");
         assertThat(created.assignedToLoginId()).isNull();
         assertThat(created.history()).singleElement().satisfies(entry -> {
             assertThat(entry.action()).isEqualTo("CREATED");
-            assertThat(entry.actorLoginId()).isEqualTo("student1");
+            assertThat(entry.actorLoginId()).isEqualTo("cse24001");
             assertThat(entry.toValue()).isEqualTo("OPEN");
         });
         verifyNoInteractions(notifications);
@@ -145,7 +145,7 @@ class HelpdeskTicketCommandServiceTest {
     void theRequesterRepliesAndTheNotifierDecidesWhoHears() {
         var message = service.addMessage(studentActor, 42L, "  The course code is CS302. ");
 
-        assertThat(message.authorLoginId()).isEqualTo("student1");
+        assertThat(message.authorLoginId()).isEqualTo("cse24001");
         assertThat(message.message()).isEqualTo("The course code is CS302.");
         assertThat(trail).extracting(HelpdeskTicketHistory::getAction)
                 .containsExactly(HelpdeskTicketHistoryAction.MESSAGE_ADDED);
@@ -191,36 +191,36 @@ class HelpdeskTicketCommandServiceTest {
 
     @Test
     void assigningRecordsTheLoginIdsAndTellsTheAssignee() {
-        HelpdeskTicketDetail assigned = service.assign(adminActor, 42L, "facultyadmin1");
+        HelpdeskTicketDetail assigned = service.assign(adminActor, 42L, "emp1005");
 
-        assertThat(assigned.assignedToLoginId()).isEqualTo("facultyadmin1");
+        assertThat(assigned.assignedToLoginId()).isEqualTo("emp1005");
         assertThat(assigned.history()).singleElement().satisfies(entry -> {
             assertThat(entry.action()).isEqualTo("ASSIGNED");
             assertThat(entry.fromValue()).isNull();
-            assertThat(entry.toValue()).isEqualTo("facultyadmin1");
-            assertThat(entry.actorLoginId()).isEqualTo("admin1");
+            assertThat(entry.toValue()).isEqualTo("emp1005");
+            assertThat(entry.actorLoginId()).isEqualTo("adm1001");
         });
         verify(notifications).assigned(ticket, 1L);
     }
 
     @Test
     void reassigningAndUnassigningAreRecorded() {
-        service.assign(adminActor, 42L, "admin1");
-        service.assign(adminActor, 42L, "facultyadmin1");
+        service.assign(adminActor, 42L, "adm1001");
+        service.assign(adminActor, 42L, "emp1005");
         HelpdeskTicketDetail unassigned = service.assign(adminActor, 42L, null);
 
         assertThat(unassigned.assignedToLoginId()).isNull();
         assertThat(unassigned.history()).extracting(HelpdeskHistoryResponse::action, HelpdeskHistoryResponse::fromValue,
                 HelpdeskHistoryResponse::toValue).containsExactly(
-                        tuple("ASSIGNED", null, "admin1"),
-                        tuple("ASSIGNED", "admin1", "facultyadmin1"),
-                        tuple("UNASSIGNED", "facultyadmin1", null));
+                        tuple("ASSIGNED", null, "adm1001"),
+                        tuple("ASSIGNED", "adm1001", "emp1005"),
+                        tuple("UNASSIGNED", "emp1005", null));
     }
 
     @Test
     void theSameAssigneeChangesNothing() {
-        service.assign(adminActor, 42L, "admin1");
-        service.assign(adminActor, 42L, " admin1 ");
+        service.assign(adminActor, 42L, "adm1001");
+        service.assign(adminActor, 42L, " adm1001 ");
         service.assign(adminActor, 42L, null);
         service.assign(adminActor, 42L, "");
 
@@ -230,8 +230,8 @@ class HelpdeskTicketCommandServiceTest {
 
     @Test
     void onlyExistingAdminAccountsCanBeAssigned() {
-        assertRefused(() -> service.assign(adminActor, 42L, "faculty1"), HttpStatus.BAD_REQUEST);
-        assertRefused(() -> service.assign(adminActor, 42L, "student1"), HttpStatus.BAD_REQUEST);
+        assertRefused(() -> service.assign(adminActor, 42L, "emp1021"), HttpStatus.BAD_REQUEST);
+        assertRefused(() -> service.assign(adminActor, 42L, "cse24001"), HttpStatus.BAD_REQUEST);
         assertRefused(() -> service.assign(adminActor, 42L, "nobody"), HttpStatus.BAD_REQUEST);
         assertThat(ticket.getAssignedTo()).isNull();
         assertThat(trail).isEmpty();
@@ -241,7 +241,7 @@ class HelpdeskTicketCommandServiceTest {
     void aDisabledAdminAccountCannotBeAssigned() {
         secondAdmin.setStatus(AccountStatus.DISABLED);
 
-        assertThatThrownBy(() -> service.assign(adminActor, 42L, "facultyadmin1"))
+        assertThatThrownBy(() -> service.assign(adminActor, 42L, "emp1005"))
                 .hasMessage("Tickets can only be assigned to active admin accounts or members of the ticket's team.");
         assertThat(ticket.getAssignedTo()).isNull();
         verifyNoInteractions(notifications);
@@ -307,7 +307,7 @@ class HelpdeskTicketCommandServiceTest {
             assertRefused(() -> service.changeStatus(adminActor, 42L, target), HttpStatus.CONFLICT);
         }
         assertRefused(() -> service.changePriority(adminActor, 42L, HelpdeskTicketPriority.HIGH), HttpStatus.CONFLICT);
-        assertRefused(() -> service.assign(adminActor, 42L, "admin1"), HttpStatus.CONFLICT);
+        assertRefused(() -> service.assign(adminActor, 42L, "adm1001"), HttpStatus.CONFLICT);
         assertThat(trail).isEmpty();
         verifyNoInteractions(notifications);
     }
@@ -316,7 +316,7 @@ class HelpdeskTicketCommandServiceTest {
     void onlyAdminsWithTheManagePermissionManageTickets() {
         for (HelpdeskActor actor : List.of(studentActor, HelpdeskFixtures.requester(1, "ROLE_ADMIN"),
                 HelpdeskFixtures.actor(80, "ROLE_FACULTY", HelpdeskActor.MANAGE))) {
-            assertRefused(() -> service.assign(actor, 42L, "admin1"), HttpStatus.FORBIDDEN);
+            assertRefused(() -> service.assign(actor, 42L, "adm1001"), HttpStatus.FORBIDDEN);
             assertRefused(() -> service.changePriority(actor, 42L, HelpdeskTicketPriority.LOW), HttpStatus.FORBIDDEN);
             assertRefused(() -> service.changeStatus(actor, 42L, HelpdeskTicketStatus.CLOSED), HttpStatus.FORBIDDEN);
         }
@@ -326,7 +326,7 @@ class HelpdeskTicketCommandServiceTest {
     @Test
     void aMissingTicketIs404() {
         assertRefused(() -> service.changeStatus(adminActor, 404L, HelpdeskTicketStatus.CLOSED), HttpStatus.NOT_FOUND);
-        assertRefused(() -> service.assign(adminActor, null, "admin1"), HttpStatus.NOT_FOUND);
+        assertRefused(() -> service.assign(adminActor, null, "adm1001"), HttpStatus.NOT_FOUND);
     }
 
     // v0.9.5: waiting on the requester, notes, reopening, and ratings

@@ -40,18 +40,25 @@ Because the seeder works through the feature services, a fresh database also get
 
 ## Test accounts
 
+Login IDs follow the college's pattern: students are their branch and intake year with a number (`cse24001`), teachers
+and staff an employee number (`emp1021`, `stf2014`), and the office `adm` with a number. Each main role has a full
+account to show every feature and an empty one to fill in live.
+
 All test accounts use the password in `STACC_TEST_PASSWORD`.
 
 | Login ID | Roles | Useful for testing |
 | --- | --- | --- |
-| `student1` | `STUDENT` | **Main student.**<br>• Student dashboard and Courses: CS301 is published; CS302 is a draft and CS303 is archived, so neither shows.<br>• Course content, announcements, and assignments.<br>• Quizzes: "Stacks and queues check" in CS301, with two attempts to take.<br>• Grades: the warm-up assignment (17/20) and "Class test 1" (21/25) are published; the warm-up is graded with a rubric.<br>• A graded late attempt, and an ungraded on-time one.<br>• Attendance: present in both finalized sessions.<br>• Results: published, including a completed course from the previous session.<br>• Calendar: semester 3 events and deadlines.<br>• Helpdesk: an open LMS ticket, and a resolved one with a reply.<br>• Registration: semester 3 is open; CS305 and CS306 (section A) can be added up to the 24-credit limit. |
-| `student2` | `STUDENT` | **Second student.**<br>• Two attempts on one assignment: the first graded, the latest not.<br>• An absence.<br>• A draft result, so no published results show.<br>• A withdrawn course enrollment (CS304).<br>• Registration: section B, so only CS305 is open to add (the e2e journey adds and drops it).<br>• Helpdesk: a closed ticket that was resolved first. |
-| `faculty1` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), CS306 (section A elective), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Question bank: four reviewed questions in CS301, used by the published quiz "Stacks and queues check".<br>• Exam papers: the blueprint "Unit 1 test blueprint" and the draft paper "Unit 1 test" built from it.<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard.<br>• Helpdesk: a high-priority ticket in progress, assigned to `admin1`, with a reply. |
-| `faculty2` | `FACULTY` | **Draft LMS course and no LMS course.**<br>• CS302 has a draft LMS course with draft content and a draft assignment.<br>• CS304 has no LMS course, so Teaching offers Create.<br>• Teaches the open elective CS305 (no LMS course).<br>• An open, unmarked attendance session.<br>• Course copy: CS250 Algorithms Lab, archived from last session with a module, two pages, and a syllabus, and an empty draft in semester 4 to copy into. |
-| `admin1` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view.<br>• Helpdesk queue: every ticket, three of them assigned to `admin1`. |
-| `studentfaculty1` | `STUDENT`, `FACULTY` | **Student and teacher at once.**<br>• Enrolled in CS301, and co-teaches CS302 with `faculty2`.<br>• Both dashboard parts.<br>• Student and teaching deadlines on the calendar. |
-| `hod1` | `FACULTY`, `HOD` | **Head of department.**<br>• Heads `CSE`, so students and faculty of CSE see Lakshmi Menon as their head of department.<br>• Admins can end the term or set another head at Academic Admin → People → Department Heads.<br>• Teaches nothing. |
-| `facultyadmin1` | `FACULTY`, `ADMIN` | **Teacher and admin at once.**<br>• Teaches CS401 in semester 4, which has no LMS course.<br>• Faculty and admin dashboards.<br>• The admin calendar, including the semester 4 event.<br>• Helpdesk: assigned the projector ticket to `admin1`. |
+| `cse24001` | `STUDENT` | **Main student.**<br>• Student dashboard and Courses: CS301 is published; CS302 is a draft and CS303 is archived, so neither shows.<br>• Course content, announcements, and assignments.<br>• Quizzes: "Stacks and queues check" in CS301, with two attempts to take.<br>• Grades: the warm-up assignment (17/20) and "Class test 1" (21/25) are published; the warm-up is graded with a rubric.<br>• A graded late attempt, and an ungraded on-time one.<br>• Attendance: present in both finalized sessions.<br>• Results: published, including a completed course from the previous session.<br>• Calendar: semester 3 events and deadlines.<br>• Helpdesk: an open LMS ticket, and a resolved one with a reply.<br>• Registration: semester 3 is open; CS305 and CS306 (section A) can be added up to the 24-credit limit. |
+| `cse24002` | `STUDENT` | **Second student.**<br>• Two attempts on one assignment: the first graded, the latest not.<br>• An absence.<br>• A draft result, so no published results show.<br>• A withdrawn course enrollment (CS304).<br>• Registration: section B, so only CS305 is open to add (the e2e journey adds and drops it).<br>• Helpdesk: a closed ticket that was resolved first. |
+| `emp1021` | `FACULTY` | **Main teacher.**<br>• Teaching page: CS301 (published LMS course), CS303 (archived), CS306 (section A elective), and CS201 (previous session, no LMS course).<br>• Content editor and assignments.<br>• Question bank: four reviewed questions in CS301, used by the published quiz "Stacks and queues check".<br>• Exam papers: the blueprint "Unit 1 test blueprint" and the draft paper "Unit 1 test" built from it.<br>• Grading: three latest attempts wait for a grade.<br>• Attendance: two finalized sessions and one open.<br>• Results: published and draft.<br>• Faculty dashboard.<br>• Helpdesk: a high-priority ticket in progress, assigned to `adm1001`, with a reply. |
+| `emp1022` | `FACULTY` | **Draft LMS course and no LMS course.**<br>• CS302 has a draft LMS course with draft content and a draft assignment.<br>• CS304 has no LMS course, so Teaching offers Create.<br>• Teaches the open elective CS305 (no LMS course).<br>• An open, unmarked attendance session.<br>• Course copy: CS250 Algorithms Lab, archived from last session with a module, two pages, and a syllabus, and an empty draft in semester 4 to copy into. |
+| `adm1001` | `ADMIN` | **Admin.**<br>• Admin dashboard.<br>• Academic Admin: masters, offerings, enrollments, and rosters.<br>• Academic calendar management: draft, published, and cancelled events.<br>• The admin calendar view.<br>• Helpdesk queue: every ticket, three of them assigned to `adm1001`. |
+| `cse24003` | `STUDENT`, `FACULTY` | **Student and teacher at once.**<br>• Enrolled in CS301, and co-teaches CS302 with `emp1022`.<br>• Both dashboard parts.<br>• Student and teaching deadlines on the calendar. |
+| `emp1003` | `FACULTY`, `HOD` | **Head of department.**<br>• Heads `CSE`, so students and faculty of CSE see Lakshmi Menon as their head of department.<br>• Admins can end the term or set another head at Academic Admin → People → Department Heads.<br>• Teaches nothing. |
+| `emp1005` | `FACULTY`, `ADMIN` | **Teacher and admin at once.**<br>• Teaches CS401 in semester 4, which has no LMS course.<br>• Faculty and admin dashboards.<br>• The admin calendar, including the semester 4 event.<br>• Helpdesk: assigned the projector ticket to `adm1001`. |
+| `cse24050` | `STUDENT` | **New student, empty.** Riya Kapoor: a student profile in BTECH-CSE and nothing else (no semester or course enrollment, no records), to fill in during a demonstration. |
+| `emp1050` | `FACULTY` | **New teacher, empty.** Vikram Joshi: a faculty profile in CSE and no teaching assignment, to assign and build courses for during a demonstration. |
+| `adm1002` | `ADMIN` | **Second admin.** Rahul Mehta: an admin with no records of their own, to show a second office account. |
 
 ## What is created
 
@@ -59,30 +66,30 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 - Department `CSE` with program `BTECH-CSE` (8 semesters).
 - Two sessions: the current one (`ACTIVE`, such as `2026-27`) and the previous one (`CLOSED`).
 - Semesters: 2 of the previous session (closed), 3 of the current one (active), and 4 of the current one (planned).
-- Courses `CS201`, `CS301`, `CS302`, `CS303`, `CS304`, and `CS401`, each offered once, and `CS250` Algorithms Lab (v0.6.8), offered in the previous semester 2 (closed, archived LMS course with content) and in semester 4 (draft LMS course), both taught by `faculty2`:
+- Courses `CS201`, `CS301`, `CS302`, `CS303`, `CS304`, and `CS401`, each offered once, and `CS250` Algorithms Lab (v0.6.8), offered in the previous semester 2 (closed, archived LMS course with content) and in semester 4 (draft LMS course), both taught by `emp1022`:
   - CS201 in the previous semester 2 (closed);
   - CS301 to CS304 in semester 3 (active);
   - CS401 in semester 4 (planned).
 
 **People and enrollment**
-- Person profiles with made-up names and addresses on the reserved `.example` domain (such as `student1@stacc.example`): `student1` Aarav Sharma, `student2` Diya Patel, `faculty1` Meera Iyer, `faculty2` Rohan Gupta, `admin1` Kavita Rao, `studentfaculty1` Arjun Nair, `facultyadmin1` Sanjay Verma, `hod1` Lakshmi Menon.
-- Student profiles for `student1`, `student2`, and `studentfaculty1`, admitted in the previous session.
-- Faculty profiles for `faculty1`, `faculty2`, `studentfaculty1`, `facultyadmin1`, and `hod1`, in `CSE`.
-- `hod1` heads `CSE`, set through the normal department head service by `admin1`, unless CSE has ever had a head (an ended or replaced term is never started again).
+- Person profiles with made-up names and addresses on the reserved `.example` domain (such as `cse24001@stacc.example`): `cse24001` Aarav Sharma, `cse24002` Diya Patel, `emp1021` Meera Iyer, `emp1022` Rohan Gupta, `adm1001` Kavita Rao, `cse24003` Arjun Nair, `emp1005` Sanjay Verma, `emp1003` Lakshmi Menon, `cse24050` Riya Kapoor, `emp1050` Vikram Joshi, `adm1002` Rahul Mehta.
+- Student profiles for `cse24001`, `cse24002`, and `cse24003`, admitted in the previous session.
+- Faculty profiles for `emp1021`, `emp1022`, `cse24003`, `emp1005`, and `emp1003`, in `CSE`.
+- `emp1003` heads `CSE`, set through the normal department head service by `adm1001`, unless CSE has ever had a head (an ended or replaced term is never started again).
 - Teaching assignments:
-  - `faculty1`: CS201, CS301, CS303;
-  - `faculty2`: CS302, CS304;
-  - `studentfaculty1`: CS302;
-  - `facultyadmin1`: CS401.
+  - `emp1021`: CS201, CS301, CS303;
+  - `emp1022`: CS302, CS304;
+  - `cse24003`: CS302;
+  - `emp1005`: CS401.
 - Semester and course enrollments:
-  - `student1`: CS301 to CS304, plus CS201 completed in the previous session;
-  - `student2`: CS301 and CS302, with CS304 withdrawn;
-  - `studentfaculty1`: CS301.
+  - `cse24001`: CS301 to CS304, plus CS201 completed in the previous session;
+  - `cse24002`: CS301 and CS302, with CS304 withdrawn;
+  - `cse24003`: CS301.
 
 **LMS**
 - LMS courses: CS301 published, CS302 draft, CS303 archived. Their enrolled students use the published one through official enrollment.
 - Course content:
-  - CS301 has a published unit with four published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text; the fourth, "Complexity cheat sheet", formatted text with a heading, a table, a list, code, and maths, added in v0.6.1) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `faculty1` at `/teaching/:lmsCourseId/ai`.
+  - CS301 has a published unit with four published topics (the third, "Choosing between arrays and linked lists", added in Phase 47 so the AI study assistant has enough text; the fourth, "Complexity cheat sheet", formatted text with a heading, a table, a list, code, and maths, added in v0.6.1) and one draft topic, and a draft unit. Its AI knowledge is not indexed by the seeder: refresh it as `emp1021` at `/teaching/:lmsCourseId/ai`.
   - CS302 has a draft unit.
 - Announcements: one published and one draft in CS301, and a draft in CS302.
 - Assignments in CS301:
@@ -97,8 +104,8 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 **Academic records**
 - Attendance in CS301: two finalized sessions with present and absent records, and one open session. CS302 has one open session.
 - Course results:
-  - CS301: published for `student1`, draft for `student2`;
-  - CS201: published for `student1`.
+  - CS301: published for `cse24001`, draft for `cse24002`;
+  - CS201: published for `cse24001`.
 - Academic calendar:
   - published events for the session and for semester 3;
   - a semester 4 event;
@@ -108,31 +115,31 @@ All test accounts use the password in `STACC_TEST_PASSWORD`.
 **Helpdesk**
 - Categories `GENERAL`, `ACADEMIC`, `LMS`, and `TECHNICAL`, all active.
 - Tickets, created through the ticket engine so their numbers, history, and notifications are real:
-  - `student1`, LMS: open, normal priority, unassigned;
-  - `faculty1`, technical: high priority, assigned to `admin1` by `facultyadmin1`, answered, in progress;
-  - `student1`, general: low priority, answered by `admin1`, resolved;
-  - `student2`, academic: answered by `admin1`, resolved and then closed.
+  - `cse24001`, LMS: open, normal priority, unassigned;
+  - `emp1021`, technical: high priority, assigned to `adm1001` by `emp1005`, answered, in progress;
+  - `cse24001`, general: low priority, answered by `adm1001`, resolved;
+  - `cse24002`, academic: answered by `adm1001`, resolved and then closed.
 
 **Approvals (development only)**
 - One demo workflow, `DEMO_TWO_STEP_APPROVAL`: Faculty review, then Administrative approval. It is labelled as not a real college process.
 - Three demo requests, started through the approval engine with source type `DEV_DEMO`, each waiting at the faculty step:
-  - `student1` (`demo-1`) and `student2` (`demo-2`): in the queues of `faculty1`, `faculty2`, `studentfaculty1`, and `facultyadmin1`;
-  - `studentfaculty1` (`demo-3`): in the same queues except their own.
+  - `cse24001` (`demo-1`) and `cse24002` (`demo-2`): in the queues of `emp1021`, `emp1022`, `cse24003`, and `emp1005`;
+  - `cse24003` (`demo-3`): in the same queues except their own.
 - Admins see none of them until a faculty member approves the first step. There are no approval pages, so try them through `/api/v1/approvals`.
 
 **Hostel (development only)**
 - Hostel `MAIN` ("Main Hostel") with rooms `A-101` and `A-102`, each with beds `B1` and `B2`, all active.
-- One application by `student2` for the current session (added in Phase 45 so search has something to find). Since Phase 46 it is approved through the engine by `admin1`, allocated a bed, vacated, and allocated a second bed, so the reports show one active and one vacated allocation and two beds stay free. Sign in as `student1` or `studentfaculty1` to apply at `/hostel` yourself, then review and allocate as `admin1` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
+- One application by `cse24002` for the current session (added in Phase 45 so search has something to find). Since Phase 46 it is approved through the engine by `adm1001`, allocated a bed, vacated, and allocated a second bed, so the reports show one active and one vacated allocation and two beds stay free. Sign in as `cse24001` or `cse24003` to apply at `/hostel` yourself, then review and allocate as `adm1001` at `/admin/hostel`. The `HOSTEL_APPLICATION` workflow comes from migration `V53`, not from the seeder.
 
 **Campus (development only)**
 - Services `ID_CARD` ("ID card replacement", students and faculty) and `TRANSPORT` ("Transport pass", students only), both approved through the `CAMPUS_SERVICE_REQUEST` workflow from migration `V57`, and `GENERAL_ADMIN` ("General administrative request", students and faculty, no approval).
 - The notice "Welcome to Campus services (development)", published for every role (so each test account has one Inbox notification for it), and the draft "Library hours during exams (development draft)".
-- Two requests, added in Phase 45 so search has something to find: `student1`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `faculty1`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Phase 46 adds two for the reports: `student2`'s "Course transcript copy (development)", completed by `admin1`, and `studentfaculty1`'s "Library card renewal (development)", cancelled by its requester. Both use the General administrative request service. Request more at `/campus`, then review, approve, and complete them as `admin1` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
+- Two requests, added in Phase 45 so search has something to find: `cse24001`'s "Bonafide letter for a scholarship (development)" (General administrative request, approved at once because it needs no approval) and `emp1021`'s "Replacement staff ID card (development)" (ID card replacement, waiting for approval). Phase 46 adds two for the reports: `cse24002`'s "Course transcript copy (development)", completed by `adm1001`, and `cse24003`'s "Library card renewal (development)", cancelled by its requester. Both use the General administrative request service. Request more at `/campus`, then review, approve, and complete them as `adm1001` at `/admin/campus`. Services are found by code, notices by title, and requests by requester and subject, so running again creates nothing new.
 - One study material is seeded since Phase 47, so AI knowledge has a file to index: the published plain-text "Linked list cheat sheet (development)" (`linked-list-cheat-sheet.txt`) under CS301's "Singly linked lists". It is uploaded through the normal material service, so it needs object storage; seeding it runs in its own transaction after the rest and is skipped, with a log line, when storage is not reachable. Upload more at `/teaching/:lmsCourseId`.
 
 ## Used by the MySQL tests
 
-The backend's MySQL tests (`*MySqlIT`, see `testing.md`) start a throwaway MySQL container with this profile, so every CI run seeds this data from an empty database and checks that seeding a second time creates nothing. Some tests work on particular records (for example `student1`'s and `studentfaculty1`'s hostel applications, or the demo requests `demo-1` and `demo-2`); when a phase changes the seeded data, keep those tests passing. The tests use a random password for that run, never your `STACC_TEST_PASSWORD`.
+The backend's MySQL tests (`*MySqlIT`, see `testing.md`) start a throwaway MySQL container with this profile, so every CI run seeds this data from an empty database and checks that seeding a second time creates nothing. Some tests work on particular records (for example `cse24001`'s and `cse24003`'s hostel applications, or the demo requests `demo-1` and `demo-2`); when a phase changes the seeded data, keep those tests passing. The tests use a random password for that run, never your `STACC_TEST_PASSWORD`.
 
 ## Starting over
 
@@ -142,11 +149,11 @@ The data lives in your local database. To start from an empty database with Dock
 
 `LocalDemoExtrasSeeder` runs after the main seeder, under the same profile and password. It adds:
 
-- **Staff accounts:** `warden1` (warden of the Main Hostel), `security1`, `maintenance1` (with `warden1` on the `MAINTENANCE` support team), `librarian1`, and `placement1`.
-- **Clubs and sports:** the Coding Club (joins on approval; advisor `faculty1`, president `student1`) and the Cricket Team (open; coach `faculty2`).
-- **Grievances:** the `ACADEMIC` category (answer within 14 days) with `faculty1` on its committee.
-- **Mentoring:** `faculty1` mentors `student1`.
-- **Library:** *Introduction to Algorithms* (copies `LIB-0001`, `LIB-0002`) and *Effective Java* (`LIB-0003`), and one digital resource; `librarian1` works the desk.
+- **Staff accounts:** `stf2011` (warden of the Main Hostel), `stf2012`, `stf2013` (with `stf2011` on the `MAINTENANCE` support team), `stf2014`, and `stf2015`.
+- **Clubs and sports:** the Coding Club (joins on approval; advisor `emp1021`, president `cse24001`) and the Cricket Team (open; coach `emp1022`).
+- **Grievances:** the `ACADEMIC` category (answer within 14 days) with `emp1021` on its committee.
+- **Mentoring:** `emp1021` mentors `cse24001`.
+- **Library:** *Introduction to Algorithms* (copies `LIB-0001`, `LIB-0002`) and *Effective Java* (`LIB-0003`), and one digital resource; `stf2014` works the desk.
 - **Facilities:** a Seminar Hall that needs approval, and an open Badminton Court.
 - **An event:** Open Source Day, published a week ahead.
 - **A placement:** Acme Software's open Graduate Software Engineer placement.
@@ -163,7 +170,7 @@ It only finds or creates, through the feature services, like the main seeder.
 | --- | --- | --- |
 | `cse25004` to `cse25015` | Twelve Computer Science students (roll numbers `25CSE004` to `25CSE015`), section C of semester 3 | Class lists and attendance in CS301 with 15 students; warm-up hand-ins (some ungraded, two missing); linked list hand-ins; a published CS201 result from last semester each. `cse25008` misses most classes. |
 | `ece25001` to `ece25015` | Fifteen Electronics and Communication students (`25ECE001` to `25ECE015`), sections A (`001` to `008`) and B | Signals and Systems and Analog Electronic Circuits as published courses; problem set hand-ins and grades; five and three finalized classes; a published EC201 result each. `ece25005` and `ece25012` miss most classes. `ece25001`, `ece25006`, `ece25011`, and `ece25014` have hostel applications waiting for a decision. |
-| `emp2011` | Anil Deshpande, CSE | Co-teaches CS301 with `faculty1`. |
+| `emp2011` | Anil Deshpande, CSE | Co-teaches CS301 with `emp1021`. |
 | `emp2012` | Farah Siddiqui, CSE | Co-teaches CS304. |
 | `emp3001` | Prakash Raman, `FACULTY` and `HOD` | Heads ECE (department analytics with 15 students); teaches EC304, which has no LMS course yet. |
 | `emp3002` | Divya Srinivasan, ECE | Teaches EC301 Signals and Systems: two published units with plain and formatted pages, a syllabus, announcements, a past and a future assignment with a grading queue, and a draft. |
@@ -176,7 +183,7 @@ Attendance marks and marks are worked out from each student's login ID and place
 
 **Campus activity.** `LocalCampusActivitySeeder` runs last (order 20) and gives these people everyday activity, through the feature services and only when missing:
 
-- **Discussions:** in EC301, a question from `ece25003` answered by `emp3002` (accepted) with a student follow-up, a student question answered by another student, and the teacher's pinned office-hours notice; in CS301, a question from `cse25006` answered by `faculty1` (accepted).
+- **Discussions:** in EC301, a question from `ece25003` answered by `emp3002` (accepted) with a student follow-up, a student question answered by another student, and the teacher's pinned office-hours notice; in CS301, a question from `cse25006` answered by `emp1021` (accepted).
 - **Clubs:** `cse25004` and `cse25005` are accepted into the Coding Club; `cse25009`, `cse25013`, and `ece25006` wait for its officers. Five students joined the Cricket Team.
 - **Mentoring:** `emp3001` mentors `ece25005` (with a first meeting, shared and private notes, and two action items that show on their To-Do lists) and `ece25012`; `emp2011` mentors `cse25008`.
 - **Library:** *Signals and Systems* (`LIB-0101`, `LIB-0102`) and *Microelectronic Circuits* (`LIB-0103`); `ece25003` and `ece25008` each have a book on loan.
@@ -187,7 +194,7 @@ Attendance marks and marks are worked out from each student's login ID and place
 
 - Weekly timetables for the current CSE and ECE semesters (rooms such as `CSE-204` and `LAB-02`).
 - Degree requirements for both B.Tech programs: core 96, electives 42, labs 12, projects 10 credits.
-- Aarav's (`student1`) mailing address and two emergency contacts.
+- Aarav's (`cse24001`) mailing address and two emergency contacts.
 - Pending requests: Aarav's medical leave and CS201 revaluation, and an attendance correction from `cse25008`.
 - A published "End Semester Examinations — December 2026" session for each current semester, every student seated.
 - Fee structures of ₹1,12,500 for both programs, due 15 Dec 2026. Aarav has paid ₹70,000 in three payments and holds a ₹10,000 merit scholarship, leaving ₹32,500 due.

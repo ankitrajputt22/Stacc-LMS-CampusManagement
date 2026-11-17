@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { RoomChange } from '../../types/hostel'
 import { placeText, roomChangeState } from './roomChangeText'
 
-const side = { loginId: 'student2', hostel: 'Main Hostel', room: '101', bed: 'A' }
+const side = { loginId: 'cse24002', hostel: 'Main Hostel', room: '101', bed: 'A' }
 
 function change(overrides: Partial<RoomChange>): RoomChange {
   return {

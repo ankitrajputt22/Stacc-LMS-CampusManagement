@@ -189,7 +189,8 @@ public class LocalTestDataSeeder implements ApplicationRunner {
     static final int MIN_PASSWORD_LENGTH = 8;
     /** The login IDs of the test accounts, in the order they are documented. */
     static final List<String> TEST_LOGIN_IDS = List.of(
-            "student1", "student2", "faculty1", "faculty2", "admin1", "studentfaculty1", "facultyadmin1", "hod1");
+            "cse24001", "cse24002", "emp1021", "emp1022", "adm1001", "cse24003", "emp1005", "emp1003",
+            "cse24050", "emp1050", "adm1002");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalTestDataSeeder.class);
     private static final Set<String> PRODUCTION_PROFILES = Set.of("prod", "production");
@@ -463,24 +464,30 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         int startYear = today.getMonthValue() >= 7 ? today.getYear() : today.getYear() - 1;
 
         // --- Accounts: one password, roles assigned by the college, permissions from the roles.
-        UserAccount student1 = account("student1", password, RoleName.STUDENT);
-        UserAccount student2 = account("student2", password, RoleName.STUDENT);
-        UserAccount faculty1 = account("faculty1", password, RoleName.FACULTY);
-        UserAccount faculty2 = account("faculty2", password, RoleName.FACULTY);
-        UserAccount admin1 = account("admin1", password, RoleName.ADMIN);
-        UserAccount studentFaculty = account("studentfaculty1", password, RoleName.STUDENT, RoleName.FACULTY);
-        UserAccount facultyAdmin = account("facultyadmin1", password, RoleName.FACULTY, RoleName.ADMIN);
-        UserAccount hod1 = account("hod1", password, RoleName.FACULTY, RoleName.HOD);
+        UserAccount cse24001 = account("cse24001", password, RoleName.STUDENT);
+        UserAccount cse24002 = account("cse24002", password, RoleName.STUDENT);
+        UserAccount emp1021 = account("emp1021", password, RoleName.FACULTY);
+        UserAccount emp1022 = account("emp1022", password, RoleName.FACULTY);
+        UserAccount adm1001 = account("adm1001", password, RoleName.ADMIN);
+        UserAccount studentFaculty = account("cse24003", password, RoleName.STUDENT, RoleName.FACULTY);
+        UserAccount facultyAdmin = account("emp1005", password, RoleName.FACULTY, RoleName.ADMIN);
+        UserAccount emp1003 = account("emp1003", password, RoleName.FACULTY, RoleName.HOD);
+        UserAccount newStudent = account("cse24050", password, RoleName.STUDENT);
+        UserAccount newFaculty = account("emp1050", password, RoleName.FACULTY);
+        UserAccount secondAdmin = account("adm1002", password, RoleName.ADMIN);
 
         // --- People: made-up names, and addresses on the reserved .example domain that can never receive mail.
-        person(student1, "Aarav Sharma");
-        person(student2, "Diya Patel");
-        person(faculty1, "Meera Iyer");
-        person(faculty2, "Rohan Gupta");
-        person(admin1, "Kavita Rao");
+        person(cse24001, "Aarav Sharma");
+        person(cse24002, "Diya Patel");
+        person(emp1021, "Meera Iyer");
+        person(emp1022, "Rohan Gupta");
+        person(adm1001, "Kavita Rao");
         person(studentFaculty, "Arjun Nair");
         person(facultyAdmin, "Sanjay Verma");
-        person(hod1, "Lakshmi Menon");
+        person(emp1003, "Lakshmi Menon");
+        person(newStudent, "Riya Kapoor");
+        person(newFaculty, "Vikram Joshi");
+        person(secondAdmin, "Rahul Mehta");
 
         // --- Academic masters.
         Department cse = department("CSE", "Computer Science and Engineering");
@@ -517,16 +524,18 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         CourseOffering cs401 = offering(networks, fourth, offering -> { });
 
         // --- Profiles. Students were admitted in the previous session; no profile grants LMS access by itself.
-        StudentProfile student1Profile = studentProfile(student1, btech, previous, "25CSE001");
-        StudentProfile student2Profile = studentProfile(student2, btech, previous, "25CSE002");
+        StudentProfile student1Profile = studentProfile(cse24001, btech, previous, "25CSE001");
+        StudentProfile student2Profile = studentProfile(cse24002, btech, previous, "25CSE002");
         StudentProfile studentFacultyStudent = studentProfile(studentFaculty, btech, previous, "25CSE003");
-        FacultyProfile faculty1Profile = facultyProfile(faculty1, cse);
-        FacultyProfile faculty2Profile = facultyProfile(faculty2, cse);
+        FacultyProfile faculty1Profile = facultyProfile(emp1021, cse);
+        FacultyProfile faculty2Profile = facultyProfile(emp1022, cse);
         FacultyProfile studentFacultyTeacher = facultyProfile(studentFaculty, cse);
         FacultyProfile facultyAdminProfile = facultyProfile(facultyAdmin, cse);
-        facultyProfile(hod1, cse);
-        // hod1 heads CSE, unless CSE has ever had a head: an ended or replaced term is never started again here.
-        departmentHead(admin1, cse, hod1);
+        facultyProfile(emp1003, cse);
+        studentProfile(newStudent, btech, previous, "25CSE050");
+        facultyProfile(newFaculty, cse);
+        // emp1003 heads CSE, unless CSE has ever had a head: an ended or replaced term is never started again here.
+        departmentHead(adm1001, cse, emp1003);
 
         // --- Teaching: several faculty may share an offering.
         teaching(faculty1Profile, cs201);
@@ -569,18 +578,18 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         CourseEnrollment studentFacultyIn301 = courseEnrollment(studentFacultyThird, cs301, enrollment -> { });
 
         // --- LMS courses: published, draft, archived, and CS304 and CS401 without one.
-        Long lms301 = lmsCourse(faculty1, cs301, LmsCourseStatus.PUBLISHED);
-        Long lms302 = lmsCourse(faculty2, cs302, LmsCourseStatus.DRAFT);
-        lmsCourse(faculty1, cs303, LmsCourseStatus.ARCHIVED);
+        Long lms301 = lmsCourse(emp1021, cs301, LmsCourseStatus.PUBLISHED);
+        Long lms302 = lmsCourse(emp1022, cs302, LmsCourseStatus.DRAFT);
+        lmsCourse(emp1021, cs303, LmsCourseStatus.ARCHIVED);
 
-        Long unit1 = module(faculty1, lms301, "Unit 1: Arrays and Linked Lists",
+        Long unit1 = module(emp1021, lms301, "Unit 1: Arrays and Linked Lists",
                 "Contiguous storage, then nodes and pointers.", true);
-        topic(faculty1, unit1, "Arrays and memory layout",
+        topic(emp1021, unit1, "Arrays and memory layout",
                 "How arrays are stored, indexed, and resized.\nRead chapter 2 before the lab.", true);
-        Long singlyLinked = topic(faculty1, unit1, "Singly linked lists",
+        Long singlyLinked = topic(emp1021, unit1, "Singly linked lists",
                 "Insertion, deletion, and traversal with a head pointer.", true);
         // Enough published text for the AI study assistant to answer from (Phase 47).
-        topic(faculty1, unit1, "Choosing between arrays and linked lists", """
+        topic(emp1021, unit1, "Choosing between arrays and linked lists", """
                 An array keeps its elements next to each other in memory, so reading the element at any index takes \
                 constant time, O(1). Inserting or deleting in the middle of an array is slow, O(n), because the later \
                 elements have to shift.
@@ -589,7 +598,7 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 Choose an array when you mostly read by index and the size changes rarely. Choose a linked list when you \
                 often insert and delete in the middle and walk the elements in order.""", true);
         // A formatted topic (v0.6.1): headings, a list, a table, code, and maths, shown with the small formatting set.
-        topic(faculty1, unit1, "Complexity cheat sheet", """
+        topic(emp1021, unit1, "Complexity cheat sheet", """
                 ## Costs at a glance
 
                 | Operation | Array | Linked list |
@@ -601,86 +610,86 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                 - Linked lists follow `next` pointers from the head.
 
                 Summing $n$ elements takes $\\sum_{i=1}^{n} 1 = n$ steps.""", LmsTextFormat.FORMATTED, true);
-        materialFacultyId = faculty1.getId();
+        materialFacultyId = emp1021.getId();
         materialTopicId = singlyLinked;
-        topic(faculty1, unit1, "Doubly linked lists", "Draft notes: previous pointers and sentinel nodes.", false);
-        Long unit2 = module(faculty1, lms301, "Unit 2: Stacks and Queues", "Being prepared.", false);
-        topic(faculty1, unit2, "Stack operations", "Push, pop, and peek with arrays and lists.", false);
-        Long relational = module(faculty2, lms302, "Unit 1: The Relational Model", "Tables, keys, and constraints.", false);
-        topic(faculty2, relational, "Keys and constraints", "Primary keys, foreign keys, and uniqueness.", false);
+        topic(emp1021, unit1, "Doubly linked lists", "Draft notes: previous pointers and sentinel nodes.", false);
+        Long unit2 = module(emp1021, lms301, "Unit 2: Stacks and Queues", "Being prepared.", false);
+        topic(emp1021, unit2, "Stack operations", "Push, pop, and peek with arrays and lists.", false);
+        Long relational = module(emp1022, lms302, "Unit 1: The Relational Model", "Tables, keys, and constraints.", false);
+        topic(emp1022, relational, "Keys and constraints", "Primary keys, foreign keys, and uniqueness.", false);
 
-        // Course copy (v0.6.8): CS250 was taught by faculty2 last session (now archived, with content and a syllabus) and
-        // is planned again for semester 4 with an empty draft LMS course, so faculty2 can copy last year's content.
+        // Course copy (v0.6.8): CS250 was taught by emp1022 last session (now archived, with content and a syllabus) and
+        // is planned again for semester 4 with an empty draft LMS course, so emp1022 can copy last year's content.
         Course algorithmsLab = course(cse, "CS250", "Algorithms Lab", "2.00");
         CourseOffering previousLab = offering(algorithmsLab, previousSecond, CourseOffering::close);
         CourseOffering plannedLab = offering(algorithmsLab, fourth, offering -> { });
         teaching(faculty2Profile, previousLab);
         teaching(faculty2Profile, plannedLab);
-        Long previousLabCourse = lmsCourse(faculty2, previousLab, LmsCourseStatus.DRAFT);
+        Long previousLabCourse = lmsCourse(emp1022, previousLab, LmsCourseStatus.DRAFT);
         boolean previousLabOpen = repositories.lmsCourses.findById(previousLabCourse)
                 .map(lmsCourse -> lmsCourse.getStatus() != LmsCourseStatus.ARCHIVED)
                 .orElse(false);
         if (previousLabOpen) {
-            Long sorting = module(faculty2, previousLabCourse, "Week 1: Sorting", "Lab work on sorting algorithms.", true);
-            topic(faculty2, sorting, "Insertion sort lab", """
+            Long sorting = module(emp1022, previousLabCourse, "Week 1: Sorting", "Lab work on sorting algorithms.", true);
+            topic(emp1022, sorting, "Insertion sort lab", """
                     ## Task
 
                     Implement insertion sort and count the comparisons for $n = 10$, $100$, and $1000$.""",
                     LmsTextFormat.FORMATTED, true);
-            topic(faculty2, sorting, "Merge sort lab", "Implement merge sort and compare it with insertion sort.", true);
-            syllabus(faculty2, previousLabCourse, "## Course overview\n\nWeekly labs on sorting, searching, and graphs.");
-            services.lmsCourses.archive(faculty2.getId(), previousLabCourse);
+            topic(emp1022, sorting, "Merge sort lab", "Implement merge sort and compare it with insertion sort.", true);
+            syllabus(emp1022, previousLabCourse, "## Course overview\n\nWeekly labs on sorting, searching, and graphs.");
+            services.lmsCourses.archive(emp1022.getId(), previousLabCourse);
         }
-        lmsCourse(faculty2, plannedLab, LmsCourseStatus.DRAFT);
+        lmsCourse(emp1022, plannedLab, LmsCourseStatus.DRAFT);
 
-        announcement(faculty1, lms301, "Welcome to Data Structures",
+        announcement(emp1021, lms301, "Welcome to Data Structures",
                 "Labs start this week. Bring your laptop and read the course outline.", true);
-        announcement(faculty1, lms301, "Lab room change", "Draft: the Thursday lab may move to Lab 3.", false);
-        announcement(faculty2, lms302, "Course outline coming soon", "Draft: the outline will be shared before classes.", false);
+        announcement(emp1021, lms301, "Lab room change", "Draft: the Thursday lab may move to Lab 3.", false);
+        announcement(emp1022, lms302, "Course outline coming soon", "Draft: the outline will be shared before classes.", false);
 
         // --- Assignments with past, future, draft, and archived deadlines.
-        LmsAssignment warmUp = assignment(faculty1, lms301, "Array warm-up exercises",
+        LmsAssignment warmUp = assignment(emp1021, lms301, "Array warm-up exercises",
                 "Solve problems 1 to 5 from the arrays worksheet.", deadline(today, -5), "20", LmsContentStatus.PUBLISHED);
-        LmsAssignment linkedList = assignment(faculty1, lms301, "Linked list implementation",
+        LmsAssignment linkedList = assignment(emp1021, lms301, "Linked list implementation",
                 "Implement a singly linked list with insert, delete, and search.", deadline(today, 9), "50",
                 LmsContentStatus.PUBLISHED);
-        assignment(faculty1, lms301, "Stack and queue problems", "Draft: problems on stacks and queues.",
+        assignment(emp1021, lms301, "Stack and queue problems", "Draft: problems on stacks and queues.",
                 deadline(today, 16), "20", LmsContentStatus.DRAFT);
-        assignment(faculty1, lms301, "Old practice quiz", "A practice quiz kept for history.", deadline(today, -20), "10",
+        assignment(emp1021, lms301, "Old practice quiz", "A practice quiz kept for history.", deadline(today, -20), "10",
                 LmsContentStatus.ARCHIVED);
-        assignment(faculty2, lms302, "ER diagram exercise", "Draw the ER diagram for the library case study.",
+        assignment(emp1022, lms302, "ER diagram exercise", "Draw the ER diagram for the library case study.",
                 deadline(today, 12), "25", LmsContentStatus.DRAFT);
 
         // --- Question bank and quizzes (v0.7.2, v0.7.3): reviewed questions of every kind and a published graded quiz in
         // CS301, so students have a quiz to take; a descriptive question waits for marking by hand.
-        Long stackOrder = question(faculty1, lms301, QuestionType.TRUE_FALSE,
+        Long stackOrder = question(emp1021, lms301, QuestionType.TRUE_FALSE,
                 "A stack removes the most recently added item first.", List.of(), true, null, "Stacks");
-        Long queueOrder = question(faculty1, lms301, QuestionType.SINGLE_CHOICE,
+        Long queueOrder = question(emp1021, lms301, QuestionType.SINGLE_CHOICE,
                 "Which structure serves items in the order they arrived?",
                 List.of(new LmsQuestionContent.Option("Stack", false), new LmsQuestionContent.Option("Queue", true),
                         new LmsQuestionContent.Option("Binary tree", false)), null, null, "Queues");
-        Long arrayCosts = question(faculty1, lms301, QuestionType.MULTIPLE_CHOICE,
+        Long arrayCosts = question(emp1021, lms301, QuestionType.MULTIPLE_CHOICE,
                 "Which operations take constant time on an array?",
                 List.of(new LmsQuestionContent.Option("Reading an item by its index", true),
                         new LmsQuestionContent.Option("Writing an item at its index", true),
                         new LmsQuestionContent.Option("Inserting at the front", false)), null, null, "Arrays");
-        Long whenLinked = question(faculty1, lms301, QuestionType.DESCRIPTIVE,
+        Long whenLinked = question(emp1021, lms301, QuestionType.DESCRIPTIVE,
                 "Explain when a linked list is a better choice than an array.", List.of(), null,
                 "Frequent insertions and deletions in the middle; no need for access by index.", "Linked lists");
-        quiz(faculty1, lms301, "Stacks and queues check", new LmsQuizSettings("Stacks and queues check",
+        quiz(emp1021, lms301, "Stacks and queues check", new LmsQuizSettings("Stacks and queues check",
                 "Answer every question. Choice questions lose a quarter of their marks when answered wrongly.",
                 LmsTextFormat.PLAIN, QuizType.GRADED, 15, null, deadline(today, 7), null, 2, false, true,
                 new BigDecimal("25")), List.of(stackOrder, queueOrder, arrayCosts, whenLinked));
 
         // --- Exam papers (v0.7.9): a blueprint for a short unit test in CS301 and a draft paper built from it.
-        examPaper(faculty1, lms301);
+        examPaper(emp1021, lms301);
 
         // --- Submissions and grades: a graded late attempt, ungraded latest attempts, and a graded earlier attempt.
-        submit(student1, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
-        grade(faculty1, warmUp, student1In301, 1, "17", "Good work. Problem 4 needs a tighter loop bound.");
+        submit(cse24001, lms301, warmUp, student1In301, "Answers to problems 1 to 5 are below.");
+        grade(emp1021, warmUp, student1In301, 1, "17", "Good work. Problem 4 needs a tighter loop bound.");
 
         // --- Rubric (v0.7.7): the warm-up is graded with a two-criterion rubric worth its 20 marks.
-        rubric(faculty1, lms301, warmUp, new RubricContent("Array exercises rubric", "How the warm-up exercises are marked.", List.of(
+        rubric(emp1021, lms301, warmUp, new RubricContent("Array exercises rubric", "How the warm-up exercises are marked.", List.of(
                 new RubricContent.Criterion("Correct answers", "Problems 1 to 5 give the right results.", new BigDecimal("12"), List.of(
                         new RubricContent.Level("All correct", null, new BigDecimal("12")),
                         new RubricContent.Level("Mostly correct", null, new BigDecimal("8")),
@@ -690,33 +699,33 @@ public class LocalTestDataSeeder implements ApplicationRunner {
                         new RubricContent.Level("Partly clear", null, new BigDecimal("4")))))));
 
         // --- Gradebook (v0.7.6): the warm-up's grades are published, and a paper class test is a published manual item
-        // with student1's marks.
-        publishColumn(faculty1, lms301, GradeItemType.ASSIGNMENT, warmUp.getId());
-        manualGrade(faculty1, lms301, "Class test 1", "25", student1In301, "21", "Strong on arrays; revise linked lists.");
-        submit(student1, lms301, linkedList, student1In301, "My linked list with insert, delete, and search.");
-        submit(student2, lms301, linkedList, student2In301, "First version: insert and search work.",
+        // with cse24001's marks.
+        publishColumn(emp1021, lms301, GradeItemType.ASSIGNMENT, warmUp.getId());
+        manualGrade(emp1021, lms301, "Class test 1", "25", student1In301, "21", "Strong on arrays; revise linked lists.");
+        submit(cse24001, lms301, linkedList, student1In301, "My linked list with insert, delete, and search.");
+        submit(cse24002, lms301, linkedList, student2In301, "First version: insert and search work.",
                 "Second version: delete now handles the head node.");
-        grade(faculty1, linkedList, student2In301, 1, "38", "Insert and search are correct; delete is missing.");
+        grade(emp1021, linkedList, student2In301, 1, "38", "Insert and search are correct; delete is missing.");
         submit(studentFaculty, lms301, warmUp, studentFacultyIn301, "Problems 1 to 3 are done.");
 
         // --- Attendance: two finalized sessions and an open one in CS301, an open unmarked one in CS302.
         Instant now = clock.instant().truncatedTo(ChronoUnit.MINUTES);
-        attendance(faculty1, cs301, "Arrays recap", now.minus(6, ChronoUnit.DAYS), Map.of(
-                "student1", AttendanceStatus.PRESENT, "student2", AttendanceStatus.ABSENT,
-                "studentfaculty1", AttendanceStatus.PRESENT), true);
-        attendance(faculty1, cs301, "Linked lists lab", now.minus(2, ChronoUnit.DAYS), Map.of(
-                "student1", AttendanceStatus.PRESENT, "student2", AttendanceStatus.PRESENT,
-                "studentfaculty1", AttendanceStatus.ABSENT), true);
-        attendance(faculty1, cs301, "Stacks introduction", now.minus(1, ChronoUnit.HOURS),
-                Map.of("student1", AttendanceStatus.PRESENT), false);
-        attendance(faculty2, cs302, "Relational model basics", now.minus(1, ChronoUnit.DAYS), Map.of(), false);
+        attendance(emp1021, cs301, "Arrays recap", now.minus(6, ChronoUnit.DAYS), Map.of(
+                "cse24001", AttendanceStatus.PRESENT, "cse24002", AttendanceStatus.ABSENT,
+                "cse24003", AttendanceStatus.PRESENT), true);
+        attendance(emp1021, cs301, "Linked lists lab", now.minus(2, ChronoUnit.DAYS), Map.of(
+                "cse24001", AttendanceStatus.PRESENT, "cse24002", AttendanceStatus.PRESENT,
+                "cse24003", AttendanceStatus.ABSENT), true);
+        attendance(emp1021, cs301, "Stacks introduction", now.minus(1, ChronoUnit.HOURS),
+                Map.of("cse24001", AttendanceStatus.PRESENT), false);
+        attendance(emp1022, cs302, "Relational model basics", now.minus(1, ChronoUnit.DAYS), Map.of(), false);
 
         // --- Official results: published and draft, and a published one of the previous session.
-        result(faculty1, cs301, student1In301, "86", "100", "A", null, true);
-        result(faculty1, cs301, student2In301, "71", "100", null, "Draft until the moderation meeting.", false);
+        result(emp1021, cs301, student1In301, "86", "100", "A", null, true);
+        result(emp1021, cs301, student2In301, "71", "100", null, "Draft until the moderation meeting.", false);
         CourseEnrollment student1In201 = repositories.courseEnrollments
                 .findBySemesterEnrollmentIdAndCourseOfferingId(student1Previous.getId(), cs201.getId()).orElseThrow();
-        result(faculty1, cs201, student1In201, "78", "100", "B+", "Consistent work across the semester.", true);
+        result(emp1021, cs201, student1In201, "78", "100", "B+", "Consistent work across the semester.", true);
 
         // --- Academic calendar: published, draft, and cancelled after publishing, around today.
         calendarEvent(current, null, "Next semester course registration", AcademicCalendarEventCategory.REGISTRATION,
@@ -742,36 +751,36 @@ public class LocalTestDataSeeder implements ApplicationRunner {
         Long technical = helpdeskCategory("TECHNICAL", "Technical issues",
                 "Sign-in, devices, classrooms, and the campus network.");
         // --- Help articles (v0.9.6): published answers suggested while a ticket is written.
-        helpArticle(admin1, technical, "Campus Wi-Fi keeps disconnecting",
+        helpArticle(adm1001, technical, "Campus Wi-Fi keeps disconnecting",
                 "Forget the campus network on your device, then join it again with your college ID and password.\n"
                         + "If it still drops, note the building and the time and create a ticket.");
-        helpArticle(admin1, lms, "A course is missing from my courses",
+        helpArticle(adm1001, lms, "A course is missing from my courses",
                 "Courses appear once your enrollment in the course is recorded and the course is published.\n"
                         + "Check Registration under Academics first. If the course is listed there but not under Courses, "
                         + "create a ticket with the course code.");
-        ticket(student1, lms, "CS302 is missing from my courses",
+        ticket(cse24001, lms, "CS302 is missing from my courses",
                 "CS302 is on my enrollment but it does not appear under Courses.", HelpdeskTicketPriority.NORMAL,
                 List.of(), null, null, HelpdeskTicketStatus.OPEN);
-        ticket(faculty1, technical, "Projector in room 204 does not turn on",
+        ticket(emp1021, technical, "Projector in room 204 does not turn on",
                 "The projector shows no picture since Monday. I teach CS301 there every morning.",
                 HelpdeskTicketPriority.HIGH, List.of("A technician will check the projector tomorrow morning."),
-                admin1, facultyAdmin, HelpdeskTicketStatus.IN_PROGRESS);
-        ticket(student1, general, "Bonafide certificate for a scholarship",
+                adm1001, facultyAdmin, HelpdeskTicketStatus.IN_PROGRESS);
+        ticket(cse24001, general, "Bonafide certificate for a scholarship",
                 "I need a bonafide certificate for a scholarship application.", HelpdeskTicketPriority.LOW,
-                List.of("Your certificate is ready at the front office."), admin1, admin1,
+                List.of("Your certificate is ready at the front office."), adm1001, adm1001,
                 HelpdeskTicketStatus.RESOLVED);
-        ticket(student2, academic, "Attendance shows me absent for the arrays recap",
+        ticket(cse24002, academic, "Attendance shows me absent for the arrays recap",
                 "I was in the arrays recap session of CS301, but my attendance shows absent.",
                 HelpdeskTicketPriority.NORMAL,
-                List.of("Your teacher confirmed the record; it was corrected in the attendance register."), admin1,
-                admin1, HelpdeskTicketStatus.CLOSED);
+                List.of("Your teacher confirmed the record; it was corrected in the attendance register."), adm1001,
+                adm1001, HelpdeskTicketStatus.CLOSED);
 
         // --- Approvals: one clearly labelled demo workflow for trying the engine, and demo requests waiting at its
         // first step. There is no approval page yet; real workflows come with the modules that use them.
         approvalWorkflow(DEMO_APPROVAL_WORKFLOW, "Demo two-step approval (development only)",
                 "For trying the approval engine on local test data. Not a real college process.");
-        demoApproval(student1, "demo-1", "Demo approval request 1 (development only)");
-        demoApproval(student2, "demo-2", "Demo approval request 2 (development only)");
+        demoApproval(cse24001, "demo-1", "Demo approval request 1 (development only)");
+        demoApproval(cse24002, "demo-2", "Demo approval request 2 (development only)");
         demoApproval(studentFaculty, "demo-3", "Demo approval request 3 (development only)");
 
         // --- Hostel: a small inventory to try applications and allocations. Real hostels are added by admins.
@@ -799,28 +808,28 @@ public class LocalTestDataSeeder implements ApplicationRunner {
 
         // --- Searchable requests (development only): one request each for a student and a faculty member, and one
         // pending hostel application, so search has something to find. Each is created through its own service.
-        campusRequest(student1, "STUDENT", "GENERAL_ADMIN", "Bonafide letter for a scholarship (development)",
+        campusRequest(cse24001, "STUDENT", "GENERAL_ADMIN", "Bonafide letter for a scholarship (development)",
                 "Please issue a bonafide certificate for the state scholarship. Development test data.");
-        campusRequest(faculty1, "FACULTY", "ID_CARD", "Replacement staff ID card (development)",
+        campusRequest(emp1021, "FACULTY", "ID_CARD", "Replacement staff ID card (development)",
                 "My staff ID card is cracked. Development test data.");
-        hostelApplication(student2, student2Profile, current, "Development test application.");
+        hostelApplication(cse24002, student2Profile, current, "Development test application.");
 
         // --- Report data (development only): campus requests in more statuses, and a hostel allocation history (one
-        // vacated, one active) for student2's application, approved through the approval engine like an admin would.
-        Long completed = campusRequest(student2, "STUDENT", "GENERAL_ADMIN", "Course transcript copy (development)",
+        // vacated, one active) for cse24002's application, approved through the approval engine like an admin would.
+        Long completed = campusRequest(cse24002, "STUDENT", "GENERAL_ADMIN", "Course transcript copy (development)",
                 "Please issue a copy of my course transcript. Development test data.");
         if (completed != null) {
-            services.campusRequests.complete(adminActor(admin1), completed);
+            services.campusRequests.complete(adminActor(adm1001), completed);
         }
         Long withdrawn = campusRequest(studentFaculty, "STUDENT", "GENERAL_ADMIN", "Library card renewal (development)",
                 "Please renew my library card. Development test data.");
         if (withdrawn != null) {
             services.campusRequests.cancel(studentFaculty.getId(), withdrawn);
         }
-        hostelAllocationHistory(admin1, student2Profile);
+        hostelAllocationHistory(adm1001, student2Profile);
         // Aarav lives in Main Hostel, room A-101, bed B1 (v0.16 hostel pages): applied, approved, allocated, checked in.
-        hostelApplication(student1, student1Profile, current, "I need accommodation for this academic session.");
-        hostelResident(admin1, student1Profile, "A-101", "B1");
+        hostelApplication(cse24001, student1Profile, current, "I need accommodation for this academic session.");
+        hostelResident(adm1001, student1Profile, "A-101", "B1");
     }
 
     // --- Find or create. Each helper creates only what is missing and never changes what exists.

@@ -103,7 +103,7 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
         courseOf("cse25006", "CS301").ifPresent(course -> thread(course, "cse25006",
                 "Deleting the last node of a doubly linked list",
                 "When I delete the tail, do I also need to update the head if the list had one node?",
-                List.of(new Reply("faculty1", AuthorKind.FACULTY, "Yes. With one node the head and the tail are the same node, "
+                List.of(new Reply("emp1021", AuthorKind.FACULTY, "Yes. With one node the head and the tail are the same node, "
                         + "so both become null.", true)),
                 false));
     }
@@ -144,17 +144,17 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
     // --- Clubs and teams: requests waiting for the Coding Club's officers, two accepted, and open cricket sign-ups.
 
     private void clubs() {
-        Long faculty1 = id("faculty1");
-        groups.list(faculty1, false).forEach(group -> {
+        Long emp1021 = id("emp1021");
+        groups.list(emp1021, false).forEach(group -> {
             if (group.code().equals("CODING_CLUB")) {
                 for (String loginId : List.of("cse25004", "cse25005", "cse25009", "cse25013", "ece25006")) {
                     join(loginId, group.groupId());
                 }
                 // The advisor accepts the first two requests; the others wait.
-                groups.members(faculty1, false, group.groupId()).stream()
+                groups.members(emp1021, false, group.groupId()).stream()
                         .filter(member -> member.status() == CampusGroupMembership.Status.PENDING)
                         .filter(member -> member.loginId().equals("cse25004") || member.loginId().equals("cse25005"))
-                        .forEach(member -> groups.decide(faculty1, false, member.membershipId(), true));
+                        .forEach(member -> groups.decide(emp1021, false, member.membershipId(), true));
             }
             if (group.code().equals("CRICKET")) {
                 for (String loginId : List.of("ece25001", "ece25009", "cse25010", "cse25014", "ece25013")) {
@@ -210,13 +210,13 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
                     "Pearson", 1997, "Electronics").titleId();
             library.addCopy(titleId, "LIB-0101", "EC-A1");
             library.addCopy(titleId, "LIB-0102", "EC-A1");
-            library.issue(id("librarian1"), "LIB-0101", "ece25003");
+            library.issue(id("stf2014"), "LIB-0101", "ece25003");
         }
         if (!libraryTitles.existsByIsbn("9780190853464")) {
             Long titleId = library.addTitle("Microelectronic Circuits", "Adel S. Sedra, Kenneth C. Smith", "9780190853464",
                     "Oxford University Press", 2019, "Electronics").titleId();
             library.addCopy(titleId, "LIB-0103", "EC-A2");
-            library.issue(id("librarian1"), "LIB-0103", "ece25008");
+            library.issue(id("stf2014"), "LIB-0103", "ece25008");
         }
     }
 

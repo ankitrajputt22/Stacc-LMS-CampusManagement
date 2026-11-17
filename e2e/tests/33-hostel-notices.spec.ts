@@ -4,7 +4,7 @@ import { signIn } from './support'
 test('a warden publishes an emergency notice for their hostel', async ({ page }) => {
   const title = `Fire drill ${Date.now()}`
 
-  await signIn(page, 'erp', 'warden1')
+  await signIn(page, 'erp', 'stf2011')
   await page.goto('/warden/notices')
   const card = page.getByRole('region', { name: 'Hostel notices' })
   await card.getByLabel('Notice title').fill(title)

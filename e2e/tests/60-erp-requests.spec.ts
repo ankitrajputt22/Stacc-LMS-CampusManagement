@@ -19,7 +19,7 @@ test('a student asks for medical leave from ERP Attendance and the office approv
   expect(reference).toMatch(/^MED-/)
   await signOut(page)
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/erp/requests')
   await page.getByRole('searchbox', { name: 'Search' }).fill('ece25010')
   await page.getByRole('button', { name: 'Search', exact: true }).click()

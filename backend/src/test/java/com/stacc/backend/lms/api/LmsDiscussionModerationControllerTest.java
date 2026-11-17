@@ -76,7 +76,7 @@ class LmsDiscussionModerationControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void aHiddenReplyReachesStudentsWithoutItsAuthorOrTextButFacultySeeIt() {
-        UserAccount author = new UserAccount("student2", "hash");
+        UserAccount author = new UserAccount("cse24002", "hash");
         ReflectionTestUtils.setField(author, "id", 31L);
         LmsDiscussionThread thread = new LmsDiscussionThread(ContentFixtures.lmsCourse(7), author, AuthorKind.STUDENT, "Help", "Question", NOW);
         LmsDiscussionReply reply = new LmsDiscussionReply(thread, author, AuthorKind.STUDENT, "Rude words", NOW);

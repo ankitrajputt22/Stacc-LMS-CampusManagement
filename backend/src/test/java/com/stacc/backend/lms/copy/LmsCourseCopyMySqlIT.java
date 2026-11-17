@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * On MySQL with the demo data: faculty2 sees last session's archived CS250 as a copy source for this year's draft CS250
+ * On MySQL with the demo data: emp1022 sees last session's archived CS250 as a copy source for this year's draft CS250
  * and copies its module, pages, and syllabus as drafts. CS250 is used by no other test.
  */
 class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
@@ -26,7 +26,7 @@ class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void lastSessionsArchivedCourseIsCopiedAsDrafts() {
-        Long faculty2 = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long emp1022 = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long target = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id
@@ -34,15 +34,15 @@ class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
                 where course.code = 'CS250' and lms.status = 'DRAFT'
                 """, Long.class);
 
-        var sources = service.sources(faculty2, target);
+        var sources = service.sources(emp1022, target);
         assertThat(sources).singleElement().extracting(LmsCourse::getStatus).hasToString("ARCHIVED");
         // Someone who does not teach this course gets the same 404 as for a missing course, not a list.
-        Long faculty1 = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sources(faculty1, target))
+        Long emp1021 = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sources(emp1021, target))
                 .isInstanceOf(com.stacc.backend.common.error.ApiException.class)
                 .hasMessage(LmsCourseCopyService.COURSE_UNAVAILABLE);
 
-        LmsCourseCopyService.CopyResult result = service.copy(faculty2, target, sources.getFirst().getId());
+        LmsCourseCopyService.CopyResult result = service.copy(emp1022, target, sources.getFirst().getId());
 
         assertThat(result).isEqualTo(new LmsCourseCopyService.CopyResult(1, 2, 0, true));
         assertThat(jdbc.queryForObject("""

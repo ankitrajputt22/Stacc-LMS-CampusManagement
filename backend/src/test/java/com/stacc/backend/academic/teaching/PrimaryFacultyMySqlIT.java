@@ -36,7 +36,7 @@ class PrimaryFacultyMySqlIT extends MySqlIntegrationTest {
         jdbc.update("update teaching_assignments set status = 'INACTIVE' where course_offering_id = ?", offering);
         List<Long> faculty = jdbc.queryForList("""
                 select profile.id from faculty_profiles profile join user_accounts account on account.id = profile.user_account_id
-                where account.login_id in ('faculty1', 'faculty2') order by account.login_id
+                where account.login_id in ('emp1021', 'emp1022') order by account.login_id
                 """, Long.class);
 
         List<Outcome<OfferingFaculty>> outcomes = Concurrently.run(

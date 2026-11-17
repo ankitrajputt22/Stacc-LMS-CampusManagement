@@ -33,7 +33,7 @@ class ApprovalQueryServiceTest {
 
     private final ApprovalRequest request = ApprovalFixtures.request(12,
             ApprovalFixtures.workflow(4, "TWO_STEP", RoleName.FACULTY, RoleName.ADMIN),
-            ApprovalFixtures.account(70, "student1", RoleName.STUDENT));
+            ApprovalFixtures.account(70, "cse24001", RoleName.STUDENT));
 
     private static void assertRefused(Runnable call, HttpStatus status) {
         assertThatThrownBy(call::run)
@@ -81,7 +81,7 @@ class ApprovalQueryServiceTest {
         assertThat(page.items()).singleElement().satisfies(task -> {
             assertThat(task.approvalRequestStepId()).isEqualTo(121L);
             assertThat(task.requiredRoleCode()).isEqualTo("FACULTY");
-            assertThat(task.requesterLoginId()).isEqualTo("student1");
+            assertThat(task.requesterLoginId()).isEqualTo("cse24001");
         });
         verify(steps).findTasks(Set.of("ADMIN", "FACULTY"), 2L, PageRequest.of(0, 20));
     }

@@ -38,7 +38,7 @@ class HostelRoomChangeControllerTest extends DatabaseFreeApiTest {
     void residentRoutesNeedTheStudentRoleAndTheRoomChangePermission() throws Exception {
         List<MockHttpServletRequestBuilder> routes = List.of(get("/api/v1/hostel/student/room-changes"),
                 json(post("/api/v1/hostel/student/room-changes/move"), "{\"reason\":\"Too noisy\"}"),
-                json(post("/api/v1/hostel/student/room-changes/swap"), "{\"partnerLoginId\":\"student1\",\"reason\":\"Friends\"}"),
+                json(post("/api/v1/hostel/student/room-changes/swap"), "{\"partnerLoginId\":\"cse24001\",\"reason\":\"Friends\"}"),
                 json(post("/api/v1/hostel/student/room-changes/4/answer"), "{\"accept\":true}"),
                 post("/api/v1/hostel/student/room-changes/4/cancel"));
         for (String wrong : List.of(token("ROLE_STUDENT", "HOSTEL_OUTING_REQUEST"), token("ROLE_WARDEN", "HOSTEL_ROOM_CHANGE_REQUEST"),

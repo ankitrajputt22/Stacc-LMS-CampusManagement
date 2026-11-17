@@ -21,8 +21,8 @@ class InnovationMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anIdeaIsDecidedOrWithdrawnNotBoth() throws Exception {
-        Long student = accounts.findByLoginId("student2").orElseThrow().getId();
-        Long reviewer = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24002").orElseThrow().getId();
+        Long reviewer = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long ideaId = innovation.submit(student, "Race idea", "A problem.", "A solution.").ideaId();
         innovation.review(reviewer, ideaId, 4, "Worth a try.");
         innovation.review(reviewer, ideaId, 5, "Even better after a second read.");

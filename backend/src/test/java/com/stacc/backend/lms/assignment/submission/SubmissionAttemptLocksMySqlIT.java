@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * Several hand-ins by one student at the same moment, on MySQL: each becomes its own attempt with its own number, and
  * the numbers continue without gaps or repeats. The numbers are reserved under the course enrollment row lock, never from
- * {@code MAX + 1}. Uses student2 in CS301's published assignment with a future deadline, which no other MySQL test uses.
+ * {@code MAX + 1}. Uses cse24002 in CS301's published assignment with a future deadline, which no other MySQL test uses.
  */
 class SubmissionAttemptLocksMySqlIT extends MySqlIntegrationTest {
 
@@ -34,7 +34,7 @@ class SubmissionAttemptLocksMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void handInsAtTheSameMomentGetTheirOwnAttemptNumbers() throws Exception {
-        Long student = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Map<String, Object> assignment = jdbc.queryForMap("""
                 select assignment.id, assignment.lms_course_id from lms_assignments assignment
                 join lms_courses course on course.id = assignment.lms_course_id

@@ -30,7 +30,7 @@ There are no fines, reservations of a specific copy, or notifications yet.
 | `GET /api/v1/library/me`, `POST …/titles/{id}/hold`, `POST …/holds/{id}/cancel`, `POST …/loans/{id}/renew` | `STUDENT` or `FACULTY` with `LIBRARY_USE`; the member comes from the token |
 | `/api/v1/library/desk/…` (titles, copies, issue, return, loans, resources) | `LIBRARIAN` with `LIBRARY_MANAGE` |
 
-The demo data adds two titles with copies `LIB-0001` to `LIB-0003` and one resource; `librarian1` works the desk.
+The demo data adds two titles with copies `LIB-0001` to `LIB-0003` and one resource; `stf2014` works the desk.
 
 ## Look (v0.16.16)
 

@@ -29,16 +29,16 @@ class GrievanceAccessMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aCaseIsOpenedOnlyByItsComplainantAndCommittee() throws Exception {
-        Long adminId = accounts.findByLoginId("admin1").orElseThrow().getId();
-        Long student = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long member = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long outsider = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long adminId = accounts.findByLoginId("adm1001").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long member = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long outsider = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long categoryId = admin.create("RACE_GRIEVANCE", "Race grievance", 7).categoryId();
-        admin.addMember(adminId, categoryId, "faculty1");
+        admin.addMember(adminId, categoryId, "emp1021");
 
         Long caseId = grievances.submit(student, categoryId, "Subject", "Details").caseId();
 
-        assertThat(grievances.committeeCase(member, caseId).complainantLoginId()).isEqualTo("student1");
+        assertThat(grievances.committeeCase(member, caseId).complainantLoginId()).isEqualTo("cse24001");
         assertThatThrownBy(() -> grievances.committeeCase(outsider, caseId)).isInstanceOf(ApiException.class);
         assertThatThrownBy(() -> grievances.committeeCase(adminId, caseId)).isInstanceOf(ApiException.class);
         assertThatThrownBy(() -> grievances.myCase(outsider, caseId)).isInstanceOf(ApiException.class);

@@ -22,7 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Two teachers marking the same answer at once both succeed, one after the other under the attempt row lock, leaving
- * exactly one mark with one of their values. Uses its own quiz in CS301, taken by studentfaculty1, whom no other quiz
+ * exactly one mark with one of their values. Uses its own quiz in CS301, taken by cse24003, whom no other quiz
  * test uses.
  */
 class LmsQuizMarkingMySqlIT extends MySqlIntegrationTest {
@@ -47,8 +47,8 @@ class LmsQuizMarkingMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void simultaneousMarksLeaveOneMark() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long student = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24003").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id
@@ -81,6 +81,6 @@ class LmsQuizMarkingMySqlIT extends MySqlIntegrationTest {
         LmsQuizGradingService.QuizResults results = grading.results(faculty, quizId);
         assertThat(results.attempts()).extracting(LmsQuizAttempt::getId).containsExactly(attemptId);
         assertThat(results.attempts().getFirst().getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount()
-                .getLoginId()).isEqualTo("studentfaculty1");
+                .getLoginId()).isEqualTo("cse24003");
     }
 }

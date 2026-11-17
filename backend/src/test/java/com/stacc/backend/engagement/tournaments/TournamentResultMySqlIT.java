@@ -22,7 +22,7 @@ class TournamentResultMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aMatchIsEitherPlayedOrCancelled() throws Exception {
-        Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
+        Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
         Long tournamentId = tournaments.create(admin, "Race cup", "Football", "2030-31").tournamentId();
         Long fixtureId = tournaments.addFixture(tournamentId, new TournamentService.FixtureInput(null, "Hawks", null, "Owls",
                 Instant.parse("2031-01-10T10:00:00Z"), null)).fixtures().getFirst().fixtureId();

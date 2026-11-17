@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './support'
 
 test('a faculty member publishes the syllabus and a student reads it with the official course details', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Syllabus')
 
@@ -17,7 +17,7 @@ test('a faculty member publishes the syllabus and a student reads it with the of
   await expect(page.getByText(/Students see this version\./)).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Syllabus')
   await expect(page.getByRole('heading', { level: 1, name: 'Syllabus' })).toBeVisible()

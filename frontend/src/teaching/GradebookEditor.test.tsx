@@ -18,7 +18,7 @@ const gradebook: Gradebook = {
   students: [
     {
       courseEnrollmentId: 41,
-      studentLoginId: 'student1',
+      studentLoginId: 'cse24001',
       cells: [
         { marks: 17, status: 'GRADED', feedback: null },
         { marks: null, status: 'NO_MARKS', feedback: null },
@@ -28,7 +28,7 @@ const gradebook: Gradebook = {
     },
     {
       courseEnrollmentId: 42,
-      studentLoginId: 'student2',
+      studentLoginId: 'cse24002',
       cells: [
         { marks: null, status: 'NEEDS_GRADING', feedback: null },
         { marks: 20, status: 'GRADED', feedback: null },
@@ -60,7 +60,7 @@ describe('GradebookEditor', () => {
     expect(within(table).getByText('17 / 20')).toBeInTheDocument()
     expect(within(table).getByText('Needs grading')).toBeInTheDocument()
 
-    await user.type(screen.getByLabelText('Search by college ID'), 'student2')
+    await user.type(screen.getByLabelText('Search by college ID'), 'cse24002')
     expect(within(table).queryByText('17 / 20')).not.toBeInTheDocument()
     expect(within(table).getByText('20 / 25')).toBeInTheDocument()
   })

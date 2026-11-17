@@ -48,15 +48,15 @@ class CampusEngagementMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void twoRegistrationsForTheLastPlaceGiveOnePlaceAndOneWaitlistSpot() throws Exception {
-        Viewer admin = new Viewer(id("admin1"), false, false, true);
+        Viewer admin = new Viewer(id("adm1001"), false, false, true);
         Instant start = Instant.now().plus(Duration.ofDays(3)).truncatedTo(ChronoUnit.SECONDS);
         EventView event = events.create(admin, new EventInput("Capacity test talk", null, null, "Hall", start, start.plus(Duration.ofHours(2)),
                 1, null, null, true, false, false));
         events.publish(admin, event.eventId());
 
         List<Outcome<EventView>> outcomes = Concurrently.run(
-                () -> events.register(new Viewer(id("student1"), true, false, false), event.eventId()),
-                () -> events.register(new Viewer(id("student2"), true, false, false), event.eventId()));
+                () -> events.register(new Viewer(id("cse24001"), true, false, false), event.eventId()),
+                () -> events.register(new Viewer(id("cse24002"), true, false, false), event.eventId()));
 
         assertThat(outcomes).allMatch(Outcome::succeeded);
         EventView after = events.one(admin, event.eventId());
@@ -71,8 +71,8 @@ class CampusEngagementMySqlIT extends MySqlIntegrationTest {
         Instant start = Instant.now().atZone(ZoneId.of("Asia/Kolkata")).plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0).toInstant();
 
         List<Outcome<BookingView>> outcomes = Concurrently.run(
-                () -> facilities.book(id("student1"), facilityId, start, start.plus(Duration.ofHours(1)), "Practice"),
-                () -> facilities.book(id("student2"), facilityId, start.plus(Duration.ofMinutes(30)), start.plus(Duration.ofHours(2)), "Match"));
+                () -> facilities.book(id("cse24001"), facilityId, start, start.plus(Duration.ofHours(1)), "Practice"),
+                () -> facilities.book(id("cse24002"), facilityId, start.plus(Duration.ofMinutes(30)), start.plus(Duration.ofHours(2)), "Match"));
 
         assertThat(outcomes.stream().filter(Outcome::succeeded)).hasSize(1);
         assertThat(facilities.upcoming(facilityId)).hasSize(1);
@@ -85,10 +85,10 @@ class CampusEngagementMySqlIT extends MySqlIntegrationTest {
         ZonedDateTime start = Instant.now().atZone(ZoneId.of("Asia/Kolkata")).plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0);
         facilities.addClassHour(facilityId, start.getDayOfWeek(), LocalTime.of(9, 0), LocalTime.of(11, 0), "CS101 lecture");
 
-        assertThatThrownBy(() -> facilities.book(id("student1"), facilityId, start.toInstant(), start.plusHours(1).toInstant(), "Study group"))
+        assertThatThrownBy(() -> facilities.book(id("cse24001"), facilityId, start.toInstant(), start.plusHours(1).toInstant(), "Study group"))
                 .isInstanceOf(ApiException.class).hasMessageContaining("CS101 lecture");
-        facilities.book(id("student1"), facilityId, start.plusHours(1).toInstant(), start.plusHours(2).toInstant(), "Study group");
-        facilities.book(id("student2"), facilityId, start.plusDays(1).toInstant(), start.plusDays(1).plusHours(1).toInstant(), "Another day");
+        facilities.book(id("cse24001"), facilityId, start.plusHours(1).toInstant(), start.plusHours(2).toInstant(), "Study group");
+        facilities.book(id("cse24002"), facilityId, start.plusDays(1).toInstant(), start.plusDays(1).plusHours(1).toInstant(), "Another day");
         assertThat(facilities.upcoming(facilityId)).hasSize(2);
     }
 }

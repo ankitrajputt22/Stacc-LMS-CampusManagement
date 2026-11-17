@@ -102,7 +102,7 @@ public final class HostelResponses {
             Long allocationId,
             Long applicationId,
             @Schema(example = "HST-000001") String applicationNumber,
-            @Schema(example = "student1") String studentLoginId,
+            @Schema(example = "cse24001") String studentLoginId,
             @Schema(example = "2026-27") String academicSessionCode,
             Long hostelId,
             String hostelCode,
@@ -113,7 +113,7 @@ public final class HostelResponses {
             String bedNumber,
             @Schema(allowableValues = {"ACTIVE", "VACATED"}) String status,
             Instant allocatedAt,
-            @Schema(example = "admin1") String allocatedByLoginId,
+            @Schema(example = "adm1001") String allocatedByLoginId,
             @Schema(nullable = true) Instant vacatedAt,
             @Schema(nullable = true) String vacatedByLoginId) {
 

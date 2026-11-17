@@ -49,6 +49,6 @@ Faculty routes need `FACULTY`, `FACULTY_COURSE_VIEW`, and `LMS_GRADEBOOK_MANAGE`
 
 ## Demo data
 
-In CS301 the "Array warm-up exercises" column is published, and the published manual item "Class test 1" (25 marks) gives `student1` 21.
+In CS301 the "Array warm-up exercises" column is published, and the published manual item "Class test 1" (25 marks) gives `cse24001` 21.
 
 Not in this phase: weights and categories, percentages, letter grades, dropping lowest scores, exporting the gradebook, grade history, or a spreadsheet-style editor.

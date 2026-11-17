@@ -50,7 +50,7 @@ class HostelApplicationServiceTest {
             studentProfiles, enrollments, sessions, approvals, approvalRequests, queries,
             Clock.fixed(HostelFixtures.NOW, ZoneOffset.UTC), org.mockito.Mockito.mock(HostelRepository.class));
 
-    private final UserAccount account = HostelFixtures.account(70, "student1", RoleName.STUDENT);
+    private final UserAccount account = HostelFixtures.account(70, "cse24001", RoleName.STUDENT);
     private final StudentProfile student = HostelFixtures.student(5, account);
     private final AcademicSession sessionA = HostelFixtures.session(2, "2026-27", 2026);
     private final AcademicSession sessionB = HostelFixtures.session(3, "2027-28", 2027);
@@ -168,7 +168,7 @@ class HostelApplicationServiceTest {
 
     @Test
     void approvedRejectedOrAllocatedApplicationsCannotBeCancelled() {
-        UserAccount admin = HostelFixtures.account(1, "admin1", RoleName.ADMIN);
+        UserAccount admin = HostelFixtures.account(1, "adm1001", RoleName.ADMIN);
         stored(HostelFixtures.approved(13, account, admin));
         assertRefused(() -> service.cancel(70L, 42L), HttpStatus.CONFLICT, HostelApplicationService.CANNOT_CANCEL);
 

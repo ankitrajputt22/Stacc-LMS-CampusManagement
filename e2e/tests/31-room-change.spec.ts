@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { signIn, signOut } from './support'
 
 test('a resident asks to move, and the hostel office sees the request waiting for the warden', async ({ page }) => {
-  await signIn(page, 'erp', 'student2')
+  await signIn(page, 'erp', 'cse24002')
   await page.goto('/hostel/room-changes')
   const card = page.getByRole('region', { name: 'Room change' })
   await card.getByRole('button', { name: 'Ask to move' }).click()
@@ -14,13 +14,13 @@ test('a resident asks to move, and the hostel office sees the request waiting fo
   await expect(request.getByText('Waiting for the warden')).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/hostel/room-changes')
   await expect(page.getByRole('listitem').filter({ hasText: 'The room is too noisy at night.' }).first().getByText('Waiting for the warden')).toBeVisible()
   await signOut(page)
 
   // The resident cancels it, so the demo bed stays free of open changes.
-  await signIn(page, 'erp', 'student2')
+  await signIn(page, 'erp', 'cse24002')
   await page.goto('/hostel/room-changes')
   const mine = page.getByRole('region', { name: 'Room change' }).getByRole('listitem').filter({ hasText: 'Waiting for the warden' }).first()
   await mine.getByRole('button', { name: 'Cancel request' }).click()

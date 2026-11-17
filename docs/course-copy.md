@@ -24,4 +24,4 @@ Everything arrives as a **draft**, after the target's own modules, so students s
 | `GET /api/v1/lms/faculty/courses/{lmsCourseId}/copy-sources` | `FACULTY`, `FACULTY_COURSE_VIEW`, `LMS_CONTENT_MANAGE` | The sources, the latest term first. |
 | `POST /api/v1/lms/faculty/courses/{lmsCourseId}/copy` | the same | `{ "sourceLmsCourseId": … }`; answers how many modules, pages, and files were copied and whether the syllabus was. |
 
-On the faculty **Modules** page, **Copy from an earlier offering** appears only when there is a source: choose the term, **Copy content**, and confirm. The demo data has CS250 Algorithms Lab for `faculty2`: last session's archived course with a module, two pages, and a syllabus, and an empty draft course in semester 4.
+On the faculty **Modules** page, **Copy from an earlier offering** appears only when there is a source: choose the term, **Copy content**, and confirm. The demo data has CS250 Algorithms Lab for `emp1022`: last session's archived course with a module, two pages, and a syllabus, and an empty draft course in semester 4.

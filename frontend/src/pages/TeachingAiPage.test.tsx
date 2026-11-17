@@ -12,7 +12,7 @@ vi.mock('../api/aiApi')
 vi.mock('../teaching/useFacultyAssignments', () => ({ useFacultyAssignments: () => ({ status: 'loading' }) }))
 
 const auth: AuthContextValue = {
-  isChecking: false, isAuthenticated: true, account: { accountId: 9, loginId: 'faculty1', roles: ['FACULTY'] },
+  isChecking: false, isAuthenticated: true, account: { accountId: 9, loginId: 'emp1021', roles: ['FACULTY'] },
   passwordChangeRequired: false, passwordChanged: vi.fn(), signedOutByUser: false, login: vi.fn(), logout: vi.fn(),
   logoutEverywhere: vi.fn(),
 }

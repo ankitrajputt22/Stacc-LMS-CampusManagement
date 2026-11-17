@@ -40,10 +40,10 @@ describe('AuthProvider', () => {
   beforeEach(() => {
     auth = null
     vi.mocked(authApi.getCurrentSession).mockResolvedValue({
-      accountId: 1, loginId: 'student1', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
+      accountId: 1, loginId: 'cse24001', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
     })
     vi.mocked(authApi.login).mockResolvedValue({
-      accountId: 2, loginId: 'student2', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
+      accountId: 2, loginId: 'cse24002', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: false,
     })
     vi.mocked(authApi.logout).mockResolvedValue()
     vi.mocked(authApi.logoutEverywhere).mockResolvedValue()
@@ -58,12 +58,12 @@ describe('AuthProvider', () => {
     expect(auth?.isAuthenticated).toBe(false)
     await waitFor(() => expect(auth?.isAuthenticated).toBe(true))
     expect(auth?.isChecking).toBe(false)
-    expect(auth?.account).toEqual({ accountId: 1, loginId: 'student1', roles: ['STUDENT'] })
+    expect(auth?.account).toEqual({ accountId: 1, loginId: 'cse24001', roles: ['STUDENT'] })
   })
 
   it('holds a required password change until the password is changed', async () => {
     vi.mocked(authApi.getCurrentSession).mockResolvedValue({
-      accountId: 1, loginId: 'student1', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: true,
+      accountId: 1, loginId: 'cse24001', roles: ['STUDENT'], expiresAt: inAnHour(), passwordChangeRequired: true,
     })
     renderProvider()
     await waitFor(() => expect(auth?.passwordChangeRequired).toBe(true))
@@ -85,7 +85,7 @@ describe('AuthProvider', () => {
   it('keeps nothing about the session in browser storage', async () => {
     renderProvider()
     await waitFor(() => expect(auth?.isAuthenticated).toBe(true))
-    await act(async () => auth?.login('student2', 'a-password'))
+    await act(async () => auth?.login('cse24002', 'a-password'))
 
     expect(window.sessionStorage.length).toBe(0)
     expect(window.localStorage.length).toBe(0)
@@ -117,9 +117,9 @@ describe('AuthProvider', () => {
     const client = renderProvider()
     await waitFor(() => expect(auth?.isAuthenticated).toBe(true))
 
-    await act(async () => auth?.login('student2', 'a-password'))
+    await act(async () => auth?.login('cse24002', 'a-password'))
 
-    expect(auth?.account?.loginId).toBe('student2')
+    expect(auth?.account?.loginId).toBe('cse24002')
     expect(client.getQueryData(['lms', 'my-courses'])).toBeUndefined()
   })
 })

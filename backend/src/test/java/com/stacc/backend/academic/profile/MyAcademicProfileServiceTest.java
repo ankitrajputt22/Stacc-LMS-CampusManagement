@@ -57,7 +57,7 @@ class MyAcademicProfileServiceTest {
         Program btech = id(new Program(cse, "BTECH-CSE", "B.Tech CSE", 8), 4);
         AcademicSession previous = id(new AcademicSession("2025-26", java.time.LocalDate.of(2025, 7, 1), java.time.LocalDate.of(2026, 6, 30)), 1);
         AcademicSession now = id(new AcademicSession("2026-27", java.time.LocalDate.of(2026, 7, 1), java.time.LocalDate.of(2027, 6, 30)), 2);
-        StudentProfile profile = id(new StudentProfile(id(new UserAccount("student1", "example-hash-value"), 70), btech, previous), 57);
+        StudentProfile profile = id(new StudentProfile(id(new UserAccount("cse24001", "example-hash-value"), 70), btech, previous), 57);
         profile.assignRollNumber("25cse001");
         Semester second = id(new Semester(btech, previous, 2), 8);
         Semester third = id(new Semester(btech, now, 3), 9);
@@ -68,7 +68,7 @@ class MyAcademicProfileServiceTest {
         Course ds = id(new Course(cse, "CS301", "Data Structures", new BigDecimal("4")), 12);
         CourseEnrollment oopEnrollment = id(new CourseEnrollment(past, id(new CourseOffering(oop, second), 30)), 140);
         CourseEnrollment dsEnrollment = id(new CourseEnrollment(current, id(new CourseOffering(ds, third), 31)), 141);
-        var teacher = id(new com.stacc.backend.identity.faculty.FacultyProfile(id(new UserAccount("faculty1", "example-hash-value"), 81), cse), 11);
+        var teacher = id(new com.stacc.backend.identity.faculty.FacultyProfile(id(new UserAccount("emp1021", "example-hash-value"), 81), cse), 11);
         CourseResult publishedOop = id(new CourseResult(oopEnrollment, teacher, new BigDecimal("78"), new BigDecimal("100"), "B+", null), 1);
         publishedOop.publish(java.time.Instant.parse("2026-06-01T00:00:00Z"));
         CourseResult draftDs = id(new CourseResult(dsEnrollment, teacher, new BigDecimal("90"), new BigDecimal("100"), "A", null), 2);
@@ -76,7 +76,7 @@ class MyAcademicProfileServiceTest {
         when(semesterEnrollments.findAllWithContextByStudentProfileId(57L)).thenReturn(List.of(current, past));
         when(courseEnrollments.findAllWithOfferingBySemesterEnrollmentIdIn(any())).thenReturn(List.of(oopEnrollment, dsEnrollment));
         when(results.findAllByCourseEnrollmentIdIn(any())).thenReturn(List.of(publishedOop, draftDs));
-        UserAccount hod = id(new UserAccount("hod1", "example-hash-value"), 90);
+        UserAccount hod = id(new UserAccount("emp1003", "example-hash-value"), 90);
         when(heads.headOf(3L)).thenReturn(Optional.of(hod));
         when(people.findByUserAccountId(90L)).thenReturn(Optional.empty());
 
@@ -89,7 +89,7 @@ class MyAcademicProfileServiceTest {
         assertEquals(3, student.current().semesterNumber());
         assertNull(student.semesters().getFirst().courses().getFirst().result(), "a draft result is never shown");
         assertEquals("B+", student.semesters().get(1).courses().getFirst().result().gradeCode());
-        assertEquals("hod1", student.headOfDepartment(), "the login ID stands in until a name is recorded");
+        assertEquals("emp1003", student.headOfDepartment(), "the login ID stands in until a name is recorded");
     }
 
     @Test

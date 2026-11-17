@@ -13,7 +13,7 @@ const thread: DiscussionThread = {
   threadId: 3,
   title: 'Exam syllabus?',
   body: 'Does unit 4 count?',
-  authorLoginId: 'student1',
+  authorLoginId: 'cse24001',
   authorKind: 'STUDENT',
   pinned: false,
   acceptedReplyId: null,
@@ -21,7 +21,7 @@ const thread: DiscussionThread = {
   canAccept: true,
   canPin: false,
   replies: [
-    { replyId: 8, authorLoginId: 'faculty1', authorKind: 'FACULTY', body: 'Yes, it does.', createdAt: '2026-11-10T11:00:00Z', accepted: false, hidden: false },
+    { replyId: 8, authorLoginId: 'emp1021', authorKind: 'FACULTY', body: 'Yes, it does.', createdAt: '2026-11-10T11:00:00Z', accepted: false, hidden: false },
   ],
   locked: false,
   hidden: false,

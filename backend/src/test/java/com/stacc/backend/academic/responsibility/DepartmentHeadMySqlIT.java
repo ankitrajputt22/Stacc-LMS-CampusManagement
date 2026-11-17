@@ -48,11 +48,11 @@ class DepartmentHeadMySqlIT extends MySqlIntegrationTest {
     @Test
     void theDemoHeadOfCseIsResolvedForItsStudents() {
         Long cse = departments.findByCode("CSE").orElseThrow().getId();
-        Long hod1 = accounts.findByLoginId("hod1").orElseThrow().getId();
-        Long student1 = accounts.findByLoginId("student1").orElseThrow().getId();
+        Long emp1003 = accounts.findByLoginId("emp1003").orElseThrow().getId();
+        Long cse24001 = accounts.findByLoginId("cse24001").orElseThrow().getId();
 
-        assertThat(resolver.headOf(cse)).map(UserAccount::getId).contains(hod1);
-        assertThat(resolver.headForStudent(student1)).map(UserAccount::getId).contains(hod1);
+        assertThat(resolver.headOf(cse)).map(UserAccount::getId).contains(emp1003);
+        assertThat(resolver.headForStudent(cse24001)).map(UserAccount::getId).contains(emp1003);
     }
 
     @Test
@@ -60,7 +60,7 @@ class DepartmentHeadMySqlIT extends MySqlIntegrationTest {
         Long department = departments.save(new Department("ITHOD", "Head Test Department")).getId();
         Long first = hodAccount("ITHOD01");
         Long second = hodAccount("ITHOD02");
-        Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
+        Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
 
         List<Outcome<DepartmentHeadRow>> outcomes = Concurrently.run(
                 () -> service.assign(admin, department, new AssignDepartmentHead(first)),

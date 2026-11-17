@@ -23,7 +23,7 @@ class FeeRefundMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aRefundIsNeverApprovedBeyondTheCredit() throws Exception {
-        Long office = accounts.findByLoginId("admin1").orElseThrow().getId();
+        Long office = accounts.findByLoginId("adm1001").orElseThrow().getId();
         Long student = accounts.findByLoginId("ece25014").orElseThrow().getId();
         FeeService.Ledger before = fees.mine(student);
         BigDecimal over = before.due().max(BigDecimal.ZERO).add(new BigDecimal("1000.00"));

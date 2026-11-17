@@ -25,7 +25,7 @@ public final class AcademicProfileRecords {
 
     public record StudentProfileSummary(
             @Schema(example = "57") Long studentProfileId,
-            @Schema(description = "The student ID, which is the account's login ID.", example = "student1") String loginId,
+            @Schema(description = "The student ID, which is the account's login ID.", example = "cse24001") String loginId,
             @Schema(description = "The name from the person profile, or null.") String name,
             @Schema(description = "The roll number, or null.", example = "21CSE045") String rollNumber,
             @Schema(example = "4") Long programId,
@@ -50,7 +50,7 @@ public final class AcademicProfileRecords {
 
     public record FacultyProfileSummary(
             @Schema(example = "11") Long facultyProfileId,
-            @Schema(description = "The employee ID, which is the account's login ID.", example = "faculty1") String loginId,
+            @Schema(description = "The employee ID, which is the account's login ID.", example = "emp1021") String loginId,
             @Schema(description = "The name from the person profile, or null.") String name,
             @Schema(example = "3") Long departmentId,
             @Schema(example = "CSE") String departmentCode,

@@ -30,7 +30,7 @@ class LmsGradebookMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void simultaneousPublicationsAndMarksLeaveOneRowEach() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

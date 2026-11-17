@@ -9,7 +9,7 @@ class HelpdeskAccessServiceTest {
 
     private final HelpdeskAccessService access = new HelpdeskAccessService();
     private final HelpdeskTicket ticket = HelpdeskFixtures.ticket(42,
-            HelpdeskFixtures.account(70, "student1", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
+            HelpdeskFixtures.account(70, "cse24001", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
 
     @Test
     void theRequesterSeesAndAnswersOnlyTheirOwnTicket() {

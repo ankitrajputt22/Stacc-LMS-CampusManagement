@@ -12,7 +12,7 @@ test('the campus office runs a hackathon and a student team hands in its work', 
   const team = `Owls ${Date.now()}`
 
   const office = await browser.newPage()
-  await signIn(office, 'erp', 'admin1')
+  await signIn(office, 'erp', 'adm1001')
   await office.goto('/hackathons')
   await office.getByLabel('Hackathon title').fill(title)
   await office.getByLabel('Team size').fill('3')
@@ -21,14 +21,14 @@ test('the campus office runs a hackathon and a student team hands in its work', 
   await office.getByRole('button', { name: 'Add hackathon' }).click()
   await expect(office.getByRole('status').filter({ hasText: 'Hackathon added as a draft.' })).toHaveCount(1)
   const card = office.getByRole('region', { name: title })
-  await card.getByLabel(`Judge’s employee ID for ${title}`).fill('faculty1')
+  await card.getByLabel(`Judge’s employee ID for ${title}`).fill('emp1021')
   await card.getByRole('button', { name: 'Name judge' }).click()
-  await expect(card.getByText('Judges: faculty1')).toBeVisible()
+  await expect(card.getByText('Judges: emp1021')).toBeVisible()
   await card.getByRole('button', { name: new RegExp(`^Publish\\s*${title}$`) }).click()
   await expect(office.getByRole('status').filter({ hasText: 'Hackathon published.' })).toHaveCount(1)
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/hackathons')
   const mine = student.getByRole('region', { name: title })
   await mine.getByLabel(`New team name for ${title}`).fill(team)

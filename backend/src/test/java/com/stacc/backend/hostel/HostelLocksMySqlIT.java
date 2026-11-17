@@ -29,7 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * The hostel's row-lock rules under truly simultaneous requests on MySQL: a student gets one current application per
  * session, a bed one active allocation, and an application one active allocation, whoever clicks first. Uses the demo
- * accounts cse25012 and studentfaculty1, which no other MySQL test touches.
+ * accounts cse25012 and cse24003, which no other MySQL test touches.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HostelLocksMySqlIT extends MySqlIntegrationTest {
@@ -72,7 +72,7 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
         assertConflict(outcomes, HostelApplicationService.DUPLICATE);
         firstApplicationId = outcomes.stream().filter(Outcome::succeeded).findFirst().orElseThrow().result().applicationId();
 
-        Long other = accountId("studentfaculty1");
+        Long other = accountId("cse24003");
         secondApplicationId = applications.apply(other, new CreateHostelApplicationRequest(currentSessionId(other), null))
                 .applicationId();
     }
@@ -82,7 +82,7 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
     void twoAllocationsAtOnceNeverShareABedOrAnApplication() throws Exception {
         approve(firstApplicationId);
         approve(secondApplicationId);
-        Long admin = accountId("admin1");
+        Long admin = accountId("adm1001");
         List<AvailableHostelBed> free = allocations.availableBeds(null, null);
         assertThat(free).hasSizeGreaterThanOrEqualTo(2);
         Long contestedBed = free.get(0).bedId();
@@ -129,7 +129,7 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
                     HostelApplicationService.SOURCE_TYPE, String.valueOf(applicationId));
             return requests.getLast().currentStep().orElseThrow().getId();
         });
-        ApprovalActor admin = ApprovalActor.of(accountId("admin1"), AuthorityUtils.createAuthorityList(
+        ApprovalActor admin = ApprovalActor.of(accountId("adm1001"), AuthorityUtils.createAuthorityList(
                 "ROLE_ADMIN", ApprovalActor.TASK_VIEW, ApprovalActor.TASK_DECIDE));
         approvals.approveStep(admin, stepId, null);
     }

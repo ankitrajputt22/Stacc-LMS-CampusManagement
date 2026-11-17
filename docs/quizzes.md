@@ -125,9 +125,9 @@ Pages: **Results** on a published or archived quiz opens `/teaching/:lmsCourseId
 
 ## Demo data
 
-`faculty1`'s CS301 has four reviewed questions (true/false, single choice, multiple choice, descriptive) and the published graded quiz "Stacks and queues check" (15 minutes, due in a week, 2 attempts, shuffled choices, 25% negative marking).
+`emp1021`'s CS301 has four reviewed questions (true/false, single choice, multiple choice, descriptive) and the published graded quiz "Stacks and queues check" (15 minutes, due in a week, 2 attempts, shuffled choices, 25% negative marking).
 
-`student1` and `student2` can take it (two attempts each).
+`cse24001` and `cse24002` can take it (two attempts each).
 
 Not in this phase: the gradebook (0.7.6), partial credit for multiple choice, AI marking, mark notifications, quizzes as module items, question pools or random selection, closing open attempts with a scheduler, extra time for individual students, and proctoring.
 

@@ -5,7 +5,7 @@ test('the campus office records a match and students see the standings', async (
   const name = `Cup ${Date.now()}`
 
   const office = await browser.newPage()
-  await signIn(office, 'erp', 'admin1')
+  await signIn(office, 'erp', 'adm1001')
   await office.goto('/admin/campus/tournaments')
   await office.getByLabel('Tournament name').fill(name)
   await office.getByLabel('Sport').fill('Football')
@@ -30,7 +30,7 @@ test('the campus office records a match and students see the standings', async (
   await expect(office.getByRole('status').filter({ hasText: 'Tournament published.' })).toHaveCount(1)
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/campus/sports')
   const published = student.getByRole('region', { name })
   await expect(published.getByRole('table', { name: `Standings of ${name}` })).toBeVisible()

@@ -17,7 +17,7 @@ describe('BedMap', () => {
         {
           roomId: 3, roomNumber: 'A-101', block: 'A', floorNumber: 1, roomType: 'Double', active: true,
           beds: [
-            { bedId: 7, bedNumber: 'B1', state: 'OCCUPIED', studentLoginId: 'student1', allocationId: 9, checkedIn: false },
+            { bedId: 7, bedNumber: 'B1', state: 'OCCUPIED', studentLoginId: 'cse24001', allocationId: 9, checkedIn: false },
             { bedId: 8, bedNumber: 'B2', state: 'MAINTENANCE', studentLoginId: null, allocationId: null, checkedIn: false },
           ],
         },

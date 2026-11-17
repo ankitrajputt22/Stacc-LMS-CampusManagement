@@ -36,7 +36,7 @@ class MentoringServiceTest {
     }
 
     private MentorAssignment pair() {
-        MentorAssignment pair = new MentorAssignment(account(1L, "faculty1"), account(2L, "student1"), NOW);
+        MentorAssignment pair = new MentorAssignment(account(1L, "emp1021"), account(2L, "cse24001"), NOW);
         ReflectionTestUtils.setField(pair, "id", 10L);
         when(assignments.findById(10L)).thenReturn(Optional.of(pair));
         MentoringMeeting meeting = new MentoringMeeting(pair, NOW, "First meeting", "Plan the semester.", "Seems anxious about exams.", NOW);

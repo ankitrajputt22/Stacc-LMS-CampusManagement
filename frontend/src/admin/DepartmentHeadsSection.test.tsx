@@ -18,7 +18,7 @@ vi.mock('../api/departmentHeadsApi', () => ({
 const cse: DepartmentHeadRow = {
   departmentId: 1, departmentCode: 'CSE', departmentName: 'Computer Science and Engineering', departmentStatus: 'ACTIVE',
   head: {
-    departmentHeadId: 4, userAccountId: 12, loginId: 'hod1', name: 'Lakshmi Menon', status: 'ACTIVE',
+    departmentHeadId: 4, userAccountId: 12, loginId: 'emp1003', name: 'Lakshmi Menon', status: 'ACTIVE',
     startedAt: '2026-07-01T00:00:00Z', endedAt: null, counts: true, notCountedReason: null,
   },
 }
@@ -42,7 +42,7 @@ describe('DepartmentHeadsSection', () => {
   beforeEach(() => {
     vi.mocked(api.getDepartmentHeads).mockReset().mockResolvedValue([cse, ece])
     vi.mocked(api.getDepartmentHeadCandidates).mockResolvedValue([
-      { userAccountId: 12, loginId: 'hod1', name: 'Lakshmi Menon' },
+      { userAccountId: 12, loginId: 'emp1003', name: 'Lakshmi Menon' },
       { userAccountId: 14, loginId: 'hod3', name: null },
     ])
     vi.mocked(api.getDepartmentHeadHistory).mockResolvedValue([cse.head!])

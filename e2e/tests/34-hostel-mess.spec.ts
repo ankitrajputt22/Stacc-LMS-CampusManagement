@@ -4,7 +4,7 @@ import { signIn } from './support'
 test('a warden sets the weekly mess menu and changes one meal for a day', async ({ page }) => {
   const dish = `Paneer curry ${Date.now()}`
 
-  await signIn(page, 'erp', 'warden1')
+  await signIn(page, 'erp', 'stf2011')
   await page.goto('/warden/mess')
   const card = page.getByRole('region', { name: 'Mess' })
   for (const day of ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']) {

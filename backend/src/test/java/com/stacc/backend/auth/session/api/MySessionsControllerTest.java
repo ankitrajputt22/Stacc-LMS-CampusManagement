@@ -42,7 +42,7 @@ class MySessionsControllerTest extends DatabaseFreeApiTest {
     }
 
     private static String bearer() {
-        return "Bearer " + TestTokens.valid("student1", 70);
+        return "Bearer " + TestTokens.valid("cse24001", 70);
     }
 
     @Test

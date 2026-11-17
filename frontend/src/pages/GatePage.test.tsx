@@ -11,7 +11,7 @@ describe('GatePage', () => {
   it('checks a typed code and records the student going out', async () => {
     vi.mocked(api.getGateMovements).mockResolvedValue([])
     const check = {
-      valid: true, message: 'Valid. Record the student going out.', studentLoginId: 'student1', hostel: 'Main Hostel', room: 'A-101',
+      valid: true, message: 'Valid. Record the student going out.', studentLoginId: 'cse24001', hostel: 'Main Hostel', room: 'A-101',
       kind: 'GATE_PASS' as const, leaveFrom: '2026-11-12T08:00:00Z', leaveUntil: '2026-11-12T18:00:00Z', outside: false, outingId: 4,
     }
     vi.mocked(api.checkPass).mockResolvedValue(check)
@@ -23,7 +23,7 @@ describe('GatePage', () => {
     )
     await userEvent.type(screen.getByRole('textbox', { name: 'Pass code' }), 'ABCD-EFGH-JKLM-NPQR')
     await userEvent.click(screen.getByRole('button', { name: 'Check' }))
-    expect(await screen.findByText('student1')).toBeInTheDocument()
+    expect(await screen.findByText('cse24001')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Record going out' }))
     expect(api.recordMovement).toHaveBeenCalledWith('ABCD-EFGH-JKLM-NPQR', 'OUT')
     expect(await screen.findByRole('button', { name: 'Record coming back' })).toBeInTheDocument()

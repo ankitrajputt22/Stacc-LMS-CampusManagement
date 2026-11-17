@@ -21,7 +21,7 @@ Phase 0.12.4. Mentoring lives in the `mentoring` module.
 | `GET /api/v1/mentoring/me`, `GET …/pairings/{id}`, `POST …/pairings/{id}/meetings`, `PUT …/meetings/{id}`, `POST …/meetings/{id}/action-items`, `POST …/action-items/{id}/complete` | `STUDENT` or `FACULTY` with `MENTORING_USE`; the pair member comes from the token |
 | `GET`/`POST /api/v1/admin/mentoring/pairings`, `POST …/pairings/{id}/end` | `ADMIN` with `MENTORING_MANAGE` |
 
-The demo data pairs `faculty1` as mentor with `student1`.
+The demo data pairs `emp1021` as mentor with `cse24001`.
 
 ## Pages (v0.16.13)
 

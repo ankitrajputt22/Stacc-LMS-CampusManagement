@@ -7,18 +7,18 @@ test('a mentor records a meeting and the student sees only the shared part and t
   const task = `Read chapter ${stamp}`
 
   const admin = await browser.newPage()
-  await signIn(admin, 'erp', 'admin1')
+  await signIn(admin, 'erp', 'adm1001')
   await admin.goto('/admin/mentoring')
-  await admin.getByLabel(/employee ID/).fill('faculty2')
-  await admin.getByLabel(/college ID/).fill('student2')
+  await admin.getByLabel(/employee ID/).fill('emp1022')
+  await admin.getByLabel(/college ID/).fill('cse24002')
   await admin.getByRole('button', { name: 'Pair', exact: true }).click()
   await expect(admin.getByRole('status').filter({ hasText: 'Paired.' })).toHaveCount(1)
 
   const mentor = await browser.newPage()
-  await signIn(mentor, 'erp', 'faculty2')
+  await signIn(mentor, 'erp', 'emp1022')
   await mentor.goto('/mentoring')
-  await mentor.getByRole('link', { name: 'View meetings with student2' }).click()
-  const pair = mentor.getByRole('region', { name: 'Mentoring student2' })
+  await mentor.getByRole('link', { name: 'View meetings with cse24002' }).click()
+  const pair = mentor.getByRole('region', { name: 'Mentoring cse24002' })
   await pair.getByLabel('Meeting title').fill(title)
   await pair.getByLabel('Held at').fill('2026-11-05T09:00')
   await pair.getByLabel('Shared notes').fill('Agreed to plan revision weekly.')
@@ -31,13 +31,13 @@ test('a mentor records a meeting and the student sees only the shared part and t
   await expect(mentor.getByRole('status').filter({ hasText: 'Action item added.' })).toHaveCount(1)
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student2')
+  await signIn(student, 'erp', 'cse24002')
   await student.goto('/todo')
   await expect(student.getByRole('link', { name: `Mentoring: ${task}` })).toBeVisible()
   await student.goto('/mentoring')
-  await student.getByRole('link', { name: 'View meetings with faculty2' }).click()
-  // This run's meeting, inside the pairing with faculty2.
-  const mine = student.getByRole('region', { name: 'Your mentor faculty2' }).getByRole('region', { name: title })
+  await student.getByRole('link', { name: 'View meetings with emp1022' }).click()
+  // This run's meeting, inside the pairing with emp1022.
+  const mine = student.getByRole('region', { name: 'Your mentor emp1022' }).getByRole('region', { name: title })
   await expect(mine.getByText('Agreed to plan revision weekly.')).toBeVisible()
   await expect(mine.getByText('Keep an eye on attendance.')).toHaveCount(0)
   await mine.getByRole('button', { name: new RegExp(`^Mark done\\s*${task}$`) }).click()

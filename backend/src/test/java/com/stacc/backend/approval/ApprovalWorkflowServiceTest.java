@@ -42,10 +42,10 @@ import org.springframework.http.HttpStatus;
 
 class ApprovalWorkflowServiceTest {
 
-    private final UserAccount student = ApprovalFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount faculty = ApprovalFixtures.account(80, "faculty1", RoleName.FACULTY);
-    private final UserAccount admin = ApprovalFixtures.account(1, "admin1", RoleName.ADMIN);
-    private final UserAccount facultyAdmin = ApprovalFixtures.account(2, "facultyadmin1", RoleName.FACULTY, RoleName.ADMIN);
+    private final UserAccount student = ApprovalFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount faculty = ApprovalFixtures.account(80, "emp1021", RoleName.FACULTY);
+    private final UserAccount admin = ApprovalFixtures.account(1, "adm1001", RoleName.ADMIN);
+    private final UserAccount facultyAdmin = ApprovalFixtures.account(2, "emp1005", RoleName.FACULTY, RoleName.ADMIN);
 
     private final ApprovalWorkflowDefinitionRepository workflows = mock(ApprovalWorkflowDefinitionRepository.class);
     private final ApprovalRequestRepository requests = mock(ApprovalRequestRepository.class);
@@ -264,7 +264,7 @@ class ApprovalWorkflowServiceTest {
     @Test
     void aRoleRemovedOrAnAccountDisabledAfterSignInDecidesNothing() {
         ApprovalRequest request = start("TWO_STEP", student);
-        UserAccount formerFaculty = ApprovalFixtures.account(81, "faculty2");
+        UserAccount formerFaculty = ApprovalFixtures.account(81, "emp1022");
         when(accounts.findById(81L)).thenReturn(Optional.of(formerFaculty));
         assertRefused(() -> service.approveStep(ApprovalFixtures.approver(81, RoleName.FACULTY), stepId(request, 1), null),
                 HttpStatus.FORBIDDEN);
@@ -291,7 +291,7 @@ class ApprovalWorkflowServiceTest {
         assertThat(service.approveStep(ApprovalFixtures.approver(2, RoleName.FACULTY, RoleName.ADMIN), stepId(request, 2), null)
                 .requestStatus()).isEqualTo("APPROVED");
         assertThat(request.getSteps()).extracting(step -> step.getActedBy().getLoginId())
-                .containsExactly("facultyadmin1", "facultyadmin1");
+                .containsExactly("emp1005", "emp1005");
     }
 
     // Stale, finished, and unknown
@@ -410,7 +410,7 @@ class ApprovalWorkflowServiceTest {
     @Test
     void aRelationshipStepIsAssignedToTheStudentsHeadAndOnlyTheyDecideIt() {
         headStepWorkflow();
-        UserAccount head = ApprovalFixtures.account(90, "hod1", RoleName.HOD);
+        UserAccount head = ApprovalFixtures.account(90, "emp1003", RoleName.HOD);
         UserAccount otherHead = ApprovalFixtures.account(91, "hod2", RoleName.HOD);
         heads.put(student.getId(), head.getId());
         when(accounts.getReferenceById(90L)).thenReturn(head);

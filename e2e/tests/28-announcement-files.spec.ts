@@ -4,7 +4,7 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 test('a faculty member posts an announcement with a file and a student downloads it from the course', async ({ page }) => {
   const title = `Lab moved ${Date.now()}`
 
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Announcements')
   await page.getByRole('button', { name: 'Add announcement' }).click()
@@ -20,7 +20,7 @@ test('a faculty member posts an announcement with a file and a student downloads
   await expect(item.getByText(/^Published /)).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Announcements')
   const posted = page.getByRole('article', { name: title })

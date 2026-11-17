@@ -9,7 +9,7 @@ import { MentoringPage } from './MentoringPage'
 vi.mock('../api/mentoringApi')
 
 const pairing: MentoringPairing = {
-  assignmentId: 10, mentorLoginId: 'faculty1', menteeLoginId: 'student1', iAmMentor: false, active: true, startedAt: '2026-11-01T00:00:00Z', endedAt: null,
+  assignmentId: 10, mentorLoginId: 'emp1021', menteeLoginId: 'cse24001', iAmMentor: false, active: true, startedAt: '2026-11-01T00:00:00Z', endedAt: null,
 }
 
 function renderPage(mine: MentoringPairing[], path: string) {
@@ -34,7 +34,7 @@ function renderPage(mine: MentoringPairing[], path: string) {
 describe('MentoringPage', () => {
   it('lists the pairing and the student’s own open item on the home page', async () => {
     renderPage([pairing], '/mentoring')
-    expect(await screen.findByRole('link', { name: 'View meetings with faculty1' })).toHaveAttribute('href', '/mentoring/10')
+    expect(await screen.findByRole('link', { name: 'View meetings with emp1021' })).toHaveAttribute('href', '/mentoring/10')
     expect(await screen.findByRole('button', { name: /^Mark done\s*Draft a study plan$/ })).toBeInTheDocument()
   })
 

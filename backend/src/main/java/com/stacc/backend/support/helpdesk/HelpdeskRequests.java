@@ -44,7 +44,7 @@ public final class HelpdeskRequests {
 
     public record AssignHelpdeskTicketRequest(
             @Schema(description = "The login ID of an admin account, or null to unassign.", nullable = true,
-                    example = "admin1")
+                    example = "adm1001")
             @Size(max = 100, message = "Login ID must be at most 100 characters")
             String assignedToLoginId) {
     }
