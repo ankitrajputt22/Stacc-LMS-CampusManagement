@@ -8,7 +8,6 @@ import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import type { LmsContentStatus } from '../types/lms'
 import { Badge, Button, Card, DataTable, textLinkClasses } from '../ui'
-import { buttonClasses } from '../ui/styles'
 import { emptySettings, quizFacts, quizTypeLabel, quizWindow } from './quizSettings'
 import { QuizSettingsForm } from './QuizSettingsForm'
 
@@ -87,19 +86,6 @@ export function QuizzesEditor({ lmsCourseId }: { lmsCourseId: number }) {
                     <span className="block">{quizFacts(quiz)}</span>
                     {quizWindow(quiz) && <span className="block text-ink-muted">{quizWindow(quiz)}</span>}
                   </>
-                ),
-              },
-              {
-                key: 'action',
-                header: 'Action',
-                cell: (quiz) => (
-                  quiz.status !== 'DRAFT' ? (
-                    <Link to={`/teaching/${lmsCourseId}/quizzes/${quiz.id}/results`} className={buttonClasses('primary', 'sm')}>
-                      View results
-                    </Link>
-                  ) : (
-                    <span aria-label="None">–</span>
-                  )
                 ),
               },
             ]}
