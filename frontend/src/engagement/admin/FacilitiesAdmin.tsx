@@ -78,7 +78,7 @@ export function FacilitiesAdmin() {
       </Card>
       <Card title="Class hours" description="Weekly times a classroom, lab, or piece of equipment is used for classes. New bookings that overlap them are refused.">
         <form
-          className="grid gap-3 sm:grid-cols-2"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_9rem_9rem_minmax(0,1.6fr)] xl:items-start"
           onSubmit={(event) => {
             event.preventDefault()
             void addClassHour(Number(slot.facilityId), { dayOfWeek: slot.dayOfWeek, startsAt: slot.startsAt, endsAt: slot.endsAt, label: slot.label.trim() })
@@ -96,7 +96,7 @@ export function FacilitiesAdmin() {
           <TextField label="Class starts" type="time" value={slot.startsAt} onChange={(event) => setSlot({ ...slot, startsAt: event.target.value })} />
           <TextField label="Class ends" type="time" value={slot.endsAt} onChange={(event) => setSlot({ ...slot, endsAt: event.target.value })} />
           <TextField label="Class" hint="For example CS101 lecture." value={slot.label} maxLength={100} onChange={(event) => setSlot({ ...slot, label: event.target.value })} />
-          <div className="self-end"><Button type="submit" variant="secondary">Add class hours</Button></div>
+          <div className="sm:col-span-2 xl:col-span-5"><Button type="submit">Add class hours</Button></div>
         </form>
       </Card>
       <Card title="Facilities" padding="none">

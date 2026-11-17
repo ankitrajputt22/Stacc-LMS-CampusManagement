@@ -99,6 +99,15 @@ function FacilityRow({ facility, canBook }: { facility: CampusFacility; canBook:
               </ul>
             )}
           </div>
+          {facility.closures.map((closure) => (
+            <Alert key={closure.closureId} tone="warning">
+              Closed {closure.startDate}
+              {closure.endDate !== closure.startDate && ` to ${closure.endDate}`}: {closure.reason}
+            </Alert>
+          ))}
+          {canBook && (
+            <h4 className="border-t border-line pt-4 text-lg font-bold text-portal-navy">Book facility</h4>
+          )}
           {canBook && (
             <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
               <TextField label="From" type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} />
