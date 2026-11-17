@@ -51,3 +51,7 @@ Every route is under `/api/v1/admin/users`. Reading needs `ADMIN` with `USER_VIE
 ## Not built yet
 
 Self-service password recovery by email, and account deletion (never).
+
+## Look (v0.16.24)
+
+An account's page opens with its login ID beside an initials circle, then the official name, every role, and the status, and Must change password when it applies; the status, roles, official details, photo, temporary password, and academic profile cards follow.

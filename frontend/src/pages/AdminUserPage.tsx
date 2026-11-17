@@ -28,7 +28,7 @@ import { StatusConfirmation } from '../components/StatusConfirmation'
 import { formatDateTime } from '../courses/dates'
 import { usePhotoUrl } from '../person/usePhotoUrl'
 import type { RoleName, UserDetail } from '../types/users'
-import { Alert, Badge, Button, Card, PageHeader, SelectField, TextField } from '../ui'
+import { Alert, Badge, Button, Card, SelectField, TextField } from '../ui'
 import { refusal, ROLES, roleWord, SIGN_IN_AGAIN, statusTone, statusWord, USERS_DENIED } from '../users/userText'
 
 /** Sends a change, shows the backend's refusal in safe words, and puts the new account into the cache. */
@@ -427,16 +427,11 @@ function UserAccountView({ accountId }: { accountId: number }) {
       const isSelf = account?.accountId === user.accountId
       return (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
-            <span>{user.loginId}</span>
-            {user.roles.map((role) => (
-              <Badge key={role} tone="info">
-                {roleWord(role)}
-              </Badge>
-            ))}
-            <Badge tone={statusTone(user.status)}>{statusWord(user.status)}</Badge>
-            {user.passwordChangeRequired && <Badge tone="warning">Must change password</Badge>}
-          </div>
+          {user.passwordChangeRequired && (
+            <p>
+              <Badge tone="warning">Must change password</Badge>
+            </p>
+          )}
           {notice && (
             <Alert tone="success">
               <span role="status">{notice}</span>
@@ -460,15 +455,33 @@ export function AdminUserPage() {
   const { accountId } = useParams()
   const id = Number(accountId)
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])
-  const cached = useQueryClient().getQueryData<UserDetail>(queryKeys.users.one(id))
+  const valid = Number.isInteger(id) && id > 0
+  // The same request the account view makes; the shared cache sends it once.
+  const loaded = useApiQuery(isAdmin && valid ? queryKeys.users.one(id) : null, (signal) => getUser(id, signal))
+  const user = loaded.status === 'loaded' ? loaded.data : null
   return (
     <div className="max-w-4xl">
-      <title>User · Stacc</title>
-      <PageHeader
-        eyebrow="ERP · Manage"
-        title={cached?.fullName ?? cached?.loginId ?? 'User'}
-        breadcrumb={<Breadcrumb parent={{ to: '/admin/users', label: 'Users' }} current={cached?.loginId} />}
-      />
+      <title>{user ? `${user.loginId} · Users · Stacc` : 'User · Stacc'}</title>
+      <Breadcrumb parent={{ to: '/admin/users', label: 'Users' }} current={user?.fullName ?? user?.loginId} />
+      <header className="mt-3 mb-6 flex items-center gap-4">
+        {user && (
+          <span aria-hidden="true" className="flex size-16 shrink-0 items-center justify-center rounded-full bg-portal-bar-strong text-xl font-bold text-portal-navy uppercase">
+            {user.loginId.slice(0, 2)}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight break-words text-portal-navy">{user?.loginId ?? 'User'}</h1>
+          {user && (
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.95rem] text-ink">
+              {user.fullName && <span>{user.fullName}</span>}
+              {user.fullName && <span aria-hidden="true">·</span>}
+              <span>{user.roles.map(roleWord).join(', ') || 'No roles'}</span>
+              <span aria-hidden="true">·</span>
+              <Badge tone={statusTone(user.status)}>{statusWord(user.status)}</Badge>
+            </p>
+          )}
+        </div>
+      </header>
       {!isAdmin ? (
         <StatePanel>
           <AccessDeniedState title="This page is for admin accounts." message="If you think you should, contact the college administration." />
