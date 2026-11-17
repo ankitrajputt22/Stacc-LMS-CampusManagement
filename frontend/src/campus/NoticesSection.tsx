@@ -41,14 +41,14 @@ export function NoticesSection() {
           {notices.data.items.map((notice) => (
             <li key={notice.noticeId}>
               <article aria-labelledby={`campus-notice-${notice.noticeId}`} className="rounded-panel border border-line bg-surface p-4 sm:p-5">
-                <h3 id={`campus-notice-${notice.noticeId}`} className="text-sm font-semibold break-words text-ink">
+                <h3 id={`campus-notice-${notice.noticeId}`} className="text-lg font-bold break-words text-portal-navy">
                   {notice.title}
                 </h3>
-                <p className="mt-0.5 text-xs text-ink-muted">
+                <p className="mt-0.5 text-sm text-stacc-primary">
                   Published <time dateTime={notice.publishedAt}>{formatDateTime(notice.publishedAt)}</time>
                 </p>
                 {/* Plain text: React shows it as text, never as HTML. */}
-                <p className="mt-2 text-sm leading-6 break-words whitespace-pre-wrap text-ink">{notice.message}</p>
+                <p className="mt-2 text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{notice.message}</p>
               </article>
             </li>
           ))}
@@ -67,11 +67,12 @@ export function NoticesSection() {
   }
 
   return (
-    <section aria-labelledby="campus-notices-heading">
-      <h2 id="campus-notices-heading" className="text-base font-semibold text-ink">
+    <section aria-labelledby="campus-notices-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <h2 id="campus-notices-heading" className="text-xl font-bold text-portal-navy">
         Campus Notices
       </h2>
-      <div ref={contentRef} className="mt-3">
+      <span aria-hidden="true" className="mt-1.5 block h-0.5 w-16 rounded bg-portal-cta" />
+      <div ref={contentRef} className="mt-4">
         {content}
       </div>
     </section>

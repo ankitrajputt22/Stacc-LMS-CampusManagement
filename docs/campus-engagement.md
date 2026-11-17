@@ -77,3 +77,9 @@ The `engagement` module (v0.11) adds clubs and sports groups, facility bookings,
 - Facilities may also be classrooms and equipment (`CLASSROOM`, `EQUIPMENT`; `V120`), booked through the same engine with the same hours, closures, approvals, and overlap rule.
 - The campus office sets weekly class hours per facility (day, start and end in the college's time zone, and a label such as `CS101 lecture`) at Campus Management → Facilities. A new booking that overlaps class hours on their day is refused with the class named; bookings made before the class hours were added stay. Class hours are removed with a time and kept, never deleted, and they take the facility row lock like bookings (`CampusEngagementMySqlIT`).
 - Bookers see each facility's class hours on the campus Facilities tab.
+
+## Look (v0.16.14)
+
+Clubs and Sports list each group as one row: name with Member or Asked to join, the joining policy as a tinted word (Open to join, Join on approval, Not taking members), description, members, officers, and Join, Ask to join, Leave, or Withdraw request; the search sits in the panel's header. A member's or officer's sessions, announcements, and teams open under the row as before.
+
+Events are one card each: the title with Cancelled, Trial, You’re going, or the waitlist place; the times, venue, and group with icons; places taken, waiting, and who may come; the description; and Register, Join the waitlist, Leave the waitlist, Give up my place, or the reasons someone cannot register. Tournaments sit in one panel, each with its matches and standings tables.

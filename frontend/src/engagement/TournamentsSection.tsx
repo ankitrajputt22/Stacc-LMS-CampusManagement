@@ -10,8 +10,11 @@ import { TournamentTables } from './TournamentTables'
 export function TournamentsSection() {
   const tournaments = useApiQuery(queryKeys.engagement.tournaments(), (signal) => getTournaments(signal))
   return (
-    <section aria-labelledby="campus-tournaments" className="space-y-4">
-      <h2 id="campus-tournaments" className="text-xl font-semibold text-ink">Tournaments</h2>
+    <section aria-labelledby="campus-tournaments" className="space-y-4 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <div>
+        <h2 id="campus-tournaments" className="text-xl font-bold text-portal-navy">Tournaments</h2>
+        <span aria-hidden="true" className="mt-1.5 block h-0.5 w-16 rounded bg-portal-cta" />
+      </div>
       {tournaments.status !== 'loaded' ? (
         <SectionState request={tournaments} what="tournaments" />
       ) : tournaments.data.length === 0 ? (

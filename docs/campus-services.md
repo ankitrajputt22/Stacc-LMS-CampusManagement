@@ -162,3 +162,7 @@ No helpdesk duplication or request conversation, no second approval engine, no d
 - A request that is approved, being processed, or ready can be completed, plainly or with an issued document: `POST …/complete` as `multipart/form-data` with `documentTitle` and `file`. The document goes into the requester's document vault as an issued document with its verification code (`DocumentVaultService.issueFile`), is linked to the request (`issued_document_id`), and is named on both request pages. Requests and documents are never deleted.
 - Cancelling stays limited to submitted and approved requests: once the office is working on a request, the requester asks through Support instead.
 - `CampusRequestProgressService` takes each step under the request row lock, after taking any approval outcome into account (`V106`).
+
+## Look (v0.16.14)
+
+Campus Services is a panel of service cards (name, description, Approval required, Request service) above My Service Requests, a table of request number, service, subject, request status, approval (or Not needed), submitted, and View. A request page has Back to Campus services, its number and tags, its dates in one row, Subject and Details, and the approval panel. The office's request queue is a table with the requester and Review. Notices are cards with the title, the publication time, and the plain-text message.

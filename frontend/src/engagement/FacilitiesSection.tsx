@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { bookFacility, cancelBooking, getFacilities, getFacilityBookings, getMyBookings } from '../api/engagementApi'
@@ -42,16 +43,29 @@ function FacilityRow({ facility, canBook }: { facility: CampusFacility; canBook:
   }
 
   return (
-    <li className="space-y-2 px-4 py-4 sm:px-5">
+    <li className="space-y-2 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{facility.name}</span>
-        <Badge tone="neutral">{facility.kind.toLowerCase()}</Badge>
+        <h3 className="text-lg font-bold text-portal-navy">{facility.name}</h3>
+        <Badge tone="neutral">{facility.kind.charAt(0) + facility.kind.slice(1).toLowerCase()}</Badge>
         {facility.needsApproval && <Badge tone="info">Needs approval</Badge>}
       </div>
-      <p className="text-sm text-ink-muted">
-        Open {facility.opensAt.slice(0, 5)} to {facility.closesAt.slice(0, 5)} (college time)
-        {facility.location && ` · ${facility.location}`}
-        {facility.capacity && ` · up to ${facility.capacity} people`}
+      <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] text-ink">
+        <span className="inline-flex items-center gap-1.5">
+          <NavIcon name="calendar" className="size-4 text-ink-muted" />
+          Open {facility.opensAt.slice(0, 5)} to {facility.closesAt.slice(0, 5)} (college time)
+        </span>
+        {facility.location && (
+          <span className="inline-flex items-center gap-1.5">
+            <NavIcon name="pin" className="size-4 text-ink-muted" />
+            {facility.location}
+          </span>
+        )}
+        {facility.capacity && (
+          <span className="inline-flex items-center gap-1.5">
+            <NavIcon name="profile" className="size-4 text-ink-muted" />
+            Up to {facility.capacity} people
+          </span>
+        )}
       </p>
       {facility.classHours.length > 0 && (
         <p className="text-sm text-ink-muted">
@@ -153,7 +167,7 @@ export function FacilitiesSection({ canBook }: { canBook: boolean }) {
         ) : facilities.data.length === 0 ? (
           <EmptyState title="No facilities yet." description="The college adds rooms, labs, halls, and courts." />
         ) : (
-          <ul className="divide-y divide-line">
+          <ul className="space-y-3 px-4 py-4 sm:px-5">
             {facilities.data.map((facility) => (
               <FacilityRow key={facility.facilityId} facility={facility} canBook={canBook && facility.active} />
             ))}

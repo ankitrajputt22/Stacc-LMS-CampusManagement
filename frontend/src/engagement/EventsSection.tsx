@@ -1,3 +1,4 @@
+import { NavIcon } from '../components/navigation/navIcons'
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import {
@@ -36,43 +37,64 @@ function EventItem({ event, canRegister }: { event: CampusEvent; canRegister: bo
       .catch((caught: unknown) => setError(failureText(caught, 'Couldn’t save. Try again.')))
   const full = event.capacity !== null && event.registered >= event.capacity
   return (
-    <li className="space-y-2 px-4 py-4 sm:px-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-ink">{event.title}</span>
-        {event.status === 'CANCELLED' && <Badge tone="danger">Cancelled</Badge>}
-        {event.trial && <Badge tone="info">Trial</Badge>}
-        {event.myRegistration === 'REGISTERED' && <Badge tone="success">You’re going</Badge>}
-        {event.myRegistration === 'WAITLISTED' && <Badge tone="info">Waitlist #{event.myWaitlistPosition}</Badge>}
-      </div>
-      <p className="text-sm text-ink-muted">
-        {formatDateTime(event.startsAt)} to {formatDateTime(event.endsAt)}
-        {event.venue && ` · ${event.venue}`}
-        {event.groupName && ` · ${event.groupName}`}
-      </p>
-      <p className="text-sm text-ink-muted">
-        {event.capacity === null ? `${event.registered} going` : `${event.registered} of ${event.capacity} places taken`}
-        {event.waitlisted > 0 && ` · ${event.waitlisted} waiting`}
-        {' · '}
-        {[event.forStudents && 'students', event.forFaculty && 'faculty'].filter(Boolean).join(' and ')}
-        {event.membersOnly && ', members only'}
-      </p>
-      {event.description && <p className="text-sm break-words whitespace-pre-line text-ink">{event.description}</p>}
-      {canRegister && event.status === 'PUBLISHED' && (
-        <div className="flex flex-wrap items-center gap-2">
-          {event.myRegistration ? (
-            <Button size="sm" variant="secondary" onClick={() => act(() => unregisterFromEvent(event.eventId))}>
-              {event.myRegistration === 'WAITLISTED' ? 'Leave the waitlist' : 'Give up my place'}
-            </Button>
-          ) : event.cannotRegisterBecause.length === 0 ? (
-            <Button size="sm" onClick={() => act(() => registerForEvent(event.eventId))}>
-              {full ? 'Join the waitlist' : 'Register'}
-              <span className="sr-only">{` for ${event.title}`}</span>
-            </Button>
-          ) : (
-            <p className="text-sm text-ink-muted">{event.cannotRegisterBecause.join(' ')}</p>
-          )}
+    <li className="space-y-3 rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6">
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-xl font-bold break-words text-portal-navy">{event.title}</h3>
+            {event.status === 'CANCELLED' && <Badge tone="danger">Cancelled</Badge>}
+            {event.trial && <Badge tone="info">Trial</Badge>}
+            {event.myRegistration === 'REGISTERED' && <Badge tone="success">You’re going</Badge>}
+            {event.myRegistration === 'WAITLISTED' && <Badge tone="info">Waitlist #{event.myWaitlistPosition}</Badge>}
+          </div>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] text-ink">
+            <span className="inline-flex items-center gap-1.5">
+              <NavIcon name="calendar" className="size-4 text-ink-muted" />
+              {formatDateTime(event.startsAt)} to {formatDateTime(event.endsAt)}
+            </span>
+            {event.venue && (
+              <span className="inline-flex items-center gap-1.5">
+                <NavIcon name="pin" className="size-4 text-ink-muted" />
+                {event.venue}
+              </span>
+            )}
+            {event.groupName && (
+              <span className="inline-flex items-center gap-1.5">
+                <NavIcon name="clubs" className="size-4 text-ink-muted" />
+                {event.groupName}
+              </span>
+            )}
+          </p>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] text-ink">
+            <span className="inline-flex items-center gap-1.5">
+              <NavIcon name="profile" className="size-4 text-ink-muted" />
+              {event.capacity === null ? `${event.registered} going` : `${event.registered} of ${event.capacity} places taken`}
+            </span>
+            {event.waitlisted > 0 && <span>{`${event.waitlisted} waiting`}</span>}
+            <span>
+              {[event.forStudents && 'Students', event.forFaculty && 'faculty'].filter(Boolean).join(' and ')}
+              {event.membersOnly && ', members only'}
+            </span>
+          </p>
+          {event.description && <p className="text-[0.95rem] break-words whitespace-pre-line text-ink">{event.description}</p>}
         </div>
-      )}
+        {canRegister && event.status === 'PUBLISHED' && (
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            {event.myRegistration ? (
+              <Button variant="secondary" onClick={() => act(() => unregisterFromEvent(event.eventId))}>
+                {event.myRegistration === 'WAITLISTED' ? 'Leave the waitlist' : 'Give up my place'}
+              </Button>
+            ) : event.cannotRegisterBecause.length === 0 ? (
+              <Button variant={full ? 'secondary' : 'primary'} onClick={() => act(() => registerForEvent(event.eventId))}>
+                {full ? 'Join the waitlist' : 'Register'}
+                <span className="sr-only">{` for ${event.title}`}</span>
+              </Button>
+            ) : (
+              <p className="max-w-xs text-sm text-ink-muted">{event.cannotRegisterBecause.join(' ')}</p>
+            )}
+          </div>
+        )}
+      </div>
       {canRegister && event.myRegistration === 'REGISTERED' && <MyCheckIn eventId={event.eventId} title={event.title} />}
       {error && <Alert tone="error">{error}</Alert>}
     </li>
@@ -94,7 +116,7 @@ export function EventsSection({ canRegister, withinDays }: { canRegister: boolea
     <Card title={withinDays === undefined ? 'Events' : 'Happening this week'} padding="none">
       {withinDays === undefined && (
         <div className="px-4 pt-3 sm:px-5">
-          <TextField label="Search events" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <TextField label="Search events" type="search" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       )}
       {events.status !== 'loaded' ? (
@@ -102,7 +124,7 @@ export function EventsSection({ canRegister, withinDays }: { canRegister: boolea
       ) : shown.length === 0 ? (
         <EmptyState title="No events here." description="Published events appear here." />
       ) : (
-        <ul className="divide-y divide-line">
+        <ul className="space-y-3 px-4 py-4 sm:px-5">
           {shown.map((event) => (
             <EventItem key={event.eventId} event={event} canRegister={canRegister} />
           ))}
