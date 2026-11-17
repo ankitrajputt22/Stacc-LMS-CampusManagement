@@ -132,22 +132,23 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
       {student !== null && rows !== null && (
         <>
           <section aria-labelledby="student-heading" className="rounded-panel border border-line bg-surface px-4 py-4 sm:px-5">
-            <h2 id="student-heading" tabIndex={-1} data-focus-key="student" className="text-base font-semibold break-all text-ink outline-none">
-              Student {student.loginId}
+            <h2 id="student-heading" tabIndex={-1} data-focus-key="student" className="text-3xl font-bold break-all text-ink outline-none">
+              <span className="sr-only">Student </span>
+              {student.loginId}
             </h2>
-            <dl className="mt-2 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+            <dl className="mt-3 grid gap-y-3 text-[0.95rem] sm:grid-cols-3 sm:[&>div]:border-line sm:[&>div:not(:first-child)]:border-l sm:[&>div:not(:first-child)]:pl-5">
               <div>
-                <dt className="text-ink-muted">Program</dt>
-                <dd className="break-words text-ink">
-                  {student.programCode} · {student.programName}
+                <dt className="text-ink">Program</dt>
+                <dd className="font-bold break-words text-ink">
+                  {student.programCode} <span className="font-normal text-ink-muted">· {student.programName}</span>
                 </dd>
               </div>
               <div>
-                <dt className="text-ink-muted">Admission session</dt>
-                <dd className="text-ink">{student.admissionSessionCode}</dd>
+                <dt className="text-ink">Admission session</dt>
+                <dd className="font-bold text-ink">{student.admissionSessionCode}</dd>
               </div>
               <div>
-                <dt className="text-ink-muted">Student profile</dt>
+                <dt className="text-ink">Student profile</dt>
                 <dd>
                   <MasterStatus status={student.studentProfileStatus} />
                 </dd>
