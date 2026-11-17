@@ -105,33 +105,52 @@ export function FacilitiesAdmin() {
         ) : facilities.data.length === 0 ? (
           <EmptyState title="No facilities yet." description="Add one above." />
         ) : (
-          <ul className="divide-y divide-line text-sm">
-            {facilities.data.map((facility) => (
-              <li key={facility.facilityId} className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-5">
-                <span className="font-semibold text-ink">{facility.name}</span>
-                <span className="font-mono text-xs text-ink-muted">{facility.code}</span>
-                <span className="text-ink-muted">{facility.opensAt.slice(0, 5)}–{facility.closesAt.slice(0, 5)}</span>
-                {facility.needsApproval && <Badge tone="info">Needs approval</Badge>}
-                {facility.closures.length > 0 && <Badge tone="warning">{facility.closures.length} closure(s)</Badge>}
-                {facility.classHours.map((hour) => (
-                  <span key={hour.classHourId} className="inline-flex items-center gap-1 text-ink-muted">
-                    {`${DAY_LABEL[hour.dayOfWeek]} ${hour.startsAt.slice(0, 5)}–${hour.endsAt.slice(0, 5)} ${hour.label}`}
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() =>
-                        void removeClassHour(hour.classHourId)
-                          .then(() => done('Class hours removed.'))
-                          .catch((caught: unknown) => done(failureText(caught, 'Couldn’t remove the class hours.') ?? '', true))
-                      }
-                    >
-                      Remove<span className="sr-only">{` ${hour.label} on ${DAY_LABEL[hour.dayOfWeek]}`}</span>
-                    </Button>
+          <>
+            <div aria-hidden="true" className="hidden grid-cols-[minmax(0,1.2fr)_9rem_9rem_10rem_minmax(0,2fr)] gap-4 bg-surface-muted px-5 py-2.5 text-sm font-semibold text-ink lg:grid">
+              <span>Facility</span>
+              <span>Code</span>
+              <span>Operating hours</span>
+              <span>Closures</span>
+              <span>Class hours</span>
+            </div>
+            <ul aria-label="Facilities" className="divide-y divide-line text-sm">
+              {facilities.data.map((facility) => (
+                <li key={facility.facilityId} className="grid gap-2 px-4 py-3 sm:px-5 lg:grid-cols-[minmax(0,1.2fr)_9rem_9rem_10rem_minmax(0,2fr)] lg:items-start lg:gap-4">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-base font-bold text-ink">{facility.name}</span>
+                    {facility.needsApproval && <Badge tone="info">Needs approval</Badge>}
                   </span>
-                ))}
-              </li>
-            ))}
-          </ul>
+                  <span className="font-mono text-xs text-ink-muted lg:pt-1">{facility.code}</span>
+                  <span className="text-ink">
+                    <span className="sr-only">Open </span>
+                    {facility.opensAt.slice(0, 5)}–{facility.closesAt.slice(0, 5)}
+                  </span>
+                  <span className="text-ink">
+                    {facility.closures.length === 0 ? 'None' : facility.closures.length === 1 ? '1 closure' : `${facility.closures.length} closures`}
+                  </span>
+                  <span className="space-y-1">
+                    {facility.classHours.length === 0 && <span className="text-ink-muted">None</span>}
+                    {facility.classHours.map((hour) => (
+                      <span key={hour.classHourId} className="flex flex-wrap items-center gap-2 text-ink">
+                        {`${DAY_LABEL[hour.dayOfWeek]} ${hour.startsAt.slice(0, 5)}–${hour.endsAt.slice(0, 5)} ${hour.label}`}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() =>
+                            void removeClassHour(hour.classHourId)
+                              .then(() => done('Class hours removed.'))
+                              .catch((caught: unknown) => done(failureText(caught, 'Couldn’t remove the class hours.') ?? '', true))
+                          }
+                        >
+                          Remove<span className="sr-only">{` ${hour.label} on ${DAY_LABEL[hour.dayOfWeek]}`}</span>
+                        </Button>
+                      </span>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </Card>
     </div>
