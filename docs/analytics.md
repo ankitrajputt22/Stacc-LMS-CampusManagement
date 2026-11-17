@@ -71,3 +71,10 @@ Each figure is one bounded aggregate query (`AreaAnalyticsQueries`); nothing is 
 ## Load tests (v0.16.8)
 
 `load/` holds the k6 suite: busy reads, an event registration burst, and a quiz start burst. Its README explains how to run it against a throwaway stack. The first baseline has not been recorded yet.
+
+## Look
+
+My progress shows three summary tiles (each with the orange underline) and the attendance and assignments by course as
+tables. Area analytics shows each area as a card with an icon tile and its figures in one divided row. The department
+view heads each department "CODE Name" with a Current session tag, Students by program and Offerings sub-headings, and
+the note in words. Course analytics shows Enrolled and Attendance tiles and the assignments and required pages as tables.
