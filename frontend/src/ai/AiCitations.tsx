@@ -19,7 +19,7 @@ export function AiCitations({ citations, headingLevel = 3, pageLink }: {
   const Heading = headingLevel === 3 ? 'h3' : 'h4'
   return (
     <div className="mt-3">
-      <Heading className="text-sm font-semibold text-ink">Sources</Heading>
+      <Heading className="text-lg font-bold text-ink">Sources</Heading>
       <ul className="mt-1.5 grid gap-2 sm:grid-cols-2">
         {citations.map((citation) => (
           <li

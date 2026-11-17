@@ -226,17 +226,16 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
       {turns.length > 0 && (
         <ol className="mt-4 space-y-3">
           {turns.map((turn, index) => (
-            <li key={`${index}-${turn.question}`} className="rounded-control border border-line px-3 py-3">
-              <p className="text-sm text-ink-muted">
-                <span className="font-medium text-ink">You asked:</span> {turn.question}
+            <li key={`${index}-${turn.question}`} className="rounded-panel border border-line px-4 py-4">
+              <p className="text-[0.95rem] text-ink">
+                <span className="block text-lg font-bold">You asked:</span> {turn.question}
                 {turn.style !== 'NORMAL' && ` (${STYLE_LABEL[turn.style]})`}
               </p>
-              <h3 className="mt-2 text-sm font-semibold text-ink">Answer</h3>
-              {/* Plain text: React shows it as text, never as HTML. */}
-              <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{turn.answer}</p>
+              <h3 className="mt-3 border-t border-line pt-3 text-lg font-bold text-ink">Answer</h3>
+              <p className="mt-1 text-[0.95rem] leading-7 break-words whitespace-pre-line text-ink">{turn.answer}</p>
               <AiCitations citations={turn.citations} pageLink={(pageId) => `/courses/${lmsCourseId}/pages/${pageId}`} />
               <div className="mt-2">
-                <Button size="sm" variant="ghost" disabled={turn.saved || saving !== null} onClick={() => void save(index)}>
+                <Button size="sm" variant={turn.saved ? 'secondary' : 'primary'} disabled={turn.saved || saving !== null} onClick={() => void save(index)}>
                   {turn.saved ? 'Saved' : saving === index ? 'Saving…' : 'Save answer'}
                   {!turn.saved && <span className="sr-only">{` to “${turn.question}”`}</span>}
                 </Button>
