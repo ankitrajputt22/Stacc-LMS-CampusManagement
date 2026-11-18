@@ -17,10 +17,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A short self-help article in one helpdesk category, in plain text. Requesters see it only once published and only
- * while its category is active; an archived article is kept but no longer changes. Nothing deletes an article.
- */
 @Entity
 @Table(name = "helpdesk_articles")
 public class HelpdeskArticle {
@@ -67,14 +63,12 @@ public class HelpdeskArticle {
     private Instant updatedAt;
 
     protected HelpdeskArticle() {
-        // Required by JPA.
     }
 
     public HelpdeskArticle(HelpdeskCategory category, String title, String body, Long byAccountId) {
         edit(category, title, body, byAccountId);
     }
 
-    /** Changes the category, title, and text. An archived article no longer changes. */
     public void edit(HelpdeskCategory category, String title, String body, Long byAccountId) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This article is archived and can no longer be changed.");
@@ -85,7 +79,6 @@ public class HelpdeskArticle {
         this.updatedByAccountId = Require.notNull(byAccountId, "byAccountId");
     }
 
-    /** Publishes a draft; the first publication time is kept. Publishing again changes nothing. */
     public void publish(Instant at, Long byAccountId) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This article is archived and can no longer be published.");
@@ -99,7 +92,6 @@ public class HelpdeskArticle {
         }
     }
 
-    /** Archives the article; archiving again changes nothing. */
     public void archive(Long byAccountId) {
         if (status != Status.ARCHIVED) {
             this.status = Status.ARCHIVED;
@@ -107,7 +99,6 @@ public class HelpdeskArticle {
         }
     }
 
-    /** How many of the words appear in the title or text; 0 when none do. Words are lower case. */
     public int matches(java.util.Collection<String> words) {
         String haystack = (title + "\n" + body).toLowerCase(java.util.Locale.ROOT);
         return (int) words.stream().filter(haystack::contains).count();

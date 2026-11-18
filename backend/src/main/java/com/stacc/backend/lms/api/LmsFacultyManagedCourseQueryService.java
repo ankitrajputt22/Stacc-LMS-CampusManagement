@@ -21,11 +21,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Every course offering a faculty member currently teaches, with its LMS course when it has one. Unlike the faculty
- * course list, it starts from official teaching assignments alone, so offerings without an LMS course and those
- * whose LMS course is archived are listed too: that is what a faculty member manages. It only reads.
- */
 @Service
 public class LmsFacultyManagedCourseQueryService {
 
@@ -44,20 +39,11 @@ public class LmsFacultyManagedCourseQueryService {
         this.courseEnrollments = courseEnrollments;
     }
 
-    /**
-     * The offerings of the faculty member behind this account, in course code order, in three queries, each with the
-     * section, the caller's teaching role, and how many students are enrolled. An assignment
-     * counts under {@link FacultyTeachingAccessService#isCurrentTeaching}: an active faculty profile and an active
-     * teaching assignment. Nothing is created here.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public List<LmsFacultyManagedCourseResponse> getManagedCourses(Long userAccountId) {
         if (userAccountId == null) {
             return List.of();
         }
-        // Consistent data has one assignment per offering; a stray second one never lists an offering twice.
         Map<Long, TeachingAssignment> offerings = new LinkedHashMap<>();
         for (TeachingAssignment assignment : teachingAssignments.findAllWithCourseDetailsByUserAccountId(userAccountId)) {
             if (FacultyTeachingAccessService.isCurrentTeaching(assignment, userAccountId)) {
@@ -79,7 +65,6 @@ public class LmsFacultyManagedCourseQueryService {
                 .toList();
     }
 
-    // The course details are read from the academic records every time. The LMS keeps no copy.
     private static LmsFacultyManagedCourseResponse responseOf(TeachingAssignment assignment, LmsCourse lmsCourse,
             long enrolledCount) {
         CourseOffering offering = assignment.getCourseOffering();

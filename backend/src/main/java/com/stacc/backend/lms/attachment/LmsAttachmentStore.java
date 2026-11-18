@@ -18,12 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * The one shared way for an LMS feature to keep files on its own records: the feature owns its attachment table and
- * decides who may download; this checks each upload with the study-material rules (size, allowed type, declared type,
- * first bytes), stores it in the private bucket under a server-made key, removes stored files when the record fails,
- * and opens a file for a download the feature has already allowed. Keys never reach a client.
- */
 @Component
 public class LmsAttachmentStore {
 
@@ -31,11 +25,9 @@ public class LmsAttachmentStore {
     public static final String STORAGE_UNAVAILABLE = "File storage is not available right now. Try again later.";
     private static final Logger LOGGER = LoggerFactory.getLogger(LmsAttachmentStore.class);
 
-    /** A stored file, ready to be recorded by its feature. */
     public record StoredFile(String objectKey, String fileName, String contentType, long sizeBytes) {
     }
 
-    /** An opened file for a download. The caller must close the content stream. */
     public record Download(String fileName, String contentType, long sizeBytes, InputStream content) {
     }
 
@@ -47,10 +39,6 @@ public class LmsAttachmentStore {
         this.maxFileBytes = properties.maxFileSize().toBytes();
     }
 
-    /**
-     * Checks every chosen file first, then stores them under {@code keyPrefix/<random>}. The prefix is made by the
-     * feature from IDs only, never from client text. An empty file field counts as no file.
-     */
     public List<StoredFile> storeAll(String keyPrefix, Collection<MultipartFile> files) {
         List<MultipartFile> chosen = files == null ? List.of() : files.stream()
                 .filter(file -> file != null && !(file.isEmpty() && (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank())))
@@ -78,7 +66,6 @@ public class LmsAttachmentStore {
         return stored;
     }
 
-    /** Removes files stored for a record that was then not saved. */
     public void removeQuietly(List<StoredFile> files) {
         for (StoredFile file : files) {
             try {

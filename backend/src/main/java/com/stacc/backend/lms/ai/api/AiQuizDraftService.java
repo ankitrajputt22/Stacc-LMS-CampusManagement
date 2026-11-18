@@ -19,12 +19,6 @@ import com.stacc.backend.lms.quiz.QuizType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Quiz drafts (v0.14.3): an ordinary draft quiz filled from reviewed, active bank questions of the chosen types first
- * (offered for practice, for a practice quiz), chosen at random; only when the bank is short, and the teacher allowed
- * it, AI drafts the gap into the bank as Needs review and those questions join the quiz too. Everything goes through
- * the bank's and the quiz's own services and rules, so publishing still needs every question reviewed.
- */
 @Service
 public class AiQuizDraftService {
 
@@ -43,7 +37,6 @@ public class AiQuizDraftService {
     }
 
     public AiQuizDraftResponse draft(Long accountId, Long lmsCourseId, AiQuizDraftRequest request) {
-        // The bank's own list checks faculty access first (the same 404 as everywhere else).
         List<LmsQuestion> chosen = new ArrayList<>(bank.list(accountId, lmsCourseId).stream()
                 .filter(question -> fits(question, request))
                 .toList());
@@ -82,7 +75,6 @@ public class AiQuizDraftService {
                 aiNote);
     }
 
-    /** A reviewed, active question of a chosen type, difficulty, and topic, offered for practice for a practice quiz. */
     static boolean fits(LmsQuestion question, AiQuizDraftRequest request) {
         return question.isActive() && question.getReviewStatus() == QuestionReviewStatus.REVIEWED
                 && request.questionTypes().contains(question.getType())

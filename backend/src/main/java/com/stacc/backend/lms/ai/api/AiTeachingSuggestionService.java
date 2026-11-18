@@ -28,11 +28,6 @@ import com.stacc.backend.lms.question.LmsQuestionBankService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Answers and rubrics (v0.14.5): a model answer to one bank question on request, and a rubric suggestion for one
- * assignment, both from the course's published content and both only shown to the teacher. Nothing is saved here: the
- * teacher saves through the normal question edit or rubric form, under their own rules.
- */
 @Service
 public class AiTeachingSuggestionService {
 
@@ -90,10 +85,6 @@ public class AiTeachingSuggestionService {
         }, AiRubricSuggestionResponse::insufficientContext);
     }
 
-    /**
-     * The suggested criteria as the rubric form needs them, or none: points rounded to 2 places, the last criterion
-     * absorbing any rounding so the total is exactly the assignment's maximum, levels capped at their criterion.
-     */
     static List<AiRubricSuggestionResponse.Criterion> criteria(RubricResult result, BigDecimal maxMarks) {
         if (result == null || result.criteria() == null || Boolean.TRUE.equals(result.insufficientContext())) {
             return List.of();

@@ -1,8 +1,6 @@
 import type { Hackathon, JudgeHackathon, OfficeHackathon } from '../types/hackathons'
 import { apiClient } from './apiClient'
 
-// The student and judge are always the signed-in account; the backend checks teams, judges, and the clock.
-
 export const getHackathons = async (signal?: AbortSignal) => (await apiClient.get<Hackathon[]>('/hackathons', { signal })).data
 export async function formHackathonTeam(hackathonId: number, name: string) {
   await apiClient.post(`/hackathons/${hackathonId}/teams`, { name })

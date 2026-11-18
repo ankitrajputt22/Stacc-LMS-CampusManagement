@@ -15,11 +15,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One campus service in the catalog, such as an ID card replacement. It is configurable data, never an enum: its code
- * is set once, it says which roles may request it, and whether requests need approval through an approval workflow,
- * named by its stable code. An inactive service takes no new requests; it is never deleted.
- */
 @Entity
 @Table(name = "campus_service_definitions")
 public class CampusServiceDefinition {
@@ -54,7 +49,6 @@ public class CampusServiceDefinition {
     @Column(name = "approval_required", nullable = false)
     private boolean approvalRequired;
 
-    // The workflow's stable code, not a relation: the catalog only names the workflow it starts.
     @Column(name = "approval_workflow_code", length = 80)
     private String approvalWorkflowCode;
 
@@ -67,7 +61,6 @@ public class CampusServiceDefinition {
     private Instant updatedAt;
 
     protected CampusServiceDefinition() {
-        // Required by JPA.
     }
 
     public CampusServiceDefinition(String code, Settings settings) {
@@ -75,7 +68,6 @@ public class CampusServiceDefinition {
         update(settings);
     }
 
-    /** Everything about a service but its code. */
     public record Settings(String name, String description, boolean active, boolean availableToStudent,
             boolean availableToFaculty, boolean approvalRequired, String approvalWorkflowCode) {
     }
@@ -88,10 +80,6 @@ public class CampusServiceDefinition {
         return normalized;
     }
 
-    /**
-     * Replaces everything but the code. A service is offered to at least one role; one that needs approval names its
-     * workflow, and one that does not names none. Whether the workflow exists is checked by the caller.
-     */
     public void update(Settings settings) {
         Require.notNull(settings, "settings");
         if (!settings.availableToStudent() && !settings.availableToFaculty()) {
@@ -108,7 +96,6 @@ public class CampusServiceDefinition {
                 : null;
     }
 
-    /** Whether an account holding these role codes may request the service. */
     public boolean isAvailableTo(Collection<String> roleCodes) {
         return (availableToStudent && roleCodes.contains("STUDENT")) || (availableToFaculty && roleCodes.contains("FACULTY"));
     }

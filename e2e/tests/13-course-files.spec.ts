@@ -9,7 +9,6 @@ test('a faculty member uploads and publishes a course file, and a student finds 
   await openCourseSection(page, 'Files')
   await expect(page.getByRole('heading', { level: 1, name: 'Files' })).toBeVisible()
 
-  // Every file is on a page; a new one starts as a draft that students cannot see.
   await page.getByRole('button', { name: 'Upload file' }).click()
   await page.getByLabel('Page', { exact: true }).selectOption({ label: 'Unit 1: Arrays and Linked Lists · Arrays and memory layout' })
   await page.getByLabel('File', { exact: true }).setInputFiles({
@@ -26,7 +25,6 @@ test('a faculty member uploads and publishes a course file, and a student finds 
   await row.getByRole('button', { name: `Publish ${FILE_TITLE}` }).click()
   await expect(row).toContainText('Visible')
 
-  // Keeping a file out of AI knowledge (v0.13.3) does not hide it from students.
   await row.getByRole('button', { name: `Exclude from AI ${FILE_TITLE}` }).click()
   await expect(row).toContainText('Kept out')
   await expect(row).toContainText('Visible')

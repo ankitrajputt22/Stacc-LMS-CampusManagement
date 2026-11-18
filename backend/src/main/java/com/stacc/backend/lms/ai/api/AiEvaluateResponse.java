@@ -5,7 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A practice answer's marks and feedback (v0.15.4); practice only, never an official mark, and nothing is stored. */
 public record AiEvaluateResponse(
         @Schema(nullable = true) BigDecimal marks,
         int maxMarks,

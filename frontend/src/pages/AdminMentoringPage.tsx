@@ -14,7 +14,6 @@ import { Alert, Button, Card, DataTable, PageHeader, TextField } from '../ui'
 import { formatMomentDay } from '../erp/requestWords'
 import type { MentoringPairing } from '../types/mentoring'
 
-/** /admin/mentoring: who mentors whom. Meetings and notes stay with each pair. */
 export function AdminMentoringPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

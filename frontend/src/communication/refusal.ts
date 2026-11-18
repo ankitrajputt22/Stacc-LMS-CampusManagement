@@ -1,6 +1,5 @@
 import { getApiError, getHttpStatus } from '../api/apiError'
 
-/** The message for a refused post: the backend's own for a 4xx, a 403 explained, nothing for a 401 (sign-out follows). */
 export function refusalText(failure: unknown, fallback: string): string | null {
   const status = getHttpStatus(failure)
   if (status === 401) {

@@ -31,7 +31,6 @@ import type { RoleName, UserDetail } from '../types/users'
 import { Alert, Badge, Button, Card, SelectField, TextField } from '../ui'
 import { refusal, ROLES, roleWord, SIGN_IN_AGAIN, statusTone, statusWord, USERS_DENIED } from '../users/userText'
 
-/** Sends a change, shows the backend's refusal in safe words, and puts the new account into the cache. */
 function useSave(accountId: number) {
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState(false)
@@ -449,14 +448,12 @@ function UserAccountView({ accountId }: { accountId: number }) {
   }
 }
 
-/** /admin/users/:accountId: one account with its status, roles, official details, password, and profiles. */
 export function AdminUserPage() {
   const { account } = useAuth()
   const { accountId } = useParams()
   const id = Number(accountId)
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])
   const valid = Number.isInteger(id) && id > 0
-  // The same request the account view makes; the shared cache sends it once.
   const loaded = useApiQuery(isAdmin && valid ? queryKeys.users.one(id) : null, (signal) => getUser(id, signal))
   const user = loaded.status === 'loaded' ? loaded.data : null
   return (

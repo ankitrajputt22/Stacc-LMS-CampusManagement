@@ -1,5 +1,3 @@
-/** Small icons of the sign-in page. All decorative: each sits on a control whose name says the same in words. */
-
 export function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-6 shrink-0">
@@ -19,7 +17,6 @@ export function EyeOffIcon() {
   )
 }
 
-/** Layered hills behind the sign-in form, in flat portal colours. Purely decorative. */
 export function PortalLandscape({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false" className={className}>

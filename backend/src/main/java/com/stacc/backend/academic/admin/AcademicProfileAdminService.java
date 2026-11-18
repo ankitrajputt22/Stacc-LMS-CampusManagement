@@ -27,11 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins find students and faculty and correct their official academic mapping: a student's roll number and profile
- * status, a faculty member's primary department and profile status. Accounts, names, contact details, a student's
- * program, and their enrollments are not changed here. Nothing is deleted.
- */
 @Service
 @Transactional
 public class AcademicProfileAdminService {
@@ -61,7 +56,6 @@ public class AcademicProfileAdminService {
         this.names = names;
     }
 
-    /** Students whose login ID or roll number contains the text, by login ID, at most 50. Empty text lists the first 50. */
     @Transactional(readOnly = true)
     public List<StudentProfileSummary> students(String query) {
         List<StudentProfile> found = students.searchByLoginIdOrRollNumber(contains(query), PageRequest.of(0, LIMIT));
@@ -86,7 +80,6 @@ public class AcademicProfileAdminService {
                 .getFirst();
     }
 
-    /** Faculty whose login ID contains the text, by login ID, at most 50, with how many offerings each teaches now. */
     @Transactional(readOnly = true)
     public List<FacultyProfileSummary> faculty(String query) {
         return summarizeFaculty(faculty.searchByLoginId(contains(query), PageRequest.of(0, LIMIT)));

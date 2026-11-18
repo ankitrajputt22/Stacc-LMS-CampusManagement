@@ -4,10 +4,6 @@ import com.stacc.backend.common.validation.Require;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/**
- * One choice of a choice question, or one accepted answer of a short-answer question. Part of its question: options are
- * replaced together when the question is edited and never shown to students with their {@code correct} flag.
- */
 @Embeddable
 public class LmsQuestionOption {
 
@@ -23,7 +19,6 @@ public class LmsQuestionOption {
     private boolean correct;
 
     protected LmsQuestionOption() {
-        // Required by JPA.
     }
 
     LmsQuestionOption(int position, String text, boolean correct) {

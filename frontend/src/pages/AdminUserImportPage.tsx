@@ -192,7 +192,6 @@ function accounts(count: number) {
   return count === 1 ? '1 account' : `${count} accounts`
 }
 
-/** /admin/users/import: check a CSV file of accounts, then create them all at once. */
 export function AdminUserImportPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

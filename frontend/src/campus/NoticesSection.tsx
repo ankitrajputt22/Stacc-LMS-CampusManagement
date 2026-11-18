@@ -13,7 +13,6 @@ import { Pager } from '../support/Pager'
 
 const PAGE_SIZE = 20
 
-/** The published notices for any role the account holds, newest first, each once. Title and message are plain text. */
 export function NoticesSection() {
   const [page, setPage] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -47,7 +46,6 @@ export function NoticesSection() {
                 <p className="mt-0.5 text-sm text-stacc-primary">
                   Published <time dateTime={notice.publishedAt}>{formatDateTime(notice.publishedAt)}</time>
                 </p>
-                {/* Plain text: React shows it as text, never as HTML. */}
                 <p className="mt-2 text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{notice.message}</p>
               </article>
             </li>

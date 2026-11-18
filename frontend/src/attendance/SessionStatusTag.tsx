@@ -6,7 +6,6 @@ const LABELS: Record<AttendanceSessionStatus, string> = {
   FINALIZED: 'Finalized',
 }
 
-/** A session's status as a badge: amber while open, green once students can see it. The word always says it. */
 export function SessionStatusTag({ status }: { status: AttendanceSessionStatus }) {
   return (
     <Badge tone={status === 'OPEN' ? 'warning' : 'success'}>

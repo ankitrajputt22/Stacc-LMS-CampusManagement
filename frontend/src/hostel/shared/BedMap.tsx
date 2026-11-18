@@ -62,7 +62,6 @@ function RoomDetailsForm({ room, onSaved }: { room: BedMapRoom; onSaved: () => P
   )
 }
 
-/** Room details behind a toggle, so the map stays a map. */
 function RoomDetails({ room, onSaved }: { room: BedMapRoom; onSaved: () => Promise<void> }) {
   const [open, setOpen] = useState(false)
   return (
@@ -126,10 +125,6 @@ function BedButton({ side, bed, onChanged }: { side: 'admin' | 'warden'; bed: Be
   )
 }
 
-/**
- * A hostel's rooms and beds, by block and floor, with each bed's state in words. Wardens and admins check students in;
- * admins also set room details and put free beds under maintenance. Only what the API sends is shown.
- */
 export function BedMap({ side, hostelId }: { side: 'admin' | 'warden'; hostelId: number }) {
   const queryClient = useQueryClient()
   const map = useApiQuery(queryKeys.hostel.bedMap(side, hostelId), (signal) => getHostelBedMap(side, hostelId, signal))

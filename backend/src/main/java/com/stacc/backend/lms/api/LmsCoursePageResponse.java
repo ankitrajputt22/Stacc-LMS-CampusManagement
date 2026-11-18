@@ -6,10 +6,6 @@ import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One published page of a course, as a student opens it, with the published pages around it. A page is a topic of a
- * module: it is shown only when the course, its module, and the page are all available to the student.
- */
 public record LmsCoursePageResponse(
         @Schema(example = "31")
         Long id,

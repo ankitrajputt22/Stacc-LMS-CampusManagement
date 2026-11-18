@@ -45,14 +45,12 @@ function AiState({ lmsCourseId, children }: { lmsCourseId: number | null; childr
   )
 }
 
-/** The published topics in course order, for the topic choices. Only what the backend sent as published. */
 function publishedTopics(content: LmsCourseContent): CourseTopicChoice[] {
   return content.modules.flatMap((module) =>
     module.topics.map((topic) => ({ id: topic.id, title: topic.title, moduleId: module.id, moduleTitle: module.title })),
   )
 }
 
-/** The published pages, modules, and files a student can summarise (v0.15.2), in course order. */
 function summaryChoices(content: LmsCourseContent): SummaryChoices {
   return {
     modules: content.modules.filter((module) => module.topics.length > 0).map((module) => ({ id: module.id, title: module.title })),
@@ -62,7 +60,6 @@ function summaryChoices(content: LmsCourseContent): SummaryChoices {
   }
 }
 
-/** The course's study sections (v0.15.8), each its own address. */
 const STUDY_SECTIONS = [
   { key: '', label: 'Overview' },
   { key: 'ask', label: 'Ask' },
@@ -76,10 +73,8 @@ function Assistant({ course, content }: { course: LmsCourseDetail; content: LmsC
   const { section } = useParams()
   const root = `/courses/${course.lmsCourseId}/ai`
   const current = STUDY_SECTIONS.find((choice) => choice.key === (section ?? '')) ?? STUDY_SECTIONS[0]
-  // Assignments still due, for hint-only help (v0.15.4); the backend decides whether each is open.
   const assignments = useApiQuery(queryKeys.lms.courseAssignments(course.lmsCourseId),
     (signal) => getCourseAssignments(course.lmsCourseId, signal))
-  // The time the page opened; a deadline passing while it is open only matters to the backend.
   const [openedAt] = useState(() => Date.now())
   const dueAssignments = assignments.status === 'loaded'
     ? assignments.data.filter((assignment) => new Date(assignment.dueAt).getTime() > openedAt)
@@ -180,10 +175,6 @@ function StudentAssistant({ lmsCourseId }: { lmsCourseId: number | null }) {
   return <Assistant course={course.data} content={content.data} />
 }
 
-/**
- * The AI Study Assistant of one course, at /courses/:lmsCourseId/ai, for accounts holding STUDENT. The backend checks
- * the course again on every request; answers are not kept once the page is left, and there is no chat history.
- */
 export function CourseAiPage() {
   const { account } = useAuth()
   const { lmsCourseId } = useParams()

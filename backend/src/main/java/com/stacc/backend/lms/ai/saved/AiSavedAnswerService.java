@@ -17,12 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Saved answers (v0.15.1, decision 6): a student saves only the AI answers they choose, at most 50 per course, in a
- * course they may use now. The student comes from the access token; the sources are rebuilt by the server from the
- * course's published content and the student's own notes, so nothing a page sends can name another source. Deleting
- * removes an answer for good.
- */
 @Service
 @Transactional
 public class AiSavedAnswerService {
@@ -32,7 +26,6 @@ public class AiSavedAnswerService {
     static final int MAX_SAVED = 50;
     static final String TOO_MANY = "You can keep at most 50 saved answers in a course. Delete one first.";
 
-    /** A source the page says the answer cited: only its kind, ID, and place; the title comes from the server. */
     public record SourceRef(String sourceType, long sourceId, Integer pageNumber, Integer slideNumber) {
     }
 
@@ -57,7 +50,6 @@ public class AiSavedAnswerService {
         return answers.findByLmsCourseIdAndUserAccountIdOrderByIdDesc(lmsCourseId, accountId);
     }
 
-    /** Saves within the quota: the account row is locked first and the count runs at READ COMMITTED. */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public AiSavedAnswer save(Long accountId, Long lmsCourseId, String question, String answer, List<SourceRef> cited) {
         requireCourse(accountId, lmsCourseId);
@@ -74,14 +66,12 @@ public class AiSavedAnswerService {
         }
     }
 
-    /** Deletes a saved answer of the student for good. */
     public void delete(Long accountId, Long lmsCourseId, Long savedAnswerId) {
         requireCourse(accountId, lmsCourseId);
         answers.delete(answers.findByIdAndLmsCourseIdAndUserAccountId(savedAnswerId, lmsCourseId, accountId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ANSWER_UNAVAILABLE)));
     }
 
-    /** Only sources the student can use now keep: published topics and files of the course, and the student's own notes. */
     static List<AiSavedSource> rebuild(List<SourceRef> cited, AiCourseKnowledge knowledge, AiStudentNoteKnowledge myNotes) {
         Set<String> seen = new LinkedHashSet<>();
         List<AiSavedSource> rebuilt = new ArrayList<>();
@@ -100,7 +90,6 @@ public class AiSavedAnswerService {
                 case "NOTE" -> myNotes.note(ref.sourceId()).ifPresent(note -> rebuilt.add(new AiSavedSource(position, "NOTE",
                         note.id(), note.title(), null, null, null, null)));
                 default -> {
-                    // Teacher documents and anything else are never a student's source.
                 }
             }
         }

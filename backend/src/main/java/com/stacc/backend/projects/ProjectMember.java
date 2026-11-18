@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A student's place on a project: requested, then active or declined; withdrawn or left later. Kept as history. */
 @Entity
 @Table(name = "project_members")
 public class ProjectMember {
@@ -53,7 +52,6 @@ public class ProjectMember {
     protected ProjectMember() {
     }
 
-    /** A join request, or the lead's own place when the project is created. */
     public ProjectMember(Project project, UserAccount account, String message, boolean lead, Instant at) {
         String text = message == null || message.isBlank() ? null : message.strip();
         if (text != null && text.length() > 500) {

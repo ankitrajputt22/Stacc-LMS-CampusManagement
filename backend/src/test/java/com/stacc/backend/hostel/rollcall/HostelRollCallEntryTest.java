@@ -10,7 +10,6 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.hostel.HostelAllocation;
 import org.junit.jupiter.api.Test;
 
-/** Nobody starts as absent: residents start unmarked, or out when the gate log says so, and are never unmarked again. */
 class HostelRollCallEntryTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T16:30:00Z");

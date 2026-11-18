@@ -267,7 +267,6 @@ function Requests({ ledger, kind }: { ledger: FeeLedger; kind: AdjustmentKind })
   )
 }
 
-/** ERP Fees: what the student owes and has paid, the fee structure, receipts, scholarships, and refunds. */
 export function ErpFeesPage({ tab = 'overview' }: { tab?: FeesTab }) {
   const fees = useApiQuery(queryKeys.erp.myFees(), getMyFees)
   return (

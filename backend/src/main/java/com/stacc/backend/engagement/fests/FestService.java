@@ -20,12 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Fests and their volunteers. The campus office runs fests, their schedules, and shifts, and accepts or declines
- * applications; accepting locks the shift row and counts accepted volunteers with a locking read, so a shift never
- * takes more than its places. Students and faculty read published fests, apply for shifts that have not started,
- * and withdraw their own applications. Only published or cancelled events are shown on a published schedule.
- */
 @Service
 @Transactional
 public class FestService {
@@ -71,8 +65,6 @@ public class FestService {
         this.clock = clock;
     }
 
-    // --- Students and faculty
-
     @Transactional(readOnly = true)
     public List<FestView> published(Long accountId) {
         return fests.findPublished().stream().map(fest -> view(fest, accountId, true)).toList();
@@ -103,8 +95,6 @@ public class FestService {
         });
         return view(application.getShift().getFest(), accountId, true);
     }
-
-    // --- The campus office
 
     @Transactional(readOnly = true)
     public List<FestView> all() {
@@ -140,7 +130,6 @@ public class FestService {
         return view(fest, null, false);
     }
 
-    /** Puts a campus event on the fest's schedule; an event belongs to at most one fest. */
     public FestView schedule(Long festId, Long eventId) {
         CampusFest fest = locked(festId);
         if (eventId == null || !events.existsById(eventId)) {
@@ -185,7 +174,6 @@ public class FestService {
                 found.getShift().getRoleTitle(), found.getAccount().getLoginId(), found.getNote(), found.getStatus(), found.getAppliedAt())).toList();
     }
 
-    /** Accepts (within the shift's places) or declines an open application. */
     public ApplicationView decide(Long applicationId, boolean accept) {
         Long shiftId = (applicationId == null ? Optional.<FestVolunteer>empty() : volunteers.findById(applicationId))
                 .map(found -> found.getShift().getId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, APPLICATION_NOT_FOUND));
@@ -203,8 +191,6 @@ public class FestService {
         return new ApplicationView(application.getId(), shift.getId(), shift.getRoleTitle(), application.getAccount().getLoginId(),
                 application.getNote(), application.getStatus(), application.getAppliedAt());
     }
-
-    // --- Helpers
 
     private FestView view(CampusFest fest, Long viewerId, boolean publicSchedule) {
         Map<Long, CampusEvent> scheduled = fest.getEventIds().isEmpty() ? Map.of()

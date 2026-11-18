@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A plain-text announcement of a club or sports group to its members. Kept as written; never changed or deleted. */
 @Entity
 @Table(name = "engagement_group_announcements")
 public class GroupAnnouncement {
@@ -41,7 +40,6 @@ public class GroupAnnouncement {
     private Instant createdAt;
 
     protected GroupAnnouncement() {
-        // Required by JPA.
     }
 
     public GroupAnnouncement(CampusGroup group, String title, String message, Long by, Instant now) {

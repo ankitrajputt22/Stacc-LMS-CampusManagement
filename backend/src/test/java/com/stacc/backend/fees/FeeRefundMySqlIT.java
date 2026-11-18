@@ -12,7 +12,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Two refunds of the whole credit approved at once: the account row lock lets only one through. A student of its own. */
 class FeeRefundMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

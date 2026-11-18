@@ -29,10 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Room changes: residents ask to move or propose a swap and answer swaps proposed to them; the hostel office carries
- * out approved changes. The warden decides through the approval task routes; this controller never decides.
- */
 @RestController
 @Tag(name = "Hostel room changes")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

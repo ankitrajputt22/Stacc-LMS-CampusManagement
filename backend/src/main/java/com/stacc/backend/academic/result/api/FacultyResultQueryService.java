@@ -18,11 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Read-only answers for faculty results: the course offerings they teach, and one offering's enrollments with
- * their results. Access comes from official teaching assignments through {@link FacultyTeachingAccessService}; an
- * offering the caller does not teach answers the same 404 as a missing one. No LMS data is read.
- */
 @Service
 @Transactional(readOnly = true)
 public class FacultyResultQueryService {
@@ -49,12 +44,6 @@ public class FacultyResultQueryService {
         this.results = results;
     }
 
-    /**
-     * The course offerings the faculty member behind this account teaches now, in course code order, read in one
-     * query. An offering counts whether or not it has an LMS course.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<ResultCourseOfferingResponse> getMyCourseOfferings(Long userAccountId) {
         if (userAccountId == null) {
             return List.of();
@@ -62,16 +51,11 @@ public class FacultyResultQueryService {
         return teachingAssignments.findAllWithCourseDetailsByUserAccountId(userAccountId).stream()
                 .filter(assignment -> FacultyTeachingAccessService.isCurrentTeaching(assignment, userAccountId))
                 .map(assignment -> ResultCourseOfferingResponse.of(assignment.getCourseOffering()))
-                // Consistent data never lists an offering twice. This keeps the answer clean if it is not.
                 .distinct()
                 .sorted(BY_COURSE_CODE)
                 .toList();
     }
 
-    /**
-     * Every official enrollment of an offering the caller teaches, withdrawn ones included, in student ID order,
-     * each with its result or null, in a fixed number of queries.
-     */
     public CourseResultRosterResponse getRoster(Long userAccountId, Long courseOfferingId) {
         TeachingAssignment teaching = teachingAccess.findCurrentTeachingAssignment(userAccountId, courseOfferingId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE));

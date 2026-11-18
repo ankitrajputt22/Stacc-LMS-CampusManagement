@@ -30,8 +30,6 @@ public class LmsStudentCourseController {
         this.courseQueryService = courseQueryService;
     }
 
-    // The rule below lets in a student account that may use the course-view feature. Which courses
-    // that student actually gets is a separate question, answered by the query from official records.
     @GetMapping("/my-courses")
     @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
     @Operation(
@@ -52,8 +50,6 @@ public class LmsStudentCourseController {
         return courseQueryService.getAccessibleCourses(AuthenticatedAccount.idFrom(accessToken));
     }
 
-    // The same rule as the course list: a student account that may use the course-view feature.
-    // Whether this student may open this particular course is decided by the query, every time.
     @GetMapping("/courses/{lmsCourseId}")
     @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
     @Operation(

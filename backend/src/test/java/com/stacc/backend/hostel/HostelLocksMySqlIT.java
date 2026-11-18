@@ -26,11 +26,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * The hostel's row-lock rules under truly simultaneous requests on MySQL: a student gets one current application per
- * session, a bed one active allocation, and an application one active allocation, whoever clicks first. Uses the demo
- * accounts cse25012 and cse24003, which no other MySQL test touches.
- */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HostelLocksMySqlIT extends MySqlIntegrationTest {
 
@@ -88,7 +83,6 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
         Long contestedBed = free.get(0).bedId();
         Long otherBed = free.get(1).bedId();
 
-        // Two students, one bed.
         List<Outcome<HostelAllocationResponse>> sameBed = Concurrently.run(
                 () -> allocations.allocate(admin, firstApplicationId, contestedBed),
                 () -> allocations.allocate(admin, secondApplicationId, contestedBed));
@@ -97,7 +91,6 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
         assertConflict(sameBed, HostelAllocationService.BED_TAKEN);
         Long waiting = sameBed.get(0).succeeded() ? secondApplicationId : firstApplicationId;
 
-        // One application, two beds: the student ends up in exactly one of them.
         Long anotherBed = allocations.availableBeds(null, null).stream()
                 .map(AvailableHostelBed::bedId)
                 .filter(bed -> !bed.equals(otherBed))
@@ -111,7 +104,6 @@ class HostelLocksMySqlIT extends MySqlIntegrationTest {
                 .satisfies(outcome -> assertThat(((ApiException) outcome.failure()).getStatus())
                         .isEqualTo(HttpStatus.CONFLICT));
 
-        // And in the stored data, whatever the order was.
         assertThat(jdbc.queryForObject("""
                 select count(*) from (select hostel_bed_id from hostel_allocations where status = 'ACTIVE'
                 group by hostel_bed_id having count(*) > 1) shared

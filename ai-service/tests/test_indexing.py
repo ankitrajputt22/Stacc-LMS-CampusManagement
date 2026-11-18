@@ -35,7 +35,6 @@ def test_no_extractable_text_fails_and_keeps_the_live_index(client):
     response = replace(client, [material(11, 1, "Broken", "broken.pdf", "PDF", b"not a pdf")], OTHER_FINGERPRINT)
     assert response.status_code == 422
     assert response.json()["code"] == "NO_INDEXABLE_CONTENT"
-    # The earlier index still answers for its own content.
     assert ask(client, "What does normalization reduce?").json()["insufficientContext"] is False
 
 
@@ -47,7 +46,6 @@ def test_replacement_is_atomic_and_cleans_old_versions(client, settings):
     versions = [entry.name for entry in course_dir.iterdir() if entry.is_dir()]
     assert len(versions) == 1
     assert (course_dir / "current").read_text() == versions[0]
-    # The old content is gone and the new content answers.
     assert ask(client, "What does normalization reduce?", FINGERPRINT).status_code == 409
     answer = ask(client, "Is a transaction atomic?", OTHER_FINGERPRINT).json()
     assert answer["citations"][0]["sourceId"] == 2

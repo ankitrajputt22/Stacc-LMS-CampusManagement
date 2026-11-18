@@ -42,16 +42,10 @@ import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Faculty member A (ACCOUNT_ID) teaches LMS course 7; faculty member B (OTHER_ACCOUNT_ID) teaches course 8.
- * The real faculty access service decides, over stand-in repositories, so an inactive profile, an inactive
- * teaching assignment, and an archived course are each shown to stop every change. The clock is fixed.
- */
 class LmsAssignmentManagementServiceTest {
 
     private static final Long ACCOUNT_ID = 21L;
     private static final Long OTHER_ACCOUNT_ID = 22L;
-    // The clock has nanoseconds; the database keeps microseconds.
     private static final Instant NOW = Instant.parse("2026-10-15T08:00:00.123456789Z");
     private static final Instant NOW_STORED = Instant.parse("2026-10-15T08:00:00.123456Z");
     private static final Instant DUE = Instant.parse("2026-10-20T18:29:00Z");
@@ -121,7 +115,6 @@ class LmsAssignmentManagementServiceTest {
         assertEquals(message, refused.getMessage());
     }
 
-    /** Every action faculty member A could try on course 7 and its assignment 5. */
     private List<Executable> everyActionOfA() {
         return List.of(
                 () -> service.create(ACCOUNT_ID, 7L, "Title", "Text", DUE, MARKS),
@@ -259,8 +252,6 @@ class LmsAssignmentManagementServiceTest {
         verify(assignments, never()).deleteById(any());
     }
 
-    // Alignment
-
     private com.stacc.backend.lms.outcome.LmsCourseOutcome outcome(LmsCourse lmsCourse, long id, int number, boolean active) {
         var created = new com.stacc.backend.lms.outcome.LmsCourseOutcome(lmsCourse, number, "Outcome " + number);
         ReflectionTestUtils.setField(created, "id", id);
@@ -284,7 +275,6 @@ class LmsAssignmentManagementServiceTest {
         assertEquals(List.of(co1), draft.getOutcomes());
         assertEquals(com.stacc.backend.lms.outcome.BloomLevel.APPLY, draft.getBloomLevel());
 
-        // An archived outcome cannot be newly added, another course's never, and an unknown one is refused too.
         for (List<Long> wanted : List.of(List.of(91L, 92L), List.of(93L), List.of(94L))) {
             assertRefused(HttpStatus.CONFLICT, LmsAssignmentManagementService.OUTCOMES_INVALID,
                     () -> service.align(ACCOUNT_ID, 5L, null, wanted));

@@ -2,10 +2,6 @@ package com.stacc.backend.auth.session;
 
 import java.util.Locale;
 
-/**
- * A short, human description of a browser, such as "Chrome on Android", for the list of signed-in devices. Only the
- * browser family and the system are kept: never the full User-Agent text, a version number, or an IP address.
- */
 final class Devices {
 
     private Devices() {

@@ -1,8 +1,6 @@
 import type { Idea, IdeaStatus } from '../types/innovation'
 import { apiClient } from './apiClient'
 
-// The submitter and reviewer are always the signed-in account; the backend checks every idea.
-
 export const getMyIdeas = async (signal?: AbortSignal) => (await apiClient.get<Idea[]>('/innovation/ideas/me', { signal })).data
 export const submitIdea = async (input: { title: string; problem: string; solution: string }) =>
   (await apiClient.post<Idea>('/innovation/ideas', input)).data

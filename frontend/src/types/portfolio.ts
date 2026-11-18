@@ -1,5 +1,3 @@
-// The portfolio API exactly as the backend sends it (PortfolioService). Records are read live from their sources.
-
 export type PortfolioKind = 'ACHIEVEMENT' | 'PROJECT' | 'COURSE' | 'SKILL' | 'SERVICE' | 'OTHER'
 export type PortfolioVerification = 'NONE' | 'REQUESTED' | 'VERIFIED' | 'DECLINED'
 
@@ -9,10 +7,8 @@ export type PortfolioItem = {
   itemId: number
   kind: PortfolioKind
   title: string
-  /** Plain text. */
   description: string | null
   occurredOn: string | null
-  /** Always one https:// address. */
   link: string | null
   verification: PortfolioVerification
   verifierLoginId: string | null

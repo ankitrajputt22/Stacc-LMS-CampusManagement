@@ -7,10 +7,6 @@ import type {
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
-// The client's base URL already ends in /api. The faculty member is the one in the access token; no
-// faculty, profile, or student ID is ever sent from here.
-
-/** The students' submissions for an assignment, each summed up by its latest attempt, newest first. */
 export async function getFacultyAssignmentSubmissions(
   assignmentId: number,
   signal?: AbortSignal,
@@ -22,7 +18,6 @@ export async function getFacultyAssignmentSubmissions(
   return response.data
 }
 
-/** One student's submission with every attempt, newest first. */
 export async function getFacultySubmissionDetail(
   assignmentId: number,
   submissionId: number,
@@ -35,13 +30,11 @@ export async function getFacultySubmissionDetail(
   return response.data
 }
 
-/** Saves the attempt's grade, or revises it. The student sees it at once. */
 export async function gradeSubmissionAttempt(attemptId: number, input: LmsGradeInput): Promise<LmsSubmissionGrade> {
   const response = await apiClient.put<LmsSubmissionGrade>(`/lms/faculty/submission-attempts/${attemptId}/grade`, input)
   return response.data
 }
 
-/** Downloads a student's submitted file for review through the API, never from storage directly. */
 export async function downloadFacultySubmissionAttachment(attachmentId: number): Promise<Blob> {
   const response = await apiClient.get<Blob>(`/lms/faculty/submission-attachments/${attachmentId}/download`, {
     responseType: 'blob',

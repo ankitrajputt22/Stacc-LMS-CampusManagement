@@ -1,4 +1,3 @@
-/** Stacc's round emblem: an open book under the "ST" monogram. Decorative; the name is always written beside it. */
 export function PortalEmblem({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false" className={className}>

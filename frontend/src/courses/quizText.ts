@@ -22,7 +22,6 @@ export function attemptStateLabel(state: QuizAttemptState): string {
   }
 }
 
-/** Whether the student may start the quiz now, in words, exactly as the backend decided it. */
 export function quizStatusText(quiz: StudentQuiz): string {
   if (quiz.openAttemptId !== null) {
     return 'You have an attempt in progress.'
@@ -39,7 +38,6 @@ export function quizStatusText(quiz: StudentQuiz): string {
   return 'Open.'
 }
 
-/** "1 of 2 attempts used", or "1 attempt used" when attempts are unlimited. */
 export function attemptsText(quiz: Pick<StudentQuiz, 'maxAttempts' | 'attempts'>): string {
   const used = quiz.attempts.length
   return quiz.maxAttempts === null
@@ -47,7 +45,6 @@ export function attemptsText(quiz: Pick<StudentQuiz, 'maxAttempts' | 'attempts'>
     : `${used} of ${quiz.maxAttempts} ${quiz.maxAttempts === 1 ? 'attempt' : 'attempts'} used`
 }
 
-/** Seconds as a clock, such as 12:05 or 1:02:09. Never below zero. */
 export function clockText(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds))
   const hours = Math.floor(seconds / 3600)
@@ -56,7 +53,6 @@ export function clockText(totalSeconds: number): string {
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${rest}` : `${minutes}:${rest}`
 }
 
-/** The answer as the form holds it. */
 export type AnswerDraft = { selected: number[]; trueFalse: boolean | null; text: string }
 
 export function draftOfQuestion(question: QuizAttemptQuestion): AnswerDraft {
@@ -67,7 +63,6 @@ export function draftOfQuestion(question: QuizAttemptQuestion): AnswerDraft {
   }
 }
 
-/** What the API is sent: only the part the question's type takes. */
 export function inputOfDraft(question: Pick<QuizAttemptQuestion, 'type'>, draft: AnswerDraft): QuizAnswerInput {
   switch (question.type) {
     case 'SINGLE_CHOICE':
@@ -100,7 +95,6 @@ export function outcomeLabel(outcome: QuizAnswerOutcome): string {
   }
 }
 
-/** Why a handed-in attempt shows no result yet, in words; null once it is shown or before hand-in. */
 export function resultWaitText(status: QuizResultStatus): string | null {
   switch (status) {
     case 'WAITING_FOR_MARKING':
@@ -112,7 +106,6 @@ export function resultWaitText(status: QuizResultStatus): string | null {
   }
 }
 
-/** An attempt's result in the attempts list: the score, or why there is none yet. */
 export function attemptResultText(attempt: Pick<QuizAttemptSummary, 'resultStatus' | 'score'>, totalMarks: number): string {
   switch (attempt.resultStatus) {
     case 'RELEASED':

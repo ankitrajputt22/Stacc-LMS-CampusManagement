@@ -14,7 +14,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Two teachers adding the 50th document at once: the course row lock lets exactly one through. */
 class AiTeacherDocumentMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -35,7 +34,6 @@ class AiTeacherDocumentMySqlIT extends MySqlIntegrationTest {
     @Test
     void theFiftiethPlaceIsTakenOnce() throws Exception {
         Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
-        // The last course emp1021 teaches; no other test writes teacher documents.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> facultyAccess.canAccessCourse(faculty, id)).reduce((first, second) -> second).orElseThrow();
         long existing = documents.countByLmsCourseIdAndStatus(course, AiTeacherDocument.Status.ACTIVE);

@@ -6,7 +6,6 @@ import { SectionState } from '../courses/SectionState'
 import { Card } from '../ui'
 import { TournamentTables } from './TournamentTables'
 
-/** Published tournaments on the campus Sports tab: matches, text scores, and standings. Read only. */
 export function TournamentsSection() {
   const tournaments = useApiQuery(queryKeys.engagement.tournaments(), (signal) => getTournaments(signal))
   return (

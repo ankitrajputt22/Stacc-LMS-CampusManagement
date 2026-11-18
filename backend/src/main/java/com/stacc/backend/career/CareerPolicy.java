@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** The college's placement policy: one row. With oneAcceptedPlacement, a student who accepted a placement applies to no more. */
 @Entity
 @Table(name = "career_policy")
 public class CareerPolicy {
@@ -22,7 +21,6 @@ public class CareerPolicy {
     private Instant updatedAt;
 
     protected CareerPolicy() {
-        // Required by JPA.
     }
 
     public void change(boolean oneAcceptedPlacement, Instant at) {

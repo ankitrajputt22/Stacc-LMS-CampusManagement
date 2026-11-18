@@ -7,11 +7,6 @@ import { parseCourseId } from './courseRoute'
 import { CourseFrame, CourseNav } from './CourseNav'
 import { useLmsCourse } from './useLmsCourse'
 
-/**
- * Every student page of one course, under /courses/:lmsCourseId, with the course navigation: Home, Modules, Pages,
- * Assignments, Quizzes, Announcements, Files, Syllabus, and the AI Study Assistant. Each page still asks the backend for its own
- * data and shows its own states; the navigation appears once the course itself has loaded.
- */
 export function CourseLayout() {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)

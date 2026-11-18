@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Read-only lookups for analytics. Each one is bounded by the courses or the person it is asked for. */
 public interface AnalyticsQueries extends Repository<LmsAssignment, Long> {
 
     @Query("select a from LmsAssignment a where a.lmsCourse.id in :courseIds "

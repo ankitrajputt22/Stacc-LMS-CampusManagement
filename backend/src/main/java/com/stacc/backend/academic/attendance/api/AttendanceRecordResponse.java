@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One student on a session's roster. No enrollment, profile, or account ID is sent, and no marker. */
 public record AttendanceRecordResponse(
         @Schema(description = "The ID to send when saving this student's status.", example = "101")
         Long attendanceRecordId,

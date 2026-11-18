@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-/** An offer made to a selected applicant, which the student accepts or declines once. */
 @Entity
 @Table(name = "career_offers")
 public class CareerOffer {
@@ -50,7 +49,6 @@ public class CareerOffer {
     private Instant respondedAt;
 
     protected CareerOffer() {
-        // Required by JPA.
     }
 
     public CareerOffer(CareerApplication application, String roleTitle, String compensation, Instant respondBy, Instant now) {

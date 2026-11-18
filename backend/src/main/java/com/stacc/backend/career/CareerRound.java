@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** When and where one stage of an opportunity takes place. */
 @Entity
 @Table(name = "career_rounds")
 public class CareerRound {
@@ -35,7 +34,6 @@ public class CareerRound {
     private String venue;
 
     protected CareerRound() {
-        // Required by JPA.
     }
 
     public CareerRound(CareerOpportunity opportunity, int stageIndex, Instant startsAt, String venue) {

@@ -41,7 +41,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only students with the quiz permission take quizzes, and an attempt never carries what gives its answers away. */
 class LmsStudentQuizControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 31;

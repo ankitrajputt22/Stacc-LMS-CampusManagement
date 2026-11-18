@@ -5,7 +5,6 @@ import java.time.Instant;
 
 import com.stacc.backend.lms.content.LmsTextFormat;
 
-/** Quiz settings for tests. */
 public final class QuizFixtures {
 
     private QuizFixtures() {

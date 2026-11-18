@@ -11,7 +11,6 @@ const STATUS_TONES: Record<HelpdeskTicketStatus, string> = {
   CLOSED: 'border-line-strong bg-surface-muted text-ink-muted',
 }
 
-/** The status as a word, lightly tinted; never only a colour. */
 export function TicketStatusTag({ status }: { status: HelpdeskTicketStatus }) {
   return (
     <span className={`${tagClasses} ${STATUS_TONES[status] ?? 'border-line-strong text-ink'}`}>
@@ -21,7 +20,6 @@ export function TicketStatusTag({ status }: { status: HelpdeskTicketStatus }) {
   )
 }
 
-/** The priority as a word. High and Urgent get a calm warm tint, nothing that flashes. */
 export function TicketPriorityTag({ priority }: { priority: HelpdeskTicketPriority }) {
   const tone =
     priority === 'URGENT'

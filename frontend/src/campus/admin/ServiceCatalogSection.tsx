@@ -20,17 +20,12 @@ import { CheckboxField } from './CheckboxField'
 type Field = 'code' | 'name' | 'audience' | 'workflow'
 
 type ServiceFormProps = {
-  /** The service being edited, or none to add one. */
   service: AdminCampusService | null
   workflows: ApprovalWorkflowSummary[] | null
   onSaved: (message: string) => void
   onClose: () => void
 }
 
-/**
- * Add or edit a service. The code is typed once and read-only afterwards. When approval is required, the workflow is
- * chosen from the approval engine's own list, never typed; the backend checks again that it exists and is active.
- */
 function ServiceForm({ service, workflows, onSaved, onClose }: ServiceFormProps) {
   const prefix = service ? `campus-service-${service.serviceId}` : 'campus-service-new'
   const busyRef = useRef(false)
@@ -45,7 +40,6 @@ function ServiceForm({ service, workflows, onSaved, onClose }: ServiceFormProps)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<{ field: Field | null; text: string } | null>(null)
 
-  // Active workflows can be chosen; a service's current one stays listed even if it was made inactive meanwhile.
   const choices = (workflows ?? []).filter((item) => item.active || item.code === service?.approvalWorkflowCode)
 
   function fail(field: Field | null, text: string, focusId?: string) {
@@ -214,7 +208,6 @@ function ServiceForm({ service, workflows, onSaved, onClose }: ServiceFormProps)
   )
 }
 
-/** Every campus service, active or not, by code, with Add service and Edit. There is no Delete. */
 export function ServiceCatalogSection() {
   const services = useApiRequest(getAdminCampusServices)
   const workflows = useApiRequest(getApprovalWorkflows)

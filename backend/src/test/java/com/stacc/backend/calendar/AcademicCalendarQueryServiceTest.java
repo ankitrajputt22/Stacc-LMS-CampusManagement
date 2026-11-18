@@ -102,7 +102,6 @@ class AcademicCalendarQueryServiceTest {
                 course.getCourseOffering().getCourse().getName(), new BigDecimal("4.00"), 3, "BTECH-CSE", "2026-27", status);
     }
 
-    /** Answers the deadline query the way the database would: by course, status, and the half-open range. */
     @SuppressWarnings("unchecked")
     private void deadlinesStored(LmsAssignment... stored) {
         when(assignments.findAllByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqualAndDueAtLessThanOrderByDueAtAscIdAsc(
@@ -161,7 +160,6 @@ class AcademicCalendarQueryServiceTest {
     @Test
     void aDeadlineNearMidnightLandsOnTheDayOfTheRequestedTimeZone() {
         when(studentCourses.getAccessibleCourses(ACCOUNT)).thenReturn(List.of(studentCourse(dataStructures)));
-        // 23:59 on 20 October in India, and one minute past midnight on 21 October there.
         LmsAssignment lastMinute = assignment(1, dataStructures, "2026-10-20T18:29:00Z", LmsContentStatus.PUBLISHED);
         LmsAssignment pastMidnight = assignment(2, dataStructures, "2026-10-20T18:31:00Z", LmsContentStatus.PUBLISHED);
         deadlinesStored(lastMinute, pastMidnight);
@@ -171,7 +169,6 @@ class AcademicCalendarQueryServiceTest {
                 .extracting(StudentAssignmentDeadline::assignmentId).containsExactly(1L);
         assertThat(service.getMyCalendar(student, OCT_21, OCT_21, KOLKATA).studentAssignmentDeadlines())
                 .extracting(StudentAssignmentDeadline::assignmentId).containsExactly(2L);
-        // In New York both are on the afternoon of 20 October.
         assertThat(service.getMyCalendar(student, OCT_20, OCT_20, "America/New_York").studentAssignmentDeadlines())
                 .extracting(StudentAssignmentDeadline::assignmentId).containsExactly(1L, 2L);
         assertThat(service.getMyCalendar(student, OCT_21, OCT_21, "America/New_York").studentAssignmentDeadlines())
@@ -184,7 +181,6 @@ class AcademicCalendarQueryServiceTest {
         CalendarViewer student = new CalendarViewer(ACCOUNT, true, false, false);
 
         service.getMyCalendar(student, OCT_20, OCT_20, KOLKATA);
-        // The day daylight saving time ends in New York has 25 hours.
         service.getMyCalendar(student, LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 1), "America/New_York");
 
         verify(assignments).findAllByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqualAndDueAtLessThanOrderByDueAtAscIdAsc(
@@ -228,7 +224,6 @@ class AcademicCalendarQueryServiceTest {
     void aFacultyMemberGetsDraftAndPublishedDeadlinesOfCoursesTheyTeachButNotArchivedOnes() {
         when(events.facultyScope(ACCOUNT)).thenReturn(facultyScope);
         when(events.findVisible(facultyScope, OCT_1, OCT_31)).thenReturn(List.of(holiday));
-        // The faculty course list already leaves out archived LMS courses and courses taught by someone else.
         when(facultyCourses.getAccessibleCourses(ACCOUNT))
                 .thenReturn(List.of(facultyCourse(dataStructures, "PUBLISHED"), facultyCourse(databases, "DRAFT")));
         deadlinesStored(

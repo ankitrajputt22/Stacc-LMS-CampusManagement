@@ -70,7 +70,6 @@ test.describe('Signing in', () => {
     expect(seen.cookies).not.toContain('STACC_SESSION')
     expect(seen.session).toBe(0)
     expect(seen.local).toBe(0)
-    // The HttpOnly cookie is there for the browser to send; the page simply cannot read it.
     const cookies = await page.context().cookies()
     expect(cookies.find((cookie) => cookie.name === 'STACC_SESSION')).toMatchObject({ httpOnly: true, sameSite: 'Lax' })
   })

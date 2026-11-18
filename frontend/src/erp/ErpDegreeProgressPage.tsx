@@ -47,7 +47,6 @@ function Summary({ progress }: { progress: DegreeProgress }) {
   )
 }
 
-/** Academics → Degree progress: credits earned towards each requirement of the student's programme. */
 export function ErpDegreeProgressPage() {
   const progress = useApiQuery(queryKeys.erp.degreeProgress(), getMyDegreeProgress)
   const [open, setOpen] = useState<CourseType | null>(null)

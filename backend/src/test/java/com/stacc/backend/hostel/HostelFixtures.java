@@ -18,7 +18,6 @@ import com.stacc.backend.identity.student.StudentProfile;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up accounts, students, inventory, applications, and approvals for the hostel tests. */
 final class HostelFixtures {
 
     static final Instant NOW = Instant.parse("2026-10-26T09:30:00.123456789Z");
@@ -61,7 +60,6 @@ final class HostelFixtures {
         return withId(new HostelBed(room, number), id);
     }
 
-    /** A pending approval request of a one-step ADMIN workflow, as the HOSTEL_APPLICATION workflow is set up. */
     static ApprovalRequest approval(long id, UserAccount requester) {
         ApprovalWorkflowDefinition workflow = withId(new ApprovalWorkflowDefinition("HOSTEL_APPLICATION",
                 "Hostel Application Approval", null, List.of(new StepSpec("Administrative Approval", new Role(RoleName.ADMIN)))), 9);

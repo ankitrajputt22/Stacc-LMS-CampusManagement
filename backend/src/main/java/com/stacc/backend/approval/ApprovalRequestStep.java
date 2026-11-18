@@ -18,10 +18,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One step of an approval request, copied from the workflow when the request started: its number, name, and the code of
- * the role that decides it. Only the request changes it, and the decision records who made it and when.
- */
 @Entity
 @Table(name = "approval_request_steps")
 public class ApprovalRequestStep {
@@ -49,8 +45,6 @@ public class ApprovalRequestStep {
     @Column(name = "approver_relationship", length = 40, updatable = false)
     private ApproverRelationship approverRelationship;
 
-    // The one account that decides this step, resolved from the relationship when the request started; null for a
-    // step any holder of the role may decide.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_approver_user_account_id")
     private UserAccount assignedApprover;
@@ -78,7 +72,6 @@ public class ApprovalRequestStep {
     private Instant updatedAt;
 
     protected ApprovalRequestStep() {
-        // Required by JPA.
     }
 
     ApprovalRequestStep(ApprovalRequest approvalRequest, int stepOrder, String stepName, String requiredRoleCode,

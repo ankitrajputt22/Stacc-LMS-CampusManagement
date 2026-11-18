@@ -12,10 +12,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A student's private note in one LMS course (v0.13.6), kept by IDs: the owner is the account in the token when it was
- * written. Only the owner reads it, and only their own AI Study Assistant uses it. The owner may delete it for real.
- */
 @Entity
 @Table(name = "ai_student_notes")
 public class AiStudentNote {
@@ -48,7 +44,6 @@ public class AiStudentNote {
     private Instant updatedAt;
 
     protected AiStudentNote() {
-        // Required by JPA.
     }
 
     public AiStudentNote(Long lmsCourseId, Long userAccountId, String title, String content) {

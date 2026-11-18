@@ -47,7 +47,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 
-/** AI drafts become NEEDS_REVIEW bank questions with their sources; anything uncited or off-type is left out. */
 class AiQuestionBankDraftServiceTest {
 
     private static final long FACULTY = 5L;
@@ -120,7 +119,6 @@ class AiQuestionBankDraftServiceTest {
         assertThat(choice.getSources()).extracting(source -> source.getSourceType() + ":" + source.getSourceId() + ":" + source.getTitle()
                 + ":" + source.getPageId()).containsExactly("TOPIC:1:Normal forms:1");
         assertThat(added.getValue().get(1).content().options()).extracting(LmsQuestionContentOptionText::of).containsExactly("3NF");
-        // Checks are kept as suggestions; a duplicate the request never sent, and an unknown level, are dropped.
         assertThat(added.getValue().get(0).checks().getDuplicateOfQuestionId()).isEqualTo(41L);
         assertThat(added.getValue().get(0).checks().isInPreviousPaper()).isTrue();
         assertThat(added.getValue().get(0).checks().getSuggestedDifficulty()).isEqualTo(QuestionDifficulty.HARD);
@@ -146,7 +144,6 @@ class AiQuestionBankDraftServiceTest {
         verify(bank, never()).addAiDrafts(anyLong(), anyLong(), any());
     }
 
-    /** Reads an option's text, for assertions. */
     private static final class LmsQuestionContentOptionText {
         static String of(com.stacc.backend.lms.question.LmsQuestionContent.Option option) {
             return option.text();

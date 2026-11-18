@@ -6,7 +6,6 @@ import { SectionState } from '../../courses/SectionState'
 import { Card } from '../../ui'
 import { HostelNoticeManager } from './HostelNotices'
 
-/** Hostel Management, Notices: the hostel office's notices for every hostel. */
 export function NoticesSection() {
   const hostels = useApiQuery(queryKeys.hostel.occupancy('admin'), (signal) => getHostelOccupancy('admin', signal))
   if (hostels.status !== 'loaded') {

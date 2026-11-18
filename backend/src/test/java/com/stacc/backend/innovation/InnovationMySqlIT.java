@@ -10,7 +10,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** A decision and a withdrawal of the same idea at once never both succeed; reviews and lists run on MySQL. Its own idea. */
 class InnovationMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

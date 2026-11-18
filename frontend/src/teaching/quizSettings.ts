@@ -14,7 +14,6 @@ export function quizTypeLabel(type: QuizType): string {
   return type === 'PRACTICE' ? 'Practice' : 'Graded'
 }
 
-/** The quiz settings as the form holds them: numbers and times as typed, times in the browser's own time zone. */
 export type QuizSettingsDraft = {
   title: string
   instructions: string
@@ -84,7 +83,6 @@ const LATEST_YEAR = 9999
 
 type Checked = { errors: Partial<Record<QuizSettingsField, string>>; input: LmsQuizSettingsInput | null }
 
-// An optional whole number from 1 to max; empty means no limit.
 function wholeNumber(value: string, max: number, wrong: string, errors: Checked['errors'], field: QuizSettingsField) {
   const typed = value.trim()
   if (typed === '') {
@@ -112,10 +110,6 @@ function moment(value: string, name: string, errors: Checked['errors'], field: Q
   return time
 }
 
-/**
- * Checks the settings the way the backend does and turns them into what the API is sent: times as absolute moments,
- * empty optional values as no limit. The backend checks everything again.
- */
 export function checkSettings(draft: QuizSettingsDraft): Checked {
   const errors: Checked['errors'] = {}
   const title = draft.title.trim()
@@ -172,7 +166,6 @@ function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`
 }
 
-/** The quiz's size and rules in a few words, such as "5 questions · 10 marks · 20 minutes · 1 attempt". */
 export function quizFacts(quiz: Pick<LmsQuizSummary, 'questionCount' | 'totalMarks' | 'timeLimitMinutes' | 'maxAttempts'>): string {
   return [
     plural(quiz.questionCount, 'question', 'questions'),
@@ -182,7 +175,6 @@ export function quizFacts(quiz: Pick<LmsQuizSummary, 'questionCount' | 'totalMar
   ].join(' · ')
 }
 
-/** When the quiz opens, is due, and closes, in the browser's own time zone; nothing when none is set. */
 export function quizWindow(quiz: Pick<LmsQuizSummary, 'availableFrom' | 'dueAt' | 'availableUntil'>): string | null {
   const parts = [
     quiz.availableFrom && `Opens ${formatDateTime(quiz.availableFrom)}`,

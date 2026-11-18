@@ -7,7 +7,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 
-/** A bank question to add to a draft quiz, with its marks in this quiz. */
 public record LmsQuizQuestionAddRequest(
         @Schema(description = "An active question of the same course's bank.", example = "41")
         @NotNull(message = "Choose a question")

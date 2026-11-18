@@ -10,7 +10,6 @@ import java.time.Instant;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** Catalog entries are checked, a loan renews once before it is due, and overdue is worked out from the due time. */
 class LibraryRulesTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

@@ -20,7 +20,6 @@ function counts(map: Record<string, number>): Figure[] {
   return Object.entries(map).map(([status, value]) => [words(status), value])
 }
 
-/** One area as a list of figures; a missing rate shows a dash with the reason. */
 function Area({ title, icon, figures, empty }: { title: string; icon: NavIconName; figures: Figure[]; empty?: string }) {
   const id = useId()
   return (
@@ -47,7 +46,6 @@ function Area({ title, icon, figures, empty }: { title: string; icon: NavIconNam
   )
 }
 
-/** /areas: live counts per campus area; the backend includes only the areas the account manages. */
 export function AreaAnalyticsPage() {
   const { account } = useAuth()
   const allowed = hasAnyRole(account?.roles ?? [], ['ADMIN', 'LIBRARIAN', 'PLACEMENT_OFFICER'])

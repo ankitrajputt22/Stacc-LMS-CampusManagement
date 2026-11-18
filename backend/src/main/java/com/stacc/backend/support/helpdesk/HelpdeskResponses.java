@@ -6,10 +6,6 @@ import java.util.List;
 import com.stacc.backend.auth.account.UserAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The helpdesk as clients see it. People appear only by login ID; no account ID, password hash, role, or permission is
- * ever included, and no entity is sent as it is.
- */
 public final class HelpdeskResponses {
 
     private HelpdeskResponses() {
@@ -19,7 +15,6 @@ public final class HelpdeskResponses {
         return account == null ? null : account.getLoginId();
     }
 
-    /** A category that can be chosen for a new ticket. */
     public record HelpdeskCategoryResponse(
             @Schema(example = "3") Long categoryId,
             @Schema(example = "LMS") String code,
@@ -32,7 +27,6 @@ public final class HelpdeskResponses {
         }
     }
 
-    /** A category as admins manage it, active or not. */
     public record HelpdeskCategoryAdminResponse(
             @Schema(example = "3") Long categoryId,
             @Schema(example = "LMS") String code,
@@ -48,7 +42,6 @@ public final class HelpdeskResponses {
         }
     }
 
-    /** One ticket in a list: no description, messages, or history. */
     public record HelpdeskTicketSummary(
             @Schema(example = "42") Long ticketId,
             @Schema(example = "STC-000042") String ticketNumber,
@@ -74,11 +67,9 @@ public final class HelpdeskResponses {
         }
     }
 
-    /** An account a ticket can be assigned to: an active admin account, by login ID only. */
     public record HelpdeskAssigneeResponse(@Schema(example = "adm1001") String loginId) {
     }
 
-    /** One page of tickets, newest first. */
     public record HelpdeskTicketPage(
             List<HelpdeskTicketSummary> items,
             @Schema(example = "0") int page,
@@ -87,7 +78,6 @@ public final class HelpdeskResponses {
             @Schema(example = "2") int totalPages) {
     }
 
-    /** One message of the conversation. */
     public record HelpdeskMessageResponse(
             @Schema(example = "7") Long messageId,
             @Schema(example = "adm1001") String authorLoginId,
@@ -101,7 +91,6 @@ public final class HelpdeskResponses {
         }
     }
 
-    /** One entry of the audit trail. */
     public record HelpdeskHistoryResponse(
             @Schema(allowableValues = {"CREATED", "MESSAGE_ADDED", "STATUS_CHANGED", "PRIORITY_CHANGED", "ASSIGNED",
                     "UNASSIGNED"}) String action,
@@ -116,7 +105,6 @@ public final class HelpdeskResponses {
         }
     }
 
-    /** One ticket in full: the original description, then the conversation and the history, oldest first. */
     public record HelpdeskTicketDetail(
             @Schema(example = "42") Long ticketId,
             @Schema(example = "STC-000042") String ticketNumber,
@@ -144,7 +132,6 @@ public final class HelpdeskResponses {
             @Schema(description = "Whether the caller, as its requester, may reopen it now.") boolean canReopen,
             @Schema(description = "Whether the caller, as its requester, may rate it now.") boolean canRate) {
 
-        /** The ticket as this caller may see it: internal notes only for the support side. */
         static HelpdeskTicketDetail of(HelpdeskTicket ticket, List<HelpdeskTicketMessage> messages,
                 List<HelpdeskTicketHistory> history, boolean supportSide, boolean owner, Instant now) {
             HelpdeskCategory category = ticket.getCategory();

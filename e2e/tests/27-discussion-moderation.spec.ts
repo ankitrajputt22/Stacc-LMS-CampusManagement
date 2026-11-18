@@ -39,7 +39,6 @@ test('a student reports a discussion and the faculty hide it from students and l
   await expect(page.getByText('This discussion is locked. It takes no new replies.')).toBeVisible()
   await signOut(page)
 
-  // Students no longer see the hidden discussion.
   await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Discussions')

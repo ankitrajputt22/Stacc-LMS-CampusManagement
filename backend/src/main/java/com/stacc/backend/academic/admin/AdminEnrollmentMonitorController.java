@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The admin enrollment monitor: every course enrollment, filtered and paged on the server. Read-only. */
 @RestController
 @RequestMapping("/api/v1/admin/academic/enrollments")
 @Tag(name = "Admin enrollments")

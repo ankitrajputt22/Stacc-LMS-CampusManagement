@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-/** Sends an official photo as an image, never cached by shared caches and never sniffed as anything else. */
 public final class PhotoResponses {
 
     private PhotoResponses() {

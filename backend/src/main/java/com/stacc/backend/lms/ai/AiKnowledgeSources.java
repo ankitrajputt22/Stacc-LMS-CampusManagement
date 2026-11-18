@@ -13,16 +13,9 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Finds the published content an LMS course's AI knowledge is built from, and its fingerprint. It applies the
- * student visibility rule of {@link LmsContentPolicy}, so AI knowledge can never contain anything a student of the
- * course could not open: no drafts, nothing archived, nothing under an unpublished topic or module, and never
- * submissions, grades, or any student's data. It only reads.
- */
 @Service
 public class AiKnowledgeSources {
 
-    /** Changing how sources are indexed changes this, so every course then shows as needing a refresh. */
     static final String FORMAT = "stacc-ai-knowledge-v2";
 
     private final LmsTopicRepository topics;
@@ -51,7 +44,6 @@ public class AiKnowledgeSources {
                 .findAllInCourse(lmsCourseId, LmsContentPolicy.PUBLISHED_ONLY, LmsContentPolicy.PUBLISHED_ONLY,
                         LmsContentPolicy.PUBLISHED_ONLY).stream()
                 .filter(LmsContentPolicy::isVisibleToStudents)
-                // Faculty may keep a material out of AI knowledge (v0.13.3); students still see it.
                 .filter(material -> !material.isExcludedFromAi())
                 .filter(material -> topicOrder.containsKey(material.getLmsTopic().getId()))
                 .sorted(Comparator.comparing((LmsStudyMaterial material) -> topicOrder.get(material.getLmsTopic().getId()))
@@ -75,11 +67,6 @@ public class AiKnowledgeSources {
         return module.getId();
     }
 
-    /**
-     * The SHA-256 of what the index would contain. Sources are listed by ID, so reordering content changes nothing,
-     * while publishing, archiving, or editing a topic's title or text, or a material's title, changes the result.
-     * A material's file never changes once uploaded, so its key and size stand for its bytes.
-     */
     static String fingerprint(List<AiCourseKnowledge.Topic> topics, List<AiCourseKnowledge.Material> materials) {
         StringBuilder text = new StringBuilder(FORMAT).append('\n');
         topics.stream().sorted(Comparator.comparingLong(AiCourseKnowledge.Topic::id)).forEach(topic -> text

@@ -11,7 +11,6 @@ function score(fixture: Fixture): string {
   return `${fixture.homeScore} – ${fixture.awayScore} · ${outcome}`
 }
 
-/** A tournament's matches and the standings the backend worked out from played ones. */
 export function TournamentTables({ tournament }: { tournament: Tournament }) {
   return (
     <div className="space-y-4">

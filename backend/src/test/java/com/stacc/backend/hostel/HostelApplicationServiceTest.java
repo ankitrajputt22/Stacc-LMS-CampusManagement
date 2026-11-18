@@ -136,7 +136,6 @@ class HostelApplicationServiceTest {
 
     @Test
     void reapplyingAfterARejectedOrCancelledApplicationWorks() {
-        // existsCurrent counts only PENDING and APPROVED applications, so earlier rejected or cancelled ones do not block.
         when(applications.existsCurrent(5L, 2L)).thenReturn(false);
         service.apply(70L, new CreateHostelApplicationRequest(2L, null));
         verify(approvals).startApproval(any());
@@ -148,8 +147,6 @@ class HostelApplicationServiceTest {
         assertRefused(() -> service.apply(70L, new CreateHostelApplicationRequest(2L, null)), HttpStatus.CONFLICT,
                 HostelApplicationService.CLOSED);
     }
-
-    // Cancelling
 
     private HostelApplication stored(ApprovalRequest approval) {
         HostelApplication application = HostelFixtures.application(42, student, sessionA, approval);

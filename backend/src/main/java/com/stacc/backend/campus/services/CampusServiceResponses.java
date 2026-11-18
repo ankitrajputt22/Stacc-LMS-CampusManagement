@@ -9,18 +9,11 @@ import com.stacc.backend.approval.ApprovalResponses.ApprovalHistoryResponse;
 import com.stacc.backend.approval.ApprovalResponses.ApprovalRequestStepResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * Campus services as clients see them. No entity is sent as it is. Requesters see services without their workflow
- * code, and their own requests without account details; admins see requesters by login ID only. The request status is
- * the business status; the approval status, when the service needs approval, is the approval engine's and is sent
- * separately.
- */
 public final class CampusServiceResponses {
 
     private CampusServiceResponses() {
     }
 
-    /** A service a requester may ask for. */
     public record CampusServiceSummary(
             @Schema(example = "1") Long serviceId,
             @Schema(example = "ID_CARD") String code,
@@ -34,7 +27,6 @@ public final class CampusServiceResponses {
         }
     }
 
-    /** A service with its full configuration, for admins. */
     public record CampusServiceDefinitionResponse(
             Long serviceId,
             @Schema(example = "ID_CARD") String code,
@@ -56,7 +48,6 @@ public final class CampusServiceResponses {
         }
     }
 
-    /** One of the requester's own requests in a list. */
     public record CampusRequestSummary(
             Long requestId,
             @Schema(example = "CSR-000001") String requestNumber,
@@ -82,7 +73,6 @@ public final class CampusServiceResponses {
             int totalPages) {
     }
 
-    /** One of the requester's own requests in full, with its approval progress when it has one. */
     public record CampusRequestDetail(
             Long requestId,
             @Schema(example = "CSR-000001") String requestNumber,
@@ -106,7 +96,6 @@ public final class CampusServiceResponses {
             String issuedDocumentTitle) {
     }
 
-    /** One request in the admin queue. */
     public record AdminCampusRequestSummary(
             Long requestId,
             @Schema(example = "CSR-000001") String requestNumber,
@@ -133,10 +122,6 @@ public final class CampusServiceResponses {
             int totalPages) {
     }
 
-    /**
-     * One request for admins: approval progress and history from the approval engine, the step waiting for a decision,
-     * whether this admin may decide it through the approval task routes, and whether it can be completed.
-     */
     public record AdminCampusRequestDetail(
             Long requestId,
             @Schema(example = "CSR-000001") String requestNumber,

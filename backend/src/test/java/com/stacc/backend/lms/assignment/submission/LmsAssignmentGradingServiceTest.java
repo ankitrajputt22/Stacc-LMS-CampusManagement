@@ -47,12 +47,6 @@ import org.mockito.InOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Faculty A (account 21) and co-teacher C (account 23) teach LMS course 7; faculty B (account 22) teaches
- * course 8 only. The real faculty access service decides, over stand-in repositories, so an inactive profile,
- * an inactive teaching assignment, and an archived course are shown to stop grading too. Assignment 5 is
- * published with 20 marks. The clock is fixed.
- */
 class LmsAssignmentGradingServiceTest {
 
     private static final Long FACULTY_A = 21L;
@@ -118,7 +112,6 @@ class LmsAssignmentGradingServiceTest {
         when(facultyProfiles.findByUserAccountId(FACULTY_A)).thenReturn(Optional.of(facultyA));
         when(facultyProfiles.findByUserAccountId(FACULTY_B)).thenReturn(Optional.of(facultyB));
         when(facultyProfiles.findByUserAccountId(FACULTY_C)).thenReturn(Optional.of(facultyC));
-        // The database stand-in: at most one grade per attempt, an ID given on first save.
         when(grades.findForUpdateByAttemptId(anyLong())).thenAnswer(call -> Optional.ofNullable(storedGrades.get(call.<Long>getArgument(0))));
         when(grades.saveAndFlush(any(LmsSubmissionGrade.class))).thenAnswer(call -> {
             LmsSubmissionGrade grade = call.getArgument(0);
@@ -203,7 +196,6 @@ class LmsAssignmentGradingServiceTest {
         assertEquals(new BigDecimal("20.00"), revised.getMaxMarksSnapshot());
         assertRefused(HttpStatus.BAD_REQUEST, "Marks cannot exceed 20.",
                 () -> service.grade(FACULTY_A, 301L, new BigDecimal("22"), null));
-        // A first grade after the change is out of the new maximum.
         assertEquals(new BigDecimal("25.00"), service.grade(FACULTY_A, 302L, new BigDecimal("22"), null).getMaxMarksSnapshot());
     }
 
@@ -348,4 +340,3 @@ class LmsAssignmentGradingServiceTest {
                 List.of(new LmsAssignmentGradingService.RubricScoreInput(40L, BigDecimal.ONE, null)), null));
     }
 }
-

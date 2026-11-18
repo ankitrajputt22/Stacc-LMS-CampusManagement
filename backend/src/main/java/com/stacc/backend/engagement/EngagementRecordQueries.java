@@ -11,10 +11,6 @@ import com.stacc.backend.engagement.teams.CampusTeamMemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * An account's own campus participation, read live from the engagement records for its portfolio: events attended
- * (checked in), accepted fest volunteering, and team places. Read only; nothing is copied.
- */
 @Service
 @Transactional(readOnly = true)
 public class EngagementRecordQueries {

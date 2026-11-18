@@ -27,12 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Fees (v0.16.7), as records only. A student's fees are those of their program for the academic session they are
- * enrolled in now (else their latest one). What is due is worked out on every read: the structure's total, less
- * payments and approved scholarships, plus approved refunds. Asking for a refund locks the student's account row; a
- * decision locks the request row and then the account row, so a refund is never approved beyond what was paid over.
- */
 @Service
 @Transactional
 public class FeeService {
@@ -52,7 +46,6 @@ public class FeeService {
             Instant decidedAt) {
     }
 
-    /** A student's fees for one session. Due is negative when more was paid than owed; credit is then what may be refunded. */
     public record Ledger(String studentLoginId, String rollNumber, String programCode, String programName, String academicSessionCode,
             LocalDate dueDate, List<Item> items, BigDecimal total, BigDecimal paid, BigDecimal scholarships, BigDecimal refunded,
             BigDecimal due, BigDecimal credit, boolean overdue, List<PaymentView> payments, List<AdjustmentView> adjustments) {
@@ -91,8 +84,6 @@ public class FeeService {
         this.college = college;
     }
 
-    // --- Students
-
     @Transactional(readOnly = true)
     public Ledger mine(Long accountId) {
         return ledgerOf(studentOf(accountId));
@@ -106,7 +97,6 @@ public class FeeService {
                         "Give a reason of at most 1,000 characters."), clock.instant())));
     }
 
-    /** Asks for money paid beyond what is owed to be returned; the amount may not exceed that credit. */
     public AdjustmentView askForRefund(Long accountId, BigDecimal amount, String reason) {
         accounts.findByIdForUpdate(accountId);
         StudentProfile student = studentOf(accountId);
@@ -117,8 +107,6 @@ public class FeeService {
         return view(adjustments.saveAndFlush(new FeeAdjustment(FeeAdjustment.Kind.REFUND, student.getUserAccount(), sessionOf(student),
                 "Refund", wanted, text(reason, 1000, "Give a reason of at most 1,000 characters."), clock.instant())));
     }
-
-    // --- The accounts office
 
     @Transactional(readOnly = true)
     public Ledger ledgerFor(String loginId) {
@@ -153,12 +141,7 @@ public class FeeService {
         return adjustments.queue(status, PageRequest.of(0, 200)).stream().map(FeeService::view).toList();
     }
 
-    /**
-     * Approves or rejects a scholarship or refund once. The student's account row is locked first; an approved refund
-     * must still be within the credit at that moment. A rejection needs a comment.
-     */
     public AdjustmentView decide(Long officeAccountId, Long adjustmentId, boolean approve, String comment) {
-        // Locking reads only until both locks are held, so the ledger below sees every decision committed before them.
         FeeAdjustment adjustment = (adjustmentId == null ? Optional.<FeeAdjustment>empty() : adjustments.findByIdForUpdate(adjustmentId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Request not found."));
         accounts.findByIdForUpdate(adjustment.getStudent().getId());
@@ -190,7 +173,6 @@ public class FeeService {
                         null, List.of(), BigDecimal.ZERO));
     }
 
-    /** Sets a program's fees for a session: each listed head added or changed, under the program row lock. */
     public Structure setStructure(Long programId, Long sessionId, LocalDate dueDate, List<Item> wanted) {
         Program program = programs.findByIdForUpdate(programId == null ? -1 : programId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Program not found."));
@@ -221,8 +203,6 @@ public class FeeService {
         items.flush();
         return structureView(structures.saveAndFlush(structure), items.findAllByFeeStructureIdOrderByIdAsc(structure.getId()));
     }
-
-    // --- Shared
 
     private Ledger ledgerOf(StudentProfile student) {
         AcademicSession session = sessionOf(student);
@@ -255,7 +235,6 @@ public class FeeService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NO_STUDENT));
     }
 
-    // The session the student is enrolled in now, else their latest semester's session, else their admission session.
     private AcademicSession sessionOf(StudentProfile student) {
         List<SemesterEnrollment> semesters = semesterEnrollments.findAllWithContextByStudentProfileId(student.getId());
         return semesters.stream().filter(enrollment -> enrollment.getStatus() == SemesterEnrollmentStatus.ENROLLED).findFirst()

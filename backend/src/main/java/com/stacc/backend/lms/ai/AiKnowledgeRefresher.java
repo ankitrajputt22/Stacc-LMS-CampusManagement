@@ -9,14 +9,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Rebuilds one LMS course's AI knowledge from its published content. Callers check faculty access first.
- *
- * <p>The steps: find the published sources and their fingerprint, mark the refresh as building, read the readable
- * study-material files, send everything to the AI service, which builds a new index and swaps it in atomically, and
- * only then mark the row READY with that fingerprint. If anything fails, the row becomes FAILED with a fixed safe
- * message and the AI service keeps its previous index files untouched.
- */
 @Service
 public class AiKnowledgeRefresher {
 
@@ -41,7 +33,6 @@ public class AiKnowledgeRefresher {
             throw AiErrors.unavailable();
         }
         AiCourseKnowledge knowledge = sources.publishedKnowledge(lmsCourseId);
-        // An empty or unreadable course gets no index at all, rather than a misleading empty one.
         if (!knowledge.hasIndexableContent()) {
             throw AiErrors.noContent();
         }
@@ -73,10 +64,6 @@ public class AiKnowledgeRefresher {
         }
     }
 
-    /**
-     * Rebuilds the course's teacher-only index (v0.13.5) from its active teacher documents, in the same steps as the
-     * course index. Callers check faculty access first. A course without teacher documents gets no teacher index.
-     */
     public Outcome refreshTeacherDocuments(Long lmsCourseId, AiTeacherKnowledge teacher) {
         if (!client.isEnabled()) {
             throw AiErrors.unavailable();

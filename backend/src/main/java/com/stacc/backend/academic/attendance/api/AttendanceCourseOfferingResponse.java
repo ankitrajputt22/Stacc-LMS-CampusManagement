@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A course offering the faculty member teaches, as the attendance pages show it. Nothing else is exposed. */
 public record AttendanceCourseOfferingResponse(
         @Schema(description = "The ID of the course offering: one course in one semester.", example = "17")
         Long courseOfferingId,

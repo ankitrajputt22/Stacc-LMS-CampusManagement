@@ -20,11 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in account's Inbox. Every route needs a student, faculty, or admin role and {@code NOTIFICATION_VIEW}, and
- * works only on the notifications of the account in the access token: one Inbox per account, whatever roles it holds.
- * Notifications are created inside the backend only, so there is no route to create, send, or delete one.
- */
 @RestController
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications")

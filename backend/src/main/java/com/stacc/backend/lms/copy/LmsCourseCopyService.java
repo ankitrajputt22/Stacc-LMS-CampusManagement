@@ -30,14 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Copies course content into an LMS course the faculty member teaches now, from an earlier offering of the same catalog
- * course that they taught (any term, archived courses included). Modules, pages (text, format, required flag), study
- * files (the bytes are copied to new private keys), and the syllabus text when the target has none: everything arrives
- * as a draft after the target's own content, so students see nothing until faculty publish it. Assignments,
- * announcements, submissions, grades, and anything about students are never copied. The target course row is locked
- * first; a storage failure removes the files already copied and changes nothing.
- */
 @Service
 public class LmsCourseCopyService {
 
@@ -47,7 +39,6 @@ public class LmsCourseCopyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LmsCourseCopyService.class);
 
-    /** How many of each thing were copied. */
     public record CopyResult(int modules, int pages, int files, boolean syllabus) {
     }
 
@@ -73,7 +64,6 @@ public class LmsCourseCopyService {
         this.clock = clock;
     }
 
-    /** The earlier offerings of the same course the faculty member taught, the latest term first. */
     @Transactional(readOnly = true)
     public List<LmsCourse> sources(Long userAccountId, Long lmsCourseId) {
         LmsCourse target = managedTarget(userAccountId, lmsCourseId);
@@ -81,7 +71,6 @@ public class LmsCourseCopyService {
                 target.getCourseOffering().getId(), userAccountId);
     }
 
-    /** Copies the source's content into the target as drafts. */
     @Transactional
     public CopyResult copy(Long userAccountId, Long lmsCourseId, Long sourceLmsCourseId) {
         LmsCourse sourceChoice = sources(userAccountId, lmsCourseId).stream()

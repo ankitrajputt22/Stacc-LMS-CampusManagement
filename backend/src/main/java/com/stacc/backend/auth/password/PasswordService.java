@@ -14,16 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Passwords after sign-in: a person changing their own, and the college issuing a temporary one. Passwords are hashed
- * and checked only with the shared {@link PasswordEncoder}; no password or hash is ever logged or returned.
- */
 @Service
 public class PasswordService {
 
     static final String WRONG_CURRENT = "Your current password is not correct.";
     static final String SAME_AS_CURRENT = "Choose a password different from your current one.";
-    /** How long a temporary password works when the college does not say. */
     public static final Duration TEMPORARY_VALIDITY = Duration.ofDays(3);
 
     private final UserAccountRepository accounts;
@@ -39,10 +34,6 @@ public class PasswordService {
         this.clock = clock;
     }
 
-    /**
-     * Changes the signed-in person's password after checking the current one. Every other session of the account ends,
-     * so a device someone else may still have open is signed out; this one stays signed in.
-     */
     @Transactional
     public void changeOwnPassword(Long accountId, String currentSessionId, String currentPassword, String newPassword) {
         UserAccount account = accounts.findById(accountId)
@@ -62,19 +53,11 @@ public class PasswordService {
         sessions.endAllExcept(accountId, currentSessionId, SessionEndReason.PASSWORD_CHANGED);
     }
 
-    /**
-     * Gives an account a temporary password that works until it expires and only for choosing a new one, and ends its
-     * sessions. For the college's account tools; the temporary password is shown once to the person issuing it.
-     */
     @Transactional
     public void issueTemporaryPassword(Long accountId, String temporaryPassword, Duration validity) {
         issueTemporaryPasswordHash(accountId, passwordEncoder.encode(temporaryPassword), validity);
     }
 
-    /**
-     * The same, with a hash the shared {@link PasswordEncoder} already made, so one temporary password given to many new
-     * accounts at once (bulk import) is hashed only once.
-     */
     @Transactional
     public void issueTemporaryPasswordHash(Long accountId, String temporaryPasswordHash, Duration validity) {
         UserAccount account = accounts.findById(accountId)
@@ -85,7 +68,6 @@ public class PasswordService {
         sessions.endAll(accountId, SessionEndReason.ENDED_BY_COLLEGE);
     }
 
-    /** Whether the account must choose a new password before anything else. */
     @Transactional(readOnly = true)
     public boolean isChangeRequired(Long accountId) {
         return accounts.findById(accountId).map(UserAccount::isPasswordChangeRequired).orElse(false);

@@ -8,7 +8,6 @@ import { ExamsTabs } from './ExamsTabs'
 import { hhmm } from './examFormat'
 import { formatDay } from './requestWords'
 
-/** Exams & Results → Exam schedule: the student's published exams with hall and seat. */
 export function ErpExamSchedulePage() {
   const exams = useApiQuery(queryKeys.erp.myExams(), getMyExams)
   const rows = exams.status === 'loaded' ? exams.data : []

@@ -46,7 +46,6 @@ function CourseAttendance({ course }: { course: StudentCourseAttendance }) {
       }
       padding="none"
     >
-      {/* Exactly the backend's counts and percentage. There is no threshold or warning. */}
       <dl className="grid grid-cols-2 gap-2 px-4 py-4 sm:grid-cols-4 sm:px-5">
         <Figure term="Present" value={String(course.presentCount)} />
         <Figure term="Absent" value={String(course.absentCount)} />
@@ -128,11 +127,6 @@ function MyAttendance() {
   }
 }
 
-/**
- * The signed-in student's own finalized attendance, by course, at /academic/attendance. The backend finds the
- * student from the access token and never shows open sessions. Accounts without the student role see an
- * explanation instead, and no request is made.
- */
 export function StudentAttendancePage() {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Removes request log rows older than the retention period, once an hour while AI is switched on (v0.13.7). */
 @Component
 @ConditionalOnProperty(prefix = "stacc.ai", name = "enabled", havingValue = "true")
 public class AiRequestLogCleanup {

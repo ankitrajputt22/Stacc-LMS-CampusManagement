@@ -20,10 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reading approvals: a requester's own requests, an approver's task queue, the admin workflow list, and status lookups
- * for business modules. It only reads. A request the caller may not see answers the same 404 as a missing one.
- */
 @Service
 @Transactional(readOnly = true)
 public class ApprovalQueryService {
@@ -45,7 +41,6 @@ public class ApprovalQueryService {
         this.access = access;
     }
 
-    /** The signed-in account's own requests, newest first. */
     public ApprovalRequestPage ownRequests(ApprovalActor actor, ApprovalRequestStatus status, int page, int size) {
         PageRequest request = pageOf(page, size);
         Page<ApprovalRequest> rows = requests.findOwn(actor.accountId(), status, request);
@@ -53,7 +48,6 @@ public class ApprovalQueryService {
                 request.getPageNumber(), request.getPageSize(), rows.getTotalElements(), rows.getTotalPages());
     }
 
-    /** One of the signed-in account's own requests with its steps and history. Anyone else's answers 404. */
     public ApprovalRequestDetail ownRequest(ApprovalActor actor, Long approvalRequestId) {
         ApprovalRequest request = approvalRequestId == null ? null
                 : requests.findWithContextById(approvalRequestId).orElse(null);
@@ -64,10 +58,6 @@ public class ApprovalQueryService {
                 history.findAllWithActorByRequestId(request.getId()));
     }
 
-    /**
-     * The steps the signed-in approver can decide now: PENDING steps that require one of the roles in the access token,
-     * never anyone's own requests, oldest first. There is no admin pass: ADMIN sees ADMIN steps only.
-     */
     public ApprovalTaskPage tasks(ApprovalActor actor, int page, int size) {
         if (!actor.taskView()) {
             throw new ApiException(HttpStatus.FORBIDDEN, "You cannot see approval tasks.");
@@ -91,25 +81,17 @@ public class ApprovalQueryService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ApprovalWorkflowDefinitionService.NOT_FOUND));
     }
 
-    // --- For business modules. These are Java calls only; the module checks its own access rules first.
-
-    /** Where one approval request is. */
     public Optional<ApprovalRequestOutcome> requestStatus(Long approvalRequestId) {
         return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
                 .map(ApprovalRequestOutcome::of);
     }
 
-    /**
-     * One request with its steps and history, for the module that owns its record and has checked its own access rules,
-     * such as a hostel admin's review page. It is never a route of its own.
-     */
     public Optional<ApprovalRequestDetail> requestDetail(Long approvalRequestId) {
         return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
                 .map(request -> ApprovalRequestDetail.of(request, steps.findAllWithActorByRequestId(request.getId()),
                         history.findAllWithActorByRequestId(request.getId())));
     }
 
-    /** The step of a PENDING request that can be decided now, with its ID for the task routes. */
     public Optional<CurrentApprovalStep> currentStep(Long approvalRequestId) {
         return (approvalRequestId == null ? Optional.<ApprovalRequest>empty() : requests.findWithContextById(approvalRequestId))
                 .flatMap(ApprovalRequest::currentStep)
@@ -117,15 +99,10 @@ public class ApprovalQueryService {
                         step.getRequiredRoleCode()));
     }
 
-    /** Every approval request for one business record, oldest first. */
     public List<ApprovalRequestOutcome> requestsForSource(String sourceType, String sourceId) {
         return requests.findAllForSource(sourceType, sourceId).stream().map(ApprovalRequestOutcome::of).toList();
     }
 
-    /**
-     * Whether a workflow with this code exists, is active, and has steps, so that {@code startApproval} can use it. A
-     * business module checks this when it is configured to start approvals with the workflow.
-     */
     public boolean isStartableWorkflow(String workflowCode) {
         String code = workflowCode == null ? "" : workflowCode.strip().toUpperCase(Locale.ROOT);
         return !code.isEmpty() && workflows.findWithStepsByCode(code)
@@ -133,10 +110,6 @@ public class ApprovalQueryService {
                 .isPresent();
     }
 
-    /**
-     * Whether the record already has a PENDING request in this workflow. The engine allows several requests per record,
-     * such as a second round after a rejection; the calling module decides whether to start another.
-     */
     public boolean hasPendingApproval(String sourceType, String sourceId, String workflowCode) {
         String code = workflowCode == null ? "" : workflowCode.strip().toUpperCase(Locale.ROOT);
         return requests.existsPendingForSource(sourceType, sourceId, code);

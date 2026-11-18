@@ -7,10 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * A new study material, sent as multipart/form-data. Everything else, such as where the file is
- * stored, its content type, its size, its status, and its place, is decided by the server.
- */
 public record LmsMaterialUploadRequest(
         @Schema(example = "Lecture notes")
         @NotBlank(message = "Title is required")

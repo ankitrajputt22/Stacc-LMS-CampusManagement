@@ -14,12 +14,6 @@ import org.springframework.security.oauth2.server.resource.authentication.Bearer
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Signs a browser request in by its HttpOnly session cookie. It runs after the CSRF check, so a change signed in by
- * the cookie has already proved it came from Stacc's own page. The token is checked exactly like a Bearer token: the
- * same signature, expiry, and open-session rules. A request with an Authorization header, and sign-in itself, are left
- * to the Bearer handling.
- */
 class SessionCookieAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager tokens;

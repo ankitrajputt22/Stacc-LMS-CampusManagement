@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The admin dashboard. The route needs the admin role and {@code ADMIN_DASHBOARD_VIEW}. It only reads and takes no
- * parameters; it gives no right to change masters, offerings, or enrollments.
- */
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")

@@ -11,11 +11,6 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.identity.student.StudentProfile;
 
-/**
- * A small made-up college for the offering and enrollment tests: one program with semesters 3 and 4 in one session,
- * a second program, two courses, offerings of both courses in semester 3 and of the first in semester 4, and one
- * student of the first program. IDs are set the way the database would.
- */
 final class EnrollmentFixtures {
 
     final Department cse = MasterFixtures.department(3, "CSE", "Computer Science and Engineering");

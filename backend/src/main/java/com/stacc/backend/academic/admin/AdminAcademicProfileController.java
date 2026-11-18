@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The official academic mapping of students and faculty, seen and corrected by admins. */
 @RestController
 @Validated
 @RequestMapping("/api/v1/admin/academic/profiles")

@@ -128,7 +128,6 @@ class HostelManagementServiceTest {
 
         assertRefused(() -> service.updateRoom(2L, new UpdateRoomRequest("A-201", true)), HttpStatus.CONFLICT);
         assertRefused(() -> service.updateBed(3L, new UpdateBedRequest("B9", true)), HttpStatus.CONFLICT);
-        // The same number with another flag is fine.
         assertThat(service.updateRoom(2L, new UpdateRoomRequest("A-101", true)).roomNumber()).isEqualTo("A-101");
         assertThat(room.getRoomNumber()).isEqualTo("A-101");
     }

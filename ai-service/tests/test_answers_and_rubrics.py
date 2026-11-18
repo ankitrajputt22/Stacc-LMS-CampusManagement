@@ -1,5 +1,3 @@
-"""v0.14.5: model answers with sources, and rubric suggestions whose points add up to the assignment's maximum."""
-
 from __future__ import annotations
 
 import json

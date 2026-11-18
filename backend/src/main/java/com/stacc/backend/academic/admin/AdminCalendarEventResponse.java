@@ -8,7 +8,6 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** An official calendar event as admins manage it, in any status, with its session and semester and its history. */
 public record AdminCalendarEventResponse(
         @Schema(example = "14") Long eventId,
         @Schema(example = "2") Long academicSessionId,

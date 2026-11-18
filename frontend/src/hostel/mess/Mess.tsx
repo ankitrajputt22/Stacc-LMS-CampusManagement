@@ -52,7 +52,6 @@ function Week({ week }: { week: DayMenu[] }) {
   )
 }
 
-/** Rate one meal: 1 to 5 and an optional comment, once. */
 function RateForm({ date, meal, onRated }: { date: string; meal: Meal; onRated: () => Promise<void> }) {
   const [rating, setRating] = useState('')
   const [comment, setComment] = useState('')
@@ -91,7 +90,6 @@ function RateForm({ date, meal, onRated }: { date: string; meal: Meal; onRated: 
   )
 }
 
-/** A resident's mess: this week's menu of their hostel, and today's meals to rate. Nothing without a hostel bed. */
 export function ResidentMessCard() {
   const queryClient = useQueryClient()
   const mess = useApiQuery(queryKeys.hostel.myMess(), (signal) => getMyMess(signal))
@@ -230,10 +228,6 @@ function DayChangeForm({ hostelId, onSaved }: { hostelId: number; onSaved: (mess
   )
 }
 
-/**
- * The mess of the hostels a manager may use: the weekly menu, single-day changes, the coming week, and the last
- * month's feedback without names (an average only for at least five ratings).
- */
 export function MessManager({ hostels }: { hostels: { hostelId: number; name: string }[] }) {
   const queryClient = useQueryClient()
   const [hostelId, setHostelId] = useState(hostels[0].hostelId)

@@ -3,7 +3,6 @@ import type { BloomLevel, LmsQuestion, LmsQuestionInput, QuestionDifficulty, Que
 
 export const MAX_OPTIONS = 10
 
-/** What the question form holds while it is being written. Numbers stay text until the form is sent. */
 export type QuestionDraft = {
   type: QuestionType
   text: string
@@ -60,7 +59,6 @@ export function usesOptions(type: QuestionType): boolean {
   return type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' || type === 'SHORT_ANSWER'
 }
 
-/** The draft with another type: options fit the new type (short answers are all correct; one correct for single choice). */
 export function changeType(draft: QuestionDraft, type: QuestionType): QuestionDraft {
   let options = draft.options.length >= 2 || type === 'SHORT_ANSWER' ? draft.options : emptyDraft().options
   if (type === 'SHORT_ANSWER') {
@@ -72,10 +70,6 @@ export function changeType(draft: QuestionDraft, type: QuestionType): QuestionDr
   return { ...draft, type, options }
 }
 
-/**
- * Checks what the browser can check before sending, so obvious slips are caught early. The backend still decides.
- * Answers field errors by name: text, options, trueFalseAnswer, marks.
- */
 export function checkDraft(draft: QuestionDraft): Record<string, string> {
   const errors: Record<string, string> = {}
   if (draft.text.trim() === '') {
@@ -110,7 +104,6 @@ export function checkDraft(draft: QuestionDraft): Record<string, string> {
   return errors
 }
 
-/** What is sent: only the parts the question's type takes. */
 export function inputOf(draft: QuestionDraft): LmsQuestionInput {
   const optional = (text: string) => (text.trim() === '' ? null : text)
   return {

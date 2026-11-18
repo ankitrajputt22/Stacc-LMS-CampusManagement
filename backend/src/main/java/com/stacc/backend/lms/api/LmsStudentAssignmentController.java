@@ -19,10 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The assignments of a course, as its students see them: published ones only. The student is taken from
- * the access token, and course access is decided again on every request from official enrollment.
- */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/assignments")
 @Tag(name = "LMS")
@@ -36,8 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class LmsStudentAssignmentController {
 
-    // The same rule as the other student course routes. It only lets the caller ask; which courses and
-    // assignments they get is decided by the query.
     private static final String STUDENT_VIEW = "hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')";
 
     private final LmsStudentAssignmentQueryService queryService;

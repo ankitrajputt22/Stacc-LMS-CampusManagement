@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One fee head of a structure with its amount in rupees. */
 @Entity
 @Table(name = "fee_structure_items")
 public class FeeStructureItem {

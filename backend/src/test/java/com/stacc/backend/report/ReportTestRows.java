@@ -20,7 +20,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketRepository;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketStatus;
 
-/** Grouped count rows, as the repositories return them, for the report tests. */
 final class ReportTestRows {
 
     private ReportTestRows() {

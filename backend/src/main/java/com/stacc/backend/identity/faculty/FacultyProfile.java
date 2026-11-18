@@ -20,20 +20,10 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The academic side of a faculty member's account: their primary department. The employee ID is
- * the account's login ID, so it is not stored here again, and neither is the person's name.
- *
- * <p>The primary department is where the faculty member belongs, not a limit on what they teach.
- * Which course offerings someone teaches will come from teaching assignments, never from this
- * profile. A profile that is no longer in use is made inactive rather than deleted.
- */
 @Entity
 @Table(name = "faculty_profiles")
 public class FacultyProfile {
 
-    // No cascade on any link: the account and the department are never created or deleted
-    // through a faculty profile.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,13 +49,8 @@ public class FacultyProfile {
     private Instant updatedAt;
 
     protected FacultyProfile() {
-        // Required by JPA.
     }
 
-    /**
-     * The account should be one with the FACULTY role. That is checked by the feature that
-     * creates faculty profiles, not here.
-     */
     public FacultyProfile(UserAccount userAccount, Department department) {
         this.userAccount = Require.notNull(userAccount, "userAccount");
         this.department = Require.notNull(department, "department");
@@ -95,7 +80,6 @@ public class FacultyProfile {
         return updatedAt;
     }
 
-    /** Moves the faculty member to another primary department. Teaching still comes only from teaching assignments. */
     public void moveToDepartment(Department department) {
         this.department = Require.notNull(department, "department");
     }

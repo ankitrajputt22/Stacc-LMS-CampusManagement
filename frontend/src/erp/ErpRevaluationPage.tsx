@@ -10,7 +10,6 @@ import { plain } from './examFormat'
 import { RequestHistory } from './RequestHistory'
 import { refusalOf } from './requestWords'
 
-/** Exams & Results → Revaluation: ask for a published result to be checked again, and follow the requests. */
 export function ErpRevaluationPage() {
   const queryClient = useQueryClient()
   const standing = useApiQuery(queryKeys.erp.standing(), getMyStanding)

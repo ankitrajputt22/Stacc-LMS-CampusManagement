@@ -8,7 +8,6 @@ import com.stacc.backend.auth.role.RoleName;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up accounts, categories, and tickets for the helpdesk tests, with IDs set the way the database would. */
 final class HelpdeskFixtures {
 
     private HelpdeskFixtures() {
@@ -40,13 +39,11 @@ final class HelpdeskFixtures {
         return ticket;
     }
 
-    /** The helpdesk part of a requester's token: STUDENT, FACULTY, or ADMIN with the three "own" permissions. */
     static HelpdeskActor requester(long accountId, String role) {
         return HelpdeskActor.of(accountId, AuthorityUtils.createAuthorityList(role, HelpdeskActor.CREATE,
                 HelpdeskActor.VIEW_OWN, HelpdeskActor.REPLY_OWN));
     }
 
-    /** An admin with every helpdesk permission, as V46 grants. */
     static HelpdeskActor admin(long accountId) {
         return HelpdeskActor.of(accountId, AuthorityUtils.createAuthorityList("ROLE_ADMIN", HelpdeskActor.CREATE,
                 HelpdeskActor.VIEW_OWN, HelpdeskActor.REPLY_OWN, HelpdeskActor.VIEW_ALL, HelpdeskActor.MANAGE,

@@ -15,7 +15,6 @@ public interface CareerOfferRepository extends JpaRepository<CareerOffer, Long> 
 
     Optional<CareerOffer> findByApplicationId(Long applicationId);
 
-    /** Whether the student has accepted an offer of a placement, for the one-placement policy. */
     @Query("select count(f) > 0 from CareerOffer f where f.application.applicant.id = :accountId "
             + "and f.status = com.stacc.backend.career.CareerOffer.Status.ACCEPTED "
             + "and f.application.opportunity.kind = com.stacc.backend.career.CareerOpportunity.Kind.PLACEMENT")

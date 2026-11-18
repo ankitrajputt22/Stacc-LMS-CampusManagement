@@ -12,11 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The signed-in account's Inbox: its own notifications, page by page, its unread count, and its read state. Every
- * method takes the account from the access token and only ever touches that account's rows; another account's row
- * answers the same 404 as one that does not exist.
- */
 @Service
 @Transactional
 public class NotificationInboxService {
@@ -35,7 +30,6 @@ public class NotificationInboxService {
         this.clock = clock;
     }
 
-    /** One page of the Inbox, newest first; with {@code unreadOnly}, unread notifications only. */
     @Transactional(readOnly = true)
     public NotificationPageResponse inbox(Long userAccountId, int page, int size, boolean unreadOnly) {
         if (page < 0) {
@@ -54,21 +48,18 @@ public class NotificationInboxService {
         return new UnreadNotificationCount(recipients.countByUserAccountIdAndReadAtIsNull(userAccountId));
     }
 
-    /** Marks one of the account's notifications read now. Already read keeps its first read time. */
     public NotificationInboxItem markRead(Long userAccountId, Long recipientId) {
         NotificationRecipient recipient = own(userAccountId, recipientId);
         recipient.markRead(clock.instant());
         return NotificationInboxItem.of(recipients.saveAndFlush(recipient));
     }
 
-    /** Marks one of the account's notifications unread again. Already unread changes nothing. */
     public NotificationInboxItem markUnread(Long userAccountId, Long recipientId) {
         NotificationRecipient recipient = own(userAccountId, recipientId);
         recipient.markUnread();
         return NotificationInboxItem.of(recipients.saveAndFlush(recipient));
     }
 
-    /** Marks every unread notification of the account read, in one statement. Other accounts are never touched. */
     public NotificationReadAllResponse markAllRead(Long userAccountId) {
         int marked = recipients.markAllRead(userAccountId, clock.instant().truncatedTo(ChronoUnit.MICROS));
         return new NotificationReadAllResponse(marked, 0);

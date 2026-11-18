@@ -22,12 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Hackathons (v0.12.12). Students form and join teams and hand in one submission per team while a published hackathon
- * has not ended; joining takes the team row lock and counts current members with a locking read, so a team never
- * passes the size limit. Named faculty judges score submissions after the end until results are released. Participants
- * never see scores before the release; then totals (the sum of the judges' scores) and places are worked out on read.
- */
 @Service
 @Transactional
 public class HackathonService {
@@ -83,8 +77,6 @@ public class HackathonService {
         this.clock = clock;
     }
 
-    // --- Students
-
     @Transactional(readOnly = true)
     public List<HackathonView> visible(Long accountId) {
         List<Hackathon> found = hackathons.findVisible();
@@ -133,7 +125,6 @@ public class HackathonService {
         join(team, accountId);
     }
 
-    /** Joins a team that has a free place; the team row lock and a locking read of its members keep the size limit. */
     public void joinTeam(Long accountId, Long teamId) {
         HackathonTeam team = (teamId == null ? Optional.<HackathonTeam>empty() : teams.findByIdForUpdate(teamId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, TEAM_NOT_FOUND));
@@ -157,7 +148,6 @@ public class HackathonService {
         members.flush();
     }
 
-    /** Hands in or replaces the team's one submission, by any member, until the hackathon ends. */
     public void submit(Long accountId, Long hackathonId, String title, String summary, String link) {
         Long teamId = members.findCurrent(hackathonId, accountId).map(member -> member.getTeam().getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, "Join or form a team first."));
@@ -172,8 +162,6 @@ public class HackathonService {
         });
         submissions.saveAndFlush(submission);
     }
-
-    // --- Judges
 
     @Transactional(readOnly = true)
     public List<JudgeView> judging(Long accountId) {
@@ -198,7 +186,6 @@ public class HackathonService {
                         : List.of())).toList();
     }
 
-    /** Gives or replaces a judge's score while judging is open. Anyone but the hackathon's judges gets 404. */
     public void score(Long accountId, Long submissionId, int value, String comment) {
         HackathonSubmission submission = (submissionId == null ? Optional.<HackathonSubmission>empty() : submissions.findById(submissionId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
@@ -221,8 +208,6 @@ public class HackathonService {
             throw new ApiException(HttpStatus.CONFLICT, "Your score was saved meanwhile; reload and try again.");
         }
     }
-
-    // --- The campus office
 
     @Transactional(readOnly = true)
     public List<OfficeView> all() {
@@ -280,7 +265,6 @@ public class HackathonService {
         lockedHackathon(hackathonId).archive();
     }
 
-    /** Submitted teams by the sum of their judges' scores, highest first; equal totals share a place. */
     private List<ResultRow> standings(List<HackathonTeam> its, Map<Long, HackathonSubmission> work) {
         List<HackathonSubmission> handedIn = its.stream().map(team -> work.get(team.getId())).filter(s -> s != null).toList();
         if (handedIn.isEmpty()) {

@@ -6,10 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * The title and message of an announcement, for adding or editing one. The course, status, and
- * publication time are not part of it: they come from the route and the publish and archive actions.
- */
 public record LmsAnnouncementRequest(
         @Schema(example = "Mid-semester exam schedule")
         @NotBlank(message = "Title is required")

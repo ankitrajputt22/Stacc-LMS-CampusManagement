@@ -7,7 +7,6 @@ test('a faculty member grades with the assignment rubric and the student sees th
   await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
 
-  // The rubric is listed with its criteria.
   await openCourseSection(page, 'Rubrics')
   await expect(page.getByRole('heading', { name: 'Array exercises rubric' })).toBeVisible()
 

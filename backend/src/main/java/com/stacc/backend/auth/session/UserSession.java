@@ -9,10 +9,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * One sign-in of one account in one browser. Its random ID travels as the {@code sid} claim of the session's token; the
- * row decides whether that token is still accepted. A session ends once and never reopens; ended rows are kept.
- */
 @Entity
 @Table(name = "user_sessions")
 public class UserSession {
@@ -21,7 +17,6 @@ public class UserSession {
     @Column(length = 36)
     private String id;
 
-    // A plain ID, not a link: checking a session must not load the account entity on every request.
     @Column(name = "user_account_id", nullable = false, updatable = false)
     private Long userAccountId;
 
@@ -45,7 +40,6 @@ public class UserSession {
     private SessionEndReason endReason;
 
     protected UserSession() {
-        // Required by JPA.
     }
 
     public UserSession(Long userAccountId, String device, Instant now, Instant expiresAt) {
@@ -57,12 +51,10 @@ public class UserSession {
         this.expiresAt = expiresAt;
     }
 
-    /** Whether the session still lets requests through at this moment, given the idle timeout. */
     public boolean isOpenAt(Instant now, java.time.Duration idleTimeout) {
         return endedAt == null && now.isBefore(expiresAt) && now.isBefore(lastSeenAt.plus(idleTimeout));
     }
 
-    /** Ends the session once; a second end changes nothing. */
     public void end(Instant now, SessionEndReason reason) {
         if (endedAt == null) {
             endedAt = now;

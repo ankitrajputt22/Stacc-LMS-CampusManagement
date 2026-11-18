@@ -8,10 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What clients may send to the approval API. No request names a requester, actor, step number, status, or time: those
- * come from the server and the access token. There is no request to start an approval.
- */
 public final class ApprovalApiRequests {
 
     private ApprovalApiRequests() {
@@ -32,7 +28,6 @@ public final class ApprovalApiRequests {
                     + "STUDENT_DEPARTMENT_HEAD (with the HOD role). Empty means any holder of the role.")
             ApproverRelationship approverRelationship) {
 
-        /** A step any holder of the role may decide. */
         public ApprovalWorkflowStepRequest(String name, String approverRoleCode) {
             this(name, approverRoleCode, null);
         }

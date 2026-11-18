@@ -14,19 +14,12 @@ import { enrolledText, lifecycleRefusal, lmsStatusWord } from './lmsCourseText'
 
 type ManagedCourseCardProps = {
   course: LmsManagedCourse
-  /** Called with the LMS course after it was created or published, so the card updates without a reload. */
   onChanged: (change: LmsCourseManagement) => void
 }
 
 const CREATE_FAILED = 'Couldn’t create the LMS course. Check your connection and try again.'
 const PUBLISH_FAILED = 'Couldn’t publish the course. Check your connection and try again.'
 
-/**
- * One course offering the faculty member teaches, with its LMS state as the backend sent it. Without an LMS course
- * it offers Create LMS course; a draft can be opened or published after a confirmation; a published one can be
- * opened; an archived one is history only and offers nothing, because the faculty pages no longer open it. The
- * backend checks the teaching assignment on every request.
- */
 export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps) {
   const id = useId()
   const queryClient = useQueryClient()
@@ -53,7 +46,6 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
       setMessage(`LMS course created as a draft. ${enrolledText(created.currentStudentCount)}`.trim())
       onChanged(created)
       void queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })
-      // The Create button is gone; focus moves to the new course's Open link.
       focusLater('open')
     } catch (failure) {
       const httpStatus = getHttpStatus(failure)
@@ -114,7 +106,6 @@ export function ManagedCourseCard({ course, onChanged }: ManagedCourseCardProps)
             </Button>
           )}
           {course.lmsCourseId !== null && (
-            // The route uses the LMS course ID, never an offering or teaching assignment ID.
             <Link to={`/teaching/${course.lmsCourseId}`} data-focus-key="open" className={buttonClasses(status === 'DRAFT' ? 'secondary' : 'primary', 'sm')}>
               Open<span className="sr-only"> LMS course</span><span className="sr-only">{spokenName}</span>
             </Link>

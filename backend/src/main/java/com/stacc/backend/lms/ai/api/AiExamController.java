@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** AI for exam blueprints (v0.14.4): drafting the questions a blueprint is short of into the bank, for review. */
 @RestController
 @Tag(name = "LMS AI teaching tools")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

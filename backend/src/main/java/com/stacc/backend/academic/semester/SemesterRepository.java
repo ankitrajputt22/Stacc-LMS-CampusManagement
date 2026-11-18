@@ -14,10 +14,6 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByProgramIdAndAcademicSessionIdAndSemesterNumber(
             Long programId, Long academicSessionId, int semesterNumber);
 
-    /**
-     * Every semester with its program, the program's department, and its academic session, in one query: the latest
-     * session first, then program code, then semester number.
-     */
     @Query("""
             select semester
             from Semester semester
@@ -38,15 +34,9 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
             """)
     Optional<Semester> findWithContextById(@Param("semesterId") Long semesterId);
 
-    /** The highest semester number a program already has, if it has any semester. */
     @Query("select max(semester.semesterNumber) from Semester semester where semester.program.id = :programId")
     Optional<Integer> findMaxSemesterNumberByProgramId(@Param("programId") Long programId);
 
-    /**
-     * Search: semesters, whatever their status, whose program code or name or academic session code contains the
-     * text, or whose number is the number in the text (such as "3" or "semester 3"). The program and session are
-     * loaded in the same query. Exact program or session codes first, then those that start with the text.
-     */
     @Query(value = """
             select semester
             from Semester semester

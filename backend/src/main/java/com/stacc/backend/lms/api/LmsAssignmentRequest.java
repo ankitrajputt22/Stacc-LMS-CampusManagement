@@ -12,10 +12,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * The definition of an assignment, for adding or editing one. The course, status, and publication time
- * are not part of it: they come from the route and the publish and archive actions.
- */
 public record LmsAssignmentRequest(
         @Schema(example = "Arrays practice")
         @NotBlank(message = "Title is required")

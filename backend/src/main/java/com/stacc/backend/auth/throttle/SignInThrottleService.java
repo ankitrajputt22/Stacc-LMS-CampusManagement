@@ -15,12 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Slows down repeated failed sign-ins, per login ID and per network address, without ever locking an account. A
- * blocked try is refused before the password is checked, and unknown login IDs are counted exactly like real ones, so
- * the answer never reveals whether an account exists. Only SHA-256 hashes of the keys are stored, and nothing about a
- * sign-in is logged.
- */
 @Service
 @EnableConfigurationProperties(SignInThrottleProperties.class)
 public class SignInThrottleService {
@@ -42,7 +36,6 @@ public class SignInThrottleService {
         return properties;
     }
 
-    /** How long a sign-in for this login ID from this address must still wait; zero when it may try now. */
     @Transactional(readOnly = true)
     public Duration waitFor(String loginId, String address) {
         Instant now = clock.instant();
@@ -52,23 +45,15 @@ public class SignInThrottleService {
                 .orElse(Duration.ZERO);
     }
 
-    /**
-     * Counts a failed sign-in for the login ID and the address, each under its own row lock. The rows are first made
-     * sure to exist in a transaction of their own: an {@code insert ignore} leaves a shared lock on an existing row, and
-     * taking the row lock in that same transaction would let simultaneous failures deadlock one another.
-     */
     public void recordFailure(String loginId, String address) {
         Instant now = clock.instant();
         String account = accountKey(loginId);
         String place = addressKey(address);
-        // MySQL may report a deadlock when several sign-ins create the same new row at once. Each step is safe to repeat:
-        // a step that lost a deadlock was rolled back and changed nothing.
         retrying(() -> rows.ensure(SignInThrottle.Scope.ACCOUNT, account, now));
         retrying(() -> rows.ensure(SignInThrottle.Scope.ADDRESS, place, now));
         retrying(() -> rows.countFailure(account, place, now, properties));
     }
 
-    /** A successful sign-in forgets the login ID's failures. The address keeps its count until its window passes. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordSuccess(String loginId) {
         throttles.findForUpdate(SignInThrottle.Scope.ACCOUNT, accountKey(loginId))

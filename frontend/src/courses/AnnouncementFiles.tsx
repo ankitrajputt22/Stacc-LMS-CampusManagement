@@ -4,10 +4,6 @@ import type { LmsAnnouncementFile } from '../types/lms'
 import { Alert, Button } from '../ui'
 import { formatFileSize, saveBlob } from './materials'
 
-/**
- * The files on an announcement, each with Download (always saved as a file, never opened inline) and, for faculty,
- * Remove. Nothing is shown when there are none.
- */
 export function AnnouncementFiles({
   files,
   title,

@@ -13,7 +13,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Two students joining a team's last place at once give one place. A hackathon of its own. */
 class HackathonMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

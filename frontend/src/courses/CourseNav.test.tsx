@@ -18,7 +18,6 @@ describe('CourseNav', () => {
       </MemoryRouter>,
     )
 
-    // The phone menu and the wide-screen column hold the same links.
     const pages = screen.getAllByRole('link', { name: 'Pages' })
     expect(pages).toHaveLength(2)
     expect(pages[0]).toHaveAttribute('aria-current', 'page')

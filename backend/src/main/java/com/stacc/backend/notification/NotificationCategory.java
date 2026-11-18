@@ -1,6 +1,5 @@
 package com.stacc.backend.notification;
 
-/** The groups a person chooses delivery for. Every notification type belongs to exactly one. */
 public enum NotificationCategory {
     COURSES,
     CALENDAR,

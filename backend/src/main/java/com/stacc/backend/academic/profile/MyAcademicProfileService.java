@@ -30,11 +30,6 @@ import com.stacc.backend.identity.student.StudentProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reads the signed-in person's own academic profile. The account always comes from the access token; nothing here
- * changes data. A student's current session, semester, and section come from their enrolled semester enrollment of the
- * latest session, never from a stored field, and only published results are shown.
- */
 @Service
 @Transactional(readOnly = true)
 public class MyAcademicProfileService {
@@ -62,11 +57,6 @@ public class MyAcademicProfileService {
         this.people = people;
     }
 
-    /**
-     * @param userAccountId the signed-in account, from the access token
-     * @param asStudent whether the account holds the student role
-     * @param asFaculty whether the account holds the faculty role
-     */
     public MyAcademicProfileResponse profile(Long userAccountId, boolean asStudent, boolean asFaculty) {
         StudentPart student = asStudent ? students.findWithContextByUserAccountId(userAccountId).map(this::studentPart).orElse(null)
                 : null;
@@ -112,7 +102,6 @@ public class MyAcademicProfileService {
                 headOf(program.getDepartment().getId()));
     }
 
-    /** The name of who heads the department now (the login ID before a name is recorded), or null. */
     private String headOf(Long departmentId) {
         return heads.headOf(departmentId)
                 .map(account -> people.findByUserAccountId(account.getId()).map(PersonProfile::displayName)
@@ -120,7 +109,6 @@ public class MyAcademicProfileService {
                 .orElse(null);
     }
 
-    /** The names of who actively teaches each offering, the primary teacher first, in two queries. */
     private Map<Long, List<String>> teachersOf(List<Long> offeringIds) {
         if (offeringIds.isEmpty()) {
             return Map.of();

@@ -18,7 +18,6 @@ public record LoginRequest(
 
     public static final int MAX_PASSWORD_LENGTH = 128;
 
-    // A record's default text form would include the password, so it is left out here.
     @Override
     public String toString() {
         return "LoginRequest[loginId=" + loginId + "]";

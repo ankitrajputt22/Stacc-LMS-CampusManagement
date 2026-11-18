@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** An idea: submitted, maybe shortlisted, then accepted or not selected once; or withdrawn by its submitter. Never deleted. */
 @Entity
 @Table(name = "innovation_ideas")
 public class InnovationIdea {
@@ -73,12 +72,10 @@ public class InnovationIdea {
         return stripped;
     }
 
-    /** Whether reviewers may still score it. */
     public boolean open() {
         return status == Status.SUBMITTED || status == Status.SHORTLISTED;
     }
 
-    /** The office moves an open idea forward: submitted to shortlisted, or either to accepted or not selected. */
     public void decide(Status next, String note, Instant at) {
         if (!open() || next == Status.SUBMITTED || next == Status.WITHDRAWN || next == null || next == status) {
             throw new IllegalStateException("This idea cannot move to that decision.");

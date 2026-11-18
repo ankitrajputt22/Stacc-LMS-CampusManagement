@@ -1,8 +1,3 @@
-"""Prompt text. Course sources are untrusted data, so they are fenced, cleaned of fence-like markers,
-and the rules say plainly that nothing inside them is an instruction. This lowers the risk of prompt
-injection; it cannot remove it, which is why answers are also checked against real sources afterwards.
-"""
-
 from __future__ import annotations
 
 import re
@@ -86,7 +81,6 @@ FENCE = re.compile(r"</?\s*(source|question|teacher_note|earlier|answer)", re.IG
 
 
 def clean(text: str) -> str:
-    """Neutralises anything that looks like this prompt's own fences."""
     return FENCE.sub(lambda match: match.group(0).replace("<", "(").replace(">", ")"), text)
 
 

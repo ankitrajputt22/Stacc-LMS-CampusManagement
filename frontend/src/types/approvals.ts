@@ -1,6 +1,3 @@
-// The parts of the approval engine (com.stacc.backend.approval) that pages show. Decisions go through the approval
-// task routes; nothing here starts or cancels an approval.
-
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
 export type ApprovalStepStatus = 'WAITING' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SKIPPED'
 
@@ -11,7 +8,6 @@ export type ApprovalStep = {
   status: ApprovalStepStatus
   actedByLoginId: string | null
   actedAt: string | null
-  /** Plain text. */
   comment: string | null
 }
 
@@ -31,7 +27,6 @@ export type ApprovalDecision = {
   currentStepOrder: number | null
 }
 
-/** A workflow in the approval admin list, for modules that let an admin choose one by its code. */
 export type ApprovalWorkflowSummary = {
   workflowId: number
   code: string

@@ -3,16 +3,6 @@ import { useCallback } from 'react'
 import { getHttpStatus } from './apiError'
 import type { ApiRequestState } from './useApiRequest'
 
-/**
- * Loads one backend answer through the shared query cache and says what the page should show, in the same states as
- * useApiRequest, so a page can switch without changing how it renders. Pages that show the same answer share one
- * request and one cached copy.
- *
- * retry() starts again from scratch and shows loading meanwhile; refresh() asks again quietly and keeps what is on
- * screen until the new answer arrives. A key of null means there is nothing valid to ask for: nothing is sent and the
- * state is notFound. A 401 stays loading: the shared client has already ended the session and sign-in is on its way.
- * New code uses this instead of useApiRequest; existing pages move over when they are redesigned.
- */
 export function useApiQuery<T>(
   queryKey: QueryKey | null,
   request: (signal: AbortSignal) => Promise<T>,

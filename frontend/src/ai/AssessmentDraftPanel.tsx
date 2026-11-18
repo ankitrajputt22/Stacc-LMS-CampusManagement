@@ -32,7 +32,6 @@ function editable(draft: AiAssessmentDraft): EditableDraft {
   }
 }
 
-/** The generated draft, editable here only. "Use in assignment form" opens the normal form; it saves nothing. */
 function DraftEditor({ lmsCourseId, draft }: { lmsCourseId: number; draft: AiAssessmentDraft }) {
   const id = useId()
   const navigate = useNavigate()
@@ -54,7 +53,6 @@ function DraftEditor({ lmsCourseId, draft }: { lmsCourseId: number; draft: AiAss
       titleRef.current?.focus()
       return
     }
-    // Only the form's own Create button creates an assignment, and it starts as a draft.
     navigate(`/teaching/${lmsCourseId}/assignments`, {
       state: { assignmentDraft: assignmentPrefill(value.title, value.instructions, value.questions) },
     })
@@ -186,7 +184,6 @@ function DraftEditor({ lmsCourseId, draft }: { lmsCourseId: number; draft: AiAss
   )
 }
 
-/** Generates an assessment draft from the course's published content, for the teacher to review and edit. */
 export function AssessmentDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const countRef = useRef<HTMLInputElement>(null)

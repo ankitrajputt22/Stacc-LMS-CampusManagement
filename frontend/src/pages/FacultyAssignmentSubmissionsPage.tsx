@@ -26,7 +26,6 @@ function coursePath(lmsCourseId: number): string {
   return `/teaching/${lmsCourseId}/assignments`
 }
 
-/** A page state with the breadcrumb above it and a heading for screen readers. */
 function SubmissionsState({ children }: { children: ReactNode }) {
   return (
     <>
@@ -65,7 +64,6 @@ function SubmissionRow({ submission }: { submission: LmsFacultySubmissionSummary
       className={`group relative px-4 py-3 last:rounded-b-panel hover:bg-surface-muted has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-stacc-primary sm:px-5 ${ROW_GRID}`}
     >
       <h3 className="text-[0.95rem] font-semibold break-all text-ink">
-        {/* The click area covers the whole row. */}
         <Link
           to={{ search: `?submission=${submission.submissionId}` }}
           data-submission-id={submission.submissionId}
@@ -102,7 +100,6 @@ function SubmissionList({ submissions }: { submissions: LmsFacultySubmissionSumm
   const { state } = useLocation()
   const fromSubmission = (state as { fromSubmission?: unknown } | null)?.fromSubmission
 
-  // Coming back from a submission, focus returns to its row.
   useEffect(() => {
     if (typeof fromSubmission === 'number') {
       listRef.current?.querySelector<HTMLElement>(`[data-submission-id="${fromSubmission}"]`)?.focus()
@@ -137,7 +134,6 @@ function SubmissionList({ submissions }: { submissions: LmsFacultySubmissionSumm
 type LoadedProps = {
   assignment: LmsFacultyAssignmentOverview
   submissions: LmsFacultySubmissionSummary[]
-  /** Which submission is open: null for the list, or { id: null } for an address that cannot be one. */
   open: { id: number | null } | null
   onGraded: () => void
 }
@@ -187,7 +183,6 @@ function AssignmentSubmissions({ assignment, submissions, open, onGraded }: Load
           </Link>
         </section>
       ) : (
-        // A new review for each submission, so nothing chosen or typed carries over to another student.
         <>
           <div className="mt-6">
             <StudentStepper
@@ -251,7 +246,6 @@ function FacultySubmissions({ lmsCourseId, assignmentId }: { lmsCourseId: number
     )
   }
 
-  // The assignment must be a published one of this course, as the backend lists them.
   const assignment = overview.data.find(
     (candidate) => candidate.assignmentId === assignmentId && candidate.lmsCourseId === lmsCourseId,
   )
@@ -269,12 +263,6 @@ function FacultySubmissions({ lmsCourseId, assignmentId }: { lmsCourseId: number
   )
 }
 
-/**
- * The submissions for one published assignment, at /teaching/:lmsCourseId/assignments/:assignmentId/submissions,
- * where the faculty member reviews each student's attempts and grades them; ?submission= opens one. The backend
- * checks the teaching assignment and the grading permission on every request. Accounts without the faculty role
- * see an explanation instead, and no request is made.
- */
 export function FacultyAssignmentSubmissionsPage() {
   const { account } = useAuth()
   const { lmsCourseId, assignmentId } = useParams()

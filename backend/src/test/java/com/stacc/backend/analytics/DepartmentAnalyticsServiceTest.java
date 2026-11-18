@@ -12,7 +12,6 @@ import java.util.List;
 import com.stacc.backend.academic.responsibility.DepartmentHeadRepository;
 import org.junit.jupiter.api.Test;
 
-/** An account that heads no department gets no department and no query runs for it. */
 class DepartmentAnalyticsServiceTest {
 
     @Test

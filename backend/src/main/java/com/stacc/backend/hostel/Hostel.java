@@ -14,10 +14,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A hostel building. Its code is set once. An inactive hostel takes no new allocations; its history stays. Hostels are
- * never deleted.
- */
 @Entity
 @Table(name = "hostels")
 public class Hostel {
@@ -52,7 +48,6 @@ public class Hostel {
     private Instant updatedAt;
 
     protected Hostel() {
-        // Required by JPA.
     }
 
     public Hostel(String code, String name, String description) {
@@ -60,7 +55,6 @@ public class Hostel {
         update(name, description, true);
     }
 
-    /** The code as it is stored: trimmed and uppercase, letters, digits, hyphens, and underscores. */
     public static String normalizedCode(String code) {
         String normalized = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
         if (!CODE_PATTERN.matcher(normalized).matches()) {

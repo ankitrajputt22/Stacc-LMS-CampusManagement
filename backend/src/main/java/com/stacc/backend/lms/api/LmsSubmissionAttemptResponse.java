@@ -6,7 +6,6 @@ import java.util.List;
 import com.stacc.backend.lms.assignment.submission.LmsAssignmentSubmissionService;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One of the student's own attempts. Nothing about the enrollment, the account, or the storage is included. */
 public record LmsSubmissionAttemptResponse(
         @Schema(example = "12")
         Long attemptId,

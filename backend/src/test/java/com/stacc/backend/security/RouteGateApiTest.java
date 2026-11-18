@@ -10,10 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-/**
- * The route rules of the v0.8 to v0.16 areas, through Spring Security: nobody is let in without a session, and a role
- * without the area's permission is refused before any service runs. Per-record checks are tested in each service.
- */
 class RouteGateApiTest extends DatabaseFreeApiTest {
 
     private static String bearer(String... authorities) {

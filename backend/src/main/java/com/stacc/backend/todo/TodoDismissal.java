@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One To-Do item an account has dismissed, by its key. */
 @Entity
 @Table(name = "todo_dismissals")
 public class TodoDismissal {
@@ -28,7 +27,6 @@ public class TodoDismissal {
     private Instant dismissedAt;
 
     protected TodoDismissal() {
-        // Required by JPA.
     }
 
     public TodoDismissal(Long userAccountId, String itemKey, Instant dismissedAt) {

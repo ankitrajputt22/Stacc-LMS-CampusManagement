@@ -5,7 +5,6 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.lms.course.LmsCourse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** An earlier offering of the same course the faculty member taught, whose content can be copied. */
 public record LmsCopySourceResponse(
         @Schema(example = "17")
         Long lmsCourseId,

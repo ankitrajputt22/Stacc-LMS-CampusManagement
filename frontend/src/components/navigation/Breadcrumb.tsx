@@ -6,13 +6,10 @@ const linkClasses =
 type Crumb = { to: string; label: string }
 
 type BreadcrumbProps = {
-  /** The page above this one, or the pages above it, outermost first. */
   parent: Crumb | readonly Crumb[]
-  /** The current page, once its name is known. */
   current?: string
 }
 
-/** "Parent / current page": the way back to a list, and where the user is. Long names are shortened. */
 export function Breadcrumb({ parent, current }: BreadcrumbProps) {
   const parents = 'to' in parent ? [parent] : parent
 

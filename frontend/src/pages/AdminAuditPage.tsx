@@ -27,7 +27,6 @@ const ACTION_WORDS: Record<AuditAction, string> = {
   FACULTY_PROFILE_CREATED: 'Faculty profile created',
 }
 
-/** A calendar date typed in the browser, as the moment its day starts there; empty stays empty. */
 function startOfLocalDay(date: string, plusDays = 0): string | undefined {
   if (date === '') {
     return undefined
@@ -65,7 +64,6 @@ function AuditLog() {
   const filters: AuditFilters = {
     action: action === '' ? undefined : (action as AuditAction),
     from: startOfLocalDay(from),
-    // The end date is included: the range ends where the next day starts.
     to: startOfLocalDay(to, 1),
     q: query === '' ? undefined : query,
     page: page - 1,
@@ -139,7 +137,6 @@ function AuditLog() {
   )
 }
 
-/** /admin/audit: the read-only audit log for admins. */
 export function AdminAuditPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

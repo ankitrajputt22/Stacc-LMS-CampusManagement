@@ -20,19 +20,10 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One course being offered in one semester. The programme and academic session come from
- * the semester, and the owning department comes from the course, so none of them is stored
- * here again. A finished offering is closed rather than deleted.
- */
-// The database's unique key is on course, semester, and a generated section_key (the section's ID, or 0 for the whole
-// semester), which is not mapped here: a course is offered at most once per semester and section.
 @Entity
 @Table(name = "course_offerings")
 public class CourseOffering {
 
-    // No cascade on either link: courses and semesters are shared data and are never
-    // created or deleted through an offering.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,12 +36,10 @@ public class CourseOffering {
     @JoinColumn(name = "semester_id", nullable = false, updatable = false)
     private Semester semester;
 
-    // The section this offering is for, or none for the whole semester. Fixed after creation.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", updatable = false)
     private Section section;
 
-    // The most enrolled students, or null for no limit.
     @Column
     private Integer capacity;
 
@@ -71,15 +60,12 @@ public class CourseOffering {
     private Instant updatedAt;
 
     protected CourseOffering() {
-        // Required by JPA.
     }
 
-    /** The course and semester say what this offering is, so they cannot be changed afterwards. */
     public CourseOffering(Course course, Semester semester) {
         this(course, semester, null);
     }
 
-    /** An offering for one section of the semester, or the whole semester when the section is null. */
     public CourseOffering(Course course, Semester semester, Section section) {
         this.course = Require.notNull(course, "course");
         this.semester = Require.notNull(semester, "semester");
@@ -89,7 +75,6 @@ public class CourseOffering {
         this.section = section;
     }
 
-    /** The section this offering is for, or null for the whole semester. */
     public Section getSection() {
         return section;
     }

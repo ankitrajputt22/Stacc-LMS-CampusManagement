@@ -115,7 +115,6 @@ class CampusServiceDefinitionServiceTest {
         CampusServiceDefinition existing = CampusFixtures.service(7, "ID_CARD", true, false, "OLD_FLOW");
         when(services.findById(7L)).thenReturn(Optional.of(existing));
 
-        // Unchanged, so a since-deactivated workflow does not block editing the name.
         service.update(7L, new UpdateCampusServiceInput("Renamed", null, true, true, false, true, "OLD_FLOW"));
         verify(approvals, never()).isStartableWorkflow("OLD_FLOW");
 

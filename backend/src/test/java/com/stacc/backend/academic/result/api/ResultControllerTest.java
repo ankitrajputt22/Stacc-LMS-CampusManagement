@@ -31,10 +31,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Calls the result routes through Spring Security. The services are stand-ins, so these tests are about who gets
- * in, what reaches the services, and what is sent back.
- */
 class ResultControllerTest extends DatabaseFreeApiTest {
 
     private static final long FACULTY_ACCOUNT = 21;

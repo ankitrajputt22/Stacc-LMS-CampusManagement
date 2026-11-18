@@ -10,12 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A student's private notes in a course they may use now (v0.13.6), checked with {@link LmsStudentAccessService} on
- * every request. The owner always comes from the access token; another student's note answers the same 404 as a missing
- * one. A student keeps at most 20 notes per course. Deleting removes the row for real; {@link AiStudentNoteIndexer}
- * then removes the note from the notes index.
- */
 @Service
 @Transactional
 public class AiStudentNoteService {
@@ -42,10 +36,6 @@ public class AiStudentNoteService {
         return notes.findByLmsCourseIdAndUserAccountIdOrderByIdAsc(lmsCourseId, accountId);
     }
 
-    /**
-     * Adds a note within the quota: the student's account row is locked first, and the count runs at READ COMMITTED so
-     * it sees notes another request committed while this one waited.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public AiStudentNote create(Long accountId, Long lmsCourseId, String title, String content) {
         requireCourse(accountId, lmsCourseId);
@@ -62,12 +52,10 @@ public class AiStudentNoteService {
         return note;
     }
 
-    /** Deletes the note for real. The caller then asks {@link AiStudentNoteIndexer#afterDelete} to update the index. */
     public void delete(Long accountId, Long lmsCourseId, Long noteId) {
         notes.delete(owned(accountId, lmsCourseId, noteId));
     }
 
-    /** The student's notes in the course as the AI may use them, with their fingerprint. Callers check access first. */
     @Transactional(readOnly = true)
     public AiStudentNoteKnowledge knowledge(Long lmsCourseId, Long accountId) {
         return AiStudentNoteKnowledge.of(notes.findByLmsCourseIdAndUserAccountIdOrderByIdAsc(lmsCourseId, accountId).stream()

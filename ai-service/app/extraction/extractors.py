@@ -1,11 +1,3 @@
-"""Plain-text extraction from study-material files.
-
-Files are untrusted. Nothing here runs macros or scripts, follows links, fetches external resources,
-or calls a shell. Office files are read as ZIP packages of XML with ``defusedxml``, which refuses
-entity tricks, and every read is bounded: package size, member count, member size, pages, and
-characters. Images are not supported: there is no OCR.
-"""
-
 from __future__ import annotations
 
 import io
@@ -35,12 +27,11 @@ REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
 
 
 class ExtractionError(Exception):
-    """The file could not be read as its declared type."""
+    pass
 
 
 @dataclass(frozen=True)
 class Segment:
-    """Text from one place in a file: a page of a PDF, a slide, or the whole of other files."""
 
     text: str
     page_number: int | None = None
@@ -49,7 +40,6 @@ class Segment:
 
 
 class _Budget:
-    """Stops extraction once a source has produced enough characters."""
 
     def __init__(self, max_chars: int) -> None:
         self.remaining = max_chars
@@ -65,7 +55,6 @@ class _Budget:
 
 
 def extract(file_type: FileType, data: bytes, max_chars: int) -> list[Segment]:
-    """The text of the file in reading order, without empty segments."""
     budget = _Budget(max_chars)
     try:
         if file_type is FileType.TXT:
@@ -82,7 +71,7 @@ def extract(file_type: FileType, data: bytes, max_chars: int) -> list[Segment]:
             raise ExtractionError("unsupported file type")
     except ExtractionError:
         raise
-    except Exception as error:  # A malformed file must never take the service down.
+    except Exception as error:
         raise ExtractionError(type(error).__name__) from error
     return [segment for segment in segments if segment.text.strip()]
 
@@ -98,7 +87,6 @@ def _pdf(data: bytes, budget: _Budget) -> list[Segment]:
 
     reader = PdfReader(io.BytesIO(data), strict=False)
     if reader.is_encrypted:
-        # Only a file without a user password can be read; nothing is guessed.
         try:
             if not reader.decrypt(""):
                 raise ExtractionError("encrypted")
@@ -117,16 +105,10 @@ DIGITS = re.compile(r"\d+")
 
 
 def _edge_key(line: str) -> str:
-    """A line as it repeats across pages: page numbers and other digits do not make it different."""
     return DIGITS.sub("#", " ".join(line.split()).lower())
 
 
 def without_running_lines(pages: list[str]) -> list[str]:
-    """Pages without their running headers and footers (v0.13.3).
-
-    A line among the first or last two of a page that also appears there on at least half of the pages (and at least
-    three) is a header or footer, such as a course name, a college name, or "Page 3 of 20", and is removed.
-    """
     if len(pages) < 3:
         return pages
     counts: dict[str, int] = {}
@@ -142,7 +124,6 @@ def without_running_lines(pages: list[str]) -> list[str]:
         lines = [line for line in text.split("\n") if line.strip()]
         edge = set(range(min(EDGE_LINES, len(lines)))) | set(range(max(len(lines) - EDGE_LINES, 0), len(lines)))
         kept = [line for index, line in enumerate(lines) if not (index in edge and _edge_key(line) in running)]
-        # A page is never emptied: on very short pages the "running" lines may be its only text.
         cleaned.append("\n".join(kept) if kept else text)
     return cleaned
 
@@ -156,7 +137,6 @@ def _open_package(data: bytes) -> zipfile.ZipFile:
 
 
 def _xml(package: zipfile.ZipFile, name: str):
-    """One XML member, read with a hard size cap whatever its header claims."""
     with package.open(name) as member:
         content = member.read(MAX_XML_MEMBER_BYTES + 1)
     if len(content) > MAX_XML_MEMBER_BYTES:
@@ -187,7 +167,6 @@ def _docx(data: bytes, budget: _Budget) -> list[Segment]:
                 parts.append("\n")
         text = "".join(parts)
         if style.lower().startswith(("heading", "title")) and text.strip():
-            # A heading starts a new section, so no chunk mixes two sections (v0.13.3).
             close()
             paragraphs = []
             heading = text.strip()[:200]
@@ -200,7 +179,6 @@ def _docx(data: bytes, budget: _Budget) -> list[Segment]:
 
 
 def _slide_order(package: zipfile.ZipFile) -> list[str]:
-    """Slide parts in presentation order, falling back to their file numbers."""
     names = {name for name in package.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)}
     try:
         presentation = _xml(package, "ppt/presentation.xml")
@@ -229,7 +207,6 @@ def _pptx(data: bytes, budget: _Budget) -> list[Segment]:
             lines = ["".join(node.text or "" for node in paragraph.iter(f"{A}t"))
                      for paragraph in slide.iter(f"{A}p")]
             kept = [line for line in lines if line.strip()]
-            # The slide's first line, usually its title, travels with each chunk of the slide.
             segments.append(Segment(budget.take("\n".join(kept)), slide_number=number,
                                     heading=kept[0].strip()[:200] if kept else None))
     return segments
@@ -275,5 +252,4 @@ def _cell_text(cell, shared: list[str]) -> str:
     if kind == "s":
         index = int(value.text)
         return shared[index] if 0 <= index < len(shared) else ""
-    # Formulas are never evaluated: only the value the file already stores is read.
     return value.text

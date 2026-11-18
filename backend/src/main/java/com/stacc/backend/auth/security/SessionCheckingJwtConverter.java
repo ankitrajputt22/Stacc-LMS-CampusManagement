@@ -11,12 +11,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
-/**
- * Turns a checked token into the signed-in account for one request, but only while the token's session is open and its
- * account active. Otherwise the request is answered 401, exactly like an expired token. While the college requires a
- * new password, the request is signed in without any role or permission, so every feature answers 403. The token's "authorities"
- * claim already holds the final names (ROLE_STUDENT, permission codes), so no prefix is added.
- */
 public class SessionCheckingJwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final SessionService sessions;
@@ -40,8 +34,6 @@ public class SessionCheckingJwtConverter implements Converter<Jwt, AbstractAuthe
             throw new InvalidBearerTokenException("The session has ended.");
         }
         if (check.passwordChangeRequired()) {
-            // Signed in, but with no role and no permission: only what needs nothing more (the session, signing
-            // out, and choosing a new password) works until the password has been changed.
             return new JwtAuthenticationToken(token, List.of(), token.getSubject());
         }
         return authorities.convert(token);

@@ -14,32 +14,22 @@ import { SessionStatusTag } from './SessionStatusTag'
 import { useAttendanceSession } from './useAttendance'
 
 type SessionViewProps = {
-  /** The course offering of the page. A session of another offering reads as unavailable here. */
   courseOfferingId: number
-  /** Null when the address cannot name a session: nothing is asked, and it reads as unavailable. */
   sessionId: number | null
-  /** The list of sessions, to go back to. */
   listPath: string
-  /** After a change, so the session list behind this view is up to date. */
   onChanged: () => void
 }
 
-/**
- * One session: when it was held, its topic and status, and its roster to mark, finalize, or correct. What is
- * shown is only what the backend sent, and after a change the page shows the backend's answer without reloading.
- */
 export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }: SessionViewProps) {
   const detail = useAttendanceSession(sessionId)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const [latest, setLatest] = useState<AttendanceSessionDetail | null>(null)
   const [editing, setEditing] = useState(false)
   const [announcement, setAnnouncement] = useState('')
-  // The address names the offering too, so a session of another offering is never shown under this one.
   const belongsHere = detail.status === 'loaded' && detail.data.courseOfferingId === courseOfferingId
   const loaded = belongsHere
   const session = latest ?? (belongsHere ? detail.data : null)
 
-  // Opening a session moves focus to it, so keyboard and screen reader users start there.
   useEffect(() => {
     if (loaded) {
       headingRef.current?.focus()
@@ -146,7 +136,6 @@ export function SessionView({ courseOfferingId, sessionId, listPath, onChanged }
         session={session}
         onChanged={setLatest}
         onFinalized={() => {
-          // The roster is replaced by its finalized form, so focus and the news move to the session heading.
           setAnnouncement('Attendance finalized. Students can see it now.')
           headingRef.current?.focus()
           onChanged()

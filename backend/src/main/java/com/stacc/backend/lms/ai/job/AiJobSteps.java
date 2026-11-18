@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The short transactions of an AI job's life: queue, claim, finish, and recover. The work itself runs outside them. */
 @Service
 public class AiJobSteps {
 
@@ -21,7 +20,6 @@ public class AiJobSteps {
         return jobs.saveAndFlush(job);
     }
 
-    /** Claims the oldest queued job with FOR UPDATE SKIP LOCKED and marks it running. */
     @Transactional
     public Optional<AiJob> claim(Instant now) {
         return jobs.claimNext().map(job -> {

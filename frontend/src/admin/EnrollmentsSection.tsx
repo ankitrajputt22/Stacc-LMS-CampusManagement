@@ -13,10 +13,6 @@ import { MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 import { StudentEnrollments } from './StudentEnrollments'
 
-/**
- * Official enrollment, one student at a time: find an existing student by login ID, then manage their semester and
- * course enrollments. The search only selects a student; it never creates or edits accounts or profiles.
- */
 export function EnrollmentsSection() {
   const [selected, setSelected] = useState<number | null>(null)
   const [text, setText] = useState('')
@@ -40,11 +36,9 @@ export function EnrollmentsSection() {
 type StudentSearchProps = {
   text: string
   onText: (text: string) => void
-  /** The text last searched for, or null before the first search. */
   query: string | null
   onSearch: (query: string) => void
   onSelect: (studentProfileId: number) => void
-  /** After returning from a student, focus goes back to the search box. */
   focusOnShow: boolean
 }
 

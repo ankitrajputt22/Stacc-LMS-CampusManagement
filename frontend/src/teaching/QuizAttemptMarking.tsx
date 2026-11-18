@@ -31,7 +31,6 @@ function refusalText(failure: unknown, fallback: string): string | null {
   return message && status !== null && status < 500 ? message : fallback
 }
 
-/** The student's answer as they gave it. Plain text, never HTML. */
 function StudentAnswer({ question }: { question: ReviewQuestion }) {
   const answer = question.answer
   const empty = <p className="text-sm text-ink-muted">Not answered.</p>
@@ -53,7 +52,6 @@ function StudentAnswer({ question }: { question: ReviewQuestion }) {
   return answer.text ? <p className="rounded-panel border border-line bg-surface p-3 text-sm break-words whitespace-pre-line text-ink">{answer.text}</p> : empty
 }
 
-/** The question's own answers, as faculty read them. */
 function AnswerKey({ question }: { question: ReviewQuestion }) {
   switch (question.type) {
     case 'TRUE_FALSE':
@@ -73,7 +71,6 @@ function AnswerKey({ question }: { question: ReviewQuestion }) {
   }
 }
 
-/** Marks and feedback for one answered question: needed for a written answer, a regrade for any other. */
 function MarkForm({ review, question, onSaved }: { review: QuizAttemptReview; question: ReviewQuestion; onSaved: (message: string) => void }) {
   const [marks, setMarks] = useState(question.mark ? String(question.mark.marks) : '')
   const [feedback, setFeedback] = useState(question.mark?.feedback ?? '')
@@ -124,11 +121,6 @@ function MarkForm({ review, question, onSaved }: { review: QuizAttemptReview; qu
   )
 }
 
-/**
- * One attempt for marking: each question with its answers, the student's answer, the automatic marks, and the
- * teacher's marks and feedback. Written answers need marks; any other can be regraded. Saving makes the result count;
- * students see it under the quiz's result settings. An attempt left open past its time can be closed first.
- */
 export function QuizAttemptMarking({ lmsCourseId, attemptId }: { lmsCourseId: number; attemptId: number }) {
   const queryClient = useQueryClient()
   const review = useApiQuery(queryKeys.lms.quizAttemptReview(attemptId), (signal) => getQuizAttemptReview(attemptId, signal))

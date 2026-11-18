@@ -17,11 +17,6 @@ function failureMessage(status: number | null): string {
   }
 }
 
-/**
- * Downloads one file at a time through the API with the given request. A second click while a download is
- * starting is ignored. A failure is reported for that file only; the page stays as it is, a 403 never signs
- * the user out, and a 401 is left to the shared client.
- */
 export function useFileDownload(fetchFile: (fileId: number) => Promise<Blob>) {
   const busyRef = useRef(false)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)

@@ -27,10 +27,8 @@ import { VacateButton } from './VacateButton'
 
 const selectClasses = `h-11 ${fieldClasses} ${border(false)}`
 
-/** A page-level message after a change, or after a refusal that reloads the application. */
 type Notify = (message: string, tone?: 'success' | 'error') => void
 
-/** Hostel, then room, then bed: only beds the backend reports as available. A 409 reloads the choices. */
 function AllocationForm({ applicationId, onAllocated }: { applicationId: number; onAllocated: Notify }) {
   const beds = useApiRequest(getAvailableBeds)
   const busyRef = useRef(false)
@@ -75,7 +73,6 @@ function AllocationForm({ applicationId, onAllocated }: { applicationId: number;
         if (status !== 409) {
           setError(text)
         } else {
-          // The bed or the application changed meanwhile: the choices and the application are loaded again.
           setBedId('')
           beds.refresh()
           onAllocated(text, 'error')
@@ -202,7 +199,6 @@ function Review({ detail, onChanged }: { detail: HostelAdminApplicationDetail; o
   )
 }
 
-/** One application for the hostel office at /admin/hostel/applications/:applicationId. */
 export function ApplicationReview() {
   const { applicationId: param } = useParams()
   const applicationId = param && /^[1-9]\d{0,17}$/.test(param) ? Number(param) : null

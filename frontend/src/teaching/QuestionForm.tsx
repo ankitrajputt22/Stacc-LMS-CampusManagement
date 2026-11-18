@@ -9,7 +9,6 @@ import { changeType, checkDraft, inputOf, MAX_OPTIONS, type QuestionDraft, usesO
 
 type QuestionFormProps = {
   initial: QuestionDraft
-  /** Active outcomes of the course, and an archived one the question already has. */
   outcomes: LmsOutcome[]
   submitLabel: string
   onSubmit: (input: LmsQuestionInput) => Promise<void>
@@ -30,7 +29,6 @@ function refusal(failure: unknown): { message: string | null; fields: Record<str
   const apiError = getApiError(failure)
   const fields: Record<string, string> = {}
   for (const fieldError of apiError?.fieldErrors ?? []) {
-    // Errors about one option belong to the options as a whole.
     fields[fieldError.field.startsWith('options') ? 'options' : fieldError.field] = fieldError.message
   }
   const message =
@@ -42,11 +40,6 @@ function refusal(failure: unknown): { message: string | null; fields: Record<str
   return { message, fields }
 }
 
-/**
- * Adding or editing a question with its answers. The parts shown follow the type: options with the correct ones marked,
- * the true or false answer, accepted short answers, or marking guidance. Obvious slips are caught before sending; the
- * backend decides.
- */
 export function QuestionForm({ initial, outcomes, submitLabel, onSubmit, onCancel }: QuestionFormProps) {
   const id = useId()
   const [draft, setDraft] = useState(initial)
@@ -68,7 +61,6 @@ export function QuestionForm({ initial, outcomes, submitLabel, onSubmit, onCance
         if (at === index) {
           return { ...option, ...change }
         }
-        // A single-choice question has one correct option: choosing another clears the rest.
         return current.type === 'SINGLE_CHOICE' && change.correct ? { ...option, correct: false } : option
       }),
     }))

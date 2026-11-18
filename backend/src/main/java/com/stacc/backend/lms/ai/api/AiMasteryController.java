@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The signed-in student's own mastery of a course's published pages (v0.15.5). Nobody else has a route to it. */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai/mastery")
 @Tag(name = "LMS AI study assistant")

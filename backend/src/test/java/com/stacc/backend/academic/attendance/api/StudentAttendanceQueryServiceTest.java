@@ -22,7 +22,6 @@ import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import org.junit.jupiter.api.Test;
 
-/** Student A is account 11. The repository answers as the database query would, latest class first. */
 class StudentAttendanceQueryServiceTest {
 
     private static final Long STUDENT_A = 11L;
@@ -38,7 +37,6 @@ class StudentAttendanceQueryServiceTest {
 
     private long nextId = 100;
 
-    /** A record of a session of the offering, held on the given day of October 2026, marked and finalized. */
     private AttendanceRecord finalized(CourseEnrollment enrollment, int day, AttendanceStatus status) {
         AttendanceRecord record = open(enrollment, day, status);
         record.getAttendanceSession().markFinalized(Instant.parse("2026-10-30T10:00:00Z"));

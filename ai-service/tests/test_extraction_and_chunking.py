@@ -74,10 +74,8 @@ def test_chunks_are_bounded_in_tokens_overlapping_and_keep_location():
     assert len(chunks) > 5
     assert all(count_tokens(chunk.text) <= 100 for chunk in chunks)
     assert all(chunk.page_number == 4 for chunk in chunks)
-    # Cuts fall at sentence ends, and consecutive chunks share text.
     assert all(chunk.text.endswith(".") for chunk in chunks)
     assert chunks[0].text.split(". ")[-1] in chunks[1].text
-    # Deterministic.
     assert chunks == chunk_segments([Segment(text, page_number=4)], size=100, overlap=20)
 
 
@@ -107,7 +105,6 @@ def test_docx_headings_and_slide_titles_become_headings():
 
 
 def _with_heading_style(docx: bytes) -> bytes:
-    """The same document with its first paragraph styled as a heading."""
     import io
     import zipfile
 

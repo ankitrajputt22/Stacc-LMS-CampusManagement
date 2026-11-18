@@ -51,7 +51,6 @@ import com.stacc.backend.auth.session.SessionProperties;
 
 class AuthControllerTest extends DatabaseFreeApiTest {
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "2408400100011";
     private static final String PASSWORD = "TestPassword123!";
     private static final String WRONG_PASSWORD = "WrongPassword123!";
@@ -239,7 +238,6 @@ class AuthControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void loginOnlyAcceptsPost() throws Exception {
-        // Only POST is public. Any other method is an ordinary protected API request.
         mockMvc.perform(get("/api/v1/auth/login"))
                 .andExpect(status().isUnauthorized());
 

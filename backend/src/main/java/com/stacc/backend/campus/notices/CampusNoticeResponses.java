@@ -5,13 +5,11 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** Campus notices as clients see them. Readers get only the published text; admins get the whole notice. */
 public final class CampusNoticeResponses {
 
     private CampusNoticeResponses() {
     }
 
-    /** A published notice in the feed. */
     public record CampusNoticeResponse(
             Long noticeId,
             @Schema(description = "Plain text.") String title,
@@ -27,7 +25,6 @@ public final class CampusNoticeResponses {
             int totalPages) {
     }
 
-    /** A notice with its visibility and lifecycle, for admins. */
     public record AdminCampusNoticeResponse(
             Long noticeId,
             String title,

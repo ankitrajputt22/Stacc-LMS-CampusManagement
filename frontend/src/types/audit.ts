@@ -1,5 +1,3 @@
-// The audit log as GET /api/v1/admin/audit-events sends it: read-only, newest first.
-
 export type AuditAction =
   | 'USER_CREATED'
   | 'USER_DETAILS_CHANGED'
@@ -12,12 +10,10 @@ export type AuditAction =
 export type AuditRow = {
   auditEventId: number
   occurredAt: string
-  /** Null for the system. */
   actorLoginId: string | null
   action: AuditAction
   targetType: string
   targetId: number | null
-  /** The login ID when the target is an account. */
   targetLoginId: string | null
   details: string | null
   requestId: string | null

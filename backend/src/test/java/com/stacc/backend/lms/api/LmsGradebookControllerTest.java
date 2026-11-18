@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Faculty need the gradebook permission and students the grades permission; requests are checked before the services. */
 class LmsGradebookControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

@@ -188,19 +188,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-/**
- * Base for tests that call the API through the whole application without a database,
- * so they need no MySQL credentials. The account repository is replaced by a stand-in
- * that each test can prepare, and tokens are signed with a made-up test secret. Requests
- * pass through the Spring Security filter chain, as they do in the running app.
- *
- * <p>Without a database there are no real repositories. A service that needs repositories
- * can only start here if they are listed below as stand-ins, even when no test uses them.
- */
 @SpringBootTest(properties = {
     "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
     "stacc.jwt.secret=" + TestSecrets.JWT_SECRET,
-    // Without a database there is no "db" health check, which the readiness group names.
     "management.endpoint.health.validate-group-membership=false"
 })
 @MockitoBean(types = {
@@ -393,7 +383,6 @@ public abstract class DatabaseFreeApiTest {
     @MockitoBean
     protected UserAccountRepository userAccountRepository;
 
-    /** Sessions are open by default here, so tokens from TestTokens are accepted; a test can say otherwise. */
     @MockitoBean
     protected SessionService sessionService;
 

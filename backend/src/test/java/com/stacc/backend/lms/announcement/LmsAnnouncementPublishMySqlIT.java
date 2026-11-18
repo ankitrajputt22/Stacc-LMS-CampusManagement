@@ -11,10 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two publications of the same draft announcement at once publish it once and send its Inbox notice once, to every
- * student who may use the course. Uses an announcement of its own in CS301's published course.
- */
 class LmsAnnouncementPublishMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

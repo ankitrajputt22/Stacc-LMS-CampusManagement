@@ -19,10 +19,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One approved application's stay in one bed. An ACTIVE allocation is what makes a bed occupied. Vacating keeps the
- * row as history; an application may get a new allocation after an earlier one was vacated. Nothing is deleted.
- */
 @Entity
 @Table(name = "hostel_allocations")
 public class HostelAllocation {
@@ -66,7 +62,6 @@ public class HostelAllocation {
     @Column(name = "vacate_condition_note", length = 500)
     private String vacateConditionNote;
 
-    /** Records the student moving in, once, while the allocation is active. */
     public void checkIn(Instant at, String note) {
         if (status != HostelAllocationStatus.ACTIVE) {
             throw new IllegalStateException("Only an active allocation can be checked in");
@@ -78,7 +73,6 @@ public class HostelAllocation {
         this.checkInNote = Require.optionalText(note, "note", 500);
     }
 
-    /** The room's condition when the student left; set together with vacating. */
     public void conditionOnVacating(String note) {
         if (vacateConditionNote == null) {
             this.vacateConditionNote = Require.optionalText(note, "condition note", 500);
@@ -98,10 +92,8 @@ public class HostelAllocation {
     private Instant updatedAt;
 
     protected HostelAllocation() {
-        // Required by JPA.
     }
 
-    /** A new ACTIVE allocation. Whether it is allowed is checked by the caller, under its locks. */
     public HostelAllocation(HostelApplication hostelApplication, HostelBed bed, UserAccount allocatedBy, Instant at) {
         this.hostelApplication = Require.notNull(hostelApplication, "hostelApplication");
         this.bed = Require.notNull(bed, "bed");
@@ -113,7 +105,6 @@ public class HostelAllocation {
         return status == HostelAllocationStatus.ACTIVE;
     }
 
-    /** Ends the allocation and records who ended it and when. Only an ACTIVE allocation can be vacated. */
     public void vacate(UserAccount actor, Instant at) {
         if (!isActive()) {
             throw new IllegalStateException("Only an active allocation can be vacated");

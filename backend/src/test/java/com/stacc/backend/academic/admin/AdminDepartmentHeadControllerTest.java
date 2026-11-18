@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Department head routes need the admin role and the department head permissions together; the actor is the token's. */
 class AdminDepartmentHeadControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/admin/academic";

@@ -1,5 +1,3 @@
-"""v0.15.2: summaries of a topic, of whatever the allowed sources hold (a module or a document), in a few styles."""
-
 from __future__ import annotations
 
 import pytest

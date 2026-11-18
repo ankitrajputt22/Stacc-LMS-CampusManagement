@@ -12,10 +12,6 @@ public interface FacultyProfileRepository extends JpaRepository<FacultyProfile, 
 
     Optional<FacultyProfile> findByUserAccountId(Long userAccountId);
 
-    /**
-     * Faculty profiles whose login ID contains the text (lower-cased and escaped by the caller), with the account and
-     * department loaded, by login ID. For choosing who teaches an offering; it never searches names or contact details.
-     */
     @Query("""
             select profile
             from FacultyProfile profile

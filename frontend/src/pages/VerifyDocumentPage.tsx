@@ -6,10 +6,6 @@ import type { Authenticity } from '../types/career'
 import { PortalEmblem } from '../login/PortalEmblem'
 import { Alert, Button, TextField } from '../ui'
 
-/**
- * /verify-document: the public check that a Stacc verification code belongs to an authentic document. No sign-in; it
- * shows only whether it is genuine, its title, and its issue date.
- */
 export function VerifyDocumentPage() {
   const [params] = useSearchParams()
   const [code, setCode] = useState(params.get('code') ?? '')

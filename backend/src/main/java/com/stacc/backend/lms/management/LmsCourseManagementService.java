@@ -14,16 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty create, publish, and archive the LMS course of a course offering they teach. Who may do so comes from {@link FacultyTeachingAccessService} for the offering, found from the stored LMS
- * course and never from the client, so an archived course stays manageable while the normal faculty access policy
- * refuses it. Anything the faculty member does not teach answers the same 404 as a missing course.
- *
- * <p>A new LMS course starts {@code DRAFT}. Publishing moves a draft to {@code PUBLISHED}; archiving moves either to
- * {@code ARCHIVED}, which is final: nothing restores it, and nothing is ever deleted. Students need no membership:
- * while the course is published, its offering's current students use it, worked out live from official enrollment.
- * Course offerings, enrollments, and teaching assignments are only read.
- */
 @Service
 @Transactional
 public class LmsCourseManagementService {
@@ -47,12 +37,6 @@ public class LmsCourseManagementService {
         this.courseEnrollments = courseEnrollments;
     }
 
-    /**
-     * Creates the draft LMS course of a course offering the faculty member teaches. An offering already has at most one LMS course: a second one answers 409, also when the
-     * database's unique constraint catches two requests at once.
-     *
-     * @param userAccountId the ID of the signed-in account, taken from its access token
-     */
     public LmsCourseChange create(Long userAccountId, Long courseOfferingId) {
         if (!teachingAccess.canTeachCourseOffering(userAccountId, courseOfferingId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, OFFERING_NOT_FOUND);
@@ -71,10 +55,6 @@ public class LmsCourseManagementService {
         return changeOf(lmsCourse, currentStudents(lmsCourse));
     }
 
-    /**
-     * Publishes a draft LMS course; a published one stays published. Its offering's current students then use it,
-     * decided on every request by the student access policy.
-     */
     public LmsCourseChange publish(Long userAccountId, Long lmsCourseId) {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
         if (lmsCourse.getStatus() == LmsCourseStatus.ARCHIVED) {
@@ -84,20 +64,12 @@ public class LmsCourseManagementService {
         return changeOf(lmsCourse, currentStudents(lmsCourse));
     }
 
-    /**
-     * Archives a draft or published LMS course; an archived one stays archived. Its content, assignments, submissions,
-     * and grades are all kept. Students and the normal faculty pages lose access to it.
-     */
     public LmsCourseChange archive(Long userAccountId, Long lmsCourseId) {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
         lmsCourse.archive();
         return changeOf(lmsCourse, null);
     }
 
-    /**
-     * Chooses what the course home shows students and its optional welcome message. Official course details stay in the
-     * academic records. An archived course cannot change (409).
-     */
     public LmsCourse changeHome(Long userAccountId, Long lmsCourseId, LmsCourseHomeView homeView, String welcomeMessage) {
         LmsCourse lmsCourse = lockManagedCourse(userAccountId, lmsCourseId);
         if (lmsCourse.getStatus() == LmsCourseStatus.ARCHIVED) {
@@ -107,8 +79,6 @@ public class LmsCourseManagementService {
         return lmsCourse;
     }
 
-    // The course is locked first, so its status cannot change under a lifecycle step, then its offering decides who
-    // may manage it. A course the faculty member does not teach looks exactly like a missing one.
     private LmsCourse lockManagedCourse(Long userAccountId, Long lmsCourseId) {
         LmsCourse lmsCourse = lmsCourses.findByIdForUpdate(lmsCourseId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_NOT_FOUND));

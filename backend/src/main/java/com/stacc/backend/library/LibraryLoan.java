@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A copy lent to a borrower until a due time, renewed at most once, and returned once. Kept as history. */
 @Entity
 @Table(name = "library_loans")
 public class LibraryLoan {
@@ -59,7 +58,6 @@ public class LibraryLoan {
         this.dueAt = issuedAt.plus(PERIOD);
     }
 
-    /** Extends the due time once, from the current due time, unless already overdue. */
     public void renew(Instant now) {
         if (returnedAt != null || renewed) {
             throw new IllegalStateException("A loan is renewed at most once, before it is returned.");

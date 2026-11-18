@@ -26,7 +26,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Admin user routes: viewing needs USER_VIEW, every change also USER_MANAGE; the admin comes from the token. */
 class AdminUserControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/admin/users";

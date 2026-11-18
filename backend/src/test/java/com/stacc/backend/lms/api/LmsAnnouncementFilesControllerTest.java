@@ -17,7 +17,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty who may manage content add or remove announcement files; each side downloads through its own route. */
 class LmsAnnouncementFilesControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

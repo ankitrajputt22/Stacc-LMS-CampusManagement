@@ -6,7 +6,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One published assignment in a student's course list. Everything a student receives is published. */
 public record LmsCourseAssignmentResponse(
         @Schema(example = "9")
         Long id,

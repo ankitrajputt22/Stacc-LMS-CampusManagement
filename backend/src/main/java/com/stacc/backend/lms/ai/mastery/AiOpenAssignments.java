@@ -14,11 +14,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The assignments a student still has to hand in, for recommendations and study plans: the course's published
- * assignments due after now, without an attempt from the student's access-granting course enrollment, earliest first.
- * Only reads; work already handed in needs no more preparation.
- */
 @Component
 public class AiOpenAssignments {
 

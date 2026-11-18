@@ -9,12 +9,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-/**
- * Refuses to start a production deployment ({@code prod} profile) with settings that are fine on a laptop but unsafe
- * for real users. Each setting is also checked on its own elsewhere (a weak JWT secret or a wildcard origin never
- * starts anywhere); this adds the combinations that only matter in production. Every problem is listed at once, and
- * no message ever contains a setting's value.
- */
 @Component
 @Profile(ProductionSettingsCheck.PROFILE)
 public class ProductionSettingsCheck {

@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/** Event attendance: attendees' check-in codes, check-in by code or college ID, and certificate eligibility. */
 @RestController
 @RequestMapping("/api/v1/engagement/events")
 @Tag(name = "Campus engagement")

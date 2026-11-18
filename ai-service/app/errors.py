@@ -1,6 +1,3 @@
-"""One error type with a stable code. Messages are short and never contain course text, prompts,
-model output, file paths, or stack traces."""
-
 from __future__ import annotations
 
 

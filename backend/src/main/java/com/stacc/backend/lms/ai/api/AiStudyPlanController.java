@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Study plans (v0.15.7): scheduled by code, shown on request, and added to the calendar or To-Do only when asked. */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai/study-plan")
 @Tag(name = "LMS AI study assistant")

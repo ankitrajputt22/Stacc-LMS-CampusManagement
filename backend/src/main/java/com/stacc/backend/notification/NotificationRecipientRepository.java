@@ -10,13 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Inbox rows. Every read and change here is limited to one account, the one in the access token. */
 public interface NotificationRecipientRepository extends JpaRepository<NotificationRecipient, Long> {
 
-    /**
-     * One page of an account's Inbox with each notification, newest first, in one query plus a count. With
-     * {@code unreadOnly} only rows that have not been read.
-     */
     @Query(value = """
             select recipient
             from NotificationRecipient recipient
@@ -34,7 +29,6 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
     Page<NotificationRecipient> findInbox(
             @Param("userAccountId") Long userAccountId, @Param("unreadOnly") boolean unreadOnly, Pageable page);
 
-    /** One Inbox row, only if it belongs to this account, with its notification. */
     @Query("""
             select recipient
             from NotificationRecipient recipient
@@ -47,7 +41,6 @@ public interface NotificationRecipientRepository extends JpaRepository<Notificat
 
     long countByUserAccountIdAndReadAtIsNull(Long userAccountId);
 
-    /** Marks every unread row of one account read in one statement, and says how many changed. */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
             update NotificationRecipient recipient

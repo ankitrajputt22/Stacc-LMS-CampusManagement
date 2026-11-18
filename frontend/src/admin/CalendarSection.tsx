@@ -72,7 +72,6 @@ function refusalText(status: number | null, apiMessage: string | null): string {
   }
 }
 
-/** When the event was published or cancelled, or that a draft is seen only here. */
 function lifecycleText(event: AdminCalendarEvent): string {
   if (event.status === 'DRAFT') {
     return 'Draft: not shown to students or faculty yet.'
@@ -86,12 +85,6 @@ function lifecycleText(event: AdminCalendarEvent): string {
     : `Cancelled ${formatDateTime(event.cancelledAt ?? '')} before it was published: never shown.`
 }
 
-/**
- * Official academic calendar events: listed with compact filters, added as drafts, edited, published, and cancelled.
- * Nothing is deleted or restored. Assignment deadlines are not listed or edited here: they belong to LMS assignments
- * and only appear on the shared calendar. The backend checks the role and the permissions on every request; a 403
- * never signs the user out.
- */
 export function CalendarSection() {
   const id = useId()
   const queryClient = useQueryClient()
@@ -207,7 +200,6 @@ export function CalendarSection() {
     </div>
   )
 
-  // Plain render helpers, not components: the form inside a row must keep its state when the section re-renders.
   function actionsFor(event: AdminCalendarEvent) {
     if (event.status === 'CANCELLED') {
       return <p className="mt-2 text-sm text-ink-muted">Cancelled events cannot be changed.</p>

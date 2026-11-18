@@ -19,9 +19,6 @@ import type {
 } from '../types/helpdesk'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api, and only the client sets the Authorization header. The requester, every
-// author, and every actor come from the access token: no request names an account.
-
 export async function getHelpdeskCategories(signal?: AbortSignal) {
   const response = await apiClient.get<HelpdeskCategory[]>('/helpdesk/categories', { signal })
   return response.data
@@ -87,22 +84,18 @@ export async function updateHelpdeskCategory(categoryId: number, request: Update
   return response.data
 }
 
-/** An internal note, seen only by the support side. */
 export async function addHelpdeskNote(ticketId: number, message: string) {
   await apiClient.post(`/helpdesk/tickets/${ticketId}/notes`, { message })
 }
 
-/** The requester reopens a resolved ticket within 7 days. */
 export async function reopenHelpdeskTicket(ticketId: number) {
   return (await apiClient.post<HelpdeskTicketDetail>(`/helpdesk/tickets/${ticketId}/reopen`)).data
 }
 
-/** The requester rates a resolved or closed ticket once. */
 export async function rateHelpdeskTicket(ticketId: number, rating: number, comment: string | null) {
   return (await apiClient.post<HelpdeskTicketDetail>(`/helpdesk/tickets/${ticketId}/rating`, { rating, comment })).data
 }
 
-/** The tickets of the signed-in staff member's teams. */
 export async function getTeamHelpdeskTickets(query: { status?: string; page: number; size: number }, signal?: AbortSignal) {
   return (await apiClient.get<HelpdeskTicketPage>('/helpdesk/team/tickets', { params: query, signal })).data
 }
@@ -127,7 +120,6 @@ export async function routeHelpdeskCategory(categoryId: number, teamId: number |
   await apiClient.put(`/helpdesk/admin/categories/${categoryId}/team`, { teamId })
 }
 
-/** Published help articles of the category, those sharing the most words of the subject first. Only reads. */
 export async function getHelpArticles(categoryId: number, q: string, signal?: AbortSignal) {
   return (await apiClient.get<HelpArticle[]>('/helpdesk/articles', { params: { categoryId, q: q || undefined }, signal })).data
 }

@@ -14,10 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two wardens' requests to open the same night's sheet at once make one sheet (the unique sheet key); marking every
- * resident lets it be finalized. Uses the Main Hostel and stf2011 on a night far in the future that no other test uses.
- */
 class HostelRollCallMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

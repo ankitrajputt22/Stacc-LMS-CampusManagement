@@ -29,11 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of the official academic calendar. Reading needs the admin role and {@code ACADEMIC_CALENDAR_VIEW};
- * creating, editing, publishing, and cancelling also need {@code ACADEMIC_CALENDAR_MANAGE}. Events are never deleted
- * or restored, and assignment deadlines are not managed here: they belong to LMS assignments.
- */
 @RestController
 @RequestMapping("/api/v1/admin/academic/calendar/events")
 @Tag(name = "Admin academic calendar")

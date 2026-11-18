@@ -38,11 +38,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The hostel office's applications and allocations. Every route needs the admin role and HOSTEL_MANAGE. Approving or
- * rejecting an application is not here: the office uses the approval task routes with the step shown in the detail,
- * which check the step's role and APPROVAL_TASK_DECIDE. The acting admin always comes from the access token.
- */
 @RestController
 @RequestMapping("/api/v1/hostel/admin")
 @Tag(name = "Hostel admin")

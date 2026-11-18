@@ -36,7 +36,6 @@ test('a mentor records a meeting and the student sees only the shared part and t
   await expect(student.getByRole('link', { name: `Mentoring: ${task}` })).toBeVisible()
   await student.goto('/mentoring')
   await student.getByRole('link', { name: 'View meetings with emp1022' }).click()
-  // This run's meeting, inside the pairing with emp1022.
   const mine = student.getByRole('region', { name: 'Your mentor emp1022' }).getByRole('region', { name: title })
   await expect(mine.getByText('Agreed to plan revision weekly.')).toBeVisible()
   await expect(mine.getByText('Keep an eye on attendance.')).toHaveCount(0)

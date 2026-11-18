@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-/** What to make flashcards from (v0.15.3). */
 public record AiFlashcardSetRequest(
         @NotNull Scope scope,
         @Schema(description = "The topic, module, or file ID; omitted for COURSE.", nullable = true) @Positive Long id,

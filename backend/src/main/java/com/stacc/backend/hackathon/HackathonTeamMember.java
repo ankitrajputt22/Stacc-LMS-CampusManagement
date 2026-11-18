@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A student's place on a team; at most one live place per hackathon. Leaving keeps the row. */
 @Entity
 @Table(name = "hackathon_team_members")
 public class HackathonTeamMember {

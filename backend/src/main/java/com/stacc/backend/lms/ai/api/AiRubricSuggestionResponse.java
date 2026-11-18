@@ -5,10 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * A suggested rubric for an assignment (v0.14.5): criteria whose maximum points add up to the assignment's maximum
- * marks, each with levels. Only shown to the teacher; the rubric form saves it, as any rubric written by hand.
- */
 public record AiRubricSuggestionResponse(
         @Schema(description = "The assignment's title, for the rubric's title.") String title,
         BigDecimal maxMarks,

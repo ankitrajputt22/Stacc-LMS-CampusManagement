@@ -26,10 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of college-wide academic sessions. Reading needs the admin role and {@code ACADEMIC_MASTER_VIEW}; creating and editing also need
- * {@code ACADEMIC_MASTER_MANAGE}. There is no delete.
- */
 @RestController
 @RequestMapping("/api/v1/admin/academic/sessions")
 @Tag(name = "Admin academic masters")

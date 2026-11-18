@@ -8,7 +8,6 @@ import { border, fieldClasses } from './formStyles'
 
 type Field = 'marksAwarded' | 'feedback'
 
-// The longest feedback the backend keeps, and the marks its column holds: six digits and two decimals.
 const FEEDBACK_MAX = 10_000
 const MARKS_PATTERN = /^\d{1,6}(\.\d{1,2})?$/
 
@@ -16,7 +15,6 @@ const KEPT = 'Your marks and feedback are still here.'
 
 type GradeFormProps = {
   attempt: LmsFacultySubmissionAttempt
-  /** What this attempt is graded out of: its existing grade's maximum, or the assignment's for a first grade. */
   outOf: number
   onSaved: (grade: LmsSubmissionGrade) => void
 }
@@ -58,12 +56,6 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   ) : null
 }
 
-/**
- * Marks and optional plain-text feedback for one attempt. Saving makes the grade visible to the student at
- * once; saving again replaces it, and only the latest grade is kept. Obvious mistakes are caught before
- * sending, and the backend checks access, the permission, and the marks again. After a failure what was
- * typed stays, and a 403 never signs the user out.
- */
 export function GradeForm({ attempt, outOf, onSaved }: GradeFormProps) {
   const id = useId()
   const marksRef = useRef<HTMLInputElement>(null)
@@ -128,7 +120,6 @@ export function GradeForm({ attempt, outOf, onSaved }: GradeFormProps) {
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status !== 401) {
-        // A 401 is left to the shared client, which ends the session.
         const apiError = getApiError(failure)
         const fieldErrors: Partial<Record<Field, string>> = Object.fromEntries(
           (apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]),

@@ -1,5 +1,3 @@
-// Admin user management as /api/v1/admin/users sends it. No answer ever carries a password or a hash.
-
 export type { AccountRole as RoleName } from '../auth/roles'
 import type { AccountRole as RoleName } from '../auth/roles'
 export type AccountStatus = 'ACTIVE' | 'DISABLED'
@@ -9,7 +7,6 @@ export type UserSummary = {
   loginId: string
   fullName: string | null
   email: string | null
-  /** In the order STUDENT, FACULTY, ADMIN. */
   roles: RoleName[]
   status: AccountStatus
   passwordChangeRequired: boolean
@@ -43,7 +40,6 @@ export type UserDetail = {
     status: string
   } | null
   facultyProfile: { facultyProfileId: number; departmentCode: string; departmentName: string; status: string } | null
-  /** Whether an official photo has been added. */
   hasPhoto: boolean
 }
 

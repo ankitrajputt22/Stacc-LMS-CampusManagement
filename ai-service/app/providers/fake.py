@@ -1,10 +1,3 @@
-"""Deterministic providers for tests and for checking the wiring without a model.
-
-They need no network, GPU, or model download, and always give the same output for the same input.
-The fake model does not understand anything: it quotes the retrieved course text it was given, so its
-answers are still grounded in the sources. Never use it for real students.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -29,7 +22,6 @@ def words(text: str) -> list[str]:
 
 
 class FakeEmbeddingProvider(EmbeddingProvider):
-    """A hashed bag of words: texts sharing words get similar vectors, unrelated texts do not."""
 
     @property
     def model_id(self) -> str:
@@ -56,7 +48,6 @@ def _first_sentence(text: str, limit: int = 240) -> str:
 
 
 class FakeModelProvider(ModelProvider):
-    """Builds valid JSON for each task straight from the retrieved chunks."""
 
     def generate_json(self, request: GenerationRequest) -> str:
         context = request.context
@@ -134,7 +125,6 @@ class FakeModelProvider(ModelProvider):
 
     @staticmethod
     def _answer_check(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
-        """Marks an option or statement correct when nearly all its words are in the sources."""
         known = set(words(" ".join(chunk.text for chunk in context)))
 
         def supported(text: str) -> bool:
@@ -149,7 +139,6 @@ class FakeModelProvider(ModelProvider):
 
     @staticmethod
     def _evaluate(context: tuple[ContextChunk, ...], parameters: dict) -> dict:
-        """Marks by how many of the reference answer's words the student used."""
         if not context:
             return {"insufficientContext": True, "sourceIds": []}
         reference = set(words(parameters.get("reference", "")))

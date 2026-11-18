@@ -6,12 +6,6 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Which other web addresses may call the API from a browser. It exists for local development,
- * where the frontend dev server and the backend run on different ports. The list comes from the
- * FRONTEND_ORIGIN environment variable and holds exact origins only: a wildcard is refused,
- * so the application never starts with the API open to every website.
- */
 @ConfigurationProperties(prefix = "stacc.cors")
 public record CorsProperties(List<String> allowedOrigins) {
 
@@ -28,7 +22,6 @@ public record CorsProperties(List<String> allowedOrigins) {
         }
     }
 
-    // An origin is a scheme, a host, and an optional port: nothing else.
     private static boolean isExactOrigin(String origin) {
         if (origin.contains("*")) {
             return false;

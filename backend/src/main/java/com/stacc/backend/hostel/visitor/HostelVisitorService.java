@@ -21,11 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Hostel visitors. Residents register visitors for today or the next 30 days and cancel them while expected; security
- * records arrivals (only within the hostel's visiting hours, in the college's time zone), departures, and walk-ins for
- * a resident by college ID; the hostel office sets visiting hours. Each change of a visit locks its row.
- */
 @Service
 @Transactional
 public class HostelVisitorService {
@@ -72,8 +67,6 @@ public class HostelVisitorService {
         this.clock = clock;
     }
 
-    // --- Residents
-
     public VisitView register(Long accountId, String visitorName, String relation, LocalDate on) {
         HostelAllocation allocation = allocations.findActiveForStudentAccount(accountId)
                 .orElseThrow(() -> new ApiException(HttpStatus.CONFLICT, NOT_RESIDENT));
@@ -100,8 +93,6 @@ public class HostelVisitorService {
         });
         return VisitView.of(visit);
     }
-
-    // --- Security
 
     @Transactional(readOnly = true)
     public List<VisitView> today() {
@@ -131,7 +122,6 @@ public class HostelVisitorService {
         return VisitView.of(visit);
     }
 
-    /** A visitor who was not registered, for the resident with this college ID, within visiting hours. */
     public VisitView walkIn(Long securityAccountId, String residentLoginId, String visitorName, String relation) {
         Long residentId = (residentLoginId == null ? Optional.<UserAccount>empty() : accounts.findByLoginId(residentLoginId.strip()))
                 .map(UserAccount::getId).orElse(null);
@@ -142,8 +132,6 @@ public class HostelVisitorService {
         return VisitView.of(visits.saveAndFlush(valid(() ->
                 HostelVisit.walkIn(allocation, visitorName, relation, collegeNow().toLocalDate(), by, now()))));
     }
-
-    // --- The hostel office
 
     @Transactional(readOnly = true)
     public Optional<HoursView> hoursOf(Long hostelId) {
@@ -164,8 +152,6 @@ public class HostelVisitorService {
         hours.flush();
         return new HoursView(saved.getHostelId(), saved.getOpensAt(), saved.getClosesAt());
     }
-
-    // --- Helpers
 
     private void requireVisitingHours(HostelAllocation allocation) {
         Long hostelId = allocation.getBed().getRoom().getHostel().getId();

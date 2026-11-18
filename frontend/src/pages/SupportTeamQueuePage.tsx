@@ -10,10 +10,6 @@ import { Button, Card, PageHeader, SelectField } from '../ui'
 
 const PAGE_SIZE = 20
 
-/**
- * /support/team: the tickets routed to the signed-in staff member's support teams, newest first. Each ticket opens on
- * the shared ticket page, where the backend checks the team again.
- */
 export function SupportTeamQueuePage() {
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(0)

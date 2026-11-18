@@ -12,7 +12,6 @@ import { DAY_LABEL, failureText } from '../engagementText'
 const KINDS: FacilityKind[] = ['ROOM', 'CLASSROOM', 'LAB', 'EQUIPMENT', 'HALL', 'COURT', 'GROUND', 'OTHER']
 const DAYS = Object.keys(DAY_LABEL) as DayOfWeek[]
 
-/** Campus Management → Facilities: add bookable places with hours and approval, and close them for some days. */
 export function FacilitiesAdmin() {
   const queryClient = useQueryClient()
   const facilities = useApiQuery(queryKeys.engagement.facilities(), (signal) => getFacilities(signal))

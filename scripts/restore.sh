@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Restores a backup made by scripts/backup.sh into an EMPTY database. It refuses a database that already has tables, so
-# it can never overwrite live data. Reads MYSQL_HOST, MYSQL_PORT, MYSQL_USER, and MYSQL_PASSWORD from the environment.
-# Usage: scripts/restore.sh <backup.sql.gz> <empty-database-name>
 set -euo pipefail
 
 FILE="${1:?Give the backup file}"

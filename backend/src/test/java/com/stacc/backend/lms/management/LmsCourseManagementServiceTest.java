@@ -44,10 +44,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The management service with the real teaching-access rule; only the repositories are stand-ins. Students need no
- * membership: the count in each answer is the offering's current students, and the access policy decides live.
- */
 class LmsCourseManagementServiceTest {
 
     private static final long FACULTY_ACCOUNT = 20L;
@@ -71,7 +67,6 @@ class LmsCourseManagementServiceTest {
         when(teachingAssignments.findAllByUserAccountIdAndCourseOfferingId(FACULTY_ACCOUNT, 31L)).thenReturn(List.of(teaching));
         when(courseOfferings.findById(31L)).thenReturn(Optional.of(offering));
         when(lmsCourses.saveAndFlush(any(LmsCourse.class))).thenAnswer(call -> withId(call.getArgument(0), 42));
-        // The query returns only current students; a withdrawn one is never among them.
         when(courseEnrollments.findAllCurrentByCourseOfferingId(31L)).thenReturn(List.of(studentA, studentB));
     }
 

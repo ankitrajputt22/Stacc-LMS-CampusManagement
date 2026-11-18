@@ -156,7 +156,6 @@ function ProjectCard({ project, isStudent, run }: { project: Project; isStudent:
   )
 }
 
-/** /projects: student projects with join requests decided by the lead and faculty mentors. */
 export function ProjectsPage() {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

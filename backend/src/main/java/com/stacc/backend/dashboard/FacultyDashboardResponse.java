@@ -6,11 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The signed-in faculty member's dashboard: short previews of the course offerings they officially teach, upcoming
- * assignments, submissions waiting for a grade, and open attendance sessions, each with its full count. Nothing is
- * derived beyond what the owning features already hold: no averages, ranks, scores, or progress.
- */
 public record FacultyDashboardResponse(
         @Schema(description = "How many course offerings the faculty member teaches now, with or without an LMS course.",
                 example = "4")

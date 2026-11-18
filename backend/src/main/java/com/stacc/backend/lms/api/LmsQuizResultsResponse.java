@@ -14,7 +14,6 @@ import com.stacc.backend.lms.quiz.attempt.QuizAttemptStatus;
 import com.stacc.backend.lms.quiz.attempt.QuizScoring;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The attempts at a quiz with their marks, for the faculty who teach the course. Students by college ID only. */
 public record LmsQuizResultsResponse(Long quizId, String title, BigDecimal totalMarks, List<Row> attempts) {
 
     public record Row(

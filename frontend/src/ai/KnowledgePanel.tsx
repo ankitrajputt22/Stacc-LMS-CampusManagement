@@ -72,14 +72,8 @@ function StatusDetails({ status }: { status: AiKnowledgeStatus }) {
   )
 }
 
-/** How often the status is asked again, only while a refresh job is queued or running. */
 const CHECK_EVERY_MS = 3000
 
-/**
- * The course's AI knowledge: its status, whether published content changed since the last refresh, and Refresh AI
- * knowledge, which queues a background job that rebuilds it from published topics and study materials only. While the
- * job is queued or running the status is asked again every few seconds; otherwise the page never polls.
- */
 export function KnowledgePanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const request = useMemo(() => (signal: AbortSignal) => getFacultyAiStatus(lmsCourseId, signal), [lmsCourseId])

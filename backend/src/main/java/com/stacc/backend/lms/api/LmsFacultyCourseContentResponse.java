@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.stacc.backend.lms.course.LmsCourseHomeView;
 
-/** One LMS course a faculty member teaches, with the content they manage. Archived content is left out. */
 public record LmsFacultyCourseContentResponse(
         @Schema(example = "42")
         Long lmsCourseId,

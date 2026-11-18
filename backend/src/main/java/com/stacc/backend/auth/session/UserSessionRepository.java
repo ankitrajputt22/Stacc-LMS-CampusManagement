@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserSessionRepository extends JpaRepository<UserSession, String> {
 
-    /** The session, its account's status, and whether a password change is due, in one query, on every request. */
     @Query("""
             select new com.stacc.backend.auth.session.UserSessionRepository$SessionWithStatus(session, account.status,
                 account.passwordChangeRequired)
@@ -20,7 +19,6 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
             """)
     Optional<SessionWithStatus> findWithAccountStatus(@Param("sessionId") String sessionId);
 
-    /** Moves "last seen" forward, at most once a minute per session, without loading the entity. */
     @Modifying
     @Query("""
             update UserSession session set session.lastSeenAt = :now
@@ -28,7 +26,6 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
             """)
     int touch(@Param("sessionId") String sessionId, @Param("now") Instant now, @Param("before") Instant before);
 
-    /** Ends every open session of an account, except one when given (null ends them all). */
     @Modifying
     @Query("""
             update UserSession session set session.endedAt = :now, session.endReason = :reason

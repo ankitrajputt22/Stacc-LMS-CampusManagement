@@ -29,12 +29,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Everyday campus activity for the people of {@link LocalCollegePopulation}, after the main seeder and the demo
- * extras: course discussions with answers, club and team memberships, mentoring pairs with a meeting, and library
- * loans. Like the other seeders it only finds or creates, through the feature services, and skips everything when the
- * population is missing.
- */
 @Component
 @Profile(LocalTestDataSeeder.PROFILE)
 @Order(20)
@@ -80,8 +74,6 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
         transaction.executeWithoutResult(status -> library());
         LOGGER.info("Local campus activity ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
-
-    // --- Course discussions: questions with answers, one accepted, and a pinned notice from the teacher.
 
     private void discussions() {
         Optional<Long> signals = courseOf("ece25001", "EC301");
@@ -141,8 +133,6 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
                 .findFirst();
     }
 
-    // --- Clubs and teams: requests waiting for the Coding Club's officers, two accepted, and open cricket sign-ups.
-
     private void clubs() {
         Long emp1021 = id("emp1021");
         groups.list(emp1021, false).forEach(group -> {
@@ -150,7 +140,6 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
                 for (String loginId : List.of("cse25004", "cse25005", "cse25009", "cse25013", "ece25006")) {
                     join(loginId, group.groupId());
                 }
-                // The advisor accepts the first two requests; the others wait.
                 groups.members(emp1021, false, group.groupId()).stream()
                         .filter(member -> member.status() == CampusGroupMembership.Status.PENDING)
                         .filter(member -> member.loginId().equals("cse25004") || member.loginId().equals("cse25005"))
@@ -172,8 +161,6 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
             groups.join(accountId, groupId);
         }
     }
-
-    // --- Mentoring: the ECE head mentors two students who miss class, with a first meeting and an action item.
 
     private void mentoring() {
         pair("emp3001", "ece25005", true);
@@ -201,8 +188,6 @@ public class LocalCampusActivitySeeder implements ApplicationRunner {
                     now.plus(7, ChronoUnit.DAYS));
         }
     }
-
-    // --- Library: department textbooks, two of them on loan.
 
     private void library() {
         if (!libraryTitles.existsByIsbn("9780138147570")) {

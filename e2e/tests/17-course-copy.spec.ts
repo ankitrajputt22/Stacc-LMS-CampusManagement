@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { openCourseSection, signIn } from './support'
 
 test('a faculty member copies last session’s content into this year’s course as drafts', async ({ page }) => {
-  // emp1022 taught CS250 last session (archived, with a module, pages, and a syllabus) and has an empty draft this year.
   await signIn(page, 'lms', 'emp1022')
   await page.getByRole('link', { name: 'Open LMS course CS250' }).click()
   await openCourseSection(page, 'Modules')

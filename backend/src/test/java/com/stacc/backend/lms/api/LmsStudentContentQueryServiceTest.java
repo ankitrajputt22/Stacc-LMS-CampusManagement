@@ -33,10 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/**
- * The repositories are stand-ins here, so they can hand back content in any state. That shows the
- * student rule holds on its own, even if a query ever returned too much.
- */
 class LmsStudentContentQueryServiceTest {
 
     private static final Long ACCOUNT_ID = 12L;
@@ -114,8 +110,6 @@ class LmsStudentContentQueryServiceTest {
         assertEquals(List.of(40L), content.modules().get(1).topics().stream().map(LmsCourseTopicResponse::id).toList());
     }
 
-    // Pages
-
     @Test
     void aPageOpensWithThePublishedPagesAroundItAcrossModules() {
         LmsModule first = module(course, 15, 1, LmsContentStatus.PUBLISHED);
@@ -185,8 +179,6 @@ class LmsStudentContentQueryServiceTest {
                 LmsContentPolicy.PUBLISHED_ONLY);
         verifyNoMoreInteractions(modules, topics, materials);
     }
-
-    // Study materials
 
     private List<Long> materialIdsShown(List<LmsStudyMaterial> storedMaterials, LmsModule module, LmsTopic... storedTopics) {
         stored(List.of(module), List.of(storedTopics));

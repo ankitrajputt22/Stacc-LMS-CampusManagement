@@ -12,16 +12,10 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * Campus service requests. Status filters match the effective status: a SUBMITTED request whose approval is decided or
- * cancelled counts as that outcome. The caller passes the status and, for APPROVED, REJECTED, and CANCELLED, the
- * approval status that leads to it ({@link CampusServiceRequestStatus#approvalEquivalent()}).
- */
 public interface CampusServiceRequestRepository extends JpaRepository<CampusServiceRequest, Long> {
 
     boolean existsByRequesterIdAndSubject(Long requesterId, String subject);
 
-    /** Locks the request row. Its approval request is not loaded, so the engine can lock and read it fresh. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select request from CampusServiceRequest request where request.id = :requestId")
     Optional<CampusServiceRequest> findByIdForUpdate(@Param("requestId") Long requestId);
@@ -37,7 +31,6 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
             """)
     Optional<CampusServiceRequest> findWithContextById(@Param("requestId") Long requestId);
 
-    /** One page of an account's own requests, newest first. */
     @Query(value = """
             select request
             from CampusServiceRequest request
@@ -74,7 +67,6 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
             @Param("status") CampusServiceRequestStatus status,
             @Param("approvalStatus") ApprovalRequestStatus approvalStatus, Pageable page);
 
-    /** One page of every request, newest first, narrowed by each filter that is given. */
     @Query(value = """
             select request
             from CampusServiceRequest request
@@ -112,10 +104,6 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
             @Param("requesterLoginId") String requesterLoginId, @Param("status") CampusServiceRequestStatus status,
             @Param("approvalStatus") ApprovalRequestStatus approvalStatus, Pageable page);
 
-    /**
-     * Search: one account's own requests whose number, subject, or service code or name contains the text. Exact
-     * numbers or subjects first, then those that start with the text, then the rest; within each, the newest first.
-     */
     @Query(value = """
             select request
             from CampusServiceRequest request
@@ -141,7 +129,6 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
     Page<CampusServiceRequest> searchOwn(@Param("requesterId") Long requesterId, @Param("exact") String exact,
             @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
 
-    /** Search: every request, as {@link #searchOwn} matches and orders them, for the campus office. */
     @Query(value = """
             select request
             from CampusServiceRequest request
@@ -166,10 +153,6 @@ public interface CampusServiceRequestRepository extends JpaRepository<CampusServ
     Page<CampusServiceRequest> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
 
-    /**
-     * Reports: how many requests have each stored status and approval status, in one grouped query, so the effective
-     * status ({@link CampusServiceRequestStatus#withApproval}) can be counted without loading any request.
-     */
     @Query("""
             select request.status as status, approval.status as approvalStatus, count(request) as total
             from CampusServiceRequest request

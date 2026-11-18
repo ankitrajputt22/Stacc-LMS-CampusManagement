@@ -23,12 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Teams of sports groups (v0.11.9): one team per name and season in a group, a roster of the group's active members,
- * and at most one current captain and vice-captain. The group's officers and the campus office manage teams under the
- * team row lock, reading the roster with a locking read; active members read them. Anyone else gets the same 404 as
- * for a missing group. Players leave the roster but are never deleted, and teams are made inactive.
- */
 @Service
 @Transactional
 public class TeamService {
@@ -78,7 +72,6 @@ public class TeamService {
         this.clock = clock;
     }
 
-    /** A group's teams with their current rosters, for active members, officers, and the campus office. */
     @Transactional(readOnly = true)
     public GroupTeams forGroup(Long accountId, boolean office, Long groupId) {
         boolean manager = groupId != null && (office || officers.isOfficer(groupId, accountId));
@@ -107,7 +100,6 @@ public class TeamService {
         return view(team, players.findCurrentForUpdate(team.getId()));
     }
 
-    /** Adds an active member of the group to the roster; naming them captain or vice-captain hands that role over. */
     public TeamView addPlayer(Long accountId, boolean office, Long teamId, String loginId, CampusTeamMember.Role role) {
         CampusTeam team = openTeam(accountId, office, teamId);
         UserAccount account = (loginId == null ? Optional.<UserAccount>empty() : accounts.findByLoginId(loginId.strip()))
@@ -122,7 +114,6 @@ public class TeamService {
         return view(team, players.findCurrentForUpdate(team.getId()));
     }
 
-    /** Changes a player's role; naming a new captain or vice-captain makes the previous one a player. */
     public TeamView changeRole(Long accountId, boolean office, Long playerId, CampusTeamMember.Role role) {
         CampusTeam team = openTeam(accountId, office, teamOf(playerId));
         List<CampusTeamMember> roster = players.findCurrentForUpdate(team.getId());
@@ -136,7 +127,6 @@ public class TeamService {
         return view(team, roster);
     }
 
-    /** Takes a player off the roster; the row stays as history. */
     public TeamView removePlayer(Long accountId, boolean office, Long playerId) {
         CampusTeam team = openTeam(accountId, office, teamOf(playerId));
         List<CampusTeamMember> roster = players.findCurrentForUpdate(team.getId());
@@ -147,7 +137,6 @@ public class TeamService {
         return view(team, roster.stream().filter(member -> member.getLeftAt() == null).toList());
     }
 
-    /** The current holder of a captain or vice-captain role becomes a player first, so the unique role never clashes. */
     private void handOver(List<CampusTeamMember> roster, CampusTeamMember.Role role) {
         if (role == CampusTeamMember.Role.CAPTAIN || role == CampusTeamMember.Role.VICE_CAPTAIN) {
             roster.stream().filter(member -> member.getRole() == role).forEach(member -> member.changeRole(CampusTeamMember.Role.PLAYER));
@@ -168,7 +157,6 @@ public class TeamService {
         return team;
     }
 
-    /** Checks the manager from the team's stored group before taking the team row lock. */
     private CampusTeam managedTeam(Long accountId, boolean office, Long teamId) {
         Long groupId = (teamId == null ? Optional.<CampusTeam>empty() : teams.findById(teamId)).map(team -> team.getGroup().getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, TEAM_NOT_FOUND));

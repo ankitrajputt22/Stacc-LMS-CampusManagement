@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Tournaments: published ones with fixtures and standings, and the campus office's management of them. */
 @RestController
 @RequestMapping("/api/v1/engagement")
 @Tag(name = "Campus engagement")

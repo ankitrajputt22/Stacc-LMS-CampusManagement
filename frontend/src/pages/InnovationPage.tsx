@@ -204,7 +204,6 @@ function Office({ run }: { run: Run }) {
   )
 }
 
-/** /innovation: submitting ideas, faculty reviews, and the campus office's decisions, one part per role held. */
 export function InnovationPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

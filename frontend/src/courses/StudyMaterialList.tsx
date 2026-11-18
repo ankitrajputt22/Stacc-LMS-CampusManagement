@@ -8,7 +8,6 @@ type StudyMaterialListProps = {
   downloads: ReturnType<typeof useMaterialDownload>
 }
 
-/** The file line under a material's title: name, type, and size. Long names wrap instead of widening the page. */
 export function MaterialFileDetails({ material }: { material: LmsCourseMaterial }) {
   const type = fileTypeLabel(material.originalFileName)
   return (
@@ -29,10 +28,6 @@ export function MaterialFileDetails({ material }: { material: LmsCourseMaterial 
   )
 }
 
-/**
- * The published study materials of one topic, each with a Download button. Nothing is shown when the
- * topic has none. Files come through the API with the user's token, never straight from storage.
- */
 export function StudyMaterialList({ materials, downloads }: StudyMaterialListProps) {
   if (materials.length === 0) {
     return null

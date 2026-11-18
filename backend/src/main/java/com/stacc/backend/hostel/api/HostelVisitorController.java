@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Hostel visitors: residents register them, security records them at the gate, the hostel office sets visiting hours. */
 @RestController
 @Tag(name = "Hostel visitors")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

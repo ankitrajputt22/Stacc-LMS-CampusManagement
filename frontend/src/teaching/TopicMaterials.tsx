@@ -180,10 +180,6 @@ type TopicMaterialsProps = {
   downloads: Downloads
 }
 
-/**
- * The study materials of one topic in the faculty editor: each file with its status and actions, and a
- * way to upload another. A wrong file is archived and a new one uploaded; files are never replaced.
- */
 export function TopicMaterials({
   topic,
   openForm,

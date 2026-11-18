@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Night roll calls of a warden's own hostels: open a sheet, mark residents, finalize. Other hostels answer 404. */
 @RestController
 @RequestMapping("/api/v1/hostel/warden")
 @Tag(name = "Hostel roll calls")

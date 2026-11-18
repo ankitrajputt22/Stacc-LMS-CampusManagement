@@ -1,6 +1,3 @@
-// The helpdesk exactly as the backend sends it (HelpdeskResponses and HelpdeskRequests in
-// com.stacc.backend.support.helpdesk). People appear by login ID only.
-
 export type HelpdeskTicketStatus = 'OPEN' | 'IN_PROGRESS' | 'WAITING_ON_REQUESTER' | 'RESOLVED' | 'CLOSED'
 
 export type HelpdeskTicketPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'
@@ -17,7 +14,6 @@ export type HelpdeskHistoryAction =
   | 'RATED'
   | 'TEAM_CHANGED'
 
-/** A category that can be chosen for a new ticket. */
 export type HelpdeskCategory = {
   categoryId: number
   code: string
@@ -25,14 +21,12 @@ export type HelpdeskCategory = {
   description: string | null
 }
 
-/** A category as admins manage it, active or not. */
 export type AdminHelpdeskCategory = HelpdeskCategory & {
   active: boolean
   createdAt: string
   updatedAt: string
 }
 
-/** One ticket in a list: no description, messages, or history. */
 export type HelpdeskTicketSummary = {
   ticketId: number
   ticketNumber: string
@@ -46,7 +40,6 @@ export type HelpdeskTicketSummary = {
   createdAt: string
   updatedAt: string
   teamName: string | null
-  /** When the support side first replied visibly. */
   firstResponseAt: string | null
   rating: number | null
 }
@@ -62,10 +55,8 @@ export type HelpdeskTicketPage = {
 export type HelpdeskTicketMessage = {
   messageId: number
   authorLoginId: string
-  /** Plain text. */
   message: string
   createdAt: string
-  /** An internal note: only the support side ever receives these. */
   internal: boolean
 }
 
@@ -77,7 +68,6 @@ export type HelpdeskTicketHistory = {
   createdAt: string
 }
 
-/** One ticket in full: the original description, then the conversation and history, oldest first. */
 export type HelpdeskTicketDetail = {
   ticketId: number
   ticketNumber: string
@@ -85,7 +75,6 @@ export type HelpdeskTicketDetail = {
   categoryName: string
   categoryActive: boolean
   subject: string
-  /** Plain text: the original issue. */
   description: string
   priority: HelpdeskTicketPriority
   status: HelpdeskTicketStatus
@@ -102,15 +91,11 @@ export type HelpdeskTicketDetail = {
   firstResponseAt: string | null
   rating: number | null
   ratingComment: string | null
-  /** Whether the signed-in account works this ticket (admin or its team): notes and status changes. */
   supportSide: boolean
-  /** Whether the signed-in requester may reopen it now. */
   canReopen: boolean
-  /** Whether the signed-in requester may rate it now. */
   canRate: boolean
 }
 
-/** A support team as admins manage it. */
 export type HelpdeskTeam = {
   teamId: number
   code: string
@@ -119,12 +104,10 @@ export type HelpdeskTeam = {
   memberLoginIds: string[]
 }
 
-/** An active admin account a ticket can be assigned to. */
 export type HelpdeskAssignee = {
   loginId: string
 }
 
-/** The requester never sends who they are, a status, or an assignee: those come from the server. */
 export type CreateHelpdeskTicketRequest = {
   categoryId: number
   subject: string
@@ -139,7 +122,6 @@ export type CreateHelpdeskCategoryRequest = {
   active: boolean
 }
 
-/** The code is not part of an update: it never changes. */
 export type UpdateHelpdeskCategoryRequest = {
   name: string
   description: string | null
@@ -159,7 +141,6 @@ export type QueueQuery = MyTicketQuery & {
   requesterLoginId?: string
 }
 
-/** A published help article, as someone writing a ticket reads it. Plain text. */
 export type HelpArticle = {
   articleId: number
   categoryId: number
@@ -171,7 +152,6 @@ export type HelpArticle = {
 
 export type HelpArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
-/** A help article as admins manage it. */
 export type AdminHelpArticle = {
   articleId: number
   categoryId: number

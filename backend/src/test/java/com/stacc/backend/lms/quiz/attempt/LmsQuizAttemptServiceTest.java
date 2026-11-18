@@ -50,7 +50,6 @@ class LmsQuizAttemptServiceTest {
     private static final Long QUIZ_ID = 501L;
     private static final Instant NOW = Instant.parse("2026-11-10T05:00:00Z");
 
-    /** A clock the test moves. */
     private static final class TestClock extends Clock {
         private Instant now = NOW;
 

@@ -11,9 +11,7 @@ export const getMyExports = async (signal?: AbortSignal) => (await apiClient.get
 export const downloadExport = async (exportId: number) =>
   (await apiClient.get<Blob>(`/exports/${exportId}/download`, { responseType: 'blob', timeout: FILE_TIMEOUT_MS })).data
 
-/** The departments the signed-in head of department heads now, with current-session counts. */
 export const getDepartmentAnalytics = async (signal?: AbortSignal) =>
   (await apiClient.get<DepartmentAnalytics[]>('/analytics/department', { signal })).data
 
-/** Area analytics; each section only for holders of that area's permission. */
 export const getAreaAnalytics = async (signal?: AbortSignal) => (await apiClient.get<AreaAnalytics>('/analytics/areas', { signal })).data

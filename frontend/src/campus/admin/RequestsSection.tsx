@@ -21,7 +21,6 @@ import { REQUEST_STATUSES, requestStatusLabel } from '../campusText'
 const PAGE_SIZE = 20
 const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
 
-/** Every campus service request, newest first, filtered by service, status, and requester, page by page. */
 export function RequestsSection() {
   const [searchParams, setSearchParams] = useSearchParams()
   const serviceParam = searchParams.get('service')

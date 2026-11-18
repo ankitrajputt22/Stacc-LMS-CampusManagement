@@ -2,11 +2,6 @@ package com.stacc.backend.report;
 
 import java.util.List;
 
-/**
- * Writes CSV for spreadsheets, safely. Every cell is quoted and inner quotes are doubled, so commas, quotes, and line
- * breaks stay inside their cell. A text cell that a spreadsheet would read as a formula (it starts with =, +, -, @, a
- * tab, or a carriage return) is prefixed with an apostrophe, so it is shown as text and never run. Rows end with CRLF.
- */
 public final class ReportCsv {
 
     private ReportCsv() {

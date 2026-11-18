@@ -26,12 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Official attendance as faculty take it. Every route needs the faculty role and the attendance permission;
- * which course offerings the faculty member may use is decided from official teaching assignments on every
- * request, with no LMS course involved. The faculty member is taken from the access token. There is no delete
- * and no reopen.
- */
 @RestController
 @RequestMapping("/api/v1/attendance/faculty")
 @Tag(name = "Attendance")

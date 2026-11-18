@@ -9,11 +9,6 @@ import type { useContentChanges } from './useContentChanges'
 
 type Changes = ReturnType<typeof useContentChanges>
 
-/**
- * An assignment's alignment: which course outcomes it assesses and its Bloom level. Edit offers the course's active
- * outcomes (an archived one already chosen stays offered) and the six Bloom levels; Save sends both. Only the alignment
- * route changes; the assignment's definition is untouched.
- */
 export function AssignmentAlignment({
   lmsCourseId,
   assignment,

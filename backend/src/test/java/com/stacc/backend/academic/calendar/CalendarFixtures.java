@@ -8,10 +8,6 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * A small made-up academic calendar setting: one program with semesters 3 and 4 in session 2026-27, and semester 5 in
- * session 2027-28. IDs are set the way the database would.
- */
 public final class CalendarFixtures {
 
     public final Department cse = withId(new Department("CSE", "Computer Science and Engineering"), 3);
@@ -29,7 +25,6 @@ public final class CalendarFixtures {
         return entity;
     }
 
-    /** A draft event with an ID, as if it had been saved. */
     public AcademicCalendarEvent event(long id, AcademicSession session, Semester semester, String title, LocalDate start,
             LocalDate end) {
         return withId(new AcademicCalendarEvent(session, semester, title, null, AcademicCalendarEventCategory.ACADEMIC,

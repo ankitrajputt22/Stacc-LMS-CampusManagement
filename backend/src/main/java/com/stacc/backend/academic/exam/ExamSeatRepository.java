@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ExamSeatRepository extends JpaRepository<ExamSeat, Long> {
 
-    /** A slot's seats, read with a locking read after the slot's row lock. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select seat from ExamSeat seat where seat.examSlot.id = :slotId")
     List<ExamSeat> findForSlotForUpdate(@Param("slotId") Long slotId);

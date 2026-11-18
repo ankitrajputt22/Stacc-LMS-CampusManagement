@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface CampusBookingRepository extends JpaRepository<CampusBooking, Long> {
 
-    /** Bookings of the facility not cancelled that overlap the window; read after locking the facility row. */
     @Query("select b from CampusBooking b where b.facility.id = :facilityId and b.cancelledAt is null "
             + "and b.startsAt < :endsAt and b.endsAt > :startsAt order by b.startsAt")
     List<CampusBooking> findOverlapping(@Param("facilityId") Long facilityId, @Param("startsAt") Instant startsAt,

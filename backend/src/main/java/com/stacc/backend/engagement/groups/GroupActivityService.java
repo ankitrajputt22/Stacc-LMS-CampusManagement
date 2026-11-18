@@ -18,11 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Sessions and announcements of clubs and sports groups (v0.11.2). The group's officers and the campus office write
- * them; active members, officers, and the campus office read them; anyone else gets the same 404 as for a missing
- * group. Scheduled sessions appear on members' calendars; an announcement tells every active member except its author.
- */
 @Service
 @Transactional
 public class GroupActivityService {
@@ -69,7 +64,6 @@ public class GroupActivityService {
         this.clock = clock;
     }
 
-    /** The group's sessions from yesterday on and its latest announcements, for members, officers, and the office. */
     @Transactional(readOnly = true)
     public Activity activity(Long accountId, boolean office, Long groupId) {
         boolean manager = office || (groupId != null && officers.isOfficer(groupId, accountId));
@@ -95,7 +89,6 @@ public class GroupActivityService {
         return SessionView.of(session);
     }
 
-    /** Posts an announcement and tells every active member except its author. */
     public AnnouncementView announce(Long accountId, boolean office, Long groupId, String title, String message) {
         CampusGroup group = managed(accountId, office, groupId);
         GroupAnnouncement saved = announcements.saveAndFlush(valid(() -> new GroupAnnouncement(group, title, message, accountId, now())));
@@ -111,7 +104,6 @@ public class GroupActivityService {
         return AnnouncementView.of(saved);
     }
 
-    /** Scheduled sessions of the groups the account is an active member or officer of, overlapping the range. */
     @Transactional(readOnly = true)
     public List<SessionView> mySessions(Long accountId, Instant from, Instant to) {
         List<Long> groupIds = memberships.findCurrentForAccount(accountId).stream()

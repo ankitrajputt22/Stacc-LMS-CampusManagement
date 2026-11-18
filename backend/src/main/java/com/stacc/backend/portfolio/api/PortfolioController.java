@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** A student's own portfolio, and the verification requests sent to a faculty member. */
 @RestController
 @RequestMapping("/api/v1/portfolio")
 @Tag(name = "Portfolio")

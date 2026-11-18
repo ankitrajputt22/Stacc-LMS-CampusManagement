@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One judge's score (0 to 100) for a submission, replaced until results are released. */
 @Entity
 @Table(name = "hackathon_scores")
 public class HackathonScore {

@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** What a program's students pay in one academic session, by fee head, with one due date. */
 @Entity
 @Table(name = "fee_structures")
 public class FeeStructure {

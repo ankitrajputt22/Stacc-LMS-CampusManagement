@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One recorded action. Every column is fixed once written: there are no setters, and nothing updates or deletes. */
 @Entity
 @Table(name = "audit_events")
 public class AuditEvent {
@@ -45,7 +44,6 @@ public class AuditEvent {
     private String requestId;
 
     protected AuditEvent() {
-        // Required by JPA.
     }
 
     AuditEvent(Instant occurredAt, Long actorAccountId, AuditAction action, String targetType, Long targetId,

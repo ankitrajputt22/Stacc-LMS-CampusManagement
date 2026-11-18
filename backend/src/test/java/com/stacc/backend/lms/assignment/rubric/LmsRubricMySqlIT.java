@@ -16,11 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Editing a rubric and grading with it at the same moment never leave a grade pointing at criteria that were replaced:
- * either the grade comes first and the edit is refused, or the edit comes first and the grade, naming the old criteria,
- * is refused. Uses its own rubric and draft-then-published assignment in CS301, handed in by cse24003.
- */
 class LmsRubricMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

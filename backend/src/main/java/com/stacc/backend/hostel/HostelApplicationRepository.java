@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Hostel applications. Their approval status is read from the linked approval request, never stored here. */
 public interface HostelApplicationRepository extends JpaRepository<HostelApplication, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -33,7 +32,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             """)
     Optional<HostelApplication> findWithContextById(@Param("applicationId") Long applicationId);
 
-    /** A student's applications, newest first. */
     @Query("""
             select application
             from HostelApplication application
@@ -44,7 +42,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             """)
     List<HostelApplication> findAllForStudent(@Param("studentProfileId") Long studentProfileId);
 
-    /** Whether the student has an application for the session whose approval is still PENDING or already APPROVED. */
     @Query("""
             select count(application) > 0
             from HostelApplication application
@@ -57,7 +54,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
     boolean existsCurrent(@Param("studentProfileId") Long studentProfileId,
             @Param("academicSessionId") Long academicSessionId);
 
-    /** The sessions in which the student has a PENDING or APPROVED application. */
     @Query("""
             select distinct application.academicSession.id
             from HostelApplication application
@@ -68,7 +64,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             """)
     List<Long> findSessionIdsWithCurrentApplication(@Param("studentProfileId") Long studentProfileId);
 
-    /** One page of every application, newest first, narrowed by each filter that is given. */
     @Query(value = """
             select application
             from HostelApplication application
@@ -111,10 +106,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
             @Param("studentLoginId") String studentLoginId,
             @Param("hasActiveAllocation") Boolean hasActiveAllocation, Pageable page);
 
-    /**
-     * Search: one student's own applications whose number or academic session code contains the text. Exact numbers
-     * or sessions first, then those that start with the text, then the rest; within each, the newest first.
-     */
     @Query(value = """
             select application
             from HostelApplication application
@@ -137,10 +128,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
     Page<HostelApplication> searchOwn(@Param("userAccountId") Long userAccountId, @Param("exact") String exact,
             @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
 
-    /**
-     * Search: every application whose number, student login ID, or academic session code contains the text, for the
-     * hostel office, ordered as {@link #searchOwn}.
-     */
     @Query(value = """
             select application
             from HostelApplication application
@@ -167,7 +154,6 @@ public interface HostelApplicationRepository extends JpaRepository<HostelApplica
     Page<HostelApplication> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
 
-    /** The approved applications of a session still waiting for a bed, in the order they were submitted. */
     @Query("""
             select application.id from HostelApplication application join application.approvalRequest request
             where application.academicSession.id = :sessionId

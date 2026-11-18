@@ -5,7 +5,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.syllabus.LmsSyllabus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The published syllabus of a course, as a student reads it, or nulls when none is published yet. */
 public record LmsCourseSyllabusResponse(
         @Schema(description = "Formatted text, or null when no syllabus is published yet. It is never HTML.")
         String content,

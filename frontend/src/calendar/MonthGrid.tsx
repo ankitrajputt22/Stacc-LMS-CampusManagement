@@ -19,7 +19,6 @@ function iso(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-/** Every item of each day of the month: events on each day they cover, deadlines on their local day. */
 function itemsByDay(
   month: CalendarMonth,
   calendar: MyCalendarResponse,
@@ -69,7 +68,6 @@ function itemsByDay(
   return days
 }
 
-/** The month as a grid of weeks, Monday first. Each day lists its items; the agenda view gives the full details. */
 export function MonthGrid({
   month,
   calendar,
@@ -79,7 +77,6 @@ export function MonthGrid({
   month: CalendarMonth
   calendar: MyCalendarResponse
   personal: PersonalCalendarEvent[]
-  /** Club and sports sessions of the account's groups. */
   sessions?: GroupSession[]
 }) {
   const days = itemsByDay(month, calendar, personal, sessions)

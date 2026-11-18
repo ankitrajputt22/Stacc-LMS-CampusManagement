@@ -1,19 +1,3 @@
-"""The local vector index: one directory per course key, replaced atomically.
-
-Layout under the index root (a Docker volume in production)::
-
-    <courseKey>/current            the name of the live version
-    <courseKey>/v-<uuid>/          one complete version
-        manifest.json              format, content fingerprint, embedding model, sizes
-        vectors.npy                float32 unit vectors, one row per chunk
-        chunks.json                each chunk's text and source metadata
-
-A new version is written to a temporary directory, read back and checked, renamed into place, and only
-then made live by atomically replacing ``current``. A failure before that point leaves the live version
-untouched. Vectors are compared with a plain dot product: a course index is small enough that an exact
-search is fast and needs no extra library.
-"""
-
 from __future__ import annotations
 
 import json
@@ -31,7 +15,7 @@ import numpy as np
 from app.errors import ServiceError, index_not_found
 from app.security import checked_course_key
 
-FORMAT_VERSION = 2  # 2: chunks measured in tokens and carrying their heading (v0.13.3).
+FORMAT_VERSION = 2
 VERSION_NAME = re.compile(r"^v-[a-f0-9]{32}$")
 CACHE_SIZE = 16
 
@@ -57,7 +41,6 @@ class CourseIndex:
     chunks: tuple[StoredChunk, ...]
 
     def search(self, query: np.ndarray, top_k: int) -> list[tuple[int, float]]:
-        """The best ``top_k`` chunks for a unit query vector, best first, as (position, score)."""
         scores = self.vectors @ query
         count = min(top_k, len(scores))
         best = np.argpartition(-scores, count - 1)[:count]
@@ -99,7 +82,7 @@ class IndexStore:
             temporary = course_dir / f".tmp-{uuid.uuid4().hex}"
             try:
                 self._write(temporary, index)
-                self._read(temporary)  # Validate what is on disk before it can go live.
+                self._read(temporary)
                 version = f"v-{uuid.uuid4().hex}"
                 os.replace(temporary, course_dir / version)
                 pointer = course_dir / f".current-{uuid.uuid4().hex}"
@@ -110,7 +93,6 @@ class IndexStore:
             self._remove_old_versions(course_dir, keep=version)
 
     def delete(self, course_key: str) -> bool:
-        """Removes an index and every version of it from disk (v0.13.6), so deleted text is gone; whether one existed."""
         course_dir = self._course_dir(course_key)
         with self._lock(course_key):
             with self._cache_guard:
@@ -123,7 +105,7 @@ class IndexStore:
 
     def load(self, course_key: str) -> CourseIndex:
         course_dir = self._course_dir(course_key)
-        for _ in range(2):  # A replacement may remove a version between reading the pointer and loading it.
+        for _ in range(2):
             try:
                 version = (course_dir / "current").read_text(encoding="utf-8").strip()
             except FileNotFoundError:

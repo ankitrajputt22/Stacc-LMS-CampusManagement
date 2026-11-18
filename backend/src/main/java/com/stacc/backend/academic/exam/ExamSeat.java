@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A student's seat in one exam, through their course enrollment. Seats are only ever added. */
 @Entity
 @Table(name = "exam_seats")
 public class ExamSeat {

@@ -42,10 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 
-/**
- * The v0.3 catalog details and rules: descriptions, degree and course types, inactive or closed parents taking no new
- * children, and one current academic session.
- */
 class AcademicCatalogRulesTest {
 
     private final DepartmentRepository departments = mock(DepartmentRepository.class);

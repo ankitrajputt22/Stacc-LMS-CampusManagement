@@ -13,12 +13,9 @@ import { hintClasses, labelClasses, panelClasses } from './aiStyles'
 import { type CourseTopicChoice, CourseTopicOptions } from './CourseTopicOptions'
 import { useAiAction } from './useAiAction'
 
-/** The topic choice for adaptive practice (v0.15.6): the backend picks a page weighted to the student's weaker ones. */
 const ADAPTIVE = 'adaptive'
 
-/** Practice marks are out of this; they are practice only, never an official mark. */
 const MARKS_EACH = 4
-/** A viva grows by its follow-ups; it stops offering them at this many questions. */
 const MAX_VIVA_QUESTIONS = 20
 
 const MODES: { value: AiPracticeMode; label: string; hint: string }[] = [
@@ -33,10 +30,8 @@ const VERDICT: Record<NonNullable<AiEvaluation['verdict']>, string> = {
   INCORRECT: 'Not correct',
 }
 
-/** A checked answer, a check that failed, or a mock exam question left empty. */
 type Result = AiEvaluation | 'failed' | 'unanswered'
 
-/** One question's marks, feedback, and the model answer after it was checked. */
 function Feedback({ question, result }: { question: AiPracticeQuestion; result: Result }) {
   if (result === 'unanswered') {
     return (
@@ -74,7 +69,6 @@ function Feedback({ question, result }: { question: AiPracticeQuestion; result: 
   )
 }
 
-/** The viva follow-up question of a checked answer, if any. */
 function followUpOf(result: Result | undefined): string | null {
   return typeof result === 'object' && result.followUpQuestion ? result.followUpQuestion : null
 }
@@ -88,11 +82,6 @@ function ModelAnswer({ question }: { question: AiPracticeQuestion }) {
   )
 }
 
-/**
- * Practice (v0.15.4): one practice model for practice, mock exams, and viva. Questions come from the course's published
- * content; the student's answers are marked by AI against the model answer and the sources, with each mistake explained.
- * Marks are practice only, never official, and nothing is kept once the page is left.
- */
 export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; topics: CourseTopicChoice[] }) {
   const id = useId()
   const queryClient = useQueryClient()
@@ -143,7 +132,6 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     }
   }
 
-  /** A marked answer is learning evidence, so the student's mastery and next steps may have changed. */
   function refreshProgress() {
     void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
     void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
@@ -160,7 +148,6 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
     refreshProgress()
   }
 
-  /** Viva: the follow-up becomes the next question, checked against the same model answer and course sources. */
   function answerFollowUp(index: number, followUpQuestion: string) {
     const asked: AiPracticeQuestion = {
       question: followUpQuestion,
@@ -179,7 +166,6 @@ export function PracticePanel({ lmsCourseId, topics }: { lmsCourseId: number; to
       return
     }
     setChecking(true)
-    // One at a time: the backend runs one AI request per student at once.
     for (let index = 0; index < questions.length; index++) {
       if (answers[index].trim() === '') {
         setResults((previous) => previous.map((item, position) => (position === index ? 'unanswered' : item)))

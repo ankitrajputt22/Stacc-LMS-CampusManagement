@@ -7,10 +7,6 @@ import type {
 } from '../types/lms'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api. The signed-in account is the one in the access token;
-// no account, student, or faculty ID is ever sent from here.
-
-/** The published assignments of a course the signed-in student may use, earliest deadline first. */
 export async function getCourseAssignments(
   lmsCourseId: number,
   signal?: AbortSignal,
@@ -21,7 +17,6 @@ export async function getCourseAssignments(
   return response.data
 }
 
-/** One published assignment of a course the signed-in student may use. */
 export async function getCourseAssignment(
   lmsCourseId: number,
   assignmentId: number,
@@ -34,7 +29,6 @@ export async function getCourseAssignment(
   return response.data
 }
 
-/** The draft and published assignments of a course the signed-in faculty member teaches, earliest deadline first. */
 export async function getFacultyCourseAssignments(
   lmsCourseId: number,
   signal?: AbortSignal,
@@ -46,13 +40,11 @@ export async function getFacultyCourseAssignments(
   return response.data
 }
 
-/** The draft and published assignments of every course the signed-in faculty member teaches. */
 export async function getMyFacultyAssignments(signal?: AbortSignal): Promise<LmsFacultyAssignmentOverview[]> {
   const response = await apiClient.get<LmsFacultyAssignmentOverview[]>('/lms/faculty/my-assignments', { signal })
   return response.data
 }
 
-/** Adds a draft assignment to the course. */
 export async function createAssignment(
   lmsCourseId: number,
   input: LmsAssignmentInput,
@@ -64,7 +56,6 @@ export async function createAssignment(
   return response.data
 }
 
-/** Changes the definition. A published assignment stays published and keeps its publication date. */
 export async function updateAssignment(
   assignmentId: number,
   input: LmsAssignmentInput,
@@ -78,7 +69,6 @@ export async function publishAssignment(assignmentId: number): Promise<LmsFacult
   return response.data
 }
 
-/** Archives the assignment. It is kept, but students and the faculty lists no longer show it. */
 export async function archiveAssignment(assignmentId: number): Promise<LmsFacultyAssignment> {
   const response = await apiClient.post<LmsFacultyAssignment>(`/lms/faculty/assignments/${assignmentId}/archive`)
   return response.data
@@ -91,7 +81,6 @@ export type SubmissionRulesInput = {
   maxAttempts: number | null
 }
 
-/** Sets when the assignment takes work; attempts already handed in stay. */
 export async function setSubmissionRules(assignmentId: number, input: SubmissionRulesInput): Promise<LmsFacultyAssignment> {
   return (await apiClient.put<LmsFacultyAssignment>(`/lms/faculty/assignments/${assignmentId}/submission-rules`, input)).data
 }

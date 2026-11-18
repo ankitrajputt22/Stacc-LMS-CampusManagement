@@ -30,11 +30,6 @@ const SECTIONS = [
   { path: 'tournaments', label: 'Tournaments', Section: TournamentsAdmin },
 ] as const
 
-/**
- * Campus Management at /admin/campus/:section: the service catalog, service requests (with review at
- * /admin/campus/requests/:requestId), and notices. Approving goes through the approval engine. Accounts without ADMIN
- * see an explanation and no request is made; the backend checks every request.
- */
 export function AdminCampusPage({ review = false }: { review?: boolean }) {
   const { account } = useAuth()
   const { section } = useParams()

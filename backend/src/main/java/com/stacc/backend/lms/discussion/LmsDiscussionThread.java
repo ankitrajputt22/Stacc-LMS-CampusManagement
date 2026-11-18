@@ -17,11 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A question or topic in a course's discussions. Its text never changes and it is never deleted; only its pin, lock,
- * hidden state, and accepted reply change, and its last activity moves with each reply. Faculty may hide it (students
- * then no longer see it) and lock it (it takes no new replies).
- */
 @Entity
 @Table(name = "lms_discussion_threads")
 public class LmsDiscussionThread {
@@ -73,7 +68,6 @@ public class LmsDiscussionThread {
     private Instant lastActivityAt;
 
     protected LmsDiscussionThread() {
-        // Required by JPA.
     }
 
     public LmsDiscussionThread(LmsCourse lmsCourse, UserAccount author, AuthorKind authorKind, String title, String body, Instant now) {
@@ -102,7 +96,6 @@ public class LmsDiscussionThread {
         this.locked = locked;
     }
 
-    /** Hides the thread from students; hiding again keeps the first time and moderator. */
     public void hide(Long byAccountId, Instant at) {
         if (hiddenAt == null) {
             this.hiddenAt = Require.notNull(at, "at");

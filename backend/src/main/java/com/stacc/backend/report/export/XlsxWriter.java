@@ -8,7 +8,6 @@ import java.util.List;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 
-/** Writes simple sheets of text cells as XLSX. Cells are always text, so nothing in them is ever run as a formula. */
 final class XlsxWriter {
 
     record Sheet(String name, List<String> header, List<List<String>> rows) {

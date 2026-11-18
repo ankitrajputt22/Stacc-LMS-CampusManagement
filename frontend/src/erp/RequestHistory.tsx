@@ -8,7 +8,6 @@ import type { RequestKind } from '../types/erp'
 import { Alert, Badge, Button } from '../ui'
 import { formatDay, KIND_WORDS, refusalOf, STATUS_TONES, STATUS_WORDS } from './requestWords'
 
-/** The student's own requests of these kinds, newest first, with Cancel while still pending. */
 export function RequestHistory({ kinds }: { kinds: readonly RequestKind[] }) {
   const queryClient = useQueryClient()
   const requests = useApiQuery(queryKeys.erp.myRequests(), getMyRequests)

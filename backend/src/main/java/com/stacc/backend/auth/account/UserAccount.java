@@ -21,10 +21,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A college-issued Stacc account. It holds only what is needed to sign in;
- * student and faculty profile details belong to their own models.
- */
 @Entity
 @Table(name = "user_accounts")
 public class UserAccount {
@@ -45,14 +41,12 @@ public class UserAccount {
     @Column(nullable = false, length = 20)
     private AccountStatus status = AccountStatus.ACTIVE;
 
-    // Set when the college issues a temporary password; the person must choose a new one before anything else.
     @Column(name = "password_change_required", nullable = false)
     private boolean passwordChangeRequired;
 
     @Column(name = "password_changed_at")
     private Instant passwordChangedAt;
 
-    // A temporary password stops working at this moment, even if it was never used.
     @Column(name = "temporary_password_expires_at")
     private Instant temporaryPasswordExpiresAt;
 
@@ -64,7 +58,6 @@ public class UserAccount {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    // No cascade: roles are shared reference data and must never be created or deleted through an account.
     @ManyToMany
     @JoinTable(
             name = "user_account_roles",
@@ -73,7 +66,6 @@ public class UserAccount {
     private Set<Role> roles = new HashSet<>();
 
     protected UserAccount() {
-        // Required by JPA.
     }
 
     public UserAccount(String loginId, String passwordHash) {
@@ -96,7 +88,6 @@ public class UserAccount {
         return passwordHash;
     }
 
-    /** The person chose a new password: it replaces the old hash, and any temporary-password state ends. */
     public void changePassword(String newPasswordHash, Instant now) {
         this.passwordHash = requireText(newPasswordHash, "passwordHash");
         this.passwordChangeRequired = false;
@@ -104,7 +95,6 @@ public class UserAccount {
         this.passwordChangedAt = now;
     }
 
-    /** The college issued a temporary password: it works until it expires, and only to choose a new one. */
     public void issueTemporaryPassword(String temporaryPasswordHash, Instant expiresAt) {
         this.passwordHash = requireText(temporaryPasswordHash, "passwordHash");
         this.passwordChangeRequired = true;
@@ -115,12 +105,10 @@ public class UserAccount {
         return passwordChangeRequired;
     }
 
-    /** Whether the password is a temporary one that has stopped working. */
     public boolean temporaryPasswordExpiredAt(Instant now) {
         return passwordChangeRequired && temporaryPasswordExpiresAt != null && !now.isBefore(temporaryPasswordExpiresAt);
     }
 
-    /** When the current temporary password stops working, or null when there is none. */
     public Instant getTemporaryPasswordExpiresAt() {
         return temporaryPasswordExpiresAt;
     }

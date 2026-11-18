@@ -1,5 +1,3 @@
-"""The request log line: metadata only, with the backend's request ID and the course key in their places."""
-
 import logging
 
 from helpers import COURSE, FINGERPRINT, HEADERS, replace, topic

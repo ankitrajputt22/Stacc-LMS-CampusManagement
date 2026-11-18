@@ -102,8 +102,6 @@ class HelpdeskTicketCommandServiceTest {
         return ticket;
     }
 
-    // Creating
-
     @Test
     void aNewTicketIsOpenNumberedAndRecordedAsCreatedByTheRequester() {
         HelpdeskTicketDetail created = service.create(studentActor, request(3, null));
@@ -138,8 +136,6 @@ class HelpdeskTicketCommandServiceTest {
         assertRefused(() -> service.create(studentActor, request(4, null)), HttpStatus.BAD_REQUEST);
         verify(tickets, never()).saveAndFlush(any());
     }
-
-    // Messages
 
     @Test
     void theRequesterRepliesAndTheNotifierDecidesWhoHears() {
@@ -186,8 +182,6 @@ class HelpdeskTicketCommandServiceTest {
         verify(messages, never()).saveAndFlush(any());
         assertThat(trail).isEmpty();
     }
-
-    // Assignment
 
     @Test
     void assigningRecordsTheLoginIdsAndTellsTheAssignee() {
@@ -247,8 +241,6 @@ class HelpdeskTicketCommandServiceTest {
         verifyNoInteractions(notifications);
     }
 
-    // Priority
-
     @Test
     void adminsMaySetAnyPriorityAndTheSameOneChangesNothing() {
         HelpdeskTicketDetail urgent = service.changePriority(adminActor, 42L, HelpdeskTicketPriority.URGENT);
@@ -262,8 +254,6 @@ class HelpdeskTicketCommandServiceTest {
         });
         verifyNoInteractions(notifications);
     }
-
-    // Status
 
     @Test
     void aRealStatusChangeIsRecordedTimedAndToldToTheRequester() {
@@ -328,8 +318,6 @@ class HelpdeskTicketCommandServiceTest {
         assertRefused(() -> service.changeStatus(adminActor, 404L, HelpdeskTicketStatus.CLOSED), HttpStatus.NOT_FOUND);
         assertRefused(() -> service.assign(adminActor, null, "adm1001"), HttpStatus.NOT_FOUND);
     }
-
-    // v0.9.5: waiting on the requester, notes, reopening, and ratings
 
     @Test
     void theRequestersReplyToATicketWaitingOnThemMovesItBackToInProgress() {

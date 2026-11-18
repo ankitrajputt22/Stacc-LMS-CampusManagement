@@ -13,19 +13,12 @@ import { StatusTag } from './StatusTag'
 
 type CourseSettingsProps = {
   course: LmsFacultyCourseContent
-  /** Reloads the course after its status changed. */
   reload: () => void
 }
 
 const PUBLISH_FAILED = 'Couldn’t publish the course. Check your connection and try again.'
 const ARCHIVE_FAILED = 'Couldn’t archive the course. Check your connection and try again.'
 
-/**
- * The LMS course's own lifecycle: its status, Publish course for a draft, and Archive course.
- * Publishing and archiving are confirmed first. An archived course can no longer be opened here, so archiving
- * returns to /teaching, which shows it as archived. Students and enrollments are never edited here: student access
- * is worked out live from official enrollment on the backend, so there is nothing to synchronize.
- */
 export function CourseSettings({ course, reload }: CourseSettingsProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()

@@ -5,10 +5,6 @@ import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/**
- * The points a grader gave for one rubric criterion, with an optional comment, and the criterion's title and maximum as
- * they were when graded.
- */
 @Embeddable
 public class LmsRubricScore {
 
@@ -33,7 +29,6 @@ public class LmsRubricScore {
     private String comment;
 
     protected LmsRubricScore() {
-        // Required by JPA.
     }
 
     public LmsRubricScore(int position, Long criterionId, String criterionTitle, BigDecimal maxPoints, BigDecimal points,

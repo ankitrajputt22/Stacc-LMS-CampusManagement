@@ -7,7 +7,6 @@ type ArchiveConfirmationProps = {
   onCancel: () => void
 }
 
-/** Archiving takes the item out of this list for good, so it is confirmed first. Nothing is deleted. */
 export function ArchiveConfirmation({ what, onConfirm, onCancel }: ArchiveConfirmationProps) {
   const confirmRef = useRef<HTMLButtonElement>(null)
 

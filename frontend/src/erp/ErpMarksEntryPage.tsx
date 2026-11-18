@@ -31,7 +31,6 @@ function partError(value: string, max: number): string | null {
   return null
 }
 
-/** The offerings the faculty member teaches, each opening its marks sheet. */
 export function ErpMarksCoursesPage() {
   const courses = useApiQuery(queryKeys.results.myCourses(), getMyResultCourses)
   return (
@@ -212,7 +211,6 @@ function Sheet({ roster, scale, courseOfferingId }: { roster: CourseResultRoster
   )
 }
 
-/** One offering's marks sheet: internal and external marks per student, saved as drafts, then published together. */
 export function ErpMarksEntryPage() {
   const { courseOfferingId } = useParams()
   const id = Number(courseOfferingId)

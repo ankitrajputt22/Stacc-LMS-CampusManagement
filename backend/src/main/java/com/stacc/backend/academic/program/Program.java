@@ -21,10 +21,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * An official academic programme offered by one department. A programme that stops
- * taking students is made inactive rather than deleted, so older records can still refer to it.
- */
 @Entity
 @Table(
         name = "programs",
@@ -43,7 +39,6 @@ public class Program {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: a department is shared data and is never created or deleted through a programme.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
@@ -61,7 +56,6 @@ public class Program {
     @Column(name = "duration_semesters", nullable = false)
     private int durationSemesters;
 
-    // The most credits a student of this program may register for in one semester; null means no limit.
     @Column(name = "max_credits_per_semester", precision = 5, scale = 2)
     private BigDecimal maxCreditsPerSemester;
 
@@ -78,10 +72,8 @@ public class Program {
     private Instant updatedAt;
 
     protected Program() {
-        // Required by JPA.
     }
 
-    /** The code is stored in uppercase without surrounding spaces and is unique within the department. */
     public Program(Department department, String code, String name, int durationSemesters) {
         this.department = Require.notNull(department, "department");
         this.code = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
@@ -105,7 +97,6 @@ public class Program {
         return name;
     }
 
-    /** The normal length of the programme, counted in semesters. */
     public int getDurationSemesters() {
         return durationSemesters;
     }
@@ -138,7 +129,6 @@ public class Program {
         return maxCreditsPerSemester;
     }
 
-    /** Sets the credit limit per semester, from more than 0 up to 60, or clears it with null. */
     public void changeMaxCreditsPerSemester(BigDecimal maxCredits) {
         if (maxCredits != null && (maxCredits.signum() <= 0 || maxCredits.compareTo(MAX_CREDITS_PER_SEMESTER) > 0)) {
             throw new IllegalArgumentException("maxCreditsPerSemester must be more than 0 and at most 60");

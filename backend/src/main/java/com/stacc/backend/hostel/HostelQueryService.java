@@ -26,10 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reading hostel applications and allocations, for students (their own) and admins (all). The approval status and
- * progress always come from the approval engine. It only reads.
- */
 @Service
 @Transactional(readOnly = true)
 public class HostelQueryService {
@@ -49,7 +45,6 @@ public class HostelQueryService {
         this.approvals = approvals;
     }
 
-    /** The signed-in student's applications, newest first. */
     public List<HostelApplicationSummary> studentApplications(Long accountId) {
         Long profileId = studentProfiles.findByUserAccountId(accountId).map(profile -> profile.getId()).orElse(null);
         if (profileId == null) {
@@ -65,7 +60,6 @@ public class HostelQueryService {
                 .toList();
     }
 
-    /** One of the signed-in student's own applications. Another student's answers the same 404 as a missing one. */
     public HostelApplicationDetail studentApplication(Long accountId, Long applicationId) {
         HostelApplication application = loaded(applicationId);
         if (!application.getStudentProfile().getUserAccount().getId().equals(accountId)) {
@@ -83,7 +77,6 @@ public class HostelQueryService {
                 stays.stream().filter(stay -> !stay.isActive()).map(StudentHostelAllocation::of).toList());
     }
 
-    /** One page of every application, newest first, with each one's active allocation. */
     public HostelApplicationPage adminApplications(Long academicSessionId, ApprovalRequestStatus approvalStatus,
             String studentLoginId, Boolean hasActiveAllocation, int page, int size) {
         PageRequest request = pageOf(page, size);
@@ -103,10 +96,6 @@ public class HostelQueryService {
                 rows.getTotalPages());
     }
 
-    /**
-     * One application for the hostel office: approval progress and history from the approval engine, the step waiting
-     * for a decision, whether this admin may decide it through the approval task routes, and every allocation.
-     */
     public HostelAdminApplicationDetail adminApplication(ApprovalActor actor, Long applicationId) {
         HostelApplication application = loaded(applicationId);
         ApprovalRequestDetail approval = approvalOf(application);
@@ -126,7 +115,6 @@ public class HostelQueryService {
                 stays.stream().map(HostelAllocationResponse::of).toList());
     }
 
-    /** One page of every allocation, newest first. */
     public HostelAllocationPage allocations(HostelAllocationStatus status, Long hostelId, Long academicSessionId,
             String studentLoginId, int page, int size) {
         PageRequest request = pageOf(page, size);

@@ -9,13 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Admin user management's account search. It lives here so the auth module never depends on person profiles. */
 public interface AccountSearchRepository extends Repository<UserAccount, Long> {
 
-    /**
-     * One page of accounts, by login ID, matching a role and a status when given, and a lower-cased pattern (escaped
-     * with {@code !}) on the login ID or the person's full name, preferred name, or email.
-     */
     @Query("""
             select account from UserAccount account
             where (:roleName is null or exists (select role.id from UserAccount other join other.roles role

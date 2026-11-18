@@ -38,11 +38,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A student's own analytics and a taught course's class analytics, worked out live by the rules in
- * {@link AnalyticsRules}. Course access comes from the same services as the course pages: the student course list
- * and the faculty access policy. Nothing is stored; nothing lists or ranks individual students.
- */
 @Service
 @Transactional(readOnly = true)
 public class AnalyticsService {
@@ -107,7 +102,6 @@ public class AnalyticsService {
         this.clock = clock;
     }
 
-    /** The student's own figures: attendance, assignment work and marks per current course, and published results. */
     public StudentAnalytics forStudent(Long accountId) {
         StudentAttendanceResponse own = attendance.getMyAttendance(accountId);
         List<StudentAttendance> attendanceLines = own.courses().stream()
@@ -143,7 +137,6 @@ public class AnalyticsService {
                 AnalyticsRules.mean(results), results.size());
     }
 
-    /** Class analytics of a course the faculty member can open; any other answers 404. */
     public CourseAnalytics forCourse(Long accountId, Long lmsCourseId) {
         if (!facultyAccess.canAccessCourse(accountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Course not found or unavailable.");

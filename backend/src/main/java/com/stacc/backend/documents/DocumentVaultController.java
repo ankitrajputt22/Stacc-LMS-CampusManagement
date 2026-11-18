@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** The person's own document vault and certificate requests, the college's certificate desk, and the public check. */
 @RestController
 @Tag(name = "Documents and certificates")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
@@ -144,10 +143,6 @@ public class DocumentVaultController {
         vault.withdraw(documentId);
     }
 
-    /**
-     * Public on purpose (listed in SecurityConfig): anyone given a verification code, such as an employer, can confirm a
-     * document is genuine. It reveals only authenticity, the title, and the issue date; never the person or the file.
-     */
     @GetMapping("/api/v1/public/documents/verify/{code}")
     @Operation(summary = "Check whether a verification code belongs to an authentic document")
     public Authenticity verify(@PathVariable String code) {

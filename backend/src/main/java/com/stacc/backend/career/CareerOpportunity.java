@@ -20,11 +20,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One opportunity: a placement, internship, research opening, or scholarship, with its eligible programs (empty means
- * every program), deadline, and ordered stages. Drafts are edited; open ones take applications until the deadline;
- * closed ones take none. Stages are fixed once it opens.
- */
 @Entity
 @Table(name = "career_opportunities")
 public class CareerOpportunity {
@@ -79,7 +74,6 @@ public class CareerOpportunity {
     private Instant updatedAt;
 
     protected CareerOpportunity() {
-        // Required by JPA.
     }
 
     public CareerOpportunity(Long createdBy) {

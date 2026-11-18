@@ -68,7 +68,6 @@ class AcademicCalendarNotificationsTest {
 
     @Test
     void aSemesterEventReachesItsStudentsItsCurrentTeachersAndAdminsEachOnce() {
-        // Account 90 is a student of semester 3 who is also an admin.
         when(semesterEnrollments.findStudentAccountIdsInSession(2L, 9L, AcademicCalendarEventQueryService.CALENDAR_PARTICIPATION))
                 .thenReturn(List.of(70L, 90L));
         when(teachingAssignments.findAllWithFacultyInSession(2L, 9L))

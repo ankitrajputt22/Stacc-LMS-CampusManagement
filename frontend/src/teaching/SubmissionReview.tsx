@@ -25,19 +25,15 @@ export const backLinkClasses =
 type AttemptReviewProps = {
   attempt: LmsFacultySubmissionAttempt
   isLatest: boolean
-  /** The assignment's maximum now. A first grade is out of this; a regrade keeps its own maximum. */
   maxMarks: number
-  /** The rubric the assignment is graded with, or null. */
   rubric: LmsRubric | null
   downloads: ReturnType<typeof useFileDownload>
   onSaved: (attempt: LmsFacultySubmissionAttempt, grade: LmsSubmissionGrade) => void
 }
 
-/** One attempt as the student handed it in, its current grade, and the form to grade it. */
 function AttemptReview({ attempt, isLatest, maxMarks, rubric, downloads, onSaved }: AttemptReviewProps) {
   const headingId = `review-attempt-${attempt.attemptId}-heading`
   const outOf = attempt.grade?.maxMarksSnapshot ?? maxMarks
-  // With a rubric, grading starts from it; marks can still be given without it.
   const [withRubric, setWithRubric] = useState(rubric !== null)
 
   return (
@@ -61,7 +57,6 @@ function AttemptReview({ attempt, isLatest, maxMarks, rubric, downloads, onSaved
         Due then <time dateTime={attempt.dueAtSnapshot}>{formatDateTime(attempt.dueAtSnapshot)}</time>
       </p>
 
-      {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
       {attempt.textContent && (
         <p className="mt-3 text-sm leading-6 break-words whitespace-pre-line text-ink">{attempt.textContent}</p>
       )}
@@ -76,7 +71,6 @@ function AttemptReview({ attempt, isLatest, maxMarks, rubric, downloads, onSaved
           {formatMarks(attempt.grade.maxMarksSnapshot)} although the assignment’s maximum is now {formatMarks(maxMarks)}.
         </p>
       )}
-      {/* A new form for each attempt, so typed marks never carry over to another attempt. */}
       {rubric && withRubric ? (
         <RubricGradeForm key={attempt.attemptId} attempt={attempt} rubric={rubric} onSaved={(grade) => onSaved(attempt, grade)} />
       ) : (
@@ -97,7 +91,6 @@ type AttemptPickerProps = {
   onSelect: (attemptId: number) => void
 }
 
-/** A button for each attempt, newest first. Each attempt is graded on its own. */
 function AttemptPicker({ attempts, selectedId, onSelect }: AttemptPickerProps) {
   return (
     <div role="group" aria-label="Choose an attempt" className="mt-3 flex flex-wrap gap-2">
@@ -136,7 +129,6 @@ function Reviewed({
 }) {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const latest = detail.attempts[0]
-  // The latest attempt is reviewed first. A choice that is no longer listed falls back to it.
   const selected = detail.attempts.find((attempt) => attempt.attemptId === selectedId) ?? latest
   const count = detail.attempts.length
 
@@ -161,19 +153,11 @@ function Reviewed({
 
 type SubmissionReviewProps = {
   assignmentId: number
-  /** Null when the address cannot name a submission: nothing is asked, and it reads as unavailable. */
   submissionId: number | null
-  /** The list of submissions, to go back to. */
   listPath: string
-  /** Called after a grade is saved, so the list behind this view is up to date. */
   onGraded: () => void
 }
 
-/**
- * One student's submission for faculty review: every attempt with its text and files, its grade, and a form
- * to grade it. Files download through the API. The backend checks access and the grading permission on every
- * request; what is shown is only what it sent.
- */
 export function SubmissionReview({ assignmentId, submissionId, listPath, onGraded }: SubmissionReviewProps) {
   const detail = useFacultySubmissionDetail(assignmentId, submissionId)
   const downloads = useFileDownload(downloadFacultySubmissionAttachment)
@@ -181,7 +165,6 @@ export function SubmissionReview({ assignmentId, submissionId, listPath, onGrade
   const [announcement, setAnnouncement] = useState('')
   const loaded = detail.status === 'loaded'
 
-  // Opening a submission moves focus to it, so keyboard and screen reader users start there.
   useEffect(() => {
     if (loaded) {
       headingRef.current?.focus()

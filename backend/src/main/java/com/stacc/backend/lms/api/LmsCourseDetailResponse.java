@@ -7,10 +7,6 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import com.stacc.backend.lms.course.LmsCourseHomeView;
 
-/**
- * What a student's course page shows about one LMS course. Everything comes from the official
- * academic records; nothing about the student, the enrollment, or the membership is included.
- */
 public record LmsCourseDetailResponse(
         @Schema(description = "The ID of the LMS course. It identifies the learning space.", example = "42")
         Long lmsCourseId,

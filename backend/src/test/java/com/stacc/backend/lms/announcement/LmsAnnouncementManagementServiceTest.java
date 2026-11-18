@@ -28,11 +28,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The faculty member behind ACCOUNT_ID teaches course 7 and no other. The faculty access rules themselves
- * (inactive profile or assignment, archived course) are tested with LmsFacultyAccessService; here a
- * refusal from it is shown to stop every change.
- */
 class LmsAnnouncementManagementServiceTest {
 
     private static final Long ACCOUNT_ID = 21L;
@@ -121,7 +116,6 @@ class LmsAnnouncementManagementServiceTest {
 
         assertEquals(LmsContentStatus.PUBLISHED, again.getStatus());
         assertEquals(NOW, again.getPublishedAt());
-        // Only the first publication tells the students.
         verify(notifications, times(1)).published(draft);
     }
 

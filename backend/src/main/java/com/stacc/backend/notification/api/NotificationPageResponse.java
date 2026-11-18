@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One page of the Inbox, newest first. */
 public record NotificationPageResponse(
         List<NotificationInboxItem> items,
         @Schema(description = "The page number, from 0.", example = "0") int page,

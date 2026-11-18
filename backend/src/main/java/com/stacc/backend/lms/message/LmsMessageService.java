@@ -21,11 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Private messages between a student and the faculty of a course. A student starts conversations and sees only their
- * own; the course's faculty see and answer every conversation of the course. Course access is checked on every request
- * (a student who leaves the course loses the conversation too). Another person's conversation answers 404.
- */
 @Service
 public class LmsMessageService {
 
@@ -67,7 +62,6 @@ public class LmsMessageService {
                 : conversations.findAllForStudent(lmsCourseId, viewer.accountId());
     }
 
-    /** A student starts a conversation with the course's faculty, with its first message. */
     @Transactional
     public ConversationDetail start(Viewer viewer, Long lmsCourseId, String subject, String body, Collection<MultipartFile> uploads) {
         if (viewer.kind() != AuthorKind.STUDENT) {
@@ -89,13 +83,11 @@ public class LmsMessageService {
     public ConversationDetail detail(Viewer viewer, Long lmsCourseId, Long conversationId) {
         LmsConversation conversation = visible(viewer, lmsCourseId, conversationId);
         List<LmsConversationMessage> found = messages.findAllForConversation(conversation.getId());
-        // The answer is built after the transaction (open-in-view is off), so every person it shows is loaded now.
         Hibernate.initialize(conversation.getStudent());
         found.forEach(message -> Hibernate.initialize(message.getAuthor()));
         return new ConversationDetail(conversation, found, attachments.findAllForConversation(conversation.getId()));
     }
 
-    /** Opens a file of a conversation the caller may read; any other file answers the same 404. */
     @Transactional(readOnly = true)
     public LmsAttachmentStore.Download openAttachment(Viewer viewer, Long lmsCourseId, Long conversationId, Long attachmentId) {
         visible(viewer, lmsCourseId, conversationId);
@@ -105,7 +97,6 @@ public class LmsMessageService {
         return files.open(attachment.getObjectKey(), attachment.getFileName(), attachment.getContentType(), attachment.getSizeBytes());
     }
 
-    // Files are stored under a key made from IDs only; if recording them fails, the stored files are removed again.
     private void attach(LmsConversationMessage message, Collection<MultipartFile> uploads) {
         List<StoredFile> stored = files.storeAll("lms/conversations/%d/messages/%d"
                 .formatted(message.getConversation().getId(), message.getId()), uploads);

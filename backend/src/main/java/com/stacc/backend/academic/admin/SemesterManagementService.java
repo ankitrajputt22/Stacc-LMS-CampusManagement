@@ -19,11 +19,6 @@ import com.stacc.backend.academic.session.AcademicSessionStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit semesters. A semester is one numbered semester of one program in one academic
- * session, both loaded on the server from the IDs sent. Program, session, and number say what it is and never
- * change; only the status can, moving forward from planned to active to closed. Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class SemesterManagementService {
@@ -108,10 +103,6 @@ public class SemesterManagementService {
         return SemesterResponse.of(semesters.saveAndFlush(semester));
     }
 
-    /**
-     * Sets or clears the semester's registration period and drop deadline. Students register only inside the period
-     * and drop only until the deadline. A closed semester keeps what it had.
-     */
     public SemesterResponse updateRegistration(Long semesterId, SemesterRegistrationUpdate request) {
         Semester semester = find(semesterId);
         if (semester.getStatus() == SemesterStatus.CLOSED) {

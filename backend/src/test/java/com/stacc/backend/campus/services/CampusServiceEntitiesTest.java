@@ -103,14 +103,12 @@ class CampusServiceEntitiesTest {
         assertThat(rejected.effectiveStatus()).isEqualTo(CampusServiceRequestStatus.REJECTED);
         assertThat(cancelled.effectiveStatus()).isEqualTo(CampusServiceRequestStatus.CANCELLED);
         assertThat(pending.effectiveStatus()).isEqualTo(CampusServiceRequestStatus.SUBMITTED);
-        // Reading never stores anything.
         assertThat(approved.getStatus()).isEqualTo(CampusServiceRequestStatus.SUBMITTED);
 
         assertThat(approved.synchronizeWithApproval()).isTrue();
         assertThat(approved.getStatus()).isEqualTo(CampusServiceRequestStatus.APPROVED);
         assertThat(approved.synchronizeWithApproval()).isFalse();
         assertThat(pending.synchronizeWithApproval()).isFalse();
-        // A completed request stays completed whatever its approval says.
         approved.complete(CampusFixtures.NOW);
         assertThat(approved.effectiveStatus()).isEqualTo(CampusServiceRequestStatus.COMPLETED);
     }

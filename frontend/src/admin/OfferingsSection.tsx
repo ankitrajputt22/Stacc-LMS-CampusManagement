@@ -12,7 +12,6 @@ import { MasterSection } from './MasterSection'
 import { lifecycleOptions } from './masterStatus'
 import { REGISTRATION_OPTIONS, registrationTone, registrationWord, roleWord } from './offeringText'
 
-/** "Dr. Meera Iyer (Primary)", "emp1021 (Co-faculty)", or Unassigned when no one actively teaches it. */
 function FacultyCell({ faculty }: { faculty: OfferingFaculty[] | null }) {
   const active = (faculty ?? []).filter((member) => member.status === 'ACTIVE')
   if (active.length === 0) {
@@ -30,12 +29,6 @@ function FacultyCell({ faculty }: { faculty: OfferingFaculty[] | null }) {
   )
 }
 
-/**
- * Course offerings: one catalog course taught in one semester, for the whole semester or for one of its sections. They
- * can be listed by session and semester, searched, added from active courses, open semesters, and active sections, and
- * moved forward through their status. The course, semester, and section never change and nothing is deleted. Each
- * offering links to its roster and to who teaches it.
- */
 export function OfferingsSection() {
   const [sessionFilter, setSessionFilter] = useState('')
   const [semesterFilter, setSemesterFilter] = useState('')

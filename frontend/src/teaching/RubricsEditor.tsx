@@ -37,7 +37,6 @@ function refusalText(failure: unknown, fallback: string): string | null {
   return message && status !== null && status < 500 ? message : fallback
 }
 
-/** One criterion of the form with its levels. */
 function CriterionFields({
   index,
   criterion,
@@ -117,7 +116,6 @@ function CriterionFields({
   )
 }
 
-/** A rubric's title, description, and criteria with optional levels; the total updates as points are typed. */
 export function RubricForm({
   initial,
   submitLabel,
@@ -204,10 +202,6 @@ export function RubricForm({
   )
 }
 
-/**
- * The course's rubrics as faculty manage them: New rubric, each rubric's criteria and levels, Edit while it has not been
- * used for grading, and Archive, confirmed first. Nothing is deleted. An assignment chooses its rubric in Assignments.
- */
 export function RubricsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const rubrics = useApiQuery(queryKeys.lms.rubrics(lmsCourseId), (signal) => getRubrics(lmsCourseId, signal))

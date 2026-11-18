@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A notification waiting for one person's daily digest. */
 @Entity
 @Table(name = "notification_digest_items")
 public class NotificationDigestItem {
@@ -35,7 +34,6 @@ public class NotificationDigestItem {
     private Instant sentAt;
 
     protected NotificationDigestItem() {
-        // Required by JPA.
     }
 
     public NotificationDigestItem(Long userAccountId, Notification notification, Instant createdAt) {

@@ -11,9 +11,7 @@ public interface HelpdeskCategoryRepository extends JpaRepository<HelpdeskCatego
 
     boolean existsByCode(String code);
 
-    /** The categories that can be chosen for a new ticket, by name. */
     List<HelpdeskCategory> findAllByActiveTrueOrderByNameAscIdAsc();
 
-    /** Every category, active or not, by code. */
     List<HelpdeskCategory> findAllByOrderByCodeAscIdAsc();
 }

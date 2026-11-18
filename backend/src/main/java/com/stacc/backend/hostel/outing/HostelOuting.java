@@ -16,10 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A hostel resident's request to go out: a gate pass or leave, with its window and reason. Its approval lives in the
- * approval engine and is never copied here. {@code returnedAt} is set when the gate records the student coming back.
- */
 @Entity
 @Table(name = "hostel_outings")
 public class HostelOuting {
@@ -58,7 +54,6 @@ public class HostelOuting {
     private Instant createdAt;
 
     protected HostelOuting() {
-        // Required by JPA.
     }
 
     public HostelOuting(StudentProfile studentProfile, OutingKind kind, Instant leaveFrom, Instant leaveUntil, String reason,

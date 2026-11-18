@@ -87,7 +87,6 @@ function TaughtOfferings() {
   }
 }
 
-/** Class lists at /class-lists: the offerings the faculty member teaches now, each with its registered students. */
 export function ClassListsPage() {
   const isFaculty = useIsFaculty()
   return (
@@ -180,7 +179,6 @@ function OfferingStudents({ courseOfferingId }: { courseOfferingId: number }) {
   }
 }
 
-/** One class list at /class-lists/:courseOfferingId. Read-only: faculty never change enrollments. */
 export function ClassListPage() {
   const isFaculty = useIsFaculty()
   const { courseOfferingId } = useParams()

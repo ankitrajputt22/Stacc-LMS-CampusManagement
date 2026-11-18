@@ -25,13 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Career profiles and the opportunities engine. Students keep their profile and resume versions, see open
- * opportunities with the reasons they are not eligible, apply with a resume version and their consent to share, follow
- * their stage, withdraw, and answer offers. Managers (CAREER_MANAGE) keep companies, create, open, and close
- * opportunities, schedule rounds, move applicants through stages, make offers, set the placement policy, and export
- * applicants who consented. Eligibility is decided here every time.
- */
 @Service
 @Transactional
 public class CareerService {
@@ -94,8 +87,6 @@ public class CareerService {
         this.clock = clock;
     }
 
-    // --- Students: profile and resumes
-
     @Transactional(readOnly = true)
     public ProfileView profile(Long accountId) {
         Optional<CareerProfile> found = profiles.findByAccountId(accountId);
@@ -141,8 +132,6 @@ public class CareerService {
         CareerResume resume = ownResume(accountId, resumeId);
         return files.open(resume.getObjectKey(), resume.getFileName(), resume.getContentType(), resume.getSizeBytes());
     }
-
-    // --- Students: opportunities
 
     @Transactional(readOnly = true)
     public List<OpportunityView> open(Long accountId) {
@@ -207,8 +196,6 @@ public class CareerService {
         }
         return view(application, offer);
     }
-
-    // --- Managers
 
     @Transactional(readOnly = true)
     public List<CareerCompany> companies() {
@@ -315,7 +302,6 @@ public class CareerService {
         return current.isOneAcceptedPlacement();
     }
 
-    /** Rows for the applicant export: only applicants who consented to share, with what they shared. */
     @Transactional(readOnly = true)
     public List<List<String>> exportRows(Long opportunityId) {
         CareerOpportunity opportunity = lockedOpportunityRead(opportunityId);
@@ -334,8 +320,6 @@ public class CareerService {
         }
         return rows;
     }
-
-    // --- Shared
 
     private List<String> reasons(CareerOpportunity opportunity, Long accountId, CareerApplication existing) {
         List<String> reasons = new ArrayList<>();

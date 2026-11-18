@@ -27,8 +27,6 @@ public class StudentAttendanceController {
         this.queryService = queryService;
     }
 
-    // The rule lets in a student account that may view attendance. Whose records are returned is decided by the
-    // query, from the account in the token and that student's own course enrollments.
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT') and hasAuthority('ATTENDANCE_VIEW')")
     @Operation(

@@ -20,11 +20,6 @@ import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-/**
- * The system health view (v0.16.7): the overall health and each part's status from Actuator, the database schema
- * version from Flyway, whether optional features and metrics are on, and the JVM's uptime and memory. Read live on each
- * request; nothing is stored, and no address, credential, or other setting is sent.
- */
 @Service
 public class SystemHealthService {
 

@@ -12,10 +12,6 @@ import com.stacc.backend.common.error.ApiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Only the complainant and the category's committee open a case, admins included; resolving and accepting at once never
- * both succeed past the case row lock. A category of its own.
- */
 class GrievanceAccessMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

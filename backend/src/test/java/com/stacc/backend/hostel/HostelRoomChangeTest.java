@@ -8,7 +8,6 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 
-/** A swap waits for its partner's one answer; any change ends once, and only an open one ends. */
 class HostelRoomChangeTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Faculty assignment routes need the admin role and the faculty assignment permissions together. */
 class AdminFacultyAssignmentControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/admin/academic";

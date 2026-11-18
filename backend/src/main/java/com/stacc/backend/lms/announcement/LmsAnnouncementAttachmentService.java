@@ -17,12 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Files on course announcements. Faculty add and remove them under the faculty access policy, finding the course from
- * the stored announcement; students download them only from published announcements of courses the student access
- * policy allows. Uploads follow the shared file rules of {@link LmsAttachmentStore}; a removed file is kept. Anything
- * the caller may not reach answers the same 404 as a missing file.
- */
 @Service
 public class LmsAnnouncementAttachmentService {
 
@@ -51,7 +45,6 @@ public class LmsAnnouncementAttachmentService {
         this.clock = clock;
     }
 
-    /** The files still listed on these announcements, by announcement. For lists the caller was allowed to read. */
     @Transactional(readOnly = true)
     public Map<Long, List<LmsAnnouncementAttachment>> listedFor(Collection<Long> announcementIds) {
         if (announcementIds.isEmpty()) {
@@ -61,7 +54,6 @@ public class LmsAnnouncementAttachmentService {
                 .collect(Collectors.groupingBy(attachment -> attachment.getAnnouncement().getId()));
     }
 
-    /** Adds files to a draft or published announcement, at most {@value #MAX_FILES} listed in all. */
     @Transactional
     public LmsAnnouncement add(Long userAccountId, Long announcementId, Collection<MultipartFile> uploads) {
         if (uploads == null || uploads.isEmpty()) {
@@ -71,7 +63,6 @@ public class LmsAnnouncementAttachmentService {
         if (attachments.countListed(announcementId) + uploads.size() > MAX_FILES) {
             throw new ApiException(HttpStatus.CONFLICT, TOO_MANY);
         }
-        // Keys are made from IDs only; if recording the files fails, the stored bytes are removed again.
         List<StoredFile> stored = files.storeAll("lms/courses/%d/announcements/%d"
                 .formatted(announcement.getLmsCourse().getId(), announcementId), uploads);
         try {
@@ -84,7 +75,6 @@ public class LmsAnnouncementAttachmentService {
         return announcement;
     }
 
-    /** Stops listing a file; its bytes are kept. Removing again changes nothing. */
     @Transactional
     public LmsAnnouncement remove(Long userAccountId, Long announcementId, Long attachmentId) {
         LmsAnnouncement announcement = lockedChangeable(userAccountId, announcementId);
@@ -92,7 +82,6 @@ public class LmsAnnouncementAttachmentService {
         return announcement;
     }
 
-    /** A listed file of an announcement in a course the faculty member teaches. */
     @Transactional(readOnly = true)
     public LmsAttachmentStore.Download openForFaculty(Long userAccountId, Long announcementId, Long attachmentId) {
         Long lmsCourseId = announcementId == null ? null : announcements.findLmsCourseIdById(announcementId).orElse(null);
@@ -102,7 +91,6 @@ public class LmsAnnouncementAttachmentService {
         return open(attachmentOf(announcementId, attachmentId));
     }
 
-    /** A listed file of a published announcement of a course the student may use now. */
     @Transactional(readOnly = true)
     public LmsAttachmentStore.Download openForStudent(Long userAccountId, Long lmsCourseId, Long announcementId, Long attachmentId) {
         LmsAnnouncement announcement = announcementId == null ? null : announcements.findById(announcementId).orElse(null);
@@ -124,7 +112,6 @@ public class LmsAnnouncementAttachmentService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, FILE_UNAVAILABLE));
     }
 
-    // Access from the stored announcement's course, then the row lock; the locking read is the first to load it.
     private LmsAnnouncement lockedChangeable(Long userAccountId, Long announcementId) {
         Long lmsCourseId = announcementId == null ? null : announcements.findLmsCourseIdById(announcementId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {

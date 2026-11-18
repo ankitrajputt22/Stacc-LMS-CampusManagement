@@ -17,12 +17,6 @@ import type {
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
-// The client's base URL already ends in /api, and only the client sets the Authorization header. No request names a
-// requester, account, status, or approval request: the caller and its roles come from the access token. Approval
-// decisions are not here: they go through approveTask and rejectTask in approvalsApi.
-
-// --- Requesters
-
 export async function getCampusServices(signal?: AbortSignal) {
   return (await apiClient.get<CampusService[]>('/campus/services', { signal })).data
 }
@@ -47,8 +41,6 @@ export async function getCampusNotices(query: { page: number; size: number }, si
   return (await apiClient.get<Page<CampusNotice>>('/campus/notices', { params: query, signal })).data
 }
 
-// --- Admin: service catalog
-
 export async function getAdminCampusServices(signal?: AbortSignal) {
   return (await apiClient.get<AdminCampusService[]>('/campus/admin/services', { signal })).data
 }
@@ -60,8 +52,6 @@ export async function createCampusService(request: CampusServiceSettings & { cod
 export async function updateCampusService(serviceId: number, request: CampusServiceSettings) {
   return (await apiClient.put<AdminCampusService>(`/campus/admin/services/${serviceId}`, request)).data
 }
-
-// --- Admin: service requests
 
 export async function getAdminCampusRequests(query: AdminCampusRequestQuery, signal?: AbortSignal) {
   return (await apiClient.get<Page<AdminCampusRequestSummary>>('/campus/admin/requests', { params: query, signal })).data
@@ -75,7 +65,6 @@ export async function completeCampusRequest(requestId: number) {
   return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/complete`)).data
 }
 
-/** Completes the request with a document issued into the requester's vault. */
 export async function completeCampusRequestWithDocument(requestId: number, documentTitle: string, file: File) {
   const form = new FormData()
   form.append('documentTitle', documentTitle)
@@ -87,12 +76,9 @@ export async function startProcessingCampusRequest(requestId: number) {
   return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/start-processing`)).data
 }
 
-/** Marks the request ready; the requester is told the first time. */
 export async function markCampusRequestReady(requestId: number) {
   return (await apiClient.post<AdminCampusRequestDetail>(`/campus/admin/requests/${requestId}/mark-ready`)).data
 }
-
-// --- Admin: notices
 
 export async function getAdminCampusNotices(query: { status?: CampusNoticeStatus; page: number; size: number }, signal?: AbortSignal) {
   return (await apiClient.get<Page<AdminCampusNotice>>('/campus/admin/notices', { params: query, signal })).data

@@ -9,8 +9,6 @@ import type {
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
-// The signed-in account is the one in the session; the backend checks course access on every request.
-
 function base(side: CourseSide, lmsCourseId: number): string {
   return side === 'faculty' ? `/lms/faculty/courses/${lmsCourseId}` : `/lms/courses/${lmsCourseId}`
 }
@@ -43,7 +41,6 @@ export async function getConversations(side: CourseSide, lmsCourseId: number, si
   return (await apiClient.get<ConversationSummary[]>(`${base(side, lmsCourseId)}/conversations`, { signal })).data
 }
 
-/** A student starts a conversation with the course's faculty. */
 export async function startConversation(lmsCourseId: number, subject: string, body: string, files: File[] = []): Promise<Conversation> {
   const form = messageForm(body, files)
   form.append('subject', subject)
@@ -65,7 +62,6 @@ export async function sendMessage(
   return (await apiClient.post<Conversation>(url, messageForm(body, files), { timeout: FILE_TIMEOUT_MS })).data
 }
 
-/** Downloads a file of a conversation through the API, never from storage directly. */
 export async function downloadMessageAttachment(
   side: CourseSide,
   lmsCourseId: number,
@@ -85,12 +81,10 @@ function messageForm(body: string, files: File[]): FormData {
   return form
 }
 
-/** Hides a thread from students, or shows it again (faculty). */
 export async function hideDiscussion(lmsCourseId: number, threadId: number, hidden: boolean): Promise<DiscussionThread> {
   return (await apiClient.post<DiscussionThread>(`${base('faculty', lmsCourseId)}/discussions/${threadId}/hide`, { hidden })).data
 }
 
-/** Locks a thread against new replies, or opens it again (faculty). */
 export async function lockDiscussion(lmsCourseId: number, threadId: number, locked: boolean): Promise<DiscussionThread> {
   return (await apiClient.post<DiscussionThread>(`${base('faculty', lmsCourseId)}/discussions/${threadId}/lock`, { locked })).data
 }
@@ -100,7 +94,6 @@ export async function hideReply(lmsCourseId: number, threadId: number, replyId: 
     .data
 }
 
-/** Reports the thread (no reply) or one of its replies to the course's faculty (students). */
 export async function reportPost(lmsCourseId: number, threadId: number, replyId: number | null, reason: string): Promise<void> {
   await apiClient.post(`${base('student', lmsCourseId)}/discussions/${threadId}/reports`, { replyId, reason })
 }
@@ -109,7 +102,6 @@ export async function getDiscussionReports(lmsCourseId: number, signal?: AbortSi
   return (await apiClient.get<DiscussionReport[]>(`${base('faculty', lmsCourseId)}/discussion-reports`, { signal })).data
 }
 
-/** Hides the reported post, or dismisses its open reports. */
 export async function resolveReport(lmsCourseId: number, reportId: number, hide: boolean): Promise<void> {
   await apiClient.post(`${base('faculty', lmsCourseId)}/discussion-reports/${reportId}/resolve`, { hide })
 }

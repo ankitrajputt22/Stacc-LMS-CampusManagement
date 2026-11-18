@@ -44,7 +44,6 @@ function CompleteButton({ detail, onChanged }: { detail: AdminCampusRequestDetai
           await completeCampusRequest(detail.requestId)
         } catch (failure) {
           if (getHttpStatus(failure) === 409) {
-            // The request changed meanwhile: the page says so and shows it as it is now.
             setConfirming(false)
             onChanged(refusalText(409, getApiError(failure)?.message ?? null, 'complete the request'), 'error')
             return
@@ -59,7 +58,6 @@ function CompleteButton({ detail, onChanged }: { detail: AdminCampusRequestDetai
   )
 }
 
-/** Being processed and Ready: steps forward only, each telling the page what happened. */
 function ProgressButtons({ detail, onChanged }: { detail: AdminCampusRequestDetail; onChanged: Notify }) {
   const [busy, setBusy] = useState(false)
   async function step(action: () => Promise<unknown>, done: string, what: string) {
@@ -92,7 +90,6 @@ function ProgressButtons({ detail, onChanged }: { detail: AdminCampusRequestDeta
   )
 }
 
-/** Complete with an issued document: a title and one file, placed in the requester's document vault. */
 function CompleteWithDocument({ detail, onChanged }: { detail: AdminCampusRequestDetail; onChanged: Notify }) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -160,7 +157,6 @@ function Review({ detail, onChanged }: { detail: AdminCampusRequestDetail; onCha
 
       <section aria-labelledby="campus-review-subject" className="mt-4 rounded-panel border border-line bg-surface p-4">
         <h3 id="campus-review-subject" className="text-sm font-semibold break-words text-ink">{detail.subject}</h3>
-        {/* Plain text: React shows it as text, never as HTML. */}
         <p className="mt-1 text-sm leading-6 break-words whitespace-pre-wrap text-ink">{detail.details}</p>
       </section>
 
@@ -209,7 +205,6 @@ function Review({ detail, onChanged }: { detail: AdminCampusRequestDetail; onCha
   )
 }
 
-/** One service request for admins at /admin/campus/requests/:requestId. Approving uses the approval engine's routes. */
 export function RequestReview() {
   const { requestId: param } = useParams()
   const requestId = param && /^[1-9]\d{0,17}$/.test(param) ? Number(param) : null

@@ -22,13 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The library (v0.12.13). Members (students and faculty) search the catalog, see their loans and holds, place and
- * cancel holds, and renew a loan once. Librarians keep the catalog and resources and lend and take back copies.
- * Lending locks the borrower's account row, then the copy row, then reads the borrower's loans and the title's copies,
- * loans, and holds with locking reads: one open loan per copy, at most five per borrower, and holds first in queue
- * order. Overdue and queue positions are worked out on read.
- */
 @Service
 @Transactional
 public class LibraryService {
@@ -77,9 +70,6 @@ public class LibraryService {
         this.clock = clock;
     }
 
-    // --- Members
-
-    /** Up to 50 titles matching the text (title, authors, subject, or ISBN), with copies, availability, and the queue. */
     @Transactional(readOnly = true)
     public List<TitleView> search(Long accountId, String text, boolean includeInactive) {
         String query = text == null ? "" : text.strip().toLowerCase(Locale.ROOT);
@@ -148,7 +138,6 @@ public class LibraryService {
         });
     }
 
-    /** Renews one's own loan once, before it is due, unless others are waiting for the title. */
     public void renew(Long accountId, Long loanId) {
         LibraryLoan loan = (loanId == null ? Optional.<LibraryLoan>empty() : loans.findByIdForUpdate(loanId))
                 .filter(found -> found.getBorrower().getId().equals(accountId))
@@ -167,8 +156,6 @@ public class LibraryService {
         return (includeInactive ? resources.findAllByOrderByTitleAsc() : resources.findByActiveTrueOrderByTitleAsc()).stream()
                 .map(r -> new ResourceView(r.getId(), r.getTitle(), r.getDescription(), r.getUrl(), r.isActive())).toList();
     }
-
-    // --- Librarians
 
     public TitleView addTitle(String title, String authors, String isbn, String publisher, Integer year, String subject) {
         LibraryTitle saved;
@@ -215,7 +202,6 @@ public class LibraryService {
         copy.withdraw(now());
     }
 
-    /** Lends a copy to an active student or faculty account, within the loan limit and the title's hold queue. */
     public LoanView issue(Long librarianId, String barcode, String loginId) {
         Long borrowerId = (loginId == null ? Optional.<UserAccount>empty() : accounts.findWithRolesAndPermissionsByLoginId(loginId.strip()))
                 .filter(found -> found.getStatus() == AccountStatus.ACTIVE && (found.hasRole(RoleName.STUDENT) || found.hasRole(RoleName.FACULTY)))
@@ -232,7 +218,6 @@ public class LibraryService {
             throw new ApiException(HttpStatus.CONFLICT, "This borrower already has " + LOAN_LIMIT + " books out.");
         }
         Long titleId = copy.getTitle().getId();
-        // Copies and loans before holds: the same order as renewing (loan, then holds), so the two never deadlock.
         int available = copies.findInServiceForShare(titleId).size() - loans.findOpenForTitleForShare(titleId).size();
         List<LibraryHold> queue = holds.findActiveForTitleForUpdate(titleId);
         Optional<LibraryHold> own = queue.stream().filter(hold -> hold.getAccount().getId().equals(borrowerId)).findFirst();
@@ -250,7 +235,6 @@ public class LibraryService {
         return new LoanView(saved.getId(), copy.getTitle().getTitle(), copy.getBarcode(), saved.getIssuedAt(), saved.getDueAt(), false, false);
     }
 
-    /** Takes a copy back; taking it back again changes nothing. */
     public String giveBack(String barcode) {
         LibraryCopy copy = copies.findByBarcodeForUpdate(LibraryCopy.normalize(barcode)).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
         return loans.findOpenForCopyForUpdate(copy.getId()).map(loan -> {

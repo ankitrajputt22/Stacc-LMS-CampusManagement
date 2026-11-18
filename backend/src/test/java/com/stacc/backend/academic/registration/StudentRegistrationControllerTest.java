@@ -22,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Course registration routes: the student role with each route's own permission, the student from the token. */
 class StudentRegistrationControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

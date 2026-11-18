@@ -23,11 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The hostel inventory: hostels, their rooms, and their beds, for admins. Nothing is deleted; anything can be made
- * inactive, but not while it holds an active allocation. A hostel's code never changes, and a room's or bed's number
- * stops changing once it has allocation history. Occupancy and capacity are always counted, never stored.
- */
 @Service
 @Transactional
 public class HostelManagementService {
@@ -51,8 +46,6 @@ public class HostelManagementService {
         this.beds = beds;
         this.allocations = allocations;
     }
-
-    // --- Hostels
 
     @Transactional(readOnly = true)
     public List<HostelResponse> hostels() {
@@ -78,7 +71,6 @@ public class HostelManagementService {
         return responseOf(saved(() -> hostels.saveAndFlush(hostel), CODE_TAKEN));
     }
 
-    /** Replaces the name, description, and active flag. The code never changes. */
     public HostelResponse updateHostel(Long hostelId, UpdateHostelRequest request) {
         Hostel hostel = (hostelId == null ? null : hostels.findByIdForUpdate(hostelId).orElse(null));
         if (hostel == null) {
@@ -94,8 +86,6 @@ public class HostelManagementService {
         });
         return responseOf(hostels.saveAndFlush(hostel));
     }
-
-    // --- Rooms
 
     @Transactional(readOnly = true)
     public List<HostelRoomResponse> rooms(Long hostelId) {
@@ -121,7 +111,6 @@ public class HostelManagementService {
         return new HostelRoomResponse(stored.getId(), hostelId, stored.getRoomNumber(), stored.isActive(), 0, 0, false);
     }
 
-    /** Changes the room number, while no bed of the room was ever allocated, and the active flag. */
     public HostelRoomResponse updateRoom(Long roomId, UpdateRoomRequest request) {
         HostelRoom room = (roomId == null ? null : rooms.findByIdForUpdate(roomId).orElse(null));
         if (room == null) {
@@ -149,8 +138,6 @@ public class HostelManagementService {
         return rooms(hostelId).stream().filter(row -> row.roomId().equals(roomId)).findFirst().orElseThrow();
     }
 
-    // --- Beds
-
     @Transactional(readOnly = true)
     public List<HostelBedResponse> beds(Long roomId) {
         HostelRoom room = roomOf(roomId);
@@ -176,7 +163,6 @@ public class HostelManagementService {
         return beds(roomId).stream().filter(row -> row.bedId().equals(stored.getId())).findFirst().orElseThrow();
     }
 
-    /** Changes the bed number, while the bed was never allocated, and the active flag. */
     public HostelBedResponse updateBed(Long bedId, UpdateBedRequest request) {
         HostelBed bed = (bedId == null ? null : beds.findByIdForUpdate(bedId).orElse(null));
         if (bed == null) {
@@ -202,8 +188,6 @@ public class HostelManagementService {
         saved(() -> beds.saveAndFlush(bed), BED_TAKEN);
         return beds(roomId).stream().filter(row -> row.bedId().equals(bedId)).findFirst().orElseThrow();
     }
-
-    // ---
 
     private HostelResponse responseOf(Hostel hostel) {
         return new HostelResponse(hostel.getId(), hostel.getCode(), hostel.getName(), hostel.getDescription(),
@@ -238,7 +222,6 @@ public class HostelManagementService {
         }
     }
 
-    // A unique constraint caught a race the check above could not see.
     private static <T> T saved(Supplier<T> save, String conflict) {
         try {
             return save.get();
@@ -247,7 +230,6 @@ public class HostelManagementService {
         }
     }
 
-    /** Block, floor, type, and notes of a room; they describe it and decide nothing. */
     public HostelRoomResponse describeRoom(Long roomId, String block, Integer floorNumber, String roomType, String notes) {
         HostelRoom room = (roomId == null ? null : rooms.findByIdForUpdate(roomId).orElse(null));
         if (room == null) {
@@ -262,7 +244,6 @@ public class HostelManagementService {
         return rooms(hostelId).stream().filter(row -> row.roomId().equals(roomId)).findFirst().orElseThrow();
     }
 
-    /** Puts a free bed under maintenance, or back into use. An occupied bed cannot go under maintenance (409). */
     public HostelBedResponse setMaintenance(Long bedId, boolean underMaintenance) {
         HostelBed bed = (bedId == null ? null : beds.findByIdForUpdate(bedId).orElse(null));
         if (bed == null) {

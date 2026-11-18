@@ -1,9 +1,3 @@
-"""The local, self-hosted provider: an Ollama server reached over HTTP.
-
-Only two Ollama routes are used: ``/api/chat`` with a JSON schema as the output format, and
-``/api/embed``. No model is pulled from here; the operator pulls models once (see docs/ai-learning.md).
-"""
-
 from __future__ import annotations
 
 import logging
@@ -53,7 +47,6 @@ class OllamaModelProvider(ModelProvider):
         body = self._client.post("/api/chat", {
             "model": self._model,
             "stream": False,
-            # Ollama constrains the output to this JSON schema. The caller still validates it.
             "format": request.json_schema,
             "messages": [
                 {"role": "system", "content": request.system_prompt},
@@ -61,7 +54,6 @@ class OllamaModelProvider(ModelProvider):
             ],
             "options": {"temperature": request.temperature, "num_predict": request.max_tokens},
         })
-        # Only the final content is read. A reasoning model's separate "thinking" text is ignored and never passed on.
         message = body.get("message")
         content = message.get("content") if isinstance(message, dict) else None
         if not isinstance(content, str):

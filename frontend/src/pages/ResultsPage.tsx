@@ -18,7 +18,6 @@ function CourseOfferingCard({ course }: { course: ResultCourseOffering }) {
       <p className="text-xs font-semibold tracking-[0.04em] break-words text-ink-muted">{course.courseCode}</p>
       <h2 className="mt-0.5 text-base leading-6 font-semibold break-words text-ink">{course.courseName}</h2>
       <CourseFacts course={course} />
-      {/* The route uses the course offering ID from the API. The click area covers the whole card. */}
       <Link
         to={`/results/${course.courseOfferingId}`}
         className="mt-2 inline-flex text-sm font-medium text-stacc-primary after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:underline group-hover:underline-offset-4"
@@ -75,11 +74,6 @@ function MyResultCourses() {
   }
 }
 
-/**
- * The course offerings the signed-in faculty member teaches, to record official results for. Results are academic
- * data, so an offering is listed whether or not it has an LMS course. Accounts without the faculty role see an
- * explanation instead and no request is made; the backend decides everything else.
- */
 export function ResultsPage() {
   const { account } = useAuth()
   const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])

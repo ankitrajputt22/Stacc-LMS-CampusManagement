@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A course's switch for the student AI Study Assistant (v0.13.7). No row means it is on. */
 @Entity
 @Table(name = "ai_course_controls")
 public class AiCourseControl {
@@ -31,7 +30,6 @@ public class AiCourseControl {
     private Instant updatedAt;
 
     protected AiCourseControl() {
-        // Required by JPA.
     }
 
     public AiCourseControl(Long lmsCourseId) {

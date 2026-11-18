@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** A person's own delivery choices, one per category, for the account in the token only. */
 @Service
 public class NotificationPreferenceService {
 
@@ -35,7 +34,6 @@ public class NotificationPreferenceService {
         return mailer.enabled();
     }
 
-    /** Every category, with the defaults where nothing was chosen. */
     @Transactional(readOnly = true)
     public List<Choice> choices(Long accountId) {
         Map<NotificationCategory, NotificationPreference> stored = preferences.findAllByUserAccountId(accountId).stream()
@@ -49,7 +47,6 @@ public class NotificationPreferenceService {
                 .toList();
     }
 
-    /** Saves the given choices; categories left out keep theirs. Each category may appear once. */
     @Transactional
     public List<Choice> choose(Long accountId, List<Choice> choices) {
         if (choices == null || choices.stream().map(Choice::category).distinct().count() != choices.size()

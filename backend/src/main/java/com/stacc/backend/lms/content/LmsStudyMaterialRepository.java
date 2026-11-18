@@ -12,14 +12,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsStudyMaterialRepository extends JpaRepository<LmsStudyMaterial, Long> {
 
-    /** The materials of one topic in these statuses, in topic order: by position, then by ID. */
     List<LmsStudyMaterial> findAllByLmsTopicIdAndStatusInOrderByPositionAscIdAsc(
             Long lmsTopicId, Collection<LmsContentStatus> statuses);
 
-    /**
-     * Every material of one LMS course, in one query, whose module, topic, and material are in the given
-     * statuses, in topic order. The caller groups them by topic.
-     */
     @Query("""
             select material
             from LmsStudyMaterial material
@@ -37,7 +32,6 @@ public interface LmsStudyMaterialRepository extends JpaRepository<LmsStudyMateri
             @Param("topicStatuses") Collection<LmsContentStatus> topicStatuses,
             @Param("materialStatuses") Collection<LmsContentStatus> materialStatuses);
 
-    /** One material together with its topic and module, whose course decides who may use it. */
     @Query("""
             select material
             from LmsStudyMaterial material
@@ -47,13 +41,6 @@ public interface LmsStudyMaterialRepository extends JpaRepository<LmsStudyMateri
             """)
     Optional<LmsStudyMaterial> findWithTopicAndModuleById(@Param("materialId") Long materialId);
 
-    /**
-     * Search: materials of these courses whose title, original file name, or description contains the text, where the
-     * material, its topic, and its module are all in these statuses (for students: published only, the chain of
-     * {@link LmsContentPolicy#isVisibleToStudents(LmsStudyMaterial)}). Only these details are searched, never file
-     * contents. The topic and module are loaded in the same query. The caller passes only courses the account may
-     * use, never an empty collection.
-     */
     @Query(value = """
             select material
             from LmsStudyMaterial material

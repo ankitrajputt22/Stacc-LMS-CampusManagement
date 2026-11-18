@@ -1,5 +1,3 @@
-"""Hybrid search (v0.13.4): keyword matching merged with semantic search."""
-
 from __future__ import annotations
 
 import pytest
@@ -52,7 +50,6 @@ def test_fusion_rewards_items_both_rankings_find():
 
 
 def test_keyword_match_finds_what_semantic_search_alone_misses(tmp_path):
-    # With a relevance floor nothing reaches, only keyword matching can find a chunk.
     strict = {"AI_MIN_RELEVANCE": "0.99"}
     found = ask(client_with(tmp_path / "hybrid", **strict), "3NF?")
     assert found["insufficientContext"] is False

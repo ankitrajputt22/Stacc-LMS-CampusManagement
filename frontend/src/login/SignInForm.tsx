@@ -4,12 +4,10 @@ import { getApiError } from '../api/apiError'
 import { useAuth } from '../auth/AuthContext'
 import { EyeIcon, EyeOffIcon } from './PortalIcons'
 
-// The same text for a wrong password, an unknown ID, and a disabled account, like the backend.
 const INVALID_CREDENTIALS = 'Invalid login ID or password.'
 const CONNECTION_PROBLEM = 'Unable to connect to Stacc. Please try again.'
 const SERVER_PROBLEM = 'Stacc could not sign you in right now. Please try again.'
 const REJECTED_INPUT = 'Check your college ID and password, then try again.'
-// The same text whoever is slowed down, like the backend: it never says whether the ID exists.
 const TOO_MANY_ATTEMPTS = 'Too many sign-in attempts. Wait a few minutes and try again.'
 const LOGIN_ID_REQUIRED = 'Enter your college ID or employee ID.'
 const PASSWORD_REQUIRED = 'Enter your password.'
@@ -24,7 +22,6 @@ type Failure = {
   fields: FieldErrors
 }
 
-// Turns a failed login into text that is safe and useful to show. Nothing raw is displayed.
 function describeFailure(error: unknown): Failure {
   if (!isAxiosError(error)) {
     return { message: SERVER_PROBLEM, fields: {} }
@@ -55,7 +52,6 @@ function describeFailure(error: unknown): Failure {
   return { message: SERVER_PROBLEM, fields: {} }
 }
 
-// Dark navy fields inside the white sign-in card, with their labels shown above them.
 const inputClasses =
   'mt-2 block h-14 w-full rounded-lg border bg-portal-navy px-5 text-base text-white placeholder:text-white/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-portal-cta'
 
@@ -66,10 +62,6 @@ function inputBorder(hasError: boolean): string {
 const labelClasses = 'block text-base font-semibold text-ink'
 const fieldErrorClasses = 'mt-2 text-sm font-medium text-danger'
 
-/**
- * The one Stacc sign-in form: a college ID or employee ID and a password, sent to the one login endpoint. It never
- * chooses or sends a role. After a successful sign-in the page moves on, because the account is then signed in.
- */
 export function SignInForm({ autoFocus = true, onForgotPassword }: { autoFocus?: boolean; onForgotPassword?: () => void }) {
   const { login } = useAuth()
   const [loginId, setLoginId] = useState('')
@@ -88,7 +80,6 @@ export function SignInForm({ autoFocus = true, onForgotPassword }: { autoFocus?:
       return
     }
 
-    // Only "is anything there" is checked here. The backend has the real rules.
     const missing: FieldErrors = {}
     if (loginId.trim() === '') {
       missing.loginId = LOGIN_ID_REQUIRED
@@ -112,7 +103,6 @@ export function SignInForm({ autoFocus = true, onForgotPassword }: { autoFocus?:
     setIsSubmitting(true)
 
     try {
-      // Both values go to the backend exactly as typed.
       await login(loginId, password)
     } catch (error) {
       const failure = describeFailure(error)
@@ -215,7 +205,6 @@ export function SignInForm({ autoFocus = true, onForgotPassword }: { autoFocus?:
         {isSubmitting ? 'Signing in…' : 'Sign in'}
       </button>
 
-      {/* Always present, so screen readers announce a message the moment it appears. */}
       <div role="alert">
         {formError && (
           <p className="mt-5 rounded-lg border border-danger/40 bg-danger/5 px-4 py-3 text-sm leading-5 text-danger">

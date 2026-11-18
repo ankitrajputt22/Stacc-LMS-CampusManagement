@@ -32,7 +32,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the hostel routes through Spring Security, with the hostel services as stand-ins. */
 class HostelControllerTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = "/api/v1/hostel/student";

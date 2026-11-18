@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** The audit log is read by admins with AUDIT_LOG_VIEW, and nothing can write, change, or delete it over HTTP. */
 class AdminAuditControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/admin/audit-events";

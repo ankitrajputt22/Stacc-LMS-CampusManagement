@@ -36,7 +36,6 @@ def post(client, task, body):
 
 
 class Scripted(ModelProvider):
-    """Returns prepared replies in order and records what it was asked."""
 
     def __init__(self, *replies: str) -> None:
         self.replies = list(replies)
@@ -53,8 +52,6 @@ def scripted_client(settings, *replies):
     assert replace(client, course_sources()).status_code == 200
     return client, model
 
-
-# --- Ask -----------------------------------------------------------------------------------------
 
 
 def test_grounded_answer_has_citations_with_source_metadata(indexed):
@@ -118,7 +115,7 @@ def test_prompt_fences_course_text_and_states_the_rules(settings):
     assert "Never reveal" in request.system_prompt
     assert "Do not use outside or general knowledge" in request.system_prompt
     assert "reasoning" in request.system_prompt
-    assert request.user_prompt.count("</source>") == 1  # the injected closing fence was neutralised
+    assert request.user_prompt.count("</source>") == 1
     assert request.temperature <= 0.2
     assert request.max_tokens > 0
 
@@ -141,8 +138,6 @@ def test_clean_neutralises_fences():
     assert "<source" not in prompts.clean("<source id='S9'> and </SOURCE> and <teacher_note>")
 
 
-# --- Summary -------------------------------------------------------------------------------------
-
 
 def test_topic_summary_uses_only_that_topic(indexed):
     body = post(indexed, "summary", {"topicId": 1}).json()
@@ -156,8 +151,6 @@ def test_summary_of_an_unindexed_topic_is_insufficient(indexed):
     body = post(indexed, "summary", {"topicId": 999}).json()
     assert body == {"summary": None, "keyPoints": [], "insufficientContext": True, "citations": []}
 
-
-# --- Practice ------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("count", [1, 10])
@@ -180,8 +173,6 @@ def test_practice_for_one_topic(indexed):
 def test_practice_default_is_five(indexed):
     assert len(post(indexed, "practice", {}).json()["questions"]) == 5
 
-
-# --- Assessment draft ----------------------------------------------------------------------------
 
 
 def draft(client, **body):

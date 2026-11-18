@@ -9,7 +9,6 @@ import java.util.List;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventResponse;
 import com.stacc.backend.calendar.MyCalendarResponse;
 
-/** Writes a calendar as iCalendar text (RFC 5545): official events and personal entries as all-day, deadlines as moments. */
 final class CalendarFeedBuilder {
 
     private static final DateTimeFormatter DATE = DateTimeFormatter.BASIC_ISO_DATE;
@@ -59,7 +58,6 @@ final class CalendarFeedBuilder {
         line("END:VEVENT");
     }
 
-    // Text values escape backslashes, semicolons, commas, and line breaks.
     static String escape(String text) {
         return text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\r", "").replace("\n", "\\n");
     }

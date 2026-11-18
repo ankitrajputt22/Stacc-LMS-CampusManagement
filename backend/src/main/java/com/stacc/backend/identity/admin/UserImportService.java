@@ -41,12 +41,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Creates many student and faculty accounts from one CSV file. Every row is checked first, with its problems listed
- * by line; nothing is created unless every row is valid, and then all accounts are created in one transaction, each
- * through the normal account creation and each recorded in the audit log. All imported accounts get the one temporary
- * password the admin typed, hashed once, and must replace it at first sign-in. No password is ever read from the file.
- */
 @Service
 public class UserImportService {
 
@@ -104,10 +98,6 @@ public class UserImportService {
     private record Row(int line, String loginId, UserCreate create, List<String> errors) {
     }
 
-    /**
-     * Checks every row, and when {@code dryRun} is false and every row is valid, creates all the accounts. A file or
-     * temporary password that cannot be used at all answers 400; row problems are listed in the answer instead.
-     */
     @Transactional
     public ImportResult importCsv(Long actorAccountId, MultipartFile file, String temporaryPassword, boolean dryRun) {
         List<List<String>> lines = read(file);
@@ -271,7 +261,6 @@ public class UserImportService {
         return new Row(line, loginId, create, errors);
     }
 
-    /** Remembers the codes looked up in this file, so each is read from the database once. */
     private final class Lookups {
         private final Map<String, Optional<Department>> departmentByCode = new HashMap<>();
         private final Map<String, Optional<Program>> programByKey = new HashMap<>();

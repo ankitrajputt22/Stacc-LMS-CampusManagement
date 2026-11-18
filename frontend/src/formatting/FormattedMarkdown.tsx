@@ -32,7 +32,6 @@ function components(base: HeadingLevel): Components {
       <blockquote className="my-2 border-l-4 border-line-strong pl-3 text-ink-muted">{children}</blockquote>
     ),
     a: ({ href, children }) => {
-      // The address was already checked by safeUrl; a refused one arrives without href and stays plain words.
       if (!href) {
         return <span>{children}</span>
       }
@@ -85,7 +84,6 @@ function components(base: HeadingLevel): Components {
   }
 }
 
-// Built once per heading level, so the rendered elements keep their identity between renders.
 const COMPONENTS: Record<HeadingLevel, Components> = {
   2: components(2),
   3: components(3),
@@ -94,11 +92,6 @@ const COMPONENTS: Record<HeadingLevel, Components> = {
   6: components(6),
 }
 
-/**
- * Formatted course text, rendered by the browser from what the faculty member wrote. HTML in the text is skipped,
- * never interpreted; images are not part of the set; links keep only safe addresses; and maths is drawn by KaTeX
- * without trusted commands. Headings start at `headingLevel`, so they fit under the page's own headings.
- */
 export default function FormattedMarkdown({ text, headingLevel }: { text: string; headingLevel: HeadingLevel }) {
   return (
     <Markdown

@@ -8,7 +8,6 @@ import { ENROLLMENT_WORDS } from './resultText'
 
 type Field = 'marksObtained' | 'maxMarks' | 'gradeCode' | 'remarks'
 
-// The limits the backend enforces: six digits and two decimals for marks, and the longest grade and remarks it keeps.
 const MARKS_PATTERN = /^\d{1,6}(\.\d{1,2})?$/
 const GRADE_MAX = 20
 const REMARKS_MAX = 2000
@@ -86,12 +85,6 @@ type ResultRowProps = {
   student: CourseResultRosterStudent
 }
 
-/**
- * One student's official result: marks obtained out of the official maximum, an optional grade code exactly as
- * entered, and optional plain-text remarks. Saving keeps it a draft; publishing, after a short confirmation, shows it
- * to the student; a published result can still be corrected and stays published. Each row keeps its own values, so
- * saving one never touches what was typed in another. The backend checks access and every rule again.
- */
 export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
   const id = useId()
   const busyRef = useRef(false)
@@ -109,7 +102,6 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
   const [confirming, setConfirming] = useState(false)
   const [announcement, setAnnouncement] = useState('')
   const headingId = `${id}-student`
-  // Withdrawn and dropped enrollments take no new result.
   const withdrawn = student.courseEnrollmentStatus === 'WITHDRAWN' || student.courseEnrollmentStatus === 'DROPPED'
   const saved = valuesOf(result)
   const dirty = FIELD_ORDER.some((field) => values[field].trim() !== saved[field].trim())
@@ -166,7 +158,6 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status !== 401) {
-        // A 401 is left to the shared client, which ends the session.
         const apiError = getApiError(failure)
         const fieldErrors: Partial<Record<Field, string>> = Object.fromEntries(
           (apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]),
@@ -194,7 +185,6 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
       const published = await publishCourseResult(courseOfferingId, student.courseEnrollmentId)
       setResult(published)
       setAnnouncement(`Result published for ${student.studentLoginId}. The student can see it now.`)
-      // The confirmation that had focus is gone, so focus moves to this student.
       headingRef.current?.focus()
     } catch (failure) {
       const status = getHttpStatus(failure)
@@ -231,7 +221,6 @@ export function ResultRow({ courseOfferingId, student }: ResultRowProps) {
     </div>
   )
 
-  // A withdrawn or dropped enrollment without a result cannot get a new one; an existing result stays editable below.
   if (withdrawn && result === null) {
     return (
       <article aria-labelledby={headingId} className="px-4 py-4 sm:px-5">

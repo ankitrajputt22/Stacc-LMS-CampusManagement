@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the campus routes through Spring Security, with the campus services as stand-ins. */
 class CampusControllerTest extends DatabaseFreeApiTest {
 
     private static final String CAMPUS = "/api/v1/campus";

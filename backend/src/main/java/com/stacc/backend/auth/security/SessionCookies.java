@@ -6,11 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import org.springframework.http.ResponseCookie;
 
-/**
- * The session cookie that carries a browser's token. It is HttpOnly, so page scripts can never read it; SameSite=Lax,
- * so other sites cannot send it with their own requests; limited to {@code /api}; and Secure wherever the deployment
- * says so (always in production).
- */
 public final class SessionCookies {
 
     private SessionCookies() {
@@ -20,12 +15,10 @@ public final class SessionCookies {
         return base(token, secure).maxAge(lifetime).build();
     }
 
-    /** Tells the browser to forget the cookie at once. */
     public static ResponseCookie clear(boolean secure) {
         return base("", secure).maxAge(Duration.ZERO).build();
     }
 
-    /** The token in the request's session cookie, or null. */
     public static String read(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {

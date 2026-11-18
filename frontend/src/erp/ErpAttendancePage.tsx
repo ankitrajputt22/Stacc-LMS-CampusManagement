@@ -13,7 +13,6 @@ function percent(value: number | null): string {
   return value === null ? '—' : `${Math.round(Number(value))}%`
 }
 
-/** ERP Attendance: finalized attendance per course, low attendance marked by the backend, and the student's requests. */
 export function ErpAttendancePage() {
   const attendance = useApiQuery(queryKeys.attendance.mine(), getMyAttendance)
   const [dialog, setDialog] = useState<'leave' | 'correction' | null>(null)

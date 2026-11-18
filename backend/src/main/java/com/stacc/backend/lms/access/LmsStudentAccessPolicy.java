@@ -9,24 +9,11 @@ import com.stacc.backend.identity.student.StudentProfileStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import com.stacc.backend.lms.course.LmsCourseStatus;
 
-/**
- * The one place that says when a student may use an LMS course. Access is worked out live from the official
- * enrollment and the course's state; no copied membership decides it, so nothing can drift. The single-course check,
- * the course list, and every feature that asks for the student's place in a course all ask here.
- */
 public final class LmsStudentAccessPolicy {
 
     private LmsStudentAccessPolicy() {
     }
 
-    /**
-     * True only when the course enrollment belongs to the student behind this account and all of these hold: the
-     * student profile is active, the semester enrollment and the course enrollment are both still enrolled, the LMS
-     * course is published, and both are for the same course offering.
-     *
-     * <p>It only reads what it is given. Offerings are compared by ID, because the two sides may hold different Java
-     * objects for the same offering.
-     */
     public static boolean grantsCurrentAccess(CourseEnrollment courseEnrollment, LmsCourse lmsCourse, Long userAccountId) {
         SemesterEnrollment semesterEnrollment = courseEnrollment.getSemesterEnrollment();
         StudentProfile studentProfile = semesterEnrollment.getStudentProfile();

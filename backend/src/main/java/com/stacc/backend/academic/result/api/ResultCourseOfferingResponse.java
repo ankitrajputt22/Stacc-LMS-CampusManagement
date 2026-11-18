@@ -7,7 +7,6 @@ import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.academic.semester.Semester;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A course offering the faculty member teaches, as the results pages show it. Nothing else is exposed. */
 public record ResultCourseOfferingResponse(
         @Schema(description = "The ID of the course offering: one course in one semester.", example = "17")
         Long courseOfferingId,

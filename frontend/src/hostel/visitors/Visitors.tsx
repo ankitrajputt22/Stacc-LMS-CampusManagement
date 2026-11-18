@@ -51,7 +51,6 @@ function VisitLine({ visit, withResident = false }: { visit: HostelVisit; withRe
   )
 }
 
-/** A resident's visitors: register one for a day, and cancel while expected. Security records them at the gate. */
 export function ResidentVisitors() {
   const queryClient = useQueryClient()
   const visitors = useApiQuery(queryKeys.hostel.myVisitors(), (signal) => getMyVisitors(signal))
@@ -125,7 +124,6 @@ export function ResidentVisitors() {
   )
 }
 
-/** The security desk's visitors today: record arrivals (within visiting hours), departures, and walk-ins. */
 export function GateVisitors() {
   const queryClient = useQueryClient()
   const visitors = useApiQuery(queryKeys.hostel.todaysVisitors(), (signal) => getTodaysVisitors(signal))
@@ -238,7 +236,6 @@ function HoursForm({ hostelId }: { hostelId: number }) {
   )
 }
 
-/** Hostel Management, Visitors: each hostel's daily visiting hours. */
 export function VisitingHoursSection() {
   const hostels = useApiQuery(queryKeys.hostel.occupancy('admin'), (signal) => getHostelOccupancy('admin', signal))
   const [hostelId, setHostelId] = useState<number | null>(null)

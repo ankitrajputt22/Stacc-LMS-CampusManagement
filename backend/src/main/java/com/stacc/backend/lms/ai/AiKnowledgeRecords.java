@@ -9,10 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The short transactions around a knowledge refresh. The refresh itself (reading files and waiting for the AI service)
- * runs outside any transaction, so no database connection or row lock is held while a model works.
- */
 @Service
 public class AiKnowledgeRecords {
 
@@ -46,11 +42,6 @@ public class AiKnowledgeRecords {
         claim(lmsCourseId, AiIndexKind.COURSE_CONTENT);
     }
 
-    /**
-     * Marks a refresh as started, under the row lock, unless another one is still running. A refresh marked as
-     * building for longer than the building timeout is treated as abandoned and may be started again. A first refresh
-     * inserts the row; two first refreshes at once meet the unique key, and the loser sees a conflict.
-     */
     @Transactional
     public void claim(Long lmsCourseId, AiIndexKind kind) {
         Optional<AiCourseKnowledgeIndex> existing = indexes.findForUpdateByLmsCourseIdAndKind(lmsCourseId, kind);

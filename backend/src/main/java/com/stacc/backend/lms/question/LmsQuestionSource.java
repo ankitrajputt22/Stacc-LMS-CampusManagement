@@ -6,10 +6,6 @@ import com.stacc.backend.common.validation.Require;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/**
- * A course source an AI-drafted question was drafted from (v0.14.1): its kind and ID, and a snapshot of its title and
- * place, for the reviewer. Never a storage key. Kept with the question when it is edited.
- */
 @Embeddable
 public class LmsQuestionSource {
 
@@ -38,7 +34,6 @@ public class LmsQuestionSource {
     private Long pageId;
 
     protected LmsQuestionSource() {
-        // Required by JPA.
     }
 
     public LmsQuestionSource(int position, String sourceType, long sourceId, String title, String fileName, Integer pageNumber,

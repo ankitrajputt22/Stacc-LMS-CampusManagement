@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
-// Reads only: Aarav's fees, exams, and results from the demo data.
 test('a student finds their fees, exam seats, and CGPA in the ERP', async ({ page }) => {
   await signIn(page, 'erp', 'cse24001')
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'ERP', exact: true }).click()

@@ -154,7 +154,6 @@ function OpportunityAdmin({ opportunity, notify }: { opportunity: Opportunity; n
   )
 }
 
-/** /placement: the placement office's companies, opportunities, rounds, applicants, offers, policy, and consent-based export. */
 export function PlacementPage() {
   const queryClient = useQueryClient()
   const companies = useApiQuery(queryKeys.career.companies(), (signal) => getCompanies(signal))

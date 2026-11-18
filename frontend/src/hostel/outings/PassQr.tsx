@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { formatDateTime } from '../../courses/dates'
 import type { OutingPass } from '../../types/outings'
 
-/** The pass as a QR code with its code in words for manual entry. Drawn in the browser; nothing leaves the page. */
 export function PassQr({ pass }: { pass: OutingPass }) {
   const [image, setImage] = useState<string | null>(null)
   useEffect(() => {

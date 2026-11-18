@@ -42,12 +42,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * The campus office's service catalog and service requests. Every route needs the admin role and
- * CAMPUS_SERVICE_MANAGE. There are no delete routes, and no approve or reject routes: the office decides approvals with
- * the approval task routes and the step shown in the request detail, which check the step's role and
- * APPROVAL_TASK_DECIDE.
- */
 @RestController
 @RequestMapping("/api/v1/campus/admin")
 @Tag(name = "Campus admin")

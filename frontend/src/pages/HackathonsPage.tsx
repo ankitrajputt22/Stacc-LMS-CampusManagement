@@ -319,7 +319,6 @@ function Student({ run }: { run: Run }) {
   return <>{hackathons.data.map((hackathon) => <StudentHackathon key={hackathon.hackathonId} hackathon={hackathon} run={run} />)}</>
 }
 
-/** /hackathons: teams and submissions for students, judging for faculty judges, and running them for the campus office. */
 export function HackathonsPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

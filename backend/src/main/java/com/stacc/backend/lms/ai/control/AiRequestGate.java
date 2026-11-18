@@ -12,11 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-/**
- * Every AI request a person makes passes here (v0.13.7): it waits its turn in {@link AiRequestLimiter}, and its kind,
- * course, outcome, and duration are written to the request log, never its content or who asked. A course the caller
- * may not use (404) and requests while AI is switched off are not logged.
- */
 @Component
 public class AiRequestGate {
 
@@ -55,13 +50,11 @@ public class AiRequestGate {
         return result;
     }
 
-    // Saved on its own: AI services hold no transaction, so the row is written whatever the request's outcome.
     private void record(AiRequestLogEntry.Kind kind, Long lmsCourseId, AiRequestLogEntry.Outcome outcome, long started) {
         int millis = (int) Math.min(Integer.MAX_VALUE, (System.nanoTime() - started) / 1_000_000);
         try {
             log.save(new AiRequestLogEntry(kind, lmsCourseId, outcome, millis, clock.instant().truncatedTo(ChronoUnit.MICROS)));
         } catch (RuntimeException failure) {
-            // The log never decides whether a request works.
             LOGGER.warn("An AI request could not be logged: {}", failure.getClass().getSimpleName());
         }
     }

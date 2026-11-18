@@ -1,5 +1,3 @@
-"""Test helpers: sample sources, sample files built in memory, and request shortcuts."""
-
 from __future__ import annotations
 
 import base64
@@ -39,11 +37,8 @@ def replace(client: TestClient, sources: list[dict], fingerprint: str = FINGERPR
                        json={"contentFingerprint": fingerprint, "sources": sources})
 
 
-# --- Small, valid files built in memory --------------------------------------------------------
-
 
 def pdf_bytes(pages: list[str]) -> bytes:
-    """A minimal PDF with one line of Helvetica text per page."""
     objects = ["<< /Type /Catalog /Pages 2 0 R >>"]
     kids = " ".join(f"{4 + 2 * i} 0 R" for i in range(len(pages)))
     objects.append(f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>")
@@ -89,7 +84,6 @@ def pptx_bytes(slides: list[str]) -> bytes:
     r = 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
     parts = {}
     ids, rels = "", ""
-    # Stored as slide files in reverse, so the presentation order must come from presentation.xml.
     for number, text in enumerate(slides, start=1):
         file_number = len(slides) - number + 1
         parts[f"ppt/slides/slide{file_number}.xml"] = (

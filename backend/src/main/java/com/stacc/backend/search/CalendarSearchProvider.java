@@ -14,13 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * Official calendar events, with the relevance of {@code GET /api/v1/calendar/me}: admins every event users may see;
- * students the events of their own enrolled or completed semesters ({@link AcademicCalendarEventQueryService#studentScope})
- * and faculty those of the semesters they teach ({@link AcademicCalendarEventQueryService#facultyScope}), each with the
- * session-wide events of those sessions. Drafts never match. Like the calendar, it needs ACADEMIC_CALENDAR_VIEW with
- * one of the three roles. Each event appears once, whichever roles make it relevant.
- */
 @Component
 public class CalendarSearchProvider implements SearchProvider {
 
@@ -58,7 +51,6 @@ public class CalendarSearchProvider implements SearchProvider {
         if (actor.holds("FACULTY")) {
             scope = scope.and(eventQueries.facultyScope(actor.accountId()));
         }
-        // Both sets come from the same semesters, so neither is empty unless both are; no empty IN list is sent.
         if (scope.semesterIds().isEmpty() || scope.academicSessionIds().isEmpty()) {
             return Optional.of(Page.empty(page));
         }
@@ -66,7 +58,6 @@ public class CalendarSearchProvider implements SearchProvider {
                 text.prefix(), text.contains(), page).map(CalendarSearchProvider::resultOf));
     }
 
-    /** Opens the calendar on the event's first month. */
     static SearchResult resultOf(AcademicCalendarEvent event) {
         Semester semester = event.getSemester();
         return new SearchResult(SearchResultType.ACADEMIC_CALENDAR_EVENT, event.getTitle(),

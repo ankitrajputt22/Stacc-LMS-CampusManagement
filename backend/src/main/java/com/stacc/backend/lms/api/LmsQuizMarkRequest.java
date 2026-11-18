@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** A teacher's marks for one answer, with optional plain-text feedback. */
 public record LmsQuizMarkRequest(
         @Schema(description = "From 0 to the question's marks in the quiz, with at most two decimals.", example = "3.5")
         @NotNull(message = "Marks are required")

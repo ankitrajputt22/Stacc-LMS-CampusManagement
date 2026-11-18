@@ -117,7 +117,6 @@ function Teams({ groupId, groupName }: { groupId: number; groupName: string }) {
   )
 }
 
-/** A sports group's teams and rosters, opened on demand; officers and the campus office manage them. */
 export function TeamsPanel({ groupId, groupName }: { groupId: number; groupName: string }) {
   const [open, setOpen] = useState(false)
   if (!open) {

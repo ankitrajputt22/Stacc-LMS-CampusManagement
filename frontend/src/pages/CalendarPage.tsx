@@ -64,13 +64,11 @@ function MonthAgenda({
   adminOnly: boolean
 }) {
   const key = monthKey(month)
-  // One month at a time, in the browser's own time zone: the zone only decides which deadlines fall on these days.
   const { from, to } = monthRange(parseMonth(key) ?? currentMonth())
   const range = { from, to, timeZone: browserTimeZone() }
   const request = useApiQuery(queryKeys.calendar.mine(range), (signal) => getMyCalendar(range, signal))
   const personal = useApiQuery(queryKeys.calendar.personal({ from, to }), (signal) => getPersonalEvents({ from, to }, signal))
   const personalEvents = personal.status === 'loaded' ? personal.data : []
-  // Club and sports sessions only for students and faculty, the members of groups; the range is the month's local days.
   const sessionRange = { from: new Date(`${from}T00:00:00`).toISOString(), to: new Date(`${to}T23:59:59`).toISOString() }
   const sessions = useApiQuery(adminOnly ? null : queryKeys.engagement.mySessions(sessionRange.from), (signal) =>
     getMyGroupSessions(sessionRange.from, sessionRange.to, signal),
@@ -137,12 +135,6 @@ function MonthAgenda({
   )
 }
 
-/**
- * The shared calendar at /calendar, one month at a time: the official academic events that apply to the account and,
- * for each role it holds, its assignment deadlines, all from GET /api/v1/calendar/me. Nothing is filtered or added here;
- * the backend decides what is shown. The month is kept in the address (?month=2026-10) so a refresh stays on it. The
- * role checks only choose wording and links; they are not security.
- */
 export function CalendarPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []
@@ -164,7 +156,6 @@ export function CalendarPage() {
   }
 
   function changeMonth(target: CalendarMonth | null) {
-    // Today, or the current month, needs no parameter.
     const next = new URLSearchParams(view === 'month' ? { view: 'month' } : {})
     if (target !== null && !sameMonth(target, currentMonth())) {
       next.set('month', monthKey(target))

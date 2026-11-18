@@ -10,10 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Read-only lookups for the To-Do list. */
 public interface TodoAssignmentQueries extends Repository<LmsAssignment, Long> {
 
-    /** Published assignments of the given courses, due from {@code from} on, that the student has not handed in. */
     @Query("""
             select a from LmsAssignment a join fetch a.lmsCourse
             where a.lmsCourse.id in :lmsCourseIds
@@ -35,7 +33,6 @@ public interface TodoAssignmentQueries extends Repository<LmsAssignment, Long> {
         long getWaiting();
     }
 
-    /** Per published assignment of the given courses, how many submissions' latest attempts have no grade. */
     @Query("""
             select assignment.id as assignmentId, assignment.title as title, assignment.lmsCourse.id as lmsCourseId,
                    count(attempt) as waiting

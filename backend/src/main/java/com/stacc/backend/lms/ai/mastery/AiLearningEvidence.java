@@ -13,7 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One piece of a student's learning evidence (v0.15.5): numbers only, never the question or answer. */
 @Entity
 @Table(name = "ai_learning_evidence")
 public class AiLearningEvidence {
@@ -44,7 +43,6 @@ public class AiLearningEvidence {
     private Instant createdAt;
 
     protected AiLearningEvidence() {
-        // Required by JPA.
     }
 
     public AiLearningEvidence(Long lmsCourseId, Long userAccountId, Long topicId, Kind kind, BigDecimal score, Instant createdAt) {

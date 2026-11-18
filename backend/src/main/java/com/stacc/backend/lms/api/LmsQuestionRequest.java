@@ -18,10 +18,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * A question with its answers, for adding or editing one. The course, author, review status, and practice flag are not
- * part of it: they come from the route and the review and practice actions.
- */
 public record LmsQuestionRequest(
         @Schema(description = "SINGLE_CHOICE and MULTIPLE_CHOICE take options; TRUE_FALSE takes trueFalseAnswer; "
                 + "SHORT_ANSWER takes its accepted answers as options, all correct; DESCRIPTIVE takes optional answerGuidance.")
@@ -71,7 +67,6 @@ public record LmsQuestionRequest(
         @Schema(description = "Optional: an active outcome of the same course. An archived outcome the question already has may stay.")
         Long outcomeId) {
 
-    /** One choice or accepted answer. */
     public record OptionRequest(
             @NotBlank(message = "Option text is required")
             @Size(max = LmsQuestionOption.MAX_TEXT_LENGTH, message = "Options must be at most 500 characters")

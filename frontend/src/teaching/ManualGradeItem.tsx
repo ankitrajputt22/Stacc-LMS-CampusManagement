@@ -24,7 +24,6 @@ function refusalText(failure: unknown, fallback: string): string | null {
   return message && status !== null && status < 500 ? message : fallback
 }
 
-/** One student's marks and feedback for the item, saved on its own. */
 function StudentMarks({
   itemId,
   column,
@@ -109,7 +108,6 @@ function ItemSettings({ itemId, column, onSaved }: { itemId: number; column: Gra
   )
 }
 
-/** A manual gradebook item: its title and maximum, and each current student's marks and feedback. */
 export function ManualGradeItem({ lmsCourseId, itemId }: { lmsCourseId: number; itemId: number }) {
   const queryClient = useQueryClient()
   const gradebook = useApiQuery(queryKeys.lms.gradebook(lmsCourseId), (signal) => getGradebook(lmsCourseId, signal))

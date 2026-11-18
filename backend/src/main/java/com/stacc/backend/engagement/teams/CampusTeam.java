@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A team of a sports group for one season. Made inactive, never deleted; its roster is kept. */
 @Entity
 @Table(name = "campus_teams")
 public class CampusTeam {

@@ -322,14 +322,9 @@ function RequestCertificate({ notify }: { notify: Notify }) {
   )
 }
 
-/**
- * /documents and its pages: the vault (issued certificates with verification codes, and one's own uploads), uploading
- * (/documents/upload), and certificate requests (/documents/requests, /documents/requests/new).
- */
 export function DocumentsPage({ section = 'documents' }: { section?: DocumentsSection }) {
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string; at: DocumentsSection } | null>(null)
   const notify: Notify = (text, error = false) => setMessage({ tone: error ? 'error' : 'success', text, at: section })
-  // A success that sent the person back to a list is shown there; an error stays on its form.
   const done = (useLocation().state as { done?: string } | null)?.done
   const shown =
     message && (message.tone === 'success' || message.at === section)

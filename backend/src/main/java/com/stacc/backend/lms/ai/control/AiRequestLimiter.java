@@ -11,11 +11,6 @@ import com.stacc.backend.common.error.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-/**
- * One AI request at a time per account, and at most {@code maxConcurrent} at once in all (v0.13.7). A request that
- * cannot start waits its turn, first come first served, for up to the queue wait; then it answers 429. Held in memory,
- * so the limits apply per backend instance.
- */
 @Component
 public class AiRequestLimiter {
 
@@ -33,7 +28,6 @@ public class AiRequestLimiter {
         this.queueWait = limits.queueWait();
     }
 
-    /** Runs the work once it is this account's turn and there is room; 429 if neither comes within the queue wait. */
     public <T> T run(Long accountId, Supplier<T> work) {
         long deadline = System.nanoTime() + queueWait.toNanos();
         Semaphore mine = perAccount.computeIfAbsent(accountId, id -> new Semaphore(1, true));
@@ -54,12 +48,10 @@ public class AiRequestLimiter {
         }
     }
 
-    /** AI requests running now. */
     public int running() {
         return maxConcurrent - overall.availablePermits();
     }
 
-    /** AI requests waiting for room now. */
     public int waiting() {
         return overall.getQueueLength();
     }

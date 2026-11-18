@@ -37,11 +37,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The single-course list trusts the faculty access service, which has its own tests. The list across courses
- * runs the real faculty course query over stand-in repositories, so it is shown to use exactly the courses
- * that rule allows. The assignment repository is a stand-in that may hand back too much.
- */
 class LmsFacultyAssignmentQueryServiceTest {
 
     private static final Long ACCOUNT_ID = 21L;
@@ -70,7 +65,6 @@ class LmsFacultyAssignmentQueryServiceTest {
         return new FacultyProfile(account, department);
     }
 
-    /** A course with its own offering, and an active teaching assignment of this teacher to it. */
     private LmsCourse course(long id, String courseCode, FacultyProfile teacher) {
         Course catalogCourse = new Course(department, courseCode, "Course " + courseCode, new BigDecimal("4.00"));
         CourseOffering offering = new CourseOffering(catalogCourse, semester);
@@ -146,7 +140,6 @@ class LmsFacultyAssignmentQueryServiceTest {
                         assignment(second, 2, LmsContentStatus.PUBLISHED, "2026-10-20T18:29:00Z"),
                         assignment(first, 3, LmsContentStatus.ARCHIVED, "2026-10-19T18:29:00Z"),
                         assignment(first, 4, LmsContentStatus.PUBLISHED, "2020-02-01T18:29:00Z"),
-                        // A query that returned too much still shows nothing of these courses.
                         assignment(inactiveAssignment, 5, LmsContentStatus.PUBLISHED, "2026-10-21T18:29:00Z"),
                         assignment(archivedCourse, 6, LmsContentStatus.PUBLISHED, "2026-10-21T18:29:00Z"),
                         assignment(othersCourse, 7, LmsContentStatus.PUBLISHED, "2026-10-21T18:29:00Z")));

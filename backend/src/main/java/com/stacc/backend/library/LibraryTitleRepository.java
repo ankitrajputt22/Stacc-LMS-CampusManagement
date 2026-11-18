@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface LibraryTitleRepository extends JpaRepository<LibraryTitle, Long> {
 
-    /** Titles whose title, authors, subject, or ISBN contain the escaped, lower-cased pattern. */
     @Query("""
             select t from LibraryTitle t where (:includeInactive = true or t.active = true) and (
             lower(t.title) like :pattern escape '!' or lower(coalesce(t.authors, '')) like :pattern escape '!'

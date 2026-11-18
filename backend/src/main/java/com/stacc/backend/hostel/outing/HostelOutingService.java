@@ -31,13 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Hostel outings: a resident asks for a gate pass or leave (and extensions of leave), approved by their hostel's warden
- * through the HOSTEL_OUTING workflow. Approval state always comes from the engine. An approved outing shows its pass as a
- * fresh code each time it is opened (earlier codes stop working). Security checks a code and records the student going
- * out and coming back; whether a student is outside comes from the latest movement. Overdue means approved, past its
- * end, and the student still outside, worked out on read.
- */
 @Service
 @Transactional
 public class HostelOutingService {
@@ -56,11 +49,9 @@ public class HostelOutingService {
             boolean overdue, boolean canCancel, boolean canExtend, boolean canShowPass, List<ExtensionView> extensions) {
     }
 
-    /** The pass to show: its code (shown only now) and window. */
     public record PassView(String code, Instant validFrom, Instant validUntil) {
     }
 
-    /** What security sees for a code: whether it lets the student out now, and why not. */
     public record PassCheck(boolean valid, String message, String studentLoginId, String hostel, String room, OutingKind kind,
             Instant leaveFrom, Instant leaveUntil, boolean outside, Long outingId) {
     }
@@ -96,8 +87,6 @@ public class HostelOutingService {
         this.clock = clock;
     }
 
-    // --- Students
-
     public OutingView request(Long accountId, OutingKind kind, Instant from, Instant until, String reason, String destination) {
         StudentProfile profile = profiles.findByUserAccountIdForUpdate(accountId)
                 .filter(found -> found.getStatus() == StudentProfileStatus.ACTIVE)
@@ -127,7 +116,6 @@ public class HostelOutingService {
         return outings.findAllForStudentAccount(accountId, PageRequest.of(0, 50)).stream().map(outing -> view(outing, now)).toList();
     }
 
-    /** Cancels the student's own outing while its approval is pending. */
     public OutingView cancel(Long accountId, Long outingId) {
         HostelOuting outing = own(accountId, outingId);
         if (outing.getApprovalRequestId() == null || !approvals.cancelApprovalIfPending(outing.getApprovalRequestId(), accountId)) {
@@ -136,7 +124,6 @@ public class HostelOutingService {
         return view(outing, now());
     }
 
-    /** Asks to stay away longer on approved leave that has not ended in a return; one pending extension at a time. */
     public OutingView extend(Long accountId, Long outingId, Instant until, String reason) {
         HostelOuting outing = own(accountId, outingId);
         Instant now = now();
@@ -159,7 +146,6 @@ public class HostelOutingService {
         return view(outing, now);
     }
 
-    /** A fresh pass code for the student's approved outing; earlier codes for it stop working. */
     public PassView pass(Long accountId, Long outingId) {
         HostelOuting outing = own(accountId, outingId);
         Instant now = now();
@@ -171,8 +157,6 @@ public class HostelOutingService {
                 outing.getLeaveFrom().minus(Duration.ofHours(1)), current.leaveUntil().plus(Duration.ofHours(12)));
         return new PassView(issued.code(), issued.pass().getValidFrom(), issued.pass().getValidUntil());
     }
-
-    // --- Security
 
     @Transactional(readOnly = true)
     public PassCheck check(String code) {
@@ -204,10 +188,6 @@ public class HostelOutingService {
                 view.leaveUntil(), view.outside(), outing.getId());
     }
 
-    /**
-     * Records the student crossing the gate with this code: OUT needs a valid pass; IN is taken from a student who is
-     * outside on this outing even after it ended, and marks the outing returned.
-     */
     public PassCheck record(Long securityAccountId, String code, GateMovement.Direction direction) {
         PassCheck check = check(code);
         if (check.outingId() == null) {
@@ -241,7 +221,6 @@ public class HostelOutingService {
                 m.getRecordedAt(), logins.get(m.getRecordedBy()))).toList();
     }
 
-    /** Manual lookup by login ID: the student's outings, newest first, with whether they are outside. */
     @Transactional(readOnly = true)
     public List<OutingView> lookup(String loginId) {
         Long accountId = accounts.findByLoginId(loginId == null ? "" : loginId.strip())
@@ -250,9 +229,6 @@ public class HostelOutingService {
         return outings.findAllForStudentAccount(accountId, PageRequest.of(0, 10)).stream().map(outing -> view(outing, now)).toList();
     }
 
-    // --- Wardens
-
-    /** Approved outings of these students that are past their end while the student is still outside. */
     @Transactional(readOnly = true)
     public List<OutingView> overdue(List<Long> studentAccountIds) {
         if (studentAccountIds.isEmpty()) {
@@ -262,8 +238,6 @@ public class HostelOutingService {
         return outings.findOpenForStudents(studentAccountIds).stream().map(outing -> view(outing, now))
                 .filter(OutingView::overdue).sorted(Comparator.comparing(OutingView::leaveUntil)).toList();
     }
-
-    // --- Shared
 
     private HostelOuting own(Long accountId, Long outingId) {
         return outings.findByIdForUpdate(outingId == null ? -1L : outingId)
@@ -286,7 +260,6 @@ public class HostelOutingService {
         List<ExtensionView> extensionViews = extensions.findAllForOutings(List.of(outing.getId())).stream()
                 .map(e -> new ExtensionView(e.getId(), e.getRequestedUntil(), e.getReason(), statusOf(e.getApprovalRequestId()), e.getCreatedAt()))
                 .toList();
-        // The end is the latest approved extension's, otherwise the original end.
         Instant until = extensionViews.stream().filter(e -> "APPROVED".equals(e.approvalStatus())).map(ExtensionView::requestedUntil)
                 .max(Comparator.naturalOrder()).orElse(outing.getLeaveUntil());
         Long studentId = outing.getStudentProfile().getUserAccount().getId();

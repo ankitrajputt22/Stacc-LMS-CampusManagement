@@ -51,7 +51,6 @@ function Shell({ lmsCourseId, children }: { lmsCourseId: number | null; children
   )
 }
 
-/** Where the syllabus stands, in words, from what the API sent. */
 function stateText(syllabus: LmsFacultySyllabus): string {
   if (syllabus.lastPublishedAt === null) {
     return syllabus.draftContent === null ? 'No syllabus yet. Start from the sections below.' : 'Not published yet. Students cannot see it.'
@@ -158,11 +157,6 @@ function Editor({ lmsCourseId, syllabus }: { lmsCourseId: number; syllabus: LmsF
   )
 }
 
-/**
- * /teaching/:lmsCourseId/syllabus: the course's syllabus as formatted text, starting from the usual sections, with Save
- * draft and Publish (confirmed first, saving the text too). The backend checks that the faculty member teaches the
- * course on every request.
- */
 export function TeachingSyllabusPage() {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)
@@ -198,7 +192,6 @@ export function TeachingSyllabusPage() {
   }
   return (
     <Shell lmsCourseId={lmsCourseId}>
-      {/* Keyed by the saved draft, so the editor starts again from it after a save elsewhere. */}
       <Editor key={syllabus.data.draftUpdatedAt ?? 'new'} lmsCourseId={lmsCourseId} syllabus={syllabus.data} />
     </Shell>
   )

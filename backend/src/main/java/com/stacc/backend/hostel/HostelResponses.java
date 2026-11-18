@@ -10,10 +10,6 @@ import com.stacc.backend.approval.ApprovalResponses.ApprovalRequestStepResponse;
 import com.stacc.backend.auth.account.UserAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The hostel module as clients see it. No entity is sent as it is. Students never see internal IDs of allocations,
- * beds, or accounts; admins get the IDs they need to choose and act. People appear by login ID only.
- */
 public final class HostelResponses {
 
     private HostelResponses() {
@@ -78,7 +74,6 @@ public final class HostelResponses {
             boolean hasCurrentApplication) {
     }
 
-    /** A student's view of one allocation: where, and since when. */
     public record StudentHostelAllocation(
             @Schema(example = "MAIN") String hostelCode,
             @Schema(example = "Main Hostel") String hostelName,
@@ -97,7 +92,6 @@ public final class HostelResponses {
         }
     }
 
-    /** An allocation as admins see it, with the IDs needed to act on it. */
     public record HostelAllocationResponse(
             Long allocationId,
             Long applicationId,
@@ -130,7 +124,6 @@ public final class HostelResponses {
         }
     }
 
-    /** One of the student's own applications in a list. The approval status is read from the approval request. */
     public record HostelApplicationSummary(
             Long applicationId,
             @Schema(example = "HST-000001") String applicationNumber,
@@ -141,7 +134,6 @@ public final class HostelResponses {
             boolean hasActiveAllocation) {
     }
 
-    /** One of the student's own applications in full: approval progress and allocations, without internal IDs. */
     public record HostelApplicationDetail(
             Long applicationId,
             String applicationNumber,

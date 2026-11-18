@@ -14,7 +14,6 @@ public interface LmsQuizAnswerMarkRepository extends JpaRepository<LmsQuizAnswer
 
     List<LmsQuizAnswerMark> findAllByAnswerIdIn(Collection<Long> answerIds);
 
-    /** The answer's mark, read with a locking read while the attempt row is locked, so a mark just saved is seen. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select mark from LmsQuizAnswerMark mark where mark.answer.id = :answerId")
     Optional<LmsQuizAnswerMark> findByAnswerIdForUpdate(@Param("answerId") Long answerId);

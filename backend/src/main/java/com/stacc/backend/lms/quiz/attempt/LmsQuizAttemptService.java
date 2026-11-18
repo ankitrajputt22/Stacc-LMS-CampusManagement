@@ -32,17 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Students take the published quizzes of courses they may use now. The student is always the signed-in account, and
- * the course enrollment is found on the server through {@link LmsStudentAccessService}; an attempt someone else made,
- * or one in a course the student can no longer use, is the same 404 as a missing one.
- *
- * <p>Starting locks the course enrollment (still enrolled) and then the enrollment's attempts at the quiz, so a second
- * start at the same moment resumes the first attempt instead of making another, and the attempt limit holds. Saving an
- * answer and handing in lock the attempt row, so an answer is never taken after the attempt was handed in. The server's
- * clock decides every deadline; reading never changes anything, so an attempt past its deadline shows as time up until
- * it is handed in or a new one starts.
- */
 @Service
 public class LmsQuizAttemptService {
 
@@ -81,16 +70,13 @@ public class LmsQuizAttemptService {
         this.scores = scores;
     }
 
-    /** A published quiz as one student sees it: its size, and that student's attempts, newest first. */
     public record StudentQuiz(LmsQuiz quiz, long questionCount, BigDecimal totalMarks, List<LmsQuizAttempt> attempts,
             Map<Long, QuizScoring.AttemptScore> scores, Instant now) {
 
-        /** Whether the student may see this attempt's result now, and if not, why. */
         public QuizResultStatus resultStatus(LmsQuizAttempt attempt) {
             return QuizResultStatus.of(attempt, scores.get(attempt.getId()), now);
         }
 
-        /** The attempt's score once its result is released; null before. */
         public BigDecimal releasedScore(LmsQuizAttempt attempt) {
             return resultStatus(attempt) == QuizResultStatus.RELEASED ? scores.get(attempt.getId()).score() : null;
         }
@@ -99,25 +85,21 @@ public class LmsQuizAttemptService {
             return quiz.availabilityAt(now);
         }
 
-        /** The attempt still open for answers, if any. */
         public LmsQuizAttempt openAttempt() {
             return attempts.stream().filter(attempt -> attempt.stateAt(now) == QuizAttemptState.IN_PROGRESS)
                     .findFirst().orElse(null);
         }
 
-        /** Attempts the student may still start; null when unlimited. */
         public Integer attemptsLeft() {
             return quiz.getMaxAttempts() == null ? null : Math.max(0, quiz.getMaxAttempts() - attempts.size());
         }
 
-        /** Whether Start (or Resume) would work now. */
         public boolean startable() {
             return openAttempt() != null
                     || availability() == QuizAvailability.OPEN && (attemptsLeft() == null || attemptsLeft() > 0);
         }
     }
 
-    /** An attempt with its quiz, its questions in the attempt's order, and the answers saved so far by question. */
     public record AttemptView(LmsQuizAttempt attempt, List<LmsQuizQuestion> questions, Map<Long, LmsQuizAnswer> answers,
             QuizScoring.AttemptScore score, Instant now) {
 
@@ -129,7 +111,6 @@ public class LmsQuizAttemptService {
             return questions.stream().map(LmsQuizQuestion::getMarks).reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
         }
 
-        /** The question's choices in the attempt's order; none for questions whose options are their answers. */
         public List<LmsQuestionOption> choicesOf(LmsQuizQuestion quizQuestion) {
             LmsQuestion question = quizQuestion.getQuestion();
             if (question.getType() != QuestionType.SINGLE_CHOICE && question.getType() != QuestionType.MULTIPLE_CHOICE) {
@@ -140,11 +121,9 @@ public class LmsQuizAttemptService {
         }
     }
 
-    /** What a student sends for one question; the parts its type does not take must be empty. */
     public record AnswerInput(Collection<Integer> selectedOptions, Boolean trueFalseAnswer, String text) {
     }
 
-    /** The published quizzes of a course the student may use now, newest first, each with the student's attempts. */
     @Transactional(readOnly = true)
     public List<StudentQuiz> list(Long userAccountId, Long lmsCourseId) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
@@ -159,20 +138,11 @@ public class LmsQuizAttemptService {
         return studentQuizzes(enrollment, List.of(visibleQuiz(lmsCourseId, quizId))).getFirst();
     }
 
-    /**
-     * Starts a new attempt, or returns the one still open. The quiz must be open, and the student must have an attempt
-     * left. An attempt left open past its deadline is closed as expired first.
-     *
-     * <p>Runs at READ COMMITTED: the course enrollment row lock already makes one student's starts wait for each other
-     * (and a unique key keeps one open attempt), so the gap locks REPEATABLE READ would add to the locking read of the
-     * attempts only made two students starting at once deadlock on the shared index.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public LmsQuizAttempt start(Long userAccountId, Long lmsCourseId, Long quizId) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
                 .orElseThrow(() -> notFound(QUIZ_UNAVAILABLE));
         LmsQuiz quiz = visibleQuiz(lmsCourseId, quizId);
-        // A drop or withdrawal that finished meanwhile ends access here too.
         CourseEnrollment locked = courseEnrollments.findByIdForUpdate(enrollment.getId())
                 .filter(current -> current.getStatus() == CourseEnrollmentStatus.ENROLLED)
                 .orElseThrow(() -> notFound(QUIZ_UNAVAILABLE));
@@ -199,7 +169,6 @@ public class LmsQuizAttemptService {
         return attempts.saveAndFlush(new LmsQuizAttempt(quiz, locked, number, now));
     }
 
-    /** The student's own attempt with its questions (never their answers' keys) and the answers saved so far. */
     @Transactional(readOnly = true)
     public AttemptView attempt(Long userAccountId, Long attemptId) {
         requireOwn(userAccountId, attemptId);
@@ -207,15 +176,6 @@ public class LmsQuizAttemptService {
         return viewOf(attempt);
     }
 
-    /**
-     * Saves the answer to one question while the attempt is open, replacing an earlier one. Times are the server's:
-     * after the deadline (and its short grace) the answer is refused.
-     *
-     * <p>Runs at READ COMMITTED: the access check reads before the attempt row is locked, and at MySQL's usual
-     * REPEATABLE READ every later plain read, such as loading an answer's chosen options, would come from that earlier
-     * snapshot. Two saves at once would then both insert the same options. After the lock every read sees what the
-     * save before it committed.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public LmsQuizAnswer saveAnswer(Long userAccountId, Long attemptId, Long quizQuestionId, AnswerInput input) {
         requireOwn(userAccountId, attemptId);
@@ -236,7 +196,6 @@ public class LmsQuizAttemptService {
         return answers.saveAndFlush(answer);
     }
 
-    /** Hands the attempt in: submitted before its deadline, expired at the deadline after it. Again changes nothing. */
     @Transactional
     public AttemptView submit(Long userAccountId, Long attemptId) {
         requireOwn(userAccountId, attemptId);
@@ -249,7 +208,6 @@ public class LmsQuizAttemptService {
     private record Checked(Set<Integer> positions, Boolean trueFalse, String text) {
     }
 
-    // The parts the question's type takes, with chosen options that exist; anything else is refused (400).
     private static Checked checked(LmsQuestion question, AnswerInput input) {
         List<Integer> chosen = input.selectedOptions() == null ? List.of() : List.copyOf(input.selectedOptions());
         String text = input.text() == null || input.text().isBlank() ? null : input.text();
@@ -278,8 +236,6 @@ public class LmsQuizAttemptService {
                 saved, scores.of(attempt), now());
     }
 
-    // The attempt must have been made through the enrollment that gives this account the course now, for a quiz that
-    // is still published. Only IDs are read first, so a following locking read is the first to load the attempt.
     private void requireOwn(Long userAccountId, Long attemptId) {
         LmsQuizAttemptRepository.AttemptOwner owner = attemptId == null ? null : attempts.findOwnerById(attemptId).orElse(null);
         boolean own = owner != null && owner.getQuizStatus() == LmsContentStatus.PUBLISHED
@@ -311,7 +267,6 @@ public class LmsQuizAttemptService {
         }).toList();
     }
 
-    // Published, and in the course of the request; the course is checked from the stored quiz.
     private LmsQuiz visibleQuiz(Long lmsCourseId, Long quizId) {
         LmsQuiz quiz = quizId == null ? null : quizzes.findById(quizId).orElse(null);
         if (quiz == null || quiz.getStatus() != LmsContentStatus.PUBLISHED || !quiz.getLmsCourse().getId().equals(lmsCourseId)) {
@@ -320,7 +275,6 @@ public class LmsQuizAttemptService {
         return quiz;
     }
 
-    // At the precision the database keeps, so an answer shows the same moment as every later read.
     private Instant now() {
         return clock.instant().truncatedTo(ChronoUnit.MICROS);
     }

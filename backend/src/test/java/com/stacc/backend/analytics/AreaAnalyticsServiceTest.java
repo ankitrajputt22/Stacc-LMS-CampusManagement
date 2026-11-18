@@ -13,7 +13,6 @@ import java.util.Set;
 import com.stacc.backend.report.ReportActor;
 import org.junit.jupiter.api.Test;
 
-/** Each area appears only with its own permission, and small groups get no average. */
 class AreaAnalyticsServiceTest {
 
     private final AreaAnalyticsQueries queries = mock(AreaAnalyticsQueries.class);

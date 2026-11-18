@@ -10,13 +10,11 @@ import { SectionState } from './SectionState'
 import { Card } from '../ui'
 
 type CourseAssignmentsProps = {
-  /** On the section's own page, whose title already names it: a plain card without its own heading. */
   standalone?: boolean
   lmsCourseId: number
   assignments: ApiRequestState<LmsCourseAssignment[]> & { retry: () => void }
 }
 
-/** The deadline and marks of an assignment, as one line of text. */
 export function AssignmentFacts({ dueAt, maxMarks, now }: { dueAt: string; maxMarks: number; now: number }) {
   return (
     <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted">
@@ -31,12 +29,7 @@ export function AssignmentFacts({ dueAt, maxMarks, now }: { dueAt: string; maxMa
   )
 }
 
-/**
- * The course's published assignments, earliest deadline first, past-due ones included. Each row opens its own page.
- * This part loads on its own: if it fails, the rest of the course page stays as it is.
- */
 export function CourseAssignments({ lmsCourseId, assignments, standalone = false }: CourseAssignmentsProps) {
-  // One moment for the whole list, so every row agrees on what has passed.
   const [now] = useState(() => Date.now())
 
   return (
@@ -65,7 +58,6 @@ export function CourseAssignments({ lmsCourseId, assignments, standalone = false
               >
                 <div className="min-w-0">
                   <h3 className={`font-semibold break-words text-ink ${standalone ? 'text-[0.95rem]' : 'text-sm'}`}>
-                    {/* The title is the one link; its click area covers the whole row. */}
                     <Link
                       to={`/courses/${lmsCourseId}/assignments/${assignment.id}`}
                       className="after:absolute after:inset-0 focus-visible:outline-none group-hover:text-stacc-primary group-hover:underline group-hover:underline-offset-4"

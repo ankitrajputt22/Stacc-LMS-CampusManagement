@@ -8,7 +8,6 @@ import com.stacc.backend.lms.ai.AiCourseKeys;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexSource;
 import com.stacc.backend.lms.ai.AiServiceMessages.SourceRef;
 
-/** One student's notes in one course (v0.13.6), as their AI Study Assistant may use them now, with their fingerprint. */
 public record AiStudentNoteKnowledge(String fingerprint, List<Note> notes) {
 
     static final String FORMAT = "stacc-ai-notes-v1";

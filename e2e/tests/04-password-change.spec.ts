@@ -1,8 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
 import { password, signIn, signOut } from './support'
 
-// Only this journey uses cse24002, so changing its password cannot disturb the others. It ends by putting the
-// password back.
 const LOGIN_ID = 'cse24002'
 const NEW_PASSWORD = 'e2e river lamp cocoa 42'
 
@@ -26,13 +24,11 @@ test('changing the password keeps this device signed in and signs every other de
 
     await changePassword(page, password(), NEW_PASSWORD)
 
-    // This device carries on; the other one is sent to sign in again on its next request.
     await page.goto('/inbox')
     await expect(page).toHaveURL(/\/inbox$/)
     await other.goto('/inbox')
     await expect(other).toHaveURL(/\/login/)
 
-    // The old password no longer works, the new one does.
     await signOut(page)
     await page.goto('/login')
     await page.getByLabel('College ID / Employee ID').fill(LOGIN_ID)

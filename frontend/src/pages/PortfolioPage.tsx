@@ -216,7 +216,6 @@ function Verifier({ notify }: { notify: Notify }) {
   )
 }
 
-/** /portfolio: a student's records and own items, and a faculty member's verification requests. */
 export function PortfolioPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

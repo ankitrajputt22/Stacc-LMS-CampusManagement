@@ -9,7 +9,6 @@ import { LoginPage } from './pages/LoginPage'
 import { CourseLayout } from './courses/CourseLayout'
 import { TeachingCourseLayout } from './teaching/TeachingCourseLayout'
 
-// Pages load on first use, so the first screen downloads only what it needs.
 const AcademicAdminPage = lazy(() => import('./pages/AcademicAdminPage').then((module) => ({ default: module.AcademicAdminPage })))
 const ErpHomePage = lazy(() => import('./erp/ErpHomePage').then((module) => ({ default: module.ErpHomePage })))
 const ErpProfilePage = lazy(() => import('./erp/ErpProfilePage').then((module) => ({ default: module.ErpProfilePage })))
@@ -143,18 +142,14 @@ function App() {
     <PageErrorBoundary>
     <Suspense fallback={<LoadingState />}>
     <Routes>
-      {/* Public: the sign-in page has its own simple layout, without the app shell. */}
       <Route path={LOGIN_PATH} element={<LoginPage />} />
-      {/* Public: anyone given a verification code can check a document is authentic. */}
       <Route path="verify-document" element={<VerifyDocumentPage />} />
 
-      {/* Everything else, including unknown addresses, is inside the app and needs a signed-in user. */}
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="study" element={<StudyHomePage />} />
-          {/* Every page of one course shares the course navigation. */}
           <Route path="courses/:lmsCourseId" element={<CourseLayout />}>
             <Route index element={<CoursePage />} />
             <Route path="modules" element={<CourseModulesPage />} />
@@ -247,9 +242,7 @@ function App() {
           <Route path="class-lists/:courseOfferingId" element={<ClassListPage />} />
           <Route path="results/:courseOfferingId" element={<CourseResultsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
-          {/* One search page for every role; the address holds the query, and View all the kind and page. */}
           <Route path="search" element={<SearchPage />} />
-          {/* Reports: one page with a part per role (faculty, admin), and one taught offering's report. */}
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/faculty/course-offerings/:courseOfferingId" element={<FacultyCourseReportPage />} />
           <Route path="inbox" element={<InboxPage />} />
@@ -293,7 +286,6 @@ function App() {
           <Route path="inbox/settings" element={<NotificationSettingsPage />} />
           <Route path="account" element={<AccountSettingsPage />} />
           <Route path="account/password" element={<ChangePasswordPage />} />
-          {/* One Support area for every account: requester pages, the shared ticket page, and the admin pages. */}
           <Route path="support" element={<SupportPage />} />
           <Route path="support/new" element={<SupportNewTicketPage />} />
           <Route path="support/tickets/:ticketId" element={<SupportTicketPage />} />
@@ -302,10 +294,8 @@ function App() {
           <Route path="support/admin/teams" element={<SupportTeamsPage />} />
           <Route path="support/admin/articles" element={<SupportArticlesPage />} />
           <Route path="support/team" element={<SupportTeamQueuePage />} />
-          {/* Departments are the first section, so the bare address opens them with their link marked. */}
           <Route path="admin/academic" element={<Navigate to="/admin/academic/departments" replace />} />
           <Route path="admin/academic/:section" element={<AcademicAdminPage />} />
-          {/* Hostel: the student's page, and the hostel office's sections; the applications section opens first. */}
           <Route path="hostel" element={<StudentHostelPage />} />
           <Route path="hostel/applications" element={<StudentHostelPage section="applications" />} />
           <Route path="hostel/room-changes" element={<StudentHostelPage section="room-changes" />} />
@@ -316,7 +306,6 @@ function App() {
           <Route path="admin/hostel" element={<Navigate to="/admin/hostel/applications" replace />} />
           <Route path="admin/hostel/:section" element={<AdminHostelPage />} />
           <Route path="admin/hostel/applications/:applicationId" element={<AdminHostelPage review />} />
-          {/* Campus: one page for every role, a request page for its requester, and Campus Management for admins. */}
           <Route path="campus" element={<CampusPage />} />
           <Route path="campus/:tab" element={<CampusPage />} />
           <Route path="campus/requests/:requestId" element={<CampusRequestPage />} />

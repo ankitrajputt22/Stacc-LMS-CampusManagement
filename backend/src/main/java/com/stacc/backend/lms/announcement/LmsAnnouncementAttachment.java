@@ -14,10 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A file on a course announcement. Its bytes are in private storage; it is downloaded only through its announcement's
- * own check. A removed file is kept, with its bytes, but no longer listed or downloaded.
- */
 @Entity
 @Table(name = "lms_announcement_attachments")
 public class LmsAnnouncementAttachment {
@@ -49,7 +45,6 @@ public class LmsAnnouncementAttachment {
     private Instant removedAt;
 
     protected LmsAnnouncementAttachment() {
-        // Required by JPA.
     }
 
     public LmsAnnouncementAttachment(LmsAnnouncement announcement, StoredFile file, Instant now) {
@@ -61,7 +56,6 @@ public class LmsAnnouncementAttachment {
         this.createdAt = Require.notNull(now, "now");
     }
 
-    /** Stops listing the file; removing again keeps the first time. The stored bytes stay. */
     public void remove(Instant at) {
         if (removedAt == null) {
             this.removedAt = Require.notNull(at, "at");

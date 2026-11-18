@@ -9,11 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface HelpdeskArticleRepository extends JpaRepository<HelpdeskArticle, Long> {
 
-    /** Every article with its category, for the admins: by category name, then title. */
     @Query("select article from HelpdeskArticle article join fetch article.category category order by category.name, article.title, article.id")
     List<HelpdeskArticle> findAllWithCategory();
 
-    /** The published articles of an active category, newest published first. */
     @Query("""
             select article from HelpdeskArticle article join fetch article.category category
             where category.id = :categoryId and category.active = true and article.status = 'PUBLISHED'

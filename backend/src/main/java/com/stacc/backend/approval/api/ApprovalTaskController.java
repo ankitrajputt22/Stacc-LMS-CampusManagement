@@ -28,11 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The approver's queue and decisions. A step is shown and decided only for an account holding the exact role the step
- * requires, and never for the requester's own request; ADMIN gets no pass. The deciding account always comes from the
- * access token.
- */
 @RestController
 @RequestMapping("/api/v1/approvals/tasks")
 @Tag(name = "Approval tasks")

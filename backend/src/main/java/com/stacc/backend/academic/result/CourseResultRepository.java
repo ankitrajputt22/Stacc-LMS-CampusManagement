@@ -14,19 +14,12 @@ public interface CourseResultRepository extends JpaRepository<CourseResult, Long
 
     Optional<CourseResult> findByCourseEnrollmentId(Long courseEnrollmentId);
 
-    /** The enrollment's result, locked until the transaction ends, so two saves of it take turns. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select result from CourseResult result where result.courseEnrollment.id = :courseEnrollmentId")
     Optional<CourseResult> findForUpdateByCourseEnrollmentId(@Param("courseEnrollmentId") Long courseEnrollmentId);
 
-    /** The results of these enrollments, in one query, for a course offering's roster. */
     List<CourseResult> findAllByCourseEnrollmentIdIn(Collection<Long> courseEnrollmentIds);
 
-    /**
-     * The published results of the student behind one account, in one query, with each course offering, course,
-     * semester, programme, and academic session. Drafts are never included. The latest academic session comes
-     * first, then the highest semester number, then course code.
-     */
     @Query("""
             select result
             from CourseResult result
@@ -42,7 +35,6 @@ public interface CourseResultRepository extends JpaRepository<CourseResult, Long
             """)
     List<CourseResult> findAllPublishedByUserAccountId(@Param("userAccountId") Long userAccountId);
 
-    /** Reports: how many results of each of these offerings are in each status, in one grouped query. */
     @Query("""
             select result.courseEnrollment.courseOffering.id as courseOfferingId, result.status as status,
                    count(result) as total

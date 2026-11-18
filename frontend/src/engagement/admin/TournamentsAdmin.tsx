@@ -28,7 +28,6 @@ function attempt(action: () => Promise<unknown>, done: string, fallback: string,
     .catch((caught: unknown) => notify(failureText(caught, fallback) ?? '', true))
 }
 
-/** One side: one of our teams, or an external opponent typed by name. */
 function SidePicker({ label, teams, value, onChange }: { label: string; teams: TeamOption[]; value: { teamId: string; name: string }; onChange: (next: { teamId: string; name: string }) => void }) {
   return (
     <>
@@ -156,7 +155,6 @@ function TournamentCard({ tournament, teams, notify }: { tournament: Tournament;
   )
 }
 
-/** Campus Management → Tournaments: add tournaments, matches between our teams or external opponents, and results. */
 export function TournamentsAdmin() {
   const queryClient = useQueryClient()
   const tournaments = useApiQuery(queryKeys.engagement.allTournaments(), (signal) => getAllTournaments(signal))

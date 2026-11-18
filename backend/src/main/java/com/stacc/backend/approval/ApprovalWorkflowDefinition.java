@@ -21,11 +21,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A reusable approval workflow: a stable code, a name, and ordered steps, each decided by one role. It is configuration
- * only. Requests copy its steps when they start, so editing a workflow changes future requests only. A workflow is made
- * inactive, never deleted; an inactive one starts no new requests.
- */
 @Entity
 @Table(name = "approval_workflow_definitions")
 public class ApprovalWorkflowDefinition {
@@ -52,7 +47,6 @@ public class ApprovalWorkflowDefinition {
     @Column(nullable = false)
     private boolean active = true;
 
-    // The steps belong to the workflow and are replaced with it. Requests never point at them: they keep snapshots.
     @OneToMany(mappedBy = "workflowDefinition", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("stepOrder ASC")
     private List<ApprovalWorkflowStepDefinition> steps = new ArrayList<>();
@@ -66,16 +60,13 @@ public class ApprovalWorkflowDefinition {
     private Instant updatedAt;
 
     protected ApprovalWorkflowDefinition() {
-        // Required by JPA.
     }
 
-    /** A new active workflow. The code is stored in uppercase and never changes. */
     public ApprovalWorkflowDefinition(String code, String name, String description, List<StepSpec> steps) {
         this.code = normalizedCode(code);
         update(name, description, true, steps);
     }
 
-    /** The code as it is stored: trimmed and uppercase. Anything that is not a valid code is refused. */
     public static String normalizedCode(String code) {
         String normalized = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
         if (!CODE_PATTERN.matcher(normalized).matches()) {
@@ -84,10 +75,6 @@ public class ApprovalWorkflowDefinition {
         return normalized;
     }
 
-    /**
-     * Replaces the name, description, active flag, and steps. Steps are numbered from 1 in the order given. Existing
-     * rows are changed in place, extra ones added, and surplus ones removed, so a step number is never used twice.
-     */
     public void update(String name, String description, boolean active, List<StepSpec> newSteps) {
         this.name = Require.text(name, "name", MAX_NAME_LENGTH);
         this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
@@ -109,7 +96,6 @@ public class ApprovalWorkflowDefinition {
         }
     }
 
-    /** One step as an admin describes it: a name and the role that decides it. Its number is its place in the list. */
     public record StepSpec(String name, Role approverRole, ApproverRelationship relationship) {
 
         public StepSpec(String name, Role approverRole) {

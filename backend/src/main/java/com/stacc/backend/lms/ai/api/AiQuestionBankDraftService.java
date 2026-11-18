@@ -38,12 +38,6 @@ import com.stacc.backend.lms.question.QuestionType;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Generate into the bank (v0.14.1): AI drafts questions in the bank's own types from the course's published content
- * (and current teacher documents), the AI service drops choice and true/false questions whose key it does not
- * reproduce, and every question left that cites a real course source is added to the bank as NEEDS_REVIEW, marked as
- * drafted by AI, with its sources. Nothing is offered for practice, put in a quiz, or published here.
- */
 @Service
 public class AiQuestionBankDraftService {
 
@@ -72,7 +66,6 @@ public class AiQuestionBankDraftService {
         this.gate = gate;
     }
 
-    /** What the drafts are labelled with besides their content (v0.14.4): an exam blueprint row's topic, Bloom level, and outcome. */
     public record Labels(String topic, BloomLevel bloomLevel, Long outcomeId) {
 
         static final Labels NONE = new Labels(null, null, null);
@@ -138,7 +131,6 @@ public class AiQuestionBankDraftService {
                 added.stream().map(LmsQuestion::getId).toList());
     }
 
-    /** The bank questions drafts are compared with (v0.14.2): the newest active ones, texts cut to the AI service's limit. */
     private List<ExistingQuestion> existing(Long lmsCourseId) {
         return bank.forQualityChecks(lmsCourseId, MAX_EXISTING).stream()
                 .map(question -> new ExistingQuestion(question.id(), question.text().length() > 2000
@@ -146,7 +138,6 @@ public class AiQuestionBankDraftService {
                 .toList();
     }
 
-    /** The checks as the bank keeps them; a duplicate ID the request did not send is ignored. */
     private static LmsQuestionAiChecks checks(QualityChecks checks, java.util.Set<Long> sent) {
         if (checks == null) {
             return LmsQuestionAiChecks.none();
@@ -166,7 +157,6 @@ public class AiQuestionBankDraftService {
         }
     }
 
-    /** The bank content of one drafted question, or null when its type, sources, or answers do not fit. */
     private static LmsQuestionBankService.AiDraft toDraft(BankQuestion question, AiQuestionBankDraftRequest request,
             AiCourseKnowledge knowledge, AiTeacherKnowledge teacher, java.util.Set<Long> sent, Labels labels) {
         QuestionType type;

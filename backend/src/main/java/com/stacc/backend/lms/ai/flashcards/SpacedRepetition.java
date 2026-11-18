@@ -3,11 +3,6 @@ package com.stacc.backend.lms.ai.flashcards;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/**
- * The spacing rule (v0.15.3), a simplified SM-2. AGAIN starts the card over and shows it again today; HARD grows the
- * gap a little; GOOD grows it by the card's ease (1 day, then 3, then the gap times the ease); EASY grows it more and
- * makes the card easier. Ease stays between 1.3 and 3.0. Worked out by code; the model has no part in it.
- */
 public final class SpacedRepetition {
 
     public static final BigDecimal START_EASE = new BigDecimal("2.50");
@@ -15,7 +10,6 @@ public final class SpacedRepetition {
     static final BigDecimal MAX_EASE = new BigDecimal("3.00");
     static final int MAX_INTERVAL_DAYS = 365;
 
-    /** A card's review state. */
     public record State(BigDecimal ease, int intervalDays, int repetitions, int lapses) {
     }
 

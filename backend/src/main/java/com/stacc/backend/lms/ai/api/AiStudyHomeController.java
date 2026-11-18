@@ -30,11 +30,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The student AI home (v0.15.8): one line per course the student may open now, with their own mastery counts, flashcards
- * due today, and the first recommendation. Read only, worked out on request from the same services as each course's
- * study area; no AI is used and nothing is stored or ranked.
- */
 @RestController
 @Tag(name = "LMS AI study assistant")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

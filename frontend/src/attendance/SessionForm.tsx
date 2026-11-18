@@ -6,14 +6,12 @@ import { Alert, Button, Card, TextField } from '../ui'
 
 type Field = 'heldAt' | 'topic'
 
-// The years the backend accepts, and the longest topic it keeps.
 const EARLIEST_YEAR = 2000
 const LATEST_YEAR = 9999
 export const TOPIC_MAX = 500
 
 type SessionFormProps = {
   heading: string
-  /** The session's current values when editing; a new session starts at the current minute. */
   initial?: { heldAt: string; topic: string | null }
   submitLabel: string
   onSubmit: (input: AttendanceSessionInput) => Promise<void>
@@ -33,11 +31,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
   }
 }
 
-/**
- * When a class was held and an optional plain-text topic. The time is entered in the browser's own time zone
- * and sent as an absolute moment. Obvious mistakes are caught before sending, and the backend checks again.
- * A refusal keeps what was entered; a 403 never signs the user out.
- */
 export function SessionForm({ heading, initial, submitLabel, onSubmit, onCancel }: SessionFormProps) {
   const id = useId()
   const heldAtRef = useRef<HTMLInputElement>(null)
@@ -90,7 +83,6 @@ export function SessionForm({ heading, initial, submitLabel, onSubmit, onCancel 
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status !== 401) {
-        // A 401 is left to the shared client, which ends the session.
         const apiError = getApiError(failure)
         const fieldErrors: Partial<Record<Field, string>> = Object.fromEntries(
           (apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]),

@@ -15,14 +15,12 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/** A club or sports group. Its code is fixed; it is made inactive, never deleted. */
 @Entity
 @Table(name = "campus_groups")
 public class CampusGroup {
 
     public enum Kind { CLUB, SPORT }
 
-    /** How people join: at once, after an officer accepts, or not at all. */
     public enum JoinPolicy { OPEN, APPROVAL, CLOSED }
 
     @Id
@@ -58,7 +56,6 @@ public class CampusGroup {
     private Instant updatedAt;
 
     protected CampusGroup() {
-        // Required by JPA.
     }
 
     public CampusGroup(String code, String name, Kind kind, String description, JoinPolicy joinPolicy) {

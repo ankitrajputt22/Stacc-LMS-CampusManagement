@@ -7,9 +7,6 @@ import type {
 import type { NotificationChoice, NotificationSettings } from '../types/notificationSettings'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api. Every route works on the Inbox of the account in the access token; no
-// account ID is ever sent, and there is no way to create or delete a notification.
-
 export async function getNotifications(
   query: { page: number; size: number; unreadOnly: boolean },
   signal?: AbortSignal,
@@ -38,7 +35,6 @@ export async function markAllNotificationsRead() {
   return response.data
 }
 
-/** The signed-in person's own delivery choices. */
 export async function getNotificationSettings(signal?: AbortSignal): Promise<NotificationSettings> {
   return (await apiClient.get<NotificationSettings>('/notifications/settings', { signal })).data
 }

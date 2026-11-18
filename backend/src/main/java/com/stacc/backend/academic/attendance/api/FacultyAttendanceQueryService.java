@@ -17,11 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Read-only answers for faculty attendance: the course offerings they teach, their sessions, and one session's
- * roster. Access comes from official teaching assignments through {@link FacultyTeachingAccessService}; an
- * offering or session the caller may not use answers the same 404 as a missing one. No LMS data is read.
- */
 @Service
 @Transactional(readOnly = true)
 public class FacultyAttendanceQueryService {
@@ -49,12 +44,6 @@ public class FacultyAttendanceQueryService {
         this.records = records;
     }
 
-    /**
-     * The course offerings the faculty member behind this account teaches now, in course code order, read in one
-     * query. An offering counts whether or not it has an LMS course.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<AttendanceCourseOfferingResponse> getMyCourseOfferings(Long userAccountId) {
         if (userAccountId == null) {
             return List.of();
@@ -62,13 +51,11 @@ public class FacultyAttendanceQueryService {
         return teachingAssignments.findAllWithCourseDetailsByUserAccountId(userAccountId).stream()
                 .filter(assignment -> FacultyTeachingAccessService.isCurrentTeaching(assignment, userAccountId))
                 .map(assignment -> summaryOf(assignment.getCourseOffering()))
-                // Consistent data never lists an offering twice. This keeps the answer clean if it is not.
                 .distinct()
                 .sorted(BY_COURSE_CODE)
                 .toList();
     }
 
-    /** The sessions of a course offering the caller teaches, the latest class first. */
     public List<AttendanceSessionResponse> getSessions(Long userAccountId, Long courseOfferingId) {
         if (!teachingAccess.canTeachCourseOffering(userAccountId, courseOfferingId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE);
@@ -78,7 +65,6 @@ public class FacultyAttendanceQueryService {
                 .toList();
     }
 
-    /** One session with its roster in student ID order, if the caller teaches its course offering now. */
     public AttendanceSessionDetailResponse getSessionDetail(Long userAccountId, Long sessionId) {
         AttendanceSession session = (sessionId == null ? null : sessions.findWithCourseById(sessionId).orElse(null));
         if (session == null || !teachingAccess.canTeachCourseOffering(userAccountId, session.getCourseOffering().getId())) {
@@ -100,7 +86,6 @@ public class FacultyAttendanceQueryService {
                 roster);
     }
 
-    // The student is shown by college ID only, read through the official enrollment.
     private static AttendanceRecordResponse recordOf(AttendanceRecord record) {
         String loginId = record.getCourseEnrollment().getSemesterEnrollment().getStudentProfile().getUserAccount().getLoginId();
         return new AttendanceRecordResponse(record.getId(), loginId, record.getStatus().name(), record.getMarkedAt());

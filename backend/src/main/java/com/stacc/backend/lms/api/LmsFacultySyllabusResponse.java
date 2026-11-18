@@ -5,7 +5,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.syllabus.LmsSyllabus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A course's syllabus as faculty manage it: the draft and the published version. Nulls when none is saved yet. */
 public record LmsFacultySyllabusResponse(
         @Schema(description = "The saved draft, or null when no syllabus is saved yet.")
         String draftContent,

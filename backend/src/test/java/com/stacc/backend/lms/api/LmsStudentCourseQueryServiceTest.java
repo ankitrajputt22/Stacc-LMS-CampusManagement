@@ -46,14 +46,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Every test starts from a student with one course they may use, and then changes one thing.
- * Each test also asks the single-course access check about the same stored data, because the
- * list must never show a course that check would refuse.
- */
 class LmsStudentCourseQueryServiceTest {
 
-    // Made-up IDs. The LMS course ID is deliberately different from the course offering ID.
     private static final Long ACCOUNT_ID = 12L;
     private static final Long OTHER_ACCOUNT_ID = 13L;
     private static final Long LMS_COURSE_ID = 7L;
@@ -67,7 +61,6 @@ class LmsStudentCourseQueryServiceTest {
     private final LmsStudentCourseQueryService service =
             new LmsStudentCourseQueryService(courseEnrollments, lmsCourses, accessCheck, faculty);
 
-    // What the stand-in database holds: the student's course enrollments, and each offering's LMS course.
     private final List<CourseEnrollment> stored = new ArrayList<>();
     private final Map<Long, LmsCourse> lmsCourseOfOffering = new HashMap<>();
 
@@ -110,7 +103,6 @@ class LmsStudentCourseQueryServiceTest {
         return created;
     }
 
-    /** One more course the student may use, with its own offering, enrollment, and published LMS course. */
     private void anotherUsableCourse(String courseCode, Long offeringId, Long lmsCourseId, Semester inSemester) {
         CourseOffering another = offering(courseCode, "Test Course " + courseCode, offeringId, inSemester);
         publishedLmsCourse(another, lmsCourseId);
@@ -137,7 +129,6 @@ class LmsStudentCourseQueryServiceTest {
                 .toList();
     }
 
-    /** The list and the single-course access check must give the same answer for the same data. */
     private void expectCourseListed(boolean expected) {
         assertEquals(expected, listedCourseIds().contains(LMS_COURSE_ID), "listed in my courses");
         assertEquals(expected, accessCheck.canAccessCourse(ACCOUNT_ID, LMS_COURSE_ID), "single-course access check");
@@ -339,8 +330,6 @@ class LmsStudentCourseQueryServiceTest {
         assertEquals(CourseEnrollmentStatus.ENROLLED, courseEnrollment.getStatus());
         assertEquals(LmsCourseStatus.PUBLISHED, lmsCourse.getStatus());
     }
-
-    // The course page. It uses the real single-course access check over the same stand-in data.
 
     private void detailStandIn(LmsCourse course) {
         when(lmsCourses.findWithAcademicContextById(course.getId())).thenReturn(Optional.of(course));

@@ -15,10 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/**
- * Calls the faculty dashboard route through Spring Security. The query service is a stand-in, so these tests are
- * about who gets in and whose dashboard is asked for. What the dashboard contains is tested with the service.
- */
 class FacultyDashboardControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROUTE = "/api/v1/dashboard/faculty";

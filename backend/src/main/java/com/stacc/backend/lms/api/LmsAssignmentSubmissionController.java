@@ -30,11 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * A student's own assignment submissions: hand in an attempt, read back their attempts, and download their
- * own files. The student is always the account in the access token, and their course enrollment is found
- * on the server; no route takes an account, student, or enrollment ID. There is no faculty access here yet.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS")
@@ -48,8 +43,6 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class LmsAssignmentSubmissionController {
 
-    // Only lets the caller ask. Which assignments and files they get is decided by the service, from
-    // official enrollment, on every request.
     private static final String SUBMIT =
             "hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_SUBMIT')";
 
@@ -125,7 +118,6 @@ public class LmsAssignmentSubmissionController {
     public ResponseEntity<InputStreamResource> download(@PathVariable Long attachmentId, @AuthenticationPrincipal Jwt accessToken) {
         LmsAssignmentSubmissionService.Download download =
                 submissionService.openOwnAttachment(AuthenticatedAccount.idFrom(accessToken), attachmentId);
-        // Always an attachment, never shown inline, so an uploaded file cannot act as a page of this site.
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(download.contentType()))
                 .contentLength(download.sizeBytes())

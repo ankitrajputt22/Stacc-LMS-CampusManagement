@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Long> {
 
-    /** One record, locked, with its session, enrollment, offering, and course, for a correction decided by the office. */
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("""
             select record from AttendanceRecord record
@@ -22,7 +21,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     java.util.Optional<AttendanceRecord> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
 
 
-    /** A session's records, each with the student's account, in student ID order. */
     @Query("""
             select record
             from AttendanceRecord record
@@ -37,11 +35,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
 
     long countByAttendanceSessionIdAndStatus(Long attendanceSessionId, AttendanceStatus status);
 
-    /**
-     * The finalized attendance of the student behind one account, in one query, with each session and its
-     * course offering, course, semester, programme, and academic session. Open sessions are never included.
-     * The latest class comes first.
-     */
     @Query("""
             select record
             from AttendanceRecord record
@@ -57,7 +50,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             """)
     List<AttendanceRecord> findAllFinalizedByUserAccountId(@Param("userAccountId") Long userAccountId);
 
-    /** How many records each of these sessions has, and how many of them are still unmarked, in one query. */
     @Query("""
             select record.attendanceSession.id as sessionId,
                    count(record) as totalRecords,
@@ -69,7 +61,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             """)
     List<SessionRecordCounts> countRecordsBySessionIdIn(@Param("sessionIds") Collection<Long> sessionIds);
 
-    /** The record counts of one session. */
     interface SessionRecordCounts {
 
         Long getSessionId();
@@ -79,10 +70,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
         Long getUnmarkedRecords();
     }
 
-    /**
-     * Reports: how many records of the finalized sessions of one offering are in each status. Open sessions are left
-     * out; a finalized session holds only PRESENT and ABSENT records, and any other status is returned as it is.
-     */
     @Query("""
             select record.status as status, count(record) as total
             from AttendanceRecord record

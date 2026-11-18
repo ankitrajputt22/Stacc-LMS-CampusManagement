@@ -16,12 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The question bank of a course, for the faculty who teach it. Every action checks the faculty access policy; for an
- * existing question the course comes from the stored question, never from the client. Changes lock the question row
- * first, so an edit and a review or practice change never overwrite each other. Students have no route here: a
- * question carries its answers.
- */
 @Service
 public class LmsQuestionBankService {
 
@@ -48,21 +42,18 @@ public class LmsQuestionBankService {
         this.facultyAccess = facultyAccess;
     }
 
-    /** Every question of the course, archived ones included, newest first. */
     @Transactional(readOnly = true)
     public List<LmsQuestion> list(Long userAccountId, Long lmsCourseId) {
         requireCourse(userAccountId, lmsCourseId);
         return questions.findAllForCourse(lmsCourseId);
     }
 
-    /** The questions of the course that a published or archived quiz uses; they can no longer be edited. */
     @Transactional(readOnly = true)
     public Set<Long> inPublishedQuizzes(Long userAccountId, Long lmsCourseId) {
         requireCourse(userAccountId, lmsCourseId);
         return new HashSet<>(questions.findIdsInPublishedQuizzes(lmsCourseId));
     }
 
-    /** Whether a published or archived quiz uses the question. For answers after a change the caller was allowed. */
     @Transactional(readOnly = true)
     public boolean isInPublishedQuiz(Long questionId) {
         return questions.countPublishedQuizUses(questionId) > 0;
@@ -78,7 +69,6 @@ public class LmsQuestionBankService {
         return questions.saveAndFlush(question);
     }
 
-    /** One AI-drafted question to add, with the sources it was drafted from (v0.14.1). */
     public record AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources, LmsQuestionAiChecks checks, Long outcomeId) {
 
         public AiDraft(LmsQuestionContent content, List<LmsQuestionSource> sources) {
@@ -90,14 +80,9 @@ public class LmsQuestionBankService {
         }
     }
 
-    /** A bank question as the AI quality checks compare against it (v0.14.2). */
     public record CheckedQuestion(long id, String text, boolean inFinalPaper) {
     }
 
-    /**
-     * The course's active questions, newest first and at most {@code limit}, with whether a final exam paper of the course
-     * uses each, for the AI drafts' duplicate and previous-paper checks. Callers check faculty access first.
-     */
     @Transactional(readOnly = true)
     public List<CheckedQuestion> forQualityChecks(Long lmsCourseId, int limit) {
         Set<Long> inFinalPapers = new HashSet<>(questions.findIdsInFinalPapers(lmsCourseId));
@@ -107,11 +92,6 @@ public class LmsQuestionBankService {
                 .toList();
     }
 
-    /**
-     * Adds AI-drafted questions to the bank (v0.14.1), all in one transaction, each NEEDS_REVIEW and marked as drafted
-     * by AI. A draft the bank's own rules refuse (such as an option that is too long) is left out, never changed.
-     * Faculty access is checked as for a question written by hand.
-     */
     @Transactional
     public List<LmsQuestion> addAiDrafts(Long userAccountId, Long lmsCourseId, List<AiDraft> drafts) {
         requireCourse(userAccountId, lmsCourseId);
@@ -121,7 +101,6 @@ public class LmsQuestionBankService {
         for (AiDraft draft : drafts) {
             LmsQuestion question;
             try {
-                // An outcome (v0.14.4, from an exam blueprint row) must still be an active outcome of the course.
                 LmsQuestionContent content = draft.outcomeId() == null ? draft.content()
                         : draft.content().withOutcome(outcome(lmsCourseId, draft.outcomeId(), null));
                 question = LmsQuestion.aiDraft(lmsCourse, userAccountId, content, draft.sources(), draft.checks());
@@ -134,11 +113,6 @@ public class LmsQuestionBankService {
         return List.copyOf(added);
     }
 
-    /**
-     * Replaces what the question says; it then needs a new review and is no longer offered for practice. A question
-     * that a published or archived quiz uses keeps what students were asked (409). The course row is locked first, as
-     * every quiz change does, so an edit and a publication run one after the other and never miss each other.
-     */
     @Transactional
     public LmsQuestion edit(Long userAccountId, Long questionId, LmsQuestionContent written, Long outcomeId) {
         Long lmsCourseId = requireQuestion(userAccountId, questionId);
@@ -173,7 +147,6 @@ public class LmsQuestionBankService {
         return question;
     }
 
-    /** Archives the question; archiving again changes nothing. Nothing deletes or restores a question. */
     @Transactional
     public LmsQuestion archive(Long userAccountId, Long questionId) {
         LmsQuestion question = locked(userAccountId, questionId);
@@ -181,7 +154,6 @@ public class LmsQuestionBankService {
         return question;
     }
 
-    // An active outcome of this course, or the question's current outcome when it was archived after being chosen.
     private LmsCourseOutcome outcome(Long lmsCourseId, Long outcomeId, LmsCourseOutcome current) {
         if (outcomeId == null) {
             return null;
@@ -207,14 +179,11 @@ public class LmsQuestionBankService {
         return question;
     }
 
-    // Checks access from the stored question's course before taking the lock. Only the course ID is read first, so the
-    // locking read is the first to load the question and sees its latest committed state.
     private LmsQuestion locked(Long userAccountId, Long questionId) {
         requireQuestion(userAccountId, questionId);
         return lockedAfterAccess(questionId);
     }
 
-    /** One question of a course the faculty member teaches, for reading only (v0.14.5); anything else is the same 404. */
     @Transactional(readOnly = true)
     public LmsQuestion find(Long userAccountId, Long questionId) {
         requireQuestion(userAccountId, questionId);
@@ -240,7 +209,6 @@ public class LmsQuestionBankService {
         }
     }
 
-    // The type rules live on the question; their messages are written for people.
     private static LmsQuestion valid(Supplier<LmsQuestion> make) {
         try {
             return make.get();

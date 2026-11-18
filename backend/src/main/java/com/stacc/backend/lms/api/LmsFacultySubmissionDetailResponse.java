@@ -6,7 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One student's submission for an assignment, with every attempt, newest first, for faculty review. */
 public record LmsFacultySubmissionDetailResponse(
         @Schema(example = "9")
         Long assignmentId,

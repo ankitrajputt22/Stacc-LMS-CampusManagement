@@ -17,11 +17,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One account's copy of a notification in its Inbox: unread while {@code readAt} is empty, read once it holds when the
- * account first marked it read. Marking it unread empties {@code readAt} again; no history of these changes is kept.
- * An account receives a notification at most once. Nothing here is ever deleted.
- */
 @Entity
 @Table(
         name = "notification_recipients",
@@ -30,7 +25,6 @@ import org.hibernate.annotations.CreationTimestamp;
                 columnNames = {"notification_id", "user_account_id"}))
 public class NotificationRecipient {
 
-    // No cascade: deleting neither an account nor a notification ever removes Inbox rows through here.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,7 +45,6 @@ public class NotificationRecipient {
     private Instant createdAt;
 
     protected NotificationRecipient() {
-        // Required by JPA.
     }
 
     public NotificationRecipient(Notification notification, UserAccount userAccount) {
@@ -83,14 +76,12 @@ public class NotificationRecipient {
         return readAt != null;
     }
 
-    /** Marks it read at the given time, to the microsecond as stored. Already read keeps its first read time. */
     public void markRead(Instant at) {
         if (readAt == null) {
             this.readAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
         }
     }
 
-    /** Marks it unread again. Already unread changes nothing. */
     public void markUnread() {
         this.readAt = null;
     }

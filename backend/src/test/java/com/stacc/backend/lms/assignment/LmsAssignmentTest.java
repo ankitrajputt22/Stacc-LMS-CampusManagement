@@ -15,7 +15,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import org.junit.jupiter.api.Test;
 
-/** Fixed timestamps only: nothing here depends on the clock or the machine's time zone. */
 class LmsAssignmentTest {
 
     private static final Instant DUE = Instant.parse("2026-10-20T18:29:00Z");

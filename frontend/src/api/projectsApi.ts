@@ -1,8 +1,6 @@
 import type { Project, ProjectStatus } from '../types/projects'
 import { apiClient } from './apiClient'
 
-// The student or faculty member is always the signed-in account; the backend checks the lead and each invitation.
-
 export const getProjects = async (signal?: AbortSignal) => (await apiClient.get<Project[]>('/projects', { signal })).data
 export const createProject = async (input: { title: string; summary: string; maxMembers: number }) =>
   (await apiClient.post<Project>('/projects', input)).data

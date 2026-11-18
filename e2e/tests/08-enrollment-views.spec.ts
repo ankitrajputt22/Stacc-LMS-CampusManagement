@@ -7,7 +7,6 @@ test('an admin filters course enrollments and a teacher reads a class list', asy
   const table = page.getByRole('table', { name: 'Course enrollments' })
   await expect(table.getByRole('row').first()).toBeVisible()
 
-  // cse24002 withdrew from CS304 in the demo data.
   await page.getByLabel('Status').selectOption('WITHDRAWN')
   await page.getByLabel('Search course enrollments').fill('cse24002')
   await page.getByRole('button', { name: 'Find' }).click()

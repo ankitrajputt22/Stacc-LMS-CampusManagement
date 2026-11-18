@@ -16,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** An item a student enters in their portfolio, optionally verified once by a named faculty member. Hidden, never deleted. */
 @Entity
 @Table(name = "portfolio_items")
 public class PortfolioItem {
@@ -83,7 +82,6 @@ public class PortfolioItem {
         apply(kind, title, description, occurredOn, link);
     }
 
-    /** Edits an item that is neither verified nor waiting for verification; a declined item starts over. */
     public void edit(Kind newKind, String newTitle, String newDescription, LocalDate newOccurredOn, String newLink) {
         if (verification == Verification.VERIFIED || verification == Verification.REQUESTED) {
             throw new IllegalStateException("A verified item, or one waiting for verification, cannot be changed.");

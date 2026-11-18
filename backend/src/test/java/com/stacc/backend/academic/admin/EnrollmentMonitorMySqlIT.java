@@ -10,7 +10,6 @@ import com.stacc.backend.academic.enrollment.CourseEnrollmentStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** The enrollment monitor's search query on MySQL over the demo data. It only reads. */
 class EnrollmentMonitorMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

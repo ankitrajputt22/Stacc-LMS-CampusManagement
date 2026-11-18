@@ -14,7 +14,6 @@ public interface PortfolioItemRepository extends JpaRepository<PortfolioItem, Lo
     @Query("select i from PortfolioItem i left join fetch i.verifier where i.owner.id = :accountId and i.hiddenAt is null order by case when i.occurredOn is null then 1 else 0 end, i.occurredOn desc, i.id desc")
     List<PortfolioItem> findVisibleForOwner(@Param("accountId") Long accountId);
 
-    /** Items waiting for this faculty member's verification, with their owners. */
     @Query("""
             select i from PortfolioItem i join fetch i.owner where i.verifier.id = :accountId
             and i.verification = com.stacc.backend.portfolio.PortfolioItem.Verification.REQUESTED and i.hiddenAt is null

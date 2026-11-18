@@ -26,11 +26,6 @@ import com.stacc.backend.engagement.facilities.CampusFacilityService.BookingView
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * The capacity and overlap rules hold under simultaneous requests: two students registering for the last place get one
- * place and one waitlist spot, and two bookings of the same time get one booking. Each test makes its own event or
- * facility, so no other test touches them.
- */
 class CampusEngagementMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-/** Standings come from played matches only; matches need two different sides and follow their status rules. */
 class TournamentRulesTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

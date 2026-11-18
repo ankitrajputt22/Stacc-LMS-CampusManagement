@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One exam of a session: a course offering on a day, between two times, in a hall with a number of seats. */
 @Entity
 @Table(name = "exam_slots")
 public class ExamSlot {

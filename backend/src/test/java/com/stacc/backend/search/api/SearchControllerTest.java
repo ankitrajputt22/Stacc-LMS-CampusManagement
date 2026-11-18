@@ -32,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the search routes through Spring Security, with the search service as a stand-in. */
 class SearchControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean
@@ -42,7 +41,6 @@ class SearchControllerTest extends DatabaseFreeApiTest {
         return "Bearer " + TestTokens.valid("ACC-TEST-" + accountId, accountId, authorities);
     }
 
-    // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> routes() {
         return List.of(get("/api/v1/search").param("q", "data"),
                 get("/api/v1/search/results").param("q", "data").param("type", "COURSE"));

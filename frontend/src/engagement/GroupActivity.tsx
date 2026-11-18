@@ -15,11 +15,6 @@ function refusal(failure: unknown, what: string): string {
   return message && status !== null && status < 500 ? message : `Couldn’t ${what}. Try again.`
 }
 
-/**
- * A group's meetings, practices, and announcements, opened on demand for its members and officers. Officers (and the
- * campus office) schedule and cancel sessions, which appear on members' calendars, and post announcements, which
- * reach members' Inboxes.
- */
 export function GroupActivityPanel({ groupId, groupName }: { groupId: number; groupName: string }) {
   const [open, setOpen] = useState(false)
   if (!open) {

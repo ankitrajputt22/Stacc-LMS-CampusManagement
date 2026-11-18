@@ -10,7 +10,6 @@ import { SectionState } from '../../courses/SectionState'
 import { Alert, Badge, Card } from '../../ui'
 import { KIND_LABEL } from './outingText'
 
-/** The warden's outing requests to decide (through the approval task routes) and the overdue students of their hostels. */
 export function WardenOutings() {
   const queryClient = useQueryClient()
   const tasks = useApiQuery(queryKeys.hostel.tasks(), (signal) => getMyApprovalTasks(signal))

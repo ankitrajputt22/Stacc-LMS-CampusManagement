@@ -7,10 +7,6 @@ import { Alert, Button, PageHeader } from '../ui'
 
 const REFRESH_MS = 60_000
 
-/**
- * /id-card: the person's digital ID card with a QR code that changes every minute while the card is open. This page
- * deliberately asks for a new code each minute (the code lives 90 seconds); nothing else in Stacc polls.
- */
 export function IdCardPage() {
   const [card, setCard] = useState<IdCard | null>(null)
   const [image, setImage] = useState<string | null>(null)

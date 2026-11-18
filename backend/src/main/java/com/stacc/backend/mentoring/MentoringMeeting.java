@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A meeting of a mentoring pair. Shared notes reach both; private notes reach the mentor only. */
 @Entity
 @Table(name = "mentoring_meetings")
 public class MentoringMeeting {
@@ -54,7 +53,6 @@ public class MentoringMeeting {
         edit(heldAt, title, sharedNotes, privateNotes);
     }
 
-    /** The mentor corrects the meeting's details and notes. */
     public void edit(Instant newHeldAt, String newTitle, String shared, String privateText) {
         String stripped = newTitle == null ? "" : newTitle.strip();
         if (stripped.isEmpty() || stripped.length() > 200) {

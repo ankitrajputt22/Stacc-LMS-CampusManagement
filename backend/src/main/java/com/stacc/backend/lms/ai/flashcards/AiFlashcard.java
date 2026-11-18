@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One card of a flashcard set (v0.15.3), with its source and its review state. */
 @Entity
 @Table(name = "ai_flashcards")
 public class AiFlashcard {
@@ -68,7 +67,6 @@ public class AiFlashcard {
     private Instant lastReviewedAt;
 
     protected AiFlashcard() {
-        // Required by JPA.
     }
 
     AiFlashcard(AiFlashcardSet set, int position, String front, String back, String sourceType, long sourceId, String sourceTitle,
@@ -85,7 +83,6 @@ public class AiFlashcard {
         this.dueOn = today;
     }
 
-    /** Records a review: the next state and due day come from {@link SpacedRepetition}. */
     public void review(ReviewRating rating, LocalDate today, Instant at) {
         SpacedRepetition.State next = SpacedRepetition.next(new SpacedRepetition.State(ease, intervalDays, repetitions, lapses), rating);
         this.ease = next.ease();

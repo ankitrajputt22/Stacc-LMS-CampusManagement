@@ -18,11 +18,6 @@ function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`
 }
 
-/**
- * Quiz drafts (v0.14.3): an ordinary draft quiz from reviewed bank questions of the chosen kinds, picked at random, with
- * AI drafting only the gap into the bank (as Needs review) when allowed. Publishing the quiz still needs every question
- * reviewed. Sent only on the button.
- */
 export function QuizDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

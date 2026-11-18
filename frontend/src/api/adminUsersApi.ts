@@ -11,9 +11,6 @@ import type {
 } from '../types/users'
 import { apiClient } from './apiClient'
 
-// Every route needs ADMIN with USER_VIEW, and USER_MANAGE to change anything; the backend checks both. The account
-// changed is always named by the URL. Temporary passwords are sent once and never come back.
-
 const ROOT = '/admin/users'
 
 export async function searchUsers(filters: UserFilters, signal?: AbortSignal) {
@@ -52,22 +49,16 @@ export async function addFacultyProfile(accountId: number, body: FacultyProfileC
   return (await apiClient.post<UserDetail>(`${ROOT}/${accountId}/faculty-profile`, body)).data
 }
 
-/** An account's official photo as image data, for an object URL. */
 export async function getUserPhoto(accountId: number, signal?: AbortSignal) {
   return (await apiClient.get<Blob>(`${ROOT}/${accountId}/photo`, { responseType: 'blob', signal })).data
 }
 
-/** Sets the official photo: a JPEG or PNG image up to 2 MB. */
 export async function uploadUserPhoto(accountId: number, file: File) {
   const body = new FormData()
   body.append('file', file)
   return (await apiClient.post<UserDetail>(`${ROOT}/${accountId}/photo`, body)).data
 }
 
-/**
- * Checks a CSV file of accounts (dryRun) or imports it. Every account gets the one temporary password sent here;
- * nothing is created unless every row is valid.
- */
 export async function importUsers(file: File, temporaryPassword: string, dryRun: boolean) {
   const body = new FormData()
   body.append('file', file)

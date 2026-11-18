@@ -7,10 +7,6 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
-/**
- * Who is acting on approvals: the account in the access token, the role codes it holds (all of them, in no particular
- * order; none is the main one), and its approval permissions. It is read from the token only.
- */
 public record ApprovalActor(Long accountId, Set<String> roleCodes, boolean viewOwn, boolean taskView,
         boolean taskDecide, boolean manageWorkflows) {
 

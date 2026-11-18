@@ -5,7 +5,6 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The Files list of a course a faculty member teaches, with the course's own details and state. */
 public record LmsFacultyCourseFilesResponse(
         @Schema(example = "42")
         Long lmsCourseId,

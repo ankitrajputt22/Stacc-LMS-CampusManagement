@@ -10,10 +10,6 @@ import com.stacc.backend.notification.NotificationSourceType;
 import com.stacc.backend.notification.NotificationType;
 import org.springframework.stereotype.Component;
 
-/**
- * The Inbox notice about a course announcement, worded in one place. The caller decides that the announcement was
- * published for the first time; the students to tell come from the student access rule.
- */
 @Component
 public class LmsAnnouncementNotifications {
 
@@ -25,7 +21,6 @@ public class LmsAnnouncementNotifications {
         this.studentAccess = studentAccess;
     }
 
-    /** Tells every student who may use the course now. A course students cannot use yet has nobody to tell. */
     public void published(LmsAnnouncement announcement) {
         Course course = announcement.getLmsCourse().getCourseOffering().getCourse();
         List<Long> students = studentAccess.findStudentAccountIdsWithAccess(announcement.getLmsCourse().getId());

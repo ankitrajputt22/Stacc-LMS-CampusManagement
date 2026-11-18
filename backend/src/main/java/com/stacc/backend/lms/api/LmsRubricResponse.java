@@ -7,7 +7,6 @@ import com.stacc.backend.lms.assignment.rubric.LmsRubric;
 import com.stacc.backend.lms.assignment.rubric.RubricStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A rubric with its criteria and levels. */
 public record LmsRubricResponse(
         Long id,
         String title,
@@ -34,7 +33,6 @@ public record LmsRubricResponse(
                         .toList());
     }
 
-    /** The assignment's rubric, or null. */
     static LmsRubricResponse ofNullable(LmsRubric rubric) {
         return rubric == null ? null : of(rubric, false);
     }

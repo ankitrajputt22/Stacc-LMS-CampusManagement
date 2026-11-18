@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/** A bookable room, lab, hall, court, or ground with daily opening hours. Made inactive, never deleted. */
 @Entity
 @Table(name = "campus_facilities")
 public class CampusFacility {
@@ -63,7 +62,6 @@ public class CampusFacility {
     private Instant updatedAt;
 
     protected CampusFacility() {
-        // Required by JPA.
     }
 
     public CampusFacility(String code, String name, Kind kind, String location, Integer capacity, LocalTime opensAt,

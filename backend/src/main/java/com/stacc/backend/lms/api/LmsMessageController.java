@@ -40,10 +40,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Private messages between a student and the faculty of a course. Students see their own conversations; the course's
- * faculty see every conversation of the course. People are shown by login ID only.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS course messages")

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** One's own sessions: listed with the current one marked, and another one ended; the current one never here. */
 class MySessionsControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/me/sessions";

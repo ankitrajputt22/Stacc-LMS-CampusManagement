@@ -15,13 +15,9 @@ import { nextStatuses, priorityLabel, refusalText, statusLabel, TICKET_PRIORITIE
 
 type TicketManagementProps = {
   ticket: HelpdeskTicketDetail
-  /** The signed-in admin's own login ID, for "Assign to me". */
   myLoginId: string | null
-  /** The ticket as the backend answered after a change. */
   onUpdated: (ticket: HelpdeskTicketDetail) => void
-  /** Shows why a change was refused because the ticket changed elsewhere, and loads it again. */
   onStale: (message: string) => void
-  /** The active admin accounts a ticket can be assigned to, loaded once by the page. */
   assignees: ApiRequestState<HelpdeskAssignee[]>
 }
 
@@ -29,12 +25,6 @@ type Saving = 'assignee' | 'priority' | 'status' | null
 
 const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
 
-/**
- * The support team's controls on the shared ticket page: assignee, priority, and status. They are shown to admin
- * accounts only, for the interface; the backend checks HELPDESK_TICKET_MANAGE on every change. Only the moves the
- * lifecycle allows are offered, and closing is confirmed first. A 409, such as a ticket changed by someone else, is
- * shown in the backend's words and the ticket is loaded again; a 403 never signs the user out.
- */
 export function TicketManagement({ ticket, myLoginId, onUpdated, onStale, assignees }: TicketManagementProps) {
   const [assignee, setAssignee] = useState(ticket.assignedToLoginId ?? '')
   const [priority, setPriority] = useState<HelpdeskTicketPriority>(ticket.priority)
@@ -43,8 +33,6 @@ export function TicketManagement({ ticket, myLoginId, onUpdated, onStale, assign
   const [saving, setSaving] = useState<Saving>(null)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState('')
-  // When the ticket changes, here or elsewhere, the choices start again from what it is now. Adjusting state while
-  // rendering keeps focus where it is, unlike remounting.
   const [shownVersion, setShownVersion] = useState(ticket.updatedAt)
   if (shownVersion !== ticket.updatedAt) {
     setShownVersion(ticket.updatedAt)
@@ -56,7 +44,6 @@ export function TicketManagement({ ticket, myLoginId, onUpdated, onStale, assign
 
   const choices = nextStatuses(ticket.status)
   const loginIds = assignees.status === 'loaded' ? assignees.data.map((entry) => entry.loginId) : []
-  // The current assignee is always a choice, even if the account can no longer be assigned, so the select is truthful.
   const options = ticket.assignedToLoginId && !loginIds.includes(ticket.assignedToLoginId)
     ? [ticket.assignedToLoginId, ...loginIds]
     : loginIds
@@ -78,7 +65,6 @@ export function TicketManagement({ ticket, myLoginId, onUpdated, onStale, assign
       if (httpStatus !== 401) {
         const text = refusalText(httpStatus, getApiError(failure)?.message ?? null)
         if (httpStatus === 409 || httpStatus === 404) {
-          // The message is shown by the page, because these controls may be gone once the ticket is loaded again.
           onStale(text)
         } else {
           setError(text)

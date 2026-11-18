@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAnswer;
 
-/** The student's saved answer to one question. */
 public record LmsQuizAnswerResponse(Long quizQuestionId, List<Integer> selectedOptions, Boolean trueFalseAnswer, String text,
         Instant answeredAt) {
 

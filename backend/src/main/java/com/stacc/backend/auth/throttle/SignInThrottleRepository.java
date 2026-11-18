@@ -16,13 +16,11 @@ public interface SignInThrottleRepository extends JpaRepository<SignInThrottle, 
 
     boolean existsByScopeAndKeyHash(SignInThrottle.Scope scope, String keyHash);
 
-    /** Makes sure the key has a row; two requests at once never create two. */
     @Modifying
     @Query(value = "insert ignore into sign_in_throttles (scope, key_hash, failures, updated_at) "
             + "values (:scope, :keyHash, 0, :now)", nativeQuery = true)
     void ensure(@Param("scope") String scope, @Param("keyHash") String keyHash, @Param("now") Instant now);
 
-    /** The key's row, locked until the transaction ends, so concurrent failures are counted one after another. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select throttle from SignInThrottle throttle where throttle.scope = :scope and throttle.keyHash = :keyHash")
     Optional<SignInThrottle> findForUpdate(@Param("scope") SignInThrottle.Scope scope, @Param("keyHash") String keyHash);

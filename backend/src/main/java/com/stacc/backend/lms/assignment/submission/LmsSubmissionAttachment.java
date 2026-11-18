@@ -14,11 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One file handed in with an attempt. Only its details are kept here; the bytes are in private object
- * storage under {@code objectKey}, a key the server generates. The key is internal: it is never sent to a
- * client. Like its attempt, an attachment never changes once it is made.
- */
 @Entity
 @Table(name = "lms_submission_attachments")
 public class LmsSubmissionAttachment {
@@ -51,7 +46,6 @@ public class LmsSubmissionAttachment {
     private Instant createdAt;
 
     protected LmsSubmissionAttachment() {
-        // Required by JPA.
     }
 
     public LmsSubmissionAttachment(
@@ -74,7 +68,6 @@ public class LmsSubmissionAttachment {
         return attempt;
     }
 
-    /** Where the bytes are stored. For the server only; never part of an answer to a client. */
     public String getObjectKey() {
         return objectKey;
     }

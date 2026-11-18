@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class OpenApiConfig {
 
-    /** Protected endpoints refer to this scheme by name when they are documented. */
     public static final String BEARER_AUTH = "bearerAuth";
 
     @Bean

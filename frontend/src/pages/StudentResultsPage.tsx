@@ -15,7 +15,6 @@ import { Card, PageHeader } from '../ui'
 
 type Group = { key: string; heading: string; programCode: string; results: StudentResult[] }
 
-// The backend already orders the results; this only puts consecutive ones of the same semester under one heading.
 function grouped(results: StudentResult[]): Group[] {
   const groups: Group[] = []
   for (const result of results) {
@@ -52,12 +51,10 @@ function ResultItem({ result }: { result: StudentResult }) {
         {result.remarks && (
           <div className="mt-2">
             <p className="text-sm text-ink-muted">Remarks</p>
-            {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
             <p className="text-sm leading-6 break-words whitespace-pre-line text-ink">{result.remarks}</p>
           </div>
         )}
       </div>
-      {/* Exactly what was recorded and published. There is no percentage, grade point, rank, or pass or fail. */}
       <dl className="flex gap-3 sm:justify-end">
         <div className="min-w-24 rounded-control border border-line bg-surface-muted px-3 py-2">
           <dt className="text-sm text-ink-muted">Marks</dt>
@@ -138,11 +135,6 @@ function MyResults() {
   }
 }
 
-/**
- * The signed-in student's own published course results, at /academic/results, the latest academic session first.
- * The backend finds the student from the access token and never shows drafts. Accounts without the student role see
- * an explanation instead, and no request is made.
- */
 export function StudentResultsPage() {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

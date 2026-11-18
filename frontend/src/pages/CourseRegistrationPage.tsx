@@ -31,7 +31,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
   return 'Couldn’t reach Stacc. Check your connection and try again.'
 }
 
-/** "1 Jul 2026, 9:00 am to 15 Jul 2026, 5:00 pm", or that no period is set. */
 function periodText(term: RegistrationTerm): string {
   if (term.registrationOpensAt === null || term.registrationClosesAt === null) {
     return 'Not set'
@@ -65,7 +64,6 @@ function Details({ items }: { items: (string | null)[] }) {
   )
 }
 
-/** One semester the student may register in: its period, the open offerings to choose from, and their courses. */
 function TermCard({ term, profileActive }: { term: RegistrationTerm; profileActive: boolean }) {
   const queryClient = useQueryClient()
   const id = useId()
@@ -93,7 +91,6 @@ function TermCard({ term, profileActive }: { term: RegistrationTerm; profileActi
     ])
   }
 
-  // A refusal is thrown to the confirmation, which shows the backend's message and keeps it open.
   async function confirmRegistration() {
     const result = await registerForCourses(selected)
     setSelected([])
@@ -350,11 +347,6 @@ function MyRegistration() {
   }
 }
 
-/**
- * Course registration at /academic/registration: the student's semester, the course offerings open to them, a summary
- * and confirmation before registering, and their registered courses with Drop while allowed. The backend takes the
- * student from the access token and checks every rule again.
- */
 export function CourseRegistrationPage() {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

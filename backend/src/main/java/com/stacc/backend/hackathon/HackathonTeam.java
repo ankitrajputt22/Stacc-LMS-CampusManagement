@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A team in one hackathon, with a name unique within it. */
 @Entity
 @Table(name = "hackathon_teams")
 public class HackathonTeam {

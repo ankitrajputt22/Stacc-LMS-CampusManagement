@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A player on a team's roster, with their role. Leaving keeps the row as history. */
 @Entity
 @Table(name = "campus_team_members")
 public class CampusTeamMember {

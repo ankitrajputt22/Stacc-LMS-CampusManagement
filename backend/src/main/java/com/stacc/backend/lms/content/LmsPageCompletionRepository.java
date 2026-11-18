@@ -11,14 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsPageCompletionRepository extends JpaRepository<LmsPageCompletion, Long> {
 
-    /** The pages this enrollment completed. */
     @Query("select completion.lmsTopic.id from LmsPageCompletion completion where completion.courseEnrollment.id = :courseEnrollmentId")
     Set<Long> findCompletedTopicIds(@Param("courseEnrollmentId") Long courseEnrollmentId);
 
-    /**
-     * The completion, read with a lock after the enrollment row lock. A locking read sees the latest committed row, so a
-     * completion another transaction has just recorded is found instead of inserted again.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select completion from LmsPageCompletion completion

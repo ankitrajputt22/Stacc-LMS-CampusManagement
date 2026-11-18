@@ -9,10 +9,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * The official result to record for one enrollment. The student, course, status, recorder, and publication time are
- * never taken from the client: they come from the route, the access token, and the publish action.
- */
 public record CourseResultRequest(
         @Schema(description = "Zero or more, at most the maximum marks, with at most two decimal places.", example = "82")
         @NotNull(message = "Marks obtained are required")

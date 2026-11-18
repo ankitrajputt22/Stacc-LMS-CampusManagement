@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Support teams and routing (admins), the team queue (team members), notes, reopening, and ratings. */
 @RestController
 @Tag(name = "Helpdesk teams")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

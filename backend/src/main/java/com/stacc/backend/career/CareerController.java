@@ -45,7 +45,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** A student's career profile and applications, and the placement office's opportunities, applicants, and offers. */
 @RestController
 @RequestMapping("/api/v1/career")
 @Tag(name = "Career and placement")

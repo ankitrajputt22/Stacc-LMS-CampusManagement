@@ -17,10 +17,6 @@ import { SIGN_IN_AGAIN } from '../support/helpdeskText'
 
 type Open = { type: 'create' } | { type: 'edit'; categoryId: number } | null
 
-/**
- * Helpdesk categories at /support/admin/categories, active and inactive, from the admin category API. Admins add and
- * edit them; a category is made inactive instead of deleted, and its code never changes. There is no Delete.
- */
 export function SupportCategoriesPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

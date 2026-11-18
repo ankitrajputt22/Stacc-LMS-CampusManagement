@@ -9,7 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** When a hostel takes visitors each day, in the college's time zone. A hostel without hours takes no visitors. */
 @Entity
 @Table(name = "hostel_visiting_hours")
 public class HostelVisitingHours {
@@ -28,7 +27,6 @@ public class HostelVisitingHours {
     private Instant updatedAt;
 
     protected HostelVisitingHours() {
-        // Required by JPA.
     }
 
     public HostelVisitingHours(Long hostelId, LocalTime opensAt, LocalTime closesAt, Instant now) {

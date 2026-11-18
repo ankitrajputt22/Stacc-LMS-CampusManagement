@@ -18,10 +18,6 @@ import type { CourseSide } from '../types/communication'
 import { Badge, Button, ButtonLink, Card } from '../ui'
 import { PostForm, PostText } from './PostForm'
 
-/**
- * Private conversations with the course's faculty. Students see their own and start new ones; faculty see every
- * student's conversation in the course and answer them.
- */
 export function ConversationList({ side, lmsCourseId, basePath }: { side: CourseSide; lmsCourseId: number; basePath: string }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()

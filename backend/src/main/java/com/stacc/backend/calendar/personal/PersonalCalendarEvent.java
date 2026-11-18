@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A person's own calendar entry: a title, optional notes, and a date range (end included). Only its owner sees it. */
 @Entity
 @Table(name = "personal_calendar_events")
 public class PersonalCalendarEvent {
@@ -45,7 +44,6 @@ public class PersonalCalendarEvent {
     private Instant updatedAt;
 
     protected PersonalCalendarEvent() {
-        // Required by JPA.
     }
 
     public PersonalCalendarEvent(Long userAccountId, String title, String notes, LocalDate startDate, LocalDate endDate, Instant now) {

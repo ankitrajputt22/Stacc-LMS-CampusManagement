@@ -3,7 +3,6 @@ package com.stacc.backend.lms.api;
 import com.stacc.backend.lms.management.LmsCourseChange;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** An LMS course after a faculty management change. */
 public record LmsCourseManagementResponse(
         @Schema(example = "42")
         Long lmsCourseId,

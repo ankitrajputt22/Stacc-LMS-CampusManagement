@@ -7,20 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** The campus service catalog. */
 public interface CampusServiceDefinitionRepository extends JpaRepository<CampusServiceDefinition, Long> {
 
     boolean existsByCode(String code);
 
     Optional<CampusServiceDefinition> findByCode(String code);
 
-    /** Every service, active or not, by code, for the admin catalog. */
     List<CampusServiceDefinition> findAllByOrderByCodeAscIdAsc();
 
-    /**
-     * The active services an account may request: those offered to students when it holds STUDENT, and those offered to
-     * faculty when it holds FACULTY. Each service appears once, by name.
-     */
     @Query("""
             select service
             from CampusServiceDefinition service

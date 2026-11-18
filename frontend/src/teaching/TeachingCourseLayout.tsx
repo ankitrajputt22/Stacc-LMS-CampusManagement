@@ -7,11 +7,6 @@ import { parseCourseId } from '../courses/courseRoute'
 import { CourseFrame, CourseNav } from '../courses/CourseNav'
 import { useFacultyCourse } from './useFacultyCourse'
 
-/**
- * Every faculty page of one course, under /teaching/:lmsCourseId, with the course navigation: Home (course settings and
- * the course home), Modules, Announcements, Assignments, Quizzes, Outcomes, Question bank, Files, Syllabus, and Teacher AI. The navigation appears once
- * the course has loaded; each page shows its own states.
- */
 export function TeachingCourseLayout() {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)

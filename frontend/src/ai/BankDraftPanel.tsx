@@ -18,11 +18,6 @@ function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`
 }
 
-/**
- * Generate into the bank (v0.14.1): AI drafts questions of the chosen types into the course's question bank, each
- * Needs review and marked as an AI draft with its sources. Choice and true/false questions whose key the AI does not
- * reproduce are dropped. Sent only on the button; nothing is offered for practice or put in a quiz.
- */
 export function BankDraftPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

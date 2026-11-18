@@ -1,8 +1,3 @@
-/**
- * The cache keys of every backend answer kept in the query cache, in one place, so a change can name exactly what it
- * makes out of date (for example `queryClient.invalidateQueries({ queryKey: queryKeys.lms.all })`). Keys need no
- * account: the cache is emptied whenever a session ends or starts.
- */
 export const queryKeys = {
   erp: {
     all: ['erp'] as const,
@@ -156,8 +151,6 @@ export const queryKeys = {
     photo: (accountId: number, version: string) => ['admin', 'users', accountId, 'photo', version] as const,
   },
   admin: {
-    /** Everything the academic admin pages load. A change there makes all of it out of date, since the lists feed each
-     * other's choices (departments for programs, semesters for offerings, and so on). */
     academic: ['admin', 'academic'] as const,
     departments: () => ['admin', 'academic', 'departments'] as const,
     programs: () => ['admin', 'academic', 'programs'] as const,

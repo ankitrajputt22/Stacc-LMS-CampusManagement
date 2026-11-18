@@ -22,11 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in account's own calendar. The route needs a student, faculty, or admin role and
- * {@code ACADEMIC_CALENDAR_VIEW}; what it shows is still decided by the account's own enrollments, teaching
- * assignments, and LMS access, taken from the access token. No account, profile, or enrollment ID is accepted.
- */
 @RestController
 @RequestMapping("/api/v1/calendar")
 @Tag(name = "Calendar")

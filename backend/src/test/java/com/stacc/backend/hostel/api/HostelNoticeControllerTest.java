@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only the hostel office and wardens with the notice permission manage notices; residents only read their own. */
 class HostelNoticeControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

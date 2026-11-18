@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What an admin sends to create or correct a notice: plain text and the roles that may see it, at least one. It never
- * carries a status or publication time; those come from the publish and archive routes.
- */
 public record CampusNoticeInput(
         @Schema(description = "Plain text.", example = "Library closed on Friday")
         @NotBlank(message = "Title is required")

@@ -10,7 +10,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Accepting two join requests at once for the last place accepts exactly one. A project of its own. */
 class ProjectCapacityMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

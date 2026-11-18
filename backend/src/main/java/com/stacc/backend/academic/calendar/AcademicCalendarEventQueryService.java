@@ -15,20 +15,10 @@ import com.stacc.backend.academic.teaching.TeachingAssignmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Which official calendar events someone sees, decided from academic records alone: no LMS course is needed. Users
- * only ever get events that {@link AcademicCalendarEvent#isVisibleToUsers()}: published ones, and cancelled ones
- * that were published first. Who they apply to comes from the signed-in account: a student's own semester
- * enrollments, or a faculty member's current teaching assignments. It only reads.
- */
 @Service
 @Transactional(readOnly = true)
 public class AcademicCalendarEventQueryService {
 
-    /**
-     * The semester enrollments whose events a student sees: current ones, and completed ones, so history stays on the
-     * calendar. A withdrawn enrollment does not count.
-     */
     static final Set<SemesterEnrollmentStatus> CALENDAR_PARTICIPATION =
             Set.of(SemesterEnrollmentStatus.ENROLLED, SemesterEnrollmentStatus.COMPLETED);
 
@@ -43,13 +33,6 @@ public class AcademicCalendarEventQueryService {
         this.teachingAssignments = teachingAssignments;
     }
 
-    /**
-     * The semesters a student takes part in, through their own enrollments that are enrolled or completed, and the
-     * sessions of those semesters. The student profile's status does not matter: like attendance and results, this is
-     * the student's own academic history.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public AcademicCalendarScope studentScope(Long userAccountId) {
         if (userAccountId == null) {
             return AcademicCalendarScope.NONE;
@@ -64,13 +47,6 @@ public class AcademicCalendarEventQueryService {
         return new AcademicCalendarScope(semesterIds, sessionIds);
     }
 
-    /**
-     * The semesters a faculty member teaches in now, through teaching assignments that count under
-     * {@link FacultyTeachingAccessService#isCurrentTeaching} (an active faculty profile and an active assignment),
-     * and the sessions of those semesters. No LMS course is needed.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public AcademicCalendarScope facultyScope(Long userAccountId) {
         if (userAccountId == null) {
             return AcademicCalendarScope.NONE;
@@ -87,12 +63,7 @@ public class AcademicCalendarEventQueryService {
         return new AcademicCalendarScope(semesterIds, sessionIds);
     }
 
-    /**
-     * The visible events in the date range that apply to the scope: those of its semesters, and the session-wide
-     * events of its sessions. The earliest start first. An empty scope sends no query.
-     */
     public List<AcademicCalendarEventResponse> findVisible(AcademicCalendarScope scope, LocalDate from, LocalDate to) {
-        // Both sets come from the same semesters, so neither is empty unless both are, and no empty IN list is sent.
         if (scope.semesterIds().isEmpty() || scope.academicSessionIds().isEmpty()) {
             return List.of();
         }
@@ -103,7 +74,6 @@ public class AcademicCalendarEventQueryService {
                 .toList();
     }
 
-    /** Every visible event in the date range, whatever its session or semester, for the admin calendar. */
     public List<AcademicCalendarEventResponse> findAllVisible(LocalDate from, LocalDate to) {
         return events.findVisibleInRange(from, to).stream()
                 .filter(AcademicCalendarEvent::isVisibleToUsers)

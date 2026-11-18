@@ -6,10 +6,6 @@ import { AdminReportsSection } from '../reports/AdminReportsSection'
 import { ExportsPanel } from '../analytics/ExportsPanel'
 import { FacultyReportsSection } from '../reports/FacultyReportsSection'
 
-/**
- * Reports at /reports: one page, with a part for each role the account holds, in the fixed order Faculty, Admin. Each
- * part asks its own API, which decides access; showing a part protects nothing. Students have no report part.
- */
 export function ReportsPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

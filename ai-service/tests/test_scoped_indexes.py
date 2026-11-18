@@ -1,5 +1,3 @@
-"""v0.13.2: every request carries the sources allowed right now, and may search more than one index."""
-
 from __future__ import annotations
 
 import pytest
@@ -68,7 +66,6 @@ def test_teacher_documents_and_notes_are_text_sources_without_a_topic(client):
     cited = next(c for c in body["citations"] if c["sourceType"] == "TEACHER_DOCUMENT")
     assert cited == {"sourceType": "TEACHER_DOCUMENT", "sourceId": 9, "topicId": None, "title": "Exam focus",
                      "fileName": None, "pageNumber": None, "slideNumber": None}
-    # Without the teacher index, the same question finds nothing of it.
     alone = post(client, "ask", {"question": "What does third normal form remove?"}).json()
     assert all(c["sourceType"] != "TEACHER_DOCUMENT" for c in alone["citations"])
 
@@ -91,7 +88,6 @@ def test_an_index_is_deleted_completely(client, settings):
     extra = [{"indexKey": TEACHER, "indexFingerprint": OTHER_FINGERPRINT}]
     assert replace(client, [topic(1, "Transactions", TRANSACTIONS)]).status_code == 200
     assert post(client, "ask", {"question": "What is a transaction?", "additionalIndexes": extra}).status_code == 404
-    # Deleting again changes nothing; the token and key are still checked.
     assert client.delete(f"/internal/v1/indexes/{TEACHER}", headers=HEADERS).status_code == 204
     assert client.delete(f"/internal/v1/indexes/{TEACHER}").status_code == 401
     assert client.delete("/internal/v1/indexes/not-a-key", headers=HEADERS).status_code == 400

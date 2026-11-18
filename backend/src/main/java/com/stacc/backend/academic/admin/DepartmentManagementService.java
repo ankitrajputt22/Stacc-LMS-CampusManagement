@@ -12,10 +12,6 @@ import com.stacc.backend.academic.department.DepartmentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit departments. A department's code is set once; its name and status can change.
- * Nothing is ever deleted, and editing never touches the programs, courses, or people that refer to it.
- */
 @Service
 @Transactional
 public class DepartmentManagementService {

@@ -11,10 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import com.stacc.backend.lms.outcome.BloomLevel;
 
-/**
- * One published assignment as a student opens it. The course code and name come from the official catalog;
- * nothing about the student, the enrollment, or the teachers is included.
- */
 public record LmsCourseAssignmentDetailResponse(
         @Schema(example = "9")
         Long id,

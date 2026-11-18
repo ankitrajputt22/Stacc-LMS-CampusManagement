@@ -1,13 +1,3 @@
-"""Keyword matching for hybrid search (v0.13.4).
-
-Semantic search finds chunks that mean the same as the question but can miss exact course terms such as ``3NF``,
-``GROUP BY``, ``O(n log n)``, or a function name. Keyword matching scores chunks with Okapi BM25 over words and
-adjacent word pairs, so both single terms and short phrases count. The two rankings are then merged by reciprocal
-rank fusion, which needs no tuning between their different score scales.
-
-Everything is worked out per request from the chunks already in memory; nothing is stored.
-"""
-
 from __future__ import annotations
 
 import math
@@ -16,7 +6,6 @@ from collections import Counter
 from collections.abc import Iterable, Sequence
 
 WORD = re.compile(r"[a-z0-9]+(?:[+#]+|(?:[._'][a-z0-9]+)*)")
-# Common English words that say nothing about a course's subject. A question made only of these matches nothing.
 STOP_WORDS = frozenset("""
 a about above after again all also am an and any are as at be because been before being below between both but by
 can could did do does doing done down during each either few for from further had has have having he her here hers
@@ -27,19 +16,16 @@ explain describe define tell give show mean means meaning please example example
 """.split())
 K1 = 1.2
 B = 0.75
-RRF_K = 60  # The usual constant: ranks matter, and no single list dominates.
+RRF_K = 60
 
 
 def terms(text: str) -> list[str]:
-    """Lower-cased words and the pairs of adjacent words, so "GROUP BY" matches as a phrase and as words."""
     words = WORD.findall(text.lower())
     pairs = [f"{first} {second}" for first, second in zip(words, words[1:], strict=False)]
     return words + pairs
 
 
 def query_terms(question: str) -> list[str]:
-    """The question's terms that can show a match: no stop words, and no pair made only of stop words. A word written in
-    capitals, such as WHERE or HAVING in SQL, is a technical term and always counts (v0.13.8)."""
     capitals = {word.lower() for word in re.findall(r"\b[A-Z][A-Z0-9_]+\b", question)}
 
     def meaningful(word: str) -> bool:
@@ -53,7 +39,6 @@ def query_terms(question: str) -> list[str]:
 
 
 def bm25(documents: Sequence[str], question: str) -> list[float]:
-    """BM25 scores of the documents for the question; 0 when a document shares no meaningful term with it."""
     wanted = query_terms(question)
     if not wanted or not documents:
         return [0.0] * len(documents)
@@ -76,7 +61,6 @@ def bm25(documents: Sequence[str], question: str) -> list[float]:
 
 
 def fuse(*rankings: Iterable[int]) -> list[int]:
-    """Reciprocal rank fusion of several best-first rankings of the same items, best first; ties keep item order."""
     fused: dict[int, float] = {}
     for ranking in rankings:
         for rank, item in enumerate(ranking, start=1):

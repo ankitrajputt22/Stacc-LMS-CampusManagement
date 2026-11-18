@@ -23,10 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in account's own approval requests. Requests are started by business modules on their users' behalf, so
- * there is no route here to start or cancel one, and no account or requester ID is ever accepted.
- */
 @RestController
 @RequestMapping("/api/v1/approvals")
 @Tag(name = "Approvals")

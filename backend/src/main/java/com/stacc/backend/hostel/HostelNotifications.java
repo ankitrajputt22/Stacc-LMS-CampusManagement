@@ -6,10 +6,6 @@ import com.stacc.backend.notification.NotificationSourceType;
 import com.stacc.backend.notification.NotificationType;
 import org.springframework.stereotype.Component;
 
-/**
- * The Inbox notifications about hostel allocations, linking to the student's Hostel page. Approval notifications are
- * the approval engine's own and are not repeated here.
- */
 @Component
 public class HostelNotifications {
 

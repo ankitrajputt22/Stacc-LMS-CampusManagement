@@ -16,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One line of a hostel's weekly menu: what is served at a meal on a day of the week (1 Monday to 7 Sunday). */
 @Entity
 @Table(name = "hostel_mess_menu_items")
 public class MessMenuItem {
@@ -48,7 +47,6 @@ public class MessMenuItem {
     private Instant updatedAt;
 
     protected MessMenuItem() {
-        // Required by JPA.
     }
 
     public MessMenuItem(Hostel hostel, int dayOfWeek, Meal meal, String items, Long byAccountId, Instant now) {

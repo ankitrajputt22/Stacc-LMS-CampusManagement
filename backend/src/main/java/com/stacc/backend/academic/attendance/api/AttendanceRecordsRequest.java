@@ -8,10 +8,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Statuses to save for some or all of a session's records. Each record is named by the ID the server gave it;
- * a student, enrollment, or account ID is never accepted.
- */
 public record AttendanceRecordsRequest(
         @Schema(description = "The records to change, each at most once. Records not listed keep their status.")
         @NotNull(message = "Records are required")

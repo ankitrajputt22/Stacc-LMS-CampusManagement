@@ -16,10 +16,6 @@ import com.stacc.backend.academic.attendance.api.StudentAttendanceQueryService;
 import com.stacc.backend.academic.teaching.FacultyTeachingAccessService;
 import org.junit.jupiter.api.Test;
 
-/**
- * Attendance is academic data: it must keep working when a course offering has no LMS course. None of its
- * classes may hold, take, or return anything from the LMS module.
- */
 class AttendanceIndependenceTest {
 
     private static final String LMS_PACKAGE = "com.stacc.backend.lms.";

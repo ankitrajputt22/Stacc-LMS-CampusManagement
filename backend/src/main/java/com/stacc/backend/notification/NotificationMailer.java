@@ -19,18 +19,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-/**
- * Sends notification emails in plain text to the college-recorded address on each person's profile, only for active
- * accounts and only when mail is enabled. Instant emails go after the change has committed, so a rolled-back change
- * never emails anyone. A failure is logged without any address or content and never affects the change.
- */
 @Component
 @EnableConfigurationProperties(MailProperties.class)
 public class NotificationMailer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMailer.class);
 
-    /** What an email says: a subject and plain-text lines. */
     public record Mail(String subject, String body) {
     }
 
@@ -48,7 +42,6 @@ public class NotificationMailer {
         return properties.enabled();
     }
 
-    /** One notification as an email. */
     public Mail mailOf(Notification notification) {
         StringBuilder body = new StringBuilder(notification.getMessage()).append("\n");
         if (notification.getActionPath() != null) {
@@ -62,7 +55,6 @@ public class NotificationMailer {
         return properties.linkBaseUrl();
     }
 
-    /** Sends the same email to each account once the current transaction has committed. */
     public void sendAfterCommit(Mail mail, Collection<Long> accountIds) {
         if (!properties.enabled() || accountIds.isEmpty()) {
             return;
@@ -80,7 +72,6 @@ public class NotificationMailer {
         }
     }
 
-    /** Sends one email per account right now; each account gets its own. */
     public void send(Mail mail, Collection<Long> accountIds) {
         if (!properties.enabled()) {
             return;
@@ -109,7 +100,6 @@ public class NotificationMailer {
         }
     }
 
-    // Only active accounts with a recorded address. Addresses are never logged.
     private Map<Long, String> addressesOf(Collection<Long> accountIds) {
         if (accountIds.isEmpty()) {
             return Map.of();

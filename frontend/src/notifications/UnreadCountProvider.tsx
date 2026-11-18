@@ -4,11 +4,6 @@ import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { UnreadCountContext } from './unreadCount'
 
-/**
- * Keeps the signed-in account's unread count for the whole app shell. It asks once when the shell appears and again
- * whenever something calls refresh, such as the Inbox after a change. There is no polling and no live connection. An
- * account without a role that has an Inbox asks nothing; a refused or failed answer just hides the badge.
- */
 export function UnreadCountProvider({ children }: { children: ReactNode }) {
   const { account } = useAuth()
   const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'])

@@ -19,7 +19,6 @@ test('a resident asks to move, and the hostel office sees the request waiting fo
   await expect(page.getByRole('listitem').filter({ hasText: 'The room is too noisy at night.' }).first().getByText('Waiting for the warden')).toBeVisible()
   await signOut(page)
 
-  // The resident cancels it, so the demo bed stays free of open changes.
   await signIn(page, 'erp', 'cse24002')
   await page.goto('/hostel/room-changes')
   const mine = page.getByRole('region', { name: 'Room change' }).getByRole('listitem').filter({ hasText: 'Waiting for the warden' }).first()

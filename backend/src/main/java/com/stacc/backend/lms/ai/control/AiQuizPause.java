@@ -9,11 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * AI off during an official quiz (v0.15.4): while a student has an attempt at a graded quiz of the course that still takes
- * answers (the deadline and its grace not passed), their AI study requests in that course answer 409. Worked out live
- * from the attempts on every request; nothing is stored. Practice quizzes do not pause AI.
- */
 @Component
 public class AiQuizPause {
 
@@ -37,7 +32,6 @@ public class AiQuizPause {
                 .orElse(false);
     }
 
-    /** 409 while a graded quiz of the course is in progress for the student. Callers check course access first. */
     public void requireNoQuizInProgress(Long accountId, Long lmsCourseId) {
         if (inQuiz(accountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.CONFLICT, PAUSED);

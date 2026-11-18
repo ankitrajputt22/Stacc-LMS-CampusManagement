@@ -1,6 +1,5 @@
 import type { LmsFacultyCourseFile, LmsFacultyCourseFiles } from '../types/lms'
 
-/** Why students cannot see the file, from the statuses the API sent, or null when they can. */
 export function hiddenBecause(file: LmsFacultyCourseFile, lmsCourseStatus: LmsFacultyCourseFiles['lmsCourseStatus']): string | null {
   const reasons = [
     file.status === 'DRAFT' && 'the file is a draft',

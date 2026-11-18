@@ -20,7 +20,6 @@ public interface HostelOutingRepository extends JpaRepository<HostelOuting, Long
     @Query("select o from HostelOuting o where o.id = :id")
     Optional<HostelOuting> findByIdForUpdate(@Param("id") Long id);
 
-    /** Outings not yet returned that started before now, of these students, for overdue checks. */
     @Query("""
             select o from HostelOuting o join fetch o.studentProfile profile join fetch profile.userAccount
             where profile.userAccount.id in :accountIds and o.returnedAt is null and o.leaveFrom <= CURRENT_TIMESTAMP

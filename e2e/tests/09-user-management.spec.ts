@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { signIn, signOut } from './support'
 
-// A new account of this run only, so the journey never changes a demo account.
 const LOGIN_ID = `E2E${Date.now().toString(36).toUpperCase()}`
 const TEMPORARY = 'Amber-Signal-4821'
 const CHOSEN = 'e2e harbor violet kite 57'
@@ -25,7 +24,6 @@ test('an admin creates an account and the new person must replace the temporary 
   await page.getByRole('button', { name: 'Find' }).click()
   await expect(page.getByRole('table', { name: 'Users' }).getByRole('link', { name: 'Journey Admin' })).toBeVisible()
 
-  // The creation is in the audit log, by adm1001, without the password.
   await page.goto('/admin/audit')
   await page.getByLabel('Search login IDs').fill(LOGIN_ID)
   await page.getByRole('button', { name: 'Find' }).click()
@@ -42,7 +40,6 @@ test('an admin creates an account and the new person must replace the temporary 
   await page.getByRole('button', { name: 'Change password' }).click()
   await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible()
 
-  // Account settings: the official name as the college recorded it, a preferred name, and this browser's session.
   await page.goto('/account')
   await expect(page.getByRole('heading', { level: 1, name: 'Account settings' })).toBeVisible()
   await expect(page.getByRole('main').getByText('Journey Admin')).toBeVisible()

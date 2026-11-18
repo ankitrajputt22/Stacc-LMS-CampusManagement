@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Students read outcomes; faculty with the content manage permission add, correct, and archive them. */
 class LmsOutcomeControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

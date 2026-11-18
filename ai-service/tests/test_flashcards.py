@@ -1,5 +1,3 @@
-"""v0.15.3: flashcards from the allowed sources, each cited, no repeated fronts."""
-
 from __future__ import annotations
 
 import json

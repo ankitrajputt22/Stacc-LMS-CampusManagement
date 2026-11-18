@@ -1,6 +1,3 @@
-// The library API exactly as the backend sends it (LibraryService). Overdue and queue positions are worked out by the
-// backend on each request.
-
 export type LibraryTitle = {
   titleId: number
   title: string

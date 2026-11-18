@@ -12,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A student's own grades in a course they may use now: only the columns whose grades are published, and for quizzes
- * only attempts whose result is released. The student comes from the access token; nobody else's marks are read.
- */
 @Service
 public class LmsStudentGradesService {
 
@@ -31,7 +27,6 @@ public class LmsStudentGradesService {
         this.clock = clock;
     }
 
-    /** The published columns with this student's cells, and the enrollment they belong to. */
     public record StudentGrades(GradebookBuilder.Gradebook gradebook, Long courseEnrollmentId) {
     }
 

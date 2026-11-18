@@ -25,5 +25,4 @@ export const courseTypeWord = (type: CourseType) => COURSE_TYPE_WORDS[type] ?? t
 export const degreeOptions = DEGREE_TYPES.map((value) => ({ value, label: degreeWord(value) }))
 export const courseTypeOptions = COURSE_TYPES.map((value) => ({ value, label: courseTypeWord(value) }))
 
-/** Optional text as the API takes it: blank becomes null. */
 export const optional = (text: string) => (text.trim() === '' ? null : text.trim())

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-/** Two classes added at once into the same room and hour: the session row lock lets only one in. A room of its own. */
 class TimetableClashMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -24,10 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in person changes their own password. It needs only a signed-in session, with no role or permission,
- * because it must also work while the college requires a new password and every other route is closed.
- */
 @RestController
 @RequestMapping("/api/v1/me/password")
 @Tag(name = "My password")
@@ -44,7 +40,6 @@ public class MyPasswordController {
             @NotBlank(message = "Current password is required") @Size(max = 256) String currentPassword,
             @NotBlank(message = "New password is required") @Size(max = PasswordPolicy.MAX_LENGTH * 2) String newPassword) {
 
-        // A record's default text form would include both passwords.
         @Override
         public String toString() {
             return "ChangePasswordRequest[hidden]";

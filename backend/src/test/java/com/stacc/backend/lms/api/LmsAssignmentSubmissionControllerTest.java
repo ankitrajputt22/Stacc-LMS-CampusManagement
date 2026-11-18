@@ -51,10 +51,6 @@ import org.springframework.test.web.servlet.request.AbstractMockHttpServletReque
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Calls the submission routes through Spring Security. The service is a stand-in, so these tests are about
- * who gets in, what is taken from the token, what reaches the service, and what is sent back.
- */
 class LmsAssignmentSubmissionControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 12;

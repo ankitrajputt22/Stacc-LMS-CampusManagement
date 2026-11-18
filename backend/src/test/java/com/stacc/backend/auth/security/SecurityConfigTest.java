@@ -42,7 +42,6 @@ class SecurityConfigTest extends DatabaseFreeApiTest {
     void browserPasswordPromptIsNotUsed() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(header().doesNotExist(HttpHeaders.WWW_AUTHENTICATE));
-        // Made-up Basic credentials are simply ignored, because HTTP Basic is switched off.
         mockMvc.perform(get("/v3/api-docs").with(request -> {
                     request.addHeader(HttpHeaders.AUTHORIZATION, "Basic c29tZW9uZTpUZXN0UGFzc3dvcmQxMjMh");
                     return request;

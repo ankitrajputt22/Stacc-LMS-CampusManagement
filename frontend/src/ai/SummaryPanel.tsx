@@ -9,7 +9,6 @@ import { INSUFFICIENT_CONTEXT } from './aiText'
 import { hintClasses, panelClasses } from './aiStyles'
 import { useAiAction } from './useAiAction'
 
-/** What the student can summarise, from the course's own published content. */
 export type SummaryChoices = {
   modules: { id: number; title: string }[]
   topics: { id: number; title: string; moduleTitle: string }[]
@@ -28,10 +27,6 @@ const STYLES: { value: AiSummaryStyle; label: string }[] = [
   { value: 'REVISION_NOTES', label: 'Revision notes' },
 ]
 
-/**
- * Summaries (v0.15.2): a page, a whole module, or one file, in a brief, detailed, or revision-notes style, from the
- * course's published content only, with sources. Sent only on the button; nothing is kept.
- */
 export function SummaryPanel({ lmsCourseId, choices }: { lmsCourseId: number; choices: SummaryChoices }) {
   const id = useId()
   const [scope, setScope] = useState<AiSummaryScope>('TOPIC')

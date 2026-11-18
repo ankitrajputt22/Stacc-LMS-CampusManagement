@@ -33,7 +33,6 @@ function Facts({ items }: { items: [string, string | null][] }) {
   )
 }
 
-/** The published result exactly as recorded, or that none is published. Never a percentage, GPA, or pass or fail. */
 function resultText(course: MyCourseRecord): string {
   if (course.result === null) {
     return 'Not published'
@@ -140,12 +139,6 @@ function FacultyProfile({ faculty }: { faculty: FacultyPart }) {
   )
 }
 
-/**
- * The signed-in person's own official academic profile, at /academic/profile: for a student, their program,
- * department, where they study now, and their semester-by-semester record with published results; for a faculty member,
- * their department and the offerings they teach. Read-only: the college keeps this data. The backend takes the account
- * from the session and decides every part.
- */
 export function AcademicProfilePage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

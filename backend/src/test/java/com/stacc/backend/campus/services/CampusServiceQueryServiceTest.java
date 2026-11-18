@@ -65,7 +65,6 @@ class CampusServiceQueryServiceTest {
             assertThat(item.serviceName()).isEqualTo("Service");
         });
         assertThat(page.totalElements()).isEqualTo(1);
-        // Reading stores nothing.
         assertThat(approvedInEngine.getStatus()).isEqualTo(CampusServiceRequestStatus.SUBMITTED);
     }
 
@@ -150,10 +149,8 @@ class CampusServiceQueryServiceTest {
         assertThat(decider.canComplete()).isFalse();
         assertThat(decider.status()).isEqualTo("SUBMITTED");
 
-        // CAMPUS_SERVICE_MANAGE alone is no approval pass.
         assertThat(service.adminRequest(CampusFixtures.approvalActor(1, "ROLE_ADMIN", "CAMPUS_SERVICE_MANAGE"), 42L)
                 .canDecide()).isFalse();
-        // Nobody decides their own request.
         assertThat(service.adminRequest(CampusFixtures.approvalActor(70, "ROLE_ADMIN", "APPROVAL_TASK_DECIDE"), 42L)
                 .canDecide()).isFalse();
     }

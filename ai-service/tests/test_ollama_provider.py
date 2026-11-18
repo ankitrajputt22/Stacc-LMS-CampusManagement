@@ -1,5 +1,3 @@
-"""The Ollama provider, against a mocked HTTP transport: no Ollama server or model is needed."""
-
 from __future__ import annotations
 
 import json

@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import com.stacc.backend.lms.outcome.BloomLevel;
 
-/** One assignment as faculty manage it. */
 public record LmsFacultyAssignmentResponse(
         @Schema(example = "9")
         Long id,

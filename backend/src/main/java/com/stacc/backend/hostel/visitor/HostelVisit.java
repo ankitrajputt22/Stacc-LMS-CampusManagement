@@ -18,11 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A visitor of a hostel resident on one day: registered ahead by the resident (EXPECTED until security records the
- * arrival) or recorded by security as a walk-in (ARRIVED at once). It moves forward only: arrived, then left; an
- * expected visit can be cancelled. Never deleted.
- */
 @Entity
 @Table(name = "hostel_visits")
 public class HostelVisit {
@@ -81,7 +76,6 @@ public class HostelVisit {
     private Instant createdAt;
 
     protected HostelVisit() {
-        // Required by JPA.
     }
 
     private HostelVisit(HostelAllocation allocation, String visitorName, String relation, Kind kind, LocalDate expectedOn, Instant now) {

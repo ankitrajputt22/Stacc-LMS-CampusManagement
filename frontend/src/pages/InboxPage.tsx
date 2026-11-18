@@ -43,7 +43,6 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   HELPDESK_REPLY: 'View ticket',
   HELPDESK_STATUS_CHANGED: 'View ticket',
   HELPDESK_ASSIGNED: 'View ticket',
-  // Approval notifications have no link until a module that uses a workflow adds its own pages.
   APPROVAL_ACTION_REQUIRED: 'View request',
   APPROVAL_APPROVED: 'View request',
   APPROVAL_REJECTED: 'View request',
@@ -56,7 +55,6 @@ const ACTION_LABELS: Record<NotificationType, string> = {
   CAMPUS_SERVICE_COMPLETED: 'View request',
 }
 
-/** Only a path inside the app is ever followed: never a full address, "//host", or "/\host". */
 function isInternalPath(path: string | null): path is string {
   return path !== null && /^\/(?![/\\])/.test(path) && !/[\s\\]/.test(path)
 }
@@ -99,7 +97,6 @@ function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className={`text-base break-words text-ink ${unread ? 'font-bold' : 'font-semibold'}`}>{item.title}</h2>
-          {/* Unread is said in words, not only by the background or the dot. */}
           <span
             className={`inline-block shrink-0 rounded-sm px-1.5 py-0.5 text-xs font-semibold ${
               unread ? 'bg-sky-100 text-portal-navy' : 'bg-success-soft text-ink'
@@ -108,7 +105,6 @@ function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
             {unread ? 'Unread' : 'Read'}
           </span>
         </div>
-        {/* Plain text: React shows it as text, never as HTML. */}
         <p className="mt-1 text-[0.95rem] leading-6 break-words whitespace-pre-line text-ink">{item.message}</p>
         <p className="mt-0.5 text-sm text-ink-muted">
           <time dateTime={item.createdAt}>{formatDateTime(item.createdAt)}</time>
@@ -138,19 +134,12 @@ function NotificationRow({ item, busy, onToggleRead, onOpen }: RowProps) {
   )
 }
 
-/**
- * The signed-in account's Inbox at /inbox: one Inbox per account, whatever roles it holds, from GET /api/v1/notifications,
- * page by page and newest first, with All and Unread. Loading it marks nothing read; only the buttons, an action link,
- * and Mark all as read change read state, and each change updates the shared unread badge without a reload. Action
- * links only ever lead inside the app, where the page checks access as usual.
- */
 export function InboxPage() {
   const { account } = useAuth()
   const hasInbox = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN'])
   const { unreadCount, refresh: refreshCount } = useUnreadCount()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  // The list is replaced while the next page loads; focus returns to the same pager button afterwards.
   const focusLater = usePendingFocus(contentRef)
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [page, setPage] = useState(0)
@@ -166,8 +155,6 @@ export function InboxPage() {
   const request = useApiRequest(load)
   const data = request.status === 'loaded' ? request.data : null
 
-  // Each list the Inbox loads asks for the count again, so the badge and the list never disagree. There is no
-  // polling: the count only changes here, after a change to read state, and when the app shell appears.
   useEffect(() => {
     if (data !== null) {
       refreshCount()
@@ -199,7 +186,6 @@ export function InboxPage() {
       const updated = item.readAt === null
         ? await markNotificationRead(item.notificationRecipientId)
         : await markNotificationUnread(item.notificationRecipientId)
-      // The row stays where it is, showing its new state, until the list is loaded again.
       setChanged((current) => ({ ...current, [updated.notificationRecipientId]: updated }))
       setAnnouncement(`${item.title}: marked as ${updated.readAt === null ? 'unread' : 'read'}.`)
       refreshCount()
@@ -214,7 +200,6 @@ export function InboxPage() {
   }
 
   function openItem(item: NotificationInboxItem) {
-    // Following the link counts as reading it. Navigation never waits for this, and a failure changes nothing.
     if (item.readAt === null) {
       markNotificationRead(item.notificationRecipientId).then(refreshCount, () => {})
     }
@@ -229,7 +214,6 @@ export function InboxPage() {
     try {
       await markAllNotificationsRead()
       setAnnouncement('All notifications marked as read.')
-      // Under Unread nothing is left, so it starts again from the first page.
       if (unreadOnly) {
         goToPage(0)
       } else {
@@ -321,7 +305,6 @@ export function InboxPage() {
         </ul>
         {data.totalPages > 1 && (
           <nav aria-label="Inbox pages" className="mt-4 flex flex-wrap items-center gap-3">
-            {/* aria-disabled rather than disabled, so focus stays on the button at either end. */}
             <ActionButton
               aria-disabled={page === 0 || undefined}
               className={pagerClasses}

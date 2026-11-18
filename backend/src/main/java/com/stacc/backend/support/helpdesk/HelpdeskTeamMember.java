@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One account's membership of a support team. Membership is configuration; tickets keep their own history. */
 @Entity
 @Table(name = "helpdesk_team_members")
 public class HelpdeskTeamMember {
@@ -34,7 +33,6 @@ public class HelpdeskTeamMember {
     private Instant createdAt;
 
     protected HelpdeskTeamMember() {
-        // Required by JPA.
     }
 
     public HelpdeskTeamMember(HelpdeskTeam team, UserAccount account, Instant createdAt) {

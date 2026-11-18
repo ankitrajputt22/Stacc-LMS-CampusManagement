@@ -33,7 +33,6 @@ function refusalText(failure: unknown, fallback: string): string | null {
   return message && status !== null && status < 500 ? message : fallback
 }
 
-/** Where a column's marks are given: the assignment's submissions, the quiz's results, or the manual item's page. */
 function columnPath(lmsCourseId: number, column: GradebookColumn): string {
   switch (column.type) {
     case 'ASSIGNMENT':
@@ -89,12 +88,6 @@ function AddItemForm({ lmsCourseId, onDone }: { lmsCourseId: number; onDone: (me
   )
 }
 
-/**
- * The course gradebook as faculty see it: every current student (by college ID, searchable) against every published
- * assignment, graded quiz, and manual item, with a total of what is graded. Columns are published to students one at a
- * time, confirmed first; nothing unpublishes. Marks are given where they belong: assignment grading, quiz results, or a
- * manual item's own page.
- */
 export function GradebookEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const gradebook = useApiQuery(queryKeys.lms.gradebook(lmsCourseId), (signal) => getGradebook(lmsCourseId, signal))

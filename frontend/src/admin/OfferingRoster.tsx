@@ -14,11 +14,6 @@ import { MasterStatus } from './MasterParts'
 import { SIGN_IN_AGAIN } from './MasterSection'
 import { statusWord } from './masterStatus'
 
-/**
- * The roster of one course offering, read-only: the offering for context, then each student's login ID and
- * enrollment status as the admin API sends them. No names or other account details are shown, and nothing can be
- * changed here.
- */
 export function OfferingRoster({ courseOfferingId }: { courseOfferingId: number | null }) {
   const request = useApiQuery(
     courseOfferingId === null ? null : queryKeys.admin.offeringRoster(courseOfferingId),

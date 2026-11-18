@@ -164,7 +164,6 @@ function FestCard({ fest, notify }: { fest: CampusFest; notify: Notify }) {
   )
 }
 
-/** Campus Management → Fests: add a fest, build its schedule from campus events, add volunteer shifts, and decide applications. */
 export function FestsAdmin() {
   const queryClient = useQueryClient()
   const fests = useApiQuery(queryKeys.engagement.allFests(), (signal) => getAllFests(signal))

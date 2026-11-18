@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/** Saved answers keep only server-rebuilt sources the student can use, stay within the quota, and are the student's own. */
 class AiSavedAnswerServiceTest {
 
     private static final long STUDENT = 11L;

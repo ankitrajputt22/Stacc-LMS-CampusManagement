@@ -14,7 +14,6 @@ import com.stacc.backend.lms.quiz.attempt.QuizAttemptState;
 import com.stacc.backend.lms.quiz.attempt.QuizResultStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A published quiz as the signed-in student sees it, with their own attempts. Never its questions or answers. */
 public record LmsStudentQuizResponse(
         Long id,
         String title,

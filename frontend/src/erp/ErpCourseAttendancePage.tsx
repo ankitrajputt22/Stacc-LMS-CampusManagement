@@ -9,7 +9,6 @@ import { Badge, Button, Card, PageHeader } from '../ui'
 import { CorrectionDialog, MedicalLeaveDialog } from './RequestDialogs'
 import { formatMomentDay } from './requestWords'
 
-/** One course's attendance: every finalized class with its topic and status, a summary, and requests. */
 export function ErpCourseAttendancePage() {
   const { courseOfferingId } = useParams()
   const attendance = useApiQuery(queryKeys.attendance.mine(), getMyAttendance)

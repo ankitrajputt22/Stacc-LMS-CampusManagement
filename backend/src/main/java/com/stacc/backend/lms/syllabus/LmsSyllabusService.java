@@ -12,12 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reads and changes course syllabi. Students read only the published version of a course the student access policy
- * allows; faculty read and change the draft of a course the faculty access policy allows. The caller always comes from
- * the access token. Changes lock the course row and then read the syllabus with a lock (which sees the latest committed
- * row, unlike a plain read after the access check), so the first saves of two faculty members make one syllabus.
- */
 @Service
 public class LmsSyllabusService {
 
@@ -39,7 +33,6 @@ public class LmsSyllabusService {
         this.clock = clock;
     }
 
-    /** The syllabus a student may read, or empty when none is published yet. A course they may not use is 404. */
     @Transactional(readOnly = true)
     public Optional<LmsSyllabus> forStudent(Long userAccountId, Long lmsCourseId) {
         if (!studentAccess.canAccessCourse(userAccountId, lmsCourseId)) {
@@ -48,14 +41,12 @@ public class LmsSyllabusService {
         return syllabi.findByLmsCourseId(lmsCourseId).filter(LmsSyllabus::isPublished);
     }
 
-    /** The syllabus of a course the faculty member teaches, draft included, or empty when none is saved yet. */
     @Transactional(readOnly = true)
     public Optional<LmsSyllabus> forFaculty(Long userAccountId, Long lmsCourseId) {
         requireFaculty(userAccountId, lmsCourseId);
         return syllabi.findByLmsCourseId(lmsCourseId);
     }
 
-    /** Saves the draft, starting the syllabus when there is none. Students keep reading the published version. */
     @Transactional
     public LmsSyllabus saveDraft(Long userAccountId, Long lmsCourseId, String content) {
         LmsCourse lmsCourse = lockedCourse(userAccountId, lmsCourseId);
@@ -67,7 +58,6 @@ public class LmsSyllabusService {
         return syllabi.save(new LmsSyllabus(lmsCourse, content, clock.instant()));
     }
 
-    /** Makes the saved draft the version students read. Without a saved draft there is nothing to publish (409). */
     @Transactional
     public LmsSyllabus publish(Long userAccountId, Long lmsCourseId) {
         lockedCourse(userAccountId, lmsCourseId);

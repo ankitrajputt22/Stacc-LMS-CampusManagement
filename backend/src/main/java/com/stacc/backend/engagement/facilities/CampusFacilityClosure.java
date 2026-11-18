@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** Days a facility is closed (end included), with the reason. New bookings on those days are refused. */
 @Entity
 @Table(name = "campus_facility_closures")
 public class CampusFacilityClosure {
@@ -40,7 +39,6 @@ public class CampusFacilityClosure {
     private Instant createdAt;
 
     protected CampusFacilityClosure() {
-        // Required by JPA.
     }
 
     public CampusFacilityClosure(CampusFacility facility, LocalDate startDate, LocalDate endDate, String reason, Instant now) {

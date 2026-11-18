@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** How many credits of one course type a program's degree needs. One row per program and type. */
 @Entity
 @Table(name = "program_credit_requirements")
 public class ProgramCreditRequirement {

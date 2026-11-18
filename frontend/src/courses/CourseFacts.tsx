@@ -6,15 +6,10 @@ type CourseFactsProps = {
     semesterNumber: number
     academicSessionCode: string
     credits: number
-    /** Shown when the card has it: a section, or null for the whole semester. */
     sectionCode?: string | null
   }
 }
 
-/**
- * The program, semester, section, session, and credits lines of a course card, exactly as the backend sent
- * them. Short spoken labels give each value its meaning; the dots are only for the eye.
- */
 export function CourseFacts({ course }: CourseFactsProps) {
   return (
     <>

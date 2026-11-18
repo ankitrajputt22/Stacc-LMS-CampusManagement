@@ -1,5 +1,3 @@
-// Fees as the API sends them (v0.16.7). Records only: payments are recorded by the accounts office.
-
 export type FeeHead = 'TUITION' | 'EXAMINATION' | 'LIBRARY' | 'LABORATORY' | 'HOSTEL' | 'MESS' | 'OTHER'
 export type PaymentMode = 'UPI' | 'BANK_TRANSFER' | 'CARD' | 'CASH' | 'CHEQUE'
 export type AdjustmentKind = 'SCHOLARSHIP' | 'REFUND'
@@ -31,7 +29,6 @@ export type FeeAdjustment = {
   decidedAt: string | null
 }
 
-/** A student's fees for one session; due is negative when more was paid than owed (credit is then refundable). */
 export type FeeLedger = {
   studentLoginId: string
   rollNumber: string | null

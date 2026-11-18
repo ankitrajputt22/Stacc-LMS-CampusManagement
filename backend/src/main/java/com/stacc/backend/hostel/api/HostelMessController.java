@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The hostel mess: residents read the week and rate meals; the hostel office and wardens manage menus and read feedback. */
 @RestController
 @Tag(name = "Hostel mess")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

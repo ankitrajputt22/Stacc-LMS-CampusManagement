@@ -7,7 +7,6 @@ import { PortalEmblem } from '../login/PortalEmblem'
 import { landingFor } from '../login/landing'
 import { SignInForm } from '../login/SignInForm'
 
-// The page the visitor first asked for, if it is a page of this app; otherwise null.
 function requestedPage(state: unknown): string | null {
   const from =
     typeof state === 'object' && state !== null
@@ -62,18 +61,12 @@ const HELP: Help[] = [
 const YEAR = new Date().getFullYear()
 const focusLight = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 
-/**
- * The public front page of Stacc at /login: one sign-in for everything (courses, records, and campus services) with
- * help for passwords, sessions, and bookmarks. The form never chooses a role; after signing in the visitor goes to the
- * page they asked for, or to the Overview.
- */
 export function LoginPage() {
   const { isAuthenticated, account } = useAuth()
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [openHelp, setOpenHelp] = useState<string | null>(null)
 
-  // Covers both a visitor who is already signed in and the moment a login succeeds.
   if (isAuthenticated) {
     return <Navigate to={requestedPage(location.state) ?? landingFor(searchParams.get('portal'), account?.roles ?? [])} replace />
   }
@@ -156,7 +149,6 @@ export function LoginPage() {
           )}
         </div>
 
-        {/* Two flat waves at the foot of the page. Decorative only. */}
         <svg aria-hidden="true" focusable="false" viewBox="0 0 1440 120" preserveAspectRatio="none" className="pointer-events-none h-20 w-full sm:h-28">
           <path d="M0 70C220 20 420 20 640 55s420 50 620 10c80-16 140-30 180-40v95H0z" fill="#1d3a66" />
           <path d="M0 100c260-40 520-35 760-10s460 30 680-5v35H0z" fill="#2a4a7a" />

@@ -4,15 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
 
-/**
- * Adaptive practice (v0.15.6): which published page to practise next, weighted to weaker pages and said in words. Not
- * started pages weigh 1, others 1 minus their mastery (at least 0.05, so a mastered page still comes up now and then).
- */
 public final class AdaptiveChoice {
 
     static final double MIN_WEIGHT = 0.05;
 
-    /** The page chosen and why, in plain words. */
     public record Choice(long topicId, String title, String reason) {
     }
 

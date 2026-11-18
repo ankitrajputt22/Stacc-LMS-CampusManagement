@@ -5,7 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One session with its whole roster, in student ID order, for faculty. */
 public record AttendanceSessionDetailResponse(
         @Schema(example = "8")
         Long sessionId,

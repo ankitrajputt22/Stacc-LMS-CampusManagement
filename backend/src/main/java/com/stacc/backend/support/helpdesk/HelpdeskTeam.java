@@ -12,7 +12,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/** A support team that categories route tickets to. Its code is fixed; a team is made inactive, never deleted. */
 @Entity
 @Table(name = "helpdesk_teams")
 public class HelpdeskTeam {
@@ -41,7 +40,6 @@ public class HelpdeskTeam {
     private Instant updatedAt;
 
     protected HelpdeskTeam() {
-        // Required by JPA.
     }
 
     public HelpdeskTeam(String code, String name) {

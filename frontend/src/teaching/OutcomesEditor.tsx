@@ -24,7 +24,6 @@ function failureText(failure: unknown): string | null {
   return status === 401 ? null : refusal(status, getApiError(failure)?.message ?? null)
 }
 
-/** A description form: add a new outcome, or correct one. Checks only the obvious; the backend decides. */
 function DescriptionForm({
   label,
   initial,
@@ -90,11 +89,6 @@ function DescriptionForm({
   )
 }
 
-/**
- * The course's learning outcomes as faculty manage them: Add outcome (the server gives the next code, CO1, CO2, …),
- * Edit the description, and Archive, confirmed first. Archived outcomes stay listed and on what they were aligned to,
- * but take no new alignments; nothing is deleted.
- */
 export function OutcomesEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const outcomes = useApiQuery(queryKeys.lms.facultyOutcomes(lmsCourseId), (signal) => getFacultyOutcomes(lmsCourseId, signal))

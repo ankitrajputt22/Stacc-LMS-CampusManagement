@@ -22,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Read-only answers about the content a faculty member manages in one LMS course. */
 @Service
 public class LmsFacultyContentQueryService {
 
@@ -48,15 +47,6 @@ public class LmsFacultyContentQueryService {
         this.materials = materials;
     }
 
-    /**
-     * One course the faculty member may use, with every module and topic that is not archived, drafts
-     * included, and each topic's study materials that are not archived, in course order. Access is
-     * decided by {@link LmsFacultyAccessService} for this course on every call. A course they may not
-     * use answers the same 404 as a course that does not exist. Archived content stays stored but is
-     * not listed.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsFacultyCourseContentResponse getCourseContent(Long userAccountId, Long lmsCourseId) {
         if (!accessService.canAccessCourse(userAccountId, lmsCourseId)) {
@@ -91,7 +81,6 @@ public class LmsFacultyContentQueryService {
                         module, topicsByModule.getOrDefault(module.getId(), List.of())))
                 .toList();
 
-        // The course details are read from the academic records every time. The LMS keeps no copy.
         CourseOffering courseOffering = lmsCourse.getCourseOffering();
         Course course = courseOffering.getCourse();
         Semester semester = courseOffering.getSemester();
@@ -109,14 +98,6 @@ public class LmsFacultyContentQueryService {
                 lmsCourse.getWelcomeMessage());
     }
 
-    /**
-     * One page (a topic) that is not archived, drafts included, of a course the faculty member may use, with the pages
-     * before and after it in course order. The course is found from the stored page, never from the client, and the
-     * page is found in exactly what {@link #getCourseContent} lists, so the same rules decide. A page that is missing,
-     * archived, in an archived module, or in a course they do not teach answers the same 404.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsFacultyPageResponse getPage(Long userAccountId, Long pageId) {
         Long lmsCourseId = topics.findWithModuleById(pageId)
@@ -150,12 +131,6 @@ public class LmsFacultyContentQueryService {
         throw pageUnavailable();
     }
 
-    /**
-     * Every file that is not archived, drafts included, of a course the faculty member may use, in course order, with
-     * the page and module it is on. It is taken from exactly what {@link #getCourseContent} lists.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsFacultyCourseFilesResponse getCourseFiles(Long userAccountId, Long lmsCourseId) {
         LmsFacultyCourseContentResponse course = getCourseContent(userAccountId, lmsCourseId);

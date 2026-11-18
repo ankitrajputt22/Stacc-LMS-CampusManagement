@@ -4,7 +4,6 @@ import java.time.ZoneId;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** The college's own time zone, in which facility opening hours and closed days are read. */
 @ConfigurationProperties(prefix = "stacc.college")
 public record EngagementProperties(String timeZone) {
 

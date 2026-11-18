@@ -1,10 +1,3 @@
-"""Builds a course index from the published sources the backend sends.
-
-A source that cannot be read, is too large, or has no text is skipped and counted; the course is
-indexed from the rest. Only when no source yields any text does the whole build fail, and then the
-live index stays as it was.
-"""
-
 from __future__ import annotations
 
 import base64
@@ -44,7 +37,6 @@ class IndexBuilder:
         size = self._settings.embedding_batch_size
         for start in range(0, len(prepared.chunks), size):
             batch = prepared.chunks[start:start + size]
-            # The title travels with each chunk, so a question naming the topic finds it.
             vectors.extend(self._embeddings.embed([
                 f"{chunk.title}\n{chunk.heading}\n{chunk.text}" if chunk.heading else f"{chunk.title}\n{chunk.text}"
                 for chunk in batch]))
@@ -93,16 +85,13 @@ class IndexBuilder:
         if source.sourceType.carries_text:
             return split_headings(source.text[:max_chars])
         try:
-            # Checked before decoding: base64 text is a third longer than the file.
             if len(source.contentBase64) > (self._settings.max_source_bytes * 4) // 3 + 4:
                 raise ExtractionError("too large")
             data = base64.b64decode(source.contentBase64, validate=True)
             segments = extract(source.fileType, data, max_chars)
             if source.fileType is FileType.TXT:
-                # Plain-text notes often use Markdown headings too.
                 return [part for segment in segments for part in split_headings(segment.text)]
             return segments
         except (ExtractionError, binascii.Error, ValueError) as error:
-            # Only the kind of problem is logged, never the file name or its text.
             log.info("Skipped a %s source: %s", source.fileType, type(error).__name__)
             return []

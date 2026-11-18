@@ -8,10 +8,6 @@ import java.util.List;
 import com.stacc.backend.academic.calendar.AcademicCalendarEventResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One account's calendar for a date range. Official events are dates; assignment deadlines are moments, chosen by
- * the requested time zone. Each deadline list is filled only for a role the account holds, and is empty otherwise.
- */
 public record MyCalendarResponse(
         @Schema(example = "2026-10-01")
         LocalDate fromDate,
@@ -34,7 +30,6 @@ public record MyCalendarResponse(
                 + "and can open, due in the range. Empty for other accounts.")
         List<FacultyAssignmentDeadline> facultyAssignmentDeadlines) {
 
-    /** A deadline of a student's own course. Nothing about submissions or grades is included. */
     public record StudentAssignmentDeadline(
             @Schema(example = "77") Long assignmentId,
             @Schema(example = "42") Long lmsCourseId,
@@ -45,7 +40,6 @@ public record MyCalendarResponse(
             @Schema(example = "20.00") BigDecimal maxMarks) {
     }
 
-    /** A deadline of a course the faculty member teaches, draft or published. */
     public record FacultyAssignmentDeadline(
             @Schema(example = "77") Long assignmentId,
             @Schema(example = "42") Long lmsCourseId,

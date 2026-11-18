@@ -24,10 +24,6 @@ function refusal(error: unknown, failed: string): string | null {
   return message && status !== null && status !== 404 ? message : failed
 }
 
-/**
- * Several sets from one blueprint (v0.14.4): two to four draft papers, by default with no question in two sets. Nothing is
- * saved unless every set can be built; the backend names the set and row that falls short.
- */
 export function PaperSetsForm({ blueprintId, onDone }: { blueprintId: number; onDone: (message: string) => void }) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
@@ -74,10 +70,6 @@ export function PaperSetsForm({ blueprintId, onDone }: { blueprintId: number; on
   )
 }
 
-/**
- * What the bank has for each row (v0.14.4), and, for rows it is short of, Draft the missing questions with AI: they go
- * into the bank as Needs review with the row's labels, to be reviewed before a paper can use them.
- */
 export function BlueprintShortfall({ lmsCourseId, blueprintId, onClose }: { lmsCourseId: number; blueprintId: number; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [rows, setRows] = useState<BlueprintRowShortfall[] | null>(null)

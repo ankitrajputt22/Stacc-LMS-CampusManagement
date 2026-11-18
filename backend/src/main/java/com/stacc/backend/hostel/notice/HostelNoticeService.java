@@ -20,12 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Hostel notices. The hostel office manages notices of every hostel; a warden only those of their own hostels (decided
- * by {@link HostelWardenService#isWardenOf}); any other hostel answers 404. Residents read the published notices of
- * their current hostel that reach their block. Publishing an emergency notice for the first time tells every resident
- * it reaches, once, under the notice's row lock.
- */
 @Service
 @Transactional
 public class HostelNoticeService {
@@ -33,7 +27,6 @@ public class HostelNoticeService {
     static final String NOT_FOUND = "Notice not found.";
     static final String HOSTEL_NOT_FOUND = "Hostel not found.";
 
-    /** Who is managing: the account, and whether it acts as the hostel office (admin) or as a warden. */
     public record Manager(Long accountId, boolean hostelOffice) {
     }
 
@@ -85,7 +78,6 @@ public class HostelNoticeService {
         return NoticeView.of(notices.saveAndFlush(notice));
     }
 
-    /** Publishes a notice; the first publication of an emergency notice tells every resident it reaches. */
     public NoticeView publish(Manager manager, Long noticeId) {
         HostelNotice notice = locked(manager, noticeId);
         boolean first = valid(() -> notice.publish(clock.instant()));
@@ -109,7 +101,6 @@ public class HostelNoticeService {
         return NoticeView.of(notices.saveAndFlush(notice));
     }
 
-    /** The published notices of the resident's current hostel that reach their block; none without a bed. */
     @Transactional(readOnly = true)
     public List<NoticeView> forResident(Long accountId) {
         Optional<HostelAllocation> allocation = allocations.findActiveForStudentAccount(accountId);

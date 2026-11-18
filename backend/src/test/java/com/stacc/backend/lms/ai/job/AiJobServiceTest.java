@@ -20,7 +20,6 @@ import com.stacc.backend.lms.ai.teacher.AiTeacherKnowledge;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/** The worker runs a claimed job and records a safe result or the refusal's own message. */
 class AiJobServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

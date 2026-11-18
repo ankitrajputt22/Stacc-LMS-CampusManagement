@@ -8,7 +8,6 @@ import com.stacc.backend.auth.account.UserAccount;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The head of the requesting student's department, by the one rule in {@link DepartmentHeadResolver}. */
 @Component
 public class StudentDepartmentHeadApprover implements ApproverRelationshipResolver {
 

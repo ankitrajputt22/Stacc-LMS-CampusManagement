@@ -34,15 +34,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Calls the real route through Spring Security. The query service is a stand-in, so these tests
- * are about who gets in and what is sent back. Which courses a student gets is tested separately.
- */
 class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
 
     private static final String MY_COURSES = "/api/v1/lms/my-courses";
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-STUDENT-1";
     private static final long ACCOUNT_ID = 12;
 
@@ -207,7 +202,6 @@ class LmsStudentCourseControllerTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(student, "id", ACCOUNT_ID);
         student.assignRole(studentRole);
 
-        // A token issued before the role held the permission does not carry it.
         UserAccount signedInEarlier = new UserAccount("TEST-STUDENT-2", "example-hash-value");
         ReflectionTestUtils.setField(signedInEarlier, "id", 13L);
         signedInEarlier.assignRole(new Role(RoleName.STUDENT));

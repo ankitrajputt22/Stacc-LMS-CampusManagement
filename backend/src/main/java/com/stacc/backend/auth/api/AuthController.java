@@ -27,10 +27,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The one college sign-in, the current session, and signing out. A browser gets its token in the HttpOnly session
- * cookie and never sees it; signing out ends the session on the server, so the token stops working everywhere at once.
- */
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication")

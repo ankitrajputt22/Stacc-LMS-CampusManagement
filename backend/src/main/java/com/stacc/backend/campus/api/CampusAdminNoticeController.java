@@ -28,10 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admins' campus notices: drafts, corrections, publishing, and archiving. Every route needs the admin role and
- * CAMPUS_NOTICE_MANAGE. There is no delete, restore, or scheduling.
- */
 @RestController
 @RequestMapping("/api/v1/campus/admin/notices")
 @Tag(name = "Campus admin")

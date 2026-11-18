@@ -34,7 +34,6 @@ function Author({ loginId, kind }: { loginId: string; kind: AuthorKind }) {
   )
 }
 
-/** Report a post: a reason, then Send report or Cancel. The faculty see the report without the reporter. */
 function ReportForm({ what, onSend, onCancel }: { what: string; onSend: (reason: string) => Promise<void>; onCancel: () => void }) {
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -79,7 +78,6 @@ function ReportForm({ what, onSend, onCancel }: { what: string; onSend: (reason:
   )
 }
 
-/** The course's open reports for its faculty: each with Hide post and Dismiss, which resolve every report of that post. */
 function ReportsCard({ lmsCourseId, basePath }: { lmsCourseId: number; basePath: string }) {
   const queryClient = useQueryClient()
   const reports = useApiQuery(queryKeys.lms.discussionReports(lmsCourseId), (signal) => getDiscussionReports(lmsCourseId, signal))
@@ -149,7 +147,6 @@ function ReportsCard({ lmsCourseId, basePath }: { lmsCourseId: number; basePath:
   )
 }
 
-/** The course's discussions: pinned first, then the most recently active, with Start a discussion. */
 export function DiscussionBoard({ side, lmsCourseId, basePath }: { side: CourseSide; lmsCourseId: number; basePath: string }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -211,7 +208,6 @@ export function DiscussionBoard({ side, lmsCourseId, basePath }: { side: CourseS
   )
 }
 
-/** One discussion with its replies, Reply, Accept as answer (asker or faculty), and Pin (faculty). */
 export function DiscussionThreadView({
   side,
   lmsCourseId,
@@ -228,7 +224,6 @@ export function DiscussionThreadView({
   const thread = useApiQuery(key, (signal) => getDiscussion(side, lmsCourseId, threadId, signal))
   const [error, setError] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState('')
-  // 0 reports the thread itself; a reply ID reports that reply.
   const [reporting, setReporting] = useState<number | null>(null)
 
   async function changed(message: string) {

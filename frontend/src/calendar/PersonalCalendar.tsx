@@ -20,7 +20,6 @@ function refusal(status: number | null, apiMessage: string | null, fallback: str
   return apiMessage && status !== null && status < 500 ? apiMessage : fallback
 }
 
-/** The month's personal entries with Add and a confirmed Remove. Only the owner ever sees them. */
 export function PersonalEntries({ events, monthStart }: { events: PersonalCalendarEvent[]; monthStart: string }) {
   const queryClient = useQueryClient()
   const [adding, setAdding] = useState(false)
@@ -125,15 +124,10 @@ export function PersonalEntries({ events, monthStart }: { events: PersonalCalend
   )
 }
 
-/** The full address of a feed path on the API's own host. */
 function feedAddress(feedPath: string): string {
   return new URL(feedPath, new URL(apiBaseUrl, window.location.origin)).toString()
 }
 
-/**
- * The private subscription link: make one (shown once, with Copy), replace it, or revoke it, confirmed first. Calendar
- * apps read the link without signing in, so it must be kept private; revoking stops it at once.
- */
 export function CalendarSubscription() {
   const queryClient = useQueryClient()
   const status = useApiQuery(queryKeys.calendar.feed(), (signal) => getCalendarFeed(signal))

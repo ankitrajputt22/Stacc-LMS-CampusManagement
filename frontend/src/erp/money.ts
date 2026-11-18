@@ -2,7 +2,6 @@ import type { FeeHead, PaymentMode } from '../types/fees'
 
 const RUPEES = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2, minimumFractionDigits: 0 })
 
-/** Rupees with Indian digit grouping, such as ₹1,12,500. */
 export function rupees(amount: number): string {
   return RUPEES.format(Number(amount))
 }

@@ -12,7 +12,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Accepting two volunteers at once for a shift with one place accepts exactly one. A fest of its own. */
 class FestVolunteerMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

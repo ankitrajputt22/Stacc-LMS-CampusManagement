@@ -2,7 +2,6 @@ package com.stacc.backend.search;
 
 import java.util.Set;
 
-/** Actors and contexts for the search tests. */
 final class SearchTestSupport {
 
     private SearchTestSupport() {

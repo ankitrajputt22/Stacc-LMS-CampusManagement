@@ -26,7 +26,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 
-/** A course needs only its owning department: no offering, semester, teacher, or LMS course. */
 class CourseManagementServiceTest {
 
     private final CourseRepository courses = mock(CourseRepository.class);

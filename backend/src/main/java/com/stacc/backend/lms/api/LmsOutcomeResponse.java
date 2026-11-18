@@ -4,7 +4,6 @@ import com.stacc.backend.lms.outcome.LmsCourseOutcome;
 import com.stacc.backend.lms.outcome.LmsOutcomeStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One course learning outcome. Plain text, never HTML. */
 public record LmsOutcomeResponse(
         @Schema(example = "12")
         Long id,

@@ -7,7 +7,6 @@ import com.stacc.backend.lms.announcement.LmsAnnouncement;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One published announcement, as a student sees it. Everything a student receives is published. */
 public record LmsCourseAnnouncementResponse(
         @Schema(example = "5")
         Long id,

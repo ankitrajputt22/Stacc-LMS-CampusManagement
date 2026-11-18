@@ -18,7 +18,6 @@ function Detail({ term, children }: { term: string; children: React.ReactNode })
   )
 }
 
-/** One request's details with Approve (and new marks for a revaluation) and Reject with a required comment. */
 function Review({ request, onClose }: { request: StudentRequest; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [comment, setComment] = useState('')
@@ -98,7 +97,6 @@ function Review({ request, onClose }: { request: StudentRequest; onClose: () => 
   )
 }
 
-/** The ERP office's queue of student requests: filter, review, and decide each once. */
 export function ErpRequestsPage() {
   const [kind, setKind] = useState<RequestKind | ''>('')
   const [status, setStatus] = useState<RequestStatus | ''>('')

@@ -1,7 +1,6 @@
 import type { RubricDraft } from '../teaching/rubricDraft'
 import type { AiRubricSuggestion } from '../types/ai'
 
-/** The suggestion as the rubric form's draft: the teacher edits and saves it like any rubric. */
 export function rubricDraftOf(suggestion: AiRubricSuggestion): RubricDraft {
   return {
     title: suggestion.title,

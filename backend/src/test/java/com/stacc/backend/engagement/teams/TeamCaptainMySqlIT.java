@@ -12,7 +12,6 @@ import com.stacc.backend.engagement.groups.CampusGroupService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Naming two captains at once leaves exactly one: the team row lock orders the hand-overs. A group of its own. */
 class TeamCaptainMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

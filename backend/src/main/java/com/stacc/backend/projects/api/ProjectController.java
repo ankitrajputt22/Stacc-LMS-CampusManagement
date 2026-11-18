@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Student projects: one team model with join requests decided by the lead and faculty mentors who accept an invitation. */
 @RestController
 @RequestMapping("/api/v1/projects")
 @Tag(name = "Projects")

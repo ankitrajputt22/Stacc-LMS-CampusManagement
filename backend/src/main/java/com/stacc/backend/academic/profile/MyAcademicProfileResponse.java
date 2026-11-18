@@ -6,11 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The signed-in person's own academic profile: a part for each of the student and faculty roles the account holds
- * with a profile behind it, and null for the others. Only official data, and only published results; never GPA, ranks,
- * or pass or fail.
- */
 public record MyAcademicProfileResponse(
         @Schema(description = "Null when the account holds no student role or has no student profile.") StudentPart student,
         @Schema(description = "Null when the account holds no faculty role or has no faculty profile.") FacultyPart faculty) {

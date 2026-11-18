@@ -1,4 +1,3 @@
-/** Percentages come from the backend; null means none to show (nothing yet, or a group under five). */
 export type StudentAnalytics = {
   overallAttendancePercent: number | null
   attendance: { courseCode: string; sessions: number; present: number; presentPercent: number | null }[]
@@ -57,9 +56,6 @@ export type ReportExport = {
   expiresAt: string
 }
 
-// --- Department analytics (DepartmentAnalyticsService): counts for the current session; attendance only for groups of
-// at least five (null otherwise). No student is named.
-
 export type DepartmentProgramLine = { code: string; name: string; students: number }
 export type DepartmentOfferingLine = {
   courseOfferingId: number
@@ -79,8 +75,6 @@ export type DepartmentAnalytics = {
   offerings: DepartmentOfferingLine[]
   note: string
 }
-
-// --- Area analytics (AreaAnalyticsService): a section is null when the account lacks that area's permission.
 
 export type AreaAnalytics = {
   hostel: { bedsInService: number; bedsUnderMaintenance: number; occupiedBeds: number; occupancyPercent: number | null } | null

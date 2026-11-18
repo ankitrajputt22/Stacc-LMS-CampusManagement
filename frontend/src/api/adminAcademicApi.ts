@@ -21,9 +21,6 @@ import type {
 } from '../types/admin'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api. Every route needs the admin role and an academic-master permission;
-// the backend checks both on every request. The record being edited is always named by the URL, never the body.
-
 const ROOT = '/admin/academic'
 
 async function list<T>(path: string, signal?: AbortSignal): Promise<T[]> {
@@ -54,7 +51,6 @@ export const createAcademicSession = (body: AcademicSessionCreate) => create<Adm
 export const updateAcademicSession = (id: number, body: AcademicSessionUpdate) =>
   update<AdminAcademicSession>('sessions', id, body)
 
-/** Makes this the college's current session; the previous one stops being current. */
 export async function makeAcademicSessionCurrent(id: number): Promise<AdminAcademicSession> {
   const response = await apiClient.patch<AdminAcademicSession>(`${ROOT}/sessions/${id}/current`)
   return response.data
@@ -64,7 +60,6 @@ export const getSemesters = (signal?: AbortSignal) => list<AdminSemester>('semes
 export const createSemester = (body: SemesterCreate) => create<AdminSemester>('semesters', body)
 export const updateSemester = (id: number, body: SemesterUpdate) => update<AdminSemester>('semesters', id, body)
 
-/** Sets or clears when students may register for the semester's offerings and until when they may drop one. */
 export async function updateSemesterRegistration(id: number, body: SemesterRegistrationUpdate): Promise<AdminSemester> {
   const response = await apiClient.put<AdminSemester>(`${ROOT}/semesters/${id}/registration`, body)
   return response.data
@@ -74,7 +69,6 @@ export const getCourses = (signal?: AbortSignal) => list<AdminCourse>('courses',
 export const createCourse = (body: CourseCreate) => create<AdminCourse>('courses', body)
 export const updateCourse = (id: number, body: CourseUpdate) => update<AdminCourse>('courses', id, body)
 
-/** Every section, or one semester's when a semester ID is given. */
 export async function getSections(semesterId?: number, signal?: AbortSignal): Promise<AdminSection[]> {
   const response = await apiClient.get<AdminSection[]>(`${ROOT}/sections`, { params: { semesterId }, signal })
   return response.data

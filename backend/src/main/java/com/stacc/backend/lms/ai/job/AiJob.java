@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A background AI job: queued, running, then succeeded or failed once, with a short safe result or error. Kept. */
 @Entity
 @Table(name = "ai_jobs")
 public class AiJob {

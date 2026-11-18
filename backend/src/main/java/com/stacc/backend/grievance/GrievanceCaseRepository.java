@@ -15,7 +15,6 @@ public interface GrievanceCaseRepository extends JpaRepository<GrievanceCase, Lo
     @Query("select c from GrievanceCase c join fetch c.category where c.complainant.id = :accountId order by c.submittedAt desc, c.id desc")
     List<GrievanceCase> findForComplainant(@Param("accountId") Long accountId);
 
-    /** Cases of these categories, other than the reader's own complaints. */
     @Query("""
             select c from GrievanceCase c join fetch c.category where c.category.id in :categoryIds and c.complainant.id <> :accountId
             order by c.submittedAt desc, c.id desc

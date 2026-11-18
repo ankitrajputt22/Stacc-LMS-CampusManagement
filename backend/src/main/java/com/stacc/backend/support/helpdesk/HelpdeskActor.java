@@ -6,10 +6,6 @@ import java.util.Set;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
-/**
- * Who is acting on the helpdesk: the account in the access token, whether it holds the admin role, and which helpdesk
- * permissions it has. It is read from the token only, never from anything the client sends.
- */
 public record HelpdeskActor(Long accountId, boolean admin, boolean viewOwn, boolean replyOwn, boolean viewAll,
         boolean replyAll, boolean manage, boolean teamWork) {
 

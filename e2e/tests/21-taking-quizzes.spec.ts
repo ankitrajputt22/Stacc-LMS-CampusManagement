@@ -28,7 +28,6 @@ test('a student takes a timed quiz, with answers saved as they go, and submits i
   await expect(questions.getByText('Saved', { exact: true })).toHaveCount(4)
   await expect(page.getByText('4 of 4 questions answered.')).toBeVisible()
 
-  // The saved answers come back after a reload, from the server.
   await page.reload()
   await expect(questions.getByRole('radio', { name: 'Queue', exact: true })).toBeChecked()
   await expect(questions.getByLabel('Answer to question 4')).toHaveValue('When items are often inserted or removed in the middle.')

@@ -24,10 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Faculty AI tools for a course the signed-in faculty member teaches, checked with the faculty access policy on every
- * request. A course they may not use answers the same 404 as a missing one.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty/courses/{lmsCourseId}/ai")
 @Tag(name = "LMS AI teaching tools")

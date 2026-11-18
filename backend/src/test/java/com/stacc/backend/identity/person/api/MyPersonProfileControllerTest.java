@@ -56,7 +56,6 @@ class MyPersonProfileControllerTest extends DatabaseFreeApiTest {
                     .andExpect(jsonPath("$.displayName").value("Aarav"))
                     .andExpect(jsonPath("$.fullName").value("Aarav Sharma"));
         }
-        // The account came from the token, never from the accountId parameter.
         verify(profiles, org.mockito.Mockito.times(4)).myProfile(7L);
     }
 

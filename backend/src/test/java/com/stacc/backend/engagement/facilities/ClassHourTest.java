@@ -10,7 +10,6 @@ import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
-/** Class hours need a day, a time that ends after it starts, and a name; they block overlapping times only. */
 class ClassHourTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

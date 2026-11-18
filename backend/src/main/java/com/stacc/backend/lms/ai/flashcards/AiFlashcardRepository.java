@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface AiFlashcardRepository extends JpaRepository<AiFlashcard, Long> {
 
-    /** A card of the student's set in the course, locked for a review, so two reviews never lose one another's update. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select card from AiFlashcard card join fetch card.set set where card.id = :cardId and set.id = :setId"
             + " and set.lmsCourseId = :lmsCourseId and set.userAccountId = :accountId")

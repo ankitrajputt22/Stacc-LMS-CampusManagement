@@ -11,10 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Every role in the code has its row, and the staff roles hold only what every account needs plus exactly the
- * permissions their features have given them so far (approval steps for HOD, support team work for the support roles).
- */
 class StaffRolesMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

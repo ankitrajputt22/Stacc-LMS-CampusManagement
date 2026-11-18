@@ -19,10 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Clubs and sports groups: admins create and edit groups and name officers (an ADVISOR must hold FACULTY); people join by
- * the group's policy and leave; officers accept or refuse requests to join. The person always comes from the token.
- */
 @Service
 @Transactional
 public class CampusGroupService {
@@ -73,8 +69,6 @@ public class CampusGroupService {
                 })
                 .toList();
     }
-
-    // --- Admin
 
     public GroupView create(String code, String name, CampusGroup.Kind kind, String description, CampusGroup.JoinPolicy policy) {
         CampusGroup group;
@@ -127,9 +121,6 @@ public class CampusGroupService {
         return view(officer.getGroup().getId(), null);
     }
 
-    // --- Members
-
-    /** Joins at once for an OPEN group, asks for an APPROVAL group, and is refused for a CLOSED or inactive one. */
     public GroupView join(Long accountId, Long groupId) {
         CampusGroup group = groups.findByIdForUpdate(groupId == null ? -1L : groupId).filter(CampusGroup::isActive)
                 .orElseThrow(CampusGroupService::missing);
@@ -150,7 +141,6 @@ public class CampusGroupService {
         return view(groupId, accountId);
     }
 
-    /** The current members and requests of a group, for its officers and admins. */
     @Transactional(readOnly = true)
     public List<MemberView> members(Long accountId, boolean admin, Long groupId) {
         requireOfficerOrAdmin(accountId, admin, groupId);
@@ -176,7 +166,6 @@ public class CampusGroupService {
         return officers.isOfficer(groupId, accountId);
     }
 
-    /** The current advisor of a group, for {@link ApproverRelationship#GROUP_ADVISOR}. */
     @Transactional(readOnly = true)
     public Optional<Long> advisorOf(Long groupId) {
         return officers.findAdvisors(groupId).stream().map(o -> o.getAccount().getId()).findFirst();

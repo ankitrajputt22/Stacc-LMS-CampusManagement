@@ -26,13 +26,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/**
- * Signs in through the authentication manager exactly as the future sign-in endpoint will,
- * with the account repository replaced by a stand-in so no database is needed.
- */
 class AccountAuthenticationTest {
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "EMP1024";
     private static final String PASSWORD = "TestPassword123!";
     private static final String WRONG_PASSWORD = "WrongPassword123!";

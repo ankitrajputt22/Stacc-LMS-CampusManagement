@@ -16,7 +16,6 @@ import com.stacc.backend.lms.quiz.attempt.LmsQuizAttempt;
 import com.stacc.backend.lms.quiz.attempt.LmsQuizAttemptRepository;
 import org.junit.jupiter.api.Test;
 
-/** AI pauses only while a graded quiz attempt of the course still takes answers. */
 class AiQuizPauseTest {
 
     private static final Instant NOW = Instant.parse("2026-11-16T05:00:00Z");

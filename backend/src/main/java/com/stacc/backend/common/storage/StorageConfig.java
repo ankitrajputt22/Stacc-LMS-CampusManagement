@@ -13,8 +13,6 @@ public class StorageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageConfig.class);
 
-    // Creating the client does not contact the server, so the application starts even when storage is
-    // down. Without credentials every storage call fails, and uploads and downloads say so.
     @Bean
     MinioClient minioClient(StorageProperties properties) {
         MinioClient.Builder builder = MinioClient.builder().endpoint(properties.endpoint());

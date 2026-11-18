@@ -13,29 +13,16 @@ import org.springframework.data.repository.query.Param;
 
 public interface CourseOfferingRepository extends JpaRepository<CourseOffering, Long> {
 
-    /**
-     * One offering, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Changing who teaches it takes this
-     * lock, so the offering never ends up with two active primary faculty members.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select offering from CourseOffering offering where offering.id = :courseOfferingId")
     Optional<CourseOffering> findByIdForUpdate(@Param("courseOfferingId") Long courseOfferingId);
 
-    /** The offering of a course for the whole semester, without a section, if there is one. */
     Optional<CourseOffering> findByCourseIdAndSemesterIdAndSectionIsNull(Long courseId, Long semesterId);
 
-    /** The offering of a course for one section of a semester, if there is one. */
     Optional<CourseOffering> findByCourseIdAndSemesterIdAndSectionId(Long courseId, Long semesterId, Long sectionId);
 
-    /** Whether a course has any offering for a section of this semester. */
     boolean existsByCourseIdAndSemesterIdAndSectionIsNotNull(Long courseId, Long semesterId);
 
-    /**
-     * Course offerings with their course, semester, program, and academic session, in one query, narrowed by any of
-     * the given IDs that are not null. The latest session comes first, then program code, semester number, and
-     * course code. The admin list asks for every row ({@code Pageable.unpaged()}); a preview asks for the first page,
-     * in the same order.
-     */
     @Query("""
             select offering
             from CourseOffering offering
@@ -70,10 +57,6 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
             """)
     Optional<CourseOffering> findWithContextById(@Param("courseOfferingId") Long courseOfferingId);
 
-    /**
-     * Search: course offerings, whatever their status, whose course code or name, program code, or academic session
-     * code contains the text, with the course, semester, program, and session loaded in the same query.
-     */
     @Query(value = """
             select offering
             from CourseOffering offering
@@ -102,7 +85,6 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     Page<CourseOffering> search(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
 
-    /** Reports: how many offerings {@link #findAllWithContext} lists for these filters (no course filter). */
     @Query("""
             select count(offering)
             from CourseOffering offering

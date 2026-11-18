@@ -10,7 +10,6 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up academic masters for the admin tests, with IDs set the way the database would. */
 final class MasterFixtures {
 
     private MasterFixtures() {
@@ -41,7 +40,6 @@ final class MasterFixtures {
         return withId(new Course(department, code, "Course " + code, new BigDecimal(credits)), id);
     }
 
-    /** Answers a save the way the database would: a new record gets the next ID. */
     static <T> T saved(T entity, long id) {
         if (ReflectionTestUtils.getField(entity, "id") == null) {
             ReflectionTestUtils.setField(entity, "id", id);

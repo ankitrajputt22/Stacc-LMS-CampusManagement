@@ -13,10 +13,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 
-/**
- * A moment a class can be recorded as held: between the years 2000 and 9999, so it is a real date the database
- * can store. A missing moment is left to {@code @NotNull}.
- */
 @Documented
 @Constraint(validatedBy = SupportedHeldAt.Validator.class)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})

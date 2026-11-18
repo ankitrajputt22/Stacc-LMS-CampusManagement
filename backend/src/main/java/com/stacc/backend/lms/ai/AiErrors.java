@@ -3,7 +3,6 @@ package com.stacc.backend.lms.ai;
 import com.stacc.backend.common.error.ApiException;
 import org.springframework.http.HttpStatus;
 
-/** The client-safe answers to AI failures. They never name the AI service, model, host, or index. */
 public final class AiErrors {
 
     public static final String UNAVAILABLE = "AI learning features are temporarily unavailable.";
@@ -23,7 +22,6 @@ public final class AiErrors {
         return new ApiException(HttpStatus.CONFLICT, NO_CONTENT);
     }
 
-    /** The API answer for a failed call; {@code notReadyMessage} is the student or faculty wording for 409. */
     public static ApiException of(AiServiceException exception, String notReadyMessage) {
         return switch (exception.reason()) {
             case DISABLED, UNAVAILABLE -> unavailable();
@@ -33,7 +31,6 @@ public final class AiErrors {
         };
     }
 
-    /** The fixed message stored as a failed refresh's last error and shown to faculty. */
     public static String refreshFailure(AiServiceException.Reason reason) {
         return switch (reason) {
             case DISABLED, UNAVAILABLE -> "The AI service was unavailable.";

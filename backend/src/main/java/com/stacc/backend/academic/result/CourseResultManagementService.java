@@ -20,15 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty record and publish official course results here. Every action starts from the signed-in account and
- * checks {@link FacultyTeachingAccessService} for the course offering in the route; the enrollment must belong to
- * that offering, so an enrollment ID alone never gives access. The acting faculty profile comes from that check. An
- * offering or enrollment the caller may not use answers the same 404 as one that does not exist. No LMS data is
- * read or changed, and nothing is calculated from LMS grades or attendance.
- *
- * <p>Results are never deleted or unpublished.
- */
 @Service
 @Transactional
 public class CourseResultManagementService {
@@ -64,17 +55,6 @@ public class CourseResultManagementService {
         this.notifications = notifications;
     }
 
-    /**
-     * Creates the enrollment's draft result, edits its draft, or corrects its published result, which stays
-     * published with its first publication time. A new result needs an enrolled or completed enrollment; an existing
-     * one is kept and can still be corrected whatever happened to the enrollment since. The acting faculty profile
-     * becomes the one that recorded it.
-     *
-     * <p>The enrollment row is locked first and the result is read with a lock, so two saves of the same enrollment
-     * take turns and its result is created once; a unique constraint backs this up.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public CourseResult save(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId, BigDecimal marksObtained,
             BigDecimal maxMarks, String gradeCode, String remarks) {
         return save(userAccountId, courseOfferingId, courseEnrollmentId, marksObtained, maxMarks, gradeCode, remarks, null, null, null, null);
@@ -84,11 +64,6 @@ public class CourseResultManagementService {
     static final String SPLIT_OVER = "A part's marks cannot exceed its maximum.";
     static final String SPLIT_SUM = "The internal and external marks must add up to the totals.";
 
-    /**
-     * Saves a result as {@link #save(Long, Long, Long, BigDecimal, BigDecimal, String, String)} does, with the marks split
-     * into internal and external parts (v0.16.3): all four parts or none, each within its maximum, and adding up to the
-     * totals. Saving without parts clears an earlier split.
-     */
     public CourseResult save(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId, BigDecimal marksObtained,
             BigDecimal maxMarks, String gradeCode, String remarks, BigDecimal internalMarks, BigDecimal internalMax,
             BigDecimal externalMarks, BigDecimal externalMax) {
@@ -126,8 +101,6 @@ public class CourseResultManagementService {
                     || !Objects.equals(result.getRemarks(), CourseResult.remarksOrNull(remarks));
             result.record(teaching.getFacultyProfile(), marksObtained, maxMarks, gradeCode, remarks);
             CourseResult saved = results.saveAndFlush(result);
-            // A student who can see the result hears about a real correction; a draft, or a save that changes
-            // nothing, tells nobody.
             if (saved.isPublished() && changed) {
                 notify(saved, NotificationType.RESULT_UPDATED, "Result updated", "Your result for %s was updated.");
             }
@@ -141,10 +114,6 @@ public class CourseResultManagementService {
                 new CourseResult(enrollment, teaching.getFacultyProfile(), marksObtained, maxMarks, gradeCode, remarks));
     }
 
-    /**
-     * Publishes the enrollment's saved result, so the student sees it. Publishing a published result changes nothing
-     * and keeps its first publication time. Nothing is created when there is no result yet.
-     */
     public CourseResult publish(Long userAccountId, Long courseOfferingId, Long courseEnrollmentId) {
         if (!teachingAccess.canTeachCourseOffering(userAccountId, courseOfferingId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE);
@@ -161,7 +130,6 @@ public class CourseResultManagementService {
         return saved;
     }
 
-    // The student of the result's own enrollment, found on the server. The result stays the source of truth.
     private void notify(CourseResult result, NotificationType type, String title, String message) {
         CourseEnrollment enrollment = result.getCourseEnrollment();
         Course course = enrollment.getCourseOffering().getCourse();
@@ -171,7 +139,6 @@ public class CourseResultManagementService {
                 result.getId(), "/academic/results"), student);
     }
 
-    // The enrollment must exist and belong to the offering in the route, which the caller teaches.
     private CourseEnrollment enrollmentOf(Long courseOfferingId, Long courseEnrollmentId, boolean lock) {
         Optional<CourseEnrollment> enrollment = courseEnrollmentId == null
                 ? Optional.empty()
@@ -181,7 +148,6 @@ public class CourseResultManagementService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ENROLLMENT_UNAVAILABLE));
     }
 
-    // Clear messages for the rules the entity enforces, checked before anything is changed.
     private static void requireValid(BigDecimal marksObtained, BigDecimal maxMarks, String gradeCode, String remarks) {
         if (marksObtained == null || maxMarks == null) {
             throw badRequest(MARKS_REQUIRED);

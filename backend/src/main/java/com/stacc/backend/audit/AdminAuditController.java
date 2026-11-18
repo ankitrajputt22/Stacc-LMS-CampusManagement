@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The read-only audit log for admins. There is no route that writes, changes, or deletes an event. */
 @RestController
 @RequestMapping("/api/v1/admin/audit-events")
 @Tag(name = "Admin audit log")

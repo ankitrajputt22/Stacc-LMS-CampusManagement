@@ -12,7 +12,6 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.lms.course.LmsCourse;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up course content for tests, with IDs set the way the database would set them. */
 public final class ContentFixtures {
 
     private ContentFixtures() {

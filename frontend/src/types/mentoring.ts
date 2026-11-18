@@ -1,6 +1,3 @@
-// The mentoring API exactly as the backend sends it (MentoringService). Private notes reach the mentor only: they are
-// null for the student.
-
 export type ActionOwner = 'MENTOR' | 'MENTEE'
 
 export type MentoringPairing = {
@@ -19,7 +16,6 @@ export type MentoringMeeting = {
   meetingId: number
   title: string
   heldAt: string
-  /** Plain text, as are the private notes. */
   sharedNotes: string | null
   privateNotes: string | null
   actionItems: MentoringActionItem[]

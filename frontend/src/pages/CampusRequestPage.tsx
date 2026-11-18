@@ -65,7 +65,6 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
         <h2 id="campus-request-subject" className="text-[0.95rem] break-words text-ink">{detail.subject}</h2>
         <p className="mt-5 text-lg font-bold text-portal-navy">Details</p>
         <span aria-hidden="true" className="mt-1 mb-2 block h-0.5 w-12 rounded bg-portal-cta" />
-        {/* Plain text: React shows it as text, never as HTML. */}
         <p className="text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{detail.details}</p>
       </section>
 
@@ -102,7 +101,6 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
                   await cancelCampusRequest(detail.requestId)
                 } catch (failure) {
                   if (getHttpStatus(failure) === 409) {
-                    // The request changed meanwhile: the page says so and shows it as it is now.
                     setConfirming(false)
                     onChanged({ text: refusalText(409, getApiError(failure)?.message ?? null, 'cancel the request'), tone: 'error' })
                     return
@@ -123,10 +121,6 @@ function Detail({ detail, onChanged }: { detail: CampusRequestDetail; onChanged:
   )
 }
 
-/**
- * One of the account's own service requests at /campus/requests/:requestId, with its approval progress from the
- * approval engine. Another account's request and a missing one look the same: "Request unavailable".
- */
 export function CampusRequestPage() {
   const { requestId: param } = useParams()
   const location = useLocation()

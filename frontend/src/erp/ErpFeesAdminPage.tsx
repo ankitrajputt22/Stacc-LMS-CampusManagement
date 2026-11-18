@@ -268,7 +268,6 @@ function FeeRequests() {
   )
 }
 
-/** Fees management for the accounts office: fee structures, student ledgers with payments, and scholarship and refund requests. */
 export function ErpFeesAdminPage() {
   return (
     <>

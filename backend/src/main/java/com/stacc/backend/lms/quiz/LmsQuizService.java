@@ -21,17 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The quizzes of a course, for the faculty who teach it. Every action checks the faculty access policy; for an
- * existing quiz the course comes from the stored quiz, never from the client, and every change locks the quiz row
- * first. Questions come only from the course's own bank and change only while the quiz is a draft.
- *
- * <p>Publishing needs at least one question, each active and reviewed (and, for a practice quiz, offered for
- * practice), and tells the students who may use the course, once. Every change locks the course row, then the quiz row;
- * a bank edit locks the course row first too, so an edit either finishes first, and publishing sees the question needs
- * review again, or waits and then finds the quiz published and stops. Reads after the locks are locking reads, so they
- * see what the request before them committed.
- */
 @Service
 public class LmsQuizService {
 
@@ -66,11 +55,9 @@ public class LmsQuizService {
         this.notifications = notifications;
     }
 
-    /** A quiz with how many questions it has and the marks they carry together. */
     public record QuizSummary(LmsQuiz quiz, long questionCount, BigDecimal totalMarks) {
     }
 
-    /** A quiz with its questions in order, each with its bank question. */
     public record QuizDetail(LmsQuiz quiz, List<LmsQuizQuestion> questions) {
 
         public BigDecimal totalMarks() {
@@ -78,7 +65,6 @@ public class LmsQuizService {
         }
     }
 
-    /** Every quiz of the course, archived ones included, newest first. */
     @Transactional(readOnly = true)
     public List<QuizSummary> list(Long userAccountId, Long lmsCourseId) {
         requireCourse(userAccountId, lmsCourseId);
@@ -96,7 +82,6 @@ public class LmsQuizService {
         }).toList();
     }
 
-    /** Adds a draft quiz without questions. */
     @Transactional
     public LmsQuiz create(Long userAccountId, Long lmsCourseId, LmsQuizSettings settings) {
         requireCourse(userAccountId, lmsCourseId);
@@ -112,7 +97,6 @@ public class LmsQuizService {
         return detailOf(quiz);
     }
 
-    /** Changes the settings; a published quiz keeps its type, shuffling, and negative marking (409). */
     @Transactional
     public QuizDetail update(Long userAccountId, Long quizId, LmsQuizSettings settings) {
         LmsQuiz quiz = lockedNotArchived(userAccountId, quizId);
@@ -124,10 +108,6 @@ public class LmsQuizService {
         return detailOf(quiz);
     }
 
-    /**
-     * Adds an active question of the course's bank at the end of a draft quiz, with the given marks or, without them,
-     * the bank's marks. A question is in a quiz at most once.
-     */
     @Transactional
     public QuizDetail addQuestion(Long userAccountId, Long quizId, Long questionId, BigDecimal marks) {
         LmsQuiz quiz = lockedDraft(userAccountId, quizId);
@@ -159,7 +139,6 @@ public class LmsQuizService {
         return detailOf(quiz);
     }
 
-    /** Takes a question out of a draft quiz; the ones after it move up. The question stays in the bank. */
     @Transactional
     public QuizDetail removeQuestion(Long userAccountId, Long quizId, Long quizQuestionId) {
         LmsQuiz quiz = lockedDraft(userAccountId, quizId);
@@ -174,7 +153,6 @@ public class LmsQuizService {
         return detailOf(quiz);
     }
 
-    /** Puts the questions of a draft quiz in a new order; the list names every question of the quiz exactly once. */
     @Transactional
     public QuizDetail reorder(Long userAccountId, Long quizId, List<Long> quizQuestionIds) {
         LmsQuiz quiz = lockedDraft(userAccountId, quizId);
@@ -192,10 +170,6 @@ public class LmsQuizService {
         return detailOf(quiz);
     }
 
-    /**
-     * Publishes a draft quiz now. It needs at least one question, and every question must be active and reviewed, and
-     * for a practice quiz offered for practice. Publishing a published quiz changes nothing.
-     */
     @Transactional
     public QuizDetail publish(Long userAccountId, Long quizId) {
         LmsQuiz quiz = lockedNotArchived(userAccountId, quizId);
@@ -206,8 +180,6 @@ public class LmsQuizService {
         if (current.isEmpty()) {
             throw new ApiException(HttpStatus.CONFLICT, NO_QUESTIONS);
         }
-        // The links hold the questions unloaded, so this locking read is the first to load them: it sees an edit that
-        // finished while publishing waited for the quiz lock, and keeps them from changing until publishing ends.
         Map<Long, LmsQuestion> locked = questions.findAllByIdForShare(
                 current.stream().map(link -> link.getQuestion().getId()).toList()).stream()
                 .collect(Collectors.toMap(LmsQuestion::getId, Function.identity()));
@@ -225,14 +197,12 @@ public class LmsQuizService {
                         number + " is not offered for practice, so it cannot be in a practice quiz.");
             }
         }
-        // The database keeps microseconds, so this answer shows the same moment as every later read.
         quiz.publish(clock.instant().truncatedTo(ChronoUnit.MICROS));
         quizzes.saveAndFlush(quiz);
         notifications.published(quiz);
         return detailOf(quiz);
     }
 
-    /** Archives a draft or published quiz and keeps it. Archiving again changes nothing; nothing restores it. */
     @Transactional
     public QuizDetail archive(Long userAccountId, Long quizId) {
         LmsQuiz quiz = locked(userAccountId, quizId);
@@ -267,10 +237,6 @@ public class LmsQuizService {
         return quiz;
     }
 
-    // Checks access from the stored quiz's course, then locks the course row and the quiz row, in that order. Every
-    // change to a quiz and every edit of a bank question locks the course row first, so they run one after another and
-    // never wait for each other's locks in opposite orders. Only the course ID is read first, so the locking read is
-    // the first to load the quiz and sees its latest committed state.
     private LmsQuiz locked(Long userAccountId, Long quizId) {
         Long lmsCourseId = requireQuiz(userAccountId, quizId);
         lmsCourses.findByIdForUpdate(lmsCourseId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, QUIZ_UNAVAILABLE));
@@ -291,7 +257,6 @@ public class LmsQuizService {
         }
     }
 
-    // The rules live on the quiz; their messages are written for people. A rule that holds only for drafts is a 409.
     private static <T> T valid(Supplier<T> make) {
         try {
             return make.get();

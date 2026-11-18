@@ -15,10 +15,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * An official academic department of the college. A department that is no longer
- * used is made inactive rather than deleted, so older records can still refer to it.
- */
 @Entity
 @Table(name = "departments")
 public class Department {
@@ -37,7 +33,6 @@ public class Department {
     @Column(nullable = false, unique = true, length = MAX_NAME_LENGTH)
     private String name;
 
-    // Optional plain text about the department.
     @Column(length = MAX_DESCRIPTION_LENGTH)
     private String description;
 
@@ -54,10 +49,8 @@ public class Department {
     private Instant updatedAt;
 
     protected Department() {
-        // Required by JPA.
     }
 
-    /** The code is stored in uppercase without surrounding spaces, so "cse" becomes "CSE". */
     public Department(String code, String name) {
         this.code = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
         this.name = Require.text(name, "name", MAX_NAME_LENGTH);
@@ -79,7 +72,6 @@ public class Department {
         return description;
     }
 
-    /** Sets or clears the description; blank text clears it. */
     public void describe(String description) {
         this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
     }

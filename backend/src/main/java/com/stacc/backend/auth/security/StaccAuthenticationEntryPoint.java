@@ -14,10 +14,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-/**
- * Answers a request that is not signed in, or whose access token cannot be accepted, with
- * HTTP 401 in the common error format. The reason a token was refused is never sent to the client.
- */
 @Component
 public class StaccAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -36,8 +32,6 @@ public class StaccAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
-        // Hand over to the shared error handling so the body matches every other API error.
-        // A token was sent but could not be accepted, or no token was sent at all.
         String message = authException instanceof OAuth2AuthenticationException
                 ? INVALID_TOKEN_MESSAGE
                 : AUTHENTICATION_REQUIRED_MESSAGE;

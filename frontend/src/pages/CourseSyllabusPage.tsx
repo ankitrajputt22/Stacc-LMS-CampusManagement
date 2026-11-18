@@ -31,10 +31,6 @@ function Shell({ course, children }: { course?: LmsCourseDetail; children: React
   )
 }
 
-/**
- * /courses/:lmsCourseId/syllabus: the course's official details from the academic records, then the syllabus the
- * teachers published. Drafts never reach students. The backend checks the student's access on every request.
- */
 export function CourseSyllabusPage() {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)

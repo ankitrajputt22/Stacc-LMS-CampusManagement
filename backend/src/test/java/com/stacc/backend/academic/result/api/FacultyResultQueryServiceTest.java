@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Faculty A (account 21) teaches offerings 17 and 18, neither with an LMS course; faculty B (22) teaches neither. */
 class FacultyResultQueryServiceTest {
 
     private static final Long FACULTY_A = 21L;

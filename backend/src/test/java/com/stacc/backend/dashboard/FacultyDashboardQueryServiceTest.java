@@ -47,11 +47,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The faculty dashboard with the real managed-course query, so teaching follows the Teaching page's rule; the other
- * repositories are stand-ins. Status, deadline, and latest-attempt filtering happen in the database, so here the test
- * checks which courses and offerings are asked about, and how the answers are put together.
- */
 class FacultyDashboardQueryServiceTest {
 
     private static final long FACULTY = 20L;
@@ -127,7 +122,6 @@ class FacultyDashboardQueryServiceTest {
                         .and(Sort.by("id").ascending()))));
         verify(attempts).findLatestUngradedByLmsCourseIdIn(Set.of(41L, 42L), PageRequest.of(0, 5));
         verify(sessions).findOpenByCourseOfferingIdIn(Set.of(31L, 32L, 33L, 34L), PageRequest.of(0, 5));
-        // No open session, so no record counts are asked for.
         verify(records, never()).countRecordsBySessionIdIn(anyCollection());
     }
 
@@ -150,7 +144,6 @@ class FacultyDashboardQueryServiceTest {
         List<LmsSubmissionAttempt> waiting = IntStream.range(0, 5).mapToObj(index -> {
             CourseEnrollment enrollment = AttendanceFixtures.enrollment(published, 50 + index, 140 + index, "STU-TEST-" + index);
             LmsAssignmentSubmission submission = withId(new LmsAssignmentSubmission(assignment, enrollment), 90 + index);
-            // Handed in half an hour after a deadline an hour ago: late.
             return withId(new LmsSubmissionAttempt(submission, submission.takeNextAttemptNumber(), "Answer",
                     NOW.minusSeconds(1800 - index), NOW.minusSeconds(3600)), 200 + index);
         }).toList();

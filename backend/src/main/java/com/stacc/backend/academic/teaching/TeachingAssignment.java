@@ -20,16 +20,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The official record that a faculty member teaches one course offering: one course in one
- * semester, never the permanent course. A faculty member can teach many offerings, and an
- * offering can have several faculty members, but each pair is recorded only once.
- *
- * <p>The account, department, course, semester, programme, and session are all reached through
- * the faculty profile and the course offering, so none of them is stored here again. The faculty
- * member's primary department does not have to own the course. An assignment that has ended is
- * made inactive rather than deleted.
- */
 @Entity
 @Table(
         name = "teaching_assignments",
@@ -38,8 +28,6 @@ import org.hibernate.annotations.UpdateTimestamp;
                 columnNames = {"faculty_profile_id", "course_offering_id"}))
 public class TeachingAssignment {
 
-    // No cascade on either link: the faculty profile and the course offering are never created
-    // or deleted through a teaching assignment.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -69,14 +57,8 @@ public class TeachingAssignment {
     private Instant updatedAt;
 
     protected TeachingAssignment() {
-        // Required by JPA.
     }
 
-    /**
-     * The faculty profile and course offering say what this assignment is, so they cannot be
-     * changed afterwards. The faculty profile should be active when an assignment is created or
-     * made active again. That is checked by the feature that manages assignments, not here.
-     */
     public TeachingAssignment(FacultyProfile facultyProfile, CourseOffering courseOffering) {
         this.facultyProfile = Require.notNull(facultyProfile, "facultyProfile");
         this.courseOffering = Require.notNull(courseOffering, "courseOffering");

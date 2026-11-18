@@ -15,12 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Allocating approved students to beds, and vacating. At any moment a bed, an application, and a student each have at
- * most one ACTIVE allocation. MySQL has no partial unique keys for that, so every allocation takes its locks in one
- * fixed order (student, application, hostel and room shared, bed) and checks under them; of two allocations racing for
- * a bed, exactly one wins and the other gets 409. The admin always comes from the access token.
- */
 @Service
 @Transactional
 public class HostelAllocationService {
@@ -59,16 +53,11 @@ public class HostelAllocationService {
         this.clock = clock;
     }
 
-    /** Beds a new allocation can use, narrowed to a hostel or room when given. */
     @Transactional(readOnly = true)
     public List<AvailableHostelBed> availableBeds(Long hostelId, Long roomId) {
         return beds.findAvailable(hostelId, roomId).stream().map(AvailableHostelBed::of).toList();
     }
 
-    /**
-     * Allocates the bed to an approved application. Runs at READ COMMITTED, so every check after a lock sees what the
-     * transaction that held it committed.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public HostelAllocationResponse allocate(Long adminAccountId, Long applicationId, Long bedId) {
         Long studentProfileId = (applicationId == null ? null
@@ -76,9 +65,7 @@ public class HostelAllocationService {
         if (studentProfileId == null) {
             throw new ApiException(HttpStatus.NOT_FOUND, APPLICATION_NOT_FOUND);
         }
-        // 1. The student: two allocations for the same student take turns.
         studentProfiles.findByIdForUpdate(studentProfileId);
-        // 2. The application.
         HostelApplication application = applications.findByIdForUpdate(applicationId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, APPLICATION_NOT_FOUND));
         if (application.approvalStatus() != ApprovalRequestStatus.APPROVED) {
@@ -94,10 +81,8 @@ public class HostelAllocationService {
         if (location == null) {
             throw new ApiException(HttpStatus.NOT_FOUND, BED_NOT_FOUND);
         }
-        // 3. The hostel and room, shared: a deactivation waits for this allocation, other allocations do not.
         hostels.findByIdForShare(location.getHostelId());
         rooms.findByIdForShare(location.getRoomId());
-        // 4. The bed: two allocations of the same bed take turns.
         HostelBed bed = beds.findByIdForUpdate(bedId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, BED_NOT_FOUND));
         if (!bed.isAllocatable()) {
             throw new ApiException(HttpStatus.CONFLICT, BED_INACTIVE);
@@ -111,12 +96,10 @@ public class HostelAllocationService {
         return HostelAllocationResponse.of(allocations.findWithContextById(allocation.getId()).orElseThrow());
     }
 
-    /** Ends an ACTIVE allocation, keeping it as history; the bed is available again. Vacating again changes nothing. */
     public HostelAllocationResponse vacate(Long adminAccountId, Long allocationId) {
         return vacate(adminAccountId, allocationId, null);
     }
 
-    /** As {@link #vacate(Long, Long)}, recording the room's condition the student left it in. */
     public HostelAllocationResponse vacate(Long adminAccountId, Long allocationId, String conditionNote) {
         HostelAllocation allocation = (allocationId == null ? null : allocations.findByIdForUpdate(allocationId).orElse(null));
         if (allocation == null) {
@@ -131,10 +114,6 @@ public class HostelAllocationService {
         return HostelAllocationResponse.of(allocations.findWithContextById(allocationId).orElseThrow());
     }
 
-    /**
-     * Records that the student moved in, with an optional note, by an admin with HOSTEL_MANAGE or a warden of the
-     * allocation's hostel (checked by the caller). Checking in again changes nothing.
-     */
     public HostelAllocationResponse checkIn(Long allocationId, String note) {
         HostelAllocation allocation = (allocationId == null ? null : allocations.findByIdForUpdate(allocationId).orElse(null));
         if (allocation == null) {

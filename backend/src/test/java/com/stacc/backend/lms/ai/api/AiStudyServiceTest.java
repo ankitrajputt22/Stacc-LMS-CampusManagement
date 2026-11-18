@@ -59,7 +59,6 @@ class AiStudyServiceTest {
     private static final long STUDENT_B = 12L;
     private static final long COURSE = 7L;
     private static final String CURRENT = "c".repeat(64);
-    /** The published topic and study material of the fixture, sent as the sources allowed right now. */
     private static final List<AiServiceMessages.SourceRef> ALLOWED = List.of(new AiServiceMessages.SourceRef("TOPIC", 1),
             new AiServiceMessages.SourceRef("STUDY_MATERIAL", 20));
     private static final String OLD = "0".repeat(64);
@@ -133,7 +132,6 @@ class AiStudyServiceTest {
         verify(client).ask(anyString(), (AskRequest) sent.capture());
         verify(client).summarize(anyString(), (AiServiceMessages.SummaryRequest) sent.capture());
         verify(client).practice(anyString(), (AiServiceMessages.PracticeRequest) sent.capture());
-        // Records print every field, so this is everything the AI service is sent.
         String json = sent.getAllValues().toString();
         assertThat(json).doesNotContain(AiCourseKeys.forTeacherDocuments(COURSE), AiCourseKeys.forStudentNotes(COURSE, STUDENT_B),
                 "TEACHER_DOCUMENT", "accountId", "loginId", "secret-key");
@@ -283,7 +281,6 @@ class AiStudyServiceTest {
         verify(client).ask(eq(AiCourseKeys.forLmsCourse(COURSE)), sent.capture());
         assertThat(sent.getValue().additionalIndexes()).containsExactly(notesIndex);
 
-        // Without the mode, notes are neither searched nor cited.
         assertThat(service.ask(STUDENT_A, COURSE, new AiAskRequest("What does normalization reduce?")).insufficientContext()).isTrue();
         verify(notes, org.mockito.Mockito.times(1)).current(any(), any());
     }
@@ -379,7 +376,6 @@ class AiStudyServiceTest {
         assertThat(summary.keyPoints()).containsExactly("Point one", "Point two");
         assertThat(summary.topicTitle()).isEqualTo("Database Normalization");
 
-        // A draft, archived, or other course's topic is not in the published knowledge: the same 404.
         assertThatThrownBy(() -> service.summarize(STUDENT_A, COURSE, 2L))
                 .isInstanceOfSatisfying(ApiException.class, e -> {
                     assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);

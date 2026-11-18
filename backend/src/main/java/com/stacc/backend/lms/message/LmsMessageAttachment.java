@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A file sent with a message. Its bytes are in private storage; it is downloaded only through its conversation. */
 @Entity
 @Table(name = "lms_conversation_message_attachments")
 public class LmsMessageAttachment {
@@ -38,7 +37,6 @@ public class LmsMessageAttachment {
     private long sizeBytes;
 
     protected LmsMessageAttachment() {
-        // Required by JPA.
     }
 
     public LmsMessageAttachment(LmsConversationMessage message, StoredFile file) {

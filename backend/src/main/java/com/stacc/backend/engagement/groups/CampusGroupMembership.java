@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A person's membership of a group: asked, accepted, refused, or left. Kept as history; joining again is a new row. */
 @Entity
 @Table(name = "campus_group_memberships")
 public class CampusGroupMembership {
@@ -48,7 +47,6 @@ public class CampusGroupMembership {
     private Instant leftAt;
 
     protected CampusGroupMembership() {
-        // Required by JPA.
     }
 
     public CampusGroupMembership(CampusGroup group, UserAccount account, boolean accepted, Instant at) {

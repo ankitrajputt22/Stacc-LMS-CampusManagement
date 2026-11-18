@@ -25,7 +25,6 @@ import { answerKeyText, marksText, PAPER_FORBIDDEN, paperFacts, paperRefusal, pa
 import { PaperDetailsForm, PaperStatusBadge } from './ExamPapersEditor'
 import { difficultyLabel, QUESTION_TYPES, questionName, questionTypeLabel } from './questionText'
 
-/** A question in the builder's working list, before it is saved. */
 type Working = {
   questionId: number
   sectionTitle: string
@@ -54,7 +53,6 @@ function refusalWords(status: number | null, message: string | null, failed: str
   return status === 403 ? PAPER_FORBIDDEN : message && status !== null && status < 500 ? message : failed
 }
 
-/** The draft's questions: section and marks for each, Move up, Move down, Remove, and Save questions. */
 function QuestionBuilder({ paper, bank, onSaved }: { paper: ExamPaper; bank: LmsQuestion[] | null; onSaved: (message: string) => Promise<void> }) {
   const [working, setWorking] = useState<Working[]>(() => workingOf(paper))
   const [dirty, setDirty] = useState(false)
@@ -233,7 +231,6 @@ function QuestionBuilder({ paper, bank, onSaved }: { paper: ExamPaper; bank: Lms
   )
 }
 
-/** A final or archived paper's questions with their answer keys, read-only. */
 function QuestionList({ paper }: { paper: ExamPaper }) {
   return (
     <Card title="Questions" padding="none">
@@ -258,11 +255,6 @@ function QuestionList({ paper }: { paper: ExamPaper }) {
   )
 }
 
-/**
- * One exam paper: its status with Make final and Archive (each confirmed), Print view and Word downloads (with or
- * without the answer key), its details, and its questions (in a draft, the builder with the bank). A final paper keeps
- * its questions; an archived one is read-only.
- */
 export function ExamPaperEditor({ lmsCourseId, paperId }: { lmsCourseId: number; paperId: number }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -424,7 +416,6 @@ export function ExamPaperEditor({ lmsCourseId, paperId }: { lmsCourseId: number;
       </Card>
 
       {data.status === 'DRAFT' ? (
-        // Keyed by the saved version, so a save starts the builder again from what the server kept.
         <QuestionBuilder key={data.updatedAt + data.questions.length} paper={data} bank={bank.status === 'loaded' ? bank.data : null} onSaved={saved} />
       ) : (
         <QuestionList paper={data} />

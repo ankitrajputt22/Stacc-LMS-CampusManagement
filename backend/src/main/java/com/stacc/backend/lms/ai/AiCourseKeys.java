@@ -5,26 +5,19 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/**
- * The opaque key under which the AI service keeps one LMS course's index. It is derived on the server from a course
- * the caller was already allowed to use, is always 32 lower-case hex characters, and never reaches a browser.
- */
 public final class AiCourseKeys {
 
     private AiCourseKeys() {
     }
 
-    /** The index of a course's student-visible (published) content. */
     public static String forLmsCourse(long lmsCourseId) {
         return sha256Hex("stacc-lms-course:" + lmsCourseId).substring(0, 32);
     }
 
-    /** The index of a course's teacher-only documents (v0.13.2), used only by Teacher AI. */
     public static String forTeacherDocuments(long lmsCourseId) {
         return sha256Hex("stacc-lms-course-teacher:" + lmsCourseId).substring(0, 32);
     }
 
-    /** One student's notes index in one course (v0.13.2), keyed by IDs only, never a login ID. */
     public static String forStudentNotes(long lmsCourseId, long accountId) {
         return sha256Hex("stacc-student-notes:" + lmsCourseId + ":" + accountId).substring(0, 32);
     }

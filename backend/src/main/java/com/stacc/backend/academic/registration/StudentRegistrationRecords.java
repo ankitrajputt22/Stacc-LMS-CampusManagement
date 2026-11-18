@@ -9,16 +9,13 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** Requests and answers of student course registration. None of them names the student: that comes from the token. */
 public final class StudentRegistrationRecords {
 
-    /** The most offerings one registration may name. */
     public static final int MAX_OFFERINGS_PER_REQUEST = 20;
 
     private StudentRegistrationRecords() {
     }
 
-    /** The offerings to register for, all of them or none. */
     public record RegistrationRequest(
             @Schema(description = "The course offerings to register for, each once, at most 20.", example = "[101, 102]")
             @NotEmpty(message = "Choose at least one course offering")
@@ -26,7 +23,6 @@ public final class StudentRegistrationRecords {
             List<@NotNull(message = "Course offering IDs cannot be empty") Long> courseOfferingIds) {
     }
 
-    /** What the student sees on the registration page: one term per semester they may register in now. */
     public record RegistrationOverview(
             @Schema(description = "Whether the student profile is active. An inactive profile cannot register or drop.")
             boolean profileActive,
@@ -87,7 +83,6 @@ public final class StudentRegistrationRecords {
             @Schema(description = "Whether the student can drop it now.") boolean canDrop) {
     }
 
-    /** The answer to a successful registration. */
     public record RegistrationResult(
             List<RegisteredCourse> registered,
             @Schema(example = "2") int totalCourses,

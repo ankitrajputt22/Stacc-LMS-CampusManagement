@@ -2,7 +2,6 @@ package com.stacc.backend.lms.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A student's own progress in a course: required pages completed, and the next one to do. Nothing is stored. */
 public record LmsCourseProgressResponse(
         @Schema(description = "Required pages the student can see.", example = "10")
         int requiredPages,

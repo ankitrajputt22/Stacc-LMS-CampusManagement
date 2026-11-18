@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface PersonalCalendarEventRepository extends JpaRepository<PersonalCalendarEvent, Long> {
 
-    /** The account's own events that overlap the range, earliest first. */
     @Query("select e from PersonalCalendarEvent e where e.userAccountId = :accountId and e.startDate <= :to and e.endDate >= :from "
             + "order by e.startDate asc, e.id asc")
     List<PersonalCalendarEvent> findOverlapping(@Param("accountId") Long accountId, @Param("from") LocalDate from, @Param("to") LocalDate to);

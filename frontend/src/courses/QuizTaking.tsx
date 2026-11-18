@@ -21,7 +21,6 @@ import {
 
 type SaveState = 'saving' | 'saved' | 'failed'
 
-/** How long typing must pause before a written answer is saved. Choices are saved at once. */
 const TEXT_SAVE_DELAY_MS = 1200
 const SHORT_ANSWER_MAX = 500
 const WRITTEN_ANSWER_MAX = 20_000
@@ -45,7 +44,6 @@ function saveStateText(state: SaveState | undefined): string {
 
 type QuestionResult = NonNullable<QuizAttempt['result']>['questions'][number]
 
-/** A released result for one question: the outcome and marks, the teacher's feedback, and, if shown, the answer. */
 function QuestionResultPanel({ question, result }: { question: QuizAttemptQuestion; result: QuestionResult }) {
   const correctChoices = (result.correctOptions ?? [])
     .map((position) => question.options.find((option) => option.position === position)?.text)
@@ -91,7 +89,6 @@ type QuestionProps = {
   onLeaveText: () => void
 }
 
-/** One question with the inputs its type takes, disabled once the attempt no longer takes answers. */
 function QuizQuestion({ question, result, draft, open, saveState, onChoose, onType, onLeaveText }: QuestionProps) {
   const id = useId()
   const name = `${id}-answer`
@@ -188,12 +185,6 @@ function QuizQuestion({ question, result, draft, open, saveState, onChoose, onTy
   )
 }
 
-/**
- * Taking one attempt: every question with its answer, saved as the student goes (choices at once, writing after a
- * short pause or on leaving the field), a timer from the server's deadline, and Submit quiz, confirmed first. When the
- * timer runs out, the saved answers are handed in. The server decides every deadline; the timer only shows it. Once
- * handed in, the answers are shown read-only.
- */
 export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const [current, setCurrent] = useState(attempt)
@@ -209,7 +200,6 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
   const pendingText = useRef(new Map<number, { timer: ReturnType<typeof setTimeout>; draft: AnswerDraft }>())
   const handingIn = useRef(false)
 
-  // The device's clock may be off; the timer counts from the server's time.
   const [clock, setClock] = useState(() => ({
     offset: Date.parse(attempt.serverTime) - Date.now(),
     now: Date.parse(attempt.serverTime),
@@ -227,7 +217,6 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
       return Promise.resolve()
     }
     setSaveStates((states) => ({ ...states, [quizQuestionId]: 'saving' }))
-    // One save at a time per question, in order, so an older answer never lands after a newer one.
     const next = (chains.current.get(quizQuestionId) ?? Promise.resolve()).then(async () => {
       try {
         await saveQuizAnswer(current.id, quizQuestionId, inputOfDraft(question, draft))
@@ -235,7 +224,6 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
       } catch (failure) {
         setSaveStates((states) => ({ ...states, [quizQuestionId]: 'failed' }))
         if (getHttpStatus(failure) === 409) {
-          // Time is up or the attempt was handed in elsewhere: hand in what was saved and show the result.
           void handInRef.current(true)
         }
       }
@@ -312,7 +300,6 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
     return () => clearInterval(tick)
   }, [open, deadline])
 
-  // Hand in once the server's deadline has passed on the timer, and say so at five minutes and one minute left.
   const warned = useRef<number | null>(null)
   useEffect(() => {
     if (!open || remaining === null) {
@@ -329,7 +316,6 @@ export function QuizTaking({ attempt, lmsCourseId }: { attempt: QuizAttempt; lms
     }
   }, [open, remaining])
 
-  // Unsaved writing is saved when the page is left inside the app.
   const flushTextRef = useRef(flushText)
   useEffect(() => {
     flushTextRef.current = flushText

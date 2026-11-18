@@ -17,11 +17,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One topic of a module: a title with optional instructional text. The text is plain text: it is
- * never stored or shown as HTML. Topics are listed by position, then by ID. A new topic is a
- * draft, and a topic that is no longer wanted is archived, never deleted.
- */
 @Entity
 @Table(name = "lms_topics")
 public class LmsTopic {
@@ -29,7 +24,6 @@ public class LmsTopic {
     public static final int MAX_TITLE_LENGTH = 200;
     public static final int MAX_CONTENT_LENGTH = 20_000;
 
-    // No cascade: the module is never created or deleted through one of its topics.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,11 +35,9 @@ public class LmsTopic {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // Plain text, line breaks kept. MEDIUMTEXT, because 20,000 characters can need more bytes than TEXT holds.
     @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 
-    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
     @Enumerated(EnumType.STRING)
     @Column(name = "content_format", nullable = false, length = 20)
     private LmsTextFormat contentFormat = LmsTextFormat.PLAIN;
@@ -53,7 +45,6 @@ public class LmsTopic {
     @Column(nullable = false)
     private int position;
 
-    // A required page counts towards its module's completion and the student's progress.
     @Column(nullable = false)
     private boolean required;
 
@@ -70,7 +61,6 @@ public class LmsTopic {
     private Instant updatedAt;
 
     protected LmsTopic() {
-        // Required by JPA.
     }
 
     public LmsTopic(LmsModule lmsModule, String title, String content, int position) {
@@ -99,7 +89,6 @@ public class LmsTopic {
         return contentFormat;
     }
 
-    /** Says how the text is shown. An archived topic can no longer be changed. */
     public void changeContentFormat(LmsTextFormat format) {
         requireNotArchived();
         this.contentFormat = Require.notNull(format, "format");
@@ -109,7 +98,6 @@ public class LmsTopic {
         return required;
     }
 
-    /** Whether students must complete this page. An archived page can no longer be changed. */
     public void markRequired(boolean required) {
         requireNotArchived();
         this.required = required;
@@ -135,28 +123,21 @@ public class LmsTopic {
         return status == LmsContentStatus.ARCHIVED;
     }
 
-    /** Changes the title and the optional text. An archived topic can no longer be changed. */
     public void edit(String title, String content) {
         requireNotArchived();
         this.title = Require.text(title, "title", MAX_TITLE_LENGTH);
         this.content = Require.optionalText(content, "content", MAX_CONTENT_LENGTH);
     }
 
-    /** Places the topic in its module's order. Positions start at 1. */
     public void moveTo(int position) {
         this.position = Require.range(position, "position", 1, Integer.MAX_VALUE);
     }
 
-    /**
-     * Publishing an already published topic changes nothing. Students still see it only once its
-     * module is published too: publishing a topic never publishes its module.
-     */
     public void publish() {
         requireNotArchived();
         this.status = LmsContentStatus.PUBLISHED;
     }
 
-    /** Archiving keeps the topic. Archiving it again changes nothing. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
     }

@@ -10,10 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Sessions on a real database: a started session is accepted, and signing out, signing out everywhere, idleness, and
- * a disabled account each end acceptance at once. Uses the demo account emp1005, which no other MySQL test uses.
- */
 class SessionMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -40,8 +36,6 @@ class SessionMySqlIT extends MySqlIntegrationTest {
         assertThat(sessions.check(laptop.getId(), account).active()).isFalse();
         assertThat(sessions.check(phone.getId(), account).active()).isTrue();
 
-        // Idle for longer than the timeout: refused, and ended for good.
-        // Moved back inside MySQL, so no time zone of this machine can get in the way.
         jdbc.update("update user_sessions set last_seen_at = date_sub(last_seen_at, interval 3 hour) where id = ?",
                 tablet.getId());
         assertThat(sessions.check(tablet.getId(), account).active()).isFalse();

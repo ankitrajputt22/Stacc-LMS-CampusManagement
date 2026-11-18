@@ -5,10 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Exists only in test code. Each route requires a role, so tests can check role rules
- * without adding role-protected demo endpoints to the real application.
- */
 @RestController
 @RequestMapping("/api/v1/test/roles")
 public class RoleTestController {

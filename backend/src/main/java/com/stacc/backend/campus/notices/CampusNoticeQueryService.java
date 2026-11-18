@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reading campus notices: the published feed for any role the account holds, and every notice for admins. */
 @Service
 @Transactional(readOnly = true)
 public class CampusNoticeQueryService {
@@ -28,10 +27,6 @@ public class CampusNoticeQueryService {
         this.notices = notices;
     }
 
-    /**
-     * One page of the published notices visible to any role the actor holds, newest first, each once. Drafts and
-     * archived notices never appear. Empty for an account holding none of the three roles.
-     */
     public CampusNoticePage feed(CampusActor actor, int page, int size) {
         PageRequest request = pageOf(page, size);
         boolean student = actor.holds("STUDENT");

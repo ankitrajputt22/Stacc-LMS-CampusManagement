@@ -134,10 +134,8 @@ class FacultyReportQueryServiceTest {
         assertThat(report.enrollment()).isEqualTo(new FacultyReports.FacultyEnrollmentReport(2, 1, 1));
         assertThat(report.assignments()).isEqualTo(new FacultyReports.FacultyAssignmentReport(true, 21L, "PUBLISHED",
                 1, 2, 3, 1));
-        // Unmarked records are reported as neither present nor absent.
         assertThat(report.attendance()).isEqualTo(new FacultyReports.FacultyAttendanceReport(1, 2, 8, 2));
         assertThat(report.results()).isEqualTo(new FacultyReports.FacultyResultReport(3, 7));
-        // Archived assignments are never asked for.
         verify(assignments).countByCourseAndStatus(Set.of(21L), Set.of(LmsContentStatus.DRAFT, LmsContentStatus.PUBLISHED));
     }
 
@@ -197,7 +195,6 @@ class FacultyReportQueryServiceTest {
         assertThat(list.get(1).assignmentCount()).isNull();
         assertThat(list.get(1).publishedResultCount()).isEqualTo(5);
         assertThat(list.get(2).assignmentCount()).isNull();
-        // One grouped query per kind, over every offering at once; only the open LMS course is counted in.
         verify(enrollments).countByOfferingAndStatus(Set.of(31L, 32L, 33L));
         verify(assignments).countByCourseAndStatus(Set.of(21L), LmsContentPolicy.IN_USE);
     }

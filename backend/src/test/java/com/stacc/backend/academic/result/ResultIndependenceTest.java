@@ -18,10 +18,6 @@ import com.stacc.backend.lms.assignment.submission.LmsAssignmentGradingService;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionGrade;
 import org.junit.jupiter.api.Test;
 
-/**
- * Official results are academic data recorded on their own. They must keep working without an LMS course, and
- * neither LMS assignment grades nor attendance may feed them, or be changed by them.
- */
 class ResultIndependenceTest {
 
     private static final List<Class<?>> RESULT_CLASSES = List.of(CourseResult.class, CourseResultRepository.class,

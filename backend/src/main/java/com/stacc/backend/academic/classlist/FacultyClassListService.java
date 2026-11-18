@@ -24,11 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty class lists: the students registered in the course offerings a faculty member teaches now, read-only. Access
- * comes only from an active teaching assignment ({@link FacultyTeachingAccessService}); an offering the caller does not
- * teach answers the same 404 as a missing one. Faculty never change enrollments here.
- */
 @Service
 @Transactional(readOnly = true)
 public class FacultyClassListService {
@@ -77,7 +72,6 @@ public class FacultyClassListService {
     public record ClassList(TaughtOffering offering, List<ClassStudent> students) {
     }
 
-    /** The offerings the caller teaches now, latest session first, then by course code. */
     public List<TaughtOffering> myOfferings(Long userAccountId) {
         List<CourseOffering> taught = teachingAssignments.findAllWithCourseDetailsByUserAccountId(userAccountId).stream()
                 .filter(assignment -> FacultyTeachingAccessService.isCurrentTeaching(assignment, userAccountId))
@@ -94,7 +88,6 @@ public class FacultyClassListService {
                 .toList();
     }
 
-    /** Every enrollment of an offering the caller teaches now, whatever its status, by student ID. */
     public ClassList classList(Long userAccountId, Long courseOfferingId) {
         TeachingAssignment teaching = teachingAccess.findCurrentTeachingAssignment(userAccountId, courseOfferingId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, UNAVAILABLE));

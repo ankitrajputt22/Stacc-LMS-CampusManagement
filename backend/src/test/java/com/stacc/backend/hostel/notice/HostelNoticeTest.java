@@ -9,7 +9,6 @@ import java.time.Instant;
 import com.stacc.backend.hostel.Hostel;
 import org.junit.jupiter.api.Test;
 
-/** A notice is published once, keeps its emergency flag after that, reaches its block only, and ends when archived. */
 class HostelNoticeTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

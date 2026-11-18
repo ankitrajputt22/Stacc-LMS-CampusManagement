@@ -3,27 +3,16 @@ import { getApiError, getHttpStatus } from '../api/apiError'
 import { Alert, Button } from '../ui'
 
 type StatusConfirmationProps = {
-  /** Such as "Complete semester enrollment?" */
   question: string
-  /** What happens, such as "Semester 3 · 2026-27 will be marked completed. This cannot be undone." */
   detail: string
   confirmLabel: string
-  /** What the confirm button says while the change is sent, such as "Publishing…". */
   busyLabel?: string
-  /** What the button that closes without changing anything says, when "Cancel" would be unclear. */
   dismissLabel?: string
-  /** Sends the change. A refusal is thrown and shown here in safe words. */
   onConfirm: () => Promise<void>
   onCancel: () => void
-  /** Turns a refused change into safe words: the HTTP status, if any, and the backend's message, if any. */
   describeRefusal: (status: number | null, apiMessage: string | null) => string
 }
 
-/**
- * A small inline confirmation for a change that cannot be undone, such as ending an enrollment or archiving a
- * course. Focus moves to the confirm button, Escape cancels, and a refusal such as a 409 is shown in the words
- * `describeRefusal` gives. A 403 never signs the user out; a 401 is left to the shared client.
- */
 export function StatusConfirmation({
   question,
   detail,

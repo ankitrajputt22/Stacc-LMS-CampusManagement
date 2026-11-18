@@ -27,7 +27,6 @@ class LmsModuleTest {
     void descriptionIsOptionalAndKeptAsPlainText() {
         assertNull(new LmsModule(lmsCourse, "Arrays", null, 1).getDescription());
         assertNull(new LmsModule(lmsCourse, "Arrays", "   ", 1).getDescription());
-        // Text that looks like HTML is stored exactly as written; it is never interpreted.
         assertEquals("<b>Read</b> chapter 1\nthen 2",
                 new LmsModule(lmsCourse, "Arrays", "<b>Read</b> chapter 1\nthen 2", 1).getDescription());
     }

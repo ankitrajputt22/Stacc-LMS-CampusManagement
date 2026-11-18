@@ -53,7 +53,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Exam blueprints and papers of a course, for the faculty who teach it: planning, building, finalizing, and Word export. */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS exam papers")
@@ -73,8 +72,6 @@ public class LmsExamPaperController {
     public LmsExamPaperController(LmsExamPaperService service) {
         this.service = service;
     }
-
-    // --- Requests
 
     public record BlueprintRowRequest(
             @Size(max = LmsExamBlueprintRow.MAX_SECTION_LENGTH) String sectionTitle,
@@ -116,8 +113,6 @@ public class LmsExamPaperController {
     public record PaperQuestionsRequest(
             @NotNull @Size(max = LmsExamPaper.MAX_QUESTIONS) List<@NotNull @Valid PaperQuestionRequest> questions) {
     }
-
-    // --- Responses
 
     public record BlueprintRowResponse(int position, String sectionTitle, QuestionType questionType, QuestionDifficulty difficulty,
             BloomLevel bloomLevel, Long outcomeId, String topic, int questionCount, BigDecimal marksEach) {
@@ -182,8 +177,6 @@ public class LmsExamPaperController {
                     detail.questions().stream().map(PaperQuestionResponse::of).toList());
         }
     }
-
-    // --- Blueprints
 
     @GetMapping("/courses/{lmsCourseId}/exam-blueprints")
     @PreAuthorize(MANAGE)
@@ -293,8 +286,6 @@ public class LmsExamPaperController {
                         row.available(), row.missing()))
                 .toList();
     }
-
-    // --- Papers
 
     @GetMapping("/courses/{lmsCourseId}/exam-papers")
     @PreAuthorize(MANAGE)

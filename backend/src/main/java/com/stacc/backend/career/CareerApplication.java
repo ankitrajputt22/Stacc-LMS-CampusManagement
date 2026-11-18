@@ -17,7 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/** A student's application, with the resume version it was sent with, consent to share, and its stage. */
 @Entity
 @Table(name = "career_applications")
 public class CareerApplication {
@@ -61,7 +60,6 @@ public class CareerApplication {
     private Instant updatedAt;
 
     protected CareerApplication() {
-        // Required by JPA.
     }
 
     public CareerApplication(CareerOpportunity opportunity, UserAccount applicant, CareerResume resume, String coverNote,
@@ -78,7 +76,6 @@ public class CareerApplication {
         return status == Status.APPLIED || status == Status.IN_PROGRESS;
     }
 
-    /** Moves to the next stage; the last stage makes it SELECTED. */
     public void advance(int stageCount) {
         if (!isActive()) {
             throw new IllegalStateException("This application is finished");

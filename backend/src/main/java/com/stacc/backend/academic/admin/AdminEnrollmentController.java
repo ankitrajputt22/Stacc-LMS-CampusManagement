@@ -34,12 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of official enrollments: find a student, enroll them in a semester of their program and in that
- * semester's course offerings, and end those enrollments. Reading needs the admin role and
- * {@code ACADEMIC_ENROLLMENT_VIEW}; changing also needs {@code ACADEMIC_ENROLLMENT_MANAGE}. The route always names
- * the student or enrollment; no body carries it. There is no delete, and no account or profile is changed.
- */
 @RestController
 @RequestMapping("/api/v1/admin/academic/enrollments")
 @Tag(name = "Admin enrollments")

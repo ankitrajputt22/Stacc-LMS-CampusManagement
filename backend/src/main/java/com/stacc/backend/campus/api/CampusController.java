@@ -38,11 +38,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The common campus routes: the services a student or faculty member may request, their own requests, and the notice
- * feed. The caller and every role it holds always come from the access token; no route takes an account or requester
- * ID. A service request has no conversation: support questions belong to the helpdesk.
- */
 @RestController
 @RequestMapping("/api/v1/campus")
 @Tag(name = "Campus")

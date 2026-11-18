@@ -1,5 +1,3 @@
-# Prometheus for the optional "monitoring" Compose profile. It reads the backend's metrics on the internal
-# management port of the backend's "monitoring" Spring profile (see docs/operations.md).
 global:
   scrape_interval: 30s
 

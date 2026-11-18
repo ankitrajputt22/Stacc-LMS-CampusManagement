@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { signIn, signOut } from './support'
 
-// Only this journey uses ece25010's requests.
 test('a student asks for medical leave from ERP Attendance and the office approves it', async ({ page }) => {
   await signIn(page, 'erp', 'ece25010')
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Attendance', exact: true }).click()

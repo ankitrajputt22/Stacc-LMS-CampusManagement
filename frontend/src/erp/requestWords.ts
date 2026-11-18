@@ -22,7 +22,6 @@ export const STATUS_TONES: Record<RequestStatus, BadgeTone> = {
   CANCELLED: 'neutral',
 }
 
-/** A date such as "Tue 1 Dec 2026", from "2026-12-01" (a day, with no time zone involved). */
 export function formatDay(day: string): string {
   const [year, month, date] = day.split('-').map(Number)
   return new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(undefined, {
@@ -30,12 +29,10 @@ export function formatDay(day: string): string {
   })
 }
 
-/** A moment shown as its day in the browser's time zone, such as "Thu 7 Aug 2026". */
 export function formatMomentDay(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-/** The words to show when a request could not be sent; null when the session ended. */
 export function refusalOf(failure: unknown): string | null {
   const status = getHttpStatus(failure)
   if (status === 401) {

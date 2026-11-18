@@ -7,10 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * The official academic mapping of students and faculty as admins see and correct it: never contact details. A
- * student's current session, semester, and section are worked out from their enrolled semester enrollment, not stored.
- */
 public final class AcademicProfileRecords {
 
     private AcademicProfileRecords() {

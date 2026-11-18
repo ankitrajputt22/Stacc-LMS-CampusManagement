@@ -16,7 +16,6 @@ import { border, fieldClasses } from '../teaching/formStyles'
 import type { CampusService } from '../types/campus'
 import { DETAILS_MAX, SUBJECT_MAX } from './campusText'
 
-/** The request form for one service: only a subject and details. The requester is the account in the access token. */
 function RequestForm({ service, onClose }: { service: CampusService; onClose: () => void }) {
   const navigate = useNavigate()
   const busyRef = useRef(false)
@@ -115,7 +114,6 @@ function RequestForm({ service, onClose }: { service: CampusService; onClose: ()
   )
 }
 
-/** The active services the account may request through any role it holds, each once, as the backend lists them. */
 export function ServicesSection() {
   const services = useApiRequest(getCampusServices)
   const [open, setOpen] = useState<number | null>(null)

@@ -32,7 +32,6 @@ const STATUS_TONES: Record<CalendarEventStatus, BadgeTone> = {
   CANCELLED: 'neutral',
 }
 
-/** The badge tone of an event status; the word always says it too. */
 export function eventStatusTone(status: CalendarEventStatus): BadgeTone {
   return STATUS_TONES[status] ?? 'neutral'
 }
@@ -41,7 +40,6 @@ export function eventStatusLabel(status: CalendarEventStatus): string {
   return STATUS_LABELS[status] ?? status
 }
 
-/** "2026-27 · Semester 3 · BTECH-CSE", or "2026-27 · All semesters" for a session-wide event. */
 export function scopeText(event: { academicSessionCode: string; semesterNumber: number | null; programCode: string | null }) {
   return event.semesterNumber === null
     ? `${event.academicSessionCode} · All semesters`

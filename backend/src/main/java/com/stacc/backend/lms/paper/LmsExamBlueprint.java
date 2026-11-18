@@ -24,11 +24,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The plan of an exam paper for one LMS course: its rows in order, each saying how many bank questions of which kind a
- * section takes and the marks each carries. A paper built from it is an ordinary paper afterwards; changing the
- * blueprint changes no paper. Archived, never deleted.
- */
 @Entity
 @Table(name = "lms_exam_blueprints")
 public class LmsExamBlueprint {
@@ -57,7 +52,6 @@ public class LmsExamBlueprint {
     @Column(nullable = false, length = 10)
     private Status status = Status.ACTIVE;
 
-    // Small and always shown with the blueprint, so it is loaded with it.
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "lms_exam_blueprint_rows", joinColumns = @JoinColumn(name = "lms_exam_blueprint_id"))
     @OrderBy("position")
@@ -75,7 +69,6 @@ public class LmsExamBlueprint {
     private Instant updatedAt;
 
     protected LmsExamBlueprint() {
-        // Required by JPA.
     }
 
     public LmsExamBlueprint(LmsCourse lmsCourse, Long createdByAccountId, String title, List<LmsExamBlueprintRow> rows) {
@@ -84,7 +77,6 @@ public class LmsExamBlueprint {
         edit(title, rows);
     }
 
-    /** Replaces the title and every row together. An archived blueprint no longer changes. */
     public void edit(String title, List<LmsExamBlueprintRow> newRows) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This blueprint is archived and can no longer be changed.");
@@ -105,7 +97,6 @@ public class LmsExamBlueprint {
         }
     }
 
-    /** Archives the blueprint; archiving again changes nothing. */
     public void archive() {
         this.status = Status.ARCHIVED;
     }

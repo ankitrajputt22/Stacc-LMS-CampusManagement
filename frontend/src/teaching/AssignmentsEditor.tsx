@@ -24,11 +24,9 @@ type AssignmentFormState = { type: 'add' } | { type: 'edit'; id: number }
 
 type Changes = ReturnType<typeof useContentChanges>
 
-// A token issued before the account got the assignment permission does not carry it until the next sign-in.
 const ASSIGNMENTS_FORBIDDEN =
   'You don’t have permission to manage assignments. If your access changed recently, sign out and sign in again.'
 
-// Looks like the action buttons beside it, but it opens another page.
 const actionLinkClasses =
   'inline-flex min-h-11 items-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink hover:border-slate-400 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-8'
 
@@ -115,7 +113,6 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
         <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-control text-sm font-medium text-stacc-primary hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0">
           Instructions{srContext(`of ${name}`)}
         </summary>
-        {/* Shown as its format says; never as HTML. */}
         <FormattedText
           text={assignment.instructions}
           format={assignment.instructionsFormat}
@@ -173,11 +170,6 @@ function AssignmentItem({ lmsCourseId, assignment, now, isEditing, isConfirming,
   )
 }
 
-/**
- * The assignments of a course in the faculty page: drafts and published ones, earliest deadline first.
- * Each change goes to the backend, which checks access and the assignment permission again, and the list
- * then reloads. Archived assignments are kept but not listed. Students' work is reviewed on its own page.
- */
 export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const assignments = useFacultyAssignments(lmsCourseId)
   const changes = useContentChanges(assignments.refresh, ASSIGNMENTS_FORBIDDEN)
@@ -186,8 +178,6 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const location = useLocation()
   const { hash } = location
   const navigate = useNavigate()
-  // A reviewed AI draft arrives once, through navigation state, and only fills the add form: nothing is created until
-  // the teacher submits it. The state is then cleared, so a refresh or Back never fills the form again.
   const [prefill] = useState(() => {
     const state: unknown = location.state
     const draft = typeof state === 'object' && state !== null ? (state as { assignmentDraft?: unknown }).assignmentDraft : undefined
@@ -209,7 +199,6 @@ export function AssignmentsEditor({ lmsCourseId }: { lmsCourseId: number }) {
     }
   }, [prefill, navigate, location.pathname, location.search])
 
-  // Coming from the assignments overview (#assignments), go to this section once it has loaded.
   useEffect(() => {
     if (list !== null && hash === `#${ASSIGNMENTS_SECTION_ID}` && !arrivedHere.current) {
       arrivedHere.current = true

@@ -28,11 +28,6 @@ const SECTIONS = [
   { path: 'visitors', label: 'Visitors', Section: VisitingHoursSection },
 ] as const
 
-/**
- * Hostel Management at /admin/hostel/:section for the hostel office: applications (with review at
- * /admin/hostel/applications/:applicationId), the hostel inventory, and allocations. Approving goes through the
- * approval engine. Accounts without ADMIN see an explanation and no request is made; the backend checks every request.
- */
 export function AdminHostelPage({ review = false }: { review?: boolean }) {
   const { account } = useAuth()
   const { section } = useParams()

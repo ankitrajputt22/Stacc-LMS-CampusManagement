@@ -11,13 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * Campus notices and service requests. Notices follow the notice feed: published only, visible to any role the account
- * holds, each once, with CAMPUS_NOTICE_VIEW. Requests follow their routes: the campus office (ADMIN with
- * CAMPUS_SERVICE_MANAGE) searches every request and opens the admin review; requesters (STUDENT or FACULTY with
- * CAMPUS_SERVICE_REQUEST_VIEW_OWN) search only their own and open their request page. Statuses shown are the effective
- * ones, with the approval's outcome taken into account.
- */
 @Component
 public class CampusSearchProvider implements SearchProvider {
 

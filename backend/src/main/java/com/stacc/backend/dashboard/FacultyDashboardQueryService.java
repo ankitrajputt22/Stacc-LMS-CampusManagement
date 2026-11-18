@@ -32,14 +32,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Builds the signed-in faculty member's dashboard from the features that own the data, in a fixed number of queries.
- * The offerings come from {@link LmsFacultyManagedCourseQueryService}, the same active-teaching-assignment rule as the
- * Teaching page, so offerings without an LMS course and archived ones are listed too. Assignment and grading queries
- * are limited to the LMS courses of those offerings that faculty can still open ({@link LmsFacultyAccessPolicy}: draft
- * or published), and attendance to the offerings themselves, with no LMS course needed. It reads only, and stores
- * nothing.
- */
 @Service
 @Transactional(readOnly = true)
 public class FacultyDashboardQueryService {
@@ -67,16 +59,8 @@ public class FacultyDashboardQueryService {
         this.clock = clock;
     }
 
-    /**
-     * The dashboard of the faculty member behind this account. Without teaching assignments every section is empty;
-     * that is an answer, not an error.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public FacultyDashboardResponse getDashboard(Long userAccountId) {
         List<LmsFacultyManagedCourseResponse> taught = teachingCourses.getManagedCourses(userAccountId);
-        // One entry per offering, and per LMS course that faculty can still open. Archived LMS courses stay in the
-        // teaching list but feed no assignment or grading section.
         Map<Long, LmsFacultyManagedCourseResponse> byOffering = new LinkedHashMap<>();
         Map<Long, LmsFacultyManagedCourseResponse> byOpenLmsCourse = new LinkedHashMap<>();
         for (LmsFacultyManagedCourseResponse course : taught) {
@@ -91,7 +75,6 @@ public class FacultyDashboardQueryService {
         long upcomingCount = 0;
         List<PendingSubmission> pending = List.of();
         long pendingCount = 0;
-        // No IN list is ever sent empty: without an open LMS course these queries are not made at all.
         if (!byOpenLmsCourse.isEmpty()) {
             Page<LmsAssignment> page = assignments.findByLmsCourseIdInAndStatusInAndDueAtGreaterThanEqual(
                     byOpenLmsCourse.keySet(), LmsContentPolicy.IN_USE, clock.instant(),
@@ -142,7 +125,6 @@ public class FacultyDashboardQueryService {
                 course.lmsCourseStatus());
     }
 
-    // Course details come from the teaching list above, so no further query is made per row.
     private static UpcomingAssignment upcomingOf(LmsAssignment assignment, LmsFacultyManagedCourseResponse course) {
         return new UpcomingAssignment(assignment.getId(), course.lmsCourseId(), course.courseCode(), course.courseName(),
                 assignment.getTitle(), assignment.getDueAt(), assignment.getMaxMarks(), assignment.getStatus().name());

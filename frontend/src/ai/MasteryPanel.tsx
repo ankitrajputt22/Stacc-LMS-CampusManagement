@@ -19,10 +19,6 @@ function confidenceWords(confidence: number): string {
   return confidence >= 0.75 ? 'high confidence' : confidence >= 0.5 ? 'some confidence' : 'low confidence'
 }
 
-/**
- * My mastery (v0.15.5): each published page with the student's own mastery, worked out from their practice answers and
- * flashcard reviews. Only they see it. Clear my evidence (confirmed first) starts over for good.
- */
 export function MasteryPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

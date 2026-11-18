@@ -23,7 +23,6 @@ function idParam(value: string | null): number | undefined {
   return value !== null && /^[1-9]\d{0,17}$/.test(value) ? Number(value) : undefined
 }
 
-/** Every allocation, newest first, with Vacate for active ones. History is kept; nothing is deleted. */
 export function AllocationsSection() {
   const [searchParams, setSearchParams] = useSearchParams()
   const status = (['ACTIVE', 'VACATED'] as const).find((value) => value === searchParams.get('status')) as HostelAllocationStatus | undefined

@@ -2,16 +2,12 @@ import { type InputHTMLAttributes, type ReactNode, type Ref, type SelectHTMLAttr
 import { controlBorder, controlClasses } from './styles'
 
 type FieldLabelProps = {
-  /** The visible label. Every field has one. */
   label: ReactNode
-  /** A short help line under the field. */
   hint?: ReactNode
-  /** The message of a field that needs fixing. The field is then marked invalid and the message read with it. */
   error?: string | null
   className?: string
 }
 
-/** The label, hint, and error around one control, with their ids wired to it. */
 function FieldFrame({ id, label, hint, error, className = '', children }: FieldLabelProps & { id: string; children: ReactNode }) {
   return (
     <div className={className}>

@@ -9,11 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Person profiles: what an account may see and change about itself. The caller is always the signed-in account; no
- * route takes an account or profile ID for "my" profile. Recording profiles is the college's job (admin user
- * management, roadmap phase 0.2.6) and the demo data's.
- */
 @Service
 public class PersonProfileService {
 
@@ -37,7 +32,6 @@ public class PersonProfileService {
         this.clock = clock;
     }
 
-    /** The signed-in account's own profile. Before the college records one, the login ID stands in for the name. */
     @Transactional(readOnly = true)
     public MyPersonProfile myProfile(Long accountId) {
         UserAccount account = accounts.findById(accountId)
@@ -47,7 +41,6 @@ public class PersonProfileService {
                 .orElseGet(() -> MyPersonProfile.notRecorded(account.getLoginId()));
     }
 
-    /** Changes what the person may change: the preferred name and the phone number. Blank values clear them. */
     @Transactional
     public MyPersonProfile changeMyPersonalDetails(Long accountId, String preferredName, String phone) {
         PersonProfile profile = profiles.findByUserAccountId(accountId)
@@ -61,7 +54,6 @@ public class PersonProfileService {
         return mine(profile.getUserAccount().getLoginId(), profile);
     }
 
-    /** Changes the person's own mailing address. Blank clears it. */
     @Transactional
     public MyPersonProfile changeMyMailingAddress(Long accountId, String mailingAddress) {
         PersonProfile profile = profiles.findByUserAccountId(accountId)
@@ -75,10 +67,6 @@ public class PersonProfileService {
         return mine(profile.getUserAccount().getLoginId(), profile);
     }
 
-    /**
-     * Adds an emergency contact. The profile row is locked first, so two adds at once count the existing contacts one
-     * after the other and the limit of three holds.
-     */
     @Transactional
     public MyPersonProfile addMyEmergencyContact(Long accountId, String name, String relation, String phone) {
         PersonProfile profile = profiles.findByUserAccountIdForUpdate(accountId)
@@ -94,7 +82,6 @@ public class PersonProfileService {
         return mine(profile.getUserAccount().getLoginId(), profile);
     }
 
-    /** Removes one of the person's own emergency contacts; anyone else's answers the same 404 as a missing one. */
     @Transactional
     public MyPersonProfile removeMyEmergencyContact(Long accountId, Long contactId) {
         PersonProfile profile = profiles.findByUserAccountId(accountId)
@@ -111,7 +98,6 @@ public class PersonProfileService {
         return MyPersonProfile.of(loginId, profile, contacts.findAllByPersonProfileIdOrderByIdAsc(profile.getId()));
     }
 
-    /** Records a profile for an account that has none, for the college's own tools and the demo data. */
     @Transactional
     public PersonProfile record(UserAccount account, String fullName, String email) {
         if (profiles.findByUserAccountId(account.getId()).isPresent()) {
@@ -129,7 +115,6 @@ public class PersonProfileService {
         try {
             return profiles.saveAndFlush(profile);
         } catch (DataIntegrityViolationException race) {
-            // Another request recorded the same account or email in the meantime; the database caught it.
             throw new ApiException(HttpStatus.CONFLICT, EMAIL_TAKEN);
         }
     }

@@ -1,24 +1,14 @@
 import type { ReactNode, Ref } from 'react'
 
 type PageHeaderProps = {
-  /** The page title, the one h1 of the page. */
   title: ReactNode
-  /** A breadcrumb above the title, usually `<Breadcrumb … />`. */
   breadcrumb?: ReactNode
-  /** A short line above the title, such as a course code. */
   eyebrow?: ReactNode
-  /** One or two sentences under the title. */
   description?: ReactNode
-  /** The page's main actions, shown beside the title on wide screens and under it on phones. */
   actions?: ReactNode
-  /** For pages that move focus to their heading after a change. */
   titleRef?: Ref<HTMLHeadingElement>
 }
 
-/**
- * The top of every page: breadcrumb, eyebrow, the large navy title, a description, and the page's actions. Use it
- * instead of writing a heading by hand, so every page title looks and reads the same.
- */
 export function PageHeader({ title, breadcrumb, eyebrow, description, actions, titleRef }: PageHeaderProps) {
   return (
     <header className="mb-6">

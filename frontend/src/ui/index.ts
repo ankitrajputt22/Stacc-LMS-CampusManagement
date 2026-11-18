@@ -1,4 +1,3 @@
-// Stacc's shared interface components. New and redesigned pages are built from these; see docs/ui-design.md.
 export { Alert, type AlertTone } from './Alert'
 export { Badge, type BadgeTone } from './Badge'
 export { Button, ButtonLink } from './Button'

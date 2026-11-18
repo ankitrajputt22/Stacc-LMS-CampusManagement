@@ -15,25 +15,18 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     Optional<Department> findByCode(String code);
 
-    /** Locks the department row, so changes of who heads it happen one at a time. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select department from Department department where department.id = :departmentId")
     Optional<Department> findByIdForUpdate(@Param("departmentId") Long departmentId);
 
-    /** Every department, by code. */
     List<Department> findAllByOrderByCodeAscIdAsc();
 
-    // These compare as the unique constraints do, in the column's collation.
     boolean existsByCode(String code);
 
     boolean existsByName(String name);
 
     boolean existsByNameAndIdNot(String name, Long id);
 
-    /**
-     * Search: departments, whatever their status, whose code or name contains the text. Exact codes or names first,
-     * then those that start with the text, then the rest; within each, by code.
-     */
     @Query(value = """
             select department
             from Department department

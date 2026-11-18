@@ -21,14 +21,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One student's attendance in one session, through the official course enrollment that was current when the
- * session was created. The student, account, and course are reached through the enrollment and are not stored
- * again. A later change to the enrollment, such as a withdrawal, never removes the record.
- *
- * <p>A record starts {@link AttendanceStatus#UNMARKED}, never absent. Once it is present or absent, the faculty
- * profile that last changed it and when are kept.
- */
 @Entity
 @Table(
         name = "attendance_records",
@@ -37,8 +29,6 @@ import org.hibernate.annotations.UpdateTimestamp;
                 columnNames = {"attendance_session_id", "course_enrollment_id"}))
 public class AttendanceRecord {
 
-    // No cascade on any link: sessions, enrollments, and faculty profiles are never created or deleted
-    // through a record.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -71,22 +61,13 @@ public class AttendanceRecord {
     private Instant updatedAt;
 
     protected AttendanceRecord() {
-        // Required by JPA.
     }
 
-    /** An unmarked record. Which enrollments get one is decided by the service that creates the session. */
     public AttendanceRecord(AttendanceSession attendanceSession, CourseEnrollment courseEnrollment) {
         this.attendanceSession = Require.notNull(attendanceSession, "attendanceSession");
         this.courseEnrollment = Require.notNull(courseEnrollment, "courseEnrollment");
     }
 
-    /**
-     * Sets the status. Marking present or absent records who did it and when; setting the same status again
-     * changes nothing, so the last real change stays recorded. Going back to unmarked clears both, and is only
-     * possible while the session is open: finalized attendance can only be corrected between present and absent.
-     *
-     * @return whether anything changed
-     */
     public boolean mark(AttendanceStatus newStatus, FacultyProfile by, Instant at) {
         Require.notNull(newStatus, "status");
         if (newStatus == status) {
@@ -102,7 +83,6 @@ public class AttendanceRecord {
             return true;
         }
         this.markedByFacultyProfile = Require.notNull(by, "markedBy");
-        // The database keeps microseconds, so the answer shows the same moment as every later read.
         this.markedAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
         this.status = newStatus;
         return true;

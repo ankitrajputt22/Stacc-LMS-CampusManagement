@@ -16,18 +16,12 @@ function Fact({ icon, children }: { icon: NavIconName; children: string }) {
   )
 }
 
-/**
- * One course in the list, shown with exactly what the backend sent: its code, its name as a real link to the course
- * page (stretched over the whole card, so screen readers hear one clear link while the whole card can be clicked),
- * credits, section, and teachers.
- */
 export function CourseSummary({ course }: CourseSummaryProps) {
   const credits = Number(course.credits)
   return (
     <article className="group relative h-full rounded-panel border border-t-4 border-line border-t-teal-600 bg-surface px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] hover:border-slate-400 hover:border-t-teal-600 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-stacc-primary">
       <p className="text-lg font-bold break-words text-ink">{course.courseCode}</p>
       <h3 className="text-xl leading-7 font-semibold break-words text-portal-navy">
-        {/* The course route uses the LMS course ID, not the course or offering ID. */}
         <Link
           to={`/courses/${course.lmsCourseId}`}
           className="underline underline-offset-4 after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:text-stacc-primary"

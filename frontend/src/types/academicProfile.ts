@@ -1,10 +1,8 @@
-// Academic profiles as the API sends them. Mirrors AcademicProfileRecords and MyAcademicProfileResponse in the backend.
 import type { ActiveStatus, CourseType, DegreeType, EnrollmentStatus, TeachingRole } from './admin'
 
 export type CurrentPlacement = {
   academicSessionCode: string
   semesterNumber: number
-  /** Null when not placed in a section. */
   sectionCode: string | null
 }
 
@@ -19,7 +17,6 @@ export type StudentProfileSummary = {
   departmentCode: string
   admissionSessionCode: string
   status: ActiveStatus
-  /** Null when the student is not enrolled in any semester now. */
   current: CurrentPlacement | null
 }
 
@@ -40,9 +37,7 @@ export type MyCourseRecord = {
   credits: number
   courseType: CourseType
   status: EnrollmentStatus
-  /** The published result, or null when none is published. */
   result: { marksObtained: number; maxMarks: number; gradeCode: string | null; publishedAt: string } | null
-  /** Who teaches the offering now, primary teacher first, by name. */
   teachers: string[]
 }
 
@@ -68,7 +63,6 @@ export type MyAcademicProfile = {
     status: ActiveStatus
     current: CurrentPlacement | null
     semesters: MySemesterRecord[]
-    /** The name of who heads the program's department now, or null when nobody does. */
     headOfDepartment: string | null
   } | null
   faculty: {
@@ -86,7 +80,6 @@ export type MyAcademicProfile = {
       sectionCode: string | null
       role: TeachingRole
     }[]
-    /** The name of who heads their primary department now, or null when nobody does. */
     headOfDepartment: string | null
   } | null
 }

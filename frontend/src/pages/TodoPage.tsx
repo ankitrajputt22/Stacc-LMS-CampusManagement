@@ -1,7 +1,6 @@
 import { PageHeader } from '../ui'
 import { TodoList } from '../todo/TodoList'
 
-/** /todo: the signed-in account's whole To-Do list. */
 export function TodoPage() {
   return (
     <>

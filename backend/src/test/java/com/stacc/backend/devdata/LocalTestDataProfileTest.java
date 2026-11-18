@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.stacc.backend.DatabaseFreeApiTest;
 import org.junit.jupiter.api.Test;
 
-/** Starts the application without the seed profile, as every normal run does. */
 class LocalTestDataProfileTest extends DatabaseFreeApiTest {
 
     @Test

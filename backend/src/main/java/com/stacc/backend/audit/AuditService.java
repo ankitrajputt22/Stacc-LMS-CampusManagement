@@ -8,11 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Records a sensitive action, in the caller's transaction, so the change and its record are saved together or not at
- * all. The details are short plain text chosen by the caller; never pass a password, hash, token, phone number, or
- * email. The request ID is taken from the current request, so a record can be matched with its log lines.
- */
 @Service
 public class AuditService {
 

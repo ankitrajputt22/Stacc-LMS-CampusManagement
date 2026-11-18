@@ -9,11 +9,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * What an admin may send to create or change a course offering or an enrollment. No request carries an ID of its
- * own or of the record it adds to: the route names those. Other records are named by ID and loaded on the server.
- * New enrollments always start {@code ENROLLED}, so a create request has no status.
- */
 public final class OfferingEnrollmentRequests {
 
     private OfferingEnrollmentRequests() {

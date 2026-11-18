@@ -5,10 +5,6 @@ import java.time.LocalDate;
 import com.stacc.backend.academic.semester.Semester;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * An official calendar event as students, faculty, and admins see it on their calendar: what it is, when, and which
- * session and semester it belongs to, by code and number. Draft events are never sent this way.
- */
 public record AcademicCalendarEventResponse(
         @Schema(example = "14")
         Long eventId,

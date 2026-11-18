@@ -1,9 +1,6 @@
 import type { HelpdeskTicketPriority, HelpdeskTicketStatus } from '../types/helpdesk'
 import { TICKET_PRIORITIES, TICKET_STATUSES } from './helpdeskText'
 
-// Filters live in the address, so the list comes back the same after opening a ticket. Anything unknown in the address
-// is ignored rather than sent.
-
 export function statusParam(value: string | null): HelpdeskTicketStatus | undefined {
   return TICKET_STATUSES.find((status) => status === value)
 }

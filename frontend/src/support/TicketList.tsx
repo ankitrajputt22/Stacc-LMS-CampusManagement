@@ -7,16 +7,10 @@ import { TicketPriorityTag, TicketStatusTag } from './TicketTags'
 
 type TicketListProps = {
   tickets: HelpdeskTicketSummary[]
-  /** Such as "My tickets". */
   label: string
-  /** The support queue also shows who raised each ticket and who has it. */
   queue?: boolean
 }
 
-/**
- * Tickets as a table on wide screens and stacked records on phones: the number (the row's one link to the shared
- * ticket page), the subject, the category, the tags, and when it last changed. There is never a description here.
- */
 export function TicketList({ tickets, label, queue = false }: TicketListProps) {
   return (
     <div className="overflow-hidden rounded-panel border border-line bg-surface">

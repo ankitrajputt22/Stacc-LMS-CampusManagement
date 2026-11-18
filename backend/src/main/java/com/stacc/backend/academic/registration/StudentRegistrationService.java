@@ -43,12 +43,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Students register for course offerings of their own semester and section, and drop them before the drop deadline.
- * The student always comes from the access token. Registration is all or nothing: every chosen offering is checked
- * under row locks (the student's semester enrollments, then the offerings in ID order) before any enrollment is made,
- * so a capacity is never exceeded. Nothing is deleted: a dropped enrollment stays as history.
- */
 @Service
 @Transactional
 public class StudentRegistrationService {
@@ -87,7 +81,6 @@ public class StudentRegistrationService {
         this.clock = clock;
     }
 
-    /** The student's registration page: each semester they may register in now, its offerings, and their courses. */
     @Transactional(readOnly = true)
     public RegistrationOverview overview(Long userAccountId) {
         StudentProfile profile = profileOf(userAccountId);
@@ -152,10 +145,6 @@ public class StudentRegistrationService {
         return new RegistrationOverview(active, answer);
     }
 
-    /**
-     * Registers the student for every chosen offering, or for none: the first problem answers with a plain message
-     * naming the course, and nothing is saved. The answer lists the new course enrollments.
-     */
     public RegistrationResult register(Long userAccountId, List<Long> courseOfferingIds) {
         if (new HashSet<>(courseOfferingIds).size() != courseOfferingIds.size()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, REPEATED);
@@ -166,14 +155,12 @@ public class StudentRegistrationService {
         }
         Instant now = clock.instant();
 
-        // Load every offering first, so a missing one changes nothing.
         Map<Long, CourseOffering> chosen = new TreeMap<>();
         for (Long id : courseOfferingIds) {
             chosen.put(id, offerings.findWithContextById(id)
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, OFFERING_MISSING)));
         }
 
-        // Lock the student's semester enrollments, then the offerings, each in ID order, as admin enrollment does.
         Map<Long, SemesterEnrollment> termBySemester = new TreeMap<>();
         for (CourseOffering offering : chosen.values()) {
             Long semesterId = offering.getSemester().getId();
@@ -250,10 +237,6 @@ public class StudentRegistrationService {
         return new RegistrationResult(registered, registered.size(), credits);
     }
 
-    /**
-     * Drops one of the student's own enrolled courses before the semester's drop deadline. Another student's
-     * enrollment answers the same 404 as a missing one.
-     */
     public RegisteredCourse drop(Long userAccountId, Long courseEnrollmentId) {
         CourseEnrollment enrollment = courseEnrollments.findByIdForUpdate(courseEnrollmentId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, ENROLLMENT_MISSING));
@@ -286,10 +269,6 @@ public class StudentRegistrationService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NO_PROFILE));
     }
 
-    /**
-     * The semesters the student may register in: their enrolled semester enrollments of semesters that are not closed,
-     * and of those, only the ones in the college's current session when any is.
-     */
     private List<SemesterEnrollment> registrationTerms(StudentProfile profile) {
         List<SemesterEnrollment> open = semesterEnrollments.findAllWithContextByStudentProfileId(profile.getId()).stream()
                 .filter(term -> term.getStatus() == SemesterEnrollmentStatus.ENROLLED)

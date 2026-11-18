@@ -5,7 +5,6 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/** A source of a saved answer, as the server rebuilt it when the answer was saved (v0.15.1). Never a storage key. */
 @Embeddable
 public class AiSavedSource {
 
@@ -34,7 +33,6 @@ public class AiSavedSource {
     private Long pageId;
 
     protected AiSavedSource() {
-        // Required by JPA.
     }
 
     public AiSavedSource(int position, String sourceType, long sourceId, String title, String fileName, Integer pageNumber,

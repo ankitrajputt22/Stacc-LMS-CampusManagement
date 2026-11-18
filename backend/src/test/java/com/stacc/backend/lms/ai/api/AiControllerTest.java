@@ -29,10 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * The AI routes through Spring Security with AI switched off, as it is by default: rules, validation, the 503 answer,
- * and that AI being unavailable neither breaks other routes nor writes any academic or assignment data.
- */
 class AiControllerTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = token(70, "ROLE_STUDENT", "LMS_COURSE_VIEW", "AI_STUDY_USE");
@@ -68,7 +64,6 @@ class AiControllerTest extends DatabaseFreeApiTest {
         return request.contentType(MediaType.APPLICATION_JSON).content(body);
     }
 
-    // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> studentRoutes() {
         return List.of(json(post("/api/v1/lms/courses/7/ai/ask"), "{\"question\":\"What is a key?\"}"),
                 post("/api/v1/lms/courses/7/ai/topics/3/summary"),
@@ -131,7 +126,6 @@ class AiControllerTest extends DatabaseFreeApiTest {
         String withRights = token(80, "ROLE_FACULTY", "FACULTY_COURSE_VIEW", "AI_TEACHING_USE", "LMS_QUESTION_BANK_MANAGE",
                 "LMS_ASSIGNMENT_MANAGE");
         assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":9}"), withRights)).isEqualTo(400);
-        // The stand-ins hold no question or assignment: the same 404 as for one the faculty member does not teach.
         assertThat(statusOf(post(answer), withRights)).isEqualTo(404);
         assertThat(statusOf(json(post(rubric), "{\"criteriaCount\":3}"), withRights)).isEqualTo(404);
     }
@@ -159,7 +153,6 @@ class AiControllerTest extends DatabaseFreeApiTest {
                 assertThat(statusOf(route, denied)).isEqualTo(403);
             }
         }
-        // The note stand-in has no rows: a note that is missing or another student's is the same 404.
         assertThat(statusOf(json(put("/api/v1/lms/courses/7/ai/notes/4"), "{\"title\":\"Mine\",\"content\":\"Text\"}"), STUDENT)).isEqualTo(404);
         assertThat(statusOf(delete("/api/v1/lms/courses/7/ai/notes/4"), STUDENT)).isEqualTo(404);
         assertThat(statusOf(get("/api/v1/lms/courses/7/ai/notes"), STUDENT)).isEqualTo(200);
@@ -215,7 +208,6 @@ class AiControllerTest extends DatabaseFreeApiTest {
             }
         }
         for (MockHttpServletRequestBuilder route : studentRoutes()) {
-            // Allowed through, and then AI is switched off.
             assertThat(statusOf(route, STUDENT)).isEqualTo(503);
         }
     }
@@ -299,7 +291,6 @@ class AiControllerTest extends DatabaseFreeApiTest {
         for (MockHttpServletRequestBuilder route : facultyRoutes()) {
             statusOf(route, FACULTY);
         }
-        // The student's course list does not depend on AI.
         mockMvc.perform(get("/api/v1/lms/my-courses").header(HttpHeaders.AUTHORIZATION, STUDENT)).andExpect(status().isOk());
         verifyNoInteractions(assignments, submissions, grades, results, attendance);
     }

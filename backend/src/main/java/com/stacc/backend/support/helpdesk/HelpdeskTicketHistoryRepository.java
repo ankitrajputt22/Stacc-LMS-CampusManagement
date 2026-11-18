@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface HelpdeskTicketHistoryRepository extends JpaRepository<HelpdeskTicketHistory, Long> {
 
-    /** A ticket's audit trail, oldest first, with each actor. */
     @Query("""
             select entry
             from HelpdeskTicketHistory entry

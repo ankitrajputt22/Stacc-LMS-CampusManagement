@@ -37,10 +37,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Checks which routes need a signed-in account. "/api/v1/test/whoami" exists only in test code
- * and stands in for any protected API route.
- */
 class ApiRouteProtectionTest extends DatabaseFreeApiTest {
 
     private static final String PROTECTED_ROUTE = "/api/v1/test/whoami";
@@ -118,7 +114,6 @@ class ApiRouteProtectionTest extends DatabaseFreeApiTest {
     void loginIsReachableWithoutAToken() throws Exception {
         when(userAccountRepository.findWithRolesAndPermissionsByLoginId(anyString())).thenReturn(Optional.empty());
 
-        // A malformed request and wrong credentials are answered by the login itself, not by the token check.
         mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Validation failed"));

@@ -30,15 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Exam blueprints and papers of a course, for the faculty who teach it. Every action checks the faculty access policy;
- * for an existing blueprint or paper the course comes from the stored record, never from the client. Questions come
- * only from the course's own bank, active and reviewed, and nothing is copied from it.
- *
- * <p>Finalizing locks the course row, then the paper row, and reads the questions with a shared lock; a bank edit locks
- * the course row first too and then refuses questions in final papers, so the two run one after the other and a final
- * paper never prints a question edited after it was finalized.
- */
 @Service
 public class LmsExamPaperService {
 
@@ -75,20 +66,16 @@ public class LmsExamPaperService {
         this.clock = clock;
     }
 
-    /** One row of a blueprint as written, before its position is given. */
     public record RowInput(String sectionTitle, QuestionType questionType, QuestionDifficulty difficulty, BloomLevel bloomLevel,
             Long outcomeId, String topic, int questionCount, BigDecimal marksEach) {
     }
 
-    /** One question of a paper as chosen in the builder. */
     public record PaperQuestionInput(Long questionId, String sectionTitle, BigDecimal marks) {
     }
 
-    /** A paper with how many questions it has and the marks they carry together. */
     public record PaperSummary(LmsExamPaper paper, long questionCount, BigDecimal totalMarks) {
     }
 
-    /** A paper with its course's code and name and its questions in order, each with its bank question. */
     public record PaperDetail(LmsExamPaper paper, String courseCode, String courseName, List<LmsExamPaperQuestion> questions) {
 
         public BigDecimal totalMarks() {
@@ -96,9 +83,6 @@ public class LmsExamPaperService {
         }
     }
 
-    // --- Blueprints
-
-    /** Every blueprint of the course, archived ones included, newest first. */
     @Transactional(readOnly = true)
     public List<LmsExamBlueprint> blueprints(Long userAccountId, Long lmsCourseId) {
         requireCourse(userAccountId, lmsCourseId);
@@ -114,7 +98,6 @@ public class LmsExamPaperService {
         return blueprints.saveAndFlush(valid(() -> new LmsExamBlueprint(lmsCourse, userAccountId, title, written)));
     }
 
-    /** Replaces the title and rows of an active blueprint. Papers built from it before stay as they are. */
     @Transactional
     public LmsExamBlueprint editBlueprint(Long userAccountId, Long blueprintId, String title, List<RowInput> rows) {
         LmsExamBlueprint blueprint = lockedBlueprint(userAccountId, blueprintId);
@@ -133,9 +116,6 @@ public class LmsExamPaperService {
         return blueprint;
     }
 
-    // --- Papers
-
-    /** Every paper of the course, archived ones included, newest first. */
     @Transactional(readOnly = true)
     public List<PaperSummary> papers(Long userAccountId, Long lmsCourseId) {
         requireCourse(userAccountId, lmsCourseId);
@@ -153,7 +133,6 @@ public class LmsExamPaperService {
         }).toList();
     }
 
-    /** Adds an empty draft paper. */
     @Transactional
     public LmsExamPaper addPaper(Long userAccountId, Long lmsCourseId, String title, String instructions, Integer durationMinutes) {
         requireCourse(userAccountId, lmsCourseId);
@@ -162,11 +141,6 @@ public class LmsExamPaperService {
         return papers.saveAndFlush(valid(() -> new LmsExamPaper(lmsCourse, userAccountId, null, title, instructions, durationMinutes)));
     }
 
-    /**
-     * Builds a draft paper from an active blueprint: for each row in order, that many active, reviewed bank questions
-     * matching its filters, chosen at random and never twice in the paper, with the row's section and marks. When the
-     * bank has too few for a row, nothing is saved (409, naming the row).
-     */
     @Transactional
     public LmsExamPaper buildPaper(Long userAccountId, Long blueprintId, String title, String instructions, Integer durationMinutes) {
         LmsExamBlueprint blueprint = lockedBlueprint(userAccountId, blueprintId);
@@ -191,11 +165,6 @@ public class LmsExamPaperService {
     public static final int MAX_SETS = 4;
     static final String[] SET_NAMES = {"A", "B", "C", "D"};
 
-    /**
-     * Builds two to four draft papers from one blueprint (v0.14.4), titled "… – Set A", "… – Set B", and so on, each by
-     * the blueprint's rows. With {@code distinct}, no question is in two sets; when the bank is too small for that, nothing
-     * is saved (409, naming the set and row). All sets are made in one transaction.
-     */
     @Transactional
     public List<LmsExamPaper> buildPaperSets(Long userAccountId, Long blueprintId, String title, String instructions,
             Integer durationMinutes, int sets, boolean distinct) {
@@ -241,7 +210,6 @@ public class LmsExamPaperService {
         return List.copyOf(made);
     }
 
-    /** How many questions one blueprint row needs and how many the bank has for it now (v0.14.4). */
     public record RowShortfall(LmsExamBlueprintRow row, int available) {
 
         public int missing() {
@@ -249,11 +217,6 @@ public class LmsExamPaperService {
         }
     }
 
-    /**
-     * For each row of a blueprint, how many active, reviewed bank questions match it, counted the way a build takes them:
-     * rows in order, a question used by an earlier row not counted again. Only reads.
-     */
-    /** A blueprint's rows with what the bank has for each, and the blueprint's course. */
     public record BlueprintShortfall(long lmsCourseId, List<RowShortfall> rows) {
     }
 
@@ -282,11 +245,9 @@ public class LmsExamPaperService {
                 question.getOutcome() == null ? null : question.getOutcome().getId(), question.getTopic());
     }
 
-    /** One question picked for a blueprint row. */
     record Chosen(LmsExamBlueprintRow row, LmsQuestion question) {
     }
 
-    /** Picks questions for every row in order, at random among those that match and are not taken yet. */
     static List<Chosen> choose(List<LmsExamBlueprintRow> rows, List<LmsQuestion> usable, Random random) {
         Set<Long> taken = new HashSet<>();
         List<Chosen> chosen = new ArrayList<>();
@@ -319,7 +280,6 @@ public class LmsExamPaperService {
         return detailOf(paper);
     }
 
-    /** Changes the title, instructions, and duration of a draft paper. */
     @Transactional
     public PaperDetail editPaper(Long userAccountId, Long paperId, String title, String instructions, Integer durationMinutes) {
         LmsExamPaper paper = lockedPaper(userAccountId, paperId);
@@ -331,7 +291,6 @@ public class LmsExamPaperService {
         return paper(userAccountId, paperId);
     }
 
-    /** Replaces every question of a draft paper with the builder's list, in its order. */
     @Transactional
     public PaperDetail setQuestions(Long userAccountId, Long paperId, List<PaperQuestionInput> chosen) {
         LmsExamPaper paper = lockedPaper(userAccountId, paperId);
@@ -368,10 +327,6 @@ public class LmsExamPaperService {
         return paper(userAccountId, paperId);
     }
 
-    /**
-     * Makes a draft paper final: it needs at least one question, each still active and reviewed. Its details and
-     * questions no longer change, and its questions can no longer be edited in the bank.
-     */
     @Transactional
     public PaperDetail finalizePaper(Long userAccountId, Long paperId) {
         Long lmsCourseId = requirePaper(userAccountId, paperId);
@@ -403,8 +358,6 @@ public class LmsExamPaperService {
         papers.saveAndFlush(paper);
         return paper(userAccountId, paperId);
     }
-
-    // --- Helpers
 
     private static boolean usable(LmsQuestion question) {
         return question.isActive() && question.getReviewStatus() == QuestionReviewStatus.REVIEWED;
@@ -460,7 +413,6 @@ public class LmsExamPaperService {
         }
     }
 
-    // The rules live on the records; their messages are written for people.
     private static <T> T valid(Supplier<T> make) {
         try {
             return make.get();

@@ -7,7 +7,6 @@ import java.util.List;
 import com.stacc.backend.lms.assignment.submission.LmsSubmissionGrade;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The grade of one attempt. Who graded it is kept for the record but not sent. */
 public record LmsSubmissionGradeResponse(
         @Schema(example = "18.00")
         BigDecimal marksAwarded,
@@ -25,7 +24,6 @@ public record LmsSubmissionGradeResponse(
         @Schema(description = "The points per criterion when graded with a rubric; empty otherwise.")
         List<RubricScore> rubric) {
 
-    /** One criterion's points and comment, with its title and maximum as they were when graded. */
     public record RubricScore(String criterion, BigDecimal points, BigDecimal maxPoints, String comment) {
     }
 

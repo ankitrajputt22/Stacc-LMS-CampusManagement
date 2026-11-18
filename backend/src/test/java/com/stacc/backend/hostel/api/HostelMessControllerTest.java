@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Menus are managed by the hostel office and wardens with the mess permission; residents read and rate only. */
 class HostelMessControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

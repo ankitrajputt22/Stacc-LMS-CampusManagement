@@ -15,10 +15,6 @@ const HOME_VIEWS: { value: LmsCourseHomeView; label: string }[] = [
   { value: 'SYLLABUS', label: 'Syllabus' },
 ]
 
-/**
- * What students see first when they open the course, and an optional welcome message in formatted text, shown on the
- * overview. Official course details come from the academic records and cannot change here.
- */
 export function CourseHomeSettings({ course }: { course: LmsFacultyCourseContent }) {
   const queryClient = useQueryClient()
   const [homeView, setHomeView] = useState<LmsCourseHomeView>(course.homeView)

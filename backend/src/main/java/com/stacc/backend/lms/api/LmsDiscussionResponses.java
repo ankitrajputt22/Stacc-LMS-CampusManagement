@@ -14,7 +14,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** Requests and responses of course discussions. Authors are shown by login ID only, never by name or contact. */
 public final class LmsDiscussionResponses {
 
     private LmsDiscussionResponses() {

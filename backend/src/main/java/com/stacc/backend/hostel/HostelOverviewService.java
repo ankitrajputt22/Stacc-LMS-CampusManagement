@@ -10,10 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Read-only views worked out live from beds and ACTIVE allocations: occupancy per hostel, a hostel's bed map, and a
- * student's place in the queue for a bed. Nothing here is stored. Who may ask is checked by the caller.
- */
 @Service
 @Transactional(readOnly = true)
 public class HostelOverviewService {
@@ -32,7 +28,6 @@ public class HostelOverviewService {
     public record BedMap(Long hostelId, String code, String name, List<RoomRow> rooms) {
     }
 
-    /** A waiting student's place: 1 is next. Null position when the application is not waiting for a bed. */
     public record QueuePlace(Integer position, int waiting) {
     }
 
@@ -49,7 +44,6 @@ public class HostelOverviewService {
         this.applications = applications;
     }
 
-    /** Occupancy of the given hostels, or of all with null. Counts active beds in active rooms only. */
     public List<Occupancy> occupancy(List<Long> hostelIds) {
         Map<Long, HostelBedRepository.HostelBedCount> bedCounts = beds.countBedsByHostel().stream()
                 .collect(Collectors.toMap(HostelBedRepository.HostelBedCount::getHostelId, Function.identity()));
@@ -69,7 +63,6 @@ public class HostelOverviewService {
                 .toList();
     }
 
-    /** Every room and bed of a hostel with its state and, while occupied, the student's login ID. */
     public BedMap bedMap(Long hostelId) {
         Hostel hostel = hostels.findById(hostelId == null ? -1L : hostelId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hostel not found."));
@@ -94,7 +87,6 @@ public class HostelOverviewService {
         return new BedMap(hostel.getId(), hostel.getCode(), hostel.getName(), rooms);
     }
 
-    /** Where an approved application waiting for a bed stands among those of its session. */
     public QueuePlace queuePlace(HostelApplication application) {
         List<Long> waiting = applications.findWaitingForBed(application.getAcademicSession().getId());
         int index = waiting.indexOf(application.getId());

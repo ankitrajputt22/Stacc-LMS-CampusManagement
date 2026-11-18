@@ -9,7 +9,6 @@ import java.time.Instant;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** Decisions move forward only, a decided idea is no longer withdrawn, and scores are 1 to 5. */
 class InnovationIdeaTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

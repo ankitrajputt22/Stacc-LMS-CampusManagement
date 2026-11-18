@@ -26,17 +26,12 @@ import { textLinkClasses } from '../ui/styles'
 const COURSES = { to: '/courses', label: 'Courses' }
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
-/**
- * One section of a course for the signed-in student, such as Modules: the course is loaded (from the shared cache) and
- * its states shown the same way on every section page, then the section's title and its own part.
- */
 export function StudentCourseSection({
   title,
   parent,
   children,
 }: {
   title: string
-  /** The course section a page sits in, such as Quizzes, as a path under the course and its name. */
   parent?: { path: string; label: string }
   children: (course: LmsCourseDetail) => ReactNode
 }) {
@@ -45,8 +40,6 @@ export function StudentCourseSection({
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])
   const course = useLmsCourse(isStudent ? lmsCourseId : null)
 
-  // The course and its facts above the section's own title, which is the page's one h1. A page inside a section,
-  // such as one quiz, keeps a breadcrumb back to the section.
   const header = (loaded?: LmsCourseDetail) => (
     <CourseSectionHeader
       course={loaded && courseBanner(loaded)}
@@ -99,7 +92,6 @@ function Modules({ course }: { course: LmsCourseDetail }) {
   )
 }
 
-/** /courses/:lmsCourseId/modules: the published modules and their pages, with the student's own progress. */
 export function CourseModulesPage() {
   return <StudentCourseSection title="Modules">{(course) => <Modules course={course} />}</StudentCourseSection>
 }
@@ -171,7 +163,6 @@ function Pages({ course }: { course: LmsCourseDetail }) {
   )
 }
 
-/** /courses/:lmsCourseId/pages: every published page of the course in course order, with its module and progress. */
 export function CoursePagesIndexPage() {
   return <StudentCourseSection title="Pages">{(course) => <Pages course={course} />}</StudentCourseSection>
 }
@@ -181,7 +172,6 @@ function Assignments({ course }: { course: LmsCourseDetail }) {
   return <CourseAssignments lmsCourseId={course.lmsCourseId} assignments={assignments} standalone />
 }
 
-/** /courses/:lmsCourseId/assignments: the course's published assignments. */
 export function CourseAssignmentsPage() {
   return <StudentCourseSection title="Assignments">{(course) => <Assignments course={course} />}</StudentCourseSection>
 }
@@ -191,7 +181,6 @@ function Announcements({ course }: { course: LmsCourseDetail }) {
   return <CourseAnnouncements announcements={announcements} lmsCourseId={course.lmsCourseId} standalone />
 }
 
-/** /courses/:lmsCourseId/announcements: the course's published announcements, newest first. */
 export function CourseAnnouncementsPage() {
   return <StudentCourseSection title="Announcements">{(course) => <Announcements course={course} />}</StudentCourseSection>
 }

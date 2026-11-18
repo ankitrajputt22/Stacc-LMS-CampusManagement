@@ -4,7 +4,6 @@ import { courseColor } from './courseColors'
 
 export type PlannerItem = {
   key: string
-  /** The course the colour and label come from. */
   colorId: number
   courseCode: string
   courseName: string
@@ -12,7 +11,6 @@ export type PlannerItem = {
   to: string
   dueAt: string
   maxMarks: number
-  /** A short word beside the item, such as Draft, when it matters. */
   tag?: string
 }
 
@@ -32,11 +30,6 @@ function AssignmentGlyph({ color }: { color: string }) {
   )
 }
 
-/**
- * Items with a deadline, planner style: one heading per local day in time order, then each item with its course's
- * colour tag, the course and kind, the title linking to its page, and the marks and local due time. Only what the
- * backend sent; days without items are not shown.
- */
 export function PlannerList({ items, headingLevel }: { items: PlannerItem[]; headingLevel: 3 | 4 }) {
   const Heading = headingLevel === 3 ? 'h3' : 'h4'
   const days: { key: string; label: string; items: PlannerItem[] }[] = []

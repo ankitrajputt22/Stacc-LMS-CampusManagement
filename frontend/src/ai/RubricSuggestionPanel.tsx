@@ -10,10 +10,6 @@ import { AiMessage } from './AiMessage'
 import { DRAFT_WARNING } from './aiText'
 import { useAiAction } from './useAiAction'
 
-/**
- * Rubric suggestions (v0.14.5): AI suggests criteria and levels for one assignment, adding up to its maximum marks.
- * Nothing is saved: Use in rubric form opens the normal form filled in, to edit and create.
- */
 export function RubricSuggestionPanel({ lmsCourseId, onUse }: { lmsCourseId: number; onUse: (draft: RubricDraft) => void }) {
   const assignments = useFacultyAssignments(lmsCourseId)
   const [assignmentId, setAssignmentId] = useState('')

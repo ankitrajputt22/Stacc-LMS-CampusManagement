@@ -34,10 +34,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the admin academic-master routes through Spring Security. The services are stand-ins, so these tests are
- * about who gets in, what reaches the services, and what is sent back.
- */
 class AdminAcademicControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/admin/academic/";

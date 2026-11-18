@@ -33,15 +33,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Calls the real route through Spring Security. The query services are stand-ins, so these tests
- * are about who gets in and what is sent back. Which courses a faculty member gets is tested separately.
- */
 class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
 
     private static final String FACULTY_MY_COURSES = "/api/v1/lms/faculty/my-courses";
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-FACULTY-1";
     private static final long ACCOUNT_ID = 21;
 
@@ -168,7 +163,6 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
     @Test
     void facultyMemberWithoutThePermissionIsForbidden() throws Exception {
         expectForbidden(tokenWith("ROLE_FACULTY"));
-        // The student course permission is a different feature and does not stand in for it.
         expectForbidden(tokenWith("ROLE_FACULTY", "LMS_COURSE_VIEW"));
 
         verifyNoInteractions(facultyCourseQueryService);
@@ -229,7 +223,6 @@ class LmsFacultyCourseControllerTest extends DatabaseFreeApiTest {
         ReflectionTestUtils.setField(facultyMember, "id", ACCOUNT_ID);
         facultyMember.assignRole(facultyRole);
 
-        // A token issued before the role held the permission does not carry it, until the next sign-in.
         UserAccount signedInEarlier = new UserAccount("TEST-FACULTY-2", "example-hash-value");
         ReflectionTestUtils.setField(signedInEarlier, "id", 22L);
         signedInEarlier.assignRole(new Role(RoleName.FACULTY));

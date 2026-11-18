@@ -37,12 +37,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Builds a person's To-Do list live on every request, one part per role and permission held: a student's unsubmitted
- * assignments (from the courses the student course list allows), a teacher's work waiting for grading and open
- * attendance (from the offerings taught), and anyone's pending approval tasks (from the approval engine's own rule).
- * Nothing is stored but dismissals. Keys name each item so a dismissal can hide it.
- */
 @Service
 public class TodoService {
 
@@ -101,7 +95,6 @@ public class TodoService {
                         (open.asMentor() ? "Mentoring " : "With your mentor ") + open.otherLoginId(), open.dueAt(), "/mentoring"));
             }
         }
-        // Study sessions the student added from a study plan (v0.15.7), from their day until dismissed.
         if (held.contains("ROLE_STUDENT") && held.contains("AI_STUDY_USE")) {
             for (AiStudySession session : studyPlans.dueForTodo(accountId)) {
                 items.add(new TodoItem("STUDY:" + session.getId(), "STUDY", session.getTitle(), session.getMinutes() + " min of study",
@@ -116,7 +109,6 @@ public class TodoService {
                 .toList();
     }
 
-    /** Hides one item for this account. Dismissing again changes nothing. */
     @Transactional
     public void dismiss(Long accountId, String key) {
         if (key == null || !KEY.matcher(key).matches()) {
@@ -126,7 +118,6 @@ public class TodoService {
             try {
                 dismissals.saveAndFlush(new TodoDismissal(accountId, key, clock.instant().truncatedTo(ChronoUnit.MICROS)));
             } catch (DataIntegrityViolationException alreadyDismissed) {
-                // Dismissed by another request at the same moment: the result is the same.
             }
         }
     }
@@ -178,7 +169,6 @@ public class TodoService {
         return items;
     }
 
-    // Only links to pages that exist for the request's kind; the page checks access again.
     private static String approvalPath(ApprovalTaskSummary task) {
         return switch (task.sourceType()) {
             case "HOSTEL_APPLICATION" -> "/admin/hostel/applications/" + task.sourceId();

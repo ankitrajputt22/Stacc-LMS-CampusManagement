@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One person's delivery choice for one category. Without a row, the Inbox is on and nothing is emailed. */
 @Entity
 @Table(name = "notification_preferences")
 public class NotificationPreference {
@@ -38,7 +37,6 @@ public class NotificationPreference {
     private Instant updatedAt;
 
     protected NotificationPreference() {
-        // Required by JPA.
     }
 
     public NotificationPreference(Long userAccountId, NotificationCategory category) {

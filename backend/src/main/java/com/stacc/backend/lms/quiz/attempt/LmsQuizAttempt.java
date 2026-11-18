@@ -20,18 +20,10 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One student's attempt at a published quiz, through their official course enrollment. Its deadline (the earlier of
- * the time limit from the start and the quiz's closing time) and the due date are fixed when it starts, so later
- * changes to the quiz never move them. The server's clock decides: answers are taken until the deadline, with a short
- * grace for answers already on their way, and an attempt handed in late, or closed after its deadline, is
- * {@link QuizAttemptStatus#EXPIRED} with the deadline as its end.
- */
 @Entity
 @Table(name = "lms_quiz_attempts")
 public class LmsQuizAttempt {
 
-    /** How long after the deadline an answer already on its way is still taken. */
     public static final Duration GRACE = Duration.ofSeconds(15);
 
     @Id
@@ -74,7 +66,6 @@ public class LmsQuizAttempt {
     private Instant updatedAt;
 
     protected LmsQuizAttempt() {
-        // Required by JPA.
     }
 
     public LmsQuizAttempt(LmsQuiz quiz, CourseEnrollment courseEnrollment, int attemptNumber, Instant startedAt) {
@@ -86,7 +77,6 @@ public class LmsQuizAttempt {
         this.dueAtSnapshot = quiz.getDueAt();
     }
 
-    /** The earlier of the time limit counted from the start and the quiz's closing time; null when neither is set. */
     public static Instant deadlineFor(LmsQuiz quiz, Instant startedAt) {
         Instant limit = quiz.getTimeLimitMinutes() == null ? null : startedAt.plus(Duration.ofMinutes(quiz.getTimeLimitMinutes()));
         Instant closes = quiz.getAvailableUntil();
@@ -96,7 +86,6 @@ public class LmsQuizAttempt {
         return closes == null || limit.isBefore(closes) ? limit : closes;
     }
 
-    /** How the attempt looks now. */
     public QuizAttemptState stateAt(Instant now) {
         return switch (status) {
             case SUBMITTED -> QuizAttemptState.SUBMITTED;
@@ -105,15 +94,10 @@ public class LmsQuizAttempt {
         };
     }
 
-    /** Whether the attempt is still open for answers now, counting the short grace after the deadline. */
     public boolean acceptsAnswersAt(Instant now) {
         return status == QuizAttemptStatus.IN_PROGRESS && (deadlineAt == null || !now.isAfter(deadlineAt.plus(GRACE)));
     }
 
-    /**
-     * Hands the attempt in. Before the deadline (and its grace) it is submitted now; after it, it is closed as expired
-     * at the deadline. Handing in a finished attempt changes nothing.
-     */
     public void submit(Instant now) {
         if (status != QuizAttemptStatus.IN_PROGRESS) {
             return;
@@ -127,7 +111,6 @@ public class LmsQuizAttempt {
         }
     }
 
-    /** Whether it was handed in after the due date that applied when it started. */
     public boolean isLate() {
         return submittedAt != null && dueAtSnapshot != null && submittedAt.isAfter(dueAtSnapshot);
     }

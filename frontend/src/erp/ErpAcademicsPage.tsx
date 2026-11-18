@@ -8,7 +8,6 @@ import { currentCourses, currentSemester, formatCredits, totalCredits } from './
 
 const STATUS_WORDS: Record<string, string> = { ENROLLED: 'Enrolled', COMPLETED: 'Completed', WITHDRAWN: 'Withdrawn', DROPPED: 'Dropped' }
 
-/** Academics → Registered courses: this semester's courses with credits, teachers, section, and status. */
 export function ErpAcademicsPage() {
   const academic = useApiQuery(queryKeys.academic.myProfile(), getMyAcademicProfile)
   const student = academic.status === 'loaded' ? academic.data.student : null

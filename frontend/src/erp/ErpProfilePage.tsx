@@ -30,7 +30,6 @@ function refusal(failure: unknown): string | null {
   return 'Couldn’t reach Stacc. Check your connection and try again.'
 }
 
-/** The photo or initials, the name, the college ID, the roll number, and the status. */
 function IdentityCard({ profile, academic }: { profile: MyPersonProfile; academic: MyAcademicProfile | null }) {
   const photoUrl = usePhotoUrl(profile.hasPhoto ? queryKeys.me.photo() : null, getMyPhoto)
   const student = academic?.student ?? null
@@ -70,7 +69,6 @@ function Detail({ term, value }: { term: string; value: string }) {
   )
 }
 
-/** What the college records: department, programme, semester, section, and admission. Read-only. */
 function OfficialDetails({ academic }: { academic: MyAcademicProfile | null }) {
   const student = academic?.student ?? null
   const faculty = academic?.faculty ?? null
@@ -210,7 +208,6 @@ function EmergencyContacts({ profile, onChanged }: { profile: MyPersonProfile; o
   )
 }
 
-/** The editable details: preferred name, phone, and mailing address, saved together. */
 function EditableDetails({ profile }: { profile: MyPersonProfile }) {
   const queryClient = useQueryClient()
   const [preferredName, setPreferredName] = useState(profile.preferredName ?? '')
@@ -273,10 +270,6 @@ function EditableDetails({ profile }: { profile: MyPersonProfile }) {
   )
 }
 
-/**
- * My Profile (ERP): the official details the college keeps, and the contact details the person keeps themselves:
- * preferred name, phone, mailing address, and up to three emergency contacts. Only the signed-in person's own.
- */
 export function ErpProfilePage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

@@ -10,10 +10,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * The marks and feedback for one attempt. Which attempt comes from the route; who grades, the maximum, and
- * the time are decided by the server, and anything else in the body is ignored.
- */
 public record LmsGradeSubmissionAttemptRequest(
         @Schema(description = "From zero up to the maximum marks, with at most two decimal places.", example = "18")
         @NotNull(message = "Marks are required")

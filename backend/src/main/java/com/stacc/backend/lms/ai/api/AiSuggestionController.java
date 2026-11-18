@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Model answers and rubric suggestions (v0.14.5): shown to the teacher only; nothing is saved by these routes. */
 @RestController
 @Tag(name = "LMS AI teaching tools")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class AiSuggestionController {
 
-    /** How many criteria to suggest. */
     public record RubricSuggestionRequest(@Schema(description = "From 2 to 8.", example = "4") @NotNull @Min(2) @Max(8) Integer criteriaCount) {
     }
 

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/** Teacher-only documents are managed only by faculty who teach the course, and archived rather than deleted. */
 class AiTeacherDocumentServiceTest {
 
     private static final long FACULTY = 5L;

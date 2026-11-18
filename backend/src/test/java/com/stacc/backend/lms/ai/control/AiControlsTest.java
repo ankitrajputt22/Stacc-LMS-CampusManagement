@@ -22,7 +22,6 @@ import com.stacc.backend.lms.access.LmsFacultyAccessService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/** The per-course switch and the request limits. */
 class AiControlsTest {
 
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-11-15T05:00:00Z"), ZoneOffset.UTC);
@@ -51,7 +50,6 @@ class AiControlsTest {
             assertThat(refused.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
             assertThat(refused.getMessage()).isEqualTo(AiRequestLimiter.STILL_ANSWERING);
         });
-        // Another student is not held up by the first one, and the account's turn is free again.
         assertThat(limiter.run(2L, () -> "other")).isEqualTo("other");
         assertThat(limiter.run(1L, () -> "again")).isEqualTo("again");
         assertThat(limiter.running()).isZero();

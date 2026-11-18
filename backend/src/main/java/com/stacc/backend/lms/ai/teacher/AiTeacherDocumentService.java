@@ -11,11 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Teacher-only documents of a course (v0.13.5), managed by the faculty who teach it. Access is checked with
- * {@link LmsFacultyAccessService} on every request, with the course taken from the route for new documents and from the
- * stored document otherwise. Documents are archived, never deleted, and reach only Teacher AI.
- */
 @Service
 @Transactional
 public class AiTeacherDocumentService {
@@ -45,10 +40,6 @@ public class AiTeacherDocumentService {
         return documents.findByLmsCourseIdAndStatusOrderByIdAsc(lmsCourseId, AiTeacherDocument.Status.ACTIVE);
     }
 
-    /**
-     * Adds a document, at most 50 active ones per course: the course row is locked first, and the count runs at READ
-     * COMMITTED so it sees documents other requests committed while this one waited for the lock.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public AiTeacherDocument create(Long accountId, Long lmsCourseId, String title, String content) {
         requireCourse(accountId, lmsCourseId);
@@ -75,7 +66,6 @@ public class AiTeacherDocumentService {
         return document;
     }
 
-    /** The active documents Teacher AI may use now, with their fingerprint. Callers check access first. */
     @Transactional(readOnly = true)
     public AiTeacherKnowledge knowledge(Long lmsCourseId) {
         return AiTeacherKnowledge.of(documents.findByLmsCourseIdAndStatusOrderByIdAsc(lmsCourseId,

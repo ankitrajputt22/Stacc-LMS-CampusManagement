@@ -19,7 +19,6 @@ import com.stacc.backend.pass.PassService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Attendance is recorded once, only for registered attendees, only near the event's time, and only by its managers. */
 class EventAttendanceTest {
 
     private static final Instant START = Instant.parse("2026-11-20T10:00:00Z");

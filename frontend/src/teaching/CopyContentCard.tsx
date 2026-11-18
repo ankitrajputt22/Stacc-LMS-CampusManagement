@@ -25,11 +25,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
   return apiMessage && status !== null && status < 600 && status !== 500 ? apiMessage : 'Couldn’t copy. Check your connection and try again.'
 }
 
-/**
- * Copy content from an earlier offering of this course that the faculty member taught: modules, pages, study files,
- * and the syllabus text when this course has none, all as drafts after the current modules. Shown only when there is
- * something to copy from; the backend decides which courses qualify.
- */
 export function CopyContentCard({ lmsCourseId, reload }: { lmsCourseId: number; reload: () => void }) {
   const queryClient = useQueryClient()
   const sources = useApiQuery(queryKeys.lms.copySources(lmsCourseId), (signal) => getCopySources(lmsCourseId, signal))

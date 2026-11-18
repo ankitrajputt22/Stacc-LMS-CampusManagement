@@ -27,12 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Faculty changes to study materials. The same rule as the other content changes: a faculty account with
- * the content permission may ask, and whether it teaches the course behind the topic or material is
- * decided from official teaching assignments on every request. There is no delete and no file replacement:
- * a wrong file is archived and a new one uploaded.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")

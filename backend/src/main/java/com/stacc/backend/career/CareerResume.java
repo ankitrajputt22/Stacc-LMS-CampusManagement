@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One resume version. Never changed or deleted, so an application keeps the exact resume it was sent with. */
 @Entity
 @Table(name = "career_resumes")
 public class CareerResume {
@@ -45,7 +44,6 @@ public class CareerResume {
     private Instant archivedAt;
 
     protected CareerResume() {
-        // Required by JPA.
     }
 
     public CareerResume(Long accountId, String label, StoredFile file, Instant now) {

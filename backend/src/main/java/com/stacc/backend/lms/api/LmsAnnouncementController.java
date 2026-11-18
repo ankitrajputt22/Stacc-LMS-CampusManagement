@@ -39,11 +39,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Course announcements. Students read the published ones; faculty manage them with the existing content
- * permission. Every route takes the caller from the access token, and which course they may use is
- * decided from official enrollment or teaching assignments on every request. There is no delete.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS")

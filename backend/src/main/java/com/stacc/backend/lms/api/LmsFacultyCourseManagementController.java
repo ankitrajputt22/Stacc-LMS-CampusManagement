@@ -26,13 +26,6 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-/**
- * Faculty management of the LMS courses of the course offerings they officially teach: list them, create a missing
- * LMS course, publish, and archive. Every route needs the faculty role,
- * {@code FACULTY_COURSE_VIEW}, and {@code LMS_COURSE_MANAGE}. Which offerings a faculty member manages is decided from
- * active teaching assignments, starting from the account in the access token; no route takes a faculty, profile, or
- * assignment ID. There is no delete and no restore.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")

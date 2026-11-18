@@ -9,7 +9,6 @@ import type { ExamPaper } from '../types/lms'
 import { Button, ButtonLink, Card } from '../ui'
 import { answerKeyText, choiceLetter, marksText, sectionGroups } from './examPaperText'
 
-/** The paper as it is printed: heading, instructions, sections, and questions, then the answer key when shown. */
 function PrintedPaper({ paper, withAnswers }: { paper: ExamPaper; withAnswers: boolean }) {
   return (
     <article className="print-area space-y-6 bg-surface p-6 text-ink sm:p-10" aria-label={`${paper.title} as printed`}>
@@ -72,7 +71,6 @@ function PrintedPaper({ paper, withAnswers }: { paper: ExamPaper; withAnswers: b
   )
 }
 
-/** The print view of a paper: Show answer key, Print, and the paper itself. Only the paper is printed. */
 export function ExamPaperPrint({ lmsCourseId, paperId }: { lmsCourseId: number; paperId: number }) {
   const paper = useApiQuery(queryKeys.lms.examPaper(paperId), (signal) => getExamPaper(paperId, signal))
   const [withAnswers, setWithAnswers] = useState(false)

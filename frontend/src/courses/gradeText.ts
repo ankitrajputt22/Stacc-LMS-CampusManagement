@@ -11,7 +11,6 @@ export function gradeTypeLabel(type: GradeItemType): string {
   }
 }
 
-/** A cell's marks, or why there are none yet. */
 export function cellText(cell: Pick<GradebookCell, 'marks' | 'status'>): string {
   switch (cell.status) {
     case 'GRADED':
@@ -23,7 +22,6 @@ export function cellText(cell: Pick<GradebookCell, 'marks' | 'status'>): string 
   }
 }
 
-/** Case-insensitive match on the college ID, for the gradebook's student search. */
 export function matchesStudent(loginId: string, search: string): boolean {
   const words = search.trim().toLowerCase()
   return words === '' || loginId.toLowerCase().includes(words)

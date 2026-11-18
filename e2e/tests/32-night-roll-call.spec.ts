@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
 test('a warden opens a night roll call, marks every resident, and finalizes it', async ({ page }) => {
-  // A night of its own, so the journey can run again on the same stack.
   const night = `2040-${String((Date.now() % 12) + 1).padStart(2, '0')}-${String((Date.now() % 28) + 1).padStart(2, '0')}`
 
   await signIn(page, 'erp', 'stf2011')
@@ -13,7 +12,6 @@ test('a warden opens a night roll call, marks every resident, and finalizes it',
   await expect(card.getByRole('status').filter({ hasText: /Roll call opened with \d+ residents?\./ })).toHaveCount(1)
 
   const sheet = card.getByRole('listitem').filter({ hasText: night })
-  // The sheet loads after the list; wait for it before collecting its residents.
   await expect(sheet.getByRole('button', { name: 'Save marks' })).toBeVisible()
   for (const present of await sheet.getByRole('radio', { name: 'Present' }).all()) {
     await present.check()

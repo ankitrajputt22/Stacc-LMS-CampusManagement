@@ -16,11 +16,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Two approvers deciding the same step at the same moment, on MySQL: the request row lock lets exactly one decision
- * through, and the other gets 409 instead of a second decision on top of the first. Uses the demo requests demo-1 and
- * demo-2, which wait at their faculty step and which no other MySQL test touches.
- */
 class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
 
     private static final String DEMO_SOURCE = "DEV_DEMO";
@@ -49,7 +44,6 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
                 () -> approvals.approveStep(faculty("emp1021"), stepId, null),
                 () -> approvals.approveStep(faculty("emp1022"), stepId, null));
 
-        // The request has a second step, so it is still pending: the slower approver finds the step decided.
         assertOneWonAndOneConflicted(outcomes, ApprovalWorkflowService.STEP_DECIDED);
         assertThat(historyCount(requestId, ApprovalRequestHistoryAction.STEP_APPROVED)).isEqualTo(1);
     }
@@ -63,8 +57,6 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
                 () -> approvals.approveStep(faculty("emp1021"), stepId, null),
                 () -> approvals.rejectStep(faculty("emp1022"), stepId, "Not needed."));
 
-        // Whichever is faster wins. A first approval leaves the request pending at its next step, so the rejection
-        // finds the step decided; a first rejection ends the whole request, so the approval finds it already rejected.
         assertOneWonAndOneConflicted(outcomes, ApprovalWorkflowService.STEP_DECIDED,
                 "This approval request is already rejected and cannot change.");
         long decisions = historyCount(requestId, ApprovalRequestHistoryAction.STEP_APPROVED)

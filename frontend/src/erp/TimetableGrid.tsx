@@ -14,10 +14,6 @@ const DAYS: { day: DayOfWeek; short: string; name: string }[] = [
 const KIND_WORDS = { LECTURE: 'Lecture', TUTORIAL: 'Tutorial', LAB: 'Lab' } as const
 const LUNCH_HOUR = 13
 
-/**
- * A week of classes as a grid: an hour per row and a day per column, Monday to Saturday (and Sunday when a class falls
- * on it). A two-hour lab fills both of its hours. The lunch hour is marked when no class uses it.
- */
 export function TimetableGrid({ slots, caption }: { slots: readonly TimetableSlot[]; caption: string }) {
   const days = DAYS.filter((entry) => entry.day !== 'SUNDAY' || slots.some((slot) => slot.day === 'SUNDAY'))
   const hours = hourRange(slots)

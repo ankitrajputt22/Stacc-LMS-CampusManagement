@@ -17,10 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/**
- * Passwords on a real database: changing one's own password ends the account's other sessions, and a temporary
- * password forces a change and stops working once it expires. Uses its own account, so no other test is affected.
- */
 class PasswordLifecycleMySqlIT extends MySqlIntegrationTest {
 
     private static final String LOGIN_ID = "password-lifecycle-it";
@@ -73,7 +69,6 @@ class PasswordLifecycleMySqlIT extends MySqlIntegrationTest {
         String forced = sessions.openSessions(id).getFirst().getId();
         assertThat(sessions.check(forced, id)).isEqualTo(new SessionService.SessionCheck(true, true));
 
-        // Moved back inside MySQL, so no time zone of this machine can get in the way.
         jdbc.update("update user_accounts set temporary_password_expires_at = "
                 + "date_sub(temporary_password_expires_at, interval 2 day) where id = ?", id);
         assertThatThrownBy(() -> login.login(new LoginRequest(LOGIN_ID, TEMPORARY), null, "198.51.100.7"))

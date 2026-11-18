@@ -5,10 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * The title and description of a module, for adding or editing one. The course, status, and position
- * are not part of it: they are set by the route and by the publish, archive, and reorder actions.
- */
 public record LmsModuleRequest(
         @Schema(example = "Introduction")
         @NotBlank(message = "Title is required")

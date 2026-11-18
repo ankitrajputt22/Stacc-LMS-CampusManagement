@@ -16,10 +16,6 @@ import com.stacc.backend.mentoring.MentoringService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Runs the portfolio's live record queries and the verification flow on MySQL, and the mentoring lists that feed the
- * To-Do list. Works on cse24002, emp1022, and items and pairings of its own.
- */
 class PortfolioMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -18,11 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The campus service catalog: what requesters may ask for, and the admin's create, read, and update. There is no
- * delete: a service is made inactive instead. A service that needs approval names an approval workflow by its code,
- * which must exist and be active when the setting is made; the engine is asked, never copied.
- */
 @Service
 @Transactional
 public class CampusServiceDefinitionService {
@@ -39,10 +34,6 @@ public class CampusServiceDefinitionService {
         this.approvals = approvals;
     }
 
-    /**
-     * The active services the actor may request, through any role it holds: STUDENT, FACULTY, or both. Each service
-     * appears once. Empty for an account holding neither role.
-     */
     @Transactional(readOnly = true)
     public List<CampusServiceSummary> available(CampusActor actor) {
         boolean student = actor.holds("STUDENT");
@@ -76,16 +67,10 @@ public class CampusServiceDefinitionService {
         try {
             return CampusServiceDefinitionResponse.of(services.saveAndFlush(service));
         } catch (DataIntegrityViolationException clash) {
-            // A unique key caught a race the check above could not see.
             throw new ApiException(HttpStatus.CONFLICT, DUPLICATE);
         }
     }
 
-    /**
-     * Replaces everything but the code. The workflow is checked when approval is switched on or the workflow changes;
-     * an unchanged setting is kept even if its workflow was made inactive meanwhile, so the rest of the service can still
-     * be edited. Existing requests keep their approval request either way.
-     */
     public CampusServiceDefinitionResponse update(Long serviceId, UpdateCampusServiceInput input) {
         CampusServiceDefinition service = loaded(serviceId);
         boolean wasRequired = service.isApprovalRequired();

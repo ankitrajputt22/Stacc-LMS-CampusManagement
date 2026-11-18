@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/** One level of a criterion, part of it: a short title, an optional description, and its points. */
 @Embeddable
 public class LmsRubricLevel {
 
@@ -25,7 +24,6 @@ public class LmsRubricLevel {
     private BigDecimal points;
 
     protected LmsRubricLevel() {
-        // Required by JPA.
     }
 
     LmsRubricLevel(int position, String title, String description, BigDecimal points) {

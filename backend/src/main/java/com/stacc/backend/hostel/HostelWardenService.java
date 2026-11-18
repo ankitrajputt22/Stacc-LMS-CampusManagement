@@ -12,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Wardens of hostels: admins with HOSTEL_MANAGE assign an active account holding WARDEN to a hostel (optionally one
- * block) and end assignments; nothing is deleted. Whether an account is a warden of a hostel is answered here only.
- */
 @Service
 @Transactional
 public class HostelWardenService {
@@ -66,7 +62,6 @@ public class HostelWardenService {
         }
     }
 
-    /** Ends an assignment; ending it again changes nothing. */
     public WardenView end(Long assignmentId) {
         HostelWarden warden = wardens.findByIdForUpdate(assignmentId == null ? -1L : assignmentId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Warden assignment not found."));

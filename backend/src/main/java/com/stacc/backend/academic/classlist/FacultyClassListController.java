@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The signed-in faculty member's class lists, read-only. The faculty member always comes from the access token. */
 @RestController
 @RequestMapping("/api/v1/faculty/me/course-offerings")
 @Tag(name = "Class lists")

@@ -14,11 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * An offering's capacity under truly simultaneous self-registrations on MySQL: two students registering at once for an
- * offering with one place leave exactly one enrolled. Uses its own course and offering in the demo semester, whose
- * registration period the demo data opens, and withdraws the winner afterwards.
- */
 class RegistrationCapacityMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -17,12 +17,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One study material of a topic: a titled file, such as lecture notes or a lab sheet. This row holds
- * the file's details only. The file itself is in private object storage under {@code objectKey}, a
- * key the application generated; the key is never sent to a browser. A new material is a draft. A
- * material that is no longer wanted is archived, and both the row and the stored file are kept.
- */
 @Entity
 @Table(name = "lms_study_materials")
 public class LmsStudyMaterial {
@@ -32,7 +26,6 @@ public class LmsStudyMaterial {
     public static final int MAX_FILE_NAME_LENGTH = 255;
     public static final int MAX_OBJECT_KEY_LENGTH = 500;
 
-    // No cascade: the topic is never created or deleted through one of its materials.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,7 +37,6 @@ public class LmsStudyMaterial {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // Plain text. It is never treated as HTML.
     @Column(length = MAX_DESCRIPTION_LENGTH)
     private String description;
 
@@ -79,13 +71,8 @@ public class LmsStudyMaterial {
     private Instant updatedAt;
 
     protected LmsStudyMaterial() {
-        // Required by JPA.
     }
 
-    /**
-     * The stored file's details are fixed once the material exists. A wrong file is archived and a new
-     * material is uploaded; there is no replacing a file in place.
-     */
     public LmsStudyMaterial(
             LmsTopic lmsTopic,
             String title,
@@ -123,7 +110,6 @@ public class LmsStudyMaterial {
         return description;
     }
 
-    /** Where the file is kept in object storage. Internal only: never send it to a client. */
     public String getObjectKey() {
         return objectKey;
     }
@@ -156,12 +142,10 @@ public class LmsStudyMaterial {
         return updatedAt;
     }
 
-    /** Whether faculty keep this material out of the course's AI knowledge. Students still see it. */
     public boolean isExcludedFromAi() {
         return excludedFromAi;
     }
 
-    /** Keeps the material out of, or brings it back into, the course's AI knowledge. Setting the same value changes nothing. */
     public void changeAiExclusion(boolean excluded) {
         requireNotArchived();
         this.excludedFromAi = excluded;
@@ -171,28 +155,21 @@ public class LmsStudyMaterial {
         return status == LmsContentStatus.ARCHIVED;
     }
 
-    /** Changes the title and the optional description. An archived material can no longer be changed. */
     public void edit(String title, String description) {
         requireNotArchived();
         this.title = Require.text(title, "title", MAX_TITLE_LENGTH);
         this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
     }
 
-    /** Places the material in its topic's order. Positions start at 1. */
     public void moveTo(int position) {
         this.position = Require.range(position, "position", 1, Integer.MAX_VALUE);
     }
 
-    /**
-     * Publishing an already published material changes nothing. Students see it only once its topic and
-     * module are published too: publishing a material never publishes them.
-     */
     public void publish() {
         requireNotArchived();
         this.status = LmsContentStatus.PUBLISHED;
     }
 
-    /** Archiving keeps the row and the stored file. Archiving it again changes nothing. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
     }

@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the approval routes through Spring Security, with the approval services as stand-ins. */
 class ApprovalControllerTest extends DatabaseFreeApiTest {
 
     private static final String ME = "/api/v1/approvals/me";

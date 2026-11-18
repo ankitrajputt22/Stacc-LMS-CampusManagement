@@ -8,15 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Append-only: it can save and read, and has no update or delete of any kind. */
 public interface AuditEventRepository extends Repository<AuditEvent, Long> {
 
     AuditEvent save(AuditEvent event);
 
-    /**
-     * One page of events, newest first, matching every filter given. The pattern (lower-cased, escaped with
-     * {@code !}) matches the login ID of the actor or of a target account.
-     */
     @Query("""
             select event from AuditEvent event
             where (:action is null or event.action = :action)

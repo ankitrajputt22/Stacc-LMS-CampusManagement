@@ -10,10 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the calendar route with the real query services and empty stand-in repositories, so the range and time zone
- * rules answer through HTTP in the shared error format.
- */
 class CalendarRangeApiTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT = "Bearer " + TestTokens.valid("STU-TEST-1", 70, "ROLE_STUDENT", "ACADEMIC_CALENDAR_VIEW");

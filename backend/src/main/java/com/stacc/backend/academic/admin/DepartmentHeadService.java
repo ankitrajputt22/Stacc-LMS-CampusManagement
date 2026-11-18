@@ -29,11 +29,6 @@ import com.stacc.backend.identity.person.PersonProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins decide who heads each department. Assigning a new head ends the current term and starts a new one, so the
- * history stays; ending a term keeps it. Every change locks the department first, so a department never has two
- * active heads, and is recorded in the audit log in the same transaction. Nothing is deleted.
- */
 @Service
 @Transactional
 public class DepartmentHeadService {
@@ -63,7 +58,6 @@ public class DepartmentHeadService {
         this.clock = clock;
     }
 
-    /** Every department by code, with its active term or none. */
     @Transactional(readOnly = true)
     public List<DepartmentHeadRow> overview() {
         Map<Long, DepartmentHead> active = heads.findAllActive().stream()
@@ -73,7 +67,6 @@ public class DepartmentHeadService {
                 .map(department -> row(department, active.get(department.getId()), names)).toList();
     }
 
-    /** Every term of one department, the latest first. */
     @Transactional(readOnly = true)
     public List<HeadTerm> history(Long departmentId) {
         if (!departments.existsById(departmentId)) {
@@ -84,7 +77,6 @@ public class DepartmentHeadService {
         return terms.stream().map(head -> term(head, names)).toList();
     }
 
-    /** The accounts that can be made a head: active and holding HOD, by login ID. */
     @Transactional(readOnly = true)
     public List<HeadCandidate> candidates() {
         List<UserAccount> found = accounts.findAllByRoleNameAndStatus(RoleName.HOD, AccountStatus.ACTIVE);
@@ -93,10 +85,6 @@ public class DepartmentHeadService {
                 names.get(account.getId()))).toList();
     }
 
-    /**
-     * Makes the account the department's head. The current head's term ends first; the same head again changes
-     * nothing. An account may head more than one department.
-     */
     public DepartmentHeadRow assign(Long actorAccountId, Long departmentId, AssignDepartmentHead request) {
         Department department = lock(departmentId);
         if (department.getStatus() != DepartmentStatus.ACTIVE) {
@@ -124,7 +112,6 @@ public class DepartmentHeadService {
         return describe(department, started);
     }
 
-    /** Ends the department's current term, if it has one. Without one, nothing changes. */
     public DepartmentHeadRow end(Long actorAccountId, Long departmentId) {
         Department department = lock(departmentId);
         heads.findActiveByDepartmentId(departmentId)

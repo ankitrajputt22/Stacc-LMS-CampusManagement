@@ -30,11 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Assignments as faculty manage them. Reading uses the faculty course-view permission; every change also
- * needs the assignment permission. The faculty member is taken from the access token, and which courses
- * they may use is decided from official teaching assignments on every request. There is no delete.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
@@ -199,7 +194,6 @@ public class LmsFacultyAssignmentController {
                 request.bloomLevel(), request.outcomeIds()));
     }
 
-    /** When an assignment takes work. */
     public record SubmissionRulesRequest(
             @Schema(description = "When it starts taking work, not after the due date; null for from publication.",
                     example = "2026-11-10T03:30:00Z")

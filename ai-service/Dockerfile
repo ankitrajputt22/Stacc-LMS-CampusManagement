@@ -1,5 +1,3 @@
-# The internal Stacc AI service. No model is downloaded here: models live in the separate Ollama
-# service and are pulled once by the operator (see docs/ai-learning.md).
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -13,7 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-# Runs as an unprivileged user; only the index directory is writable.
 RUN useradd --system --uid 10001 --home-dir /service stacc-ai \
     && mkdir -p /data/indexes && chown stacc-ai /data/indexes
 USER stacc-ai

@@ -72,7 +72,6 @@ function SubHeading({ children }: { children: string }) {
   )
 }
 
-/** One waiting request: its details beside the two decisions, issuing a file into the vault or refusing with a reason. */
 function Decide({ request, notify }: { request: CertificateRequest; notify: Notify }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -168,10 +167,6 @@ function Decide({ request, notify }: { request: CertificateRequest; notify: Noti
   )
 }
 
-/**
- * /admin/certificates and /admin/certificates/:requestId: open certificate requests, each issued into the requester's
- * vault with a file, or refused with a reason.
- */
 export function CertificateDeskPage() {
   const { requestId } = useParams()
   const queue = useApiQuery(queryKeys.career.certificateQueue('REQUESTED'), (signal) => getCertificateQueue('REQUESTED', signal))

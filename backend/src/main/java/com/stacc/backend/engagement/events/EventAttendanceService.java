@@ -18,13 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Event attendance (v0.11.6). A registered attendee gets a check-in code from the pass service, valid from an hour
- * before the event until it ends; the event's managers check attendees in by that code or by college ID within the
- * same window. Attending is recorded once on the registration under its row lock. A participation certificate is due
- * to every attendee once the event has ended; that is worked out on read, never stored. A trial (v0.11.8) is an event
- * marked as one before it starts; once it has started its managers record Selected or Not selected per attendee.
- */
 @Service
 @Transactional
 public class EventAttendanceService {
@@ -70,7 +63,6 @@ public class EventAttendanceService {
         this.clock = clock;
     }
 
-    /** A fresh check-in code for the attendee's own registration; earlier codes for it stop working. */
     public CheckInCode myCode(Long accountId, Long eventId) {
         CampusEventRegistration registration = registrations.findCurrentForAccount(eventId, accountId)
                 .filter(found -> found.getStatus() == CampusEventRegistration.Status.REGISTERED)
@@ -89,7 +81,6 @@ public class EventAttendanceService {
                 .orElse(new MyAttendance(false, null, false, null));
     }
 
-    /** The event's registrations with attendance, for those who manage it. */
     @Transactional(readOnly = true)
     public List<Attendee> attendees(Viewer viewer, Long eventId) {
         managed(viewer, eventId);
@@ -97,7 +88,6 @@ public class EventAttendanceService {
                 found.getRegisteredAt(), found.getAttendedAt(), found.getCheckInMethod(), eligible(found), found.getTrialOutcome())).toList();
     }
 
-    /** Checks in the attendee whose check-in code this is, within the window. */
     public CheckInResult checkInByCode(Viewer viewer, Long eventId, String code) {
         CampusEvent event = managed(viewer, eventId);
         Pass pass = passes.find(code).filter(found -> found.getPurpose() == PassPurpose.EVENT_CHECK_IN && found.getRevokedAt() == null)
@@ -109,7 +99,6 @@ public class EventAttendanceService {
         return checkIn(viewer, event, registration, CampusEventRegistration.CheckInMethod.PASS);
     }
 
-    /** Checks in a registered attendee by college ID, within the window. */
     public CheckInResult checkInByLoginId(Viewer viewer, Long eventId, String loginId) {
         CampusEvent event = managed(viewer, eventId);
         Long accountId = (loginId == null ? Optional.<UserAccount>empty() : accounts.findByLoginId(loginId.strip()))
@@ -137,9 +126,6 @@ public class EventAttendanceService {
         return new CheckInResult(registration.getAccount().getLoginId(), registration.getAttendedAt(), !first);
     }
 
-    // --- Trials (v0.11.8)
-
-    /** Marks a managed event as a trial before it starts; it stays one. */
     public void markAsTrial(Viewer viewer, Long eventId) {
         CampusEvent event = managed(viewer, eventId);
         CampusEvent locked = events.findByIdForUpdate(event.getId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
@@ -150,7 +136,6 @@ public class EventAttendanceService {
         }
     }
 
-    /** Records or corrects Selected or Not selected for a registered attendee of a trial that has started. */
     public Attendee decideTrial(Viewer viewer, Long eventId, String loginId, CampusEventRegistration.TrialOutcome outcome) {
         CampusEvent event = managed(viewer, eventId);
         if (!event.isTrial()) {

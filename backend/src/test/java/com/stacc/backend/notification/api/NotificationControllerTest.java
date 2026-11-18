@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the Inbox routes through Spring Security, with the Inbox service as a stand-in. */
 class NotificationControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROUTE = "/api/v1/notifications";

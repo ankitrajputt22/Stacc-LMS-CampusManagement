@@ -1,11 +1,3 @@
-"""Grounded generation over one course index: answers, topic summaries, practice questions, and
-assessment drafts.
-
-Every reply is checked before it leaves: the model's JSON is validated against a schema (with one
-repair attempt), and every source label it cites must be one of the chunks it was given. An answer
-without a real citation is treated as insufficient context, never shown as fact.
-"""
-
 from __future__ import annotations
 
 import copy
@@ -30,7 +22,6 @@ REPAIR_NOTE = ("\n\nYour previous reply could not be used: it was not valid JSON
 
 
 def inline_schema(model: type[BaseModel]) -> dict:
-    """The model's JSON schema with every $ref resolved, which local model runtimes handle best."""
     schema = model.model_json_schema()
     definitions = schema.pop("$defs", {})
 
@@ -52,12 +43,10 @@ def _citation(chunk: StoredChunk) -> Citation:
 
 
 def _searchable(chunk: StoredChunk) -> str:
-    """What keyword matching reads: the source title, the heading path, and the text."""
     return "\n".join(part for part in (chunk.title, chunk.heading, chunk.text) if part)
 
 
 class _Context:
-    """The chunks given to the model, labelled S1, S2, ... so citations can be checked."""
 
     def __init__(self, chunks: list[StoredChunk]) -> None:
         self.chunks = {f"S{number}": chunk for number, chunk in enumerate(chunks, start=1)}
@@ -85,25 +74,20 @@ class LearningService:
         self._embeddings = embeddings
         self._store = store
 
-    # --- Index access ------------------------------------------------------------------------
-
     def _index(self, course_key: str, fingerprint: str) -> CourseIndex:
         index = self._store.load(course_key)
-        # The backend names the content it expects; an index of other content or another model is never used.
         if index.fingerprint != fingerprint or index.embedding_model != self._embeddings.model_id:
             raise index_mismatch()
         return index
 
     @staticmethod
     def _allowed(index: CourseIndex, allowed: list[schemas.SourceRef] | None) -> np.ndarray:
-        """Which chunks of the index the request may use: those of the allowed sources, or all when no list is given."""
         if allowed is None:
             return np.ones(len(index.chunks), dtype=bool)
         keys = {(ref.sourceType.value, ref.sourceId) for ref in allowed}
         return np.array([(chunk.sourceType, chunk.sourceId) in keys for chunk in index.chunks], dtype=bool)
 
     def _scopes(self, course_key: str, request: schemas.IndexedRequest) -> list[tuple[CourseIndex, np.ndarray]]:
-        """The course index and any additional ones, each checked against its fingerprint, with the allowed chunks."""
         course = self._index(course_key, request.indexFingerprint)
         scopes = [(course, self._allowed(course, request.allowedSources))]
         for extra in request.additionalIndexes:
@@ -112,12 +96,6 @@ class LearningService:
         return scopes
 
     def _search(self, scopes: list[tuple[CourseIndex, np.ndarray]], question: str) -> list[StoredChunk]:
-        """The best allowed chunks across every index, best first.
-
-        Hybrid search (v0.13.4): the semantic ranking (chunks above the relevance floor) and the keyword ranking
-        (BM25 over words and word pairs, chunks sharing a meaningful term) are merged by reciprocal rank fusion. A
-        question that neither finds returns nothing, so the answer is insufficient context without asking the model.
-        """
         query = unit_vectors(self._embeddings.embed([question]))[0]
         candidates: list[StoredChunk] = []
         semantic: list[tuple[float, int]] = []
@@ -138,11 +116,9 @@ class LearningService:
         return [candidates[item] for item in fused[: self._settings.top_k]]
 
     def retrieve(self, course_key: str, request: schemas.IndexedRequest, question: str) -> list[StoredChunk]:
-        """The chunks an answer to the question would be given, best first (v0.13.8, for evaluation)."""
         return self._search(self._scopes(course_key, request), question)
 
     def _spread(self, chunks: list[StoredChunk]) -> list[StoredChunk]:
-        """Up to the context limit, spread evenly over the chunks so the whole selection is covered."""
         limit = self._settings.max_context_chunks
         if len(chunks) <= limit:
             return chunks
@@ -154,14 +130,11 @@ class LearningService:
                   if allowed[position] and (topic_id is None or chunk.topicId == topic_id)]
         return self._spread(chunks)
 
-    # --- Generation --------------------------------------------------------------------------
-
     def _generate(self, task: str, context: _Context, output: type[Output], temperature: float,
                   parameters: dict, usable: Callable[[Output], bool] = lambda _: True,
                   question: str | None = None, teacher_note: str | None = None,
                   history: tuple[tuple[str, str], ...] = (), style: str | None = None,
                   answer: str | None = None) -> Output | None:
-        """Valid output, or None when two attempts gave valid JSON that was still unusable."""
         system = prompts.system_prompt(task, parameters)
         if style in prompts.STYLES:
             system += "\n" + prompts.STYLES[style]
@@ -186,11 +159,8 @@ class LearningService:
             raise model_output_invalid()
         return None
 
-    # --- Tasks -------------------------------------------------------------------------------
-
     def ask(self, course_key: str, request: schemas.AskRequest) -> schemas.AskResponse:
         insufficient = schemas.AskResponse(answer=None, insufficientContext=True, citations=[])
-        # A follow-up (v0.15.1) is searched together with the question it follows, so "and why?" still finds sources.
         search_text = request.question if not request.history else request.history[-1].question + "\n" + request.question
         hits = self._search(self._scopes(course_key, request), search_text)
         if not hits:
@@ -218,7 +188,6 @@ class LearningService:
                                 usable=lambda out: out.insufficientContext or bool(out.summary))
         if result is None or result.insufficientContext:
             return insufficient
-        # Every chunk given belongs to this topic, so when the model names none, all of them back the summary.
         citations = context.citations(result.sourceIds) or context.citations(list(context.chunks))
         return schemas.SummaryResponse(summary=result.summary, keyPoints=[p for p in result.keyPoints if p],
                                        insufficientContext=False, citations=citations)
@@ -272,11 +241,7 @@ class LearningService:
                                                instructionsSuggestion=result.instructionsSuggestion or None,
                                                questions=accepted(result), insufficientContext=False)
 
-    # --- Practice evaluation (v0.15.4) ----------------------------------------------------------
-
     def evaluate(self, course_key: str, request: schemas.EvaluateRequest) -> schemas.EvaluateResponse:
-        """Marks a practice answer against the reference and the sources; marks are capped at the maximum, feedback must
-        cite a source, and nothing is stored."""
         insufficient = schemas.EvaluateResponse(marks=None, verdict=None, feedback=None, followUpQuestion=None, citations=[],
                                                 insufficientContext=True)
         hits = self._search(self._scopes(course_key, request), request.question + "\n" + request.referenceAnswer)
@@ -298,10 +263,7 @@ class LearningService:
             followUpQuestion=result.followUpQuestion if request.mode is schemas.PracticeMode.VIVA else None,
             citations=context.citations(result.sourceIds), insufficientContext=False)
 
-    # --- Flashcards (v0.15.3) ---------------------------------------------------------------------
-
     def flashcards(self, course_key: str, request: schemas.FlashcardRequest) -> schemas.FlashcardResponse:
-        """Cited cards from the allowed sources (or one topic); repeated fronts are dropped."""
         empty = schemas.FlashcardResponse(cards=[], insufficientContext=True)
         chunks = self._selection(self._scopes(course_key, request), request.topicId)
         if not chunks:
@@ -324,8 +286,6 @@ class LearningService:
             return empty
         return schemas.FlashcardResponse(cards=cited(result), insufficientContext=False)
 
-    # --- Model answers and rubric suggestions (v0.14.5) ---------------------------------------
-
     def model_answer(self, course_key: str, request: schemas.ModelAnswerRequest) -> schemas.ModelAnswerResponse:
         insufficient = schemas.ModelAnswerResponse(answer=None, keyPoints=[], citations=[], insufficientContext=True)
         hits = self._search(self._scopes(course_key, request), request.questionText)
@@ -343,7 +303,6 @@ class LearningService:
                                            citations=context.citations(result.sourceIds), insufficientContext=False)
 
     def rubric(self, course_key: str, request: schemas.RubricRequest) -> schemas.RubricResponse:
-        """Criteria whose points are scaled to add up to the assignment's maximum marks; levels never exceed their criterion."""
         empty = schemas.RubricResponse(criteria=[], citations=[], insufficientContext=True)
         query = request.title + "\n" + (request.instructions or "")
         hits = self._search(self._scopes(course_key, request), query[:2000])
@@ -371,11 +330,7 @@ class LearningService:
                                                 maxPoints=points, levels=levels))
         return schemas.RubricResponse(criteria=made, citations=context.citations(result.sourceIds), insufficientContext=False)
 
-    # --- Question bank drafts (v0.14.1) --------------------------------------------------------
-
     def bank_draft(self, course_key: str, request: schemas.BankDraftRequest) -> schemas.BankDraftResponse:
-        """Questions in the bank's own types, each cited. Every keyed question (choice or true/false) is answered
-        again by the model from its own sources without the key; a question whose answer differs is dropped."""
         empty = schemas.BankDraftResponse(questions=[], droppedForKeyMismatch=0, insufficientContext=True)
         chunks = self._selection(self._scopes(course_key, request), request.topicId)
         if not chunks:
@@ -422,7 +377,6 @@ class LearningService:
                                          insufficientContext=not questions and dropped == 0 and repeats == 0)
 
     def _key_confirmed(self, question: schemas.BankModelQuestion, context: _Context) -> bool:
-        """Answers the question again from its own cited sources, without the key, and compares."""
         cited = _Context([context.chunks[ref.strip().upper()] for ref in question.sourceIds
                           if ref.strip().upper() in context.chunks])
         if question.questionType is schemas.BankType.TRUE_FALSE:
@@ -453,9 +407,6 @@ def _word_overlap(first: set[str], second: set[str]) -> float:
 
 
 class _Quality:
-    """The v0.14.2 checks for one batch of drafts: possible duplicates of bank questions (by meaning or wording), whether
-    the match is in a final exam paper, repeats within the batch (dropped), and how close each draft is to the allowed
-    course content."""
 
     DUPLICATE_SIMILARITY = 0.92
     DUPLICATE_WORD_OVERLAP = 0.8
@@ -483,7 +434,6 @@ class _Quality:
         return unit_vectors(vectors)
 
     def _similar(self, vector: np.ndarray, words: set[str], vectors: np.ndarray, word_sets: list[set[str]]) -> int | None:
-        """The position of the closest match at or above the duplicate thresholds, or None."""
         best, best_score = None, 0.0
         for position, other in enumerate(word_sets):
             meaning = float(vectors[position] @ vector) if len(vectors) else 0.0
@@ -495,7 +445,6 @@ class _Quality:
         return best
 
     def check(self, question: schemas.BankModelQuestion) -> schemas.QualityChecks | None:
-        """The checks for one draft, or None when it repeats an earlier draft of the same batch."""
         text = question.text
         vector = self._embed([text])[0]
         words = _content_words(text)
@@ -512,4 +461,3 @@ class _Quality:
             outOfSyllabus=closeness < self._settings.min_relevance and not shares_words,
             suggestedDifficulty=question.difficultySuggestion.value if question.difficultySuggestion else None,
             suggestedBloomLevel=question.bloomSuggestion.value if question.bloomSuggestion else None)
-

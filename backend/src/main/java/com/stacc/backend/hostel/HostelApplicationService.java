@@ -26,12 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Students' hostel applications: which sessions they may apply for, applying, and cancelling a pending application.
- * Approval is the shared approval engine's: applying starts a request with the {@code HOSTEL_APPLICATION} workflow and
- * cancelling cancels it there, so this service never changes approval state itself. The student always comes from the
- * access token.
- */
 @Service
 @Transactional
 public class HostelApplicationService {
@@ -72,11 +66,6 @@ public class HostelApplicationService {
         this.clock = clock;
     }
 
-    /**
-     * The sessions the student may apply for: those with at least one ENROLLED semester enrollment, the latest first,
-     * marked when a pending or approved application exists. No LMS course, attendance, or result is needed. Empty
-     * without an active student profile.
-     */
     @Transactional(readOnly = true)
     public List<EligibleHostelSession> eligibleSessions(Long accountId) {
         StudentProfile profile = studentProfiles.findByUserAccountId(accountId).orElse(null);
@@ -91,10 +80,6 @@ public class HostelApplicationService {
                 .toList();
     }
 
-    /**
-     * Applies for a session and starts its approval, in one transaction. The student profile is locked first, so two
-     * applications of the same student take turns and the duplicate check sees the other's result.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public HostelApplicationDetail apply(Long accountId, CreateHostelApplicationRequest request) {
         StudentProfile profile = studentProfiles.findByUserAccountIdForUpdate(accountId)
@@ -132,7 +117,6 @@ public class HostelApplicationService {
                     String.valueOf(application.getId()),
                     "Hostel application " + application.getApplicationNumber() + " for " + session.getCode()));
         } catch (ApiException unavailable) {
-            // The workflow is missing or inactive: nothing is saved, and the student is told plainly.
             throw new ApiException(HttpStatus.CONFLICT, CLOSED);
         }
         application.linkApproval(approvalRequests.getReferenceById(started.approvalRequestId()));
@@ -140,10 +124,6 @@ public class HostelApplicationService {
         return queries.studentApplication(accountId, application.getId());
     }
 
-    /**
-     * Cancels the student's own pending application through the approval engine. An already cancelled one is returned
-     * as it is; an approved or rejected one, or one with an active allocation, cannot be cancelled (409).
-     */
     public HostelApplicationDetail cancel(Long accountId, Long applicationId) {
         HostelApplication application = (applicationId == null ? null
                 : applications.findByIdForUpdate(applicationId).orElse(null));

@@ -27,10 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 
-/**
- * The admin dashboard over stand-in repositories. Counting rows and filtering by status happen in the database, so
- * here the test checks which counts are asked for, with which status, and how the answer is put together.
- */
 class AdminDashboardQueryServiceTest {
 
     private final DepartmentRepository departments = mock(DepartmentRepository.class);

@@ -26,12 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The faculty side of course content. Every route takes the faculty member from the access token. The
- * rules below only let a faculty account with the right permission ask; whether it may use this course,
- * module, or topic is decided from official teaching assignments on every request. There is no delete:
- * content is archived instead.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")

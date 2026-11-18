@@ -37,10 +37,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Course discussions. Students use /courses/{id}/discussions under the student access policy, faculty
- * /faculty/courses/{id}/discussions under the faculty access policy; the route decides the kind, the token the account.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS course discussions")

@@ -46,12 +46,6 @@ import org.mockito.InOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Course offering 17 has no LMS course. Faculty A (account 21) and co-teacher C (account 23) teach it; faculty B
- * (account 22) teaches nothing. Student A (enrollment 40) is enrolled, student B (41) has completed, student C (42)
- * has withdrawn; enrollment 50 belongs to offering 18. The real teaching access service decides over stand-in
- * repositories, which keep what is saved as the database would.
- */
 class CourseResultManagementServiceTest {
 
     private static final Long FACULTY_A = 21L;
@@ -226,7 +220,6 @@ class CourseResultManagementServiceTest {
 
         CourseResult again = serviceAt(LATER).publish(FACULTY_C, OFFERING, studentA.getId());
         assertEquals(NOW_STORED, again.getPublishedAt());
-        // Publishing records no marks, so the recorder stays the one who saved them.
         assertSame(facultyA, again.getRecordedByFacultyProfile());
 
         CourseResult corrected = serviceAt(LATER).save(FACULTY_C, OFFERING, studentA.getId(),
@@ -265,7 +258,6 @@ class CourseResultManagementServiceTest {
         serviceAt(NOW).publish(FACULTY_A, OFFERING, studentA.getId());
         clearInvocations(notifications);
 
-        // The same values, written differently, change nothing.
         serviceAt(LATER).save(FACULTY_C, OFFERING, studentA.getId(), new BigDecimal("82.00"), new BigDecimal("100.0"),
                 " A ", "   ");
         verifyNoInteractions(notifications);

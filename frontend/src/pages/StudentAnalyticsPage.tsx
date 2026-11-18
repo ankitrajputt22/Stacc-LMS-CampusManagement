@@ -6,7 +6,6 @@ import { EmptyState } from '../components/states/EmptyState'
 import { SectionState } from '../courses/SectionState'
 import { Card, DataTable, PageHeader } from '../ui'
 
-/** /academic/analytics: the student's own figures as the backend works them out. Only their own; nobody is compared. */
 export function StudentAnalyticsPage() {
   const analytics = useApiQuery(queryKeys.analytics.mine(), (signal) => getMyAnalytics(signal))
   return (

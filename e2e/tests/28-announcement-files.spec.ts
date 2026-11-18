@@ -29,7 +29,6 @@ test('a faculty member posts an announcement with a file and a student downloads
   await posted.getByRole('button', { name: /^Download/ }).click()
   expect((await download).suggestedFilename()).toBe('lab-plan.txt')
 
-  // The first publication reached the student's Inbox.
   await page.goto('/inbox')
   await expect(page.getByText(`${title} was posted in ${COURSE_CODE} ${COURSE_NAME}.`)).toBeVisible()
 })

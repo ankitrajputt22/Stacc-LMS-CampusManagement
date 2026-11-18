@@ -157,7 +157,6 @@ class AdminReportQueryServiceTest {
                 "CAMPUS_SERVICE_MANAGE"), none).operations();
         assertThat(all.helpdesk()).isEqualTo(new AdminReports.AdminHelpdeskReport(4, 1, 0, 2));
         assertThat(all.hostel()).isEqualTo(new AdminReports.AdminHostelReport(6, 2));
-        // A submitted request whose approval was decided counts as that decision.
         assertThat(all.campusServices()).isEqualTo(new AdminReports.AdminCampusServiceReport(2, 4, 1, 1, 1));
 
         var none = service.overview(admin("ADMIN_REPORT_VIEW"), this.none).operations();
@@ -165,7 +164,6 @@ class AdminReportQueryServiceTest {
         assertThat(none.hostel()).isNull();
         assertThat(none.campusServices()).isNull();
 
-        // The permission without the ADMIN role is no pass either.
         var noRole = service.overview(new ReportActor(1L, Set.of("FACULTY"), Set.of("HELPDESK_TICKET_VIEW_ALL",
                 "HOSTEL_MANAGE", "CAMPUS_SERVICE_MANAGE")), this.none).operations();
         assertThat(noRole.helpdesk()).isNull();

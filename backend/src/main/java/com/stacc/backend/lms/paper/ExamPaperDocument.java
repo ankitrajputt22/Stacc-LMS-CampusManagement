@@ -14,11 +14,6 @@ import com.stacc.backend.lms.paper.LmsExamPaperService.PaperDetail;
 import com.stacc.backend.lms.question.LmsQuestion;
 import com.stacc.backend.lms.question.LmsQuestionOption;
 
-/**
- * Writes an exam paper as a small Word document (.docx): the heading, instructions, sections, and questions with their
- * choices, and, when asked, an answer key on a page of its own. Formatted question text is written as it was typed.
- * Built per request and never stored.
- */
 public final class ExamPaperDocument {
 
     public static final String CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -150,7 +145,6 @@ public final class ExamPaperDocument {
                 .append(escape(text)).append("</w:t></w:r>");
     }
 
-    /** XML-escapes the text and drops characters XML cannot hold. */
     static String escape(String text) {
         StringBuilder out = new StringBuilder(text.length());
         text.codePoints().forEach(point -> {

@@ -18,7 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A student's request to the ERP office (v0.16.5), decided once and never deleted. */
 @Entity
 @Table(name = "student_requests")
 public class StudentRequest {
@@ -120,7 +119,6 @@ public class StudentRequest {
         return request;
     }
 
-    /** The number people quote, such as MED-000024. */
     public String reference() {
         return kind.prefix() + "-" + String.format("%06d", id);
     }

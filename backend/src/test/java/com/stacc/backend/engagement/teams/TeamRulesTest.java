@@ -11,7 +11,6 @@ import com.stacc.backend.auth.account.UserAccount;
 import com.stacc.backend.engagement.groups.CampusGroup;
 import org.junit.jupiter.api.Test;
 
-/** Teams belong to active sports groups and need a name and season; a player who left changes no more. */
 class TeamRulesTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

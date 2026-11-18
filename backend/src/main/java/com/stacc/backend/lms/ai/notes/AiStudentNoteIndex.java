@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** The fingerprint of one student's notes in one course as last indexed (v0.13.6). Never their text. */
 @Entity
 @Table(name = "ai_student_note_indexes")
 public class AiStudentNoteIndex {
@@ -31,7 +30,6 @@ public class AiStudentNoteIndex {
     private Instant indexedAt;
 
     protected AiStudentNoteIndex() {
-        // Required by JPA.
     }
 
     public AiStudentNoteIndex(Long lmsCourseId, Long userAccountId, String contentFingerprint, Instant indexedAt) {

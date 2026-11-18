@@ -16,11 +16,6 @@ import com.stacc.backend.academic.department.DepartmentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit the permanent course catalog. A course has one owning department, loaded on the
- * server from the ID sent; its department and code are set once, and its name, credits, and status can change. A
- * course has no semester, session, teacher, or LMS course: those belong to course offerings. Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class CourseManagementService {

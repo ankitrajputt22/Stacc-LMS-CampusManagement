@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-/** Faculty A (account 21) teaches offerings 17 and 18, neither with an LMS course; faculty B (22) teaches neither. */
 class FacultyAttendanceQueryServiceTest {
 
     private static final Long FACULTY_A = 21L;

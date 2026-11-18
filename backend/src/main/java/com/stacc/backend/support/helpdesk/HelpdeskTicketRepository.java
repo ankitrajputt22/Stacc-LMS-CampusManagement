@@ -12,10 +12,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * Tickets, always loaded with their category, requester, and assignee for display, so a page is one query plus a count.
- * Lists are ordered newest first, then by ID.
- */
 public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, Long> {
 
     @Query("""
@@ -28,18 +24,12 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
             """)
     Optional<HelpdeskTicket> findWithContextById(@Param("ticketId") Long ticketId);
 
-    /**
-     * One ticket, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Every change takes this lock, so two
-     * changes to the same ticket take turns. Only the ticket's own row is locked.
-     */
-    /** Whether the account already raised a ticket with exactly this subject. Used by the local test data. */
     boolean existsByRequesterIdAndSubject(Long requesterId, String subject);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select ticket from HelpdeskTicket ticket where ticket.id = :ticketId")
     Optional<HelpdeskTicket> findByIdForUpdate(@Param("ticketId") Long ticketId);
 
-    /** One page of the tickets one account raised, narrowed by each filter that is not null. */
     @Query(value = """
             select ticket
             from HelpdeskTicket ticket
@@ -63,7 +53,6 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
     Page<HelpdeskTicket> findOwn(@Param("requesterId") Long requesterId, @Param("status") HelpdeskTicketStatus status,
             @Param("priority") HelpdeskTicketPriority priority, @Param("categoryId") Long categoryId, Pageable page);
 
-    /** One page of every ticket, for the support queue, narrowed by each filter that is not null. */
     @Query(value = """
             select ticket
             from HelpdeskTicket ticket
@@ -91,11 +80,6 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
             @Param("priority") HelpdeskTicketPriority priority, @Param("categoryId") Long categoryId,
             @Param("assigneeId") Long assigneeId, @Param("requesterLoginId") String requesterLoginId, Pageable page);
 
-    /**
-     * Search: one requester's own tickets whose number, subject, or category code or name contains the text. The
-     * description is not searched. Exact numbers or subjects first, then those that start with the text, then the
-     * rest; within each, the newest first.
-     */
     @Query(value = """
             select ticket
             from HelpdeskTicket ticket
@@ -120,7 +104,6 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
     Page<HelpdeskTicket> searchOwn(@Param("requesterId") Long requesterId, @Param("exact") String exact,
             @Param("prefix") String prefix, @Param("contains") String contains, Pageable page);
 
-    /** Search: every ticket, as {@link #searchOwn} matches and orders them, for admins who may see all tickets. */
     @Query(value = """
             select ticket
             from HelpdeskTicket ticket
@@ -144,7 +127,6 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
     Page<HelpdeskTicket> searchAll(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
 
-    /** Reports: how many tickets are in each status, in one grouped query. */
     @Query("select ticket.status as status, count(ticket) as total from HelpdeskTicket ticket group by ticket.status")
     List<StatusCount> countByStatus();
 
@@ -154,7 +136,6 @@ public interface HelpdeskTicketRepository extends JpaRepository<HelpdeskTicket, 
         Long getTotal();
     }
 
-    /** The tickets routed to these teams, newest first, for their members. */
     @Query(value = """
             select ticket
             from HelpdeskTicket ticket

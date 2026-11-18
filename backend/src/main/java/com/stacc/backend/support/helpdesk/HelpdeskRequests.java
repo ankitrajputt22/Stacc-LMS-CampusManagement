@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What clients may send to the helpdesk. No request names a requester, author, actor, ticket number, or timestamp:
- * those always come from the server and the access token.
- */
 public final class HelpdeskRequests {
 
     private HelpdeskRequests() {

@@ -25,10 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The repository is a stand-in, so it can hand back announcements in any state. That shows each side's
- * rule holds on its own, even if a query ever returned too much.
- */
 class LmsAnnouncementQueryServiceTest {
 
     private static final Long STUDENT_ID = 12L;
@@ -83,7 +79,6 @@ class LmsAnnouncementQueryServiceTest {
     void courseTheCallerMayNotUseIsUnavailableAndNothingIsRead() {
         ApiException student = assertThrows(ApiException.class, () -> service.getPublishedAnnouncements(STUDENT_ID, 8L));
         ApiException faculty = assertThrows(ApiException.class, () -> service.getManagedAnnouncements(FACULTY_ID, 8L));
-        // Each side's own access counts: a student cannot read the faculty list, and the reverse.
         assertThrows(ApiException.class, () -> service.getManagedAnnouncements(STUDENT_ID, COURSE_ID));
         assertThrows(ApiException.class, () -> service.getPublishedAnnouncements(FACULTY_ID, COURSE_ID));
 

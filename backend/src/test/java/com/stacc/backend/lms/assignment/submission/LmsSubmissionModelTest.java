@@ -23,7 +23,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import org.junit.jupiter.api.Test;
 
-/** The three submission records and their rules. Timestamps are fixed UTC moments. */
 class LmsSubmissionModelTest {
 
     private final LmsCourse course = SubmissionFixtures.course(7);

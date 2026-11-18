@@ -5,7 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A course offering the faculty member teaches, with every enrollment and its result, in student ID order. */
 public record CourseResultRosterResponse(
         @Schema(example = "17")
         Long courseOfferingId,

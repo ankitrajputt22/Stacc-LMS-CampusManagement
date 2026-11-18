@@ -83,7 +83,6 @@ function HostelWardens({ hostelId }: { hostelId: number }) {
   )
 }
 
-/** Hostel Management → Wardens: who looks after each hostel, or one block of it. Assignments end; nothing is deleted. */
 export function WardensSection() {
   const hostels = useApiQuery(['hostel', 'list'], (signal) => getHostels(signal))
   const [hostelId, setHostelId] = useState<number | null>(null)

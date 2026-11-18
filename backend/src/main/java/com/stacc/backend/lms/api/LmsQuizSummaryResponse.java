@@ -9,7 +9,6 @@ import com.stacc.backend.lms.quiz.LmsQuizService;
 import com.stacc.backend.lms.quiz.QuizType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One quiz in the faculty list of a course. */
 public record LmsQuizSummaryResponse(
         Long id,
         String title,

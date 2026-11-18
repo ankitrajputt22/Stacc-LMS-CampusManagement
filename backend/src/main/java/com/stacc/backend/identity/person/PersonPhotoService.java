@@ -18,11 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * The official photo on a person profile. The college uploads it; the person and admins with {@code USER_VIEW} see it.
- * Only JPEG and PNG images up to 2 MB are taken, checked by their first bytes, and stored in the private bucket under a
- * server-made key that never leaves the backend. A replaced photo's file is kept.
- */
 @Service
 public class PersonPhotoService {
 
@@ -51,11 +46,9 @@ public class PersonPhotoService {
         this.clock = clock;
     }
 
-    /** An opened photo. The caller closes the stream. */
     public record Photo(String contentType, InputStream content) {
     }
 
-    /** Stores a new official photo for the account, by an admin from the token, and records it in the audit log. */
     @Transactional
     public void upload(Long actorAccountId, Long accountId, MultipartFile file) {
         PersonProfile profile = profiles.findByUserAccountId(accountId)
@@ -81,7 +74,6 @@ public class PersonPhotoService {
         }
     }
 
-    /** The account's official photo, or empty when there is none. */
     @Transactional(readOnly = true)
     public Optional<Photo> open(Long accountId) {
         Optional<PersonProfile> profile = profiles.findByUserAccountId(accountId).filter(PersonProfile::hasPhoto);
@@ -96,7 +88,6 @@ public class PersonPhotoService {
         }
     }
 
-    // JPEG or PNG by the first bytes, whatever the browser declared; the stored type is the one the bytes show.
     static String check(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, NO_FILE);

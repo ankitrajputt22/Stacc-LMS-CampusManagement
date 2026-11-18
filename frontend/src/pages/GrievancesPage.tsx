@@ -36,7 +36,6 @@ function AnswerDue({ summary }: { summary: GrievanceSummary }) {
   )
 }
 
-/** Cases as a table: the case number is the row's one link to the case page. Only what the summary API sends. */
 function CaseTable({ cases, caption, basePath, showSubmitted }: { cases: GrievanceSummary[]; caption: string; basePath: string; showSubmitted: boolean }) {
   return (
     <DataTable<GrievanceSummary>
@@ -178,11 +177,6 @@ function CommitteeCases() {
   )
 }
 
-/**
- * /grievances and its pages: one's own grievances (/grievances, /grievances/new, /grievances/:caseId), and for
- * committee members the cases of their committees (/grievances/committee and /grievances/committee/:caseId). The
- * backend decides who may open each case; a case of anyone else answers the same 404.
- */
 export function GrievancesPage({ section = 'mine' }: { section?: GrievanceSection }) {
   const { account } = useAuth()
   const roles = account?.roles ?? []
@@ -193,10 +187,8 @@ export function GrievancesPage({ section = 'mine' }: { section?: GrievanceSectio
   const submitted = (location.state as { submitted?: string } | null)?.submitted
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string; at: string } | null>(null)
   const notify: Notify = (text, error = false) => setMessage({ tone: error ? 'error' : 'success', text, at: location.pathname })
-  // A message belongs to the page it was given on.
   const shown = message?.at === location.pathname ? message : null
   const id = Number(caseId)
-  // An account that cannot raise grievances goes straight to its committee cases.
   const current = section === 'mine' && !complainant ? 'committee' : section
 
   let body

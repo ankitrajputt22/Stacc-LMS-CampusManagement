@@ -9,7 +9,6 @@ const TONES: Record<GrievanceStatus, string> = {
   CLOSED: 'border-line-strong bg-surface-muted text-ink-muted',
 }
 
-/** A case's status as a word, lightly tinted; never only a colour. */
 export function GrievanceStatusTag({ status }: { status: GrievanceStatus }) {
   return (
     <span className={`inline-block shrink-0 rounded-sm border px-2 py-0.5 text-sm font-medium ${TONES[status]}`}>

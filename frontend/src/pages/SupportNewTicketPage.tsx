@@ -48,7 +48,6 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
   const [errors, setErrors] = useState<Errors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  // The subject as of the last time the field was left, for the help article suggestions.
   const [suggestionSubject, setSuggestionSubject] = useState('')
 
   function change(field: Field, value: string) {
@@ -83,7 +82,6 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
     }
     try {
       const ticket = await createHelpdeskTicket(request)
-      // No reload: the ticket page opens and says which number the ticket got.
       navigate(`/support/tickets/${ticket.ticketId}`, { state: { createdNumber: ticket.ticketNumber } })
     } catch (failure) {
       const status = getHttpStatus(failure)
@@ -96,7 +94,6 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
         if (FIELD_ORDER.includes(error.field as Field)) fieldErrors[error.field as Field] = error.message
       }
       if (status === 404 || (status === 400 && apiError?.message.includes('category'))) {
-        // The category was removed or made inactive meanwhile: the list is loaded again without it.
         fieldErrors.categoryId = CATEGORY_GONE
         change('categoryId', '')
         onCategoryGone()
@@ -236,7 +233,6 @@ function NewTicketForm({ categories, onCategoryGone }: { categories: HelpdeskCat
   )
 }
 
-/** A new ticket at /support/new, raised as the signed-in account in one of the active categories. */
 export function SupportNewTicketPage() {
   const { account } = useAuth()
   const hasSupport = hasAnyRole(account?.roles ?? [], ['STUDENT', 'FACULTY', 'ADMIN'])

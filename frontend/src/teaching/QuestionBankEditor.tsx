@@ -37,7 +37,6 @@ import { useContentChanges } from './useContentChanges'
 const FORBIDDEN =
   'You don’t have access to change this course’s question bank. If your access changed recently, sign out and sign in again.'
 
-/** The question's answers, as faculty read them. Plain text, never HTML. */
 function Answers({ question }: { question: LmsQuestion }) {
   switch (question.type) {
     case 'TRUE_FALSE':
@@ -138,16 +137,10 @@ function QuestionSummary({ question }: { question: LmsQuestion }) {
   )
 }
 
-/** The outcomes a question may choose: active ones, and the archived one it already has. */
 function outcomeChoices(outcomes: LmsOutcome[], current: LmsOutcome | null): LmsOutcome[] {
   return outcomes.filter((outcome) => outcome.status === 'ACTIVE' || outcome.id === current?.id)
 }
 
-/**
- * The course's question bank as faculty manage it: Add a question, filter and search the bank, Edit (which needs a new
- * review), Mark reviewed, OK for practice (reviewed questions only), and Archive, confirmed first. Nothing is deleted.
- * Students never see this page: questions carry their answers.
- */
 export function QuestionBankEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const queryClient = useQueryClient()
   const questions = useApiQuery(queryKeys.lms.questions(lmsCourseId), (signal) => getQuestions(lmsCourseId, signal))

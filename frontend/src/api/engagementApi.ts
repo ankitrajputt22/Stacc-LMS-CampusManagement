@@ -32,7 +32,6 @@ import type {
 } from '../types/engagement'
 import { apiClient } from './apiClient'
 
-// The signed-in account is the one in the session. The backend checks officers, organizers, and bookers per record.
 const BASE = '/engagement'
 
 export const getGroups = async (signal?: AbortSignal) => (await apiClient.get<CampusGroup[]>(`${BASE}/groups`, { signal })).data
@@ -69,7 +68,6 @@ export const createFacility = async (body: {
   closesAt: string
   needsApproval: boolean
 }) => (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities`, body)).data
-/** Adds weekly class hours; later bookings that overlap them are refused. */
 export const addClassHour = async (facilityId: number, body: { dayOfWeek: DayOfWeek; startsAt: string; endsAt: string; label: string }) =>
   (await apiClient.post<CampusFacility>(`${BASE}/admin/facilities/${facilityId}/class-hours`, body)).data
 export const removeClassHour = async (classHourId: number) =>
@@ -88,8 +86,6 @@ export const registerForEvent = async (eventId: number) => (await apiClient.post
 export const unregisterFromEvent = async (eventId: number) =>
   (await apiClient.post<CampusEvent>(`${BASE}/events/${eventId}/registration/cancel`)).data
 
-// --- Group sessions and announcements
-
 export async function getGroupActivity(groupId: number, signal?: AbortSignal) {
   return (await apiClient.get<GroupActivity>(`${BASE}/groups/${groupId}/activity`, { signal })).data
 }
@@ -102,19 +98,14 @@ export async function cancelGroupSession(sessionId: number) {
   return (await apiClient.post<GroupSession>(`${BASE}/sessions/${sessionId}/cancel`)).data
 }
 
-/** Posts an announcement; active members are told in their Inbox. */
 export async function postGroupAnnouncement(groupId: number, title: string, message: string) {
   return (await apiClient.post<GroupAnnouncement>(`${BASE}/groups/${groupId}/announcements`, { title, message })).data
 }
 
-/** Scheduled sessions of the account's groups overlapping the range (moments in UTC). */
 export async function getMyGroupSessions(from: string, to: string, signal?: AbortSignal) {
   return (await apiClient.get<GroupSession[]>(`${BASE}/me/sessions`, { params: { from, to }, signal })).data
 }
 
-// --- Event attendance
-
-/** A fresh check-in code for my registration; earlier codes stop working. */
 export async function getEventCheckInCode(eventId: number) {
   return (await apiClient.post<EventCheckInCode>(`${BASE}/events/${eventId}/check-in-code`)).data
 }
@@ -127,27 +118,19 @@ export async function getEventAttendance(eventId: number, signal?: AbortSignal) 
   return (await apiClient.get<EventAttendanceRow[]>(`${BASE}/events/${eventId}/attendance`, { signal })).data
 }
 
-/** Checks an attendee in by their check-in code or college ID. */
 export async function checkInEventAttendee(eventId: number, input: { code?: string; loginId?: string }) {
   return (await apiClient.post<EventCheckIn>(`${BASE}/events/${eventId}/check-ins`, input)).data
 }
 
-// --- Trials
-
-/** Marks an event the account manages as a trial, before it starts. */
 export async function markEventAsTrial(eventId: number) {
   await apiClient.post(`${BASE}/events/${eventId}/trial`)
 }
 
-/** Records or corrects Selected or Not selected for a registered attendee, once the trial has started. */
 export async function decideTrialOutcome(eventId: number, loginId: string, outcome: TrialOutcome) {
   return (await apiClient.post<EventAttendanceRow>(`${BASE}/events/${eventId}/trial-outcomes`, { loginId, outcome })).data
 }
 
-// --- Fests
-
 export const getFests = async (signal?: AbortSignal) => (await apiClient.get<CampusFest[]>(`${BASE}/fests`, { signal })).data
-/** Applies to volunteer for a shift; the campus office accepts or declines. */
 export const applyForFestShift = async (shiftId: number, note: string | null) =>
   (await apiClient.post<CampusFest>(`${BASE}/fests/shifts/${shiftId}/apply`, { note })).data
 export const withdrawFestApplication = async (applicationId: number) =>
@@ -168,21 +151,16 @@ export const getFestApplications = async (festId: number, signal?: AbortSignal) 
 export const decideFestApplication = async (applicationId: number, accept: boolean) =>
   (await apiClient.post<FestApplication>(`${BASE}/admin/fests/applications/${applicationId}/decision`, { accept })).data
 
-// --- Teams
-
 export const getGroupTeams = async (groupId: number, signal?: AbortSignal) =>
   (await apiClient.get<GroupTeams>(`${BASE}/groups/${groupId}/teams`, { signal })).data
 export const createTeam = async (groupId: number, name: string, season: string) =>
   (await apiClient.post<CampusTeam>(`${BASE}/groups/${groupId}/teams`, { name, season })).data
 export const deactivateTeam = async (teamId: number) => (await apiClient.post<CampusTeam>(`${BASE}/teams/${teamId}/deactivate`)).data
-/** Adds an active member of the group by college ID; a new captain or vice-captain takes over that role. */
 export const addTeamPlayer = async (teamId: number, loginId: string, role: TeamRole) =>
   (await apiClient.post<CampusTeam>(`${BASE}/teams/${teamId}/players`, { loginId, role })).data
 export const changeTeamRole = async (playerId: number, role: TeamRole) =>
   (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/role`, { role })).data
 export const removeTeamPlayer = async (playerId: number) => (await apiClient.post<CampusTeam>(`${BASE}/teams/players/${playerId}/remove`)).data
-
-// --- Tournaments
 
 export const getTournaments = async (signal?: AbortSignal) => (await apiClient.get<Tournament[]>(`${BASE}/tournaments`, { signal })).data
 export const getAllTournaments = async (signal?: AbortSignal) => (await apiClient.get<Tournament[]>(`${BASE}/admin/tournaments`, { signal })).data

@@ -13,11 +13,6 @@ import com.stacc.backend.lms.ai.job.AiJobRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * AI health for admins (v0.13.7): whether AI is on and the AI service answers, index and job states, requests running
- * and waiting now, and the last 24 hours of the request log by outcome and kind. Statuses and numbers only: no
- * address, setting, course, person, or content. Worked out live; nothing is stored.
- */
 @Service
 public class AiHealthService {
 

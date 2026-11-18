@@ -11,7 +11,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Recording a result and cancelling the same match at once never both succeed. A tournament of its own. */
 class TournamentResultMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

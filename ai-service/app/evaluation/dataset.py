@@ -1,10 +1,3 @@
-"""The evaluation course and its question set (v0.13.8).
-
-A small database-systems course of published topics, each with the sources that should answer it. Questions use
-the course's own words, synonyms, and exact technical terms, so both semantic and keyword search are exercised.
-Every question names at least one expected source; a few name none and must find nothing relevant.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -36,7 +29,7 @@ TOPICS: dict[int, tuple[str, str]] = {
 @dataclass(frozen=True)
 class Question:
     text: str
-    expected: frozenset[int]  # topic IDs; empty means nothing relevant should be found
+    expected: frozenset[int]
 
 
 QUESTIONS: tuple[Question, ...] = (

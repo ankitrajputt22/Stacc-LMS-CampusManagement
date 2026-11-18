@@ -7,7 +7,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 
-/** The marks a question carries in one draft quiz. */
 public record LmsQuizQuestionMarksRequest(
         @Schema(example = "2.5")
         @NotNull(message = "Marks are required")

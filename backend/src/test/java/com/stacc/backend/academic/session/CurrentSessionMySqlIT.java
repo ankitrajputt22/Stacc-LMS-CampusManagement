@@ -12,10 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * One current academic session on a real database: the unique generated column refuses a second current session, and
- * making another session current moves the mark. Uses its own sessions and puts the demo session back afterwards.
- */
 class CurrentSessionMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

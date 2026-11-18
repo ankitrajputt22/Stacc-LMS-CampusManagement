@@ -15,15 +15,10 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
 
     Optional<SemesterEnrollment> findByStudentProfileIdAndSemesterId(Long studentProfileId, Long semesterId);
 
-    /**
-     * How many students are enrolled in a section now, read as a locking read ({@code FOR SHARE}) so it sees every
-     * committed placement. The caller holds the section's row lock, so the count cannot change before it saves.
-     */
     @Query(value = "select count(*) from semester_enrollments where section_id = :sectionId and status = 'ENROLLED' for share",
             nativeQuery = true)
     long countEnrolledInSectionForShare(@Param("sectionId") Long sectionId);
 
-    /** How many students are enrolled in each section now, as pairs of section ID and count. */
     @Query("""
             select enrollment.section.id, count(enrollment)
             from SemesterEnrollment enrollment
@@ -33,10 +28,8 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             """)
     List<Object[]> countEnrolledBySection();
 
-    /** How many semester enrollments have this status, such as every one still {@code ENROLLED}. */
     long countByStatus(SemesterEnrollmentStatus status);
 
-    /** A student's semester enrollments with each semester, program, and session: the latest session first. */
     @Query("""
             select enrollment
             from SemesterEnrollment enrollment
@@ -62,18 +55,10 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
             """)
     Optional<SemesterEnrollment> findWithContextById(@Param("semesterEnrollmentId") Long semesterEnrollmentId);
 
-    /**
-     * One semester enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Adding a course to it
-     * and ending it both take this lock, so a course is never added to an enrollment that is ending at the same time.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select enrollment from SemesterEnrollment enrollment where enrollment.id = :semesterEnrollmentId")
     Optional<SemesterEnrollment> findByIdForUpdate(@Param("semesterEnrollmentId") Long semesterEnrollmentId);
 
-    /**
-     * The semester and academic session of each semester enrollment in these statuses of the student behind one
-     * account, in one query and without loading the enrollments.
-     */
     @Query("""
             select semester.id as semesterId, semester.academicSession.id as academicSessionId
             from SemesterEnrollment enrollment
@@ -84,10 +69,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
     List<EnrolledSemester> findEnrolledSemestersByUserAccountId(
             @Param("userAccountId") Long userAccountId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
 
-    /**
-     * The academic sessions in which a student has at least one semester enrollment in this status, the latest first.
-     * Hostel eligibility uses it with ENROLLED.
-     */
     @Query("""
             select distinct academicSession
             from SemesterEnrollment enrollment
@@ -100,7 +81,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
     List<AcademicSession> findSessionsOfStudentWithStatus(@Param("studentProfileId") Long studentProfileId,
             @Param("status") SemesterEnrollmentStatus status);
 
-    /** Whether a student has a semester enrollment in this status in a semester of the academic session. */
     @Query("""
             select count(enrollment) > 0
             from SemesterEnrollment enrollment
@@ -111,7 +91,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
     boolean existsInSessionWithStatus(@Param("studentProfileId") Long studentProfileId,
             @Param("academicSessionId") Long academicSessionId, @Param("status") SemesterEnrollmentStatus status);
 
-    /** One semester a student is enrolled in, and its academic session. */
     interface EnrolledSemester {
 
         Long getSemesterId();
@@ -119,10 +98,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
         Long getAcademicSessionId();
     }
 
-    /**
-     * The accounts of the students with a semester enrollment in these statuses in one academic session, and, when a
-     * semester is given, in that semester only. Each account once.
-     */
     @Query("""
             select distinct studentProfile.userAccount.id
             from SemesterEnrollment enrollment
@@ -135,7 +110,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
     List<Long> findStudentAccountIdsInSession(@Param("academicSessionId") Long academicSessionId,
             @Param("semesterId") Long semesterId, @Param("statuses") Collection<SemesterEnrollmentStatus> statuses);
 
-    /** Reports: how many semester enrollments are in each status, in the semesters that match every given filter. */
     @Query("""
             select enrollment.status as status, count(enrollment) as total
             from SemesterEnrollment enrollment
@@ -154,10 +128,6 @@ public interface SemesterEnrollmentRepository extends JpaRepository<SemesterEnro
         Long getTotal();
     }
 
-    /**
-     * The enrolled semester enrollments of these students with semester, session, and section, the latest session first:
-     * the first one of a student is where they study now.
-     */
     @Query("""
             select enrollment
             from SemesterEnrollment enrollment
