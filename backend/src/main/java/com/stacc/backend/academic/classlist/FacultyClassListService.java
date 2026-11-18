@@ -64,7 +64,7 @@ public class FacultyClassListService {
 
     public record ClassStudent(
             @Schema(example = "501") Long courseEnrollmentId,
-            @Schema(description = "The student ID, which is the account's login ID.", example = "student1") String loginId,
+            @Schema(description = "The student ID, which is the account's login ID.", example = "cse24001") String loginId,
             @Schema(description = "The name from the person profile, or null.") String name,
             @Schema(example = "25CSE001") String rollNumber,
             @Schema(example = "BTECH-CSE") String programCode,

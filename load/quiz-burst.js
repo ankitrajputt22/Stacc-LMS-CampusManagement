@@ -6,12 +6,12 @@ import { annotate, BASE, signIn } from './common.js'
 
 // Many students take one quiz at once, several requests from each, so starting, saving, and handing in race on the
 // same attempt. Setup builds a graded quiz with one attempt each from the reviewed objective questions of the course's
-// bank (as faculty1 would) and publishes it; each request then starts or resumes the student's attempt, saves the
+// bank (as emp1021 would) and publishes it; each request then starts or resumes the student's attempt, saves the
 // correct answers, and hands it in. Afterwards every student must hold exactly one handed-in attempt with full marks.
 // Run it on a throwaway stack with the demo data.
-const FACULTY = __ENV.FACULTY || 'faculty1'
+const FACULTY = __ENV.FACULTY || 'emp1021'
 const COURSE_CODE = __ENV.COURSE_CODE || 'CS301'
-const STUDENTS = (__ENV.STUDENTS || 'student1,student2,studentfaculty1').split(',').map((id) => id.trim())
+const STUDENTS = (__ENV.STUDENTS || 'cse24001,cse24002,cse24003').split(',').map((id) => id.trim())
 const REQUESTS_PER_STUDENT = Number(__ENV.REQUESTS_PER_STUDENT || 10)
 const TOTAL = STUDENTS.length * REQUESTS_PER_STUDENT
 const OBJECTIVE = ['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE']

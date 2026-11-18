@@ -31,7 +31,7 @@ function renderWith(login: AuthContextValue['login']) {
 
 async function signIn() {
   const user = userEvent.setup()
-  await user.type(screen.getByLabelText('College ID / Employee ID'), 'student1')
+  await user.type(screen.getByLabelText('College ID / Employee ID'), 'cse24001')
   await user.type(screen.getByLabelText('Password', { exact: true }), 'not-the-password')
   await user.click(screen.getByRole('button', { name: 'Sign in' }))
 }

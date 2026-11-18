@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Sessions on a real database: a started session is accepted, and signing out, signing out everywhere, idleness, and
- * a disabled account each end acceptance at once. Uses the demo account facultyadmin1, which no other MySQL test uses.
+ * a disabled account each end acceptance at once. Uses the demo account emp1005, which no other MySQL test uses.
  */
 class SessionMySqlIT extends MySqlIntegrationTest {
 
@@ -27,7 +27,7 @@ class SessionMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void sessionsEndForEveryReasonAndStayEnded() {
-        Long account = accounts.findByLoginId("facultyadmin1").orElseThrow().getId();
+        Long account = accounts.findByLoginId("emp1005").orElseThrow().getId();
         UserSession laptop = sessions.start(account, "Mozilla/5.0 (Macintosh; Intel Mac OS X) Chrome/130");
         UserSession phone = sessions.start(account, "Mozilla/5.0 (Linux; Android 14) Chrome/130");
         UserSession tablet = sessions.start(account, null);
@@ -55,7 +55,7 @@ class SessionMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void disablingTheAccountRefusesItsOpenSessionsAtOnce() {
-        UserAccount account = accounts.findByLoginId("faculty2").orElseThrow();
+        UserAccount account = accounts.findByLoginId("emp1022").orElseThrow();
         UserSession session = sessions.start(account.getId(), null);
         assertThat(sessions.check(session.getId(), account.getId()).active()).isTrue();
 

@@ -6,7 +6,7 @@ const NOTE = 'My 3NF summary (AI notes journey)'
 
 test('a teacher keeps a teacher-only document and a student keeps, then deletes, a private note', async ({ page }) => {
   // Teacher AI (v0.14.6) is one area with a tab per section; teacher-only documents (v0.13.5) are under Knowledge.
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Teacher AI')
   await expect(page.getByRole('heading', { level: 1, name: 'Teacher AI' })).toBeVisible()
@@ -26,7 +26,7 @@ test('a teacher keeps a teacher-only document and a student keeps, then deletes,
   await signOut(page)
 
   // A student's notes (v0.13.6) are private to them and deleted for good.
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'AI Study Assistant')
   await expect(page.getByText(DOCUMENT)).toHaveCount(0)

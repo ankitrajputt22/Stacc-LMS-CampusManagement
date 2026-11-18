@@ -24,7 +24,7 @@ class HelpdeskNotificationsTest {
     private final NotificationService service = mock(NotificationService.class);
     private final HelpdeskNotifications notifications = new HelpdeskNotifications(service);
     private final HelpdeskTicket ticket = HelpdeskFixtures.ticket(42,
-            HelpdeskFixtures.account(70, "student1", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
+            HelpdeskFixtures.account(70, "cse24001", RoleName.STUDENT), HelpdeskFixtures.category(3, "LMS", true));
 
     private NotificationMessage sentTo(long accountId) {
         ArgumentCaptor<NotificationMessage> message = ArgumentCaptor.forClass(NotificationMessage.class);
@@ -48,7 +48,7 @@ class HelpdeskNotificationsTest {
     void nobodyIsToldAboutTheirOwnAction() {
         notifications.replied(ticket, 70L);
         notifications.statusChanged(ticket, 70L);
-        ticket.assignTo(HelpdeskFixtures.account(1, "admin1", RoleName.ADMIN));
+        ticket.assignTo(HelpdeskFixtures.account(1, "adm1001", RoleName.ADMIN));
         notifications.assigned(ticket, 1L);
 
         verifyNoInteractions(service);
@@ -67,7 +67,7 @@ class HelpdeskNotificationsTest {
 
     @Test
     void anAssignmentTellsTheAssigneeAndUnassigningTellsNobody() {
-        ticket.assignTo(HelpdeskFixtures.account(2, "facultyadmin1", RoleName.ADMIN));
+        ticket.assignTo(HelpdeskFixtures.account(2, "emp1005", RoleName.ADMIN));
         notifications.assigned(ticket, 1L);
         NotificationMessage assigned = sentTo(2);
         assertThat(assigned.type()).isEqualTo(NotificationType.HELPDESK_ASSIGNED);

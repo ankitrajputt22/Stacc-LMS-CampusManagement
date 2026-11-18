@@ -5,7 +5,7 @@ test('the campus office runs a fest and a student volunteers for a shift', async
   const name = `Fest ${Date.now()}`
 
   const office = await browser.newPage()
-  await signIn(office, 'erp', 'admin1')
+  await signIn(office, 'erp', 'adm1001')
   await office.goto('/admin/campus/fests')
   await office.getByLabel('Fest name').fill(name)
   await office.getByLabel('First day').fill('2030-02-01')
@@ -23,7 +23,7 @@ test('the campus office runs a fest and a student volunteers for a shift', async
   await expect(office.getByRole('status').filter({ hasText: 'Fest published.' })).toHaveCount(1)
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/campus/fests')
   const festCard = student.getByRole('region', { name })
   await festCard.getByRole('textbox', { name: /^Note for Help desk/ }).fill('Free in the morning')
@@ -32,7 +32,7 @@ test('the campus office runs a fest and a student volunteers for a shift', async
   await expect(festCard.getByText('Applied', { exact: true })).toBeVisible()
 
   await office.reload()
-  await office.getByRole('region', { name }).getByRole('button', { name: 'Accept student1' }).click()
-  await expect(office.getByRole('status').filter({ hasText: 'student1 accepted.' })).toHaveCount(1)
+  await office.getByRole('region', { name }).getByRole('button', { name: 'Accept cse24001' }).click()
+  await expect(office.getByRole('status').filter({ hasText: 'cse24001 accepted.' })).toHaveCount(1)
   await expect(office.getByRole('region', { name }).getByText('1 of 1 places taken')).toBeVisible()
 })

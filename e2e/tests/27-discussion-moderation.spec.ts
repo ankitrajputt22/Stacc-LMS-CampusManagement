@@ -4,7 +4,7 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 test('a student reports a discussion and the faculty hide it from students and lock it', async ({ page }) => {
   const title = `Moderation journey ${Date.now()}`
 
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Discussions')
   await page.getByRole('button', { name: 'Start a discussion' }).click()
@@ -14,7 +14,7 @@ test('a student reports a discussion and the faculty hide it from students and l
   await expect(page.getByRole('heading', { name: title })).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Discussions')
   await page.getByRole('link', { name: title }).click()
@@ -24,7 +24,7 @@ test('a student reports a discussion and the faculty hide it from students and l
   await expect(page.getByRole('status').filter({ hasText: 'Report sent to the course’s faculty.' })).toBeAttached()
   await signOut(page)
 
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Discussions')
   const reports = page.getByRole('region', { name: 'Reported posts' })
@@ -40,7 +40,7 @@ test('a student reports a discussion and the faculty hide it from students and l
   await signOut(page)
 
   // Students no longer see the hidden discussion.
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Discussions')
   await expect(page.getByRole('heading', { name: 'Discussions' }).first()).toBeVisible()

@@ -4,7 +4,7 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 const FILE_TITLE = 'Array exercises (files journey)'
 
 test('a faculty member uploads and publishes a course file, and a student finds and downloads it', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Files')
   await expect(page.getByRole('heading', { level: 1, name: 'Files' })).toBeVisible()
@@ -32,7 +32,7 @@ test('a faculty member uploads and publishes a course file, and a student finds 
   await expect(row).toContainText('Visible')
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Files')
   const studentFiles = page.getByRole('table', { name: 'Course files' })

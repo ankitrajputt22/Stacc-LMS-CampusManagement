@@ -11,7 +11,7 @@ describe('grade text', () => {
 
   it('finds students by part of their college ID', () => {
     expect(matchesStudent('2408400100011', ' 0011 ')).toBe(true)
-    expect(matchesStudent('student1', 'STUDENT')).toBe(true)
-    expect(matchesStudent('student1', 'faculty')).toBe(false)
+    expect(matchesStudent('cse24001', 'CSE24')).toBe(true)
+    expect(matchesStudent('cse24001', 'faculty')).toBe(false)
   })
 })

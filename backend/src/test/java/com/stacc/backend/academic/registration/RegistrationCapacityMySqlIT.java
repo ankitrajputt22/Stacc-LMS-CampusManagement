@@ -30,13 +30,13 @@ class RegistrationCapacityMySqlIT extends MySqlIntegrationTest {
     @Test
     void theLastSeatIsTakenOnlyOnce() throws Exception {
         List<Long> accounts = jdbc.queryForList(
-                "select id from user_accounts where login_id in ('student1', 'student2') order by login_id", Long.class);
+                "select id from user_accounts where login_id in ('cse24001', 'cse24002') order by login_id", Long.class);
         assertThat(accounts).hasSize(2);
         Long semesterId = jdbc.queryForObject("""
                 select enrollment.semester_id from semester_enrollments enrollment
                 join student_profiles profile on profile.id = enrollment.student_profile_id
                 join user_accounts account on account.id = profile.user_account_id
-                where account.login_id = 'student1' and enrollment.status = 'ENROLLED'
+                where account.login_id = 'cse24001' and enrollment.status = 'ENROLLED'
                 """, Long.class);
         Long departmentId = jdbc.queryForObject("select id from departments where code = 'CSE'", Long.class);
         jdbc.update("insert into courses (department_id, code, name, credits, course_type, status, created_at, updated_at) "

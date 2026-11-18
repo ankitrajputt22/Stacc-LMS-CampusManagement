@@ -97,7 +97,7 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
                 get(TICKETS + "/me"), get(TICKETS + "/42"),
                 json(post(TICKETS + "/42/messages"), "{\"message\":\"Hello\"}"),
                 get(ADMIN_TICKETS), get(ASSIGNEES),
-                json(put(ADMIN_TICKETS + "/42/assignment"), "{\"assignedToLoginId\":\"admin1\"}"),
+                json(put(ADMIN_TICKETS + "/42/assignment"), "{\"assignedToLoginId\":\"adm1001\"}"),
                 json(put(ADMIN_TICKETS + "/42/priority"), "{\"priority\":\"HIGH\"}"),
                 json(put(ADMIN_TICKETS + "/42/status"), "{\"status\":\"CLOSED\"}"));
     }
@@ -204,11 +204,11 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void theQueuePassesItsFiltersAndUsesThePageDefaults() throws Exception {
-        mockMvc.perform(get(ADMIN_TICKETS).param("assignedToMe", "true").param("requesterLoginId", "student1")
+        mockMvc.perform(get(ADMIN_TICKETS).param("assignedToMe", "true").param("requesterLoginId", "cse24001")
                 .header(HttpHeaders.AUTHORIZATION, admin())).andExpect(status().isOk());
 
         ArgumentCaptor<HelpdeskActor> actor = ArgumentCaptor.forClass(HelpdeskActor.class);
-        verify(queries).queue(actor.capture(), isNull(), isNull(), isNull(), eq(true), eq("student1"), eq(0), eq(20));
+        verify(queries).queue(actor.capture(), isNull(), isNull(), isNull(), eq(true), eq("cse24001"), eq(0), eq(20));
         assertThat(actor.getValue().accountId()).isEqualTo(1L);
         assertThat(actor.getValue().manage()).isTrue();
     }
@@ -249,12 +249,12 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
     @Test
     void aReplyAnswers201WithTheMessage() throws Exception {
         when(commands.addMessage(any(), eq(42L), eq("Hello")))
-                .thenReturn(new HelpdeskMessageResponse(7L, "student1", "Hello", Instant.parse("2026-10-25T09:00:00Z"), false));
+                .thenReturn(new HelpdeskMessageResponse(7L, "cse24001", "Hello", Instant.parse("2026-10-25T09:00:00Z"), false));
 
         mockMvc.perform(json(post(TICKETS + "/42/messages"), "{\"message\":\"Hello\",\"authorId\":1}")
                         .header(HttpHeaders.AUTHORIZATION, student()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.authorLoginId").value("student1"))
+                .andExpect(jsonPath("$.authorLoginId").value("cse24001"))
                 .andExpect(jsonPath("$", not(hasKey("authorId"))));
     }
 
@@ -270,11 +270,11 @@ class HelpdeskControllerTest extends DatabaseFreeApiTest {
 
     @Test
     void theAssigneeListHasLoginIdsOnly() throws Exception {
-        when(queries.assignees(any())).thenReturn(List.of(new HelpdeskAssigneeResponse("admin1")));
+        when(queries.assignees(any())).thenReturn(List.of(new HelpdeskAssigneeResponse("adm1001")));
 
         mockMvc.perform(get(ASSIGNEES).header(HttpHeaders.AUTHORIZATION, admin()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].loginId").value("admin1"))
+                .andExpect(jsonPath("$[0].loginId").value("adm1001"))
                 .andExpect(jsonPath("$[0].length()").value(1));
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.paths['" + ASSIGNEES + "'].get.security[0].bearerAuth").exists());

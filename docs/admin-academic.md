@@ -77,7 +77,7 @@ A section (`academic.section.Section`) is a group of students within one semeste
 - A closed semester takes no new sections (409). The semester and code never change. A capacity below the students already enrolled in it answers 409. Sections are deactivated, never deleted; an inactive section keeps its students but takes no more.
 - A student is placed through their semester enrollment: `PUT /api/v1/admin/academic/enrollments/semester-enrollments/{semesterEnrollmentId}/section` with `sectionId`, or `null` to take them out. It needs the enrollment permissions. Only an `ENROLLED` semester enrollment can change section, and only to an active section of its own semester (409 otherwise). The semester enrollment is locked first and then the section, always in that order, and the section's enrolled students are counted with a locking read only under its lock, so two placements at once never take its last place twice (`SectionCapacityMySqlIT`). A full section answers 409 "Section A is full: all 60 places are taken."
 - The section stays on an ended semester enrollment as history, and only `ENROLLED` students count towards a capacity. Semester enrollment answers carry `sectionId` and `sectionCode`.
-- The demo data has sections A and B (60 places each) in BTECH-CSE semester 3, 2026-27, with student1 and studentfaculty1 in A and student2 in B.
+- The demo data has sections A and B (60 places each) in BTECH-CSE semester 3, 2026-27, with cse24001 and cse24003 in A and cse24002 in B.
 
 ## Course offerings
 

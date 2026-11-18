@@ -197,7 +197,7 @@ The source is `HOSTEL_ALLOCATION` with the allocation ID, and `V54` widens the n
 - **Student `/hostel`** (the **Hostel** item in the Student navigation section):
   - **Apply for hostel**: an **Academic Session** select from the eligible sessions, an optional **Note**, and **Apply for hostel**.
   - **Your applications**: newest first, with Pending, Approved, Rejected, or Cancelled in words.
-  - The chosen application shows its **Approval progress** step by step, such as "Administrative Approval · Approved by admin1", with any rejection note as plain text.
+  - The chosen application shows its **Approval progress** step by step, such as "Administrative Approval · Approved by adm1001", with any rejection note as plain text.
   - **Cancel application** (only while pending) asks "Cancel this hostel application?" ("This stops the current approval workflow.") with **Cancel application** and **Keep application**.
   - Allocation shows Hostel, Room, Bed, Allocated, and Active, or "Waiting for hostel allocation." once approved, and any earlier allocations.
 - **Admin `/admin/hostel`** (the **Hostel Management** item in the Admin section) opens **Applications**, with **Hostels & Rooms** and **Allocations** beside it:

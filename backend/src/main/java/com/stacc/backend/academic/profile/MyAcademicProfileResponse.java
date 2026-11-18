@@ -16,7 +16,7 @@ public record MyAcademicProfileResponse(
         @Schema(description = "Null when the account holds no faculty role or has no faculty profile.") FacultyPart faculty) {
 
     public record StudentPart(
-            @Schema(description = "The student ID.", example = "student1") String loginId,
+            @Schema(description = "The student ID.", example = "cse24001") String loginId,
             @Schema(description = "The roll number, or null.") String rollNumber,
             @Schema(example = "BTECH-CSE") String programCode,
             @Schema(example = "Bachelor of Technology in CSE") String programName,
@@ -64,7 +64,7 @@ public record MyAcademicProfileResponse(
     }
 
     public record FacultyPart(
-            @Schema(description = "The employee ID.", example = "faculty1") String loginId,
+            @Schema(description = "The employee ID.", example = "emp1021") String loginId,
             @Schema(example = "CSE") String departmentCode,
             @Schema(example = "Computer Science and Engineering") String departmentName,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}) String status,

@@ -7,7 +7,7 @@ test('a librarian catalogs a book and lends it, and the student sees the loan', 
   const barcode = `LIB-${stamp}`
 
   const librarian = await browser.newPage()
-  await signIn(librarian, 'erp', 'librarian1')
+  await signIn(librarian, 'erp', 'stf2014')
   await librarian.goto('/library')
   await librarian.getByLabel('New title').fill(book)
   await librarian.getByLabel('Authors (optional)').fill('N. Wirth')
@@ -20,13 +20,13 @@ test('a librarian catalogs a book and lends it, and the student sees the loan', 
   await librarian.getByRole('button', { name: 'Add copy' }).click()
   await expect(librarian.getByRole('status').filter({ hasText: 'Copy added.' })).toHaveCount(1)
   await librarian.getByLabel('Copy barcode to lend').fill(barcode)
-  await librarian.getByLabel('Borrower’s college ID').fill('student1')
+  await librarian.getByLabel('Borrower’s college ID').fill('cse24001')
   await librarian.getByRole('button', { name: 'Lend', exact: true }).click()
   await expect(librarian.getByRole('status').filter({ hasText: 'Copy lent for two weeks.' })).toHaveCount(1)
   await expect(librarian.getByRole('table', { name: 'Out on loan' }).getByText(barcode)).toBeVisible()
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/library')
   await expect(student.getByRole('region', { name: 'My loans and holds' }).getByRole('button', { name: new RegExp(`^Renew\\s*${book}$`) })).toBeVisible()
 })

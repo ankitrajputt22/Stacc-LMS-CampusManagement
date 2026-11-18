@@ -93,7 +93,7 @@ public final class ApprovalResponses {
             String stepName,
             @Schema(example = "FACULTY") String requiredRoleCode,
             @Schema(allowableValues = {"WAITING", "PENDING", "APPROVED", "REJECTED", "SKIPPED"}) String status,
-            @Schema(nullable = true, example = "faculty1") String actedByLoginId,
+            @Schema(nullable = true, example = "emp1021") String actedByLoginId,
             @Schema(nullable = true) Instant actedAt,
             @Schema(nullable = true, description = "Plain text.") String comment) {
 
@@ -155,7 +155,7 @@ public final class ApprovalResponses {
             int stepOrder,
             String stepName,
             @Schema(example = "FACULTY") String requiredRoleCode,
-            @Schema(example = "student1") String requesterLoginId,
+            @Schema(example = "cse24001") String requesterLoginId,
             Instant submittedAt) {
 
         static ApprovalTaskSummary of(ApprovalRequestStep step) {

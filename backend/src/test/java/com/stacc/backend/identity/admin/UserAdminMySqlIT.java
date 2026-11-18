@@ -33,11 +33,11 @@ class UserAdminMySqlIT extends MySqlIntegrationTest {
     @Test
     void searchingFiltersByRoleStatusAndText() {
         UserPage students = users.list(RoleName.STUDENT, AccountStatus.ACTIVE, null, 0, 100);
-        assertThat(students.items()).extracting(UserSummary::loginId).contains("student1", "student2")
-                .doesNotContain("admin1");
+        assertThat(students.items()).extracting(UserSummary::loginId).contains("cse24001", "cse24002")
+                .doesNotContain("adm1001");
 
         UserPage byName = users.list(null, null, "AARAV", 0, 100);
-        assertThat(byName.items()).extracting(UserSummary::loginId).containsExactly("student1");
+        assertThat(byName.items()).extracting(UserSummary::loginId).containsExactly("cse24001");
 
         assertThat(users.list(null, null, "%", 0, 100).items()).isEmpty();
     }

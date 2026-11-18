@@ -22,7 +22,7 @@ public final class DepartmentHeadRecords {
     public record HeadTerm(
             @Schema(example = "4") Long departmentHeadId,
             @Schema(example = "12") Long userAccountId,
-            @Schema(example = "hod1") String loginId,
+            @Schema(example = "emp1003") String loginId,
             @Schema(description = "The person's name, or null before the college records one.") String name,
             @Schema(allowableValues = {"ACTIVE", "ENDED"}) String status,
             Instant startedAt,
@@ -34,7 +34,7 @@ public final class DepartmentHeadRecords {
 
     public record HeadCandidate(
             @Schema(example = "12") Long userAccountId,
-            @Schema(example = "hod1") String loginId,
+            @Schema(example = "emp1003") String loginId,
             @Schema(description = "Or null before the college records a name.") String name) {
     }
 

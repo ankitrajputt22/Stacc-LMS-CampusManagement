@@ -35,7 +35,7 @@ class SectionCapacityMySqlIT extends MySqlIntegrationTest {
                 select enrollment.id from semester_enrollments enrollment
                 join student_profiles profile on profile.id = enrollment.student_profile_id
                 join user_accounts account on account.id = profile.user_account_id
-                where account.login_id in ('student1', 'student2') and enrollment.section_id is not null
+                where account.login_id in ('cse24001', 'cse24002') and enrollment.section_id is not null
                 order by account.login_id
                 """, Long.class);
         assertThat(ids).hasSize(2);

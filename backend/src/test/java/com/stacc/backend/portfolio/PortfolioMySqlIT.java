@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Runs the portfolio's live record queries and the verification flow on MySQL, and the mentoring lists that feed the
- * To-Do list. Works on student2, faculty2, and items and pairings of its own.
+ * To-Do list. Works on cse24002, emp1022, and items and pairings of its own.
  */
 class PortfolioMySqlIT extends MySqlIntegrationTest {
 
@@ -33,13 +33,13 @@ class PortfolioMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anItemIsVerifiedOnlyByTheNamedFacultyMember() {
-        Long student = accounts.findByLoginId("student2").orElseThrow().getId();
-        Long named = accounts.findByLoginId("faculty2").orElseThrow().getId();
-        Long other = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24002").orElseThrow().getId();
+        Long named = accounts.findByLoginId("emp1022").orElseThrow().getId();
+        Long other = accounts.findByLoginId("emp1021").orElseThrow().getId();
         Long itemId = portfolios.add(student, new PortfolioService.ItemInput(PortfolioItem.Kind.ACHIEVEMENT, "Hackathon finalist", null,
                 LocalDate.of(2026, 9, 1), null)).itemId();
         portfolios.add(student, new PortfolioService.ItemInput(PortfolioItem.Kind.SKILL, "Undated skill", null, null, null));
-        portfolios.requestVerification(student, itemId, "faculty2");
+        portfolios.requestVerification(student, itemId, "emp1022");
 
         assertThatThrownBy(() -> portfolios.decide(other, itemId, true, null)).isInstanceOf(ApiException.class);
         assertThat(portfolios.waitingFor(named)).extracting(PortfolioService.WaitingItem::itemId).contains(itemId);
@@ -53,11 +53,11 @@ class PortfolioMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void mentoringListsRunOnMySql() {
-        Long mentor = accounts.findByLoginId("faculty2").orElseThrow().getId();
-        Long student = accounts.findByLoginId("student2").orElseThrow().getId();
-        Long pairingId = mentoring.pairings(mentor).stream().filter(pairing -> pairing.menteeLoginId().equals("student2")).findFirst()
+        Long mentor = accounts.findByLoginId("emp1022").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24002").orElseThrow().getId();
+        Long pairingId = mentoring.pairings(mentor).stream().filter(pairing -> pairing.menteeLoginId().equals("cse24002")).findFirst()
                 .map(MentoringService.PairingView::assignmentId)
-                .orElseGet(() -> mentoring.pair("faculty2", "student2").assignmentId());
+                .orElseGet(() -> mentoring.pair("emp1022", "cse24002").assignmentId());
         Long meetingId = mentoring.addMeeting(mentor, pairingId, Instant.now().truncatedTo(ChronoUnit.SECONDS), "IT meeting", "Shared", "Private")
                 .meetings().getFirst().meetingId();
         mentoring.addActionItem(mentor, meetingId, "Undated task", MentoringActionItem.Owner.MENTEE, null);

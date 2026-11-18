@@ -12,7 +12,7 @@ import { MasterSection } from './MasterSection'
 import { lifecycleOptions } from './masterStatus'
 import { REGISTRATION_OPTIONS, registrationTone, registrationWord, roleWord } from './offeringText'
 
-/** "Dr. Meera Iyer (Primary)", "faculty1 (Co-faculty)", or Unassigned when no one actively teaches it. */
+/** "Dr. Meera Iyer (Primary)", "emp1021 (Co-faculty)", or Unassigned when no one actively teaches it. */
 function FacultyCell({ faculty }: { faculty: OfferingFaculty[] | null }) {
   const active = (faculty ?? []).filter((member) => member.status === 'ACTIVE')
   if (active.length === 0) {

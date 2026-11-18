@@ -32,8 +32,8 @@ class LmsDiscussionModerationMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void reportsHidingAndLockingHoldUnderTheThreadLock() throws Exception {
-        Viewer faculty = new Viewer(accounts.findByLoginId("faculty1").orElseThrow().getId(), AuthorKind.FACULTY);
-        Viewer student = new Viewer(accounts.findByLoginId("student1").orElseThrow().getId(), AuthorKind.STUDENT);
+        Viewer faculty = new Viewer(accounts.findByLoginId("emp1021").orElseThrow().getId(), AuthorKind.FACULTY);
+        Viewer student = new Viewer(accounts.findByLoginId("cse24001").orElseThrow().getId(), AuthorKind.STUDENT);
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

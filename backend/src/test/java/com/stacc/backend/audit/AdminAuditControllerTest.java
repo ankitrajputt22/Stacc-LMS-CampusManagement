@@ -29,7 +29,7 @@ class AdminAuditControllerTest extends DatabaseFreeApiTest {
     private AuditQueryService queries;
 
     private static String bearer(String... authorities) {
-        return "Bearer " + TestTokens.valid("admin1", 70, authorities);
+        return "Bearer " + TestTokens.valid("adm1001", 70, authorities);
     }
 
     @Test

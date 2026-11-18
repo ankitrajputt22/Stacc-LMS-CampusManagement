@@ -57,8 +57,8 @@ public final class HelpdeskResponses {
             @Schema(example = "Cannot open my CS302 course") String subject,
             @Schema(allowableValues = {"LOW", "NORMAL", "HIGH", "URGENT"}) String priority,
             @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "WAITING_ON_REQUESTER", "RESOLVED", "CLOSED"}) String status,
-            @Schema(example = "student1") String requesterLoginId,
-            @Schema(nullable = true, example = "admin1") String assignedToLoginId,
+            @Schema(example = "cse24001") String requesterLoginId,
+            @Schema(nullable = true, example = "adm1001") String assignedToLoginId,
             Instant createdAt,
             Instant updatedAt,
             @Schema(nullable = true, example = "Maintenance") String teamName,
@@ -75,7 +75,7 @@ public final class HelpdeskResponses {
     }
 
     /** An account a ticket can be assigned to: an active admin account, by login ID only. */
-    public record HelpdeskAssigneeResponse(@Schema(example = "admin1") String loginId) {
+    public record HelpdeskAssigneeResponse(@Schema(example = "adm1001") String loginId) {
     }
 
     /** One page of tickets, newest first. */
@@ -90,7 +90,7 @@ public final class HelpdeskResponses {
     /** One message of the conversation. */
     public record HelpdeskMessageResponse(
             @Schema(example = "7") Long messageId,
-            @Schema(example = "admin1") String authorLoginId,
+            @Schema(example = "adm1001") String authorLoginId,
             @Schema(description = "Plain text.") String message,
             Instant createdAt,
             @Schema(description = "An internal note, seen only by the support side.") boolean internal) {
@@ -107,7 +107,7 @@ public final class HelpdeskResponses {
                     "UNASSIGNED"}) String action,
             @Schema(nullable = true, example = "OPEN") String fromValue,
             @Schema(nullable = true, example = "IN_PROGRESS") String toValue,
-            @Schema(example = "admin1") String actorLoginId,
+            @Schema(example = "adm1001") String actorLoginId,
             Instant createdAt) {
 
         static HelpdeskHistoryResponse of(HelpdeskTicketHistory entry) {
@@ -127,8 +127,8 @@ public final class HelpdeskResponses {
             @Schema(description = "Plain text, the original description.") String description,
             @Schema(allowableValues = {"LOW", "NORMAL", "HIGH", "URGENT"}) String priority,
             @Schema(allowableValues = {"OPEN", "IN_PROGRESS", "WAITING_ON_REQUESTER", "RESOLVED", "CLOSED"}) String status,
-            @Schema(example = "student1") String requesterLoginId,
-            @Schema(nullable = true, example = "admin1") String assignedToLoginId,
+            @Schema(example = "cse24001") String requesterLoginId,
+            @Schema(nullable = true, example = "adm1001") String assignedToLoginId,
             @Schema(nullable = true) Instant resolvedAt,
             @Schema(nullable = true) Instant closedAt,
             Instant createdAt,

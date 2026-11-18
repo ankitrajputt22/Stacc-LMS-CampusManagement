@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * An edit and a practice change at the same moment never overwrite each other: both lock the question row first, so an
- * edited question always ends up needing review and not offered for practice. Uses CS250's draft LMS course of faculty2,
+ * edited question always ends up needing review and not offered for practice. Uses CS250's draft LMS course of emp1022,
  * whose question bank no other test touches.
  */
 class LmsQuestionBankMySqlIT extends MySqlIntegrationTest {
@@ -30,7 +30,7 @@ class LmsQuestionBankMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anEditAndAPracticeChangeAtOnceLeaveTheEditedQuestionNeedingReview() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

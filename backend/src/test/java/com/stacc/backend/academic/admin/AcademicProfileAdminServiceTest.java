@@ -78,7 +78,7 @@ class AcademicProfileAdminServiceTest {
 
     @Test
     void aFacultyMemberMovesOnlyToAnActiveDepartment() {
-        UserAccount account = MasterFixtures.withId(new UserAccount("faculty1", "example-hash-value"), 81L);
+        UserAccount account = MasterFixtures.withId(new UserAccount("emp1021", "example-hash-value"), 81L);
         FacultyProfile profile = MasterFixtures.withId(new FacultyProfile(account, college.cse), 11L);
         Department ee = MasterFixtures.department(5, "EE", "Electrical Engineering");
         when(faculty.findWithAccountById(11L)).thenReturn(Optional.of(profile));

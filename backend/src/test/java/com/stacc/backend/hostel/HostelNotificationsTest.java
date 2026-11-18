@@ -18,8 +18,8 @@ class HostelNotificationsTest {
 
     private final NotificationService service = mock(NotificationService.class);
     private final HostelNotifications notifications = new HostelNotifications(service);
-    private final UserAccount studentAccount = HostelFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = HostelFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount studentAccount = HostelFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = HostelFixtures.account(1, "adm1001", RoleName.ADMIN);
 
     private HostelAllocation allocation() {
         HostelApplication application = HostelFixtures.application(42, HostelFixtures.student(5, studentAccount),

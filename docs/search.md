@@ -130,7 +130,7 @@ A preview runs at most one bounded, paged query and one count query for each kin
 
 ## Development data
 
-Under `dev-seed` (`docs/local-test-data.md`), the seeder adds searchable requests through their services: a campus request each for `student1` and `faculty1`, and a pending hostel application for `student2`. Courses, assignments, announcements, calendar events, notices, and tickets were already seeded. Study materials need object storage, so they are not seeded; upload one at `/teaching/:lmsCourseId` to try material search.
+Under `dev-seed` (`docs/local-test-data.md`), the seeder adds searchable requests through their services: a campus request each for `cse24001` and `emp1021`, and a pending hostel application for `cse24002`. Courses, assignments, announcements, calendar events, notices, and tickets were already seeded. Study materials need object storage, so they are not seeded; upload one at `/teaching/:lmsCourseId` to try material search.
 
 ## Look
 

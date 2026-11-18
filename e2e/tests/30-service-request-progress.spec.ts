@@ -4,7 +4,7 @@ import { signIn, signOut } from './support'
 test('a student requests a campus service and sees it move to ready as the office handles it', async ({ page }) => {
   const subject = `Bonafide letter ${Date.now()}`
 
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
   await page.goto('/campus/services')
   const service = page.getByRole('list', { name: 'Campus services' }).getByRole('listitem').filter({ hasText: 'General administrative request' })
   await service.getByRole('button', { name: /^Request service/ }).click()
@@ -16,7 +16,7 @@ test('a student requests a campus service and sees it move to ready as the offic
   const requestUrl = page.url()
   await signOut(page)
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto(requestUrl.replace('/campus/requests/', '/admin/campus/requests/'))
   await page.getByRole('button', { name: 'Mark being processed' }).click()
   await expect(page.getByRole('status').filter({ hasText: 'Marked as being processed.' })).toBeVisible()
@@ -24,7 +24,7 @@ test('a student requests a campus service and sees it move to ready as the offic
   await expect(page.getByRole('status').filter({ hasText: /Marked ready\./ })).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
   await page.goto(requestUrl)
   await expect(page.getByText('Ready', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Ready since')).toBeVisible()

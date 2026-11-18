@@ -11,7 +11,7 @@ test.describe('Signing in', () => {
   })
 
   test('a student signing in lands on the Overview, with Learning and the ERP in the sidebar', async ({ page }) => {
-    await signIn(page, 'erp', 'student1')
+    await signIn(page, 'erp', 'cse24001')
 
     await expect(page).toHaveURL(/\/$/)
     const nav = page.getByRole('navigation', { name: 'Main' })
@@ -20,30 +20,30 @@ test.describe('Signing in', () => {
   })
 
   test('the Account tray shows the person by name, with the login ID beneath', async ({ page }) => {
-    await signIn(page, 'lms', 'student1')
+    await signIn(page, 'lms', 'cse24001')
 
     await page.getByRole('button', { name: 'Account', exact: true }).click()
 
     const tray = page.getByRole('dialog', { name: 'Account' })
     await expect(tray.getByText('Aarav Sharma')).toBeVisible()
-    await expect(tray.getByText('student1', { exact: true })).toBeVisible()
+    await expect(tray.getByText('cse24001', { exact: true })).toBeVisible()
   })
 
   test('an old LMS link still takes a faculty member to Teaching, with Teaching in the sidebar', async ({ page }) => {
-    await signIn(page, 'lms', 'faculty1')
+    await signIn(page, 'lms', 'emp1021')
 
     await expect(page).toHaveURL(/\/teaching$/)
     await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'My Courses' })).toBeVisible()
   })
 
   test('an account that both studies and teaches lands on the dashboard, with no main role picked', async ({ page }) => {
-    await signIn(page, 'lms', 'studentfaculty1')
+    await signIn(page, 'lms', 'cse24003')
 
     await expect(page).toHaveURL(/\/$/)
   })
 
   test('signing in through the ERP opens the dashboard', async ({ page }) => {
-    await signIn(page, 'erp', 'admin1')
+    await signIn(page, 'erp', 'adm1001')
 
     await expect(page).toHaveURL(/\/$/)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
@@ -51,7 +51,7 @@ test.describe('Signing in', () => {
 
   test('a wrong password gets one generic message and stays on the form', async ({ page }) => {
     await page.goto('/login')
-    await page.getByLabel('College ID / Employee ID').fill('student1')
+    await page.getByLabel('College ID / Employee ID').fill('cse24001')
     await page.getByLabel('Password', { exact: true }).fill('not-the-password')
     await page.getByRole('button', { name: 'Sign in' }).click()
 
@@ -60,7 +60,7 @@ test.describe('Signing in', () => {
   })
 
   test('the sign-in token is never readable by the page, and nothing is kept in browser storage', async ({ page }) => {
-    await signIn(page, 'lms', 'student1')
+    await signIn(page, 'lms', 'cse24001')
 
     const seen = await page.evaluate(() => ({
       cookies: document.cookie,
@@ -76,7 +76,7 @@ test.describe('Signing in', () => {
   })
 
   test('a reload keeps the person signed in, because the session lives on the server', async ({ page }) => {
-    await signIn(page, 'lms', 'student1')
+    await signIn(page, 'lms', 'cse24001')
 
     await page.reload()
 
@@ -84,7 +84,7 @@ test.describe('Signing in', () => {
   })
 
   test('after signing out, pages need signing in again', async ({ page }) => {
-    await signIn(page, 'lms', 'student1')
+    await signIn(page, 'lms', 'cse24001')
     await signOut(page)
 
     await page.goto('/courses')

@@ -62,11 +62,11 @@ You need Java 21, Maven, Node.js 20 or later, and MySQL 8.4 or 9.
 
    | Login ID | Shows |
    | --- | --- |
-   | `student1`, `student2` | Courses, quizzes, registration, hostel, campus, career, ID card |
-   | `faculty1` | Teaching, grading, quizzes, analytics, club advisor approvals |
-   | `admin1` | Academic admin, users, reports, hostel and campus management |
-   | `studentfaculty1`, `hod1` | Several roles in one account; head of department |
-   | `warden1`, `security1`, `maintenance1`, `librarian1`, `placement1` | Staff pages: warden, gate, team tickets, ID check, placement office |
+   | `cse24001`, `cse24002` | Courses, quizzes, registration, hostel, campus, career, ID card |
+   | `emp1021` | Teaching, grading, quizzes, analytics, club advisor approvals |
+   | `adm1001` | Academic admin, users, reports, hostel and campus management |
+   | `cse24003`, `emp1003` | Several roles in one account; head of department |
+   | `stf2011`, `stf2012`, `stf2013`, `stf2014`, `stf2015` | Staff pages: warden, gate, team tickets, ID check, placement office |
 
 File uploads need MinIO on port 9000 (`STACC_STORAGE_ACCESS_KEY`, `STACC_STORAGE_SECRET_KEY`); everything else works without it. AI stays off unless `AI_ENABLED=true`. Every setting is listed in [docs/configuration.md](docs/configuration.md).
 

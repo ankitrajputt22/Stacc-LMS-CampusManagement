@@ -34,7 +34,7 @@ class AiJobMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void jobsAreLiveOncePerCourseAndClaimedOnce() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
         List<Long> courseIds = courses.findAll().stream().map(course -> course.getId()).limit(2).toList();
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         jobs.saveAndFlush(new AiJob(AiJob.Kind.REFRESH_INDEX, courseIds.get(0), faculty, now));

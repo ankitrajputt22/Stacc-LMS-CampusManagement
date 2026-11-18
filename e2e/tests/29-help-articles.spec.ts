@@ -4,7 +4,7 @@ import { signIn, signOut } from './support'
 test('an admin publishes a help article and a student sees it suggested while writing a ticket', async ({ page }) => {
   const title = `Printer queue stuck ${Date.now()}`
 
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/support/admin/articles')
   await page.getByRole('button', { name: 'New article' }).click()
   await page.getByLabel('Category').selectOption({ label: 'Technical issues' })
@@ -17,7 +17,7 @@ test('an admin publishes a help article and a student sees it suggested while wr
   await expect(article.getByText('Published')).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
   await page.goto('/support/new')
   await page.getByLabel('Category').selectOption({ label: 'Technical issues' })
   await page.getByLabel('Subject').fill('The printer queue is stuck')

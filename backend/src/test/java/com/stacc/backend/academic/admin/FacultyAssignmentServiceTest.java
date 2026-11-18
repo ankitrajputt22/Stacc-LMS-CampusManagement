@@ -46,7 +46,7 @@ class FacultyAssignmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        faculty = faculty(11, 81, "faculty1", RoleName.FACULTY);
+        faculty = faculty(11, 81, "emp1021", RoleName.FACULTY);
         when(offerings.findByIdForUpdate(31L)).thenReturn(Optional.of(college.offeringA));
         when(facultyProfiles.findWithAccountById(11L)).thenReturn(Optional.of(faculty));
         when(assignments.saveAndFlush(any(TeachingAssignment.class)))
@@ -78,7 +78,7 @@ class FacultyAssignmentServiceTest {
 
         var assigned = service.assign(new FacultyAssignmentCreate(31L, 11L, TeachingRole.CO_FACULTY));
 
-        assertEquals("faculty1", assigned.loginId());
+        assertEquals("emp1021", assigned.loginId());
         assertEquals("CO_FACULTY", assigned.role());
         assertEquals("ACTIVE", assigned.status());
     }

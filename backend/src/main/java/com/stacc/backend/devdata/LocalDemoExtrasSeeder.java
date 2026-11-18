@@ -49,8 +49,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Local demo data for the v0.8 to v0.12 areas, after {@link LocalTestDataSeeder}: staff accounts (warden1, security1,
- * maintenance1, librarian1, placement1) with the same test password, the Main Hostel's warden, the maintenance team,
+ * Local demo data for the v0.8 to v0.12 areas, after {@link LocalTestDataSeeder}: staff accounts (stf2011, stf2012,
+ * stf2013, stf2014, stf2015) with the same test password, the Main Hostel's warden, the maintenance team,
  * a club and a sports group with officers, two facilities, a college event, and a placement opportunity. Like the main
  * seeder it only finds or creates, through the feature services, and never changes or deletes what exists.
  */
@@ -59,7 +59,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Order(10)
 public class LocalDemoExtrasSeeder implements ApplicationRunner {
 
-    static final List<String> STAFF_LOGIN_IDS = List.of("warden1", "security1", "maintenance1", "librarian1", "placement1");
+    static final List<String> STAFF_LOGIN_IDS = List.of("stf2011", "stf2012", "stf2013", "stf2014", "stf2015");
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalDemoExtrasSeeder.class);
 
     private final Environment environment;
@@ -140,22 +140,22 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
     }
 
     private void staff(String password) {
-        account("warden1", password, "Kavita Rao", RoleName.WARDEN);
-        account("security1", password, "Imran Khan", RoleName.SECURITY);
-        account("maintenance1", password, "Suresh Kumar", RoleName.MAINTENANCE);
-        account("librarian1", password, "Lata Menon", RoleName.LIBRARIAN);
-        account("placement1", password, "Neha Verma", RoleName.PLACEMENT_OFFICER);
+        account("stf2011", password, "Pooja Desai", RoleName.WARDEN);
+        account("stf2012", password, "Imran Khan", RoleName.SECURITY);
+        account("stf2013", password, "Suresh Kumar", RoleName.MAINTENANCE);
+        account("stf2014", password, "Lata Menon", RoleName.LIBRARIAN);
+        account("stf2015", password, "Neha Verma", RoleName.PLACEMENT_OFFICER);
     }
 
     private void hostelAndSupport() {
         hostels.findByCode("MAIN").ifPresent(hostel -> {
             if (wardens.findActiveByHostel(hostel.getId()).isEmpty()) {
-                wardenService.assign(hostel.getId(), "warden1", null);
+                wardenService.assign(hostel.getId(), "stf2011", null);
             }
         });
         teams.findByCode("MAINTENANCE").ifPresent(team -> {
             if (teamService.all().stream().filter(view -> view.teamId().equals(team.getId())).allMatch(view -> view.memberLoginIds().isEmpty())) {
-                teamService.setMembers(team.getId(), List.of("maintenance1", "warden1"));
+                teamService.setMembers(team.getId(), List.of("stf2013", "stf2011"));
             }
         });
     }
@@ -164,13 +164,13 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
         if (!groups.existsByCode("CODING_CLUB")) {
             Long id = groupService.create("CODING_CLUB", "Coding Club", CampusGroup.Kind.CLUB,
                     "Weekly problem solving and project nights. Development demo data.", CampusGroup.JoinPolicy.APPROVAL).groupId();
-            groupService.addOfficer(id, "faculty1", CampusGroupOfficer.Title.ADVISOR);
-            groupService.addOfficer(id, "student1", CampusGroupOfficer.Title.PRESIDENT);
+            groupService.addOfficer(id, "emp1021", CampusGroupOfficer.Title.ADVISOR);
+            groupService.addOfficer(id, "cse24001", CampusGroupOfficer.Title.PRESIDENT);
         }
         if (!groups.existsByCode("CRICKET")) {
             Long id = groupService.create("CRICKET", "Cricket Team", CampusGroup.Kind.SPORT,
                     "Practice on weekday evenings. Development demo data.", CampusGroup.JoinPolicy.OPEN).groupId();
-            groupService.addOfficer(id, "faculty2", CampusGroupOfficer.Title.COACH);
+            groupService.addOfficer(id, "emp1022", CampusGroupOfficer.Title.COACH);
         }
         if (!facilities.existsByCode("SEMINAR_HALL")) {
             facilityService.create("SEMINAR_HALL", "Seminar Hall", CampusFacility.Kind.HALL, "Main block, ground floor", 120,
@@ -182,7 +182,7 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
         }
         String title = "Open Source Day (development)";
         if (events.findAllForAdmin().stream().noneMatch(event -> title.equals(event.getTitle()))) {
-            Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
+            Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
             CampusEventService.Viewer viewer = new CampusEventService.Viewer(admin, false, false, true);
             Instant start = clock.instant().plus(Duration.ofDays(7)).truncatedTo(ChronoUnit.HOURS);
             Long id = eventService.create(viewer, new CampusEventService.EventInput(title,
@@ -194,13 +194,13 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
 
     private void grievances() {
         if (!grievanceCategories.existsByCode("ACADEMIC")) {
-            Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
+            Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
             Long categoryId = grievanceAdmin.create("ACADEMIC", "Academic matters", 14).categoryId();
-            grievanceAdmin.addMember(admin, categoryId, "faculty1");
+            grievanceAdmin.addMember(admin, categoryId, "emp1021");
         }
-        if (mentoring.allPairings().stream().noneMatch(pairing -> pairing.mentorLoginId().equals("faculty1")
-                && pairing.menteeLoginId().equals("student1"))) {
-            mentoring.pair("faculty1", "student1");
+        if (mentoring.allPairings().stream().noneMatch(pairing -> pairing.mentorLoginId().equals("emp1021")
+                && pairing.menteeLoginId().equals("cse24001"))) {
+            mentoring.pair("emp1021", "cse24001");
         }
     }
 
@@ -224,7 +224,7 @@ public class LocalDemoExtrasSeeder implements ApplicationRunner {
                 .orElseGet(() -> career.addCompany("Acme Software", "https://acme.example", "Development demo company.").getId());
         String title = "Graduate Software Engineer (development)";
         if (opportunities.findAllForManagers().stream().noneMatch(opportunity -> title.equals(opportunity.getTitle()))) {
-            Long creator = accounts.findByLoginId("placement1").orElseThrow().getId();
+            Long creator = accounts.findByLoginId("stf2015").orElseThrow().getId();
             Long id = career.createOpportunity(creator, new CareerService.OpportunityInput(CareerOpportunity.Kind.PLACEMENT, title,
                     companyId, null, "A two-year graduate programme. Development demo data.", List.of(),
                     clock.instant().plus(Duration.ofDays(21)), List.of("Applied", "Online test", "Interview"))).opportunityId();

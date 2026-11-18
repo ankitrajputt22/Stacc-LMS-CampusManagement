@@ -5,7 +5,7 @@ test('a student starts a project, another joins, and a faculty mentor accepts', 
   const title = `Campus app ${Date.now()}`
 
   const lead = await browser.newPage()
-  await signIn(lead, 'erp', 'student1')
+  await signIn(lead, 'erp', 'cse24001')
   await lead.goto('/projects')
   await lead.getByLabel('Project title').fill(title)
   await lead.getByLabel('Members, you included').fill('3')
@@ -14,7 +14,7 @@ test('a student starts a project, another joins, and a faculty mentor accepts', 
   await expect(lead.getByRole('status').filter({ hasText: 'Project started. You lead it.' })).toHaveCount(1)
 
   const member = await browser.newPage()
-  await signIn(member, 'erp', 'student2')
+  await signIn(member, 'erp', 'cse24002')
   await member.goto('/projects')
   const card = member.getByRole('region', { name: title })
   await card.getByLabel(`Message to the lead of ${title} (optional)`).fill('I can build the backend.')
@@ -23,16 +23,16 @@ test('a student starts a project, another joins, and a faculty mentor accepts', 
 
   await lead.reload()
   const mine = lead.getByRole('region', { name: title })
-  await mine.getByRole('button', { name: /^Accept\s*student2$/ }).click()
-  await expect(lead.getByRole('status').filter({ hasText: 'student2 joined the project.' })).toHaveCount(1)
-  await mine.getByLabel(`Mentor’s employee ID for ${title}`).fill('faculty1')
+  await mine.getByRole('button', { name: /^Accept\s*cse24002$/ }).click()
+  await expect(lead.getByRole('status').filter({ hasText: 'cse24002 joined the project.' })).toHaveCount(1)
+  await mine.getByLabel(`Mentor’s employee ID for ${title}`).fill('emp1021')
   await mine.getByRole('button', { name: 'Invite mentor' }).click()
-  await expect(lead.getByRole('status').filter({ hasText: 'faculty1 invited to mentor.' })).toHaveCount(1)
+  await expect(lead.getByRole('status').filter({ hasText: 'emp1021 invited to mentor.' })).toHaveCount(1)
 
   const mentor = await browser.newPage()
-  await signIn(mentor, 'erp', 'faculty1')
+  await signIn(mentor, 'erp', 'emp1021')
   await mentor.goto('/projects')
   await mentor.getByRole('region', { name: title }).getByRole('button', { name: new RegExp(`^Accept mentoring\\s*${title}$`) }).click()
   await expect(mentor.getByRole('status').filter({ hasText: 'You are now mentoring this project.' })).toHaveCount(1)
-  await expect(mentor.getByRole('region', { name: title }).getByText('Mentors: faculty1')).toBeVisible()
+  await expect(mentor.getByRole('region', { name: title }).getByText('Mentors: emp1021')).toBeVisible()
 })

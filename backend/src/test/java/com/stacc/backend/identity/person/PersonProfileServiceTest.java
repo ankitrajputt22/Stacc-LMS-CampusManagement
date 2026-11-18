@@ -32,20 +32,20 @@ class PersonProfileServiceTest {
 
     @Test
     void beforeTheCollegeRecordsAProfileTheLoginIdStandsInForTheName() {
-        when(accounts.findById(7L)).thenReturn(Optional.of(account(7, "student1")));
+        when(accounts.findById(7L)).thenReturn(Optional.of(account(7, "cse24001")));
         when(profiles.findByUserAccountId(7L)).thenReturn(Optional.empty());
 
         MyPersonProfile mine = service.myProfile(7L);
 
         assertThat(mine.recorded()).isFalse();
-        assertThat(mine.displayName()).isEqualTo("student1");
+        assertThat(mine.displayName()).isEqualTo("cse24001");
         assertThat(mine.fullName()).isNull();
     }
 
     @Test
     void thePreferredNameWinsOverTheFullName() {
-        UserAccount account = account(7, "student1");
-        PersonProfile profile = new PersonProfile(account, "Aarav Sharma", "student1@stacc.example");
+        UserAccount account = account(7, "cse24001");
+        PersonProfile profile = new PersonProfile(account, "Aarav Sharma", "cse24001@stacc.example");
         when(accounts.findById(7L)).thenReturn(Optional.of(account));
         when(profiles.findByUserAccountId(7L)).thenReturn(Optional.of(profile));
 
@@ -65,7 +65,7 @@ class PersonProfileServiceTest {
         assertThatThrownBy(() -> service.changeMyPersonalDetails(7L, "Aarav", null))
                 .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.CONFLICT));
 
-        PersonProfile profile = new PersonProfile(account(7, "student1"), "Aarav Sharma", null);
+        PersonProfile profile = new PersonProfile(account(7, "cse24001"), "Aarav Sharma", null);
         when(profiles.findByUserAccountId(7L)).thenReturn(Optional.of(profile));
         assertThatThrownBy(() -> service.changeMyPersonalDetails(7L, "Aarav", "not a phone"))
                 .isInstanceOfSatisfying(ApiException.class, e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
@@ -74,12 +74,12 @@ class PersonProfileServiceTest {
 
     @Test
     void recordingRefusesASecondProfileOrATakenEmail() {
-        UserAccount account = account(7, "student1");
+        UserAccount account = account(7, "cse24001");
         when(profiles.findByUserAccountId(7L)).thenReturn(Optional.of(new PersonProfile(account, "Aarav Sharma", null)));
         assertThatThrownBy(() -> service.record(account, "Aarav Sharma", null))
                 .hasMessage(PersonProfileService.ALREADY_RECORDED);
 
-        UserAccount other = account(8, "student2");
+        UserAccount other = account(8, "cse24002");
         when(profiles.findByUserAccountId(8L)).thenReturn(Optional.empty());
         when(profiles.existsByEmail("shared@stacc.example")).thenReturn(true);
         assertThatThrownBy(() -> service.record(other, "Diya Patel", "Shared@stacc.example"))

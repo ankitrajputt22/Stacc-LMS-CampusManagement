@@ -41,8 +41,8 @@ class HostelAllocationServiceTest {
     private final HostelAllocationService service = new HostelAllocationService(applications, allocations, hostels, rooms,
             beds, studentProfiles, accounts, notifications, Clock.fixed(HostelFixtures.NOW, ZoneOffset.UTC));
 
-    private final UserAccount studentAccount = HostelFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = HostelFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount studentAccount = HostelFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = HostelFixtures.account(1, "adm1001", RoleName.ADMIN);
     private final StudentProfile student = HostelFixtures.student(5, studentAccount);
     private final Hostel hostel = HostelFixtures.hostel(1, "MAIN");
     private final HostelRoom room = HostelFixtures.room(2, hostel, "A-101");
@@ -99,9 +99,9 @@ class HostelAllocationServiceTest {
         HostelAllocationResponse result = service.allocate(1L, 42L, 3L);
 
         assertThat(result.status()).isEqualTo("ACTIVE");
-        assertThat(result.allocatedByLoginId()).isEqualTo("admin1");
+        assertThat(result.allocatedByLoginId()).isEqualTo("adm1001");
         assertThat(result.allocatedAt()).isNotNull();
-        assertThat(result.studentLoginId()).isEqualTo("student1");
+        assertThat(result.studentLoginId()).isEqualTo("cse24001");
         assertThat(result.bedNumber()).isEqualTo("B1");
         ArgumentCaptor<HostelAllocation> saved = ArgumentCaptor.forClass(HostelAllocation.class);
         verify(allocations).saveAndFlush(saved.capture());
@@ -181,7 +181,7 @@ class HostelAllocationServiceTest {
         HostelAllocationResponse again = service.vacate(1L, 77L);
 
         assertThat(first.status()).isEqualTo("VACATED");
-        assertThat(first.vacatedByLoginId()).isEqualTo("admin1");
+        assertThat(first.vacatedByLoginId()).isEqualTo("adm1001");
         assertThat(first.vacatedAt()).isNotNull();
         assertThat(again.vacatedAt()).isEqualTo(first.vacatedAt());
         verify(notifications, times(1)).vacated(active);

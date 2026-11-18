@@ -9,7 +9,7 @@ import { SystemHealthPage } from './SystemHealthPage'
 vi.mock('../api/systemApi')
 
 const auth: AuthContextValue = {
-  isChecking: false, isAuthenticated: true, account: { accountId: 1, loginId: 'admin1', roles: ['ADMIN'] },
+  isChecking: false, isAuthenticated: true, account: { accountId: 1, loginId: 'adm1001', roles: ['ADMIN'] },
   passwordChangeRequired: false, passwordChanged: vi.fn(), signedOutByUser: false, login: vi.fn(), logout: vi.fn(),
   logoutEverywhere: vi.fn(),
 }

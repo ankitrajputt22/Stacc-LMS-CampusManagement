@@ -11,7 +11,7 @@ vi.mock('../api/hackathonApi')
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 7, loginId: 'student2', roles: ['STUDENT'] },
+  account: { accountId: 7, loginId: 'cse24002', roles: ['STUDENT'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -24,7 +24,7 @@ const base: Hackathon = {
   hackathonId: 1, title: 'Code Sprint', description: null, startsAt: '2026-12-01T04:00:00Z', endsAt: '2026-12-02T04:00:00Z', maxTeamSize: 2,
   status: 'PUBLISHED', takingWork: true, myTeamId: null,
   teams: [
-    { teamId: 1, name: 'Owls', memberLoginIds: ['student1', 'student3'], submitted: true, submission: null },
+    { teamId: 1, name: 'Owls', memberLoginIds: ['cse24001', 'student3'], submitted: true, submission: null },
     { teamId: 2, name: 'Hawks', memberLoginIds: ['student4'], submitted: false, submission: null },
   ],
   results: [],

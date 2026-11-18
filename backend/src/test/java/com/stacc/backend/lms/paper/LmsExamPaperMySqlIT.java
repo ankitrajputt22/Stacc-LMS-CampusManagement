@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * Editing a bank question and making final a paper that uses it, at the same moment, never both succeed: either the
  * edit finishes first and finalizing finds the question needing review, or finalizing finishes first and the edit finds
- * the final paper. Uses CS302's draft LMS course of faculty2, with its own questions and papers.
+ * the final paper. Uses CS302's draft LMS course of emp1022, with its own questions and papers.
  */
 class LmsExamPaperMySqlIT extends MySqlIntegrationTest {
 
@@ -38,7 +38,7 @@ class LmsExamPaperMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anEditAndAFinalizationAtOnceNeverBothSucceed() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

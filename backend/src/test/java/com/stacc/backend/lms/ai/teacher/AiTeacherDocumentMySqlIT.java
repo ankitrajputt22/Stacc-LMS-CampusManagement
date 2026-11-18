@@ -34,8 +34,8 @@ class AiTeacherDocumentMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void theFiftiethPlaceIsTakenOnce() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        // The last course faculty1 teaches; no other test writes teacher documents.
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        // The last course emp1021 teaches; no other test writes teacher documents.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> facultyAccess.canAccessCourse(faculty, id)).reduce((first, second) -> second).orElseThrow();
         long existing = documents.countByLmsCourseIdAndStatus(course, AiTeacherDocument.Status.ACTIVE);

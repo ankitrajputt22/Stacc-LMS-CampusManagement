@@ -12,7 +12,7 @@ vi.mock('../api/projectsApi')
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 7, loginId: 'student2', roles: ['STUDENT'] },
+  account: { accountId: 7, loginId: 'cse24002', roles: ['STUDENT'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -22,9 +22,9 @@ const auth: AuthContextValue = {
 }
 
 const project: Project = {
-  projectId: 3, title: 'Campus app', summary: 'A helper for new students.', leadLoginId: 'student1', maxMembers: 3, activeMembers: 1,
+  projectId: 3, title: 'Campus app', summary: 'A helper for new students.', leadLoginId: 'cse24001', maxMembers: 3, activeMembers: 1,
   status: 'OPEN', iAmLead: false, myMembership: null, myMemberId: null, myMentorship: null, myMentorId: null,
-  members: [{ memberId: 1, loginId: 'student1', status: 'ACTIVE', lead: true, message: null }], mentors: [],
+  members: [{ memberId: 1, loginId: 'cse24001', status: 'ACTIVE', lead: true, message: null }], mentors: [],
 }
 
 function renderPage(projects: Project[]) {

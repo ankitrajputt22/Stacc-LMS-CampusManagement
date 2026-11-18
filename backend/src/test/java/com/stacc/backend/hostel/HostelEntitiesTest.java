@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 
 class HostelEntitiesTest {
 
-    private final UserAccount studentAccount = HostelFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = HostelFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount studentAccount = HostelFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = HostelFixtures.account(1, "adm1001", RoleName.ADMIN);
 
     @Test
     void hostelCodesAreUppercaseAndChecked() {

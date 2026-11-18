@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Two wardens' requests to open the same night's sheet at once make one sheet (the unique sheet key); marking every
- * resident lets it be finalized. Uses the Main Hostel and warden1 on a night far in the future that no other test uses.
+ * resident lets it be finalized. Uses the Main Hostel and stf2011 on a night far in the future that no other test uses.
  */
 class HostelRollCallMySqlIT extends MySqlIntegrationTest {
 
@@ -31,7 +31,7 @@ class HostelRollCallMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void oneSheetPerNightAndEveryResidentMarkedBeforeFinalizing() throws Exception {
-        Long warden = accounts.findByLoginId("warden1").orElseThrow().getId();
+        Long warden = accounts.findByLoginId("stf2011").orElseThrow().getId();
         Long hostelId = jdbc.queryForObject("select id from hostels where code = 'MAIN'", Long.class);
         LocalDate night = LocalDate.of(2031, 3, 14);
 

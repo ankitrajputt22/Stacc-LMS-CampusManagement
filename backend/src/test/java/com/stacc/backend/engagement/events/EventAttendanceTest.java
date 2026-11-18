@@ -36,7 +36,7 @@ class EventAttendanceTest {
     }
 
     private CampusEventRegistration registered() {
-        UserAccount student = new UserAccount("student1", "hash");
+        UserAccount student = new UserAccount("cse24001", "hash");
         ReflectionTestUtils.setField(student, "id", 7L);
         CampusEventRegistration registration = mock(CampusEventRegistration.class, org.mockito.Mockito.CALLS_REAL_METHODS);
         ReflectionTestUtils.setField(registration, "status", CampusEventRegistration.Status.REGISTERED);
@@ -52,7 +52,7 @@ class EventAttendanceTest {
         when(event.getEndsAt()).thenReturn(START.plusSeconds(7200));
         when(events.findById(3L)).thenReturn(Optional.of(event));
         when(eventService.canManage(event, ORGANIZER)).thenReturn(true);
-        when(accounts.findByLoginId("student1")).thenAnswer(call -> Optional.of(registered().getAccount()));
+        when(accounts.findByLoginId("cse24001")).thenAnswer(call -> Optional.of(registered().getAccount()));
     }
 
     @Test
@@ -61,10 +61,10 @@ class EventAttendanceTest {
         CampusEventRegistration registration = registered();
         when(registrations.findCurrentForAccount(3L, 7L)).thenReturn(Optional.of(registration));
         when(registrations.findByIdForUpdate(40L)).thenReturn(Optional.of(registration));
-        when(accounts.getReferenceById(any())).thenReturn(new UserAccount("faculty1", "hash"));
+        when(accounts.getReferenceById(any())).thenReturn(new UserAccount("emp1021", "hash"));
 
-        EventAttendanceService.CheckInResult first = at(START.minusSeconds(600)).checkInByLoginId(ORGANIZER, 3L, "student1");
-        EventAttendanceService.CheckInResult again = at(START).checkInByLoginId(ORGANIZER, 3L, "student1");
+        EventAttendanceService.CheckInResult first = at(START.minusSeconds(600)).checkInByLoginId(ORGANIZER, 3L, "cse24001");
+        EventAttendanceService.CheckInResult again = at(START).checkInByLoginId(ORGANIZER, 3L, "cse24001");
 
         assertThat(first.alreadyCheckedIn()).isFalse();
         assertThat(again.alreadyCheckedIn()).isTrue();
@@ -79,9 +79,9 @@ class EventAttendanceTest {
         when(registrations.findCurrentForAccount(3L, 7L)).thenReturn(Optional.of(registration));
         when(registrations.findByIdForUpdate(40L)).thenReturn(Optional.of(registration));
 
-        assertThatThrownBy(() -> at(START.minusSeconds(7200)).checkInByLoginId(ORGANIZER, 3L, "student1")).isInstanceOf(ApiException.class);
-        assertThatThrownBy(() -> at(START.plusSeconds(7200)).checkInByLoginId(ORGANIZER, 3L, "student1")).isInstanceOf(ApiException.class);
-        assertThatThrownBy(() -> at(START).checkInByLoginId(new Viewer(99L, true, false, false), 3L, "student1")).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> at(START.minusSeconds(7200)).checkInByLoginId(ORGANIZER, 3L, "cse24001")).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> at(START.plusSeconds(7200)).checkInByLoginId(ORGANIZER, 3L, "cse24001")).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> at(START).checkInByLoginId(new Viewer(99L, true, false, false), 3L, "cse24001")).isInstanceOf(ApiException.class);
 
         ReflectionTestUtils.setField(registration, "status", CampusEventRegistration.Status.WAITLISTED);
         assertThatThrownBy(() -> registration.checkIn(CampusEventRegistration.CheckInMethod.MANUAL, null, START))
@@ -94,16 +94,16 @@ class EventAttendanceTest {
         CampusEventRegistration registration = registered();
         when(registrations.findCurrentForAccount(3L, 7L)).thenReturn(Optional.of(registration));
         when(registrations.findByIdForUpdate(40L)).thenReturn(Optional.of(registration));
-        when(accounts.getReferenceById(any())).thenReturn(new UserAccount("faculty1", "hash"));
+        when(accounts.getReferenceById(any())).thenReturn(new UserAccount("emp1021", "hash"));
 
-        assertThatThrownBy(() -> at(START).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED))
+        assertThatThrownBy(() -> at(START).decideTrial(ORGANIZER, 3L, "cse24001", CampusEventRegistration.TrialOutcome.SELECTED))
                 .isInstanceOf(ApiException.class).hasMessage(EventAttendanceService.NOT_TRIAL);
         when(event.isTrial()).thenReturn(true);
-        assertThatThrownBy(() -> at(START.minusSeconds(60)).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED))
+        assertThatThrownBy(() -> at(START.minusSeconds(60)).decideTrial(ORGANIZER, 3L, "cse24001", CampusEventRegistration.TrialOutcome.SELECTED))
                 .isInstanceOf(ApiException.class).hasMessage(EventAttendanceService.TRIAL_NOT_STARTED);
 
-        at(START).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.NOT_SELECTED);
-        EventAttendanceService.Attendee corrected = at(START.plusSeconds(60)).decideTrial(ORGANIZER, 3L, "student1", CampusEventRegistration.TrialOutcome.SELECTED);
+        at(START).decideTrial(ORGANIZER, 3L, "cse24001", CampusEventRegistration.TrialOutcome.NOT_SELECTED);
+        EventAttendanceService.Attendee corrected = at(START.plusSeconds(60)).decideTrial(ORGANIZER, 3L, "cse24001", CampusEventRegistration.TrialOutcome.SELECTED);
         assertThat(corrected.trialOutcome()).isEqualTo(CampusEventRegistration.TrialOutcome.SELECTED);
         assertThat(registration.getTrialDecidedAt()).isEqualTo(START.plusSeconds(60));
     }

@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * Editing a rubric and grading with it at the same moment never leave a grade pointing at criteria that were replaced:
  * either the grade comes first and the edit is refused, or the edit comes first and the grade, naming the old criteria,
- * is refused. Uses its own rubric and draft-then-published assignment in CS301, handed in by studentfaculty1.
+ * is refused. Uses its own rubric and draft-then-published assignment in CS301, handed in by cse24003.
  */
 class LmsRubricMySqlIT extends MySqlIntegrationTest {
 
@@ -43,8 +43,8 @@ class LmsRubricMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anEditAndAGradeWithTheRubricAtOnceNeverBothSucceed() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long student = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24003").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

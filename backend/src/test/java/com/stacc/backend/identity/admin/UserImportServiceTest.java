@@ -95,10 +95,10 @@ class UserImportServiceTest {
 
     @Test
     void aCheckSavesNothingAndEveryProblemIsListedByLine() {
-        when(accounts.existsByLoginId("student1")).thenReturn(true);
+        when(accounts.existsByLoginId("cse24001")).thenReturn(true);
 
         UserImportService.ImportResult result = service.importCsv(1L, csv(
-                "student1,Taken,,STUDENT,CSE,BTECH-CSE,2026-27,\n"
+                "cse24001,Taken,,STUDENT,CSE,BTECH-CSE,2026-27,\n"
                         + "NEW1,,bad-email,TEACHER,,,,\n"
                         + "NEW2,Fine,,STUDENT,CSE,MCA,1999-00,\n"
                         + "new2,Again,,ADMIN,,,,\n"

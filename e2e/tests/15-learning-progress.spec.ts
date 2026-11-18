@@ -4,14 +4,14 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 const PAGE = 'Arrays and memory layout'
 
 test('a faculty member makes a page required and a student continues to it and marks it complete', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Modules')
   await page.getByRole('button', { name: new RegExp(`^Make required\\s*page “${PAGE}”$`) }).click()
   await expect(page.getByRole('button', { name: new RegExp(`^Make optional\\s*page “${PAGE}”$`) })).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   const progress = page.getByRole('region', { name: 'Your progress' })
   await expect(progress).toContainText('0 of 1 required page completed')

@@ -19,7 +19,7 @@ class PersonProfileValuesTest {
 
     @Test
     void emailsAreCheckedAndStoredInLowerCase() {
-        assertThat(PersonProfileValues.email(" Student1@Stacc.Example ")).isEqualTo("student1@stacc.example");
+        assertThat(PersonProfileValues.email(" CSE24001@Stacc.Example ")).isEqualTo("cse24001@stacc.example");
         assertThat(PersonProfileValues.email("")).isNull();
         for (String bad : new String[] {"no-at-sign", "two@@signs.example", "space in@x.example", "nodot@example"}) {
             assertThatThrownBy(() -> PersonProfileValues.email(bad)).as(bad).hasMessage("Email address is not valid.");

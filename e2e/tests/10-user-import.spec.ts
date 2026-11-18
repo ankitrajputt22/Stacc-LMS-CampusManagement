@@ -6,17 +6,17 @@ const SUFFIX = Date.now().toString(36).toUpperCase()
 const HEADER = 'login_id,full_name,email,roles,department,program,admission_session,roll_number'
 
 test('an admin checks a CSV file, sees its problems, and then imports it', async ({ page }) => {
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/users')
   await page.getByRole('link', { name: 'Import from CSV' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Import users' })).toBeVisible()
   await page.getByLabel('Temporary password for every account').fill('Teal-Harbor-6620')
 
-  // student1 exists already, so the file is refused as a whole.
+  // cse24001 exists already, so the file is refused as a whole.
   await page.getByLabel('File to import').setInputFiles({
     name: 'people.csv',
     mimeType: 'text/csv',
-    buffer: Buffer.from(`${HEADER}\nstudent1,Someone,,ADMIN,,,,\nIMP${SUFFIX},Import Person,,ADMIN,,,,\n`),
+    buffer: Buffer.from(`${HEADER}\ncse24001,Someone,,ADMIN,,,,\nIMP${SUFFIX},Import Person,,ADMIN,,,,\n`),
   })
   await page.getByRole('button', { name: 'Check file' }).click()
   await expect(page.getByText('An account with this login ID already exists.').first()).toBeVisible()

@@ -31,7 +31,7 @@ class MyPersonProfileControllerTest extends DatabaseFreeApiTest {
     }
 
     private static MyPersonProfile aarav() {
-        return new MyPersonProfile("student1", "Aarav", true, "Aarav Sharma", "Aarav", "student1@stacc.example",
+        return new MyPersonProfile("cse24001", "Aarav", true, "Aarav Sharma", "Aarav", "cse24001@stacc.example",
                 "+91 98765 43210", false, null, java.util.List.of());
     }
 

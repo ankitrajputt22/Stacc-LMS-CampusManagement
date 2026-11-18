@@ -13,7 +13,7 @@ const base: GrievanceCase = {
   caseId: 9, caseNumber: 'GRV-000009', categoryName: 'Ragging', subject: 'Hostel B', details: 'What happened.', status: 'SUBMITTED',
   submittedAt: '2026-11-10T05:00:00Z', respondBy: '2026-11-17T05:00:00Z', overdue: false, reviewStartedAt: null, resolution: null,
   resolvedAt: null, appealReason: null, appealedAt: null, appealRespondBy: null, appealDecision: null, closedAt: null, appealUntil: null,
-  complainantLoginId: 'student1',
+  complainantLoginId: 'cse24001',
 }
 
 function renderWith(node: React.ReactNode) {
@@ -29,7 +29,7 @@ describe('grievance case views', () => {
     vi.mocked(api.getCommitteeGrievance).mockResolvedValue(base)
     vi.mocked(api.resolveGrievance).mockResolvedValue({ ...base, status: 'RESOLVED' })
     renderWith(<CommitteeGrievance caseId={9} notify={vi.fn()} />)
-    expect(await screen.findByText('student1')).toBeInTheDocument()
+    expect(await screen.findByText('cse24001')).toBeInTheDocument()
     await userEvent.type(screen.getByRole('textbox', { name: 'Resolution' }), 'Warning issued.')
     await userEvent.click(screen.getByRole('button', { name: 'Resolve' }))
     expect(api.resolveGrievance).toHaveBeenCalledWith(9, 'Warning issued.')
@@ -40,6 +40,6 @@ describe('grievance case views', () => {
     renderWith(<MyGrievance caseId={9} notify={vi.fn()} />)
     expect(await screen.findByRole('button', { name: 'Accept resolution' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Appeal' })).toBeInTheDocument()
-    expect(screen.queryByText('student1')).not.toBeInTheDocument()
+    expect(screen.queryByText('cse24001')).not.toBeInTheDocument()
   })
 })

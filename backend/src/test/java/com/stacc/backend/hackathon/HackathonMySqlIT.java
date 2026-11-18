@@ -27,9 +27,9 @@ class HackathonMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aTeamNeverPassesItsSize() throws Exception {
-        Long founder = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long first = accounts.findByLoginId("student2").orElseThrow().getId();
-        Long second = accounts.findByLoginId("faculty1").orElseThrow().getId();
+        Long founder = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long first = accounts.findByLoginId("cse24002").orElseThrow().getId();
+        Long second = accounts.findByLoginId("emp1021").orElseThrow().getId();
         Instant start = Instant.now().minus(Duration.ofHours(1)).truncatedTo(ChronoUnit.SECONDS);
         hackathons.create("Race sprint", null, start, start.plus(Duration.ofDays(2)), 2);
         Long hackathonId = repository.findAllForOffice().stream().filter(h -> h.getTitle().equals("Race sprint")).findFirst().orElseThrow().getId();

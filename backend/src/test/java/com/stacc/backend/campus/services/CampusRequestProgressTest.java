@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 /** An accepted request moves forward only: being processed, ready, completed; nothing goes back. */
 class CampusRequestProgressTest {
 
-    private final UserAccount student = CampusFixtures.account(5, "student1", RoleName.STUDENT);
+    private final UserAccount student = CampusFixtures.account(5, "cse24001", RoleName.STUDENT);
     private final CampusServiceDefinition direct = CampusFixtures.service(1, "BONAFIDE", true, false, null);
 
     @Test

@@ -69,7 +69,7 @@ public final class OfferingEnrollmentResponses {
             @Schema(example = "7") Long teachingAssignmentId,
             @Schema(example = "3") Long courseOfferingId,
             @Schema(example = "11") Long facultyProfileId,
-            @Schema(description = "The employee ID, which is the account's login ID.", example = "faculty1") String loginId,
+            @Schema(description = "The employee ID, which is the account's login ID.", example = "emp1021") String loginId,
             @Schema(description = "The name from the person profile, or null.", example = "Dr. Meera Iyer") String name,
             @Schema(example = "CSE") String departmentCode,
             @Schema(allowableValues = {"PRIMARY", "CO_FACULTY"}, example = "PRIMARY") String role,
@@ -86,7 +86,7 @@ public final class OfferingEnrollmentResponses {
     /** A faculty member to choose from when assigning who teaches: never contact details. */
     public record FacultyLookupResponse(
             @Schema(example = "11") Long facultyProfileId,
-            @Schema(example = "faculty1") String loginId,
+            @Schema(example = "emp1021") String loginId,
             @Schema(description = "The name from the person profile, or null.") String name,
             @Schema(example = "CSE") String departmentCode,
             @Schema(allowableValues = {"ACTIVE", "INACTIVE"}, example = "ACTIVE") String status) {

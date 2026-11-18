@@ -21,11 +21,11 @@ class EnrollmentMonitorMySqlIT extends MySqlIntegrationTest {
         MonitorPage everything = monitor.search(new Filters(null, null, null, null, null, null, null), 0, 100);
         assertThat(everything.totalElements()).isGreaterThanOrEqualTo(9);
 
-        MonitorPage byStudent = monitor.search(new Filters(null, null, null, null, null, null, "STUDENT2"), 0, 100);
-        assertThat(byStudent.items()).isNotEmpty().allSatisfy(row -> assertThat(row.loginId()).isEqualTo("student2"));
+        MonitorPage byStudent = monitor.search(new Filters(null, null, null, null, null, null, "CSE24002"), 0, 100);
+        assertThat(byStudent.items()).isNotEmpty().allSatisfy(row -> assertThat(row.loginId()).isEqualTo("cse24002"));
 
         MonitorPage byName = monitor.search(new Filters(null, null, null, null, null, null, "aarav"), 0, 100);
-        assertThat(byName.items()).isNotEmpty().allSatisfy(row -> assertThat(row.loginId()).isEqualTo("student1"));
+        assertThat(byName.items()).isNotEmpty().allSatisfy(row -> assertThat(row.loginId()).isEqualTo("cse24001"));
         assertThat(byName.items()).extracting(MonitorRow::name).containsOnly("Aarav Sharma");
 
         MonitorPage withdrawn = monitor.search(

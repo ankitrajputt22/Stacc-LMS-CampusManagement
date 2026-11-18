@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { COURSE_CODE, openCourseSection, signIn } from './support'
 
 test('a faculty member plans a paper with a blueprint, builds it from the bank, prints it, and makes it final', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Exam papers')
   await expect(page.getByRole('heading', { name: 'Exam papers', level: 1 })).toBeVisible()

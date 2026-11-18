@@ -10,7 +10,7 @@ vi.mock('../api/portfolioApi')
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 7, loginId: 'student1', roles: ['STUDENT'] },
+  account: { accountId: 7, loginId: 'cse24001', roles: ['STUDENT'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -25,7 +25,7 @@ describe('PortfolioPage', () => {
       records: [{ source: 'EVENT_ATTENDED', title: 'Open Source Day', detail: 'Attended', at: '2026-11-01T10:00:00Z' }],
       items: [
         { itemId: 1, kind: 'PROJECT', title: 'Campus app', description: null, occurredOn: null, link: 'https://example.org/app',
-          verification: 'VERIFIED', verifierLoginId: 'faculty1', verificationNote: null, decidedAt: '2026-11-02T10:00:00Z' },
+          verification: 'VERIFIED', verifierLoginId: 'emp1021', verificationNote: null, decidedAt: '2026-11-02T10:00:00Z' },
         { itemId: 2, kind: 'OTHER', title: 'Odd link', description: null, occurredOn: null, link: 'javascript:alert(1)',
           verification: 'NONE', verifierLoginId: null, verificationNote: null, decidedAt: null },
       ],
@@ -40,7 +40,7 @@ describe('PortfolioPage', () => {
     expect(await screen.findByText('Open Source Day')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'https://example.org/app' })).toHaveAttribute('href', 'https://example.org/app')
     expect(screen.queryByRole('link', { name: 'javascript:alert(1)' })).not.toBeInTheDocument()
-    expect(screen.getByText(/Verified · faculty1/)).toBeInTheDocument()
+    expect(screen.getByText(/Verified · emp1021/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Verification requests' })).not.toBeInTheDocument()
   })
 })

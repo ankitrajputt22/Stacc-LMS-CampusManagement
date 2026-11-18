@@ -46,8 +46,8 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
         Long stepId = currentStepId(requestId);
 
         List<Outcome<ApprovalDecisionResponse>> outcomes = Concurrently.run(
-                () -> approvals.approveStep(faculty("faculty1"), stepId, null),
-                () -> approvals.approveStep(faculty("faculty2"), stepId, null));
+                () -> approvals.approveStep(faculty("emp1021"), stepId, null),
+                () -> approvals.approveStep(faculty("emp1022"), stepId, null));
 
         // The request has a second step, so it is still pending: the slower approver finds the step decided.
         assertOneWonAndOneConflicted(outcomes, ApprovalWorkflowService.STEP_DECIDED);
@@ -60,8 +60,8 @@ class ApprovalDecisionLocksMySqlIT extends MySqlIntegrationTest {
         Long stepId = currentStepId(requestId);
 
         List<Outcome<ApprovalDecisionResponse>> outcomes = Concurrently.run(
-                () -> approvals.approveStep(faculty("faculty1"), stepId, null),
-                () -> approvals.rejectStep(faculty("faculty2"), stepId, "Not needed."));
+                () -> approvals.approveStep(faculty("emp1021"), stepId, null),
+                () -> approvals.rejectStep(faculty("emp1022"), stepId, "Not needed."));
 
         // Whichever is faster wins. A first approval leaves the request pending at its next step, so the rejection
         // finds the step decided; a first rejection ends the whole request, so the approval finds it already rejected.

@@ -18,8 +18,8 @@ class HelpdeskTicketTest {
     private static final Instant T1 = Instant.parse("2026-10-20T10:15:30.123456789Z");
     private static final Instant T2 = Instant.parse("2026-10-21T08:00:00Z");
 
-    private final UserAccount student = HelpdeskFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = HelpdeskFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount student = HelpdeskFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = HelpdeskFixtures.account(1, "adm1001", RoleName.ADMIN);
     private final HelpdeskCategory lms = HelpdeskFixtures.category(3, "LMS", true);
 
     private HelpdeskTicket ticket() {

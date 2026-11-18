@@ -23,9 +23,9 @@ class FestVolunteerMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aShiftNeverTakesMoreThanItsPlaces() throws Exception {
-        Long admin = accounts.findByLoginId("admin1").orElseThrow().getId();
-        Long first = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long second = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long admin = accounts.findByLoginId("adm1001").orElseThrow().getId();
+        Long first = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long second = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Long festId = fests.create(admin, new FestService.FestInput("Race fest", null, LocalDate.of(2031, 1, 10), LocalDate.of(2031, 1, 11))).festId();
         fests.publish(festId);
         Instant start = Instant.parse("2031-01-10T04:00:00Z");

@@ -9,7 +9,7 @@ describe('initialsOf', () => {
   })
 
   it('takes two letters of a single word, such as a login ID', () => {
-    expect(initialsOf('student1')).toBe('ST')
+    expect(initialsOf('cse24001')).toBe('CS')
     expect(initialsOf('Aarav')).toBe('AA')
     expect(initialsOf('2408400100011')).toBe('24')
   })

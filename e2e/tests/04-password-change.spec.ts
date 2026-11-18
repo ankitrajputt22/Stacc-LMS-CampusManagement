@@ -1,9 +1,9 @@
 import { expect, type Page, test } from '@playwright/test'
 import { password, signIn, signOut } from './support'
 
-// Only this journey uses student2, so changing its password cannot disturb the others. It ends by putting the
+// Only this journey uses cse24002, so changing its password cannot disturb the others. It ends by putting the
 // password back.
-const LOGIN_ID = 'student2'
+const LOGIN_ID = 'cse24002'
 const NEW_PASSWORD = 'e2e river lamp cocoa 42'
 
 async function changePassword(page: Page, current: string, next: string) {

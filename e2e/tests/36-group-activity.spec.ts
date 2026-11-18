@@ -4,7 +4,7 @@ import { signIn } from './support'
 test('a club officer posts an announcement and schedules a meeting for members', async ({ page }) => {
   const title = `Kickoff ${Date.now()}`
 
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
   await page.goto('/campus/clubs')
   await page.getByRole('button', { name: /^Sessions and announcements/ }).first().click()
   const panel = page.getByRole('region', { name: /^Sessions and announcements of / }).first()

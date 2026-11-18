@@ -4,7 +4,7 @@ import { COURSE_NAME, openCourseSection, signIn } from './support'
 const QUIZ = 'Stacks and queues check'
 
 test('a student takes a timed quiz, with answers saved as they go, and submits it', async ({ page }) => {
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Quizzes')
   await expect(page.getByRole('heading', { name: 'Quizzes', level: 1 })).toBeVisible()

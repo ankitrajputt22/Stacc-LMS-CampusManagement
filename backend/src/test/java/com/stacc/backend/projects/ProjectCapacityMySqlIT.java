@@ -21,10 +21,10 @@ class ProjectCapacityMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aProjectNeverPassesItsMemberLimit() throws Exception {
-        Long lead = accounts.findByLoginId("student1").orElseThrow().getId();
-        Long first = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long lead = accounts.findByLoginId("cse24001").orElseThrow().getId();
+        Long first = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Long second = accounts.findByLoginId("student3").map(account -> account.getId())
-                .orElseGet(() -> accounts.findByLoginId("faculty1").orElseThrow().getId());
+                .orElseGet(() -> accounts.findByLoginId("emp1021").orElseThrow().getId());
         Long projectId = projects.create(lead, "Race project", "Testing the member limit.", 2).projectId();
         projects.requestToJoin(first, projectId, null);
         projects.requestToJoin(second, projectId, null);

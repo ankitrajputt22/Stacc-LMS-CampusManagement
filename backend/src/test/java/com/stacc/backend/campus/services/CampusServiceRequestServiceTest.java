@@ -50,8 +50,8 @@ class CampusServiceRequestServiceTest {
             approvals, approvalQueries, approvalRequests, queries, notifications,
             Clock.fixed(CampusFixtures.NOW, ZoneOffset.UTC));
 
-    private final UserAccount student = CampusFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount admin = CampusFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount student = CampusFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount admin = CampusFixtures.account(1, "adm1001", RoleName.ADMIN);
     private final CampusServiceDefinition idCard = CampusFixtures.service(1, "ID_CARD", true, false, "CAMPUS_SERVICE_REQUEST");
     private final CampusServiceDefinition general = CampusFixtures.service(2, "GENERAL_ADMIN", true, true, null);
     private final ApprovalRequest pending = CampusFixtures.approval(12, student);

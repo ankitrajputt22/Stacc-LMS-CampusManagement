@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * Several hand-ins at once against a one-attempt assignment make exactly one attempt; the others are refused, because
  * the limit is counted under the course enrollment row lock. Uses its own assignment in CS301, handed in by
- * studentfaculty1.
+ * cse24003.
  */
 class SubmissionAttemptLimitMySqlIT extends MySqlIntegrationTest {
 
@@ -37,8 +37,8 @@ class SubmissionAttemptLimitMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void simultaneousHandInsNeverPassTheAttemptLimit() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty1").orElseThrow().getId();
-        Long student = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1021").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24003").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

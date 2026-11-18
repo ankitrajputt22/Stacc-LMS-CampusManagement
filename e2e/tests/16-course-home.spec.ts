@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './support'
 
 test('a faculty member writes the course welcome, and a student finds it and moves around with the course navigation', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await expect(page.getByRole('navigation', { name: 'Course navigation' }).getByRole('link', { name: 'Home' })).toHaveAttribute(
     'aria-current',
@@ -14,7 +14,7 @@ test('a faculty member writes the course welcome, and a student finds it and mov
   await expect(page.getByText('Course home saved.')).toBeVisible()
   await signOut(page)
 
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   const welcome = page.getByRole('region', { name: 'Welcome' })
   await expect(welcome.getByRole('heading', { name: 'Welcome', exact: true })).toBeVisible()

@@ -7,7 +7,7 @@ test('the campus office closes a classroom for class hours and students see them
   const lecture = `Lecture ${stamp}`
 
   const office = await browser.newPage()
-  await signIn(office, 'erp', 'admin1')
+  await signIn(office, 'erp', 'adm1001')
   await office.goto('/admin/campus/facilities')
   await office.getByLabel('Code', { exact: true }).fill(`CR${stamp}`)
   await office.getByLabel('Name', { exact: true }).fill(room)
@@ -25,7 +25,7 @@ test('the campus office closes a classroom for class hours and students see them
   await expect(office.getByText(`Tuesday 09:00–11:00 ${lecture}`)).toBeVisible()
 
   const student = await browser.newPage()
-  await signIn(student, 'erp', 'student1')
+  await signIn(student, 'erp', 'cse24001')
   await student.goto('/campus/facilities')
   await expect(student.getByText(`Class hours (no bookings): Tuesday 09:00–11:00 ${lecture}`)).toBeVisible()
 })

@@ -47,7 +47,7 @@ public class EnrollmentMonitorService {
     public record MonitorRow(
             @Schema(example = "501") Long courseEnrollmentId,
             @Schema(example = "57") Long studentProfileId,
-            @Schema(description = "The student ID, which is the account's login ID.", example = "student1") String loginId,
+            @Schema(description = "The student ID, which is the account's login ID.", example = "cse24001") String loginId,
             @Schema(description = "The name from the person profile, or null.", example = "Aarav Sharma") String name,
             @Schema(example = "25CSE001") String rollNumber,
             @Schema(example = "CS301") String courseCode,

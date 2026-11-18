@@ -62,7 +62,7 @@ class CampusNotificationsTest {
 
     @Test
     void aCompletedRequestTellsItsRequesterWithALinkToTheRequest() {
-        UserAccount student = CampusFixtures.account(70, "student1", RoleName.STUDENT);
+        UserAccount student = CampusFixtures.account(70, "cse24001", RoleName.STUDENT);
         CampusServiceRequest request = CampusFixtures.request(43,
                 CampusFixtures.service(2, "GENERAL_ADMIN", true, true, null), student, null);
 

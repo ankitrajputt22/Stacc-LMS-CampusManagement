@@ -23,23 +23,23 @@ class LibraryLendingMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void aCopyIsLentOnceAndHoldsComeFirst() throws Exception {
-        Long librarian = accounts.findByLoginId("librarian1").map(account -> account.getId())
-                .orElseGet(() -> accounts.findByLoginId("admin1").orElseThrow().getId());
-        Long holder = accounts.findByLoginId("student2").orElseThrow().getId();
+        Long librarian = accounts.findByLoginId("stf2014").map(account -> account.getId())
+                .orElseGet(() -> accounts.findByLoginId("adm1001").orElseThrow().getId());
+        Long holder = accounts.findByLoginId("cse24002").orElseThrow().getId();
         Long titleId = library.addTitle("Race algorithms", "Test Author", null, null, 2020, "Testing").titleId();
         library.addCopy(titleId, "RACE-0001", "T1");
 
         List<Concurrently.Outcome<LibraryService.LoanView>> outcomes = Concurrently.run(
-                () -> library.issue(librarian, "RACE-0001", "student1"),
-                () -> library.issue(librarian, "RACE-0001", "faculty1"));
+                () -> library.issue(librarian, "RACE-0001", "cse24001"),
+                () -> library.issue(librarian, "RACE-0001", "emp1021"));
         assertThat(outcomes).filteredOn(Concurrently.Outcome::succeeded).hasSize(1);
 
         library.placeHold(holder, titleId);
         String borrower = library.giveBack("RACE-0001");
-        assertThat(borrower).isIn("student1", "faculty1");
+        assertThat(borrower).isIn("cse24001", "emp1021");
         assertThatThrownBy(() -> library.issue(librarian, "RACE-0001", borrower)).isInstanceOf(ApiException.class)
                 .hasMessageContaining("held for others");
-        library.issue(librarian, "RACE-0001", "student2");
+        library.issue(librarian, "RACE-0001", "cse24002");
         assertThat(library.mine(holder).holds()).isEmpty();
         assertThat(library.mine(holder).loans()).singleElement().extracting(LibraryService.LoanView::barcode).isEqualTo("RACE-0001");
     }

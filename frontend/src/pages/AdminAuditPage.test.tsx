@@ -13,7 +13,7 @@ vi.mock('../api/auditApi', () => ({ searchAuditEvents: vi.fn() }))
 const auth: AuthContextValue = {
   isChecking: false,
   isAuthenticated: true,
-  account: { accountId: 1, loginId: 'admin1', roles: ['ADMIN'] },
+  account: { accountId: 1, loginId: 'adm1001', roles: ['ADMIN'] },
   passwordChangeRequired: false,
   passwordChanged: vi.fn(),
   signedOutByUser: false,
@@ -27,7 +27,7 @@ describe('AdminAuditPage', () => {
     vi.mocked(auditApi.searchAuditEvents).mockResolvedValue({
       items: [
         {
-          auditEventId: 9, occurredAt: '2026-11-03T10:00:00Z', actorLoginId: 'admin1', action: 'USER_ROLES_CHANGED',
+          auditEventId: 9, occurredAt: '2026-11-03T10:00:00Z', actorLoginId: 'adm1001', action: 'USER_ROLES_CHANGED',
           targetType: 'USER_ACCOUNT', targetId: 57, targetLoginId: '25CSE104', details: 'STUDENT to STUDENT, FACULTY.',
           requestId: 'req-1',
         },

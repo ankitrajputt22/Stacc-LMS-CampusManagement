@@ -3,7 +3,7 @@ import { signIn } from './support'
 
 // Reads only: Aarav's fees, exams, and results from the demo data.
 test('a student finds their fees, exam seats, and CGPA in the ERP', async ({ page }) => {
-  await signIn(page, 'erp', 'student1')
+  await signIn(page, 'erp', 'cse24001')
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'ERP', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'ERP' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Fees.*₹32,500 due/ })).toBeVisible()

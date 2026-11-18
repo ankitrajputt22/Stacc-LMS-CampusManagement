@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Two outcomes added at the same moment get different codes: both lock the course row, then read the outcomes with a
- * locking read. Uses CS302's draft LMS course and faculty2, whose outcomes no other test touches.
+ * locking read. Uses CS302's draft LMS course and emp1022, whose outcomes no other test touches.
  */
 class LmsOutcomeMySqlIT extends MySqlIntegrationTest {
 
@@ -29,7 +29,7 @@ class LmsOutcomeMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void twoOutcomesAddedAtOnceGetTheirOwnCodes() throws Exception {
-        Long faculty = accounts.findByLoginId("faculty2").orElseThrow().getId();
+        Long faculty = accounts.findByLoginId("emp1022").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

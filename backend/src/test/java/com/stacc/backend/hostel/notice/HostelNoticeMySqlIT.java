@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Publishing the same emergency notice twice at once publishes it once and tells the residents once. Main Hostel, warden1. */
+/** Publishing the same emergency notice twice at once publishes it once and tells the residents once. Main Hostel, stf2011. */
 class HostelNoticeMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -25,7 +25,7 @@ class HostelNoticeMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void anEmergencyIsAnnouncedOnce() throws Exception {
-        HostelNoticeService.Manager warden = new HostelNoticeService.Manager(accounts.findByLoginId("warden1").orElseThrow().getId(), false);
+        HostelNoticeService.Manager warden = new HostelNoticeService.Manager(accounts.findByLoginId("stf2011").orElseThrow().getId(), false);
         Long hostelId = jdbc.queryForObject("select id from hostels where code = 'MAIN'", Long.class);
         Long noticeId = notices.add(warden, hostelId, null, "Fire drill", "Leave by the nearest stairs at 6 pm.", true).noticeId();
 

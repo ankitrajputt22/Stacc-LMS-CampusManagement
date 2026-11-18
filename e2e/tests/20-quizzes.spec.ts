@@ -4,7 +4,7 @@ import { COURSE_CODE, openCourseSection, signIn } from './support'
 const QUESTION = 'A queue serves the most recently added item first.'
 
 test('a faculty member builds a quiz from reviewed bank questions and publishes it', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
 
   // A reviewed question of its own, so the journey does not depend on the demo bank.

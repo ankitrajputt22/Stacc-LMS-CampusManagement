@@ -4,7 +4,7 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 const ASSIGNMENT = 'Array warm-up exercises'
 
 test('a faculty member grades with the assignment rubric and the student sees the scores per criterion', async ({ page }) => {
-  await signIn(page, 'lms', 'faculty1')
+  await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
 
   // The rubric is listed with its criteria.
@@ -13,7 +13,7 @@ test('a faculty member grades with the assignment rubric and the student sees th
 
   await openCourseSection(page, 'Assignments')
   await page.getByRole('link', { name: new RegExp(`Review submissions.*${ASSIGNMENT}`) }).click()
-  await page.getByRole('list', { name: 'Submissions' }).getByRole('link', { name: 'student1' }).click()
+  await page.getByRole('list', { name: 'Submissions' }).getByRole('link', { name: 'cse24001' }).click()
 
   await page.getByRole('button', { name: 'Mostly correct (8)' }).click()
   await page.getByRole('button', { name: 'Clear (8)' }).click()
@@ -23,7 +23,7 @@ test('a faculty member grades with the assignment rubric and the student sees th
   await expect(page.getByRole('status').filter({ hasText: /Grade saved for attempt \d+: 16 out of 20\./ })).toBeAttached()
 
   await signOut(page)
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await page.getByRole('link', { name: ASSIGNMENT }).first().click()
   await expect(page.getByRole('region', { name: 'Rubric' })).toBeVisible()

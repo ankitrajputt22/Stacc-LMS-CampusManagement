@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 /** Browsers sign in by the HttpOnly session cookie; these are the rules around it. */
 class SessionCookieFlowTest extends DatabaseFreeApiTest {
 
-    private static final String TOKEN = TestTokens.valid("student1", 7, "ROLE_STUDENT", "ROLE_FACULTY", "LMS_COURSE_VIEW");
+    private static final String TOKEN = TestTokens.valid("cse24001", 7, "ROLE_STUDENT", "ROLE_FACULTY", "LMS_COURSE_VIEW");
 
     private static Cookie session() {
         return new Cookie(SessionProperties.COOKIE_NAME, TOKEN);
@@ -47,7 +47,7 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
         mockMvc.perform(get("/api/v1/auth/session").cookie(session()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountId").value(7))
-                .andExpect(jsonPath("$.loginId").value("student1"))
+                .andExpect(jsonPath("$.loginId").value("cse24001"))
                 .andExpect(jsonPath("$.roles[0]").value("STUDENT"))
                 .andExpect(jsonPath("$.roles[1]").value("FACULTY"))
                 .andExpect(jsonPath("$.roles.length()").value(2))

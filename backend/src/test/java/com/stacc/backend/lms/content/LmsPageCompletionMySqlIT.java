@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Two "Mark as complete" clicks at the same moment record one completion: both lock the course enrollment row and then
- * read the completion with a locking read. Uses studentfaculty1 and CS301's "Arrays and memory layout", whose
+ * read the completion with a locking read. Uses cse24003 and CS301's "Arrays and memory layout", whose
  * completions no other test touches.
  */
 class LmsPageCompletionMySqlIT extends MySqlIntegrationTest {
@@ -30,7 +30,7 @@ class LmsPageCompletionMySqlIT extends MySqlIntegrationTest {
 
     @Test
     void twoCompletionsAtOnceRecordOne() throws Exception {
-        Long student = accounts.findByLoginId("studentfaculty1").orElseThrow().getId();
+        Long student = accounts.findByLoginId("cse24003").orElseThrow().getId();
         Long lmsCourseId = jdbc.queryForObject("""
                 select lms.id from lms_courses lms
                 join course_offerings offering on offering.id = lms.course_offering_id

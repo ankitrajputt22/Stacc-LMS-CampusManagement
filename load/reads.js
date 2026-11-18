@@ -8,7 +8,7 @@ export const options = {
   thresholds: { http_req_duration: ['p(95)<800'], http_req_failed: ['rate<0.01'] },
 }
 
-const STUDENTS = ['student1', 'student2', 'studentfaculty1']
+const STUDENTS = ['cse24001', 'cse24002', 'cse24003']
 
 export function setup() {
   return STUDENTS.map((id) => signIn(id))

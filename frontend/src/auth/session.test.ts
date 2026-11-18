@@ -4,7 +4,7 @@ import type { SessionResponse } from './types'
 
 const answer: SessionResponse = {
   accountId: 7,
-  loginId: 'student1',
+  loginId: 'cse24001',
   roles: ['STUDENT'],
   expiresAt: '2026-11-01T22:00:00Z',
   passwordChangeRequired: false,
@@ -14,7 +14,7 @@ describe('sessionFrom', () => {
   it('keeps who is signed in and when the session ends, and nothing secret', () => {
     expect(sessionFrom(answer)).toEqual({
       accountId: 7,
-      loginId: 'student1',
+      loginId: 'cse24001',
       roles: ['STUDENT'],
       expiresAt: Date.parse('2026-11-01T22:00:00Z'),
       passwordChangeRequired: false,

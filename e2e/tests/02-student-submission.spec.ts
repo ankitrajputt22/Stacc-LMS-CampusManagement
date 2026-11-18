@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { ASSIGNMENT_TITLE, COURSE_NAME, signIn } from './support'
 
 test('a student opens a course and hands in an assignment', async ({ page }) => {
-  await signIn(page, 'lms', 'student1')
+  await signIn(page, 'lms', 'cse24001')
 
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await expect(page.getByRole('heading', { level: 1, name: new RegExp(COURSE_NAME) })).toBeVisible()

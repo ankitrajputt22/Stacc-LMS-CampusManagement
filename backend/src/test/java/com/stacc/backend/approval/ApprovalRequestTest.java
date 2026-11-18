@@ -20,9 +20,9 @@ class ApprovalRequestTest {
 
     private static final Instant LATER = Instant.parse("2026-10-27T11:00:00.987654321Z");
 
-    private final UserAccount student = ApprovalFixtures.account(70, "student1", RoleName.STUDENT);
-    private final UserAccount faculty = ApprovalFixtures.account(80, "faculty1", RoleName.FACULTY);
-    private final UserAccount admin = ApprovalFixtures.account(1, "admin1", RoleName.ADMIN);
+    private final UserAccount student = ApprovalFixtures.account(70, "cse24001", RoleName.STUDENT);
+    private final UserAccount faculty = ApprovalFixtures.account(80, "emp1021", RoleName.FACULTY);
+    private final UserAccount admin = ApprovalFixtures.account(1, "adm1001", RoleName.ADMIN);
 
     private ApprovalRequest threeSteps() {
         return ApprovalFixtures.request(12, ApprovalFixtures.workflow(4, "DEMO",

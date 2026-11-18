@@ -7,7 +7,7 @@ const TEMPORARY = 'Amber-Signal-4821'
 const CHOSEN = 'e2e harbor violet kite 57'
 
 test('an admin creates an account and the new person must replace the temporary password', async ({ page }) => {
-  await signIn(page, 'erp', 'admin1')
+  await signIn(page, 'erp', 'adm1001')
   await page.goto('/admin/users')
   await expect(page.getByRole('heading', { level: 1, name: 'Users' })).toBeVisible()
   await page.getByRole('link', { name: 'Add user' }).click()
@@ -25,12 +25,12 @@ test('an admin creates an account and the new person must replace the temporary 
   await page.getByRole('button', { name: 'Find' }).click()
   await expect(page.getByRole('table', { name: 'Users' }).getByRole('link', { name: 'Journey Admin' })).toBeVisible()
 
-  // The creation is in the audit log, by admin1, without the password.
+  // The creation is in the audit log, by adm1001, without the password.
   await page.goto('/admin/audit')
   await page.getByLabel('Search login IDs').fill(LOGIN_ID)
   await page.getByRole('button', { name: 'Find' }).click()
   const created = page.getByRole('table', { name: 'Audit log' }).getByRole('row').filter({ hasText: 'Account created' })
-  await expect(created).toContainText('admin1')
+  await expect(created).toContainText('adm1001')
   await expect(page.getByText(TEMPORARY)).toHaveCount(0)
   await signOut(page)
 
