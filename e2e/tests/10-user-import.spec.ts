@@ -16,7 +16,7 @@ test('an admin checks a CSV file, sees its problems, and then imports it', async
   await page.getByLabel('File to import').setInputFiles({
     name: 'people.csv',
     mimeType: 'text/csv',
-    buffer: Buffer.from(`${HEADER}\nstudent1,Someone,,ADMIN,,,,\nIMP${SUFFIX},Import Person,,ADMIN,,,,\n`),
+    buffer: Buffer.from(`${HEADER}\ncse24001,Someone,,ADMIN,,,,\nIMP${SUFFIX},Import Person,,ADMIN,,,,\n`),
   })
   await page.getByRole('button', { name: 'Check file' }).click()
   await expect(page.getByText('An account with this login ID already exists.').first()).toBeVisible()
