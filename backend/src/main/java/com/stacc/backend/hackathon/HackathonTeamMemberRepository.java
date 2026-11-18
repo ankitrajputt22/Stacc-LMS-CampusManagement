@@ -15,7 +15,6 @@ public interface HackathonTeamMemberRepository extends JpaRepository<HackathonTe
     @Query("select m from HackathonTeamMember m join fetch m.account where m.team.id in :teamIds and m.leftAt is null order by m.joinedAt, m.id")
     List<HackathonTeamMember> findCurrentFor(@Param("teamIds") Collection<Long> teamIds);
 
-    /** Current members of a team, read with a locking read after the team row lock. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from HackathonTeamMember m where m.team.id = :teamId and m.leftAt is null")
     List<HackathonTeamMember> findCurrentForUpdate(@Param("teamId") Long teamId);

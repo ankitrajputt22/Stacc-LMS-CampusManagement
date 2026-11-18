@@ -7,10 +7,6 @@ import { AiMessage } from './AiMessage'
 import { DRAFT_WARNING, INSUFFICIENT_CONTEXT } from './aiText'
 import { useAiAction } from './useAiAction'
 
-/**
- * Model answer on request (v0.14.5): AI suggests a model answer and key points to a bank question, from the course's
- * published content, for the teacher only. Nothing is saved; Edit copies what the teacher wants into the guidance.
- */
 export function ModelAnswerSuggestion({ questionId }: { questionId: number }) {
   const [open, setOpen] = useState(false)
   const { state, run } = useAiAction<AiModelAnswer>('faculty')
@@ -35,7 +31,6 @@ export function ModelAnswerSuggestion({ questionId }: { questionId: number }) {
               <div className="space-y-2">
                 <AiMessage tone="warning">{DRAFT_WARNING}</AiMessage>
                 <p className="font-medium text-ink">Model answer</p>
-                {/* Plain text only. */}
                 <p className="leading-6 break-words whitespace-pre-line text-ink">{state.data.answer}</p>
                 {state.data.keyPoints.length > 0 && (
                   <ul className="list-disc pl-5 text-ink">

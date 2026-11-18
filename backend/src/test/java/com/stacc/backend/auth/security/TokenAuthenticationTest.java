@@ -48,10 +48,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Sends requests with good and bad access tokens. "/api/v1/test/whoami" exists only in test code
- * and reports who Spring Security thinks is calling.
- */
 class TokenAuthenticationTest extends DatabaseFreeApiTest {
 
     private static final String WHO_AM_I = "/api/v1/test/whoami";
@@ -217,7 +213,6 @@ class TokenAuthenticationTest extends DatabaseFreeApiTest {
     void tokenInTheUrlIsNotAccepted() throws Exception {
         String token = TestTokens.valid("2408400100011", 12, "ROLE_STUDENT");
 
-        // A token in the URL is ignored, so the request counts as not signed in.
         mockMvc.perform(get(WHO_AM_I).param("access_token", token))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication is required."));

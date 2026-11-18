@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A private calendar subscription link. Only the SHA-256 fingerprint of its secret is kept. */
 @Entity
 @Table(name = "calendar_feed_links")
 public class CalendarFeedLink {
@@ -31,7 +30,6 @@ public class CalendarFeedLink {
     private Instant revokedAt;
 
     protected CalendarFeedLink() {
-        // Required by JPA.
     }
 
     public CalendarFeedLink(Long userAccountId, String tokenFingerprint, Instant createdAt) {

@@ -15,11 +15,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/**
- * That a student completed a page: one row per official course enrollment and page, written once and never changed
- * or deleted. Like a submission, it belongs to the enrollment, never to an account, so the student comes only from the
- * enrollment that gives them access.
- */
 @Entity
 @Table(name = "lms_page_completions", uniqueConstraints = @UniqueConstraint(
         name = "uk_lms_page_completions_enrollment_topic", columnNames = {"course_enrollment_id", "lms_topic_id"}))
@@ -41,7 +36,6 @@ public class LmsPageCompletion {
     private Instant completedAt;
 
     protected LmsPageCompletion() {
-        // Required by JPA.
     }
 
     public LmsPageCompletion(CourseEnrollment courseEnrollment, LmsTopic lmsTopic, Instant completedAt) {

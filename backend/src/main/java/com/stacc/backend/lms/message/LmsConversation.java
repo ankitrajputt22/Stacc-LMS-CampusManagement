@@ -15,10 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A private conversation between one student and the faculty of one LMS course. The student starts it; every faculty
- * member teaching the course may read and answer it. It is never deleted.
- */
 @Entity
 @Table(name = "lms_conversations")
 public class LmsConversation {
@@ -47,7 +43,6 @@ public class LmsConversation {
     private Instant lastMessageAt;
 
     protected LmsConversation() {
-        // Required by JPA.
     }
 
     public LmsConversation(LmsCourse lmsCourse, UserAccount student, String subject, Instant now) {

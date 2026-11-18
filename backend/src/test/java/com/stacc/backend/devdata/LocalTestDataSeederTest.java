@@ -6,10 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 
-/** The checks that decide whether the local test data may be created at all. */
 class LocalTestDataSeederTest {
 
-    // A made-up value for these tests only.
     private static final String TEST_ONLY_PASSWORD = "unit-test-only-value";
 
     private static MockEnvironment environment(String password, String... profiles) {

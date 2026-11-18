@@ -19,11 +19,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A campus event: who organizes it (optionally for a group), when and where, who may come, how many, and when
- * registration is open. A draft is edited freely; a group event waits for its advisor's approval before it shows;
- * cancelling keeps it and its registrations. Never deleted.
- */
 @Entity
 @Table(name = "campus_events")
 public class CampusEvent {
@@ -99,7 +94,6 @@ public class CampusEvent {
     private Instant updatedAt;
 
     protected CampusEvent() {
-        // Required by JPA.
     }
 
     public CampusEvent(UserAccount organizer, CampusGroup group) {
@@ -107,7 +101,6 @@ public class CampusEvent {
         this.group = group;
     }
 
-    /** Sets the details; only while a draft. */
     public void edit(String title, String description, String venue, Instant startsAt, Instant endsAt, Integer capacity,
             Instant registrationOpensAt, Instant registrationClosesAt, boolean forStudents, boolean forFaculty, boolean membersOnly) {
         if (status != Status.DRAFT) {
@@ -156,7 +149,6 @@ public class CampusEvent {
         this.approvalRequestId = approvalRequestId;
     }
 
-    /** Back to a draft after the approval was refused, so it can be corrected and sent again. */
     public void backToDraft() {
         status = Status.DRAFT;
     }
@@ -184,7 +176,6 @@ public class CampusEvent {
     public boolean isMembersOnly() { return membersOnly; }
     public boolean isTrial() { return trial; }
 
-    /** Marks the event as a trial before it starts; it stays one. Marking again changes nothing. */
     public boolean markAsTrial(Instant now) {
         if (trial) {
             return false;

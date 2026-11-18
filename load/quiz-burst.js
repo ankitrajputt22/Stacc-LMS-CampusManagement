@@ -4,11 +4,6 @@ import exec from 'k6/execution'
 import { Counter } from 'k6/metrics'
 import { annotate, BASE, signIn } from './common.js'
 
-// Many students take one quiz at once, several requests from each, so starting, saving, and handing in race on the
-// same attempt. Setup builds a graded quiz with one attempt each from the reviewed objective questions of the course's
-// bank (as emp1021 would) and publishes it; each request then starts or resumes the student's attempt, saves the
-// correct answers, and hands it in. Afterwards every student must hold exactly one handed-in attempt with full marks.
-// Run it on a throwaway stack with the demo data.
 const FACULTY = __ENV.FACULTY || 'emp1021'
 const COURSE_CODE = __ENV.COURSE_CODE || 'CS301'
 const STUDENTS = (__ENV.STUDENTS || 'cse24001,cse24002,cse24003').split(',').map((id) => id.trim())
@@ -73,7 +68,6 @@ export function setup() {
   }
   json(http.post(`${BASE}/lms/faculty/quizzes/${quiz.id}/publish`, null, faculty), 'Publishing the quiz')
 
-  // The correct answers by question text, so each attempt can answer whatever order it shows.
   const answers = {}
   for (const question of bank) {
     answers[question.text] = {
@@ -100,7 +94,6 @@ function expected(response, what, allowed) {
 
 export default function (data) {
   const { params } = data.sessions[exec.scenario.iterationInTest % data.sessions.length]
-  // 200 starts or resumes the one attempt; 409 once it is handed in and no attempts are left.
   const started = http.post(`${BASE}/lms/courses/${data.lmsCourseId}/quizzes/${data.quizId}/attempts`, null, params)
   if (!expected(started, 'start', [200, 409]) || started.status !== 200) {
     return
@@ -111,7 +104,6 @@ export default function (data) {
     const body = question.type === 'TRUE_FALSE'
       ? { trueFalseAnswer: key.trueFalseAnswer }
       : { selectedOptions: question.options.filter((choice) => key.correctTexts.includes(choice.text)).map((choice) => choice.position) }
-    // 409 once another request of the same student has handed the attempt in.
     const saved = http.put(`${BASE}/lms/quiz-attempts/${attempt.id}/answers/${question.quizQuestionId}`, JSON.stringify(body), params)
     expected(saved, 'save', [200, 409])
   }

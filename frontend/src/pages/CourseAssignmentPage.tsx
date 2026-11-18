@@ -29,7 +29,6 @@ function coursePath(lmsCourseId: number | null): string {
   return lmsCourseId === null ? COURSES.to : `/courses/${lmsCourseId}`
 }
 
-/** A page state with the breadcrumb above it and a heading for screen readers. */
 function AssignmentState({ lmsCourseId, children }: { lmsCourseId: number | null; children: ReactNode }) {
   return (
     <>
@@ -77,13 +76,8 @@ function Fact({ icon, term, children }: { icon: NavIconName; term: string; child
   )
 }
 
-/**
- * One published assignment: what to do, by when, and for how many marks, then the student's own submission.
- * Only what the backend sent.
- */
 function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetail }) {
   const [now] = useState(() => Date.now())
-  // The course itself comes from the shared cache the course layout already filled.
   const course = useLmsCourse(assignment.lmsCourseId)
 
   return (
@@ -156,7 +150,6 @@ function AssignmentDetail({ assignment }: { assignment: LmsCourseAssignmentDetai
 
       <Card title="Instructions" className="mt-6">
         <div>
-          {/* Shown as its format says; never as HTML. */}
           <FormattedText
             text={assignment.instructions}
             format={assignment.instructionsFormat}
@@ -221,11 +214,6 @@ function StudentAssignment({ lmsCourseId, assignmentId }: { lmsCourseId: number 
   }
 }
 
-/**
- * One published assignment for the signed-in student, at /courses/:lmsCourseId/assignments/:assignmentId.
- * Arriving from the course page proves nothing: the backend checks the course and the assignment again on
- * every request. Accounts without the student role see an explanation instead, and no request is made.
- */
 export function CourseAssignmentPage() {
   const { account } = useAuth()
   const { lmsCourseId, assignmentId } = useParams()

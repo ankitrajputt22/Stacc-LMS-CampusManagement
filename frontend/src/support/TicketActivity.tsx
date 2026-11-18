@@ -10,7 +10,6 @@ function toneOf(entry: HelpdeskTicketHistory) {
   return entry.action === 'REOPENED' ? ('current' as const) : ('neutral' as const)
 }
 
-/** The ticket's history, oldest first, on the shared timeline: each entry as a sentence with who and when. */
 export function TicketActivity({ history }: { history: HelpdeskTicketHistory[] }) {
   return (
     <section aria-labelledby="ticket-activity" className="rounded-panel border border-line bg-surface p-4">

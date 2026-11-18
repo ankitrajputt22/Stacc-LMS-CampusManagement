@@ -13,11 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Grievances (v0.12.3) for complainants and committees. A case is confidential: its complainant and the active
- * committee members of its category (never the complainant themselves) open it, and anyone else gets the same 404 as
- * for a missing case. There is no admin pass. Every change locks the case row; overdue is worked out on read.
- */
 @Service
 @Transactional
 public class GrievanceService {
@@ -32,7 +27,6 @@ public class GrievanceService {
             Instant submittedAt, Instant respondBy, boolean overdue) {
     }
 
-    /** One case; the complainant's login ID is sent to the committee only. */
     public record CaseView(Long caseId, String caseNumber, String categoryName, String subject, String details, GrievanceCase.Status status,
             Instant submittedAt, Instant respondBy, boolean overdue, Instant reviewStartedAt, String resolution, Instant resolvedAt,
             String appealReason, Instant appealedAt, Instant appealRespondBy, String appealDecision, Instant closedAt,
@@ -53,8 +47,6 @@ public class GrievanceService {
         this.accounts = accounts;
         this.clock = clock;
     }
-
-    // --- Complainants
 
     @Transactional(readOnly = true)
     public List<CategoryOption> openCategories() {
@@ -100,8 +92,6 @@ public class GrievanceService {
         return view(found, false);
     }
 
-    // --- Committees
-
     @Transactional(readOnly = true)
     public List<CaseSummary> committeeCases(Long accountId) {
         List<Long> categoryIds = committees.findCategoryIdsFor(accountId);
@@ -142,7 +132,6 @@ public class GrievanceService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
     }
 
-    /** A committee member of the case's category who is not its complainant; anyone else gets the same 404. */
     private GrievanceCase committeeOnly(Long accountId, Long caseId, boolean lock) {
         List<Long> categoryIds = committees.findCategoryIdsFor(accountId);
         return load(caseId, lock)

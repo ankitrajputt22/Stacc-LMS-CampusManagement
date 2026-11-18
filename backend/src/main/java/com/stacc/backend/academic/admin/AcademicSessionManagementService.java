@@ -13,11 +13,6 @@ import com.stacc.backend.academic.session.AcademicSessionStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit academic sessions. A session's code is set once; its dates and status can change. A
- * session moves forward from planned to active to closed, never back. Several sessions may be active at once, and
- * overlapping dates are allowed: no such rule has been decided. Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class AcademicSessionManagementService {
@@ -79,11 +74,6 @@ public class AcademicSessionManagementService {
         return AcademicSessionResponse.of(sessions.saveAndFlush(session));
     }
 
-    /**
-     * Makes this the college's current session, and the previous current session an ordinary one, in one step. The
-     * current session is locked first, so two admins doing this at once are handled one after the other; the database
-     * still allows only one current session. Doing it again for the current session changes nothing.
-     */
     public AcademicSessionResponse makeCurrent(Long academicSessionId) {
         AcademicSession session = find(academicSessionId);
         if (session.getStatus() == AcademicSessionStatus.CLOSED) {

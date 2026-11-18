@@ -7,10 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The two steps of counting a failure, each in a transaction of its own. An {@code insert ignore} leaves a shared lock
- * on an existing row; taking the row lock in that same transaction would let simultaneous failures deadlock one another.
- */
 @Component
 class SignInThrottleRows {
 
@@ -20,7 +16,6 @@ class SignInThrottleRows {
         this.throttles = throttles;
     }
 
-    /** Makes sure one key has a row, in a transaction of its own; usually it exists and nothing is written. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void ensure(SignInThrottle.Scope scope, String keyHash, Instant now) {
         if (!throttles.existsByScopeAndKeyHash(scope, keyHash)) {

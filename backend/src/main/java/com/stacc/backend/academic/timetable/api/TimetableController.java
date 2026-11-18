@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The class timetable: one's own week, and the admin routes that keep each semester's slots. */
 @RestController
 @Tag(name = "Timetable")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

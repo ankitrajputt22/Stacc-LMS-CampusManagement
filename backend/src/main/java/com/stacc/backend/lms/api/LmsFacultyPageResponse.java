@@ -7,10 +7,6 @@ import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One page of a course a faculty member teaches, drafts included, so they can see it as students will once it is
- * published. The pages around it are the other pages that are not archived, in course order.
- */
 public record LmsFacultyPageResponse(
         @Schema(example = "42")
         Long lmsCourseId,

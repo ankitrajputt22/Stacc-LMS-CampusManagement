@@ -17,7 +17,6 @@ test('a faculty member adds a question to the bank, reviews it, offers it for pr
   await form.getByLabel('Difficulty', { exact: true }).selectOption('EASY')
   await form.getByRole('button', { name: 'Add question' }).click()
 
-  // The demo bank already holds reviewed questions, so everything below looks inside this question's own entry.
   const bank = page.getByRole('region', { name: 'Questions' })
   const item = bank.getByRole('listitem').filter({ hasText: QUESTION })
   await expect(item.getByText(QUESTION, { exact: true })).toBeVisible()

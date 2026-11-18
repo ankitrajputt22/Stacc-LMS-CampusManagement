@@ -8,7 +8,6 @@ import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One topic as faculty manage it, with its study materials that are not archived. */
 public record LmsFacultyTopicContentResponse(
         @Schema(example = "31")
         Long id,

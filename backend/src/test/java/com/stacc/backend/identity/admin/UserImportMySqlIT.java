@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 
-/** A CSV import on MySQL: every account, person, and profile is created together, with the temporary password state. */
 class UserImportMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

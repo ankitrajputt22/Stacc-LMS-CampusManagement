@@ -102,7 +102,6 @@ function Fest({ fest, canVolunteer, notify }: { fest: CampusFest; canVolunteer: 
   )
 }
 
-/** The campus Fests tab: published fests with their schedules, and volunteering for their shifts. */
 export function FestsSection({ canVolunteer }: { canVolunteer: boolean }) {
   const queryClient = useQueryClient()
   const fests = useApiQuery(canVolunteer ? queryKeys.engagement.fests() : null, (signal) => getFests(signal))

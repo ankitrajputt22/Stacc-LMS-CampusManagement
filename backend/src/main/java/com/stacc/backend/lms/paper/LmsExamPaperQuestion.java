@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One bank question in a paper, at a position, under an optional section title, with its marks in this paper. */
 @Entity
 @Table(name = "lms_exam_paper_questions")
 public class LmsExamPaperQuestion {
@@ -23,7 +22,6 @@ public class LmsExamPaperQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: neither the paper nor the bank question is created or deleted through this link.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_exam_paper_id", nullable = false, updatable = false)
     private LmsExamPaper paper;
@@ -42,7 +40,6 @@ public class LmsExamPaperQuestion {
     private BigDecimal marks;
 
     protected LmsExamPaperQuestion() {
-        // Required by JPA.
     }
 
     public LmsExamPaperQuestion(LmsExamPaper paper, LmsQuestion question, int position, String sectionTitle, BigDecimal marks) {

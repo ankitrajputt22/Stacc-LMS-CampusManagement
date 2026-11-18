@@ -25,13 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * The document vault and certificate requests. Owners upload their own files and request certificates; admins with
- * DOCUMENT_ISSUE issue a certificate file into the requester's vault or refuse with a note, and may withdraw an issued
- * document. An issued document's verification code is derived from its ID with the server's signing key (so its owner
- * can always see it and nothing secret is stored); the public check looks it up by the code's fingerprint and says only
- * whether it is an authentic, current document, with its title and issue date.
- */
 @Service
 @Transactional
 public class DocumentVaultService {
@@ -44,7 +37,6 @@ public class DocumentVaultService {
             CertificateRequest.Status status, String decisionNote, Instant createdAt, Instant decidedAt) {
     }
 
-    /** The public answer: only whether the document is genuine and current, with its title and issue date. */
     public record Authenticity(boolean authentic, String message, String title, Instant issuedAt) {
     }
 
@@ -65,8 +57,6 @@ public class DocumentVaultService {
         this.clock = clock;
     }
 
-    // --- Owners
-
     @Transactional(readOnly = true)
     public List<DocumentView> mine(Long accountId) {
         return documents.findAllForOwner(accountId).stream().map(this::view).toList();
@@ -86,7 +76,6 @@ public class DocumentVaultService {
         }
     }
 
-    /** Opens one of the owner's own documents; any other answers the same 404. */
     @Transactional(readOnly = true)
     public LmsAttachmentStore.Download open(Long accountId, Long documentId) {
         VaultDocument document = documents.findById(documentId == null ? -1L : documentId)
@@ -116,14 +105,11 @@ public class DocumentVaultService {
         return view(request);
     }
 
-    // --- The college
-
     @Transactional(readOnly = true)
     public List<RequestView> queue(CertificateRequest.Status status) {
         return requests.findAllByStatus(status).stream().map(this::view).toList();
     }
 
-    /** Issues the certificate file into the requester's vault and returns the request, now ISSUED. */
     public RequestView issue(Long adminId, Long requestId, String title, MultipartFile file) {
         CertificateRequest request = requests.findByIdForUpdate(requestId == null ? -1L : requestId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Request not found."));
@@ -148,11 +134,6 @@ public class DocumentVaultService {
         return view(request);
     }
 
-    /**
-     * Issues a document into the owner's vault for another feature's record, such as a completed campus service
-     * request: stored privately, verifiable by its code like any issued document. The stored file is removed again if
-     * recording it fails.
-     */
     public VaultDocument issueFile(Long adminId, UserAccount owner, String title, MultipartFile file) {
         List<StoredFile> stored = files.storeAll("vault/accounts/" + owner.getId(), file == null ? List.of() : List.of(file));
         if (stored.isEmpty()) {
@@ -177,15 +158,12 @@ public class DocumentVaultService {
         return view(request);
     }
 
-    /** Withdraws an issued document: the owner keeps it, but its verification code no longer confirms it. */
     public void withdraw(Long documentId) {
         VaultDocument document = documents.findById(documentId == null ? -1L : documentId)
                 .filter(found -> found.getOrigin() == VaultDocument.Origin.ISSUED)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Issued document not found."));
         document.withdraw(now());
     }
-
-    // --- Public
 
     @Transactional(readOnly = true)
     public Authenticity verify(String code) {

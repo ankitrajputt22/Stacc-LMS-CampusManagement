@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Faculty copy course content from an earlier offering of the same course that they taught. */
 @RestController
 @RequestMapping("/api/v1/lms/faculty/courses/{lmsCourseId}")
 @Tag(name = "LMS course copy")

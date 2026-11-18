@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Hackathons: teams and submissions for students, scoring for judges, and running them for the campus office. */
 @RestController
 @RequestMapping("/api/v1")
 @Tag(name = "Hackathons")

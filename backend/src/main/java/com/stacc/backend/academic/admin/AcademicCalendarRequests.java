@@ -9,11 +9,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What an admin may send to create or edit an official calendar event. The event being edited comes from the route.
- * The session and semester are named by ID and loaded on the server. No request carries a status or a publication or
- * cancellation time: a new event is always a draft, and only the publish and cancel routes change its status.
- */
 public final class AcademicCalendarRequests {
 
     private AcademicCalendarRequests() {

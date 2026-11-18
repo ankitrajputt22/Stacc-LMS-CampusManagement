@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface AiRequestLogRepository extends JpaRepository<AiRequestLogEntry, Long> {
 
-    /** Rows since a moment as (outcome, count, average duration in milliseconds). */
     @Query("select cast(entry.outcome as string), count(entry), avg(entry.durationMs) from AiRequestLogEntry entry"
             + " where entry.createdAt >= :since group by entry.outcome")
     List<Object[]> countByOutcomeSince(@Param("since") Instant since);

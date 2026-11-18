@@ -22,11 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The class timetable (v0.16.2). Admins add and remove weekly slots of course offerings; adding one locks the academic
- * session's row and then reads that day's slots, so two slots of the same room, or two classes of the same students,
- * can never overlap. Students read the slots of the offerings they are enrolled in now, faculty those they teach now.
- */
 @Service
 @Transactional
 public class TimetableService {
@@ -47,7 +42,6 @@ public class TimetableService {
         }
     }
 
-    /** The signed-in account's week: a part for studying and a part for teaching, each null without that role. */
     public record MyTimetable(List<SlotView> studying, List<SlotView> teaching) {
     }
 
@@ -73,7 +67,6 @@ public class TimetableService {
         return slots.findActiveForSemester(semesterId).stream().map(SlotView::of).toList();
     }
 
-    /** Adds a weekly slot, refusing a clash of room or of students with any slot of the same session. */
     public SlotView add(Long courseOfferingId, DayOfWeek day, LocalTime startsAt, LocalTime endsAt, String room,
             ClassTimetableSlot.Kind kind) {
         CourseOffering offering = (courseOfferingId == null ? Optional.<CourseOffering>empty() : offerings.findById(courseOfferingId))
@@ -108,7 +101,6 @@ public class TimetableService {
         return SlotView.of(slots.saveAndFlush(new ClassTimetableSlot(offering, day, startsAt, endsAt, validRoom, kind, clock.instant())));
     }
 
-    /** Removes a slot from the week; it is kept as history. Removing it again changes nothing. */
     public void remove(Long slotId) {
         ClassTimetableSlot slot = (slotId == null ? Optional.<ClassTimetableSlot>empty() : slots.findById(slotId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, SLOT_NOT_FOUND));
@@ -116,7 +108,6 @@ public class TimetableService {
         slots.saveAndFlush(slot);
     }
 
-    /** The week of the signed-in account, from its current enrollments and teaching assignments. */
     @Transactional(readOnly = true)
     public MyTimetable mine(Long accountId, boolean asStudent, boolean asFaculty) {
         List<SlotView> studying = null;
@@ -138,8 +129,6 @@ public class TimetableService {
         return new MyTimetable(studying, taught);
     }
 
-    // Two offerings share students when they are of the same semester and either is for the whole semester or both are
-    // for the same section. The same offering always shares its students.
     private static boolean sameStudents(CourseOffering one, CourseOffering other) {
         if (one.getId().equals(other.getId())) {
             return true;

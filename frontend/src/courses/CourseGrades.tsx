@@ -9,10 +9,6 @@ import { SectionState } from './SectionState'
 
 type Item = StudentGrades['items'][number]
 
-/**
- * The signed-in student's own grades in a course: only the columns their teachers have published, with the total of
- * what is graded so far. Never anyone else's marks, and no percentages or ranks.
- */
 export function CourseGrades({ lmsCourseId }: { lmsCourseId: number }) {
   const grades = useApiQuery(queryKeys.lms.myGrades(lmsCourseId), (signal) => getMyGrades(lmsCourseId, signal))
   if (grades.status !== 'loaded') {

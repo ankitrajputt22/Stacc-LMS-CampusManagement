@@ -8,10 +8,6 @@ import type { useContentChanges } from './useContentChanges'
 
 type Changes = ReturnType<typeof useContentChanges>
 
-/**
- * Which rubric an assignment is graded with. Change rubric offers the course's active rubrics; one whose total differs
- * from the assignment's maximum marks is shown but cannot be chosen. Grades already given keep their own scores.
- */
 export function AssignmentRubric({
   lmsCourseId,
   assignment,

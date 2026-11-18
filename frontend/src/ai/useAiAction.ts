@@ -7,10 +7,6 @@ export type AiActionState<T> =
   | { status: 'done'; data: T }
   | { status: 'failed'; failure: AiFailure }
 
-/**
- * One AI request started by a button, never by typing. A new request replaces the previous one, a request still
- * running when the page closes is cancelled, and nothing is kept once the page is left.
- */
 export function useAiAction<T>(audience: 'student' | 'faculty') {
   const [state, setState] = useState<AiActionState<T>>({ status: 'idle' })
   const controller = useRef<AbortController | null>(null)

@@ -4,13 +4,6 @@ import java.time.Duration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * How failed sign-ins slow down further tries. After {@code accountThreshold} failures for one login ID, or
- * {@code addressThreshold} from one network address, within {@code window}, each further failure blocks that key for
- * {@code baseDelay}, doubling each time up to {@code maxDelay}. Accounts are never locked. {@code trustProxy} reads the
- * address from the {@code X-Real-IP} header set by Stacc's own proxy; it must stay false when the backend can be
- * reached directly, or anyone could choose their address.
- */
 @ConfigurationProperties(prefix = "stacc.sign-in")
 public record SignInThrottleProperties(int accountThreshold, int addressThreshold, Duration window, Duration baseDelay,
         Duration maxDelay, boolean trustProxy) {

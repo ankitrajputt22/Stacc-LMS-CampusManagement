@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What clients may send to the hostel API. No request names a student, profile, requester, approval request, status,
- * application number, or actor: those come from the server and the access token. Codes are not part of updates.
- */
 public final class HostelRequests {
 
     private HostelRequests() {

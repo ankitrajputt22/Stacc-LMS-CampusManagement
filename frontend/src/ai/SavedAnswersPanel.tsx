@@ -10,10 +10,6 @@ import { Alert, Button } from '../ui'
 import { AiCitations } from './AiCitations'
 import { hintClasses, panelClasses } from './aiStyles'
 
-/**
- * Saved answers (v0.15.1, decision 6): the AI answers the student chose to keep in this course, newest first, with their
- * sources. Nobody else sees them. Deleting (confirmed first) removes one for good.
- */
 export function SavedAnswersPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

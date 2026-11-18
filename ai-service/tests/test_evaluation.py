@@ -1,5 +1,3 @@
-"""v0.13.8: the retrieval evaluation and leakage checks, with the fake model and embeddings only."""
-
 from __future__ import annotations
 
 import json
@@ -25,7 +23,6 @@ def report(tmp_path, **env):
 def test_every_question_has_its_expected_sources_and_nothing_false_is_found(tmp_path):
     result = report(tmp_path)
     assert len(result.answerable) >= 15
-    # Floors, not targets: a change that makes retrieval worse fails here.
     assert result.hit_rate == 1.0
     assert result.first_hit_rate >= 0.9
     assert result.mean_reciprocal_rank >= 0.9
@@ -48,11 +45,8 @@ def test_the_question_set_is_well_formed():
     assert any(not question.expected for question in dataset.QUESTIONS)
 
 
-# --- Leakage ---------------------------------------------------------------------------------------
-
 
 class Recording(FakeModelProvider):
-    """The fake model, keeping every request it was given."""
 
     def __init__(self) -> None:
         self.requests = []
@@ -101,7 +95,6 @@ def test_an_index_not_named_in_the_request_is_never_searched(settings):
     assert replace(client, [note], fingerprint=OTHER_FINGERPRINT, course=other).status_code == 200
     post(client, "ask", {"question": "Why are commits durable? quokka", "allowedSources": ONLY_TOPIC_1})
     assert all(SECRET not in request.user_prompt for request in model.requests)
-    # Named, but with only other notes allowed, the note is still left out.
     extra = [{"indexKey": other, "indexFingerprint": OTHER_FINGERPRINT,
               "allowedSources": [{"sourceType": "NOTE", "sourceId": 10}]}]
     post(client, "ask", {"question": "Why are commits durable? quokka", "allowedSources": ONLY_TOPIC_1,

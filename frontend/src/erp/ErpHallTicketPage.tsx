@@ -10,7 +10,6 @@ import { ExamsTabs } from './ExamsTabs'
 import { hhmm } from './examFormat'
 import { formatDay } from './requestWords'
 
-/** Exams & Results → Hall ticket: a printable sheet of the student's details and exams with halls and seats. */
 export function ErpHallTicketPage() {
   const exams = useApiQuery(queryKeys.erp.myExams(), getMyExams)
   const academic = useApiQuery(queryKeys.academic.myProfile(), getMyAcademicProfile)

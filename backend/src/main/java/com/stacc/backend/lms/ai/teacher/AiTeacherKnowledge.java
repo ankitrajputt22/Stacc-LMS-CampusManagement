@@ -8,10 +8,6 @@ import com.stacc.backend.lms.ai.AiCourseKeys;
 import com.stacc.backend.lms.ai.AiServiceMessages.IndexSource;
 import com.stacc.backend.lms.ai.AiServiceMessages.SourceRef;
 
-/**
- * A course's active teacher-only documents (v0.13.5), as Teacher AI may use them right now, with their fingerprint.
- * The fingerprint changes when a document is added, edited, or archived, so the teacher index shows as out of date.
- */
 public record AiTeacherKnowledge(String fingerprint, List<Document> documents) {
 
     static final String FORMAT = "stacc-ai-teacher-v1";

@@ -18,7 +18,6 @@ export const QUIZ_FORBIDDEN =
 
 type QuizSettingsFormProps = {
   initial: QuizSettingsDraft
-  /** After publishing, the type, shuffling, and negative marking stay as they are. */
   published?: boolean
   submitLabel: string
   onSubmit: (input: LmsQuizSettingsInput) => Promise<void>
@@ -44,11 +43,6 @@ function refusal(failure: unknown): { message: string | null; fields: Record<str
   return { message, fields }
 }
 
-/**
- * A quiz's settings: title, instructions, type, time limit, availability, attempts, shuffling, and negative marking.
- * Times are entered in the browser's own time zone and sent as absolute moments. Obvious slips are caught before
- * sending; the backend decides.
- */
 export function QuizSettingsForm({ initial, published = false, submitLabel, onSubmit, onCancel }: QuizSettingsFormProps) {
   const id = useId()
   const [draft, setDraft] = useState(initial)

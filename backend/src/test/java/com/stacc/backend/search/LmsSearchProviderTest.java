@@ -95,7 +95,6 @@ class LmsSearchProviderTest {
 
     @BeforeEach
     void setUp() {
-        // Course A is the student's; course B exists but the student may not use it, so the course service never lists it.
         when(studentCourses.getAccessibleCourses(70L)).thenReturn(List.of(course(11, "CS301", "Data Structures")));
     }
 
@@ -138,7 +137,6 @@ class LmsSearchProviderTest {
             assertThat(result.actionPath()).isEqualTo("/courses/11/assignments/7");
             assertThat(result.subtitle()).isEqualTo("CS301 Data Structures");
         });
-        // The accessible courses are looked up once per search, not once per section.
         verify(studentCourses, times(1)).getAccessibleCourses(70L);
     }
 
@@ -163,12 +161,10 @@ class LmsSearchProviderTest {
 
         assertThat(provider.search(SearchResultType.STUDY_MATERIAL, context(student, "notes"), five).orElseThrow()
                 .getContent()).singleElement().satisfies(result -> {
-                    // The material is on its page, so the result opens the page.
                     assertThat(result.actionPath()).isEqualTo("/courses/11/pages/" + published.getLmsTopic().getId());
                     assertThat(result.subtitle()).isEqualTo("CS301 Data Structures · notes.pdf");
                 });
 
-        // Should the query ever return a draft topic's material, the content policy refuses it rather than showing it.
         LmsStudyMaterial draftTopic = material(11, LmsContentStatus.PUBLISHED, LmsContentStatus.DRAFT,
                 LmsContentStatus.PUBLISHED);
         when(materials.search(any(), any(), anyString(), anyString(), anyString(), any()))
@@ -220,7 +216,6 @@ class LmsSearchProviderTest {
         assertThat(page.getContent()).extracting(SearchResult::actionPath)
                 .containsExactly("/teaching/21", "/teaching", "/teaching");
         assertThat(page.getContent().get(1).subtitle()).endsWith("No LMS course yet");
-        // The Teaching list needs LMS_COURSE_MANAGE as well.
         assertThat(provider.search(SearchResultType.TEACHING_COURSE,
                 context(actor(80, Set.of("FACULTY"), "FACULTY_COURSE_VIEW"), "CS30"), five)).isEmpty();
     }

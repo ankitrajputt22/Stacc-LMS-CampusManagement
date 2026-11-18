@@ -14,11 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Several hand-ins by one student at the same moment, on MySQL: each becomes its own attempt with its own number, and
- * the numbers continue without gaps or repeats. The numbers are reserved under the course enrollment row lock, never from
- * {@code MAX + 1}. Uses cse24002 in CS301's published assignment with a future deadline, which no other MySQL test uses.
- */
 class SubmissionAttemptLocksMySqlIT extends MySqlIntegrationTest {
 
     private static final int HAND_INS = 5;

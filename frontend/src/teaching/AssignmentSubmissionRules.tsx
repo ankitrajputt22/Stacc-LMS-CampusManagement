@@ -8,10 +8,6 @@ import type { useContentChanges } from './useContentChanges'
 
 type Changes = ReturnType<typeof useContentChanges>
 
-/**
- * When an assignment takes work: an opening time, whether late work is accepted and until when, and an attempt limit.
- * Times are entered in the browser's own time zone. The backend checks them against the due date again.
- */
 export function AssignmentSubmissionRules({ assignment, name, changes }: { assignment: LmsFacultyAssignment; name: string; changes: Changes }) {
   const [open, setOpen] = useState(false)
   const [opens, setOpens] = useState(assignment.availableFrom ? toLocalInputValue(assignment.availableFrom) : '')

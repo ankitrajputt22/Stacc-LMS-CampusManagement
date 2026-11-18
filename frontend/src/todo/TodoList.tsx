@@ -20,15 +20,10 @@ const KIND: Record<TodoKind, { label: string; tone: BadgeTone }> = {
   STUDY: { label: 'Study plan', tone: 'brand' },
 }
 
-/** Whether a due time has passed. Display only; the backend decides what is listed. */
 function pastDue(item: TodoItem): boolean {
   return item.dueAt !== null && item.kind === 'ASSIGNMENT' && new Date(item.dueAt).getTime() < Date.now()
 }
 
-/**
- * The To-Do list, soonest due first, with Dismiss for each item. `limit` shows only the first few (on the dashboard);
- * the items and their links are only what the backend sends, and each destination checks access again.
- */
 export function TodoList({ limit, level = 2 }: { limit?: number; level?: 2 | 3 }) {
   const queryClient = useQueryClient()
   const todo = useApiQuery(queryKeys.me.todo(), (signal) => getTodo(signal))

@@ -9,10 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * On MySQL with the demo data: emp1022 sees last session's archived CS250 as a copy source for this year's draft CS250
- * and copies its module, pages, and syllabus as drafts. CS250 is used by no other test.
- */
 class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -36,7 +32,6 @@ class LmsCourseCopyMySqlIT extends MySqlIntegrationTest {
 
         var sources = service.sources(emp1022, target);
         assertThat(sources).singleElement().extracting(LmsCourse::getStatus).hasToString("ARCHIVED");
-        // Someone who does not teach this course gets the same 404 as for a missing course, not a list.
         Long emp1021 = accounts.findByLoginId("emp1021").orElseThrow().getId();
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sources(emp1021, target))
                 .isInstanceOf(com.stacc.backend.common.error.ApiException.class)

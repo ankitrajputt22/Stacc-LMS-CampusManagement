@@ -21,11 +21,6 @@ import { priorityLabel, SIGN_IN_AGAIN, statusLabel, TICKET_PRIORITIES, TICKET_ST
 const QUEUE_DENIED = 'You don’t have access to the support queue.'
 const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
 
-/**
- * The support team's queue at /support/admin: every ticket from GET /api/v1/helpdesk/admin/tickets, newest first, page by
- * page, narrowed by the backend's own filters. Each ticket opens the shared ticket page. Admin accounts only, and the
- * backend checks HELPDESK_TICKET_VIEW_ALL on every request.
- */
 export function SupportQueuePage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

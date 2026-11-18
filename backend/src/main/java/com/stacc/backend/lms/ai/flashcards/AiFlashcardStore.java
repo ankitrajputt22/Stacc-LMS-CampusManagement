@@ -13,11 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The short transactions of flashcards (v0.15.3); the AI call that drafts the cards runs before, outside any
- * transaction. Callers check the student's course access first. A student keeps at most 20 sets per course, counted
- * under the account row lock; a review locks its card row.
- */
 @Service
 public class AiFlashcardStore {
 
@@ -26,11 +21,9 @@ public class AiFlashcardStore {
     public static final int MAX_SETS = 20;
     static final String TOO_MANY = "You can keep at most 20 flashcard sets in a course. Delete one first.";
 
-    /** One card to save, with the source the server rebuilt for it. */
     public record CardDraft(String front, String back, String sourceType, long sourceId, String sourceTitle, Long pageId) {
     }
 
-    /** A set with how many cards it has and how many are due today. */
     public record SetSummary(AiFlashcardSet set, long cards, long due) {
     }
 
@@ -66,7 +59,6 @@ public class AiFlashcardStore {
         return set;
     }
 
-    /** Saves a new set within the quota: the account row is locked first and the count runs at READ COMMITTED. */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public AiFlashcardSet create(Long accountId, Long lmsCourseId, String title, List<CardDraft> drafts, LocalDate today) {
         accounts.findByIdForUpdate(accountId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, SET_UNAVAILABLE));
@@ -82,7 +74,6 @@ public class AiFlashcardStore {
         return saved;
     }
 
-    /** Records a review under the card row lock; the next due day comes from {@link SpacedRepetition}. */
     @Transactional
     public AiFlashcard review(Long accountId, Long lmsCourseId, Long setId, Long cardId, ReviewRating rating, LocalDate today,
             Instant at) {
@@ -92,7 +83,6 @@ public class AiFlashcardStore {
         return card;
     }
 
-    /** Deletes a set and its cards for good. */
     @Transactional
     public void delete(Long accountId, Long lmsCourseId, Long setId) {
         sets.delete(owned(accountId, lmsCourseId, setId));

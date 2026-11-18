@@ -13,11 +13,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * Calendar events, always with their session and, when they have one, their semester and its program, so a list is
- * one query. An event is in a date range when it starts on or before the range's last day and ends on or after its
- * first day, which includes events that run across either edge.
- */
 public interface AcademicCalendarEventRepository extends JpaRepository<AcademicCalendarEvent, Long> {
 
     @Query("""
@@ -30,18 +25,10 @@ public interface AcademicCalendarEventRepository extends JpaRepository<AcademicC
             """)
     Optional<AcademicCalendarEvent> findWithContextById(@Param("eventId") Long eventId);
 
-    /**
-     * One event, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Every change takes this lock, so
-     * an edit and a cancellation of the same event never overwrite each other. Only the event's own row is locked.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select event from AcademicCalendarEvent event where event.id = :eventId")
     Optional<AcademicCalendarEvent> findByIdForUpdate(@Param("eventId") Long eventId);
 
-    /**
-     * Every event, whatever its status, narrowed by each filter that is not null: the earliest start first. A
-     * semester filter matches events of exactly that semester, not the session-wide events around it.
-     */
     @Query("""
             select event
             from AcademicCalendarEvent event
@@ -62,10 +49,6 @@ public interface AcademicCalendarEventRepository extends JpaRepository<AcademicC
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
 
-    /**
-     * Every event users may see in the date range, for any session or semester: published ones, and cancelled ones
-     * that were published first ({@link AcademicCalendarEvent#isVisibleToUsers()}). The earliest start first.
-     */
     @Query("""
             select event
             from AcademicCalendarEvent event
@@ -81,11 +64,6 @@ public interface AcademicCalendarEventRepository extends JpaRepository<AcademicC
             """)
     List<AcademicCalendarEvent> findVisibleInRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /**
-     * The events users may see in the date range that apply to these semesters or sessions: an event of one of the
-     * semesters, or a session-wide event of one of the sessions. Neither collection may be empty. The earliest start
-     * first.
-     */
     @Query("""
             select event
             from AcademicCalendarEvent event
@@ -106,11 +84,6 @@ public interface AcademicCalendarEventRepository extends JpaRepository<AcademicC
             @Param("semesterIds") Collection<Long> semesterIds,
             @Param("academicSessionIds") Collection<Long> academicSessionIds);
 
-    /**
-     * Search: every event users may see ({@link AcademicCalendarEvent#isVisibleToUsers()}) whose title or description
-     * contains the text, for the admin calendar. Exact titles first, then titles that start with the text, then the
-     * rest; within each, the earliest start first. Drafts never match.
-     */
     @Query(value = """
             select event
             from AcademicCalendarEvent event
@@ -136,11 +109,6 @@ public interface AcademicCalendarEventRepository extends JpaRepository<AcademicC
     Page<AcademicCalendarEvent> searchVisible(@Param("exact") String exact, @Param("prefix") String prefix,
             @Param("contains") String contains, Pageable page);
 
-    /**
-     * Search: the events users may see that apply to these semesters or sessions (an event of one of the semesters, or
-     * a session-wide event of one of the sessions, as {@link #findVisibleInRangeForScope} decides), whose title or
-     * description contains the text. Neither collection may be empty.
-     */
     @Query(value = """
             select event
             from AcademicCalendarEvent event

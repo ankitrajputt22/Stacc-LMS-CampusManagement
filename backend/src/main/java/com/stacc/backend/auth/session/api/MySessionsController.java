@@ -28,10 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in person's own sign-ins: where they are signed in, and signing out one other device. Like signing out,
- * these need only a signed-in session, and the account always comes from the access token.
- */
 @RestController
 @RequestMapping("/api/v1/me/sessions")
 @Tag(name = "My sessions")

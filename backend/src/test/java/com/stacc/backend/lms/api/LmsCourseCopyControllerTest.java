@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Copying needs the faculty role with the course view and content manage permissions, as the token's account. */
 class LmsCourseCopyControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

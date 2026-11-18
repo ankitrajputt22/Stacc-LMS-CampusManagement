@@ -39,14 +39,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the real content routes through Spring Security. The services are stand-ins, so these tests are
- * about who gets in, what is checked at the door, and what is sent back. What each side may see or
- * change is tested with the services themselves.
- */
 class LmsContentControllerTest extends DatabaseFreeApiTest {
 
-    // Made-up values used only by these tests.
     private static final long ACCOUNT_ID = 21;
     private static final String VALID_MODULE = "{\"title\":\"Introduction\",\"description\":\"Read this first.\"}";
     private static final String VALID_TOPIC = "{\"title\":\"Course overview\",\"content\":\"Line one\\nLine two\"}";
@@ -91,7 +85,6 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         return request.contentType(MediaType.APPLICATION_JSON).content(body);
     }
 
-    /** Every faculty change route, with a valid body where one is needed. */
     private static List<MockHttpServletRequestBuilder> changeRoutes() {
         return List.of(
                 json(post("/api/v1/lms/faculty/courses/7/modules"), VALID_MODULE),
@@ -105,8 +98,6 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
                 post("/api/v1/lms/faculty/topics/31/publish"),
                 post("/api/v1/lms/faculty/topics/31/archive"));
     }
-
-    // Student content
 
     @Test
     void studentGetsThePublishedContentOfTheirCourse() throws Exception {
@@ -245,8 +236,6 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         verify(facultyContent).getPage(ACCOUNT_ID, 31L);
     }
 
-    // Faculty content
-
     @Test
     void facultyMemberGetsTheContentTheyManage() throws Exception {
         when(facultyContent.getCourseContent(ACCOUNT_ID, 7L)).thenReturn(new LmsFacultyCourseContentResponse(
@@ -282,8 +271,6 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
 
         verifyNoInteractions(facultyContent);
     }
-
-    // Faculty changes
 
     @Test
     void addingAModuleAnswersCreatedWithTheNewModule() throws Exception {
@@ -324,7 +311,6 @@ class LmsContentControllerTest extends DatabaseFreeApiTest {
         when(contentManagement.publishTopic(ACCOUNT_ID, 31L)).thenReturn(topic);
         when(contentManagement.archiveTopic(ACCOUNT_ID, 31L)).thenReturn(topic);
 
-        // Adding a module or a topic has its own tests above.
         for (MockHttpServletRequestBuilder route : List.of(
                 json(put("/api/v1/lms/faculty/courses/7/modules/reorder"), "{\"moduleIds\":[12]}"),
                 json(put("/api/v1/lms/faculty/modules/12"), VALID_MODULE),

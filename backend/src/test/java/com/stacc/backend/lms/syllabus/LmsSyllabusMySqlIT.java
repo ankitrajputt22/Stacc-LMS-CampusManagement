@@ -12,10 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two first saves of one course's syllabus at the same moment make one syllabus, because both lock the course row.
- * Uses CS302's draft LMS course and emp1022, whose syllabus no other test touches.
- */
 class LmsSyllabusMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

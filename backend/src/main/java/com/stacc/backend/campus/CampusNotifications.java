@@ -14,11 +14,6 @@ import com.stacc.backend.notification.NotificationSourceType;
 import com.stacc.backend.notification.NotificationType;
 import org.springframework.stereotype.Component;
 
-/**
- * The Inbox notifications of the campus module: a notice's first publication, to the active accounts of the roles it
- * is visible to, and a completed service request, to its requester. Approval notifications are the approval engine's
- * own and are not repeated here.
- */
 @Component
 public class CampusNotifications {
 
@@ -32,7 +27,6 @@ public class CampusNotifications {
         this.accounts = accounts;
     }
 
-    /** Tells every active account holding a role the notice is visible to, once each, however many roles match. */
     public void noticePublished(CampusNotice notice) {
         List<RoleName> roles = new ArrayList<>();
         if (notice.isVisibleToStudent()) {
@@ -53,7 +47,6 @@ public class CampusNotifications {
                 recipients);
     }
 
-    /** Tells the requester that the request is ready, for example to collect. */
     public void serviceReady(CampusServiceRequest request) {
         notifications.notifyUser(new NotificationMessage(NotificationType.CAMPUS_SERVICE_READY,
                 "Service request ready",

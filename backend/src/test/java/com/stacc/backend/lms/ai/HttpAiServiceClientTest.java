@@ -26,7 +26,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.util.unit.DataSize;
 
-/** The AI client against a real local HTTP server standing in for the AI service: no AI service or model runs. */
 class HttpAiServiceClientTest {
 
     private static final String TOKEN = "internal-token-for-tests-0123456789abcdef";
@@ -119,7 +118,6 @@ class HttpAiServiceClientTest {
         assertThat(lastPath.get()).isEqualTo("/internal/v1/indexes/" + COURSE_KEY + "/ask");
         assertThat(lastToken.get()).isEqualTo(TOKEN);
         assertThat(lastAuthorization.get()).isNull();
-        // The personal-data boundary: the question, the fingerprint, and the allowed sources, nothing about the student.
         assertThat(lastBody.get()).isEqualTo("{\"indexFingerprint\":\"" + FINGERPRINT
                 + "\",\"question\":\"What does third normal form remove?\",\"allowedSources\":[{\"sourceType\":\"TOPIC\",\"sourceId\":3}],"
                 + "\"additionalIndexes\":[],\"history\":[],\"style\":\"NORMAL\"}");
@@ -139,7 +137,6 @@ class HttpAiServiceClientTest {
         }
         assertThat(lastRequestId.get()).isEqualTo("a1b2c3d4e5f60718");
 
-        // Outside a request (such as the start-up check) none is invented.
         client.ask(COURSE_KEY, question());
         assertThat(lastRequestId.get()).isNull();
     }

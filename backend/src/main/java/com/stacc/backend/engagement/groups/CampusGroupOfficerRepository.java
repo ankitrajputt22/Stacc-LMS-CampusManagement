@@ -18,7 +18,6 @@ public interface CampusGroupOfficerRepository extends JpaRepository<CampusGroupO
     @Query("select count(o) > 0 from CampusGroupOfficer o where o.group.id = :groupId and o.account.id = :accountId and o.endedAt is null")
     boolean isOfficer(@Param("groupId") Long groupId, @Param("accountId") Long accountId);
 
-    /** The group's current faculty advisor, the earliest assigned first. */
     @Query("select o from CampusGroupOfficer o join fetch o.account where o.group.id = :groupId and o.endedAt is null "
             + "and o.title = com.stacc.backend.engagement.groups.CampusGroupOfficer.Title.ADVISOR order by o.assignedAt asc")
     List<CampusGroupOfficer> findAdvisors(@Param("groupId") Long groupId);

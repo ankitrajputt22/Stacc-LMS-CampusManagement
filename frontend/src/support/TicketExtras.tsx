@@ -10,7 +10,6 @@ function failureText(failure: unknown, what: string): string | null {
   return status === 401 ? null : refusalText(status, getApiError(failure)?.message ?? null, what)
 }
 
-/** An internal note for the support side: never shown to the requester and sends no notification. */
 export function TicketNoteForm({ ticket, onChanged }: { ticket: HelpdeskTicketDetail; onChanged: () => void }) {
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +47,6 @@ export function TicketNoteForm({ ticket, onChanged }: { ticket: HelpdeskTicketDe
   )
 }
 
-/** The requester's own actions on a finished ticket: reopen within 7 days of resolution, and rate it once. */
 export function TicketRequesterActions({
   ticket,
   onUpdated,

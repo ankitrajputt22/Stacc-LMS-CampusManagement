@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/** A study session a student added to their To-Do list from a plan (v0.15.7). */
 @Entity
 @Table(name = "ai_study_sessions")
 public class AiStudySession {
@@ -40,7 +39,6 @@ public class AiStudySession {
     private Instant createdAt;
 
     protected AiStudySession() {
-        // Required by JPA.
     }
 
     public AiStudySession(Long lmsCourseId, Long userAccountId, LocalDate plannedOn, String title, int minutes) {

@@ -24,19 +24,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Study plans (v0.15.7): worked out by {@link StudyPlanner} on request from the course's published assignments, the
- * student's own mastery and flashcards, and the busy days in their own calendar, in the college's time zone. A plan is
- * never stored; on request its days go into the student's personal calendar, or its sessions into their To-Do list.
- * Both actions work the plan out again on the server, so a page can never add anything else.
- */
 @Service
 public class AiStudyPlanService {
 
     static final Duration REFRESH_AFTER = Duration.ofDays(21);
     static final String WRONG_LENGTH = "Plan 7 or 14 days.";
     static final String WRONG_MINUTES = "Plan from 30 to 240 minutes a day.";
-    /** Calendar entries added from a plan start with this; they never count as busy days for a later plan. */
     static final String CALENDAR_PREFIX = "Study plan · ";
 
     private final AiMasteryService mastery;
@@ -61,7 +54,6 @@ public class AiStudyPlanService {
         this.clock = clock;
     }
 
-    /** The plan for the coming days; the mastery view checks the student's course access first. */
     @Transactional(readOnly = true)
     public List<StudyPlanner.Day> plan(Long accountId, Long lmsCourseId, int days, int minutesPerDay) {
         if (days != 7 && days != 14) {
@@ -103,10 +95,6 @@ public class AiStudyPlanService {
         return StudyPlanner.plan(start, days, minutesPerDay, needs, busy, hasFlashcards);
     }
 
-    /**
-     * Adds one personal calendar entry per planned day, named for the course, skipping days that already hold this
-     * course's plan, so adding twice adds nothing new; answers how many were added.
-     */
     @Transactional
     public int addToCalendar(Long accountId, Long lmsCourseId, int days, int minutesPerDay) {
         List<StudyPlanner.Day> planned = plan(accountId, lmsCourseId, days, minutesPerDay);
@@ -133,7 +121,6 @@ public class AiStudyPlanService {
         return added;
     }
 
-    /** Saves the plan's sessions for the To-Do list, skipping any already saved; answers how many were added. */
     @Transactional
     public int addToTodo(Long accountId, Long lmsCourseId, int days, int minutesPerDay) {
         int added = 0;
@@ -148,7 +135,6 @@ public class AiStudyPlanService {
         return added;
     }
 
-    /** The account's saved study sessions planned for today or earlier, for its To-Do list. */
     @Transactional(readOnly = true)
     public List<AiStudySession> dueForTodo(Long accountId) {
         return sessions.findTop50ByUserAccountIdAndPlannedOnLessThanEqualOrderByPlannedOnAscIdAsc(accountId,

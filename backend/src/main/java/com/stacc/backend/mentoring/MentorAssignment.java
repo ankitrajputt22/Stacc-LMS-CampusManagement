@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A faculty mentor paired with a student. Ended, never deleted; its meetings stay readable by the pair. */
 @Entity
 @Table(name = "mentor_assignments")
 public class MentorAssignment {

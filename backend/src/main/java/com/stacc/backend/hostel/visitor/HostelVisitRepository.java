@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface HostelVisitRepository extends JpaRepository<HostelVisit, Long> {
 
-    /** A day's visits at every hostel, with the resident and their hostel, for the security desk. */
     @Query("""
             select visit from HostelVisit visit join fetch visit.allocation allocation
             join fetch allocation.bed bed join fetch bed.room room join fetch room.hostel
@@ -22,7 +21,6 @@ public interface HostelVisitRepository extends JpaRepository<HostelVisit, Long> 
             """)
     List<HostelVisit> findForDay(@Param("day") LocalDate day);
 
-    /** The resident's visits from a date on, newest first. */
     @Query("""
             select visit from HostelVisit visit join visit.allocation allocation
             where allocation.hostelApplication.studentProfile.userAccount.id = :accountId and visit.expectedOn >= :from

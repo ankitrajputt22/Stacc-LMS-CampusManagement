@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** An officer of a group (faculty advisor, coach, or student officer). Ended, never deleted. */
 @Entity
 @Table(name = "campus_group_officers")
 public class CampusGroupOfficer {
@@ -45,7 +44,6 @@ public class CampusGroupOfficer {
     private Instant endedAt;
 
     protected CampusGroupOfficer() {
-        // Required by JPA.
     }
 
     public CampusGroupOfficer(CampusGroup group, UserAccount account, Title title, Instant at) {

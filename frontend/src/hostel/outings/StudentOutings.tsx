@@ -202,7 +202,6 @@ function RoomProblemForm() {
   )
 }
 
-/** A room problem sent to hostel maintenance through Support, with the resident's room attached. */
 export function RoomProblemCard() {
   return (
     <Card title="Room problem" icon="warning" description="Sent to hostel maintenance through Support, with your room attached.">
@@ -211,7 +210,6 @@ export function RoomProblemCard() {
   )
 }
 
-/** A resident's gate passes and leave, with their passes as QR codes: the request form beside the requests. */
 export function StudentOutings() {
   const queryClient = useQueryClient()
   const outings = useApiQuery(queryKeys.hostel.outings(), (signal) => getMyOutings(signal))

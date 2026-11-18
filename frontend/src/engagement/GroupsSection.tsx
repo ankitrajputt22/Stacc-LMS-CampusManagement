@@ -119,7 +119,6 @@ function GroupCard({ group, canJoin }: { group: CampusGroup; canJoin: boolean })
   )
 }
 
-/** Clubs or sports groups with search, joining by each group's policy, and officers' member lists. */
 export function GroupsSection({ kind, canJoin }: { kind: GroupKind; canJoin: boolean }) {
   const groups = useApiQuery(queryKeys.engagement.groups(), (signal) => getGroups(signal))
   const [search, setSearch] = useState('')

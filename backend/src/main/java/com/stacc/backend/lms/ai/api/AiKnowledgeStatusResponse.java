@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.stacc.backend.lms.ai.job.AiJobService;
 import java.time.Instant;
 
-/** A course's AI knowledge as faculty see it. It never names the AI service, model, index location, or fingerprint. */
 public record AiKnowledgeStatusResponse(
         @Schema(description = "Whether AI learning features are switched on for this Stacc installation.") boolean enabled,
         @Schema(description = "NOT_INDEXED, BUILDING, READY, or FAILED: the latest refresh.") String status,
@@ -18,7 +17,6 @@ public record AiKnowledgeStatusResponse(
                 + "latest refresh covers them; false until a refresh includes a change.") boolean teacherDocumentsCurrent,
         @Schema(description = "Whether students may use the AI Study Assistant in this course (v0.13.7).") boolean studentAiEnabled) {
 
-    /** The status before teacher documents are added in. */
     AiKnowledgeStatusResponse(boolean enabled, String status, boolean stale, Instant indexedAt, int publishedSourceCount,
             String failureMessage, AiJobService.JobView job) {
         this(enabled, status, stale, indexedAt, publishedSourceCount, failureMessage, job, 0, true, true);

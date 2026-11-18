@@ -19,11 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A person's own calendar entries and private subscription link. Entries belong to the account in the token and are
- * never shown to anyone else; another person's entry answers 404. The link's secret is made here, shown once, and only
- * its fingerprint is stored; creating a new link revokes the old one.
- */
 @Service
 public class PersonalCalendarService {
 
@@ -34,7 +29,6 @@ public class PersonalCalendarService {
     public record FeedStatus(boolean active, Instant createdAt) {
     }
 
-    /** A new link's secret. It is never stored and cannot be shown again. */
     public record NewFeed(String token, Instant createdAt) {
     }
 
@@ -73,7 +67,6 @@ public class PersonalCalendarService {
         return event;
     }
 
-    /** Personal entries are the person's own notes, so the person may remove them for good. */
     @Transactional
     public void delete(Long accountId, Long eventId) {
         events.delete(own(accountId, eventId));
@@ -103,7 +96,6 @@ public class PersonalCalendarService {
         links.findActiveForUpdate(accountId).ifPresent(link -> link.revoke(now()));
     }
 
-    /** The account behind an active link, or empty for anything else. Only reads. */
     @Transactional(readOnly = true)
     public Optional<Long> accountForFeed(String token) {
         if (token == null || !TOKEN.matcher(token).matches()) {

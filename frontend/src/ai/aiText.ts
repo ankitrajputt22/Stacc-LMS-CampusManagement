@@ -28,7 +28,6 @@ export const QUESTION_TYPE_LABELS: Record<AiQuestionType, string> = {
   MIXED: 'Mixed',
 }
 
-/** "Topic", or "Study Material · Page 4" / "Study Material · Slide 2". */
 export function citationKind(citation: AiCitation): string {
   if (citation.sourceType === 'TOPIC') {
     return 'Topic'
@@ -48,10 +47,8 @@ export function citationKind(citation: AiCitation): string {
   return `Study Material${place}`
 }
 
-/** The backend's words when a course's teachers turned the AI Study Assistant off (v0.13.7). */
 export const STUDENT_AI_TURNED_OFF = 'The AI Study Assistant is turned off for this course.'
 
-/** The backend's words while a graded quiz of the course is in progress for the student (v0.15.4). */
 export const AI_PAUSED_FOR_QUIZ = 'The AI Study Assistant is paused while you have a graded quiz in progress in this course.'
 
 export type AiFailure = {
@@ -59,10 +56,6 @@ export type AiFailure = {
   message: string
 }
 
-/**
- * What to say when an AI request fails, in plain words. A 401 is handled by the shared client (the session ends), a 403
- * never signs out, and nothing names the AI service, model, or index.
- */
 export function aiFailure(error: unknown, audience: 'student' | 'faculty'): AiFailure | null {
   const status = getHttpStatus(error)
   const message = getApiError(error)?.message
@@ -81,7 +74,6 @@ export function aiFailure(error: unknown, audience: 'student' | 'faculty'): AiFa
       if (message === AI_PAUSED_FOR_QUIZ) {
         return { kind: 'paused', message }
       }
-      // Other refusals the student should read as written, such as an assignment that is no longer open (v0.15.4).
       if (audience === 'student' && message && message !== STUDY_NOT_READY) {
         return { kind: 'notReady', message }
       }

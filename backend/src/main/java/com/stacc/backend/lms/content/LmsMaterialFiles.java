@@ -7,11 +7,6 @@ import com.stacc.backend.common.error.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Checks an uploaded file before anything is stored: it must not be empty, must fit the size limit, must
- * have an allowed extension, must not claim a different type, and must start the way that kind of file
- * starts. This is a strict allow-list, not a virus scan; scanning can be added for production later.
- */
 public final class LmsMaterialFiles {
 
     static final String NO_FILE = "Choose a file to upload.";
@@ -26,7 +21,6 @@ public final class LmsMaterialFiles {
     private LmsMaterialFiles() {
     }
 
-    /** A checked upload: its cleaned-up name, its kind, and its size. */
     public record CheckedFile(String fileName, LmsMaterialFileType type, long sizeBytes) {
     }
 
@@ -68,10 +62,6 @@ public final class LmsMaterialFiles {
                 : "The file is larger than the " + maxBytes + " byte limit.";
     }
 
-    /**
-     * The name as shown to people: no folder part, no control characters, at most 255 characters with
-     * the extension kept. It is only a label: it never decides where the file is stored.
-     */
     static String cleanFileName(String original) {
         String name = original == null ? "" : original;
         name = name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\')) + 1);
@@ -81,7 +71,6 @@ public final class LmsMaterialFiles {
         }
         if (name.length() > LmsStudyMaterial.MAX_FILE_NAME_LENGTH) {
             String extension = extensionOf(name);
-            // Allowed extensions are a few letters long. Anything longer cannot be an allowed file.
             if (extension.isEmpty() || extension.length() > 10) {
                 throw badRequest(TYPE_NOT_ALLOWED);
             }

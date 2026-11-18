@@ -10,7 +10,6 @@ export type CategoryValues = { code: string; name: string; description: string; 
 type Field = 'code' | 'name' | 'description'
 
 type CategoryFormProps = {
-  /** The category being edited, or null for a new one. */
   editing: AdminHelpdeskCategory | null
   onSubmit: (values: CategoryValues) => Promise<void>
   onCancel: () => void
@@ -32,11 +31,6 @@ function checked(values: CategoryValues, creating: boolean): Partial<Record<Fiel
   return errors
 }
 
-/**
- * Adds a helpdesk category or edits one. A new category is active; its code is set once and stored in uppercase by the
- * backend, so when editing the code is shown but cannot be changed. A refusal, such as a taken code (409), is shown in
- * the backend's words and keeps what was entered.
- */
 export function CategoryForm({ editing, onSubmit, onCancel }: CategoryFormProps) {
   const id = useId()
   const creating = editing === null

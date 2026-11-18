@@ -54,11 +54,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The dashboard with the real student course, attendance, and result query services; only the repositories are
- * stand-ins. Status and deadline filtering of assignments and announcements happens in the database, so here the
- * test checks which courses, status, moment, and page are asked for.
- */
 class StudentDashboardQueryServiceTest {
 
     private static final long STUDENT = 50L;
@@ -254,7 +249,6 @@ class StudentDashboardQueryServiceTest {
         verify(results).findAllPublishedByUserAccountId(STUDENT);
         verify(courseEnrollments, never()).findAllWithStudentByUserAccountId(longThat(id -> id != STUDENT));
         assertEquals(Set.of(41L), Set.copyOf(askedCourseIds()));
-        // Another student's enrollment in the same published course does not count for this one.
         CourseEnrollment someoneElse = AttendanceFixtures.enrollment(offeringA, 51, 150, "STU-TEST-B");
         when(courseEnrollments.findAllWithStudentByUserAccountId(STUDENT)).thenReturn(List.of(someoneElse));
         assertEquals(0, service.getDashboard(STUDENT).courseCount());

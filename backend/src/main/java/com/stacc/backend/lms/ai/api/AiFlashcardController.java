@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** A student's flashcard sets in a course they may use now (v0.15.3). Nobody else has a route to them. */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai/flashcard-sets")
 @Tag(name = "LMS AI study assistant")
@@ -57,7 +56,6 @@ public class AiFlashcardController {
         }
     }
 
-    /** {@code today} is the college's date, so the student's review shows the cards the server counts as due. */
     public record SetResponse(long id, String title, List<CardResponse> cards, LocalDate today) {
 
         static SetResponse of(AiFlashcardSet set, LocalDate today) {

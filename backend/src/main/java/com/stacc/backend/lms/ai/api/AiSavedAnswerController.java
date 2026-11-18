@@ -32,10 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Saved answers (v0.15.1, decision 6): the AI answers a student chose to keep, in a course they may use now. The
- * student is always the account in the access token; nobody else has a route to them.
- */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai/saved-answers")
 @Tag(name = "LMS AI study assistant")

@@ -19,7 +19,6 @@ import com.stacc.backend.lms.quiz.attempt.QuizAttemptStatus;
 import com.stacc.backend.lms.quiz.attempt.QuizScoring;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One attempt for marking: every question in the quiz's order with its answers, the student's answer, and the marks. */
 public record LmsQuizAttemptReviewResponse(
         Long attemptId,
         Long quizId,

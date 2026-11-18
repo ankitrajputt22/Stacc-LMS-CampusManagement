@@ -65,11 +65,6 @@ function Shell({ lmsCourseId, title, children }: { lmsCourseId: number | null; t
   )
 }
 
-/**
- * /teaching/:lmsCourseId/files: the course's files as faculty manage them. Upload puts a new file on a chosen page as
- * a draft; Publish and Archive (confirmed first) use the same routes as course content, and nothing is deleted. The
- * backend checks that the faculty member teaches the course on every request.
- */
 export function TeachingFilesPage() {
   const { account } = useAuth()
   const queryClient = useQueryClient()

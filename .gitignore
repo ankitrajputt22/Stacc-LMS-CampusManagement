@@ -1,28 +1,23 @@
-# Environment files
 .env
 .env.*
 !.env.example
 
-# Java and Maven
 target/
 *.class
 .mvn/timing.properties
 
-# Node and Vite
 node_modules/
 dist/
 .vite/
 coverage/
 *.tsbuildinfo
 
-# IDEs and editors
 .idea/
 *.iml
 .vscode/
 *.swp
 *.swo
 
-# Logs
 *.log
 logs/
 npm-debug.log*
@@ -30,16 +25,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Operating-system files
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# Temporary files
 *.tmp
 *.temp
 *.bak
 *~
 
-# Design notes and mock-ups kept locally only
 Stacc Details/

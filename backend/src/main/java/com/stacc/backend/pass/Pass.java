@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One issued pass. The code itself is never stored. */
 @Entity
 @Table(name = "passes")
 public class Pass {
@@ -46,7 +45,6 @@ public class Pass {
     private Instant revokedAt;
 
     protected Pass() {
-        // Required by JPA.
     }
 
     Pass(PassPurpose purpose, Long sourceId, Long holderAccountId, String codeFingerprint, Instant validFrom, Instant validUntil, Instant issuedAt) {
@@ -65,7 +63,6 @@ public class Pass {
         }
     }
 
-    /** Valid at this moment: inside its window and not revoked. */
     public boolean validAt(Instant at) {
         return revokedAt == null && !at.isBefore(validFrom) && !at.isAfter(validUntil);
     }

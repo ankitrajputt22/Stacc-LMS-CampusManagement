@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A physical copy of a title, known by its barcode. Withdrawn, never deleted. */
 @Entity
 @Table(name = "library_copies")
 public class LibraryCopy {

@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty with the quiz grading permission read results or mark; marks are checked before the service. */
 class LmsQuizGradingControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

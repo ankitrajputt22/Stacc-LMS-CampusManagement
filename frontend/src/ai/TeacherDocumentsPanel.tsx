@@ -87,11 +87,6 @@ function DocumentForm({ draft, onSaved, onCancel, lmsCourseId }: {
   )
 }
 
-/**
- * Teacher-only documents (v0.13.5): plain-text notes and drafts that only Teacher AI read when drafting assessments.
- * Students never see them. Changes reach Teacher AI after the next Refresh AI knowledge; documents are archived (confirmed
- * first), never deleted. The backend checks that the faculty member teaches the course on every request.
- */
 export function TeacherDocumentsPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

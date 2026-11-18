@@ -16,11 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The faculty dashboard. The route needs the faculty role and {@code FACULTY_DASHBOARD_VIEW}; what it shows is still
- * decided by official teaching assignments and the existing LMS and attendance rules, for the account in the access
- * token. It takes no parameters.
- */
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")

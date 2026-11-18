@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 
-/** Course offerings per section, and students taking only their own section's offerings. */
 class SectionOfferingRulesTest {
 
     private final CourseOfferingRepository offerings = mock(CourseOfferingRepository.class);

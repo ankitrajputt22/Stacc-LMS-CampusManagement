@@ -35,10 +35,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the announcement routes through Spring Security. The services are stand-ins, so these tests are
- * about who gets in, what is checked at the door, and what is sent back.
- */
 class LmsAnnouncementControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

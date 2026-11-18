@@ -17,11 +17,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * AI jobs (v0.13.1). Faculty queue a course's knowledge refresh, which answers at once; a worker claims queued jobs
- * one at a time and runs the existing refresher outside any long transaction. Callers check faculty access first. At
- * most one refresh is queued or running per course. Results and errors are short safe texts.
- */
 @Service
 public class AiJobService {
 
@@ -53,7 +48,6 @@ public class AiJobService {
         this.clock = clock;
     }
 
-    /** Queues a refresh of the course's AI knowledge; 409 while one is queued or running, or with nothing to index. */
     public JobView queueRefresh(Long accountId, Long lmsCourseId) {
         if (!client.isEnabled()) {
             throw AiErrors.unavailable();
@@ -72,7 +66,6 @@ public class AiJobService {
         return jobs.findFirstByLmsCourseIdAndKindOrderByIdDesc(lmsCourseId, AiJob.Kind.REFRESH_INDEX).map(JobView::of);
     }
 
-    /** Claims and runs the oldest queued job, if any; answers whether one ran. */
     public boolean runNext() {
         AiJob claimed = steps.claim(now()).orElse(null);
         if (claimed == null) {
@@ -91,10 +84,6 @@ public class AiJobService {
         return true;
     }
 
-    /**
-     * Refreshes the course's published-content index and, when it has teacher documents (v0.13.5), its teacher-only
-     * index too. A course with only teacher documents refreshes only those.
-     */
     private String refreshAll(Long lmsCourseId) {
         StringBuilder summary = new StringBuilder();
         if (sources.publishedKnowledge(lmsCourseId).hasIndexableContent()) {
@@ -114,7 +103,6 @@ public class AiJobService {
         return summary.toString();
     }
 
-    /** Fails jobs a stopped process left running. */
     public int recoverAfterRestart() {
         return steps.recover(now());
     }

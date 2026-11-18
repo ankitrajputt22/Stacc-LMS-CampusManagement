@@ -27,16 +27,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * LMS search, for students and for faculty, never mixed.
- *
- * <p>Students search only the courses {@link LmsStudentCourseQueryService} lists for them, the same rule as their
- * course list and every course page, and inside those only published assignments and announcements and materials whose
- * whole chain is published ({@link LmsContentPolicy#PUBLISHED_ONLY}). Faculty search the offerings they currently teach
- * ({@link LmsFacultyManagedCourseQueryService}, as the Teaching page) and, inside the draft or published LMS courses
- * {@link LmsFacultyCourseQueryService} lists for them, everything that is not archived ({@link LmsContentPolicy#IN_USE}).
- * Each side needs the role and permissions of its own routes. An account without accessible courses sends no query.
- */
 @Component
 public class LmsSearchProvider implements SearchProvider {
 
@@ -79,7 +69,6 @@ public class LmsSearchProvider implements SearchProvider {
             case ASSIGNMENT -> student ? Optional.of(studentAssignments(context, page)) : Optional.empty();
             case STUDY_MATERIAL -> student ? Optional.of(studentMaterials(context, page)) : Optional.empty();
             case ANNOUNCEMENT -> student ? Optional.of(studentAnnouncements(context, page)) : Optional.empty();
-            // The Teaching page's list needs LMS_COURSE_MANAGE too; its results open that page.
             case TEACHING_COURSE -> actor.holdsWith("FACULTY", "FACULTY_COURSE_VIEW", "LMS_COURSE_MANAGE")
                     ? Optional.of(teachingCourses(context, page)) : Optional.empty();
             case TEACHING_ASSIGNMENT -> faculty ? Optional.of(teachingAssignments(context, page)) : Optional.empty();
@@ -89,15 +78,12 @@ public class LmsSearchProvider implements SearchProvider {
         };
     }
 
-    // --- Students
-
     private Map<Long, LmsCourseSummaryResponse> studentCourseMap(SearchContext context) {
         return context.remember(STUDENT_COURSES, () -> studentCourses.getAccessibleCourses(context.actor().accountId())
                 .stream()
                 .collect(Collectors.toMap(LmsCourseSummaryResponse::lmsCourseId, Function.identity(), (a, b) -> a)));
     }
 
-    /** The student's own course list is short; it is matched here, with the same ranking the queries use. */
     private Page<SearchResult> studentCourses(SearchContext context, Pageable page) {
         SearchText text = context.text();
         List<SearchResult> matches = studentCourseMap(context).values().stream()
@@ -155,7 +141,6 @@ public class LmsSearchProvider implements SearchProvider {
         SearchText text = context.text();
         return materials.search(courses.keySet(), LmsContentPolicy.PUBLISHED_ONLY, text.exact(), text.prefix(),
                 text.contains(), page).map(material -> {
-                    // The query narrows to published chains; the policy is still the rule, so a mismatch is a bug.
                     if (!LmsContentPolicy.isVisibleToStudents(material)) {
                         throw new IllegalStateException("A study material outside the published chain was found");
                     }
@@ -168,15 +153,12 @@ public class LmsSearchProvider implements SearchProvider {
                 });
     }
 
-    // --- Faculty
-
     private Map<Long, LmsFacultyCourseSummaryResponse> facultyCourseMap(SearchContext context) {
         return context.remember(FACULTY_COURSES, () -> facultyCourses.getAccessibleCourses(context.actor().accountId())
                 .stream()
                 .collect(Collectors.toMap(LmsFacultyCourseSummaryResponse::lmsCourseId, Function.identity(), (a, b) -> a)));
     }
 
-    /** Every offering taught, with or without an LMS course; it is matched here, ranked as the queries rank. */
     private Page<SearchResult> teachingCourses(SearchContext context, Pageable page) {
         SearchText text = context.text();
         List<LmsFacultyManagedCourseResponse> taught = context.remember(MANAGED_COURSES,
@@ -245,9 +227,6 @@ public class LmsSearchProvider implements SearchProvider {
                 });
     }
 
-    // --- Helpers
-
-    /** A taught offering opens its teaching page only while its LMS course can be used; otherwise the Teaching list. */
     static String teachingPath(LmsFacultyManagedCourseResponse course) {
         boolean open = course.lmsCourseId() != null && course.lmsCourseStatus() != null
                 && LmsCourseStatus.valueOf(course.lmsCourseStatus()) != LmsCourseStatus.ARCHIVED;
@@ -269,7 +248,6 @@ public class LmsSearchProvider implements SearchProvider {
         return code + " " + name;
     }
 
-    // The course is a lazy reference; reading its ID loads nothing.
     private static Long courseIdOf(LmsAssignment assignment) {
         return assignment.getLmsCourse().getId();
     }
@@ -282,7 +260,6 @@ public class LmsSearchProvider implements SearchProvider {
         return material.getLmsTopic().getLmsModule().getLmsCourse().getId();
     }
 
-    /** One page of a short list that was already matched and ordered in memory. */
     static <T> Page<T> pageOf(List<T> all, Pageable page) {
         int from = (int) Math.min(page.getOffset(), all.size());
         int to = Math.min(from + page.getPageSize(), all.size());

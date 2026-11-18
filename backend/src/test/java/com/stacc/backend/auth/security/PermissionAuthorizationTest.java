@@ -25,10 +25,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Checks permission rules through real requests. The "/api/v1/test/permissions/..." routes and the
- * TEST_ permission names exist only in test code. They are not real Stacc permissions.
- */
 class PermissionAuthorizationTest extends DatabaseFreeApiTest {
 
     private static final String READ = "/api/v1/test/permissions/read";
@@ -131,7 +127,6 @@ class PermissionAuthorizationTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.authorities", everyItem(not(startsWith("SCOPE_")))))
                 .andExpect(jsonPath("$.authorities", everyItem(not(startsWith("ROLE_TEST_")))));
 
-        // A prefixed name is a different authority and does not count as the permission.
         expectForbidden(tokenWith("ROLE_TEST_READ"), READ);
         expectForbidden(tokenWith("SCOPE_TEST_READ"), READ);
         expectForbidden(tokenWith("PERMISSION_TEST_READ"), READ);

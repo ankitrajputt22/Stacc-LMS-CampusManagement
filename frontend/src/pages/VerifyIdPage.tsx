@@ -4,7 +4,6 @@ import { checkIdCard } from '../api/careerApi'
 import type { IdCheck } from '../types/career'
 import { Alert, Button, Card, PageHeader, TextField } from '../ui'
 
-/** /verify-id: staff type the code under a person's ID QR code and see whose card it is, while the code is valid. */
 export function VerifyIdPage() {
   const [code, setCode] = useState('')
   const [result, setResult] = useState<IdCheck | null>(null)
@@ -49,7 +48,6 @@ export function VerifyIdPage() {
             {result && (
               <Alert tone={result.valid ? 'success' : 'error'}>
                 <p className="text-lg font-bold">{result.message}</p>
-                {/* An expired or unknown code shows the message only, never who it was. */}
                 {result.valid && (
                   <dl className="mt-3 grid gap-x-8 gap-y-1.5 text-[0.95rem] sm:grid-cols-[9rem_minmax(0,1fr)]">
                     {rows

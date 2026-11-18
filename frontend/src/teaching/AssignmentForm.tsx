@@ -13,10 +13,8 @@ type Field = 'title' | 'instructions' | 'dueAt' | 'maxMarks'
 
 type AssignmentFormProps = {
   heading: string
-  /** A short neutral note shown above the fields. */
   note?: string
   initial?: { title: string; instructions: string; instructionsFormat: TextFormat; dueAt: string; maxMarks: number }
-  /** Values to start a new assignment with, such as a reviewed AI draft. The teacher still checks and submits them. */
   prefill?: AssignmentDraftPrefill
   submitLabel: string
   submittingLabel: string
@@ -24,7 +22,6 @@ type AssignmentFormProps = {
   onCancel: () => void
 }
 
-// The years the backend accepts, and the most marks its column holds: six digits and two decimals.
 const EARLIEST_YEAR = 2000
 const LATEST_YEAR = 9999
 const MARKS_PATTERN = /^\d{1,6}(\.\d{1,2})?$/
@@ -66,11 +63,6 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   ) : null
 }
 
-/**
- * A contained form for an assignment's definition. The deadline is entered in the browser's own time zone
- * and sent as an absolute moment; the instructions are plain text. Obvious mistakes are caught before
- * sending, and the backend checks everything again.
- */
 export function AssignmentForm({
   heading,
   note,
@@ -94,7 +86,6 @@ export function AssignmentForm({
   }
   const [title, setTitle] = useState(initial?.title ?? prefill?.title ?? '')
   const [instructions, setInstructions] = useState(initial?.instructions ?? prefill?.instructions ?? '')
-  // New instructions are formatted; an AI draft arrives as plain text, and an edit keeps the current format.
   const [instructionsFormat, setInstructionsFormat] = useState<TextFormat>(
     initial?.instructionsFormat ?? (prefill ? 'PLAIN' : 'FORMATTED'),
   )
@@ -110,7 +101,6 @@ export function AssignmentForm({
     titleRef.current?.focus()
   }, [])
 
-  // A message stays until its field is changed, so a corrected field no longer says it is wrong.
   function clearError(field: Field) {
     setErrors((current) => {
       if (!current[field]) {
@@ -151,7 +141,6 @@ export function AssignmentForm({
       dueAt: due.toISOString(),
       maxMarks: Number(marks),
     })
-    // On success the editor closes this form, so nothing more is updated here.
     if (!outcome.ok) {
       setSubmitting(false)
       setErrors(outcome.fieldErrors)

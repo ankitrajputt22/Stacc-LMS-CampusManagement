@@ -18,16 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Course discussions. A student takes part in a course the student access policy allows, faculty in a course the
- * faculty access policy allows; the kind comes from the route, the account from the access token. Anyone taking part
- * starts threads and replies; faculty pin threads; the thread's author or the faculty accept one reply as the answer.
- * Nothing is edited or deleted. A course or thread the caller may not use answers 404.
- *
- * <p>Moderation (v0.8.3): faculty hide threads and replies (students no longer see a hidden thread, and see a hidden
- * reply only as hidden) and lock threads against new replies. Students report a post with a reason; faculty resolve a
- * post's open reports together, by hiding it or dismissing them. Every moderation change locks the thread row first.
- */
 @Service
 public class LmsDiscussionService {
 
@@ -85,7 +75,6 @@ public class LmsDiscussionService {
         LmsCourse course = lmsCourses.getReferenceById(lmsCourseId);
         LmsDiscussionThread thread = threads.saveAndFlush(new LmsDiscussionThread(course,
                 accounts.getReferenceById(viewer.accountId()), viewer.kind(), title, body, now()));
-        // The answer is built after the transaction, so the author is loaded now.
         Hibernate.initialize(thread.getAuthor());
         return new ThreadDetail(thread, List.of());
     }
@@ -94,7 +83,6 @@ public class LmsDiscussionService {
     public ThreadDetail detail(Viewer viewer, Long lmsCourseId, Long threadId) {
         LmsDiscussionThread thread = thread(viewer, lmsCourseId, threadId);
         List<LmsDiscussionReply> found = replies.findAllForThread(thread.getId());
-        // The answer is built after the transaction (open-in-view is off), so every author it shows is loaded now.
         Hibernate.initialize(thread.getAuthor());
         found.forEach(reply -> Hibernate.initialize(reply.getAuthor()));
         return new ThreadDetail(thread, found);
@@ -113,7 +101,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    /** Pins or unpins a thread; only the course's faculty. */
     @Transactional
     public ThreadDetail pin(Viewer viewer, Long lmsCourseId, Long threadId, boolean pinned) {
         if (viewer.kind() != AuthorKind.FACULTY) {
@@ -124,7 +111,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    /** Marks one reply of the thread as the accepted answer, replacing an earlier choice. */
     @Transactional
     public ThreadDetail accept(Viewer viewer, Long lmsCourseId, Long threadId, Long replyId) {
         LmsDiscussionThread found = thread(viewer, lmsCourseId, threadId);
@@ -145,9 +131,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    // --- Moderation
-
-    /** Hides a thread from students, or shows it again; only the course's faculty. */
     @Transactional
     public ThreadDetail hideThread(Viewer viewer, Long lmsCourseId, Long threadId, boolean hidden) {
         requireFaculty(viewer);
@@ -162,7 +145,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    /** Locks a thread against new replies, or opens it again; only the course's faculty. */
     @Transactional
     public ThreadDetail lockThread(Viewer viewer, Long lmsCourseId, Long threadId, boolean locked) {
         requireFaculty(viewer);
@@ -171,7 +153,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    /** Hides a reply from students, or shows it again. A hidden reply stops being the accepted answer. */
     @Transactional
     public ThreadDetail hideReply(Viewer viewer, Long lmsCourseId, Long threadId, Long replyId, boolean hidden) {
         requireFaculty(viewer);
@@ -190,10 +171,6 @@ public class LmsDiscussionService {
         return detail(viewer, lmsCourseId, threadId);
     }
 
-    /**
-     * A student reports a thread (no reply) or one of its replies to the course's faculty. Hidden posts cannot be
-     * reported (404), nor one's own (409), and a person has one open report per post (409).
-     */
     @Transactional
     public LmsDiscussionReport report(Viewer viewer, Long lmsCourseId, Long threadId, Long replyId, String reason) {
         if (viewer.kind() != AuthorKind.STUDENT) {
@@ -215,12 +192,10 @@ public class LmsDiscussionService {
         try {
             return reports.saveAndFlush(valid(() -> new LmsDiscussionReport(thread, reply, viewer.accountId(), reason, now())));
         } catch (DataIntegrityViolationException duplicate) {
-            // The unique open-report key caught a report made at the same moment.
             throw new ApiException(HttpStatus.CONFLICT, ALREADY_REPORTED);
         }
     }
 
-    /** The course's open reports, oldest first; only the course's faculty. */
     @Transactional(readOnly = true)
     public List<LmsDiscussionReport> openReports(Viewer viewer, Long lmsCourseId) {
         requireFaculty(viewer);
@@ -228,7 +203,6 @@ public class LmsDiscussionService {
         return reports.findOpenForCourse(lmsCourseId);
     }
 
-    /** Resolves every open report of the reported post: hides the post, or dismisses the reports. */
     @Transactional
     public void resolve(Viewer viewer, Long lmsCourseId, Long reportId, boolean hide) {
         requireFaculty(viewer);
@@ -281,7 +255,6 @@ public class LmsDiscussionService {
         }
     }
 
-    // A student never sees a hidden thread: it answers the same 404 as a missing one.
     private LmsDiscussionThread thread(Viewer viewer, Long lmsCourseId, Long threadId) {
         requireCourse(viewer, lmsCourseId);
         return (threadId == null ? java.util.Optional.<LmsDiscussionThread>empty() : threads.findById(threadId))

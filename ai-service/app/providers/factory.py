@@ -1,5 +1,3 @@
-"""Chooses the providers named by the settings. Commercial AI APIs are deliberately not offered."""
-
 from __future__ import annotations
 
 import logging

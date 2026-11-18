@@ -45,8 +45,6 @@ class DomainSearchProvidersTest {
 
     private final PageRequest five = PageRequest.of(0, 5);
 
-    // --- Calendar
-
     private final AcademicCalendarEventQueryService eventQueries = mock(AcademicCalendarEventQueryService.class);
     private final AcademicCalendarEventRepository events = mock(AcademicCalendarEventRepository.class);
     private final CalendarSearchProvider calendar = new CalendarSearchProvider(eventQueries, events);
@@ -97,8 +95,6 @@ class DomainSearchProvidersTest {
         assertThat(result.subtitle()).isEqualTo("3 Nov 2026 – 5 Nov 2026 · Exam · 2026-27 · Cancelled");
     }
 
-    // --- Campus
-
     private final CampusNoticeRepository notices = mock(CampusNoticeRepository.class);
     private final CampusServiceRequestRepository requests = mock(CampusServiceRequestRepository.class);
     private final CampusSearchProvider campus = new CampusSearchProvider(notices, requests);
@@ -130,15 +126,12 @@ class DomainSearchProvidersTest {
                 context(actor(1, Set.of("ADMIN"), "CAMPUS_SERVICE_MANAGE"), "card"), five);
         verify(requests).searchAll(any(), any(), any(), any());
 
-        // ADMIN alone, or CAMPUS_SERVICE_MANAGE without ADMIN, is no pass to every request.
         assertThat(campus.search(SearchResultType.CAMPUS_SERVICE_REQUEST,
                 context(actor(2, Set.of("ADMIN"), "CAMPUS_NOTICE_VIEW"), "card"), five)).isEmpty();
         campus.search(SearchResultType.CAMPUS_SERVICE_REQUEST,
                 context(actor(70, Set.of("STUDENT"), "CAMPUS_SERVICE_MANAGE", "CAMPUS_SERVICE_REQUEST_VIEW_OWN"), "card"), five);
         verify(requests).searchOwn(eq(70L), any(), any(), any(), any());
     }
-
-    // --- Helpdesk
 
     private final HelpdeskTicketRepository tickets = mock(HelpdeskTicketRepository.class);
     private final HelpdeskSearchProvider helpdesk = new HelpdeskSearchProvider(new HelpdeskAccessService(), tickets);
@@ -161,15 +154,12 @@ class DomainSearchProvidersTest {
                 context(actor(1, Set.of("ADMIN"), "HELPDESK_TICKET_VIEW_OWN", "HELPDESK_TICKET_VIEW_ALL"), "projector"), five);
         verify(tickets).searchAll(any(), any(), any(), any());
 
-        // VIEW_ALL without ADMIN is own-only, and without any ticket permission there is no section.
         helpdesk.search(SearchResultType.HELPDESK_TICKET,
                 context(actor(71, Set.of("STUDENT"), "HELPDESK_TICKET_VIEW_ALL", "HELPDESK_TICKET_VIEW_OWN"), "projector"), five);
         verify(tickets).searchOwn(eq(71L), any(), any(), any(), any());
         assertThat(helpdesk.search(SearchResultType.HELPDESK_TICKET,
                 context(actor(72, Set.of("STUDENT"), "GLOBAL_SEARCH_USE"), "projector"), five)).isEmpty();
     }
-
-    // --- Hostel
 
     private final HostelApplicationRepository applications = mock(HostelApplicationRepository.class);
     private final HostelSearchProvider hostel = new HostelSearchProvider(applications);
@@ -189,8 +179,6 @@ class DomainSearchProvidersTest {
         assertThat(hostel.search(SearchResultType.HOSTEL_APPLICATION,
                 context(actor(80, Set.of("FACULTY"), "HOSTEL_APPLICATION_VIEW_OWN", "HOSTEL_MANAGE"), "HST-0"), five)).isEmpty();
     }
-
-    // --- Academic
 
     private final DepartmentRepository departments = mock(DepartmentRepository.class);
     private final ProgramRepository programs = mock(ProgramRepository.class);
@@ -226,7 +214,6 @@ class DomainSearchProvidersTest {
 
     @Test
     void countsComeFromTheSameScopedQueryAsTheItems() {
-        // Two of the requester's own tickets match; the total is what the own-only query counted, never every ticket.
         when(tickets.searchOwn(eq(70L), anyString(), anyString(), anyString(), any()))
                 .thenReturn(new PageImpl<>(List.of(), five, 2));
         var page = helpdesk.search(SearchResultType.HELPDESK_TICKET,

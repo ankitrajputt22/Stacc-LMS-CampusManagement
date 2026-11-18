@@ -8,7 +8,6 @@ export type OutingExtension = {
   createdAt: string
 }
 
-/** A hostel outing as the API works it out: approval, end (with approved extensions), and whether the student is out. */
 export type HostelOuting = {
   outingId: number
   studentLoginId: string
@@ -28,7 +27,6 @@ export type HostelOuting = {
   extensions: OutingExtension[]
 }
 
-/** A pass code, shown only now, and its window. */
 export type OutingPass = { code: string; validFrom: string; validUntil: string }
 
 export type PassCheck = {

@@ -15,7 +15,6 @@ public interface MealFeedbackRepository extends JpaRepository<MealFeedback, Long
             """)
     List<MealFeedback> findOwnBetween(@Param("accountId") Long accountId, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    /** A hostel's feedback in a period, newest first, without who gave it. */
     @Query("""
             select feedback from MealFeedback feedback where feedback.hostel.id = :hostelId
             and feedback.mealDate between :from and :to order by feedback.mealDate desc, feedback.meal, feedback.id desc

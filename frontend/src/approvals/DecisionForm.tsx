@@ -6,23 +6,14 @@ import { border, fieldClasses } from '../teaching/formStyles'
 import { COMMENT_MAX, refusalText } from './approvalText'
 
 type DecisionFormProps = {
-  /** The current step's ID from the module's detail answer, for the approval task routes. */
   stepId: number
-  /** A page-level message after the decision, or after a refusal that reloads the record. */
   onDecided: (message: string, tone?: 'success' | 'error') => void
-  /** Prefixes the field ID, so two forms never share one. */
   idPrefix: string
   approvedMessage: string
   rejectedMessage: string
-  /** Who reads the comment, such as "The student sees it as plain text." */
   audienceHint: string
 }
 
-/**
- * Approve or Reject the current approval step through the approval engine's task routes. Approving takes an optional
- * comment; rejecting needs one. The backend checks the step's role and APPROVAL_TASK_DECIDE again on every call; no
- * module has an approval route of its own.
- */
 export function DecisionForm({ stepId, onDecided, idPrefix, approvedMessage, rejectedMessage, audienceHint }: DecisionFormProps) {
   const commentId = `${idPrefix}-decision-comment`
   const busyRef = useRef(false)
@@ -54,7 +45,6 @@ export function DecisionForm({ stepId, onDecided, idPrefix, approvedMessage, rej
       if (status !== 401) {
         const text = refusalText(status, getApiError(failure)?.message ?? null, 'record the decision')
         if (status === 409 || status === 404) {
-          // Decided elsewhere meanwhile: the page says so and shows the record as it is now.
           onDecided(text, 'error')
         } else {
           setError(text)

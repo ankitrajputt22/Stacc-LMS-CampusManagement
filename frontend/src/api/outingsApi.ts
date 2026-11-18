@@ -2,8 +2,6 @@ import type { HelpdeskTicketDetail } from '../types/helpdesk'
 import type { ApprovalTaskSummary, GateMovement, HostelOuting, OutingKind, OutingPass, PassCheck } from '../types/outings'
 import { apiClient } from './apiClient'
 
-// Who asks always comes from the session. Wardens decide outings through the approval task routes.
-
 export async function getMyOutings(signal?: AbortSignal) {
   return (await apiClient.get<HostelOuting[]>('/hostel/student/outings', { signal })).data
 }

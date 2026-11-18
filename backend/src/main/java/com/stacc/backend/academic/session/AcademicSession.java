@@ -16,10 +16,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * An official academic period for the whole college, such as "2026-27". It does not belong
- * to a department or a programme. A finished session is closed rather than deleted.
- */
 @Entity
 @Table(name = "academic_sessions")
 public class AcademicSession {
@@ -43,7 +39,6 @@ public class AcademicSession {
     @Column(nullable = false, length = 20)
     private AcademicSessionStatus status = AcademicSessionStatus.PLANNED;
 
-    // At most one session is current: a unique generated column in the database enforces it.
     @Column(name = "is_current", nullable = false)
     private boolean current;
 
@@ -56,13 +51,8 @@ public class AcademicSession {
     private Instant updatedAt;
 
     protected AcademicSession() {
-        // Required by JPA.
     }
 
-    /**
-     * The code is the college's own name for the session and is stored as given, in uppercase
-     * without surrounding spaces. It is never worked out from the dates.
-     */
     public AcademicSession(String code, LocalDate startDate, LocalDate endDate) {
         this.code = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
         setDates(startDate, endDate);
@@ -88,12 +78,10 @@ public class AcademicSession {
         return status;
     }
 
-    /** Whether this is the college's current session. At most one session is. */
     public boolean isCurrent() {
         return current;
     }
 
-    /** Makes this the current session. The caller clears the previous one first. A closed session cannot be current. */
     public void makeCurrent() {
         if (status == AcademicSessionStatus.CLOSED) {
             throw new IllegalStateException("A closed academic session cannot be the current one");
@@ -124,13 +112,11 @@ public class AcademicSession {
         this.status = AcademicSessionStatus.ACTIVE;
     }
 
-    /** Closing a session also stops it being the current one. */
     public void close() {
         this.status = AcademicSessionStatus.CLOSED;
         this.current = false;
     }
 
-    // A session may be any length, but it must end after it starts.
     private void setDates(LocalDate startDate, LocalDate endDate) {
         Require.notNull(startDate, "startDate");
         Require.notNull(endDate, "endDate");

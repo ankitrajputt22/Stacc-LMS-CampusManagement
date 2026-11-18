@@ -24,7 +24,6 @@ import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/** The MinIO client is a stand-in here, so no storage server is needed. Live checks are done against MinIO itself. */
 class MinioObjectStorageServiceTest {
 
     private final MinioClient client = mock(MinioClient.class);

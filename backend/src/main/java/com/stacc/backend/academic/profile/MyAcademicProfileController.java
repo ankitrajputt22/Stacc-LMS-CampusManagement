@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The signed-in student's or faculty member's own official academic profile, read-only. */
 @RestController
 @RequestMapping("/api/v1/academic/me")
 @Tag(name = "My academic profile")

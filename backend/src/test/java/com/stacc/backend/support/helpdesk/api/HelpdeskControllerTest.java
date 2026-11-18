@@ -44,7 +44,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the helpdesk routes through Spring Security, with the helpdesk services as stand-ins. */
 class HelpdeskControllerTest extends DatabaseFreeApiTest {
 
     private static final String TICKETS = "/api/v1/helpdesk/tickets";

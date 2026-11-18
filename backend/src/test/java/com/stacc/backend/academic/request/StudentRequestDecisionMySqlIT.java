@@ -11,7 +11,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** An approval and a rejection of the same request at once: the request row lock lets one decide. A student of its own. */
 class StudentRequestDecisionMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

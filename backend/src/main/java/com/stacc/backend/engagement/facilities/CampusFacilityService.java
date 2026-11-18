@@ -25,12 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Facilities and their bookings. A booking lies on one day inside opening hours (in the college's time zone), not on a
- * closed day, outside the facility's weekly class hours (v0.12.5), at most 12 hours, starting in the future. Booking locks the facility row and then reads overlapping
- * bookings, so two bookings of the same time never both succeed. A booking needing approval holds its time while
- * pending; a rejected or cancelled approval frees it. The booker cancels their own booking before it starts.
- */
 @Service
 @Transactional
 public class CampusFacilityService {
@@ -49,7 +43,6 @@ public class CampusFacilityService {
     public record ClosureView(Long closureId, LocalDate startDate, LocalDate endDate, String reason) {
     }
 
-    /** A booking: CONFIRMED, PENDING (waiting for approval), REJECTED, or CANCELLED, worked out on read. */
     public record BookingView(Long bookingId, Long facilityId, String facilityName, String bookedByLoginId, Instant startsAt,
             Instant endsAt, String purpose, String status) {
     }
@@ -126,7 +119,6 @@ public class CampusFacilityService {
         return view(facility, LocalDate.now(clock.withZone(properties.zone())));
     }
 
-    /** Adds a weekly class slot; later bookings that overlap it are refused, earlier ones stay. */
     public FacilityView addClassHour(Long facilityId, DayOfWeek day, LocalTime startsAt, LocalTime endsAt, String label) {
         CampusFacility facility = locked(facilityId);
         try {
@@ -137,7 +129,6 @@ public class CampusFacilityService {
         return view(facility, LocalDate.now(clock.withZone(properties.zone())));
     }
 
-    /** Removes a weekly class slot; the record is kept with its removal time. */
     public FacilityView removeClassHour(Long classHourId) {
         CampusFacilityClassHour slot = classHours.findById(classHourId == null ? -1L : classHourId).filter(found -> found.getRemovedAt() == null)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Class hours not found."));
@@ -192,7 +183,6 @@ public class CampusFacilityService {
         return viewOf(booking);
     }
 
-    /** The booker cancels their own booking before it starts; a pending approval is cancelled with it. */
     public BookingView cancel(Long accountId, Long bookingId) {
         CampusBooking booking = bookings.findById(bookingId == null ? -1L : bookingId)
                 .filter(found -> found.getAccount().getId().equals(accountId))
@@ -213,7 +203,6 @@ public class CampusFacilityService {
         return bookings.findAllForAccount(accountId, PageRequest.of(0, 50)).stream().map(this::viewOf).toList();
     }
 
-    /** A facility's coming bookings, so people can see free times. Shows who booked by login ID. */
     @Transactional(readOnly = true)
     public List<BookingView> upcoming(Long facilityId) {
         return bookings.findUpcoming(facilityId, now(), PageRequest.of(0, 100)).stream().map(this::viewOf)

@@ -14,11 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * The daily digest, only when email is on: every waiting item is marked sent and its account gets one email listing
- * them. Items are taken under a row lock and marked in the same transaction, so a digest is sent at most once; the
- * emails go out after that commits.
- */
 @Component
 @EnableScheduling
 @ConditionalOnProperty(prefix = "stacc.mail", name = "enabled", havingValue = "true")

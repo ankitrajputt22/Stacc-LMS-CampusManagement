@@ -5,7 +5,6 @@ type AccountRolesProps = {
   className?: string
 }
 
-/** The account's roles as plain words, such as "Student · Faculty". Nothing is shown without a role. */
 export function AccountRoles({ roles, className = '' }: AccountRolesProps) {
   if (roles.length === 0) {
     return null

@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** The admin enrollment monitor and the faculty class lists: each needs its own role and permission. */
 class EnrollmentViewRoutesTest extends DatabaseFreeApiTest {
 
     @MockitoBean

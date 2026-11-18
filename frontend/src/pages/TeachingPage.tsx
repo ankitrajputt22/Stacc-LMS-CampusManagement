@@ -17,7 +17,6 @@ import { PageHeader } from '../ui'
 
 const NOT_FACULTY = 'This page is for faculty accounts.'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-// A token issued before the account got the permission does not carry it until the next sign-in.
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
@@ -25,7 +24,6 @@ type LmsState = Pick<LmsManagedCourse, 'lmsCourseId' | 'lmsCourseStatus'>
 
 function ManagedCourses() {
   const courses = useApiQuery(queryKeys.lms.managedCourses(), getManagedTeachingCourses)
-  // Changes made on this page, shown at once without asking the backend again.
   const [changes, setChanges] = useState<Record<number, LmsState>>({})
 
   if (courses.status === 'loading') {
@@ -94,17 +92,10 @@ function ManagedCourses() {
   )
 }
 
-/**
- * Every course offering the signed-in faculty member officially teaches, with its LMS course: create a missing one,
- * open or publish a draft, open a published one, or see that one is archived. Accounts without the faculty role see an
- * explanation instead and no request is made. That check is for convenience only: the backend decides which
- * offerings, if any, a faculty member manages.
- */
 export function TeachingPage() {
   const { account } = useAuth()
   const location = useLocation()
   const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])
-  // Set by the course page after it archived a course, which it can then no longer show.
   const archivedCourse = (location.state as { archivedCourse?: string } | null)?.archivedCourse
 
   return (

@@ -17,10 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One entry of a ticket's audit trail: who did what, with the value before and after as short text, such as OPEN to
- * IN_PROGRESS or an assignee's login ID. Entries are append-only and never changed or deleted.
- */
 @Entity
 @Table(name = "helpdesk_ticket_history")
 public class HelpdeskTicketHistory {
@@ -54,7 +50,6 @@ public class HelpdeskTicketHistory {
     private Instant createdAt;
 
     protected HelpdeskTicketHistory() {
-        // Required by JPA.
     }
 
     public HelpdeskTicketHistory(HelpdeskTicket ticket, UserAccount actor, HelpdeskTicketHistoryAction action,

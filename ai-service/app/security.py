@@ -1,11 +1,3 @@
-"""The internal token check and the course-key rule.
-
-Only the Stacc backend calls this service. It sends the shared internal token in the
-``X-Stacc-AI-Token`` header; users' access tokens never reach this service. A course key is an
-opaque value the backend derives from an LMS course; it is checked strictly before it is used as
-a directory name.
-"""
-
 from __future__ import annotations
 
 import hmac
@@ -27,7 +19,6 @@ def require_internal_token(request: Request, x_stacc_ai_token: str | None = Head
 
 
 def checked_course_key(course_key: str) -> str:
-    """The course key, if it is exactly 32 lower-case hex characters. Anything else is refused."""
     if not COURSE_KEY_PATTERN.fullmatch(course_key):
         raise ServiceError(400, "INVALID_COURSE_KEY", "The course key is not valid.")
     return course_key

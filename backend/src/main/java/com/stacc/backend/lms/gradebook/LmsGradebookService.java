@@ -23,14 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The gradebook of a course, for the faculty who teach it: every current student's marks in every column, manual items
- * and their marks, and publishing a column's grades to students. Every action checks the faculty access policy; for a
- * manual item the course comes from the stored item.
- *
- * <p>Publishing locks the course row and then reads its grade items with a locking read, so two publications of the same
- * column make one record (a unique key backs this up). Entering marks locks the manual item first.
- */
 @Service
 public class LmsGradebookService {
 
@@ -64,7 +56,6 @@ public class LmsGradebookService {
         this.clock = clock;
     }
 
-    /** The gradebook with its students, by login ID. */
     public record FacultyGradebook(GradebookBuilder.Gradebook gradebook, List<CourseEnrollment> students) {
     }
 
@@ -82,7 +73,6 @@ public class LmsGradebookService {
         return items.saveAndFlush(valid(() -> LmsGradeItem.manual(course, userAccountId, title, maxMarks)));
     }
 
-    /** Renames a manual item or changes its maximum; the maximum cannot fall below marks already entered (409). */
     @Transactional
     public LmsGradeItem editManualItem(Long userAccountId, Long itemId, String title, BigDecimal maxMarks) {
         LmsGradeItem item = lockedManual(userAccountId, itemId);
@@ -97,10 +87,6 @@ public class LmsGradebookService {
         return items.saveAndFlush(item);
     }
 
-    /**
-     * Shows a column's grades to students from now on: a published assignment, a published graded quiz, or a manual
-     * item of the course. Publishing again changes nothing; nothing unpublishes.
-     */
     @Transactional
     public LmsGradeItem publishColumn(Long userAccountId, Long lmsCourseId, GradeItemType type, Long sourceId) {
         course(userAccountId, lmsCourseId);
@@ -135,7 +121,6 @@ public class LmsGradebookService {
         return items.saveAndFlush(item);
     }
 
-    /** Enters one current student's marks for a manual item, replacing earlier ones. */
     @Transactional
     public LmsGradeEntry enterMarks(Long userAccountId, Long itemId, Long courseEnrollmentId, BigDecimal marks, String feedback) {
         LmsGradeItem item = lockedManual(userAccountId, itemId);
@@ -154,7 +139,6 @@ public class LmsGradebookService {
         return entries.saveAndFlush(entry);
     }
 
-    // Only the course ID is read first, so the locking read is the first to load the item.
     private LmsGradeItem lockedManual(Long userAccountId, Long itemId) {
         Long lmsCourseId = itemId == null ? null : items.findLmsCourseIdById(itemId).orElse(null);
         if (lmsCourseId == null || !facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {

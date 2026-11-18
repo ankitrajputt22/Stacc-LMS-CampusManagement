@@ -43,11 +43,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * The ERP records of the local college (v0.16), after the other seeders: weekly timetables for the current CSE and ECE
- * semesters, degree requirements for both programs, and Aarav's mailing address and emergency contacts. Like the
- * other seeders it only finds or creates, through the feature services, and skips what already exists.
- */
 @Component
 @Profile(LocalTestDataSeeder.PROFILE)
 @Order(30)
@@ -144,7 +139,6 @@ public class LocalErpSeeder implements ApplicationRunner {
         LOGGER.info("Local ERP records ({} profile) ready.", LocalTestDataSeeder.PROFILE);
     }
 
-    // The week of the semester the student is enrolled in now, added only when that semester has no classes yet.
     private void week(String loginId, List<Slot> week) {
         accounts.findByLoginId(loginId).ifPresent(account -> {
             var enrolled = courseEnrollments.findAllWithStudentByUserAccountId(account.getId()).stream()
@@ -178,7 +172,6 @@ public class LocalErpSeeder implements ApplicationRunner {
             try {
                 var program = degree.mine(account.getId());
                 if (program.groups().isEmpty()) {
-                    // The program code alone does not say which row; the student's own profile names it.
                     degree.set(programIdOf(account), BTECH);
                 }
             } catch (ApiException missing) {
@@ -209,8 +202,6 @@ public class LocalErpSeeder implements ApplicationRunner {
         });
     }
 
-    // A few requests waiting for the office: leave and a revaluation from Aarav, a correction from a student who often
-    // misses class. Only when the student has none yet.
     private void requests() {
         accounts.findByLoginId("cse24001").ifPresent(account -> {
             if (!requests.mine(account.getId()).isEmpty()) {
@@ -236,8 +227,6 @@ public class LocalErpSeeder implements ApplicationRunner {
         });
     }
 
-    // The end-semester exams of the semester the student is enrolled in now: one exam every other weekday from 7 Dec,
-    // 10:00 to 13:00 (labs to 12:00), every student seated, published. Only when the semester has no exam session.
     private void examSession(String loginId, String hall) {
         accounts.findByLoginId(loginId).ifPresent(account -> courseEnrollments.findAllWithStudentByUserAccountId(account.getId()).stream()
                 .filter(enrollment -> enrollment.getStatus() == CourseEnrollmentStatus.ENROLLED).findFirst()
@@ -271,7 +260,6 @@ public class LocalErpSeeder implements ApplicationRunner {
             new FeeService.Item(FeeStructureItem.Head.HOSTEL, new BigDecimal("30000")),
             new FeeService.Item(FeeStructureItem.Head.MESS, new BigDecimal("11500")));
 
-    // The program's fees for the session the student is enrolled in now, due on 15 Dec 2026, when none are set yet.
     private void feeStructure(String loginId) {
         accounts.findByLoginId(loginId).ifPresent(account -> courseEnrollments.findAllWithStudentByUserAccountId(account.getId()).stream()
                 .filter(enrollment -> enrollment.getStatus() == CourseEnrollmentStatus.ENROLLED).findFirst()
@@ -284,7 +272,6 @@ public class LocalErpSeeder implements ApplicationRunner {
                 }));
     }
 
-    // Aarav has paid three instalments and holds a merit scholarship, leaving the rest due on 15 Dec.
     private void aaravsFees() {
         Long office = accounts.findByLoginId("adm1001").map(UserAccount::getId).orElse(null);
         accounts.findByLoginId("cse24001").ifPresent(account -> {
@@ -312,7 +299,6 @@ public class LocalErpSeeder implements ApplicationRunner {
             {"Puri, aloo sabzi, tea", "Pulao, dal, salad", "Bhel puri, tea", "Chicken or soya curry, rice, roti"},
             {"Bread, omelette, tea", "Special thali", "Cake, tea", "Khichdi, papad, pickle"}};
 
-    // Main Hostel's weekly menu and two published notices, set as the hostel office would, when none exist yet.
     private void hostelLife() {
         Long office = accounts.findByLoginId("adm1001").map(UserAccount::getId).orElse(null);
         hostels.findByCode("MAIN").ifPresent(hostel -> {

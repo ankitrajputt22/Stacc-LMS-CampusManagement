@@ -5,7 +5,6 @@ import com.stacc.backend.academic.teaching.TeachingRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-/** What an admin sends to assign faculty to a course offering or change an assignment. Never an account ID. */
 public final class FacultyAssignmentRequests {
 
     private FacultyAssignmentRequests() {

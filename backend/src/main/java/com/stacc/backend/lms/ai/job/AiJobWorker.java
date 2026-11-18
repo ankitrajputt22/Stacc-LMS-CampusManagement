@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Runs queued AI jobs every few seconds, and fails jobs a restart interrupted. Present only while AI is switched on. */
 @Component
 @EnableScheduling
 @ConditionalOnProperty(prefix = "stacc.ai", name = "enabled", havingValue = "true")
@@ -34,7 +33,6 @@ public class AiJobWorker {
         }
     }
 
-    /** One job per tick at most, so a long refresh never blocks the scheduler for other work for long. */
     @Scheduled(fixedDelay = 2000, initialDelay = 5000)
     public void tick() {
         if (client.isEnabled()) {

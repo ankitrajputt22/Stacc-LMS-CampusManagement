@@ -4,7 +4,6 @@ import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 
 export type CourseNavItem = { to: string; label: string; end?: boolean }
 
-// One line icon per course section, by its label; a section without one shows none.
 const ICONS: Record<string, NavIconName> = {
   Home: 'home',
   Modules: 'academics',
@@ -48,20 +47,12 @@ function Items({ items }: { items: readonly CourseNavItem[] }) {
 }
 
 type CourseNavProps = {
-  /** The course code, such as CS301. */
   title: ReactNode
-  /** The course name under the code. */
   subtitle?: ReactNode
-  /** The way back to the list of courses. */
   back?: { to: string; label: string }
   items: readonly CourseNavItem[]
 }
 
-/**
- * The course's own navigation, the same on every page of a course: a slim white column on wide screens and a "Course
- * menu" that opens on phones, so content always gets the full width there. It lists only what Stacc has; it is never
- * access control, since the backend checks every request.
- */
 export function CourseNav({ title, subtitle, back, items }: CourseNavProps) {
   return (
     <>
@@ -92,7 +83,6 @@ export function CourseNav({ title, subtitle, back, items }: CourseNavProps) {
   )
 }
 
-/** The page frame of a course: its navigation beside the content on wide screens, above it on phones. */
 export function CourseFrame({ nav, children }: { nav: ReactNode; children: ReactNode }) {
   return (
     <div className="md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">

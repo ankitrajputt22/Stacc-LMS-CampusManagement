@@ -20,11 +20,6 @@ import com.stacc.backend.lms.quiz.attempt.QuizResultStatus;
 import com.stacc.backend.lms.quiz.attempt.QuizScoring;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One of the student's own attempts: its questions in the attempt's order and the answers saved so far. Until its
- * result is released it never carries which options are correct, the accepted short answers, the true or false answer,
- * or explanations; after that only when the quiz shows answers with results. Marking guidance is never sent.
- */
 public record LmsQuizAttemptResponse(
         Long id,
         Long quizId,
@@ -48,15 +43,10 @@ public record LmsQuizAttemptResponse(
         Result result,
         List<Question> questions) {
 
-    /** A released result: the score and counts, and each question's outcome. */
     public record Result(BigDecimal score, BigDecimal totalMarks, long correct, long incorrect, long unanswered,
             List<QuestionResult> questions) {
     }
 
-    /**
-     * One question's result. The correct options, accepted answers, true or false answer, and explanation come only
-     * when the quiz shows answers with results.
-     */
     public record QuestionResult(Long quizQuestionId, QuizAnswerOutcome outcome, BigDecimal marksAwarded, String feedback,
             List<Integer> correctOptions, List<String> acceptedAnswers, Boolean trueFalseAnswer, String explanation) {
     }

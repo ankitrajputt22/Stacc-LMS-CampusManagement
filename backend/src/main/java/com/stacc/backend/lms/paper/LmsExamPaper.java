@@ -18,11 +18,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * An exam paper of one LMS course: a title, plain-text instructions, a duration, and bank questions in order (see
- * {@link LmsExamPaperQuestion}). A draft changes freely; a final paper keeps its details and questions, with the first
- * finalization time kept; an archived paper is kept for history. Nothing deletes a paper or reopens it.
- */
 @Entity
 @Table(name = "lms_exam_papers")
 public class LmsExamPaper {
@@ -46,7 +41,6 @@ public class LmsExamPaper {
     @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
     private LmsCourse lmsCourse;
 
-    // Which blueprint it was built from, for the record only: the blueprint never changes the paper afterwards.
     @Column(name = "lms_exam_blueprint_id", updatable = false)
     private Long blueprintId;
 
@@ -78,7 +72,6 @@ public class LmsExamPaper {
     private Instant updatedAt;
 
     protected LmsExamPaper() {
-        // Required by JPA.
     }
 
     public LmsExamPaper(LmsCourse lmsCourse, Long createdByAccountId, Long blueprintId, String title, String instructions,
@@ -89,7 +82,6 @@ public class LmsExamPaper {
         edit(title, instructions, durationMinutes);
     }
 
-    /** Changes the title, instructions, and duration of a draft. */
     public void edit(String title, String instructions, Integer durationMinutes) {
         requireDraft();
         this.title = Require.text(title, "Title", MAX_TITLE_LENGTH);
@@ -98,7 +90,6 @@ public class LmsExamPaper {
                 : Require.range(durationMinutes, "Duration in minutes", 1, MAX_DURATION_MINUTES);
     }
 
-    /** Makes a draft final, once; finalizing a final paper again changes nothing. */
     public void finalizeAt(Instant now) {
         if (status == Status.FINAL) {
             return;
@@ -108,7 +99,6 @@ public class LmsExamPaper {
         this.finalizedAt = Require.notNull(now, "now");
     }
 
-    /** Archives a draft or final paper; archiving again changes nothing. */
     public void archive() {
         this.status = Status.ARCHIVED;
     }

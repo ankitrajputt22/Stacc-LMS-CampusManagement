@@ -56,13 +56,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins find, create, and manage accounts. Every account is created by the college with a temporary password the
- * person must replace at first sign-in; there is no signup. Accounts are disabled, never deleted. Changing the status
- * or the roles ends the account's sessions, so it takes effect at once. An admin never disables their own account or
- * removes their own admin role, so the college cannot lock itself out. Passwords and hashes are never returned. Every
- * change is recorded in the audit log in the same transaction, without names, contact details, or passwords.
- */
 @Service
 @Transactional
 public class UserAdminService {
@@ -124,7 +117,6 @@ public class UserAdminService {
         this.audit = audit;
     }
 
-    /** One page of accounts matching the filters, by login ID. */
     @Transactional(readOnly = true)
     public UserPage list(RoleName role, AccountStatus status, String query, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
@@ -151,19 +143,11 @@ public class UserAdminService {
         return detailOf(find(accountId));
     }
 
-    /**
-     * Creates the account, its person profile, and the student or faculty profile its roles need, all at once or not
-     * at all. The temporary password follows the password policy and must be replaced at first sign-in.
-     */
     public UserDetail create(Long actorAccountId, UserCreate request) {
         checkPolicy(request.temporaryPassword(), request.loginId().strip());
         return createWithHash(actorAccountId, request, passwordEncoder.encode(request.temporaryPassword()));
     }
 
-    /**
-     * Creates one account with an already-made hash of its temporary password, whose policy the caller has checked for
-     * this login ID. Bulk import hashes the shared temporary password once and calls this for every row.
-     */
     public UserDetail createWithHash(Long actorAccountId, UserCreate request, String temporaryPasswordHash) {
         String loginId = request.loginId().strip();
         if (accounts.existsByLoginId(loginId)) {
@@ -206,7 +190,6 @@ public class UserAdminService {
         return detailOf(account);
     }
 
-    /** Corrects the official full name and email, recording a person profile when the account has none. */
     public UserDetail updateDetails(Long actorAccountId, Long accountId, DetailsUpdate request) {
         UserAccount account = find(accountId);
         String email = cleanEmail(request.email());
@@ -231,7 +214,6 @@ public class UserAdminService {
         return detailOf(account);
     }
 
-    /** Activates or disables the account. Disabling ends its sessions; the same status changes nothing. */
     public UserDetail updateStatus(Long actorAccountId, Long accountId, AccountStatus status) {
         UserAccount account = accounts.findByIdForUpdate(accountId).orElseThrow(() -> notFound());
         if (account.getStatus() == status) {
@@ -251,11 +233,6 @@ public class UserAdminService {
         return detailOf(account);
     }
 
-    /**
-     * Sets the account's roles to exactly these. A real change ends its sessions, so the new roles apply at the next
-     * sign-in at once. Profiles are kept when a role is removed: they are academic history, and a profile alone grants
-     * nothing.
-     */
     public UserDetail updateRoles(Long actorAccountId, Long accountId, Set<RoleName> wanted) {
         UserAccount account = accounts.findByIdForUpdate(accountId).orElseThrow(() -> notFound());
         Set<RoleName> current = account.getRoles().stream().map(Role::getName)
@@ -285,7 +262,6 @@ public class UserAdminService {
         return detailOf(account);
     }
 
-    /** Issues a new temporary password; the person must replace it, and every session of the account ends. */
     public UserDetail issueTemporaryPassword(Long actorAccountId, Long accountId, String temporaryPassword) {
         UserAccount account = find(accountId);
         checkPolicy(temporaryPassword, account.getLoginId());
@@ -417,7 +393,6 @@ public class UserAdminService {
         }
     }
 
-    // The search query uses ! as its escape character.
     static String escapeLike(String text) {
         return text.replace("!", "!!").replace("%", "!%").replace("_", "!_");
     }

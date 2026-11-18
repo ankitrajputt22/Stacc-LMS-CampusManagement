@@ -2,10 +2,6 @@ package com.stacc.backend.notification;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Email delivery of notifications. Off unless enabled; then a sender address is required. Links in emails start with
- * the link base URL (the frontend's own address). The mail server itself is set with the spring.mail settings.
- */
 @ConfigurationProperties(prefix = "stacc.mail")
 public record MailProperties(boolean enabled, String from, String linkBaseUrl, String digestCron) {
 

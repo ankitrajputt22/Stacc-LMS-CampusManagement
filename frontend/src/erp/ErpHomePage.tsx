@@ -41,10 +41,6 @@ function Banner({ tone, children }: { tone: 'warning' | 'danger'; children: stri
   )
 }
 
-/**
- * The ERP home: alerts that need attention, then one tile per ERP area with a live one-line summary. Every figure comes
- * from the backend's own rules (attendance below the minimum is decided there); nothing is made up.
- */
 export function ErpHomePage() {
   const { account } = useAuth()
   const student = hasAnyRole(account?.roles ?? [], ['STUDENT'])

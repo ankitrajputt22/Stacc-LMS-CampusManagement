@@ -8,7 +8,6 @@ import { UnreadCountProvider } from '../notifications/UnreadCountProvider'
 
 const NAVIGATION_ID = 'app-navigation'
 
-// Matches the Tailwind `lg` breakpoint, where the sidebar replaces the menu drawer.
 const DESKTOP_QUERY = '(min-width: 64rem)'
 
 export function AppLayout() {
@@ -41,7 +40,6 @@ export function AppLayout() {
       document.removeEventListener('keydown', closeOnEscape)
       desktop.removeEventListener('change', closeMenu)
       document.body.style.overflow = ''
-      // The menu has closed and the page is interactive again, so return focus to where it started.
       menuButton?.focus()
     }
   }, [isMenuOpen])
@@ -72,7 +70,6 @@ export function AppLayout() {
             className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8"
           >
             <div className="mx-auto max-w-7xl">
-              {/* Keyed by the address, so moving to another page clears an earlier failure. */}
               <PageErrorBoundary key={location.pathname}>
                 <Suspense fallback={<LoadingState />}>
                   <Outlet />

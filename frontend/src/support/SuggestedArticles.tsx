@@ -2,11 +2,6 @@ import { getHelpArticles } from '../api/helpdeskApi'
 import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 
-/**
- * Help articles for a ticket being written: the category's published articles, those sharing words with the subject
- * first. Loaded when the category changes and when the subject field is left, never per keystroke. Shows nothing when
- * there are none, so the form never waits on it.
- */
 export function SuggestedArticles({ categoryId, subject, className = '' }: { categoryId: number | null; subject: string; className?: string }) {
   const articles = useApiQuery(categoryId === null ? null : queryKeys.helpdesk.helpArticles(categoryId, subject), (signal) =>
     getHelpArticles(categoryId ?? 0, subject, signal),

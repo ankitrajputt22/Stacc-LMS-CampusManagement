@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
-// New accounts of this run only; the journey never changes a demo account.
 const SUFFIX = Date.now().toString(36).toUpperCase()
 const HEADER = 'login_id,full_name,email,roles,department,program,admission_session,roll_number'
 
@@ -12,7 +11,6 @@ test('an admin checks a CSV file, sees its problems, and then imports it', async
   await expect(page.getByRole('heading', { level: 1, name: 'Import users' })).toBeVisible()
   await page.getByLabel('Temporary password for every account').fill('Teal-Harbor-6620')
 
-  // cse24001 exists already, so the file is refused as a whole.
   await page.getByLabel('File to import').setInputFiles({
     name: 'people.csv',
     mimeType: 'text/csv',

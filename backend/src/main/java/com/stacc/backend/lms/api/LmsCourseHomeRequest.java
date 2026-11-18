@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** What a course's home shows and its welcome message. Official course details are never part of it. */
 public record LmsCourseHomeRequest(
         @Schema(description = "OVERVIEW, MODULES, or SYLLABUS.", allowableValues = {"OVERVIEW", "MODULES", "SYLLABUS"})
         @NotNull(message = "Choose what the course home shows")

@@ -15,7 +15,6 @@ public interface InnovationIdeaRepository extends JpaRepository<InnovationIdea, 
     @Query("select i from InnovationIdea i where i.submitter.id = :accountId order by i.submittedAt desc, i.id desc")
     List<InnovationIdea> findForSubmitter(@Param("accountId") Long accountId);
 
-    /** Ideas in these statuses, other than the reader's own, oldest first. */
     @Query("select i from InnovationIdea i where i.status in :statuses and i.submitter.id <> :accountId order by i.submittedAt, i.id")
     List<InnovationIdea> findOpenForReviewer(@Param("statuses") Collection<InnovationIdea.Status> statuses, @Param("accountId") Long accountId);
 

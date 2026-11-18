@@ -1,6 +1,5 @@
 export type TodoKind = 'ASSIGNMENT' | 'GRADING' | 'ATTENDANCE' | 'APPROVAL' | 'MENTORING' | 'STUDY'
 
-/** One To-Do item as the API sends it, worked out live. */
 export type TodoItem = {
   key: string
   kind: TodoKind

@@ -15,10 +15,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A room in one hostel. Its capacity is the number of its active beds; it has no capacity field of its own. An inactive
- * room takes no new allocations. Rooms are never deleted.
- */
 @Entity
 @Table(name = "hostel_rooms")
 public class HostelRoom {
@@ -39,7 +35,6 @@ public class HostelRoom {
     @Column(nullable = false)
     private boolean active = true;
 
-    // Details for finding and describing the room; none of them decides anything.
     @Column(length = 50)
     private String block;
 
@@ -52,7 +47,6 @@ public class HostelRoom {
     @Column(length = 500)
     private String notes;
 
-    /** Block, floor, type, and notes: plain text, each optional. */
     public void describe(String block, Integer floorNumber, String roomType, String notes) {
         if (floorNumber != null && (floorNumber < -5 || floorNumber > 200)) {
             throw new IllegalArgumentException("the floor must be between -5 and 200");
@@ -77,7 +71,6 @@ public class HostelRoom {
     private Instant updatedAt;
 
     protected HostelRoom() {
-        // Required by JPA.
     }
 
     public HostelRoom(Hostel hostel, String roomNumber) {
@@ -85,7 +78,6 @@ public class HostelRoom {
         update(roomNumber, true);
     }
 
-    /** Sets the number and active flag. Whether the number may still change is checked by the caller. */
     public void update(String roomNumber, boolean active) {
         this.roomNumber = Require.text(roomNumber, "roomNumber", MAX_NUMBER_LENGTH);
         this.active = active;

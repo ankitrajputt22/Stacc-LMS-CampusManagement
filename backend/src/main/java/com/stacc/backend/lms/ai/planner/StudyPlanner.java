@@ -5,12 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * The study planner (v0.15.7): a plan for the coming days, scheduled by code, never by a model. Each day has a budget of
- * minutes (half on a day the student's own calendar is busy). Work for assignments due in the window goes first, on the
- * days before each deadline; then practice for weak pages, then pages not started, then pages to refresh; a short
- * flashcard review goes on every day there are flashcards. Nothing is planned for a day that has no room.
- */
 public final class StudyPlanner {
 
     static final int ASSIGNMENT_MINUTES = 45;
@@ -20,7 +14,6 @@ public final class StudyPlanner {
 
     public enum Kind { ASSIGNMENT, PRACTISE_WEAK, START_PAGE, REFRESH_PAGE, FLASHCARDS }
 
-    /** Something to plan: an assignment with its due day, or a page by need. */
     public record Need(Kind kind, Long targetId, String title, LocalDate dueOn) {
     }
 
@@ -37,10 +30,6 @@ public final class StudyPlanner {
     private StudyPlanner() {
     }
 
-    /**
-     * @param needs in priority order within each kind; assignments with their due day
-     * @param busyDays days with entries in the student's own calendar
-     */
     public static List<Day> plan(LocalDate start, int days, int minutesPerDay, List<Need> needs, Set<LocalDate> busyDays,
             boolean hasFlashcards) {
         List<Day> plan = new ArrayList<>();
@@ -52,7 +41,6 @@ public final class StudyPlanner {
         if (hasFlashcards) {
             plan.forEach(day -> place(day, new Session(Kind.FLASHCARDS, null, "Review flashcards", FLASHCARD_MINUTES)));
         }
-        // Assignments: up to two sessions on the latest days with room before the due day.
         needs.stream().filter(need -> need.kind() == Kind.ASSIGNMENT && need.dueOn() != null).forEach(need -> {
             int placed = 0;
             for (int index = plan.size() - 1; index >= 0 && placed < 2; index--) {
@@ -63,7 +51,6 @@ public final class StudyPlanner {
                 }
             }
         });
-        // Pages, by need, each on the earliest day with room, spread so no day repeats a page.
         for (Kind kind : List.of(Kind.PRACTISE_WEAK, Kind.START_PAGE, Kind.REFRESH_PAGE)) {
             int minutes = kind == Kind.REFRESH_PAGE ? REFRESH_MINUTES : PRACTICE_MINUTES;
             String verb = kind == Kind.PRACTISE_WEAK ? "Practise " : kind == Kind.START_PAGE ? "Start " : "Refresh ";

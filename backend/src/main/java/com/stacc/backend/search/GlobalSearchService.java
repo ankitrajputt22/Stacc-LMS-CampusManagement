@@ -16,16 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Composes a search from its providers. It validates the text, asks each provider for the kinds it answers, and keeps
- * the kinds with results, in the fixed order of {@link SearchResultType}. It owns no access rule: each provider applies
- * its own domain's. It only reads, and stores nothing, not even the query.
- */
 @Service
 @Transactional(readOnly = true)
 public class GlobalSearchService {
 
-    /** At most this many results of each kind in the preview. */
     public static final int PREVIEW_LIMIT = 5;
     public static final int MAX_PAGE_SIZE = 100;
 
@@ -43,7 +37,6 @@ public class GlobalSearchService {
         }
     }
 
-    /** The preview: up to {@link #PREVIEW_LIMIT} results of each kind the actor may search, with each kind's total. */
     public GlobalSearchResponse preview(SearchActor actor, String query) {
         SearchContext context = new SearchContext(actor, SearchText.of(query));
         PageRequest firstPage = PageRequest.of(0, PREVIEW_LIMIT);
@@ -58,10 +51,6 @@ public class GlobalSearchService {
         return new GlobalSearchResponse(context.text().text(), sections);
     }
 
-    /**
-     * One page of one kind, under exactly the rules of the preview. A kind the actor may not search is an empty page,
-     * never a 403 or 404, so the answer reveals nothing about records the actor cannot see.
-     */
     public SearchResultPage results(SearchActor actor, String query, SearchResultType type, int page, int size) {
         SearchText text = SearchText.of(query);
         if (type == null) {

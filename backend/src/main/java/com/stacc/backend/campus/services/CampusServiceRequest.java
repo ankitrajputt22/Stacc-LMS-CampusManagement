@@ -23,12 +23,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One request for a campus service: a subject and plain-text details, nothing more. When its service needs approval it
- * starts SUBMITTED with an approval request of the approval engine, whose outcome it takes on; otherwise it starts
- * APPROVED, accepted for handling. An approved request is completed by the office. There are no messages: support
- * conversations belong to the helpdesk. Requests are never deleted.
- */
 @Entity
 @Table(name = "campus_service_requests")
 public class CampusServiceRequest {
@@ -41,7 +35,6 @@ public class CampusServiceRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Empty only inside the transaction that creates the request, until its ID is known.
     @Column(name = "request_number", unique = true, length = 20)
     private String requestNumber;
 
@@ -79,7 +72,6 @@ public class CampusServiceRequest {
     @Column(name = "ready_at")
     private Instant readyAt;
 
-    // The document issued when the request was completed, kept in the requester's vault.
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issued_document_id", unique = true)
     private VaultDocument issuedDocument;
@@ -93,10 +85,8 @@ public class CampusServiceRequest {
     private Instant updatedAt;
 
     protected CampusServiceRequest() {
-        // Required by JPA.
     }
 
-    /** A new request: SUBMITTED when the service needs approval, otherwise APPROVED. */
     public CampusServiceRequest(CampusServiceDefinition serviceDefinition, UserAccount requester, String subject,
             String details, Instant submittedAt) {
         this.serviceDefinition = Require.notNull(serviceDefinition, "serviceDefinition");
@@ -125,20 +115,14 @@ public class CampusServiceRequest {
         this.approvalRequest = Require.notNull(request, "approvalRequest");
     }
 
-    /** The approval status, read from the approval engine's request, or null when the service needs no approval. */
     public ApprovalRequestStatus approvalStatus() {
         return approvalRequest == null ? null : approvalRequest.getStatus();
     }
 
-    /** The status with the approval's outcome taken into account. Reading it changes nothing. */
     public CampusServiceRequestStatus effectiveStatus() {
         return status.withApproval(approvalStatus());
     }
 
-    /**
-     * Stores the effective status, the one place an approval decision reaches the campus request. Returns whether it
-     * changed. Only the business status changes; the approval request is never touched.
-     */
     public boolean synchronizeWithApproval() {
         CampusServiceRequestStatus effective = effectiveStatus();
         if (effective == status) {
@@ -148,7 +132,6 @@ public class CampusServiceRequest {
         return true;
     }
 
-    /** Cancels a request that is still SUBMITTED or APPROVED. Its approval, if pending, is cancelled by the caller first. */
     public void cancel() {
         if (status != CampusServiceRequestStatus.SUBMITTED && status != CampusServiceRequestStatus.APPROVED) {
             throw new IllegalStateException("Only an open request can be cancelled");
@@ -156,7 +139,6 @@ public class CampusServiceRequest {
         status = CampusServiceRequestStatus.CANCELLED;
     }
 
-    /** Completes an approved request (being processed or ready included) and records when, once. */
     public void complete(Instant at) {
         if (!status.isBeingHandled()) {
             throw new IllegalStateException("Only an approved request can be completed");
@@ -165,13 +147,11 @@ public class CampusServiceRequest {
         completedAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
     }
 
-    /** Completes the request with the document issued for it. */
     public void complete(Instant at, VaultDocument document) {
         complete(at);
         this.issuedDocument = Require.notNull(document, "document");
     }
 
-    /** An approved request is being processed. Returns false when it already is. */
     public boolean startProcessing(Instant at) {
         if (status == CampusServiceRequestStatus.IN_PROGRESS) {
             return false;
@@ -184,7 +164,6 @@ public class CampusServiceRequest {
         return true;
     }
 
-    /** An approved or processing request is ready. Returns false when it already is. */
     public boolean markReady(Instant at) {
         if (status == CampusServiceRequestStatus.READY) {
             return false;
@@ -233,7 +212,6 @@ public class CampusServiceRequest {
         return details;
     }
 
-    /** The stored business status. Use {@link #effectiveStatus()} to show or decide anything. */
     public CampusServiceRequestStatus getStatus() {
         return status;
     }

@@ -7,7 +7,6 @@ import com.stacc.backend.lms.content.LmsModule;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One module as faculty manage it, with its topics that are not archived. */
 public record LmsFacultyModuleContentResponse(
         @Schema(example = "12")
         Long id,

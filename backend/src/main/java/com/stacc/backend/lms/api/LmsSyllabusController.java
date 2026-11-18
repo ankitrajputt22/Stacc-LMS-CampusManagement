@@ -22,10 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Course syllabi. Students read the published version of a course they may use; faculty read and change the draft of a
- * course they teach and publish it. The caller always comes from the access token.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS syllabus")

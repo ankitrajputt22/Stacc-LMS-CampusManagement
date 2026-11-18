@@ -28,10 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * A student's private notes for the AI Study Assistant (v0.13.6), in a course they may use now. The owner is always the
- * account in the access token; nobody else, staff included, has a route to them.
- */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai/notes")
 @Tag(name = "LMS AI study assistant")

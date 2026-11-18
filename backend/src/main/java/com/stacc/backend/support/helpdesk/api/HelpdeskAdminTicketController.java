@@ -31,11 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The support team's ticket queue. Listing needs the admin role and {@code HELPDESK_TICKET_VIEW_ALL}; assigning,
- * prioritising, and moving a ticket need the admin role and {@code HELPDESK_TICKET_MANAGE}. Tickets are never deleted
- * or reopened, and a closed ticket cannot be changed.
- */
 @RestController
 @RequestMapping("/api/v1/helpdesk/admin/tickets")
 @Tag(name = "Helpdesk admin")

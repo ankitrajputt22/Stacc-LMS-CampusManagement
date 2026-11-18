@@ -20,12 +20,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A course-wide announcement: a title and a plain-text message from the faculty to the students of one
- * LMS course. It belongs to the course itself, not to a module or topic. A new announcement is a draft;
- * publishing shows it to students and records when that first happened. An announcement that is no
- * longer wanted is archived, never deleted.
- */
 @Entity
 @Table(name = "lms_announcements")
 public class LmsAnnouncement {
@@ -33,7 +27,6 @@ public class LmsAnnouncement {
     public static final int MAX_TITLE_LENGTH = 200;
     public static final int MAX_MESSAGE_LENGTH = 10_000;
 
-    // No cascade: the LMS course is never created or deleted through one of its announcements.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,11 +38,9 @@ public class LmsAnnouncement {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // Plain text, line breaks kept. It is never treated as HTML.
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    // How the text is shown: exactly as typed, or with the small formatting set. Either way it is stored as written.
     @Enumerated(EnumType.STRING)
     @Column(name = "message_format", nullable = false, length = 20)
     private LmsTextFormat messageFormat = LmsTextFormat.PLAIN;
@@ -58,8 +49,6 @@ public class LmsAnnouncement {
     @Column(nullable = false, length = 20)
     private LmsContentStatus status = LmsContentStatus.DRAFT;
 
-    // When the announcement was first published. It never changes afterwards, not even when the text is
-    // corrected or the announcement is archived.
     @Column(name = "published_at")
     private Instant publishedAt;
 
@@ -72,7 +61,6 @@ public class LmsAnnouncement {
     private Instant updatedAt;
 
     protected LmsAnnouncement() {
-        // Required by JPA.
     }
 
     public LmsAnnouncement(LmsCourse lmsCourse, String title, String message) {
@@ -116,7 +104,6 @@ public class LmsAnnouncement {
         return messageFormat;
     }
 
-    /** Says how the message is shown. An archived announcement can no longer be changed. */
     public void changeMessageFormat(LmsTextFormat format) {
         requireNotArchived();
         this.messageFormat = Require.notNull(format, "format");
@@ -126,20 +113,12 @@ public class LmsAnnouncement {
         return status == LmsContentStatus.ARCHIVED;
     }
 
-    /**
-     * Changes the title and message, as a draft or a correction after publishing. A published announcement
-     * stays published and keeps its publication time. An archived one can no longer be changed.
-     */
     public void edit(String title, String message) {
         requireNotArchived();
         this.title = Require.text(title, "title", MAX_TITLE_LENGTH);
         this.message = Require.text(message, "message", MAX_MESSAGE_LENGTH);
     }
 
-    /**
-     * Shows the announcement to students. The first publication records the time; publishing an already
-     * published announcement changes nothing. An archived announcement cannot be published again.
-     */
     public void publish(Instant at) {
         requireNotArchived();
         if (status != LmsContentStatus.PUBLISHED) {
@@ -151,7 +130,6 @@ public class LmsAnnouncement {
         }
     }
 
-    /** Hides the announcement for good and keeps it, with its publication time. Archiving again changes nothing. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
     }

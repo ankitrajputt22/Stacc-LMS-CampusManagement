@@ -24,13 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Room changes of hostel residents (v0.10.3). A resident asks to move, or proposes a swap of beds with another resident
- * who must accept first; then the resident's hostel warden decides through the HOSTEL_ROOM_CHANGE workflow, and the
- * hostel office carries out an approved change: the move to a bed it chooses, or both beds swapped at once, through
- * {@link HostelAllocationService} and its lock order. Approval state always comes from the engine. Students never
- * choose a bed; the requester and partner always come from the access token and the partner's login ID.
- */
 @Service
 @Transactional
 public class HostelRoomChangeService {
@@ -85,9 +78,6 @@ public class HostelRoomChangeService {
         this.clock = clock;
     }
 
-    // --- Residents
-
-    /** Asks to move to another bed; the warden decides, then the hostel office chooses the bed. */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public RoomChangeView requestMove(Long accountId, String reason, String preference) {
         lockResidents(accountId, null);
@@ -98,7 +88,6 @@ public class HostelRoomChangeService {
         return view(change, accountId);
     }
 
-    /** Proposes a swap of beds with the resident whose college ID is given; nothing goes to the warden until they accept. */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public RoomChangeView proposeSwap(Long accountId, String partnerLoginId, String reason) {
         UserAccount partner = (partnerLoginId == null ? Optional.<UserAccount>empty() : accounts.findByLoginId(partnerLoginId.strip()))
@@ -112,7 +101,6 @@ public class HostelRoomChangeService {
         return view(change, accountId);
     }
 
-    /** The partner accepts or declines a proposed swap; accepting sends it to the requester's warden. */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public RoomChangeView answerSwap(Long accountId, Long changeId, boolean accept) {
         HostelRoomChange change = locked(changeId);
@@ -133,7 +121,6 @@ public class HostelRoomChangeService {
         return view(change, accountId);
     }
 
-    /** The requester cancels an open change while it waits for the partner or for the warden. */
     public RoomChangeView cancel(Long accountId, Long changeId) {
         HostelRoomChange change = locked(changeId);
         if (!accountOf(change.getRequesterAllocation()).equals(accountId)) {
@@ -152,18 +139,11 @@ public class HostelRoomChangeService {
         return changes.findAllForAccount(accountId).stream().map(change -> view(change, accountId)).toList();
     }
 
-    // --- The hostel office
-
     @Transactional(readOnly = true)
     public List<RoomChangeView> open() {
         return changes.findAllInStatuses(EnumSet.of(HostelRoomChange.Status.OPEN)).stream().map(change -> view(change, null)).toList();
     }
 
-    /**
-     * Carries out an approved change: a move vacates the student's bed and allocates the chosen one; a swap vacates both
-     * beds and allocates each student the other's. Everything happens in one transaction, so either all of it holds or
-     * nothing changes.
-     */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public RoomChangeView complete(Long adminAccountId, Long changeId, Long bedId) {
         HostelRoomChange change = locked(changeId);
@@ -193,10 +173,6 @@ public class HostelRoomChangeService {
         return view(change, null);
     }
 
-    // --- Helpers
-
-    // Locks the residents' student rows, the lower account ID first, so a swap and another change of either student
-    // take turns and two swaps proposed between the same students at once never wait on each other in a circle.
     private void lockResidents(Long accountId, Long partnerAccountId) {
         if (partnerAccountId != null && partnerAccountId < accountId) {
             lockResident(partnerAccountId, PARTNER_NOT_RESIDENT, HttpStatus.CONFLICT);

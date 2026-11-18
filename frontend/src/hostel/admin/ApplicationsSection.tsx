@@ -19,7 +19,6 @@ import { APPROVAL_STATUSES, approvalStatusLabel, approvalTagClasses, SIGN_IN_AGA
 const PAGE_SIZE = 20
 const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
 
-/** Every hostel application, newest first, filtered by session, approval status, and student, page by page. */
 export function ApplicationsSection() {
   const [searchParams, setSearchParams] = useSearchParams()
   const sessionParam = searchParams.get('session')

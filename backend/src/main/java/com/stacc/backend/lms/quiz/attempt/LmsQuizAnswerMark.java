@@ -15,11 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-/**
- * A teacher's marks for one answer, with optional feedback: needed for a descriptive answer, and a regrade that takes
- * the place of the automatic marks for any other. Marking again replaces it without history. The server sets who marked
- * it and when.
- */
 @Entity
 @Table(name = "lms_quiz_answer_marks")
 public class LmsQuizAnswerMark {
@@ -47,14 +42,12 @@ public class LmsQuizAnswerMark {
     private Instant markedAt;
 
     protected LmsQuizAnswerMark() {
-        // Required by JPA.
     }
 
     public LmsQuizAnswerMark(LmsQuizAnswer answer) {
         this.answer = Require.notNull(answer, "answer");
     }
 
-    /** Sets the marks (0 to the question's marks in the quiz, two decimals) and feedback, replacing earlier ones. */
     public void mark(BigDecimal marks, BigDecimal maximum, String feedback, Long markedByAccountId, Instant at) {
         Require.notNull(marks, "Marks");
         if (marks.signum() < 0 || marks.compareTo(maximum) > 0 || marks.stripTrailingZeros().scale() > 2) {

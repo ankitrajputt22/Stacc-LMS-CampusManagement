@@ -11,7 +11,6 @@ import { Alert, Badge, Button, Card, PageHeader, SelectField, TextField } from '
 import { hhmm } from './examFormat'
 import { formatDay, refusalOf } from './requestWords'
 
-/** The seats of one hall as a grid: given seats filled, free ones outlined. */
 function HallGrid({ exam }: { exam: ExamSlot }) {
   const shown = Math.min(exam.hallSeats, 120)
   return (
@@ -151,7 +150,6 @@ function SessionPanel({ session, semesterId }: { session: ExamSession; semesterI
   )
 }
 
-/** Exam management: a semester's exam sessions, their exams and halls, seat plans, and publishing. */
 export function ErpExamAdminPage() {
   const queryClient = useQueryClient()
   const semesters = useApiQuery(queryKeys.admin.semesters(), getSemesters)

@@ -30,11 +30,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A rubric of one LMS course: criteria in order, each with its maximum points and optional levels. Its total is the sum
- * of the criteria's maximum points. The criteria are part of the rubric and are replaced together when it is edited;
- * the service refuses that once the rubric has been used for grading. Rubrics are archived, never deleted.
- */
 @Entity
 @Table(name = "lms_rubrics")
 public class LmsRubric {
@@ -66,7 +61,6 @@ public class LmsRubric {
     @Column(name = "created_by_account_id", nullable = false, updatable = false)
     private Long createdByAccountId;
 
-    // Part of the rubric: saved, replaced, and removed with it.
     @OneToMany(mappedBy = "rubric", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
     @OrderBy("position")
@@ -81,7 +75,6 @@ public class LmsRubric {
     private Instant updatedAt;
 
     protected LmsRubric() {
-        // Required by JPA.
     }
 
     public LmsRubric(LmsCourse lmsCourse, Long createdByAccountId, RubricContent content) {
@@ -90,7 +83,6 @@ public class LmsRubric {
         write(content);
     }
 
-    /** Replaces the title, description, and criteria. An archived rubric cannot change. */
     public void edit(RubricContent content) {
         if (status == RubricStatus.ARCHIVED) {
             throw new IllegalStateException("This rubric is archived and can no longer be changed.");
@@ -106,7 +98,6 @@ public class LmsRubric {
         return status == RubricStatus.ACTIVE;
     }
 
-    /** The sum of the criteria's maximum points. */
     public BigDecimal getTotalPoints() {
         return criteria.stream().map(LmsRubricCriterion::getMaxPoints).reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
     }

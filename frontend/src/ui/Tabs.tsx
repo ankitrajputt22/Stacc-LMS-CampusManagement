@@ -6,16 +6,10 @@ const tabBase =
 const tabIdle = 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
 const tabSelected = 'border-portal-cta text-ink font-semibold'
 
-/** `current` overrides the address match, for a tab that stands for several pages, such as a group of sections. */
 export type LinkTab = { to: string; label: string; end?: boolean; current?: boolean }
 
-/**
- * Tabs that are pages, such as a course's Home, Modules, and Grades: each is a link with its own address, and the
- * current one is marked as the current page. Use these when each view should be bookmarkable.
- */
 export function LinkTabs({ label, tabs, variant = 'underline' }: { label: string; tabs: readonly LinkTab[]; variant?: 'underline' | 'pill' }) {
   if (variant === 'pill') {
-    // Pills: the current page is a filled light-blue tab, the others plain words with thin dividers between them.
     return (
       <nav aria-label={label} className="mb-5 overflow-x-auto">
         <ul className="flex items-center">
@@ -66,14 +60,9 @@ type TabsProps<T extends string> = {
   tabs: readonly Tab<T>[]
   selected: T
   onSelect: (value: T) => void
-  /** The content of the selected tab. */
   children: ReactNode
 }
 
-/**
- * In-page tabs that switch a panel without changing the address, following the ARIA tabs pattern: arrow keys, Home,
- * and End move between tabs, and only the selected tab is in the tab order.
- */
 export function Tabs<T extends string>({ label, tabs, selected, onSelect, children }: TabsProps<T>) {
   const id = useId()
   const refs = useRef<(HTMLButtonElement | null)[]>([])

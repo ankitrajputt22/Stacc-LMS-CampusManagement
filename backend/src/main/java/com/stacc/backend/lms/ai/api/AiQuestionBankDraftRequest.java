@@ -12,7 +12,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-/** What to draft into the question bank (v0.14.1). Nothing else: the course and teacher come from the route and token. */
 public record AiQuestionBankDraftRequest(
         @Schema(description = "From 1 to 10.", example = "5") @NotNull @Min(1) @Max(10) Integer questionCount,
         @Schema(description = "The question types to draft, one or more.") @NotEmpty @Size(max = 5) List<@NotNull QuestionType> questionTypes,

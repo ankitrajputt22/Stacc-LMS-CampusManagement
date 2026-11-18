@@ -5,7 +5,6 @@ import { StatusConfirmation } from '../../components/StatusConfirmation'
 import { TextField } from '../../ui'
 import { refusalText } from '../hostelText'
 
-/** Vacate for one ACTIVE allocation, confirmed first. History is kept; nothing is deleted. */
 export function VacateButton({ allocationId, label, onVacated }: { allocationId: number; label: string; onVacated: () => void }) {
   const [confirming, setConfirming] = useState(false)
   const [condition, setCondition] = useState('')

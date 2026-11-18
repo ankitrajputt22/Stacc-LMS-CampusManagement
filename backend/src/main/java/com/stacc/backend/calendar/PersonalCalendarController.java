@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** A person's own calendar entries and private subscription link, and the public feed that link opens. */
 @RestController
 @RequestMapping("/api/v1/calendar")
 @Tag(name = "Personal calendar")
@@ -150,10 +149,6 @@ public class PersonalCalendarController {
         personal.revokeFeed(AuthenticatedAccount.idFrom(token));
     }
 
-    /**
-     * Public on purpose (listed in SecurityConfig): calendar apps cannot sign in. The secret in the path only reads the
-     * calendar of the account behind an active link; a wrong, revoked, or disabled one answers the same 404.
-     */
     @GetMapping(value = "/feeds/{token}.ics", produces = "text/calendar")
     @Operation(summary = "Read a calendar through its private subscription link", description = "iCalendar text, read only.")
     @ApiResponse(responseCode = "404", description = "The link is unknown or revoked.",

@@ -14,11 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One logical notification: what happened, in plain text, with a loose reference to the record it is about and an
- * optional path inside the application to look at it. It is written once, never changed, and never deleted. Who
- * receives it, and whether they have read it, is kept per recipient in {@link NotificationRecipient}.
- */
 @Entity
 @Table(name = "notifications")
 public class Notification {
@@ -27,8 +22,6 @@ public class Notification {
     public static final int MAX_MESSAGE_LENGTH = 2000;
     public static final int MAX_ACTION_PATH_LENGTH = 300;
 
-    // An application path: one leading slash, then path and query characters only. No scheme, host, backslash,
-    // whitespace, or "//" that a browser could read as another site.
     private static final Pattern SAFE_PATH = Pattern.compile("/(?![/\\\\])[A-Za-z0-9/_.~%?=&-]*");
 
     @Id
@@ -42,7 +35,6 @@ public class Notification {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // Plain text. It is never treated as HTML.
     @Column(nullable = false, length = MAX_MESSAGE_LENGTH)
     private String message;
 
@@ -61,13 +53,8 @@ public class Notification {
     private Instant createdAt;
 
     protected Notification() {
-        // Required by JPA.
     }
 
-    /**
-     * @param sourceType what the notification is about, or null; given together with sourceId
-     * @param actionPath a path inside the application, such as /calendar, or null
-     */
     public Notification(NotificationType type, String title, String message, NotificationSourceType sourceType,
             Long sourceId, String actionPath) {
         this.type = Require.notNull(type, "type");
@@ -84,7 +71,6 @@ public class Notification {
         this.actionPath = actionPath;
     }
 
-    /** Whether the path stays inside the application: "/calendar" yes; "https://…", "//host", or "/\host" never. */
     public static boolean isSafeActionPath(String path) {
         return path != null && path.length() <= MAX_ACTION_PATH_LENGTH && !path.contains("..")
                 && SAFE_PATH.matcher(path).matches();

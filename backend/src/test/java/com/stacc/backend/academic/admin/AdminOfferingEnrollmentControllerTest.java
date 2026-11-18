@@ -37,10 +37,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the admin course-offering and enrollment routes through Spring Security. The services are stand-ins, so these
- * tests are about who gets in, what reaches the services, and what is sent back.
- */
 class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
 
     private static final String OFFERINGS = "/api/v1/admin/academic/offerings";
@@ -96,7 +92,6 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
                 json(put(ENROLLMENTS + "/course-enrollments/140/status"), "{\"status\":\"WITHDRAWN\"}"));
     }
 
-    // Each call gets new requests, so a token is never added to a request that already carries one.
     private void refused(List<String> tokens, Supplier<List<MockHttpServletRequestBuilder>> requests) throws Exception {
         for (String denied : tokens) {
             for (MockHttpServletRequestBuilder request : requests.get()) {
@@ -293,7 +288,6 @@ class AdminOfferingEnrollmentControllerTest extends DatabaseFreeApiTest {
                 {ENROLLMENTS + "/semester-enrollments/{semesterEnrollmentId}/courses", "get"},
                 {ENROLLMENTS + "/semester-enrollments/{semesterEnrollmentId}/courses", "post"},
                 {ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/status", "put"}};
-        // LMS access is worked out live from enrollment, so there is nothing to provision or retry.
         result.andExpect(jsonPath("$.paths['" + ENROLLMENTS + "/course-enrollments/{courseEnrollmentId}/provision-lms']")
                 .doesNotExist());
         for (String[] operation : operations) {

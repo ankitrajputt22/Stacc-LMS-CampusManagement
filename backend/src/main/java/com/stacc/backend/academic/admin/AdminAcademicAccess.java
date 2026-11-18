@@ -1,10 +1,5 @@
 package com.stacc.backend.academic.admin;
 
-/**
- * The method rules of the admin academic routes. Reading needs the admin role and the view permission; changing
- * needs the manage permission as well. Masters, course offerings, enrollments, and the academic calendar each have
- * their own pair of permissions. There is no admin pass anywhere else.
- */
 final class AdminAcademicAccess {
 
     static final String VIEW = "hasRole('ADMIN') and hasAuthority('ACADEMIC_MASTER_VIEW')";

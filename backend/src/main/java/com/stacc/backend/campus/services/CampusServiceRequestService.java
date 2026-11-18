@@ -21,13 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The lifecycle of campus service requests: creating one, cancelling one's own, and completing an approved one.
- * Approval belongs to the approval engine: a request whose service needs approval starts an approval request there,
- * cancelling cancels it there, and the request's business status only follows the engine's outcome through
- * {@link #synchronize}. This service never changes approval state itself. The requester always comes from the access
- * token.
- */
 @Service
 @Transactional
 public class CampusServiceRequestService {
@@ -67,11 +60,6 @@ public class CampusServiceRequestService {
         this.clock = clock;
     }
 
-    /**
-     * Creates a request for an active service the actor may use through any role it holds. When the service needs
-     * approval, the request starts SUBMITTED and its approval starts in the same transaction, with the service's
-     * workflow; otherwise it starts APPROVED, accepted for handling. Nothing is saved when either step fails.
-     */
     public CampusRequestDetail create(CampusActor actor, CreateCampusServiceRequestInput input) {
         CampusServiceDefinition service = (input.serviceId() == null ? Optional.<CampusServiceDefinition>empty()
                 : services.findById(input.serviceId()))
@@ -83,7 +71,6 @@ public class CampusServiceRequestService {
             throw new ApiException(HttpStatus.CONFLICT, SERVICE_UNAVAILABLE);
         }
         if (service.isApprovalRequired() && !approvalQueries.isStartableWorkflow(service.getApprovalWorkflowCode())) {
-            // The workflow was made inactive after the service was configured: refuse until either is corrected.
             throw new ApiException(HttpStatus.CONFLICT, APPROVAL_UNAVAILABLE);
         }
         UserAccount requester = (actor.accountId() == null ? Optional.<UserAccount>empty()
@@ -112,15 +99,9 @@ public class CampusServiceRequestService {
         return queries.ownRequest(requester.getId(), request.getId());
     }
 
-    /**
-     * Cancels the requester's own request while it is SUBMITTED or APPROVED. A pending approval is cancelled through the
-     * approval engine, which locks it first, so an approver deciding at the same moment either wins (and the request
-     * follows that decision) or finds it cancelled. A completed, rejected, or cancelled request answers 409.
-     */
     public CampusRequestDetail cancel(Long accountId, Long requestId) {
         CampusServiceRequest request = lockedOwn(accountId, requestId);
         if (request.getStatus() == CampusServiceRequestStatus.SUBMITTED && request.getApprovalRequest() != null) {
-            // The approval is not read before the engine locks it, so its state is never stale here.
             boolean cancelledNow = approvals.cancelApprovalIfPending(request.getApprovalRequest().getId(), accountId);
             request.synchronizeWithApproval();
             if (cancelledNow) {
@@ -136,10 +117,6 @@ public class CampusServiceRequestService {
         return queries.ownRequest(accountId, requestId);
     }
 
-    /**
-     * Marks an APPROVED request COMPLETED, records when, and tells the requester. Completing a completed request changes
-     * nothing; a submitted, rejected, or cancelled one answers 409.
-     */
     public AdminCampusRequestDetail complete(ApprovalActor admin, Long requestId) {
         CampusServiceRequest request = (requestId == null ? Optional.<CampusServiceRequest>empty()
                 : requests.findByIdForUpdate(requestId))
@@ -157,10 +134,6 @@ public class CampusServiceRequestService {
         return queries.adminRequest(admin, requestId);
     }
 
-    /**
-     * The one place an approval outcome reaches a campus request: reads the linked approval request and stores the
-     * business status it leads to. It changes only the campus request, never the approval. The caller holds the row lock.
-     */
     void synchronize(CampusServiceRequest request) {
         if (request.synchronizeWithApproval()) {
             requests.saveAndFlush(request);

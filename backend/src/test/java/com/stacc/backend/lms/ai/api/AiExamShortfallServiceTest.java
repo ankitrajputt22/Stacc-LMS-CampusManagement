@@ -18,7 +18,6 @@ import com.stacc.backend.lms.question.QuestionType;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/** Only short rows are drafted, with the row's own labels, at most ten each. */
 class AiExamShortfallServiceTest {
 
     @Test

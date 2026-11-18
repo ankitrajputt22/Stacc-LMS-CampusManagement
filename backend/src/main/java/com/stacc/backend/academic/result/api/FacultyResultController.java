@@ -24,12 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Official course results as faculty record them. Every route needs the faculty role and the result permission;
- * which course offerings the faculty member may use is decided from official teaching assignments on every
- * request, with no LMS course involved. The faculty member is taken from the access token. Results are never
- * calculated from LMS grades or attendance, and there is no delete and no unpublish.
- */
 @RestController
 @RequestMapping("/api/v1/results/faculty")
 @Tag(name = "Results")

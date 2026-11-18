@@ -20,22 +20,15 @@ function border(hasError: boolean): string {
 
 const LIMIT_TEXT = `${MATERIAL_TYPES_TEXT}, up to ${formatFileSize(MAX_MATERIAL_BYTES)}.`
 
-/** A page a file can be uploaded to, for the Files page's page choice. */
 export type UploadPage = { id: number; title: string; moduleTitle: string }
 
 type MaterialUploadFormProps = {
-  /** The page the file goes on, when it is already decided (a page's own materials). */
   topicTitle?: string
-  /** The pages to choose from when it is not (the course Files page). */
   pages?: UploadPage[]
   onSubmit: (title: string, description: string | null, file: File, pageId: number | null) => Promise<FormOutcome>
   onCancel: () => void
 }
 
-/**
- * The form for a new study material: a title, an optional description, and the file. The checks here
- * only help early; the backend checks the file again and decides. The file is never shown or opened here.
- */
 export function MaterialUploadForm({ topicTitle, pages, onSubmit, onCancel }: MaterialUploadFormProps) {
   const id = useId()
   const titleRef = useRef<HTMLInputElement>(null)
@@ -56,7 +49,6 @@ export function MaterialUploadForm({ topicTitle, pages, onSubmit, onCancel }: Ma
 
   function chooseFile(chosen: File | null) {
     setFile(chosen)
-    // A sensible title to start from, which can be changed.
     if (chosen && title.trim() === '') {
       const dot = chosen.name.lastIndexOf('.')
       setTitle((dot > 0 ? chosen.name.slice(0, dot) : chosen.name).slice(0, TITLE_MAX))
@@ -101,7 +93,6 @@ export function MaterialUploadForm({ topicTitle, pages, onSubmit, onCancel }: Ma
 
     setUploading(true)
     const outcome = await onSubmit(title, description.trim() === '' ? null : description, file, pageId === '' ? null : Number(pageId))
-    // On success the editor closes this form, so nothing more is updated here.
     if (!outcome.ok) {
       setUploading(false)
       setErrors(outcome.fieldErrors)

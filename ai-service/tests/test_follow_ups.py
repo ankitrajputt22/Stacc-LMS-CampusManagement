@@ -1,5 +1,3 @@
-"""v0.15.1: follow-ups within the page, and answers that are simpler or give an example. Nothing is stored."""
-
 from __future__ import annotations
 
 import json

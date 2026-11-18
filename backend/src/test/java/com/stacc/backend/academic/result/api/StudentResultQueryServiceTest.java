@@ -19,7 +19,6 @@ import com.stacc.backend.academic.result.CourseResultRepository;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import org.junit.jupiter.api.Test;
 
-/** Student A is account 11. The repository answers as the database query would. */
 class StudentResultQueryServiceTest {
 
     private static final Long STUDENT_A = 11L;

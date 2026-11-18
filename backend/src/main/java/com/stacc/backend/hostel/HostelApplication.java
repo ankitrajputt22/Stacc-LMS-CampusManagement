@@ -21,11 +21,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A student's application for a hostel place in one academic session. Its approval is one request of the shared
- * approval engine, and its status is read from that request; the application keeps no status of its own. Applications
- * are never deleted.
- */
 @Entity
 @Table(name = "hostel_applications")
 public class HostelApplication {
@@ -37,7 +32,6 @@ public class HostelApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Empty only inside the transaction that creates the application, until its ID is known.
     @Column(name = "application_number", unique = true, length = 20)
     private String applicationNumber;
 
@@ -49,7 +43,6 @@ public class HostelApplication {
     @JoinColumn(name = "academic_session_id", nullable = false, updatable = false)
     private AcademicSession academicSession;
 
-    // Set once, in the transaction that creates the application, right after the approval starts.
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approval_request_id", unique = true)
     private ApprovalRequest approvalRequest;
@@ -57,7 +50,6 @@ public class HostelApplication {
     @Column(length = MAX_NOTE_LENGTH)
     private String note;
 
-    // A wish only: the hostel office still chooses the hostel, room, and bed.
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @jakarta.persistence.JoinColumn(name = "preferred_hostel_id")
     private Hostel preferredHostel;
@@ -85,7 +77,6 @@ public class HostelApplication {
     private Instant updatedAt;
 
     protected HostelApplication() {
-        // Required by JPA.
     }
 
     public HostelApplication(StudentProfile studentProfile, AcademicSession academicSession, String note,
@@ -96,19 +87,16 @@ public class HostelApplication {
         this.submittedAt = Require.notNull(submittedAt, "submittedAt").truncatedTo(ChronoUnit.MICROS);
     }
 
-    /** The number of an application with this ID, such as HST-000042. */
     public static String numberFor(long id) {
         return NUMBER_FORMAT.formatted(id);
     }
 
-    /** Gives the saved application its number, once. */
     public void assignNumber() {
         if (applicationNumber == null) {
             applicationNumber = numberFor(Require.notNull(id, "id"));
         }
     }
 
-    /** Links the approval request that was started for this application, once. */
     public void linkApproval(ApprovalRequest request) {
         if (approvalRequest != null) {
             throw new IllegalStateException("The application already has an approval request");
@@ -116,7 +104,6 @@ public class HostelApplication {
         this.approvalRequest = Require.notNull(request, "approvalRequest");
     }
 
-    /** The approval status, always read from the approval request. */
     public ApprovalRequestStatus approvalStatus() {
         return approvalRequest == null ? null : approvalRequest.getStatus();
     }

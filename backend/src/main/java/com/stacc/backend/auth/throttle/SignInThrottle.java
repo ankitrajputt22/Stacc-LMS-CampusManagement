@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** Failed sign-ins counted for one hashed key: a login ID or a network address. */
 @Entity
 @Table(name = "sign_in_throttles")
 public class SignInThrottle {
@@ -43,7 +42,6 @@ public class SignInThrottle {
     private Instant updatedAt;
 
     protected SignInThrottle() {
-        // Required by JPA.
     }
 
     public int getFailures() {
@@ -54,15 +52,10 @@ public class SignInThrottle {
         return blockedUntil;
     }
 
-    /** How long this key must still wait at this moment; zero when it may try. */
     public Duration waitAt(Instant now) {
         return blockedUntil == null || !now.isBefore(blockedUntil) ? Duration.ZERO : Duration.between(now, blockedUntil);
     }
 
-    /**
-     * Counts one more failure. Failures older than the window are forgotten unless the key is still blocked. From the
-     * threshold on, each failure blocks the key for the base delay, doubling each time, up to the maximum.
-     */
     void fail(Instant now, int threshold, Duration window, Duration baseDelay, Duration maxDelay) {
         boolean blocked = blockedUntil != null && now.isBefore(blockedUntil);
         if (firstFailureAt == null || (!blocked && !now.isBefore(firstFailureAt.plus(window)))) {
@@ -79,7 +72,6 @@ public class SignInThrottle {
         updatedAt = now;
     }
 
-    /** A successful sign-in forgets this key's failures. */
     void clear(Instant now) {
         failures = 0;
         firstFailureAt = null;

@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A scholarship applied for, or a refund asked for, by a student, decided once by the accounts office. */
 @Entity
 @Table(name = "fee_adjustments")
 public class FeeAdjustment {

@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty with the exam paper permission reach blueprints and papers; requests are checked before the service. */
 class LmsExamPaperControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

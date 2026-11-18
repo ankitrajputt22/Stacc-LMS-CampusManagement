@@ -10,7 +10,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** A manual gradebook item, such as a class test on paper. */
 public record LmsGradeItemRequest(
         @Schema(example = "Class test 1")
         @NotBlank(message = "Title is required")

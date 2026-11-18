@@ -22,29 +22,17 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The official result of one course enrollment: the student, through that semester enrollment, in that exact
- * course offering. It is recorded explicitly by faculty and is never calculated from LMS grades, assignments, or
- * attendance. The student, course, offering, semester, programme, and session are reached through the enrollment
- * and are not stored again; there is at most one result per enrollment.
- *
- * <p>The grade code is optional official data, kept as entered: there is no grading scale, so it is never derived
- * from the marks. A result starts as a draft; once published it stays published, and a correction keeps its first
- * publication time. It is never deleted.
- */
 @Entity
 @Table(name = "course_results")
 public class CourseResult {
 
     public static final int MARK_DECIMAL_PLACES = 2;
-    /** The largest value the {@code DECIMAL(8,2)} columns hold. */
     public static final BigDecimal MAX_MARKS_LIMIT = new BigDecimal("999999.99");
     public static final int MAX_GRADE_CODE_LENGTH = 20;
     public static final int MAX_REMARKS_LENGTH = 2000;
 
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
-    // No cascade on any link: the enrollment and the faculty profile are never created or deleted through a result.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -97,34 +85,23 @@ public class CourseResult {
     private Instant updatedAt;
 
     protected CourseResult() {
-        // Required by JPA.
     }
 
-    /**
-     * A new draft result. Whether the faculty member teaches the offering, and whether the enrollment may get a new
-     * result, is checked by the service that records results, not here.
-     */
     public CourseResult(CourseEnrollment courseEnrollment, FacultyProfile recordedBy, BigDecimal marksObtained,
             BigDecimal maxMarks, String gradeCode, String remarks) {
         this.courseEnrollment = Require.notNull(courseEnrollment, "courseEnrollment");
         apply(recordedBy, marksObtained, maxMarks, gradeCode, remarks);
     }
 
-    /**
-     * Records new values: an edit of a draft, or a correction of a published result, which stays published and keeps
-     * its first publication time. The faculty profile becomes the one that recorded it last.
-     */
     public void record(FacultyProfile recordedBy, BigDecimal marksObtained, BigDecimal maxMarks, String gradeCode,
             String remarks) {
         apply(recordedBy, marksObtained, maxMarks, gradeCode, remarks);
     }
 
-    /** Publishes the result. Publishing again changes nothing, so the first publication time is kept. */
     public void publish(Instant at) {
         if (isPublished()) {
             return;
         }
-        // The database keeps microseconds, so the answer shows the same moment as every later read.
         this.publishedAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
         this.status = CourseResultStatus.PUBLISHED;
     }
@@ -133,10 +110,6 @@ public class CourseResult {
         return status == CourseResultStatus.PUBLISHED;
     }
 
-    /**
-     * A grade code as it is kept: surrounding spaces removed and runs of spaces inside made single, so "B+" stays
-     * "B+". Blank becomes none. Nothing is renamed or mapped to another grade.
-     */
     public static String gradeCodeOrNull(String gradeCode) {
         if (gradeCode == null || gradeCode.isBlank()) {
             return null;
@@ -148,7 +121,6 @@ public class CourseResult {
         return normalized;
     }
 
-    /** Remarks as they are kept: plain text without surrounding spaces, line breaks kept. Blank becomes none. */
     public static String remarksOrNull(String remarks) {
         return Require.optionalText(remarks, "remarks", MAX_REMARKS_LENGTH);
     }
@@ -185,10 +157,6 @@ public class CourseResult {
         return externalMax;
     }
 
-    /**
-     * Records the marks as internal and external parts (v0.16.3): both parts or neither. With parts, the marks obtained
-     * and the maximum are their sums. Without, the parts are cleared.
-     */
     public void recordSplit(BigDecimal internalMarks, BigDecimal internalMax, BigDecimal externalMarks, BigDecimal externalMax) {
         if (internalMarks == null && internalMax == null && externalMarks == null && externalMax == null) {
             this.internalMarks = null;

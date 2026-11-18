@@ -19,11 +19,6 @@ const STATUSES: EnrollmentStatus[] = ['ENROLLED', 'COMPLETED', 'WITHDRAWN', 'DRO
 
 const id = (value: string) => (value === '' ? undefined : Number(value))
 
-/**
- * Every official course enrollment, searched, filtered, and paged on the server: by session, program, semester,
- * course, status, and a student ID, roll number, name, or course code. It only reads; enrollments are changed per
- * student under Enrollments.
- */
 export function EnrollmentMonitorSection() {
   const [sessionId, setSessionId] = useState('')
   const [programId, setProgramId] = useState('')

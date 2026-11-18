@@ -26,11 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Degree requirements and progress (v0.16.4). A program asks for credits of each course type; a student's progress is
- * worked out on read from their passed, published results (a course counts once, however often it was passed), never
- * stored. Admins set the requirements with the academic master permissions.
- */
 @Service
 @Transactional
 public class DegreeProgressService {
@@ -82,11 +77,6 @@ public class DegreeProgressService {
                 .map(requirement -> new Requirement(requirement.getCourseType(), requirement.getRequiredCredits())).toList();
     }
 
-    /**
-     * Sets a program's requirements: each course type listed at most once, credits above 0 and at most 400. A listed
-     * type is added or changed; one left out keeps its value, since requirements are changed but never removed. The
-     * program row is locked so two changes take turns.
-     */
     public List<Requirement> set(Long programId, List<Requirement> wanted) {
         Program program = programs.findByIdForUpdate(programId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Program not found."));
@@ -116,7 +106,6 @@ public class DegreeProgressService {
         return requirementsOf(programId);
     }
 
-    /** The signed-in student's progress towards their program's degree. */
     @Transactional(readOnly = true)
     public DegreeProgress mine(Long userAccountId) {
         StudentProfile profile = students.findWithContextByUserAccountId(userAccountId)

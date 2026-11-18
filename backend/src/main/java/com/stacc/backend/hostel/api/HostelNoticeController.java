@@ -33,10 +33,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Hostel notices: the hostel office and wardens manage them (wardens only for their own hostels); residents read those
- * of their current hostel and block.
- */
 @RestController
 @Tag(name = "Hostel notices")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",
@@ -63,7 +59,6 @@ public class HostelNoticeController {
             @NotBlank @Size(max = HostelNotice.MAX_MESSAGE_LENGTH) String message, boolean emergency) {
     }
 
-    // The hostel office acts for every hostel only with the ADMIN role in the token; a warden only for their own.
     private static Manager manager(Jwt token, Authentication authentication) {
         boolean office = authentication.getAuthorities().stream().anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
         return new Manager(AuthenticatedAccount.idFrom(token), office);

@@ -24,7 +24,6 @@ import { textLinkClasses } from '../ui/styles'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
 function Shell({ lmsCourseId, children }: { lmsCourseId: number | null; children: ReactNode }) {
-  // The course itself comes from the shared cache the course layout already filled.
   const course = useLmsCourse(lmsCourseId)
   return (
     <div>
@@ -39,11 +38,6 @@ function Shell({ lmsCourseId, children }: { lmsCourseId: number | null; children
   )
 }
 
-/**
- * /courses/:lmsCourseId/files: every published file of the course in course order, searchable on this page, each with
- * its page and a Download through the API. The backend checks the student's access on every request; a course the
- * student may not use shows "Course unavailable".
- */
 export function CourseFilesPage() {
   const { account } = useAuth()
   const lmsCourseId = parseCourseId(useParams().lmsCourseId)

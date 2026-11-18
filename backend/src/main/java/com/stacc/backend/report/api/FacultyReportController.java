@@ -22,10 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Faculty reports: counts for the course offerings the signed-in faculty member actively teaches. The faculty member
- * always comes from the access token; no route takes a faculty, profile, or account ID. Read-only.
- */
 @RestController
 @RequestMapping("/api/v1/reports/faculty")
 @Tag(name = "Reports")

@@ -15,7 +15,6 @@ public interface LibraryHoldRepository extends JpaRepository<LibraryHold, Long> 
     @Query("select h from LibraryHold h where h.title.id in :titleIds and h.status = com.stacc.backend.library.LibraryHold.Status.ACTIVE order by h.placedAt, h.id")
     List<LibraryHold> findActiveForTitles(@Param("titleIds") Collection<Long> titleIds);
 
-    /** A title's active holds in queue order, read with a locking read. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select h from LibraryHold h where h.title.id = :titleId and h.status = com.stacc.backend.library.LibraryHold.Status.ACTIVE order by h.placedAt, h.id")
     List<LibraryHold> findActiveForTitleForUpdate(@Param("titleId") Long titleId);

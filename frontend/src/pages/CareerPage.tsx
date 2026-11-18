@@ -117,7 +117,6 @@ function ResumesCard({ profile, notify }: { profile: CareerProfile; notify: Noti
   )
 }
 
-/** An opportunity's stages as numbered steps, in order. */
 function StageSteps({ title, stages }: { title: string; stages: string[] }) {
   return (
     <ol aria-label={`Stages of ${title}`} className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -206,10 +205,6 @@ const APPLICATION_TONE = {
   WITHDRAWN: 'border-line-strong bg-surface-muted text-ink-muted',
 } as const
 
-/**
- * /career and its tabs: the student's career profile (/career), resume versions (/career/resumes), open opportunities
- * (/career/opportunities), and their applications and offers (/career/applications).
- */
 export function CareerPage({ section = 'profile' }: { section?: CareerSection }) {
   const queryClient = useQueryClient()
   const profile = useApiQuery(queryKeys.career.profile(), (signal) => getCareerProfile(signal))

@@ -12,7 +12,6 @@ import com.stacc.backend.common.error.ApiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** A copy is lent once at a time, and a held title goes to the queue first. A title of its own. */
 class LibraryLendingMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

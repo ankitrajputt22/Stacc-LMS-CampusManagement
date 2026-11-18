@@ -30,12 +30,6 @@ import com.stacc.backend.lms.ai.flashcards.ReviewRating;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Flashcards (v0.15.3): a student asks AI for a set from a published page, module, file, or the whole course; every card
- * that cites a real source is kept with that source, owned by the student. Reviews follow {@link
- * com.stacc.backend.lms.ai.flashcards.SpacedRepetition}, with "today" in the college's time zone. Access is the student
- * access policy on every request; reviewing and deleting need no AI.
- */
 @Service
 public class AiFlashcardService {
 
@@ -82,7 +76,6 @@ public class AiFlashcardService {
     public AiFlashcard review(Long accountId, Long lmsCourseId, Long setId, Long cardId, ReviewRating rating) {
         requireCourse(accountId, lmsCourseId);
         AiFlashcard card = store.review(accountId, lmsCourseId, setId, cardId, rating, today(), clock.instant());
-        // Learning evidence (v0.15.5) for the page the card came from.
         mastery.record(accountId, lmsCourseId, card.getPageId(), AiLearningEvidence.Kind.FLASHCARD_REVIEW, switch (rating) {
             case AGAIN -> 0.0;
             case HARD -> 0.4;
@@ -97,7 +90,6 @@ public class AiFlashcardService {
         store.delete(accountId, lmsCourseId, setId);
     }
 
-    /** Asks AI for cards and saves the cited ones as a new set; nothing is saved when none are usable. */
     public AiFlashcardSet create(Long accountId, Long lmsCourseId, AiFlashcardSetRequest request) {
         requireCourse(accountId, lmsCourseId);
         return gate.run(AiRequestLogEntry.Kind.FLASHCARDS, accountId, lmsCourseId, () -> {
@@ -159,7 +151,6 @@ public class AiFlashcardService {
         };
     }
 
-    /** Today in the college's time zone, which decides which cards are due. */
     public LocalDate today() {
         return LocalDate.now(clock.withZone(college.zone()));
     }

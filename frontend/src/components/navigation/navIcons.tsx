@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-/** The line icons of the sidebar and top bar. Each sits beside visible words, so they are hidden from screen readers. */
 export type NavIconName =
   | 'home'
   | 'courses'

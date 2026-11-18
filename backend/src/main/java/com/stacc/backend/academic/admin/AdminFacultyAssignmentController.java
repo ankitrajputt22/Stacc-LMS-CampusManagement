@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Who teaches each course offering, managed by admins with the faculty assignment permissions. */
 @RestController
 @Validated
 @RequestMapping("/api/v1/admin/academic")

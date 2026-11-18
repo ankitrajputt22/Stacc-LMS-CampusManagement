@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A place at an event, or on its waitlist. Cancelling keeps the row; registering again makes a new one. */
 @Entity
 @Table(name = "campus_event_registrations")
 public class CampusEventRegistration {
@@ -48,7 +47,6 @@ public class CampusEventRegistration {
     private Instant cancelledAt;
 
     protected CampusEventRegistration() {
-        // Required by JPA.
     }
 
     public CampusEventRegistration(CampusEvent event, UserAccount account, boolean waitlisted, Instant at) {
@@ -98,7 +96,6 @@ public class CampusEventRegistration {
     @JoinColumn(name = "trial_decided_by_account_id")
     private UserAccount trialDecidedBy;
 
-    /** Records or corrects the trial outcome of a registered attendee. */
     public void decideTrial(TrialOutcome outcome, UserAccount by, Instant at) {
         if (status != Status.REGISTERED) {
             throw new IllegalStateException("Only a registered attendee gets a trial outcome.");
@@ -114,7 +111,6 @@ public class CampusEventRegistration {
     public TrialOutcome getTrialOutcome() { return trialOutcome; }
     public Instant getTrialDecidedAt() { return trialDecidedAt; }
 
-    /** Records attending once: only a registered (not waitlisted or cancelled) attendee; again changes nothing. */
     public boolean checkIn(CheckInMethod method, UserAccount by, Instant at) {
         if (status != Status.REGISTERED) {
             throw new IllegalStateException("Only a registered attendee can check in.");

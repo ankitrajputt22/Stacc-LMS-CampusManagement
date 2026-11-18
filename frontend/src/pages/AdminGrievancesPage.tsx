@@ -123,7 +123,6 @@ function CategoryCard({ category, notify }: { category: GrievanceCategoryAdmin; 
   )
 }
 
-/** One row per category: what it is, how fast it is answered, who answers it, and whether it takes new cases. */
 function CategorySummary({ categories }: { categories: GrievanceCategoryAdmin[] }) {
   return (
     <Card title="Existing categories" padding="none">
@@ -147,7 +146,6 @@ function CategorySummary({ categories }: { categories: GrievanceCategoryAdmin[] 
   )
 }
 
-/** /admin/grievances: grievance categories and their committees. Admins never read cases here; committees do. */
 export function AdminGrievancesPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

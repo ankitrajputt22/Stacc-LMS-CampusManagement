@@ -16,7 +16,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** A rubric with its criteria and levels, for adding or editing one. Plain text throughout. */
 public record LmsRubricRequest(
         @Schema(example = "Database design")
         @NotBlank(message = "Title is required")

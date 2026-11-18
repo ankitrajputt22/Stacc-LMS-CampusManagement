@@ -1,13 +1,9 @@
 import type { HelpdeskTicketHistory, HelpdeskTicketPriority, HelpdeskTicketStatus } from '../types/helpdesk'
 
-// The one place helpdesk codes become words. Pages never show a raw code.
-
 export const TICKET_STATUSES: readonly HelpdeskTicketStatus[] = ['OPEN', 'IN_PROGRESS', 'WAITING_ON_REQUESTER', 'RESOLVED', 'CLOSED']
 export const TICKET_PRIORITIES: readonly HelpdeskTicketPriority[] = ['LOW', 'NORMAL', 'HIGH', 'URGENT']
-/** What a requester may choose. Urgent is set only by the support team; the backend refuses it anyway. */
 export const REQUESTER_PRIORITIES = ['LOW', 'NORMAL', 'HIGH'] as const
 
-// The backend's limits, so obvious mistakes are caught before sending. The backend checks everything again.
 export const SUBJECT_MAX = 200
 export const DESCRIPTION_MAX = 10_000
 export const MESSAGE_MAX = 10_000
@@ -38,10 +34,6 @@ export function priorityLabel(priority: string): string {
   return PRIORITY_LABELS[priority as HelpdeskTicketPriority] ?? priority
 }
 
-/**
- * The statuses a ticket may move to next, as the backend's lifecycle allows; nothing after Closed.
- * Only these are offered; the backend checks the move again.
- */
 export function nextStatuses(status: HelpdeskTicketStatus): HelpdeskTicketStatus[] {
   switch (status) {
     case 'OPEN':
@@ -57,7 +49,6 @@ export function nextStatuses(status: HelpdeskTicketStatus): HelpdeskTicketStatus
   }
 }
 
-/** One history entry as a sentence, such as "Status changed from Open to In Progress." */
 export function historyText(entry: HelpdeskTicketHistory): string {
   switch (entry.action) {
     case 'CREATED':
@@ -88,7 +79,6 @@ export function historyText(entry: HelpdeskTicketHistory): string {
 export const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** A refused change in safe words: the backend's own message for 400, 404, and 409, never request details. */
 export function refusalText(status: number | null, apiMessage: string | null, what = 'save'): string {
   switch (status) {
     case 400:

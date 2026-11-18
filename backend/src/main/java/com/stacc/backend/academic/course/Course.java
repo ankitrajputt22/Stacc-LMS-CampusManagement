@@ -20,12 +20,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A permanent entry in the college's course catalog, such as a subject with its code and
- * credits. It is not tied to a programme, a semester, or a session: a course being taught in
- * a particular semester is a separate record. A course that is no longer offered is made
- * inactive rather than deleted.
- */
 @Entity
 @Table(name = "courses")
 public class Course {
@@ -42,7 +36,6 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // The department responsible for the course. No cascade: it is never created or deleted through a course.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
@@ -53,7 +46,6 @@ public class Course {
     @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
-    // An optional short form, such as DBMS, kept as entered.
     @Column(name = "short_name", length = MAX_SHORT_NAME_LENGTH)
     private String shortName;
 
@@ -80,13 +72,8 @@ public class Course {
     private Instant updatedAt;
 
     protected Course() {
-        // Required by JPA.
     }
 
-    /**
-     * The code is stored in uppercase without surrounding spaces and is unique across the college.
-     * No particular code format is assumed.
-     */
     public Course(Department department, String code, String name, BigDecimal credits) {
         this.department = Require.notNull(department, "department");
         this.code = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
@@ -110,7 +97,6 @@ public class Course {
         return name;
     }
 
-    /** The official credit value, always with two decimal places. */
     public BigDecimal getCredits() {
         return credits;
     }
@@ -127,7 +113,6 @@ public class Course {
         return courseType;
     }
 
-    /** Sets the short name, description, and type. Blank text clears the short name or description. */
     public void describe(String shortName, String description, CourseType courseType) {
         this.shortName = Require.optionalText(shortName, "shortName", MAX_SHORT_NAME_LENGTH);
         this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
@@ -162,8 +147,6 @@ public class Course {
         this.status = CourseStatus.INACTIVE;
     }
 
-    // Credits may be fractional, such as 1.50. A value with more decimal places than can be
-    // stored is rejected, never rounded.
     private static BigDecimal validCredits(BigDecimal credits) {
         Require.notNull(credits, "credits");
         if (credits.signum() <= 0) {

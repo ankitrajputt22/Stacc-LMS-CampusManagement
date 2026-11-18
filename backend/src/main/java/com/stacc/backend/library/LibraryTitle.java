@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A catalog entry: a book or other item, with copies. Made inactive, never deleted. */
 @Entity
 @Table(name = "library_titles")
 public class LibraryTitle {

@@ -82,11 +82,6 @@ function MyCourses() {
   )
 }
 
-/**
- * The signed-in student's current LMS courses. Accounts without the student role see an
- * explanation instead and no request is made. That check is for convenience only: the backend
- * decides which courses, if any, a student may see.
- */
 export function CoursesPage() {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

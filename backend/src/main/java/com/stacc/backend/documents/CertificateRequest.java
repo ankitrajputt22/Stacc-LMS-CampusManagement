@@ -16,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A request for a certificate. The college issues it into the requester's vault, or refuses it with a note. */
 @Entity
 @Table(name = "certificate_requests")
 public class CertificateRequest {
@@ -58,7 +57,6 @@ public class CertificateRequest {
     private Instant decidedAt;
 
     protected CertificateRequest() {
-        // Required by JPA.
     }
 
     public CertificateRequest(UserAccount requester, Type type, String purpose, Instant now) {

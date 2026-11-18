@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsDiscussionThreadRepository extends JpaRepository<LmsDiscussionThread, Long> {
 
-    /** Pinned threads first, then the most recently active. */
     @Query("select t from LmsDiscussionThread t join fetch t.author where t.lmsCourse.id = :lmsCourseId "
             + "order by t.pinned desc, t.lastActivityAt desc, t.id desc")
     List<LmsDiscussionThread> findAllForCourse(@Param("lmsCourseId") Long lmsCourseId);

@@ -16,16 +16,11 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Requests and answers of admin user management. No answer ever carries a password or a hash, and no request names
- * the account in its body: the route does.
- */
 public final class UserAdminRecords {
 
     private UserAdminRecords() {
     }
 
-    /** A new account with its official name, roles, temporary password, and the profiles its roles need. */
     public record UserCreate(
             @Schema(description = "The student or employee ID the person signs in with. Unique and never changed "
                     + "afterwards.", example = "25CSE104")
@@ -103,7 +98,6 @@ public final class UserAdminRecords {
             String temporaryPassword) {
     }
 
-    /** One account in the list. */
     public record UserSummary(
             @Schema(example = "57") Long accountId,
             @Schema(example = "25CSE104") String loginId,
@@ -123,7 +117,6 @@ public final class UserAdminRecords {
             @Schema(example = "2") int totalPages) {
     }
 
-    /** One account with its person details and academic profiles. Never a password, a hash, or a phone number. */
     public record UserDetail(
             Long accountId,
             String loginId,

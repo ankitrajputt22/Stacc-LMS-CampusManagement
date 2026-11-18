@@ -20,11 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Starting twice at once makes one attempt (the second start resumes it), and an answer saved while the attempt is handed
- * in is either taken before the hand-in or refused after it. Uses its own quiz in CS301, taken by cse24002, whom no
- * other quiz test uses.
- */
 class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -109,14 +104,12 @@ class LmsQuizAttemptMySqlIT extends MySqlIntegrationTest {
         Long quizQuestionId = quizzes.addQuestion(faculty, quizId, questionId, null).questions().getFirst().getId();
         quizzes.publish(faculty, quizId);
 
-        // Two students' first starts share a gap of the attempts index; neither may deadlock the other.
         List<Concurrently.Outcome<LmsQuizAttempt>> starts = Concurrently.run(
                 () -> attempts.start(first, lmsCourseId, quizId),
                 () -> attempts.start(second, lmsCourseId, quizId));
         assertThat(starts).allMatch(Concurrently.Outcome::succeeded);
         Long attemptId = starts.getFirst().result().getId();
 
-        // The same choice saved four times at once: one answer row with one chosen option, never a duplicate.
         List<Concurrently.Outcome<LmsQuizAnswer>> saves = Concurrently.run(
                 () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)),
                 () -> attempts.saveAnswer(first, attemptId, quizQuestionId, new LmsQuizAttemptService.AnswerInput(List.of(2), null, null)),

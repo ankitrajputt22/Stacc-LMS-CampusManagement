@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A place in a title's queue: active until fulfilled by a loan or cancelled. Queue positions are worked out on read. */
 @Entity
 @Table(name = "library_holds")
 public class LibraryHold {

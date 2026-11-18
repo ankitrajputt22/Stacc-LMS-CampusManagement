@@ -1,12 +1,3 @@
-"""Runs the retrieval evaluation (v0.13.8) and reports hit rate, mean reciprocal rank, and false finds.
-
-    python -m app.evaluation.run          # with the configured providers, such as Ollama
-    AI_PROVIDER=fake python -m app.evaluation.run
-
-It builds the evaluation course in a temporary index folder, asks every question, and prints one line per question
-and the totals. Nothing leaves the machine except calls to the configured local model runtime.
-"""
-
 from __future__ import annotations
 
 import sys
@@ -27,11 +18,10 @@ from app.retrieval.service import LearningService
 @dataclass(frozen=True)
 class QuestionResult:
     question: dataset.Question
-    found: tuple[int, ...]  # topic IDs, best first
+    found: tuple[int, ...]
 
     @property
     def rank(self) -> int | None:
-        """The rank of the first expected source, from 1, or None."""
         for position, topic_id in enumerate(self.found, start=1):
             if topic_id in self.question.expected:
                 return position
@@ -48,12 +38,10 @@ class Report:
 
     @property
     def hit_rate(self) -> float:
-        """Share of answerable questions with an expected source among those found."""
         return sum(result.rank is not None for result in self.answerable) / max(1, len(self.answerable))
 
     @property
     def first_hit_rate(self) -> float:
-        """Share of answerable questions whose best source is an expected one."""
         return sum(result.rank == 1 for result in self.answerable) / max(1, len(self.answerable))
 
     @property
@@ -62,7 +50,6 @@ class Report:
 
     @property
     def false_finds(self) -> int:
-        """Unanswerable questions for which something was found anyway."""
         return sum(bool(result.found) for result in self.results if not result.question.expected)
 
 

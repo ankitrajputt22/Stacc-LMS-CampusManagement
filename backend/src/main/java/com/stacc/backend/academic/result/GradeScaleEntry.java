@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One grade of the college's scale (reference data, from V144): its points and the lowest percentage for it. */
 @Entity
 @Table(name = "grade_scale")
 public class GradeScaleEntry {

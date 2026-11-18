@@ -128,7 +128,6 @@ function UserList() {
   )
 }
 
-/** Admin user management at /admin/users: find accounts and open one, or add a new account. */
 export function AdminUsersPage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

@@ -12,10 +12,6 @@ import { Alert, Badge, Button, Card } from '../ui'
 
 const STATUS = { QUEUED: 'Waiting', RUNNING: 'Being made', READY: 'Ready', FAILED: 'Failed', EXPIRED: 'Expired' } as const
 
-/**
- * Background XLSX exports: start one, then download it once ready (until it expires after a day). The list loads again
- * only when the person presses Refresh; nothing polls.
- */
 export function ExportsPanel({ kind, parameter, label }: { kind: ExportKind; parameter: number | null; label: string }) {
   const queryClient = useQueryClient()
   const exports = useApiQuery(queryKeys.analytics.exports(), (signal) => getMyExports(signal))

@@ -183,7 +183,6 @@ function NewUserForm() {
   )
 }
 
-/** /admin/users/new: the college creates an account, its roles, a temporary password, and the profiles it needs. */
 export function AdminUserCreatePage() {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

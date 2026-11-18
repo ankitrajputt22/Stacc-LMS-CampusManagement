@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Read-only answers about the announcements of an LMS course, for each side. */
 @Service
 @Transactional(readOnly = true)
 public class LmsAnnouncementQueryService {
@@ -32,13 +31,6 @@ public class LmsAnnouncementQueryService {
         this.announcements = announcements;
     }
 
-    /**
-     * The published announcements of a course the student may use, newest published first. Drafts and
-     * archived announcements never appear. A course the student may not use answers the same 404 as a
-     * course that does not exist.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<LmsCourseAnnouncementResponse> getPublishedAnnouncements(Long userAccountId, Long lmsCourseId) {
         if (!studentAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE_MESSAGE);
@@ -50,12 +42,6 @@ public class LmsAnnouncementQueryService {
                 .toList();
     }
 
-    /**
-     * The announcements of a course the faculty member teaches, drafts included and archived ones left out,
-     * newest created first. A course they may not use answers the same 404 as a course that does not exist.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<LmsFacultyAnnouncementResponse> getManagedAnnouncements(Long userAccountId, Long lmsCourseId) {
         if (!facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE_MESSAGE);

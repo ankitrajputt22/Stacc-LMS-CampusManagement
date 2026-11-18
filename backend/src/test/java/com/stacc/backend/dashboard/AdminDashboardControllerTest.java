@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Calls the admin dashboard route through Spring Security, with the query service as a stand-in. */
 class AdminDashboardControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROUTE = "/api/v1/dashboard/admin";

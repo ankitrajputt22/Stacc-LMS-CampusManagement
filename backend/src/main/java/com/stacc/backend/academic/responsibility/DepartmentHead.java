@@ -17,16 +17,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * One term of an account as head of one department. A department has at most one active term (a unique generated
- * column in the database). A new head starts a new term, so the history of who headed a department stays; ending a
- * term keeps the row. The department and the account never change after creation.
- */
 @Entity
 @Table(name = "department_heads")
 public class DepartmentHead {
 
-    // No cascade: departments and accounts are never created or deleted through a term.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,10 +44,8 @@ public class DepartmentHead {
     private Instant endedAt;
 
     protected DepartmentHead() {
-        // Required by JPA.
     }
 
-    /** Starts an active term. Whether the account may head the department is checked by the service. */
     public DepartmentHead(Department department, UserAccount userAccount, Instant startedAt) {
         this.department = Require.notNull(department, "department");
         this.userAccount = Require.notNull(userAccount, "userAccount");
@@ -88,7 +80,6 @@ public class DepartmentHead {
         return endedAt;
     }
 
-    /** Ends the term. Ending an ended term changes nothing, and nothing reopens one. */
     public void end(Instant at) {
         Require.notNull(at, "at");
         if (status == DepartmentHeadStatus.ACTIVE) {

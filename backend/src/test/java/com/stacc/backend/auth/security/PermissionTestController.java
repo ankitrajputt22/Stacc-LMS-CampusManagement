@@ -5,10 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Exists only in test code. Each route requires a made-up TEST_ permission, so tests can
- * check permission rules without adding real permissions or demo endpoints to the application.
- */
 @RestController
 @RequestMapping("/api/v1/test/permissions")
 public class PermissionTestController {

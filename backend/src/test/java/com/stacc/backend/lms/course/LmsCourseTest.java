@@ -61,7 +61,6 @@ class LmsCourseTest {
                 .map(Field::getName)
                 .toList();
 
-        // The home choice and welcome message are LMS settings, not academic data.
         assertEquals(List.of("id", "courseOffering", "status", "homeView", "welcomeMessage", "createdAt", "updatedAt"), fields);
     }
 

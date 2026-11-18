@@ -13,12 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-/**
- * Packs a course's published content for the AI service: each topic's text, followed by its readable study materials,
- * whose bytes are read through {@link ObjectStorageService}. The AI service gets only these bytes, never storage
- * access, keys, or database access. Limits keep a refresh bounded: the most sources, the largest file (the
- * study-material limit), and the most bytes in total; whatever does not fit is skipped and counted.
- */
 @Component
 class AiIndexPayloads {
 
@@ -77,7 +71,6 @@ class AiIndexPayloads {
             byte[] bytes = content.readNBytes((int) Math.min(maxFileBytes + 1, Integer.MAX_VALUE - 8));
             return bytes.length > maxFileBytes ? null : bytes;
         } catch (IOException | RuntimeException exception) {
-            // Only the material's ID is logged, never its key or contents.
             LOGGER.warn("Skipped study material {} for AI indexing: it could not be read", material.id());
             return null;
         }

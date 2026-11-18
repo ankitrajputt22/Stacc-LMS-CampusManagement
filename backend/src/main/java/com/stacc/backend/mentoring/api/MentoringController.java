@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Mentoring: the pair's meetings, notes, and action items, and the admins' pairings. */
 @RestController
 @RequestMapping("/api/v1")
 @Tag(name = "Mentoring")

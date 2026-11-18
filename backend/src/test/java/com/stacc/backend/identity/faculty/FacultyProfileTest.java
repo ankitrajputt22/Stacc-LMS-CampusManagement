@@ -46,8 +46,6 @@ class FacultyProfileTest {
 
     @Test
     void profileStoresNoCopyOfAccountOrTeachingData() {
-        // The employee ID and name belong to the account, and what someone teaches will come from
-        // teaching assignments, so none of them may appear here as a field of its own.
         Set<String> fields = Arrays.stream(FacultyProfile.class.getDeclaredFields())
                 .filter(field -> !field.isSynthetic())
                 .map(Field::getName)
@@ -78,8 +76,6 @@ class FacultyProfileTest {
 
         assertSame(account, studentProfile.getUserAccount());
         assertSame(account, facultyProfile.getUserAccount());
-        // Each profile keeps its own department: the faculty one directly, the student one
-        // through the program.
         assertSame(department, facultyProfile.getDepartment());
         assertSame(mathematics, studentProfile.getProgram().getDepartment());
     }

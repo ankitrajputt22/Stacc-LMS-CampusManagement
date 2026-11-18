@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Residents with the room change permission ask; only the hostel office carries changes out; wardens decide elsewhere. */
 class HostelRoomChangeControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

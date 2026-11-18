@@ -38,7 +38,6 @@ describe('LibraryPage', () => {
         </AuthContext>
       </QueryClientProvider>,
     )
-    // The table also renders a stacked copy for phones, so each value appears twice in the DOM.
     expect((await screen.findAllByText('Overdue'))[0]).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Renew/ })).not.toBeInTheDocument()
     await userEvent.click((await screen.findAllByRole('button', { name: /^Join queue\s*for Compilers$/ }))[0])

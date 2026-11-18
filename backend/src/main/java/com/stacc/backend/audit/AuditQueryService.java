@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The admin view of the audit log: newest first, filtered and paged on the server. It only reads. */
 @Service
 @Transactional(readOnly = true)
 public class AuditQueryService {

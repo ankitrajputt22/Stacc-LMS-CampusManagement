@@ -13,7 +13,6 @@ export function outingStatusLabel(status: string): string {
   return STATUS[status] ?? status
 }
 
-/** A datetime-local value (browser time) as an ISO moment with its zone, or null when empty or invalid. */
 export function localToIso(value: string): string | null {
   if (value === '') {
     return null

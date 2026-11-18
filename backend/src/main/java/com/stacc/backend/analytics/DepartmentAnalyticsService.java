@@ -11,11 +11,6 @@ import com.stacc.backend.academic.responsibility.DepartmentHeadResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Department analytics (v0.16.3) for heads of department. The departments come only from active head terms that
- * {@link DepartmentHeadResolver} counts for the signed-in account. Counts are live; attendance percentages follow
- * {@link AnalyticsRules} (groups of at least five); no student is named and nothing is ranked or stored.
- */
 @Service
 @Transactional(readOnly = true)
 public class DepartmentAnalyticsService {
@@ -38,7 +33,6 @@ public class DepartmentAnalyticsService {
         this.queries = queries;
     }
 
-    /** The departments the account heads now, each with its current-session figures; empty when it heads none. */
     public List<DepartmentView> forHead(Long accountId) {
         return heads.findAllActive().stream()
                 .filter(head -> head.getUserAccount().getId().equals(accountId) && DepartmentHeadResolver.counts(head))

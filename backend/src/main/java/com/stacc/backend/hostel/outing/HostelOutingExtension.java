@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A request to stay away longer on approved leave. Once approved, the leave's end is its requested end. */
 @Entity
 @Table(name = "hostel_outing_extensions")
 public class HostelOutingExtension {
@@ -39,7 +38,6 @@ public class HostelOutingExtension {
     private Instant createdAt;
 
     protected HostelOutingExtension() {
-        // Required by JPA.
     }
 
     public HostelOutingExtension(HostelOuting outing, Instant requestedUntil, String reason, Instant now) {

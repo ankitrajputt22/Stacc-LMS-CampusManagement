@@ -16,7 +16,6 @@ import { NavIcon, type NavIconName } from '../components/navigation/navIcons'
 import { StudentStrip } from '../erp/StudentStrip'
 import { ErpPreview, QuickLinks } from './StudentErpPreview'
 
-/** One of the two big panels of the student dashboard: a heading with a short tag, and its sections. */
 function Panel({ title, tag, icon, children }: { title: string; tag: string; icon: NavIconName; children: React.ReactNode }) {
   return (
     <div className="rounded-panel border border-line bg-surface shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
@@ -46,7 +45,6 @@ function Courses({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }) {
             <li key={course.lmsCourseId} className="flex min-w-0 items-center gap-3 rounded-panel border border-line border-l-[6px] bg-surface px-4 py-2.5"
               style={{ borderLeftColor: courseColor(course.lmsCourseId) }}>
               <div className="min-w-0 flex-1">
-                {/* The course route uses the LMS course ID only. */}
                 <Link to={`/courses/${course.lmsCourseId}`} className={`text-[0.95rem] font-semibold ${itemLinkClasses}`}>
                   {course.courseCode}: {course.courseName}
                 </Link>
@@ -98,7 +96,6 @@ function RecentAnnouncements({ dashboard, level }: { dashboard: Dashboard; level
         <ul className="divide-y divide-line">
           {dashboard.recentAnnouncements.map((announcement) => (
             <li key={announcement.announcementId} className="py-2.5 first:pt-0 last:pb-0">
-              {/* The full announcement is on the course page. */}
               <Link to={`/courses/${announcement.lmsCourseId}`} className={`text-sm ${itemLinkClasses}`}>
                 {announcement.title}
                 <span className="sr-only">, in {announcement.courseName}</span>
@@ -136,7 +133,6 @@ function Attendance({ dashboard, level }: { dashboard: Dashboard; level: 2 | 3 }
                   {course.totalSessions === 1 ? 'session' : 'sessions'}
                 </p>
               </div>
-              {/* The backend's own percentage, never recalculated here, and never shown for nothing recorded. */}
               <p className="shrink-0 text-sm font-semibold text-ink">
                 {course.attendancePercentage === null ? 'No attendance recorded yet.' : formatPercentage(course.attendancePercentage)}
               </p>
@@ -170,7 +166,6 @@ function RecentResults({ dashboard, level }: { dashboard: Dashboard; level: 2 | 
                   {result.academicSessionCode}, Semester {result.semesterNumber}
                 </p>
               </div>
-              {/* Exactly what was published: no percentage, grade point, rank, or pass or fail. */}
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold text-ink">
                   <span className="sr-only">Marks </span>
@@ -187,10 +182,6 @@ function RecentResults({ dashboard, level }: { dashboard: Dashboard; level: 2 | 
   )
 }
 
-/**
- * The student dashboard: what GET /api/v1/dashboard/student sends, as short previews that link to the full pages.
- * The backend already decided what is visible; nothing is filtered, calculated, or invented here.
- */
 export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {
   const dashboard = useApiRequest(getStudentDashboard)
 
@@ -220,7 +211,6 @@ export function StudentDashboard({ level = 2 }: { level?: 2 | 3 }) {
   return (
     <div className="space-y-6">
       <StudentStrip />
-      {/* The two real counts, kept small; the panels below show their previews. */}
       <dl className="flex flex-wrap gap-x-8 gap-y-2">
         <div className="flex items-baseline gap-3">
           <dt className="text-ink-muted">My Courses</dt>

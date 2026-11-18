@@ -9,7 +9,6 @@ import { FormattedText } from '../formatting/FormattedText'
 import { Card } from '../ui'
 import { formatDateTime } from './dates'
 
-/** The course's published syllabus for the signed-in student, or that none is published yet. Drafts never appear. */
 export function SyllabusBody({ lmsCourseId, headingLevel = 2 }: { lmsCourseId: number; headingLevel?: 2 | 3 }) {
   const syllabus = useApiQuery(queryKeys.lms.syllabus(lmsCourseId), (signal) => getCourseSyllabus(lmsCourseId, signal))
 

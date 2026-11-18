@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Fests: published fests with their schedules and volunteer shifts, and the campus office's management of them. */
 @RestController
 @RequestMapping("/api/v1/engagement")
 @Tag(name = "Campus engagement")

@@ -18,7 +18,6 @@ import { statusAction } from './statusAction'
 
 const PROFILE_DENIED = 'You don’t have access to academic profiles.'
 
-/** A search box that asks the backend only when submitted, for lists too long to load whole. */
 function ServerSearch({ label, hint, onSearch }: { label: string; hint: string; onSearch: (query: string) => void }) {
   const [text, setText] = useState('')
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -44,7 +43,6 @@ function ServerSearch({ label, hint, onSearch }: { label: string; hint: string; 
   )
 }
 
-/** "2026-27 · Semester 3 · Section A", or that the student is not enrolled now. */
 function placement(row: StudentProfileSummary) {
   if (row.current === null) {
     return <span className="text-ink-muted">Not enrolled now</span>
@@ -54,11 +52,6 @@ function placement(row: StudentProfileSummary) {
   }`
 }
 
-/**
- * Students' official academic mapping: program and department, admission session, roll number, and where they study
- * now, worked out from their enrolled semester enrollment. Admins correct the roll number and the profile status here;
- * enrollment and sections are managed under Enrollments, and accounts are not changed here.
- */
 export function StudentProfilesSection() {
   const [query, setQuery] = useState('')
   const request = useApiQuery(queryKeys.admin.studentProfiles(query), (signal) => searchStudentProfiles(query, signal))
@@ -133,10 +126,6 @@ export function StudentProfilesSection() {
   )
 }
 
-/**
- * Faculty members' official academic mapping: their primary department, profile status, and how many offerings they
- * teach now. The department never limits what they teach; that comes only from faculty assignments.
- */
 export function FacultyProfilesSection() {
   const [query, setQuery] = useState('')
   const request = useApiQuery(queryKeys.admin.facultyProfiles(query), (signal) => searchFacultyProfiles(query, signal))

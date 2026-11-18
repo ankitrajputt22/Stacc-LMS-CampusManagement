@@ -83,7 +83,6 @@ class LmsQuizTest {
                 .hasMessage(LmsQuiz.FIXED_AFTER_PUBLISHING);
         assertThatThrownBy(() -> quiz.edit(QuizFixtures.withNegative(QuizFixtures.graded("Q"), "25")))
                 .isInstanceOf(IllegalStateException.class);
-        // The same percentage written differently is no change.
         quiz.edit(QuizFixtures.withNegative(QuizFixtures.graded("Q"), "0.00"));
     }
 

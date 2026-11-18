@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Workflow definitions, loaded with their steps and roles when those are needed. */
 public interface ApprovalWorkflowDefinitionRepository extends JpaRepository<ApprovalWorkflowDefinition, Long> {
 
     boolean existsByCode(String code);
@@ -30,7 +29,6 @@ public interface ApprovalWorkflowDefinitionRepository extends JpaRepository<Appr
             """)
     Optional<ApprovalWorkflowDefinition> findWithStepsByCode(@Param("code") String code);
 
-    /** Every workflow with its steps, by code, for the admin list. */
     @Query("""
             select distinct workflow
             from ApprovalWorkflowDefinition workflow

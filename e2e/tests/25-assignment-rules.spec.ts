@@ -3,7 +3,6 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 
 const TITLE = 'One-shot reflection'
 
-/** The value of a datetime-local input for a moment some days from now, in the browser's own time zone. */
 function inDays(days: number): string {
   const time = new Date(Date.now() + days * 86_400_000)
   const pad = (value: number) => String(value).padStart(2, '0')

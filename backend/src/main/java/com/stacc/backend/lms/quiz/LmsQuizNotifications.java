@@ -10,7 +10,6 @@ import com.stacc.backend.notification.NotificationSourceType;
 import com.stacc.backend.notification.NotificationType;
 import org.springframework.stereotype.Component;
 
-/** The Inbox notifications about quizzes. The quiz stays the source of truth: a notification only points at it. */
 @Component
 public class LmsQuizNotifications {
 
@@ -22,10 +21,6 @@ public class LmsQuizNotifications {
         this.studentAccess = studentAccess;
     }
 
-    /**
-     * Tells every student who may use the course now, under the student access rule, that the quiz was published. The
-     * caller calls this only for the first publication. A course students cannot use yet has nobody to tell.
-     */
     public void published(LmsQuiz quiz) {
         Course course = quiz.getLmsCourse().getCourseOffering().getCourse();
         List<Long> students = studentAccess.findStudentAccountIdsWithAccess(quiz.getLmsCourse().getId());

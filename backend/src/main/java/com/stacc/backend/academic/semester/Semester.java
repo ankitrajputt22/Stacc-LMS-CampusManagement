@@ -20,11 +20,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One numbered semester of one programme during one academic session, for example
- * semester 3 of a programme in 2026-27. This is where a programme and a session meet.
- * A finished semester is closed rather than deleted.
- */
 @Entity
 @Table(
         name = "semesters",
@@ -33,8 +28,6 @@ import org.hibernate.annotations.UpdateTimestamp;
                 columnNames = {"program_id", "academic_session_id", "semester_number"}))
 public class Semester {
 
-    // No cascade on either link: programmes and sessions are shared data and are never
-    // created or deleted through a semester.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,7 +43,6 @@ public class Semester {
     @Column(name = "semester_number", nullable = false, updatable = false)
     private int semesterNumber;
 
-    // The registration period and drop deadline, in UTC. No period means registration is not open.
     @Column(name = "registration_opens_at")
     private Instant registrationOpensAt;
 
@@ -73,13 +65,8 @@ public class Semester {
     private Instant updatedAt;
 
     protected Semester() {
-        // Required by JPA.
     }
 
-    /**
-     * The programme, session, and number say what this semester is, so they cannot be changed
-     * afterwards. The number must fit within the programme's length at the time of creation.
-     */
     public Semester(Program program, AcademicSession academicSession, int semesterNumber) {
         this.program = Require.notNull(program, "program");
         this.academicSession = Require.notNull(academicSession, "academicSession");
@@ -124,10 +111,6 @@ public class Semester {
         return dropDeadline;
     }
 
-    /**
-     * Sets or clears the registration period. The opening and closing moments come together or not at all, closing
-     * comes after opening, and a drop deadline needs a period and is not before it opens.
-     */
     public void changeRegistrationPeriod(Instant opensAt, Instant closesAt, Instant dropDeadline) {
         if ((opensAt == null) != (closesAt == null)) {
             throw new IllegalArgumentException("registration needs both an opening and a closing time, or neither");
@@ -143,14 +126,12 @@ public class Semester {
         this.dropDeadline = dropDeadline;
     }
 
-    /** True when a period is set and the moment falls inside it; the closing moment itself is outside. */
     public boolean isRegistrationOpenAt(Instant moment) {
         return registrationOpensAt != null
                 && !moment.isBefore(registrationOpensAt)
                 && moment.isBefore(registrationClosesAt);
     }
 
-    /** True when a drop deadline is set and the moment is not after it. */
     public boolean isDropAllowedAt(Instant moment) {
         return dropDeadline != null && !moment.isAfter(dropDeadline);
     }

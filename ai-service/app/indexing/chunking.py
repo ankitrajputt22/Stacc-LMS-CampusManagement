@@ -1,12 +1,3 @@
-"""Deterministic chunking: bounded, overlapping pieces measured in tokens that never cross a page, slide, or
-heading (v0.13.3).
-
-Whitespace is normalised, then each segment is cut into pieces of about ``size`` tokens, a token being a word or a
-punctuation mark. A cut is moved back to the nearest paragraph, sentence, or line break in the second half of the
-piece, and consecutive pieces share about ``overlap`` tokens so an idea split by a cut is still found. Markdown
-headings in topic text and plain-text files start new segments, and each chunk keeps its segment's heading.
-"""
-
 from __future__ import annotations
 
 import re
@@ -39,7 +30,6 @@ def count_tokens(text: str) -> int:
 
 
 def split_headings(text: str) -> list[Segment]:
-    """Text cut at its Markdown headings; each section keeps its heading path, such as ``Joins > Inner joins``."""
     segments: list[Segment] = []
     path: list[tuple[int, str]] = []
     lines: list[str] = []
@@ -63,7 +53,6 @@ def split_headings(text: str) -> list[Segment]:
 
 
 def _cut(text: str, spans: list[tuple[int, int]], start: int, end: int) -> int:
-    """The token index to end a piece at: a paragraph, sentence, or line break in the second half, else ``end``."""
     low = start + (end - start) // 2
     gaps = [(i, text[spans[i][1]:spans[i + 1][0]]) for i in range(end - 1, low - 1, -1) if i + 1 < len(spans)]
     for found in (
@@ -92,6 +81,5 @@ def chunk_segments(segments: list[Segment], size: int, overlap: int) -> list[Tex
                 chunks.append(TextChunk(piece, segment.page_number, segment.slide_number, segment.heading))
             if end >= len(spans):
                 break
-            # Step back for the overlap, but always move forward.
             start = max(end - overlap, start + 1)
     return chunks

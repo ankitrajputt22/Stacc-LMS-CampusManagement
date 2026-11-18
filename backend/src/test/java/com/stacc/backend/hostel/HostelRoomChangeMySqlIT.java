@@ -13,11 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two move requests of the same resident at once leave one open room change, under the student row lock; cancelling it
- * cancels its pending approval too. Uses cse24002's demo bed in the Main Hostel, whose warden decides, and leaves no
- * open change behind.
- */
 class HostelRoomChangeMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

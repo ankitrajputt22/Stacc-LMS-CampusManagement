@@ -1,7 +1,5 @@
-/** Course discussions and messages, as the API returns them. People appear by login ID only. */
 export type AuthorKind = 'STUDENT' | 'FACULTY'
 
-/** Which side of a course the signed-in account uses: its student pages or its teaching pages. */
 export type CourseSide = 'student' | 'faculty'
 
 export type DiscussionThreadSummary = {
@@ -15,11 +13,9 @@ export type DiscussionThreadSummary = {
   createdAt: string
   lastActivityAt: string
   locked: boolean
-  /** Only faculty receive hidden threads. */
   hidden: boolean
 }
 
-/** A hidden reply reaches students without its author or text. */
 export type DiscussionReply = {
   replyId: number
   authorLoginId: string | null
@@ -48,7 +44,6 @@ export type DiscussionThread = {
   canReport: boolean
 }
 
-/** An open report for the course's faculty; reporters are not shown. */
 export type DiscussionReport = {
   reportId: number
   threadId: number

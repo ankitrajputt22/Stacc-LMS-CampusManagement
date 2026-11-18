@@ -16,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A person's application for a volunteer shift. Applied, then accepted or declined; withdrawn by them. Kept. */
 @Entity
 @Table(name = "campus_fest_volunteers")
 public class FestVolunteer {
@@ -49,7 +48,6 @@ public class FestVolunteer {
     private Instant decidedAt;
 
     protected FestVolunteer() {
-        // Required by JPA.
     }
 
     public FestVolunteer(FestShift shift, UserAccount account, String note, Instant now) {

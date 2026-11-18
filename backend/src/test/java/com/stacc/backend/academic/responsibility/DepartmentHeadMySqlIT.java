@@ -20,11 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Department heads on MySQL: the seeded head of CSE, and two admins setting different heads of one department at the
- * same moment, which must leave exactly one active term. Uses its own department and accounts, which no other test
- * touches.
- */
 class DepartmentHeadMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -14,17 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-/**
- * Keeps one student's notes index in one course current (v0.13.6). It runs outside any transaction, so no row lock is
- * held while the AI service works. The index is rebuilt only when the notes changed since it was last built, and it is
- * removed with all its files once the student has no note left. Callers check the student's course access first.
- */
 @Service
 public class AiStudentNoteIndexer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AiStudentNoteIndexer.class);
 
-    /** The notes index to search with the course's own, and the notes it may cite. */
     public record Scope(IndexRef index, AiStudentNoteKnowledge knowledge) {
     }
 
@@ -41,10 +35,6 @@ public class AiStudentNoteIndexer {
         this.clock = clock;
     }
 
-    /**
-     * The student's current notes index, rebuilt first if the notes changed; empty when they have no notes. Throws
-     * {@link AiServiceException} when the AI service cannot build it.
-     */
     public Optional<Scope> current(Long lmsCourseId, Long accountId) {
         AiStudentNoteKnowledge knowledge = notes.knowledge(lmsCourseId, accountId);
         String key = AiCourseKeys.forStudentNotes(lmsCourseId, accountId);
@@ -64,11 +54,6 @@ public class AiStudentNoteIndexer {
         return Optional.of(new Scope(new IndexRef(key, knowledge.fingerprint(), knowledge.allowedSources()), knowledge));
     }
 
-    /**
-     * After a note is deleted: the index is rebuilt without it, or removed with its files when no note is left. If the
-     * AI service cannot be reached now, the deleted note is still never used (it is no longer an allowed source), and
-     * the index is rebuilt or removed the next time the student uses their notes.
-     */
     public void afterDelete(Long lmsCourseId, Long accountId) {
         if (!client.isEnabled()) {
             return;
@@ -96,7 +81,6 @@ public class AiStudentNoteIndexer {
         try {
             indexes.saveAndFlush(row);
         } catch (DataIntegrityViolationException twice) {
-            // Two requests built the same notes at once; the other one recorded it.
         }
     }
 }

@@ -6,7 +6,6 @@ import java.time.Instant;
 import com.stacc.backend.academic.result.CourseResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One official result as faculty manage it. Who recorded it is not sent. */
 public record FacultyResultResponse(
         @Schema(example = "31")
         Long resultId,

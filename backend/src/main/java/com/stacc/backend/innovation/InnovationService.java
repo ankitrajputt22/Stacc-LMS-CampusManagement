@@ -17,11 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Innovation (v0.12.11). Submitters see their own ideas and, once decided, the reviewers' comments without names.
- * Reviewers see open ideas other than their own with only their own review; the campus office sees every idea with
- * every review and decides. Every change locks the idea row first.
- */
 @Service
 @Transactional
 public class InnovationService {
@@ -48,13 +43,10 @@ public class InnovationService {
         this.clock = clock;
     }
 
-    // --- Submitters
-
     @Transactional(readOnly = true)
     public List<IdeaView> mine(Long accountId) {
         List<InnovationIdea> found = ideas.findForSubmitter(accountId);
         Map<Long, List<InnovationReview>> byIdea = reviewsOf(found);
-        // Comments reach the submitter only once the idea is decided, and never with the reviewer's name or score.
         return found.stream().map(idea -> view(idea, null, idea.decided() ? byIdea.getOrDefault(idea.getId(), List.of()).stream()
                 .map(review -> new ReviewView(null, 0, review.getComment(), review.getReviewedAt())).toList() : List.of())).toList();
     }
@@ -76,8 +68,6 @@ public class InnovationService {
         return view(idea, null, List.of());
     }
 
-    // --- Reviewers
-
     @Transactional(readOnly = true)
     public List<IdeaView> forReview(Long accountId) {
         List<InnovationIdea> found = ideas.findOpenForReviewer(OPEN, accountId);
@@ -86,7 +76,6 @@ public class InnovationService {
                 .filter(review -> review.getReviewer().getId().equals(accountId)).map(InnovationService::reviewView).toList())).toList();
     }
 
-    /** Gives or replaces the reviewer's score and comment on an open idea that is not their own. */
     public void review(Long accountId, Long ideaId, int score, String comment) {
         InnovationIdea idea = locked(ideaId);
         if (idea.getSubmitter().getId().equals(accountId) || !idea.open()) {
@@ -103,8 +92,6 @@ public class InnovationService {
             throw new ApiException(HttpStatus.CONFLICT, "Your review was saved meanwhile; reload and try again.");
         }
     }
-
-    // --- The campus office
 
     @Transactional(readOnly = true)
     public List<IdeaView> all() {

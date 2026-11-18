@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A summary of a page, module, or file (v0.15.2), or insufficientContext with no summary. */
 public record AiSummaryResponse(
         AiSummaryScope scope,
         long id,

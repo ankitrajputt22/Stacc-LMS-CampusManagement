@@ -22,12 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Portfolios (v0.12.9). The records section is read live on every request from the owner's college-issued documents
- * (not withdrawn) and campus participation; nothing is copied. Self-entered items belong to their owner, who alone reads
- * the portfolio; a named faculty member sees only the items waiting for their verification. Every change locks the
- * item row.
- */
 @Service
 @Transactional
 public class PortfolioService {
@@ -102,7 +96,6 @@ public class PortfolioService {
         return view(item);
     }
 
-    /** Sends the item to one active faculty member, who is not the owner, for verification. */
     public ItemView requestVerification(Long accountId, Long itemId, String verifierLoginId) {
         UserAccount faculty = (verifierLoginId == null ? Optional.<UserAccount>empty()
                 : accounts.findWithRolesAndPermissionsByLoginId(verifierLoginId.strip()))
@@ -123,7 +116,6 @@ public class PortfolioService {
                 item.getTitle(), item.getDescription(), item.getOccurredOn(), item.getLink(), item.getRequestedAt())).toList();
     }
 
-    /** The named faculty member verifies or declines, once. Anyone else gets the same 404. */
     public void decide(Long accountId, Long itemId, boolean verify, String note) {
         PortfolioItem item = (itemId == null ? Optional.<PortfolioItem>empty() : items.findByIdForUpdate(itemId))
                 .filter(found -> found.getVerifier() != null && found.getVerifier().getId().equals(accountId))

@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A digital resource: a name, a plain-text description, and one https:// address. Made inactive, never deleted. */
 @Entity
 @Table(name = "library_resources")
 public class LibraryResource {

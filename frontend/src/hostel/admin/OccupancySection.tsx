@@ -19,7 +19,6 @@ function Figure({ label, value }: { label: string; value: number }) {
   )
 }
 
-/** One hostel's counts in a strip, as the API counts them. */
 function Overview({ hostel }: { hostel: HostelOccupancy }) {
   return (
     <section aria-label={`${hostel.name} overview`} className="grid items-center gap-4 rounded-panel border border-line bg-surface px-5 py-4 sm:grid-cols-[1.6fr_repeat(4,1fr)]">
@@ -38,7 +37,6 @@ function Overview({ hostel }: { hostel: HostelOccupancy }) {
   )
 }
 
-/** Hostel Management → Occupancy: every hostel's counts, worked out live, and a chosen hostel's bed map. */
 export function OccupancySection() {
   const occupancy = useApiQuery(queryKeys.hostel.occupancy('admin'), (signal) => getHostelOccupancy('admin', signal))
   const [chosen, setChosen] = useState<number | null>(null)
@@ -56,7 +54,6 @@ export function OccupancySection() {
       </Card>
     )
   }
-  // The first hostel is shown until another is chosen, so the bed map is there at once.
   const selected = chosen ?? occupancy.data[0].hostelId
   const hostel = occupancy.data.find((row) => row.hostelId === selected) ?? occupancy.data[0]
   return (

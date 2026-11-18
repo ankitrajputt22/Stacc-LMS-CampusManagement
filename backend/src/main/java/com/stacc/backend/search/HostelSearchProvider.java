@@ -9,12 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * Hostel applications, as the hostel routes allow: the hostel office (ADMIN with HOSTEL_MANAGE) searches every
- * application by number, student login ID, or session and opens the admin review; students (STUDENT with
- * HOSTEL_APPLICATION_VIEW_OWN) search only their own and open them on their Hostel page. Faculty-only accounts get no
- * section. The approval status comes from the approval engine.
- */
 @Component
 public class HostelSearchProvider implements SearchProvider {
 

@@ -30,11 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Faculty review and grade students' submissions. The faculty member is taken from the access token, and
- * whether they may review a course is decided from official teaching assignments on every request; no route
- * takes a faculty, profile, or student ID. A grade is given to one attempt.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS")
@@ -53,8 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class LmsFacultySubmissionController {
 
-    // Only lets the caller ask. Which courses they may review is decided by the services, from official
-    // teaching assignments, on every request.
     private static final String GRADE =
             "hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW') and hasAuthority('LMS_ASSIGNMENT_GRADE')";
 
@@ -108,7 +101,6 @@ public class LmsFacultySubmissionController {
     public ResponseEntity<InputStreamResource> download(@PathVariable Long attachmentId, @AuthenticationPrincipal Jwt accessToken) {
         LmsAssignmentSubmissionService.Download download =
                 queryService.openAttachment(AuthenticatedAccount.idFrom(accessToken), attachmentId);
-        // Always an attachment, never shown inline, so an uploaded file cannot act as a page of this site.
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(download.contentType()))
                 .contentLength(download.sizeBytes())

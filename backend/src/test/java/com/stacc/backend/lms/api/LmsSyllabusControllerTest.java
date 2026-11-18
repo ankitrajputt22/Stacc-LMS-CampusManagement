@@ -25,7 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Students read the published syllabus; faculty with the manage permission save and publish the draft. */
 class LmsSyllabusControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

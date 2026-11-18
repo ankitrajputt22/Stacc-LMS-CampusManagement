@@ -1,10 +1,3 @@
-"""Request and response shapes of the internal API, and the shapes the model must return.
-
-Field names are camelCase to match the Stacc backend's JSON. Requests forbid unknown fields, so a
-caller cannot slip extra data in. Model output is never passed on as-is: it is parsed into the
-``*ModelOutput`` classes, overlong text is cut to its limit, and only then turned into a response.
-"""
-
 from __future__ import annotations
 
 from enum import StrEnum
@@ -36,7 +29,6 @@ class Strict(BaseModel):
 class SourceType(StrEnum):
     TOPIC = "TOPIC"
     STUDY_MATERIAL = "STUDY_MATERIAL"
-    # Kept in their own indexes (v0.13.5, v0.13.6): a course's teacher-only documents and a student's private notes.
     TEACHER_DOCUMENT = "TEACHER_DOCUMENT"
     NOTE = "NOTE"
 
@@ -67,12 +59,8 @@ class QuestionType(StrEnum):
     MIXED = "MIXED"
 
 
-# --- Index replacement -------------------------------------------------------------------------
-
 
 class IndexSource(Strict):
-    """One source. A topic, teacher document, or note carries its text; a study material carries its file. Only
-    topics and study materials belong to a topic."""
 
     sourceType: SourceType
     sourceId: int = Field(gt=0)
@@ -107,8 +95,6 @@ class ReplaceIndexResponse(BaseModel):
     contentFingerprint: str
 
 
-# --- Citations ---------------------------------------------------------------------------------
-
 
 class Citation(BaseModel):
     sourceType: SourceType
@@ -120,11 +106,8 @@ class Citation(BaseModel):
     slideNumber: int | None = None
 
 
-# --- Student requests --------------------------------------------------------------------------
-
 
 class SourceRef(Strict):
-    """One source a request may use, as the backend allows it right now."""
 
     sourceType: SourceType
     sourceId: int = Field(gt=0)
@@ -134,7 +117,6 @@ AllowedSources = Annotated[list[SourceRef] | None, Field(default=None, max_lengt
 
 
 class IndexRef(Strict):
-    """Another index to search with the course's own, such as a teacher's or a student's notes index."""
 
     indexKey: str = Field(pattern=r"^[a-f0-9]{32}$")
     indexFingerprint: str = Field(pattern=FINGERPRINT)
@@ -142,11 +124,6 @@ class IndexRef(Strict):
 
 
 class IndexedRequest(Strict):
-    """A request over the course index named in the path, and optionally more indexes.
-
-    ``allowedSources`` lists the sources the backend allows at this moment; chunks of any other source are never
-    searched, summarised, or cited, even if an index still holds them. ``None`` allows every source of the index.
-    """
 
     indexFingerprint: str = Field(pattern=FINGERPRINT)
     allowedSources: AllowedSources = None
@@ -154,7 +131,6 @@ class IndexedRequest(Strict):
 
 
 class AnswerStyle(StrEnum):
-    """How to answer (v0.15.1): normally, more simply, or with an example."""
     NORMAL = "NORMAL"
     SIMPLER = "SIMPLER"
     EXAMPLE = "EXAMPLE"
@@ -162,7 +138,6 @@ class AnswerStyle(StrEnum):
 
 
 class Turn(Strict):
-    """An earlier question and answer on the student's open page (v0.15.1); the page sends them, nothing is stored."""
     question: str = Field(min_length=1, max_length=1000)
     answer: str = Field(min_length=1, max_length=2000)
 
@@ -188,15 +163,12 @@ class AskResponse(BaseModel):
 
 
 class SummaryStyle(StrEnum):
-    """How to summarise (v0.15.2)."""
     BRIEF = "BRIEF"
     DETAILED = "DETAILED"
     REVISION_NOTES = "REVISION_NOTES"
 
 
 class SummaryRequest(IndexedRequest):
-    """A topic's summary, or, without a topic, a summary of whatever the allowed sources hold, such as one module or one
-    document (v0.15.2)."""
     topicId: int | None = Field(default=None, gt=0)
     style: SummaryStyle = SummaryStyle.BRIEF
 
@@ -247,11 +219,8 @@ class AssessmentDraftResponse(BaseModel):
     insufficientContext: bool
 
 
-# --- Question bank drafts (v0.14.1) ------------------------------------------------------------------
-
 
 class BankType(StrEnum):
-    """The question bank's own kinds of question."""
     SINGLE_CHOICE = "SINGLE_CHOICE"
     MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
     TRUE_FALSE = "TRUE_FALSE"
@@ -260,7 +229,6 @@ class BankType(StrEnum):
 
     @property
     def keyed(self) -> bool:
-        """Whether the question has a key the self-check can test."""
         return self in (BankType.SINGLE_CHOICE, BankType.MULTIPLE_CHOICE, BankType.TRUE_FALSE)
 
 
@@ -274,7 +242,6 @@ class Bloom(StrEnum):
 
 
 class ExistingQuestion(Strict):
-    """A question already in the course's bank, for the duplicate and previous-paper checks (v0.14.2)."""
     id: int = Field(gt=0)
     text: str = Field(min_length=1, max_length=2000)
     inFinalPaper: bool = False
@@ -290,7 +257,6 @@ class BankDraftRequest(IndexedRequest):
 
 
 class QualityChecks(BaseModel):
-    """Flags worked out by code and embeddings, and the model's suggestions, for the reviewer (v0.14.2)."""
     duplicateOfQuestionId: int | None
     inPreviousPaper: bool
     outOfSyllabus: bool
@@ -322,8 +288,6 @@ class BankDraftResponse(BaseModel):
     droppedAsRepeats: int = 0
     insufficientContext: bool
 
-
-# --- Model answers and rubric suggestions (v0.14.5) ------------------------------------------------
 
 
 class ModelAnswerRequest(IndexedRequest):
@@ -365,8 +329,6 @@ class RubricResponse(BaseModel):
     insufficientContext: bool
 
 
-# --- Practice evaluation (v0.15.4) -----------------------------------------------------------------
-
 
 class PracticeMode(StrEnum):
     PRACTICE = "PRACTICE"
@@ -397,8 +359,6 @@ class EvaluateResponse(BaseModel):
     insufficientContext: bool
 
 
-# --- Flashcards (v0.15.3) ----------------------------------------------------------------------------
-
 
 class FlashcardRequest(IndexedRequest):
     cardCount: int = Field(ge=3, le=30)
@@ -415,9 +375,6 @@ class FlashcardResponse(BaseModel):
     cards: list[Flashcard]
     insufficientContext: bool
 
-
-# --- What the model must return ----------------------------------------------------------------
-# Source references are the short labels ("S1", "S2", ...) the prompt gives each retrieved chunk.
 
 SourceRefs = Annotated[list[Annotated[str, _cut(10)]], Field(max_length=12)]
 
@@ -511,8 +468,6 @@ class BankModelOutput(BaseModel):
 
 
 class AnswerCheckOutput(BaseModel):
-    """The model's own answer to a keyed question, given without the key: the chosen option numbers (from 1), or the
-    true/false answer."""
     chosenOptions: Annotated[list[int], Field(max_length=10)] = []
     trueFalseAnswer: bool | None = None
 
@@ -559,4 +514,3 @@ class EvaluateModelOutput(BaseModel):
     feedback: Bounded(2000) = ""
     followUpQuestion: Bounded(500) | None = None
     sourceIds: SourceRefs = []
-

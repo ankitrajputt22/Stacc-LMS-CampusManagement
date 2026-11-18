@@ -16,16 +16,13 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
-/** Builds access tokens for tests, including deliberately broken ones. */
 public final class TestTokens {
 
-    /** The session every test token names. Database-free tests treat it as open unless a test says otherwise. */
     public static final String SESSION_ID = "00000000-0000-4000-8000-000000000001";
 
     private TestTokens() {
     }
 
-    /** Claims of a normal, currently valid Stacc access token. */
     public static JwtClaimsSet.Builder validClaims(String loginId, long accountId, String... authorities) {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         return JwtClaimsSet.builder()
@@ -38,17 +35,14 @@ public final class TestTokens {
                 .claim(AccessTokenService.AUTHORITIES_CLAIM, List.of(authorities));
     }
 
-    /** A token issued by the application's own service, for the test session, ending in twelve hours. */
     public static String issue(AccessTokenService service, com.stacc.backend.auth.security.StaccUserPrincipal principal) {
         return service.issue(principal, SESSION_ID, Instant.now().plus(12, ChronoUnit.HOURS)).value();
     }
 
-    /** A token signed with the test secret, exactly as the application signs them. */
     public static String valid(String loginId, long accountId, String... authorities) {
         return signed(TestSecrets.JWT_SECRET, MacAlgorithm.HS256, validClaims(loginId, accountId, authorities));
     }
 
-    /** A correctly signed token that stopped being valid 45 minutes ago. */
     public static String expired(String loginId, long accountId, String... authorities) {
         Instant anHourAgo = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(1, ChronoUnit.HOURS);
         return withClaims(
@@ -56,7 +50,6 @@ public final class TestTokens {
                 claims -> claims.issuedAt(anHourAgo).expiresAt(anHourAgo.plus(15, ChronoUnit.MINUTES)));
     }
 
-    /** A token signed with the test secret after the claims have been changed. */
     public static String withClaims(JwtClaimsSet.Builder claims, Consumer<JwtClaimsSet.Builder> change) {
         change.accept(claims);
         return signed(TestSecrets.JWT_SECRET, MacAlgorithm.HS256, claims);
@@ -69,7 +62,6 @@ public final class TestTokens {
                 .getTokenValue();
     }
 
-    /** A token with no signature at all, claiming the "none" algorithm. */
     public static String unsigned(String loginId, long accountId) {
         Instant now = Instant.now();
         String header = "{\"alg\":\"none\"}";
@@ -79,7 +71,6 @@ public final class TestTokens {
         return encode(header) + "." + encode(payload) + ".";
     }
 
-    /** The same token with its payload swapped for one that claims more rights. */
     public static String tampered(String token) {
         String[] parts = token.split("\\.");
         String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8)

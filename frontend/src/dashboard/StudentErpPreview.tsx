@@ -10,10 +10,6 @@ import { rupees } from '../erp/money'
 import { formatDay } from '../erp/requestWords'
 import { ButtonLink, Card } from '../ui'
 
-/**
- * The ERP corner of the student dashboard: what is due in fees and the next exam, both straight from the ERP APIs.
- * Each part shows nothing until its answer arrives, and nothing at all when there is nothing to show.
- */
 export function ErpPreview({ level }: { level: 2 | 3 }) {
   const fees = useApiQuery(queryKeys.erp.myFees(), getMyFees)
   const exams = useApiQuery(queryKeys.erp.myExams(), getMyExams)
@@ -58,7 +54,6 @@ const LINKS: { to: string; label: string; icon: NavIconName }[] = [
   { to: '/erp/attendance', label: 'Attendance', icon: 'attendance' },
 ]
 
-/** The quick links bar under the student dashboard, with the degree's credits earned when the program records them. */
 export function QuickLinks() {
   const progress = useApiQuery(queryKeys.erp.degreeProgress(), getMyDegreeProgress)
   const degree = progress.status === 'loaded' && progress.data.groups.length > 0 ? progress.data : null

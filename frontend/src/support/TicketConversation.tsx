@@ -9,16 +9,10 @@ import { MESSAGE_MAX, refusalText } from './helpdeskText'
 
 type TicketConversationProps = {
   ticket: HelpdeskTicketDetail
-  /** Loads the ticket again after a reply. */
   onChanged: () => void
-  /** Shows why the reply was refused because the ticket changed elsewhere, and loads it again. */
   onStale: (message: string) => void
 }
 
-/**
- * The original issue and the conversation, oldest first, as full-width plain text that keeps its line breaks. Below it
- * is the reply form, unless the ticket is closed. A reply never changes the status; the backend decides who may reply.
- */
 export function TicketConversation({ ticket, onChanged, onStale }: TicketConversationProps) {
   const closed = ticket.status === 'CLOSED'
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -49,7 +43,6 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
     setError(null)
     setSent('')
     try {
-      // Only the text is sent: the author is the account in the access token.
       await addHelpdeskMessage(ticket.ticketId, { message: text })
       setMessage('')
       setSent('Reply sent.')
@@ -59,7 +52,6 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
       if (status !== 401) {
         const text = refusalText(status, getApiError(failure)?.message ?? null, 'send the reply')
         if (status === 409 || status === 404) {
-          // The ticket changed meanwhile, for example it was closed: the page says so and shows it as it is now.
           onStale(text)
         } else {
           setError(text)
@@ -80,7 +72,6 @@ export function TicketConversation({ ticket, onChanged, onStale }: TicketConvers
         <p className="mt-1 text-xs text-ink-muted">
           {ticket.requesterLoginId} · <time dateTime={ticket.createdAt}>{formatDateTime(ticket.createdAt)}</time>
         </p>
-        {/* Plain text: React shows it as text, never as HTML. */}
         <p className="mt-3 text-sm leading-6 break-words whitespace-pre-wrap text-ink">{ticket.description}</p>
       </section>
 

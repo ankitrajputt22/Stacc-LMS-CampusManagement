@@ -12,19 +12,13 @@ type PageBodyProps = {
   materials: LmsCourseMaterial[]
   previous: LmsPageLink | null
   next: LmsPageLink | null
-  /** Where a neighbouring page opens: the student page or the faculty preview. */
   pathTo: (pageId: number) => string
-  /** Only the links to the pages before and after, such as below a locked page or after the completion box. */
   neighboursOnly?: boolean
 }
 
 const neighbourClasses =
   'flex min-h-11 flex-col justify-center rounded-control border border-line bg-surface px-4 py-2 text-sm hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary'
 
-/**
- * The body of a course page, the same for students and for the faculty preview: its text as its format says, its
- * study materials, and links to the pages before and after it in course order. Only what the API sent.
- */
 export function PageBody({ content, contentFormat, materials, previous, next, pathTo, neighboursOnly = false }: PageBodyProps) {
   const downloads = useMaterialDownload()
 

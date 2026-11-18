@@ -21,11 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reading campus service requests: requesters their own, admins all. Every status shown is the effective one, with the
- * approval's outcome taken into account; approval progress comes from the approval engine. It only reads, so a list
- * or a detail never stores anything.
- */
 @Service
 @Transactional(readOnly = true)
 public class CampusServiceQueryService {
@@ -40,7 +35,6 @@ public class CampusServiceQueryService {
         this.approvals = approvals;
     }
 
-    /** One page of the account's own requests, newest first. Lists load service and approval in the same query. */
     public CampusRequestPage ownRequests(Long accountId, CampusServiceRequestStatus status, Long serviceId, int page,
             int size) {
         PageRequest request = pageOf(page, size);
@@ -50,7 +44,6 @@ public class CampusServiceQueryService {
                 request.getPageNumber(), request.getPageSize(), rows.getTotalElements(), rows.getTotalPages());
     }
 
-    /** One of the account's own requests. Another account's answers the same 404 as a missing one. */
     public CampusRequestDetail ownRequest(Long accountId, Long requestId) {
         CampusServiceRequest request = loaded(requestId);
         if (!request.getRequester().getId().equals(accountId)) {
@@ -67,7 +60,6 @@ public class CampusServiceQueryService {
                 request.getProcessingAt(), request.getReadyAt(), documentTitle(request));
     }
 
-    /** One page of every request, newest first, narrowed by each filter that is given. */
     public AdminCampusRequestPage adminRequests(Long serviceId, CampusServiceRequestStatus status,
             String requesterLoginId, int page, int size) {
         PageRequest request = pageOf(page, size);
@@ -78,10 +70,6 @@ public class CampusServiceQueryService {
                 request.getPageNumber(), request.getPageSize(), rows.getTotalElements(), rows.getTotalPages());
     }
 
-    /**
-     * One request for admins, with approval progress and history, the step waiting for a decision, and whether this
-     * admin may decide it through the approval task routes. CAMPUS_SERVICE_MANAGE alone never makes it decidable.
-     */
     public AdminCampusRequestDetail adminRequest(ApprovalActor actor, Long requestId) {
         CampusServiceRequest request = loaded(requestId);
         ApprovalRequestDetail approval = approvalOf(request);
@@ -117,7 +105,6 @@ public class CampusServiceQueryService {
                 : approvals.requestDetail(request.getApprovalRequest().getId()).orElse(null);
     }
 
-    /** The comment of the rejected step, exactly as the approver wrote it, if the approval was rejected. */
     private static String rejectionComment(ApprovalRequestDetail approval) {
         if (approval == null) {
             return null;

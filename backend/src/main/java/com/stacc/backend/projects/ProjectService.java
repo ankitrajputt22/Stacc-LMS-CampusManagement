@@ -19,12 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Projects (v0.12.10), one team model. A student creates a project and leads it; other students ask to join an open
- * project and the lead accepts them only while active members are fewer than the limit (the project row lock, then a
- * locking read of the active members). The lead invites active faculty as mentors, who accept or decline. Students and
- * faculty see projects that are not archived, with members and mentors by login ID only.
- */
 @Service
 @Transactional
 public class ProjectService {
@@ -43,7 +37,6 @@ public class ProjectService {
     public record MentorView(Long mentorId, String loginId, ProjectMentor.Status status) {
     }
 
-    /** A project; join requests and their messages are sent to the lead only. */
     public record ProjectView(Long projectId, String title, String summary, String leadLoginId, int maxMembers, long activeMembers,
             Project.Status status, boolean iAmLead, String myMembership, Long myMemberId, String myMentorship, Long myMentorId,
             List<MemberView> members, List<MentorView> mentors) {
@@ -110,7 +103,6 @@ public class ProjectService {
         return one(project, accountId);
     }
 
-    /** The lead accepts within the member limit, or declines. */
     public ProjectView decide(Long accountId, Long memberId, boolean accept) {
         Project project = led(accountId, projectOfMember(memberId));
         ProjectMember request = members.findByIdForUpdate(memberId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
@@ -125,7 +117,6 @@ public class ProjectService {
         return one(project, accountId);
     }
 
-    /** Withdraws one's own request or leaves; the lead stays with the project. */
     public ProjectView leave(Long accountId, Long memberId) {
         Project project = locked(projectOfMember(memberId));
         ProjectMember place = members.findByIdForUpdate(memberId).filter(found -> found.getAccount().getId().equals(accountId))
@@ -154,7 +145,6 @@ public class ProjectService {
         return one(project, accountId);
     }
 
-    /** The invited faculty member accepts or declines; an accepted mentor may later step down. */
     public ProjectView answerMentorship(Long accountId, Long mentorId, Boolean accept) {
         ProjectMentor mentor = (mentorId == null ? Optional.<ProjectMentor>empty() : mentors.findById(mentorId))
                 .filter(found -> found.getAccount().getId().equals(accountId))

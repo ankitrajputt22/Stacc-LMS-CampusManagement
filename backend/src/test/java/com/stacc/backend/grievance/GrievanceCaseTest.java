@@ -10,7 +10,6 @@ import java.time.Instant;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** A grievance moves forward only, may be appealed once within the window, and is overdue only while it waits. */
 class GrievanceCaseTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

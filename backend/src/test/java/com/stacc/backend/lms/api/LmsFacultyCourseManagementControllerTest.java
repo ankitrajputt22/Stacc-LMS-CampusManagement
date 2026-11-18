@@ -29,10 +29,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import org.springframework.http.MediaType;
 
-/**
- * Calls the faculty LMS course management routes through Spring Security. The services are stand-ins, so these tests
- * are about who gets in, what reaches the services, and what is sent back.
- */
 class LmsFacultyCourseManagementControllerTest extends DatabaseFreeApiTest {
 
     private static final String ROOT = "/api/v1/lms/faculty";

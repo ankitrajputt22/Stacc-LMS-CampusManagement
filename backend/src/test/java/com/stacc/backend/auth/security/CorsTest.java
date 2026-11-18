@@ -20,10 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Checks which web addresses a browser may call the API from. The frontend dev server is the
- * only one allowed by default. These rules never replace sign-in or permissions.
- */
 class CorsTest extends DatabaseFreeApiTest {
 
     private static final String DEV_FRONTEND = "http://localhost:5173";
@@ -31,7 +27,6 @@ class CorsTest extends DatabaseFreeApiTest {
     private static final String LOGIN = "/api/v1/auth/login";
     private static final String MY_COURSES = "/api/v1/lms/my-courses";
 
-    // What a browser sends before the real request, to ask whether it may send it.
     private ResultActions preflight(String origin, String path, String method, String requestHeaders)
             throws Exception {
         return mockMvc.perform(options(path)
@@ -126,8 +121,6 @@ class CorsTest extends DatabaseFreeApiTest {
                 .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
     }
 
-    // The answer lists only the headers that are allowed. A browser then refuses to send the
-    // request, because the other header it asked for was not granted.
     @Test
     void headersOutsideTheAllowedListAreNotGranted() throws Exception {
         preflight(DEV_FRONTEND, LOGIN, "POST", "content-type, x-account-id")
@@ -145,8 +138,6 @@ class CorsTest extends DatabaseFreeApiTest {
                 .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
-    // Outside /api no permission is given at all. Without that header a browser will not let
-    // another address read the answer, whatever the status is.
     @Test
     void onlyTheApiIsOpenToTheDevFrontend() throws Exception {
         preflight(DEV_FRONTEND, "/v3/api-docs", "GET", "accept")
@@ -163,8 +154,6 @@ class CorsTest extends DatabaseFreeApiTest {
         mockMvc.perform(get(MY_COURSES)).andExpect(status().isUnauthorized());
     }
 
-    // In Docker the browser reaches the API through the frontend's own address, and Nginx passes
-    // that address on. Such a request names an origin, but it is the same one, so it is not refused.
     @Test
     void requestFromThePageItsOwnAddressIsNotTreatedAsAnotherSite() throws Exception {
         mockMvc.perform(loginAttempt()

@@ -1,5 +1,3 @@
-"""v0.14.1: questions drafted in the bank's own types, cited, with keyed questions checked by answering them again."""
-
 from __future__ import annotations
 
 import json
@@ -63,7 +61,6 @@ def test_a_question_whose_key_the_model_does_not_reproduce_is_dropped(settings):
     assert body["droppedForKeyMismatch"] == 1
     assert [question["questionType"] for question in body["questions"]] == ["TRUE_FALSE"]
     check = model.requests[1]
-    # The check never sees which option is marked correct.
     assert "correct" not in check.user_prompt and "1. BCNF" in check.user_prompt
 
 
@@ -80,8 +77,6 @@ def test_an_unusable_check_counts_as_a_mismatch(settings):
 def test_requests_are_validated(indexed, change):
     assert draft(indexed, **change).status_code == 400
 
-
-# --- Quality checks (v0.14.2) ---------------------------------------------------------------------------
 
 
 def statement(text: str, source: str = "S1", **extra) -> dict:
@@ -115,4 +110,3 @@ def test_a_question_sharing_nothing_with_the_course_is_flagged_out_of_syllabus(s
 def test_the_existing_question_list_is_bounded(indexed):
     existing = [{"id": number, "text": "Question"} for number in range(1, 502)]
     assert draft(indexed, existingQuestions=existing).status_code == 400
-

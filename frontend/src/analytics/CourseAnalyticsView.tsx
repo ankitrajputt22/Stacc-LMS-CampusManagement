@@ -10,7 +10,6 @@ import { Percent } from './Percent'
 
 const SMALL = 'Shown for groups of at least five students'
 
-/** Class analytics as the backend works them out: no student is listed or ranked, and small groups show counts only. */
 export function CourseAnalyticsView({ lmsCourseId }: { lmsCourseId: number }) {
   const analytics = useApiQuery(queryKeys.analytics.course(lmsCourseId), (signal) => getCourseAnalytics(lmsCourseId, signal))
   if (analytics.status !== 'loaded') {

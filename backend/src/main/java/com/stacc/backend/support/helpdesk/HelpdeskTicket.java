@@ -19,12 +19,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One support request: who raised it, its category, a plain-text subject and original description, its priority and
- * status, and the admin it is assigned to, if any. The requester never changes. A new ticket is OPEN and unassigned;
- * its status only moves forward ({@link HelpdeskTicketStatus#canMoveTo}), and once CLOSED nothing about it changes.
- * The conversation and the audit trail are kept in {@link HelpdeskTicketMessage} and {@link HelpdeskTicketHistory}.
- */
 @Entity
 @Table(name = "helpdesk_tickets")
 public class HelpdeskTicket {
@@ -33,12 +27,10 @@ public class HelpdeskTicket {
     public static final int MAX_DESCRIPTION_LENGTH = 10_000;
     public static final String NUMBER_FORMAT = "STC-%06d";
 
-    // No cascade on any link: accounts and categories are never created or deleted through a ticket.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Derived from the ID right after the first insert, in the same transaction, so every stored ticket has one.
     @Column(name = "ticket_number", unique = true, length = 20)
     private String ticketNumber;
 
@@ -53,7 +45,6 @@ public class HelpdeskTicket {
     @Column(nullable = false, length = MAX_SUBJECT_LENGTH)
     private String subject;
 
-    // Plain text. It is never treated as HTML.
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
@@ -79,7 +70,6 @@ public class HelpdeskTicket {
     @JoinColumn(name = "team_id")
     private HelpdeskTeam team;
 
-    // When someone other than the requester first replied visibly, for response times.
     @Column(name = "first_response_at")
     private Instant firstResponseAt;
 
@@ -101,10 +91,8 @@ public class HelpdeskTicket {
     private Instant updatedAt;
 
     protected HelpdeskTicket() {
-        // Required by JPA.
     }
 
-    /** A new OPEN, unassigned ticket. Whether the category may be used and the priority chosen is checked by the caller. */
     public HelpdeskTicket(UserAccount requester, HelpdeskCategory category, String subject, String description,
             HelpdeskTicketPriority priority) {
         this.requester = Require.notNull(requester, "requester");
@@ -114,12 +102,10 @@ public class HelpdeskTicket {
         this.priority = Require.notNull(priority, "priority");
     }
 
-    /** The human-readable number of a ticket with this ID, such as STC-000042. */
     public static String numberFor(long id) {
         return NUMBER_FORMAT.formatted(id);
     }
 
-    /** Gives the saved ticket its number, once. */
     public void assignNumber() {
         if (ticketNumber == null) {
             this.ticketNumber = numberFor(Require.notNull(id, "id"));
@@ -130,22 +116,16 @@ public class HelpdeskTicket {
         return status == HelpdeskTicketStatus.CLOSED;
     }
 
-    /** Changes the priority of a ticket that is not closed. */
     public void changePriority(HelpdeskTicketPriority priority) {
         requireNotClosed();
         this.priority = Require.notNull(priority, "priority");
     }
 
-    /** Assigns the ticket to an admin account, or unassigns it with null. Who may be assigned is checked by the caller. */
     public void assignTo(UserAccount assignee) {
         requireNotClosed();
         this.assignedTo = assignee;
     }
 
-    /**
-     * Moves the ticket to the target status. The first move to RESOLVED or CLOSED records when; the same status changes
-     * nothing. A move the lifecycle does not allow, such as back to OPEN, is refused.
-     */
     public void moveTo(HelpdeskTicketStatus target, Instant at) {
         Require.notNull(target, "status");
         if (!status.canMoveTo(target)) {
@@ -164,7 +144,6 @@ public class HelpdeskTicket {
         this.status = target;
     }
 
-    /** How long a resolved ticket may still be reopened by its requester. */
     public static final java.time.Duration REOPEN_WINDOW = java.time.Duration.ofDays(7);
 
     public void routeTo(HelpdeskTeam team) {
@@ -172,19 +151,16 @@ public class HelpdeskTicket {
         this.team = team;
     }
 
-    /** Records the first visible reply by the support side, once. */
     public void responded(Instant at) {
         if (firstResponseAt == null) {
             this.firstResponseAt = Require.notNull(at, "at").truncatedTo(ChronoUnit.MICROS);
         }
     }
 
-    /** Whether the requester may still reopen it: resolved, not closed, and resolved within the window. */
     public boolean canReopenAt(Instant at) {
         return status == HelpdeskTicketStatus.RESOLVED && resolvedAt != null && !at.isAfter(resolvedAt.plus(REOPEN_WINDOW));
     }
 
-    /** Back to IN_PROGRESS from RESOLVED, by the requester within the window; the resolution time is cleared. */
     public void reopen(Instant at) {
         if (!canReopenAt(at)) {
             throw new IllegalStateException("This ticket can no longer be reopened");
@@ -193,7 +169,6 @@ public class HelpdeskTicket {
         this.resolvedAt = null;
     }
 
-    /** The requester's rating of a resolved or closed ticket, 1 to 5, given once. */
     public void rate(int stars, String comment, Instant at) {
         if (status != HelpdeskTicketStatus.RESOLVED && status != HelpdeskTicketStatus.CLOSED) {
             throw new IllegalStateException("Only a resolved or closed ticket can be rated");

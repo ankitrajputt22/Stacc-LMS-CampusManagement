@@ -17,10 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * One weekly class of a course offering: a day, a start and an end time in the college's time zone, a room, and a
- * kind. Removing a slot keeps it with the time it was removed; nothing is deleted.
- */
 @Entity
 @Table(name = "class_timetable_slots")
 public class ClassTimetableSlot {
@@ -73,7 +69,6 @@ public class ClassTimetableSlot {
         this.createdAt = createdAt;
     }
 
-    /** Whether this slot and the given day and times share any minute. */
     public boolean overlaps(DayOfWeek day, LocalTime start, LocalTime end) {
         return dayOfWeek == day.getValue() && startsAt.isBefore(end) && start.isBefore(endsAt);
     }

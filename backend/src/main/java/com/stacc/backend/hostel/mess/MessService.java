@@ -26,12 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The hostel mess. The hostel office manages every hostel's menu and a warden their own hostels' (others answer 404);
- * residents read their current hostel's week and rate meals of the last seven days, once each. A day's change replaces
- * the weekly line for that meal and date. Feedback is read without names, and its average only for at least
- * {@value AnalyticsRules#MIN_GROUP} ratings (decision 7).
- */
 @Service
 @Transactional
 public class MessService {
@@ -93,12 +87,6 @@ public class MessService {
         this.clock = clock;
     }
 
-    // --- Residents
-
-    /**
-     * The resident's hostel's menu for seven days from the given date (today when empty), and their own ratings. A
-     * student without a hostel bed gets an empty answer.
-     */
     @Transactional(readOnly = true)
     public ResidentMess residentWeek(Long accountId, LocalDate from) {
         if (allocations.findActiveForStudentAccount(accountId).isEmpty()) {
@@ -111,7 +99,6 @@ public class MessService {
         return new ResidentMess(hostel.getName(), week(hostel.getId(), start), rated);
     }
 
-    /** Rates a meal of today or the last seven days at the resident's current hostel, once. */
     public RatedMeal rate(Long accountId, LocalDate date, Meal meal, int rating, String comment) {
         Hostel hostel = residentHostel(accountId);
         if (date == null || date.isAfter(today()) || date.isBefore(today().minusDays(FEEDBACK_DAYS))) {
@@ -126,8 +113,6 @@ public class MessService {
             throw new ApiException(HttpStatus.CONFLICT, ALREADY_RATED);
         }
     }
-
-    // --- The hostel office and wardens
 
     @Transactional(readOnly = true)
     public ManagerMess forManager(Manager manager, Long hostelId, LocalDate from) {
@@ -147,7 +132,6 @@ public class MessService {
         return new ManagerMess(hostel.getId(), hostel.getName(), template, week(hostelId, from == null ? today() : from), summary, comments);
     }
 
-    /** Sets weekly lines; lines not given stay as they are. */
     public void setTemplate(Manager manager, Long hostelId, List<TemplateLine> lines) {
         Hostel hostel = managed(manager, hostelId);
         Map<String, MessMenuItem> existing = items.findAllForHostel(hostelId).stream()
@@ -170,7 +154,6 @@ public class MessService {
         }
     }
 
-    /** What is served at one meal on one date instead of the weekly line; setting it again replaces it. */
     public void setChange(Manager manager, Long hostelId, LocalDate date, Meal meal, String newItems, String note) {
         Hostel hostel = managed(manager, hostelId);
         try {
@@ -185,9 +168,6 @@ public class MessService {
         }
     }
 
-    // --- Helpers
-
-    /** Seven days from the start, each meal from the day's change if there is one, otherwise from the weekly line. */
     List<DayMenu> week(Long hostelId, LocalDate start) {
         Map<String, MessMenuItem> template = items.findAllForHostel(hostelId).stream()
                 .collect(Collectors.toMap(item -> item.getDayOfWeek() + ":" + item.getMeal(), Function.identity()));

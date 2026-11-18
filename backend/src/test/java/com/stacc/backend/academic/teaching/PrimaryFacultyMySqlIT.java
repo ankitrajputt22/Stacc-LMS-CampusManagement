@@ -14,11 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * One primary faculty member per offering under truly simultaneous requests on MySQL: two admins assigning different
- * primaries at once leave exactly one. Uses the demo CS401 offering, which no other MySQL test touches, and makes the
- * assignments it created inactive afterwards.
- */
 class PrimaryFacultyMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

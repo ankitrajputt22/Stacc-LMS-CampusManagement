@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Sessions and announcements of clubs and sports groups, and the sessions on the signed-in member's calendar. */
 @RestController
 @RequestMapping("/api/v1/engagement")
 @Tag(name = "Campus engagement")

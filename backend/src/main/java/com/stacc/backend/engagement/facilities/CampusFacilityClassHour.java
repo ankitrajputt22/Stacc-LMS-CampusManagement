@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A weekly class slot of a facility, in the college's time zone: no bookings overlap it. Removed, never deleted. */
 @Entity
 @Table(name = "campus_facility_class_hours")
 public class CampusFacilityClassHour {
@@ -64,7 +63,6 @@ public class CampusFacilityClassHour {
         this.createdAt = createdAt;
     }
 
-    /** Whether this slot overlaps the given times on its day. */
     public boolean overlaps(LocalTime from, LocalTime to) {
         return from.isBefore(endsAt) && to.isAfter(startsAt);
     }

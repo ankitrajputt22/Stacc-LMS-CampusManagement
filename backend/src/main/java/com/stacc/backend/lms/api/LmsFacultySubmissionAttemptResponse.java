@@ -5,7 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One attempt as faculty review it: the student's work, whether it was late, and its grade if any. */
 public record LmsFacultySubmissionAttemptResponse(
         @Schema(example = "31")
         Long attemptId,

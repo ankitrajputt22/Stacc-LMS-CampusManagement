@@ -15,15 +15,10 @@ function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
   )
 }
 
-/** The HTTP status of a failed request, or null when no answer arrived (for example, offline). */
 export function getHttpStatus(error: unknown): number | null {
   return isAxiosError(error) ? (error.response?.status ?? null) : null
 }
 
-/**
- * Returns the backend's common error response from a failed request, or null
- * when the failure did not come with one (for example, a network error).
- */
 export function getApiError(error: unknown): ApiErrorResponse | null {
   if (!isAxiosError(error)) {
     return null

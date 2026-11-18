@@ -1,16 +1,11 @@
 import type { ReactNode } from 'react'
 
-/**
- * The top of a student course section: the course and its facts (once loaded), an optional breadcrumb, then the
- * section's own title with the teal bar, which is the page's one h1.
- */
 export function CourseSectionHeader({
   course,
   title,
   description,
   breadcrumb,
 }: {
-  /** The course's code and name, and its facts line, once loaded. */
   course?: { name: string; facts: string }
   title: string
   description?: ReactNode

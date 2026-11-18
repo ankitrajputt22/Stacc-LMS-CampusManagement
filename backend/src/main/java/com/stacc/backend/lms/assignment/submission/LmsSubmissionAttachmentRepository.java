@@ -10,13 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsSubmissionAttachmentRepository extends JpaRepository<LmsSubmissionAttachment, Long> {
 
-    /** The attachments of these attempts, in one query, in the order they were added. */
     List<LmsSubmissionAttachment> findAllByAttemptIdInOrderByIdAsc(Collection<Long> attemptIds);
 
-    /**
-     * One attachment, loaded together with its attempt, submission, assignment, and the assignment's
-     * LMS course, which decide who may download it.
-     */
     @Query("""
             select attachment
             from LmsSubmissionAttachment attachment

@@ -9,10 +9,6 @@ type DialogProps = {
   children: ReactNode
 }
 
-/**
- * A modal dialog on the native `<dialog>` element: focus moves into it and stays there, Escape and Close close it, and
- * focus returns to what opened it. Use it for short forms such as a request.
- */
 export function Dialog({ title, open, onClose, children }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const id = useId()

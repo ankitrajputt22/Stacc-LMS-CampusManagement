@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Campus notices. */
 public interface CampusNoticeRepository extends JpaRepository<CampusNotice, Long> {
 
     boolean existsByTitle(String title);
@@ -19,10 +18,6 @@ public interface CampusNoticeRepository extends JpaRepository<CampusNotice, Long
     @Query("select notice from CampusNotice notice where notice.id = :noticeId")
     Optional<CampusNotice> findByIdForUpdate(@Param("noticeId") Long noticeId);
 
-    /**
-     * One page of the published notices visible to any of the account's roles, newest first. Each notice appears once,
-     * however many of its flags match.
-     */
     @Query(value = """
             select notice
             from CampusNotice notice
@@ -43,7 +38,6 @@ public interface CampusNoticeRepository extends JpaRepository<CampusNotice, Long
     Page<CampusNotice> findFeed(@Param("student") boolean student, @Param("faculty") boolean faculty,
             @Param("admin") boolean admin, Pageable page);
 
-    /** One page of every notice, or those in one status, the most recently created first. */
     @Query(value = """
             select notice
             from CampusNotice notice
@@ -53,11 +47,6 @@ public interface CampusNoticeRepository extends JpaRepository<CampusNotice, Long
             countQuery = "select count(notice) from CampusNotice notice where (:status is null or notice.status = :status)")
     Page<CampusNotice> findAdminPage(@Param("status") CampusNoticeStatus status, Pageable page);
 
-    /**
-     * Search: the published notices visible to any of the account's roles, as {@link #findFeed} decides, whose title
-     * or message contains the text. Each notice appears once, however many of its flags match. Exact titles first,
-     * then titles that start with the text, then the rest; within each, the newest first.
-     */
     @Query(value = """
             select notice
             from CampusNotice notice

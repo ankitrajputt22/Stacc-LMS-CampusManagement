@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A resident's rating (1 to 5) of one meal, with an optional comment; given once and never changed. */
 @Entity
 @Table(name = "hostel_meal_feedback")
 public class MealFeedback {
@@ -52,7 +51,6 @@ public class MealFeedback {
     private Instant createdAt;
 
     protected MealFeedback() {
-        // Required by JPA.
     }
 
     public MealFeedback(Hostel hostel, Long studentAccountId, LocalDate mealDate, Meal meal, int rating, String comment, Instant now) {

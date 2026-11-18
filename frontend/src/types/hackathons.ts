@@ -1,6 +1,3 @@
-// The hackathon API exactly as the backend sends it (HackathonService). Participants never get scores before the
-// results are released; judges get only their own scores.
-
 export type HackathonStatus = 'DRAFT' | 'PUBLISHED' | 'RESULTS_RELEASED' | 'ARCHIVED'
 
 export type HackathonSubmission = { title: string; summary: string; link: string | null; submittedAt: string }

@@ -50,7 +50,6 @@ function ChangeSummary({ change }: { change: RoomChange }) {
   )
 }
 
-/** Ask to move, or propose a swap: a reason, and for a swap the other resident's college ID. */
 function NewChangeForm({ kind, onDone }: { kind: 'MOVE' | 'SWAP'; onDone: (message: string) => void }) {
   const [reason, setReason] = useState('')
   const [extra, setExtra] = useState('')
@@ -102,7 +101,6 @@ function NewChangeForm({ kind, onDone }: { kind: 'MOVE' | 'SWAP'; onDone: (messa
   )
 }
 
-/** A resident's room changes: ask to move, propose a swap, answer swaps proposed to them, and cancel their own. */
 export function StudentRoomChanges() {
   const queryClient = useQueryClient()
   const changes = useApiQuery(queryKeys.hostel.myRoomChanges(), (signal) => getMyRoomChanges(signal))
@@ -209,7 +207,6 @@ export function StudentRoomChanges() {
   )
 }
 
-/** The hostel office's open room changes: an approved move needs a bed; an approved swap is carried out as it is. */
 export function RoomChangesSection() {
   const queryClient = useQueryClient()
   const changes = useApiQuery(queryKeys.hostel.openRoomChanges(), (signal) => getOpenRoomChanges(signal))

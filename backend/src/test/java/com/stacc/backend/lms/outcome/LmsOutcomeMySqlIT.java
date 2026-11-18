@@ -12,10 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two outcomes added at the same moment get different codes: both lock the course row, then read the outcomes with a
- * locking read. Uses CS302's draft LMS course and emp1022, whose outcomes no other test touches.
- */
 class LmsOutcomeMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

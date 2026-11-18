@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 
-/** How many practice questions to generate, optionally about one published topic. */
 public record AiPracticeRequest(
         @Schema(description = "From 1 to 10; 5 when omitted.", example = "5") @Min(1) @Max(10) Integer questionCount,
         @Schema(description = "A published topic of the course, or omitted for the whole course.") @Positive Long topicId,

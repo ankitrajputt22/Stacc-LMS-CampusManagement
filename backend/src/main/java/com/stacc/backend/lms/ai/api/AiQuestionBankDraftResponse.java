@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** What a question bank draft added (v0.14.1). The questions themselves are in the bank, each NEEDS_REVIEW. */
 public record AiQuestionBankDraftResponse(
         @Schema(description = "Questions added to the bank, each needing review.") int added,
         @Schema(description = "Questions dropped because the AI answered them differently from their own key.") int droppedForKeyMismatch,

@@ -38,7 +38,6 @@ function PlainText({ children }: { children: string }) {
   return <p className="text-[0.95rem] leading-6 break-words whitespace-pre-wrap text-ink">{children}</p>
 }
 
-/** A text box and a button that sends it; used for the appeal, the resolution, and the appeal decision. */
 function TextAction({ label, button, onSend }: { label: string; button: string; onSend: (text: string) => Promise<unknown> }) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
@@ -62,7 +61,6 @@ function TextAction({ label, button, onSend }: { label: string; button: string; 
   )
 }
 
-/** The case's dates in one row: only the moments the case has reached, and the next one that matters. */
 function Facts({ found }: { found: GrievanceCase }) {
   const waiting = found.status === 'SUBMITTED' || found.status === 'APPEALED'
   const facts: { label: string; at?: string | null; text?: string; overdue?: boolean }[] = [
@@ -91,7 +89,6 @@ function Facts({ found }: { found: GrievanceCase }) {
   )
 }
 
-/** The stored moments of the case, oldest first. Nothing here is an event log; each step is a date on the case. */
 function caseTimeline(found: GrievanceCase): TimelineEntry[] {
   const steps: (TimelineEntry | null)[] = [
     { key: 'submitted', title: 'Submitted', at: found.submittedAt, detail: 'Grievance submitted.', tone: 'done' },
@@ -113,7 +110,6 @@ function caseTimeline(found: GrievanceCase): TimelineEntry[] {
   return steps.filter((step): step is TimelineEntry => step !== null)
 }
 
-/** The whole case: its title and dates, the plain-text parts, and beside them the next step and the timeline. */
 function CaseLayout({ found, back, nextStep }: { found: GrievanceCase; back: { to: string; label: string }; nextStep: ReactNode }) {
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
@@ -170,7 +166,6 @@ function useAct(notify: Notify) {
       .catch((caught: unknown) => notify(failureText(caught, 'Couldn’t save. Try again.') ?? '', true))
 }
 
-/** One of the signed-in account's own grievances, with Accept and Appeal while it is resolved. */
 export function MyGrievance({ caseId, notify }: { caseId: number; notify: Notify }) {
   const found = useApiQuery(queryKeys.grievances.myCase(caseId), (signal) => getMyGrievance(caseId, signal))
   const act = useAct(notify)
@@ -214,7 +209,6 @@ export function MyGrievance({ caseId, notify }: { caseId: number; notify: Notify
   return <CaseLayout found={data} back={{ to: '/grievances', label: 'My grievances' }} nextStep={nextStep} />
 }
 
-/** A case of the account's committees, with the next step the committee may take. */
 export function CommitteeGrievance({ caseId, notify }: { caseId: number; notify: Notify }) {
   const found = useApiQuery(queryKeys.grievances.committeeCase(caseId), (signal) => getCommitteeGrievance(caseId, signal))
   const act = useAct(notify)

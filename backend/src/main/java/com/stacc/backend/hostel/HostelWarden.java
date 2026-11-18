@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A warden's assignment to a hostel, or to one block of it. Ending it keeps it as history; it is never deleted. */
 @Entity
 @Table(name = "hostel_wardens")
 public class HostelWarden {
@@ -41,7 +40,6 @@ public class HostelWarden {
     private Instant endedAt;
 
     protected HostelWarden() {
-        // Required by JPA.
     }
 
     public HostelWarden(Hostel hostel, UserAccount warden, String block, Instant at) {

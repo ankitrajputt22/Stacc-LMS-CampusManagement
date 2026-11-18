@@ -23,10 +23,8 @@ import com.stacc.backend.hostel.HostelRepository;
 import com.stacc.backend.hostel.HostelWardenService;
 import org.junit.jupiter.api.Test;
 
-/** A day's change replaces the weekly line; feedback averages show only for five ratings; other hostels answer 404. */
 class MessServiceTest {
 
-    // A Thursday at noon in Kolkata.
     private static final Instant NOW = Instant.parse("2026-11-12T06:30:00Z");
     private static final LocalDate TODAY = LocalDate.of(2026, 11, 12);
 

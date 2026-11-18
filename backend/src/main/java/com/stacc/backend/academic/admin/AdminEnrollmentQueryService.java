@@ -21,11 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * What admins read for enrollment work: students found by login ID, a student's semester enrollments, a semester
- * enrollment's course enrollments, and an offering's roster. Everything is read-only. The student lookup is only for
- * choosing a student to enroll: it is not a user directory and shows no account data beyond the login ID.
- */
 @Service
 @Transactional(readOnly = true)
 public class AdminEnrollmentQueryService {
@@ -50,10 +45,6 @@ public class AdminEnrollmentQueryService {
         this.offerings = offerings;
     }
 
-    /**
-     * Student profiles whose login ID contains the text, ignoring case, by login ID and at most {@value #SEARCH_LIMIT}.
-     * Without text the first ones are listed. {@code %} and {@code _} match themselves, not any text.
-     */
     public List<StudentLookupResponse> searchStudents(String query) {
         String text = query == null ? "" : query.strip();
         if (text.length() > MAX_QUERY_LENGTH) {
@@ -85,7 +76,6 @@ public class AdminEnrollmentQueryService {
                 SemesterEnrollmentResponse.of(semesterEnrollment), enrollments);
     }
 
-    /** Every course enrollment of exactly this offering, whatever its status, by student login ID. */
     public OfferingRosterResponse roster(Long courseOfferingId) {
         CourseOffering offering = offerings.findWithContextById(courseOfferingId)
                 .orElseThrow(() -> AcademicMasterErrors.notFound(CourseOfferingManagementService.NOT_FOUND));
@@ -96,7 +86,6 @@ public class AdminEnrollmentQueryService {
         return new OfferingRosterResponse(CourseOfferingResponse.of(offering), enrollments);
     }
 
-    // The repository query uses ! as its escape character.
     static String escapeLike(String text) {
         return text.replace("!", "!!").replace("%", "!%").replace("_", "!_");
     }

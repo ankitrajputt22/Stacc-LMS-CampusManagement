@@ -1,8 +1,6 @@
 import type { GrievanceCase, GrievanceCategoryAdmin, GrievanceCategoryOption, GrievanceSummary } from '../types/grievances'
 import { apiClient } from './apiClient'
 
-// The complainant and the committee member are always the signed-in account; the backend checks each case.
-
 export const getGrievanceCategories = async (signal?: AbortSignal) =>
   (await apiClient.get<GrievanceCategoryOption[]>('/grievances/categories', { signal })).data
 export const submitGrievance = async (input: { categoryId: number; subject: string; details: string }) =>

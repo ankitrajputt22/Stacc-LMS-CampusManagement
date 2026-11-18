@@ -18,11 +18,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * The settings of a quiz, for adding or editing one. The course, questions, status, and publication time are not part
- * of it: they come from the route and the question, publish, and archive actions. Times are ISO-8601 moments with a
- * time zone; a date and time without a zone is refused.
- */
 public record LmsQuizRequest(
         @Schema(example = "Normalization check")
         @NotBlank(message = "Title is required")

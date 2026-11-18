@@ -32,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Private notes belong to the student in the token, stay within the quota, and are deleted for real, index included. */
 class AiStudentNotesTest {
 
     private static final long STUDENT = 11L;
@@ -75,7 +74,6 @@ class AiStudentNotesTest {
         when(repository.countByLmsCourseIdAndUserAccountId(COURSE, STUDENT)).thenReturn(20L);
         assertRefused(HttpStatus.CONFLICT, () -> service.create(STUDENT, COURSE, "One more", "Text"));
         assertRefused(HttpStatus.NOT_FOUND, () -> service.list(OTHER, COURSE));
-        // Another student's note, or one in another course, is never found for this student.
         assertRefused(HttpStatus.NOT_FOUND, () -> service.update(STUDENT, COURSE, 99L, "Mine", "Text"));
         assertRefused(HttpStatus.NOT_FOUND, () -> service.delete(STUDENT, COURSE, 99L));
     }

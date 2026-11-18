@@ -6,7 +6,6 @@ type CheckboxFieldProps = {
   describedBy?: string
 }
 
-/** One labelled checkbox with a touch-sized row, as the other admin forms use. */
 export function CheckboxField({ id, label, checked, onChange, describedBy }: CheckboxFieldProps) {
   return (
     <label htmlFor={id} className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink sm:min-h-8">

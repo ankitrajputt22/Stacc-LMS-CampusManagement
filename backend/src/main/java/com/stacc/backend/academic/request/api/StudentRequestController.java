@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Student requests to the ERP office, and the office's queue. */
 @RestController
 @Tag(name = "ERP requests")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

@@ -29,14 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Builds the signed-in student's dashboard from the features that own the data, in a fixed number of queries. The
- * courses come from {@link LmsStudentCourseQueryService}, the same rule as the student's course list, and only those
- * courses' published assignments and announcements are read, so no other LMS access rule exists here. Attendance and
- * results come from {@link StudentAttendanceQueryService} and {@link StudentResultQueryService}, which follow the
- * student's own course enrollments and need no LMS course: history stays visible without current LMS access. It
- * reads only, and stores nothing.
- */
 @Service
 @Transactional(readOnly = true)
 public class StudentDashboardQueryService {
@@ -47,8 +39,6 @@ public class StudentDashboardQueryService {
     static final int ATTENDANCE_PREVIEW_LIMIT = 4;
     static final int RESULT_PREVIEW_LIMIT = 5;
 
-    // Latest publication first. Results carry no ID, so ties fall back to the academic context: the latest session,
-    // the highest semester, then course code.
     private static final Comparator<StudentResultsResponse.Result> RECENT_FIRST = Comparator
             .comparing(StudentResultsResponse.Result::publishedAt, Comparator.nullsLast(Comparator.reverseOrder()))
             .thenComparing(StudentResultsResponse.Result::academicSessionCode, Comparator.reverseOrder())
@@ -73,12 +63,6 @@ public class StudentDashboardQueryService {
         this.clock = clock;
     }
 
-    /**
-     * The dashboard of the student behind this account. A student without data for a section gets an empty section,
-     * never an error.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public StudentDashboardResponse getDashboard(Long userAccountId) {
         Map<Long, LmsCourseSummaryResponse> courses = new LinkedHashMap<>();
         for (LmsCourseSummaryResponse course : courseQueries.getAccessibleCourses(userAccountId)) {
@@ -88,7 +72,6 @@ public class StudentDashboardQueryService {
         List<UpcomingAssignment> upcoming = List.of();
         long upcomingCount = 0;
         List<RecentAnnouncement> recentAnnouncements = List.of();
-        // Without a current course there is nothing to look up, and no empty IN list is ever sent.
         if (!courses.isEmpty()) {
             Instant now = clock.instant();
             Page<LmsAssignment> page = assignments.findByLmsCourseIdInAndStatusAndDueAtGreaterThanEqual(
@@ -126,7 +109,6 @@ public class StudentDashboardQueryService {
                 course.semesterNumber(), course.programCode(), course.academicSessionCode());
     }
 
-    // The course details come from the course list above, so no further query is made per row.
     private static UpcomingAssignment upcomingOf(LmsAssignment assignment, LmsCourseSummaryResponse course) {
         return new UpcomingAssignment(assignment.getId(), course.lmsCourseId(), course.courseCode(), course.courseName(),
                 assignment.getTitle(), assignment.getDueAt(), assignment.getMaxMarks());

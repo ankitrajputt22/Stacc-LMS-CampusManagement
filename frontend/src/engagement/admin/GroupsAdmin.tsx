@@ -53,7 +53,6 @@ function GroupAdminRow({ group, onDone }: { group: CampusGroup; onDone: (text: s
   )
 }
 
-/** Campus Management → Groups: clubs and sports groups, their join policies, and their officers. Nothing is deleted. */
 export function GroupsAdmin() {
   const queryClient = useQueryClient()
   const groups = useApiQuery(queryKeys.engagement.groups(), (signal) => getGroups(signal))

@@ -17,7 +17,6 @@ import type { LmsFacultyAssignmentOverview } from '../types/lms'
 
 const NOT_FACULTY = 'This page is for faculty accounts.'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
-// A token issued before the account got the permission does not carry it until the next sign-in.
 const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
@@ -32,7 +31,6 @@ function AssignmentRow({ assignment, now }: { assignment: LmsFacultyAssignmentOv
       </p>
       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
         <h2 className="text-sm font-semibold break-words text-ink">
-          {/* The assignment is managed on its course page. The click area covers the whole row. */}
           <Link
             to={`/teaching/${assignment.lmsCourseId}#${ASSIGNMENTS_SECTION_ID}`}
             className="after:absolute after:inset-0 focus-visible:outline-none group-hover:text-stacc-primary group-hover:underline group-hover:underline-offset-4"
@@ -51,7 +49,6 @@ function AssignmentRow({ assignment, now }: { assignment: LmsFacultyAssignmentOv
         {marksText(assignment.maxMarks)}
       </p>
       {assignment.status === 'PUBLISHED' && (
-        // Above the row's stretched link, so it opens the submissions instead of the course.
         <Link
           to={submissionsPath(assignment.lmsCourseId, assignment.assignmentId)}
           className="relative z-10 mt-1 inline-flex min-h-11 items-center rounded-control text-sm font-medium text-stacc-primary underline-offset-4 hover:text-stacc-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:min-h-0"
@@ -116,11 +113,6 @@ function MyAssignments() {
   )
 }
 
-/**
- * The draft and published assignments of every course the signed-in faculty member teaches, earliest
- * deadline first. Each one is managed on its course page; there is no second editor here. Accounts without
- * the faculty role see an explanation instead and no request is made. The backend decides which courses count.
- */
 export function AssignmentsPage() {
   const { account } = useAuth()
   const isFaculty = hasAnyRole(account?.roles ?? [], ['FACULTY'])

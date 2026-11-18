@@ -14,40 +14,32 @@ export const ADMIN_DENIED = 'You don’t have access to academic administration.
 export const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** How many records a page of the list shows. */
 export const PAGE_SIZE = 20
 
 type Request<T> = ApiRequestState<T[]> & { retry: () => void; refresh: () => void }
 
 export type MasterColumn<T> = Omit<Column<T>, 'key'> & { key?: string }
 
-/** A choice that narrows the list on this page, such as Department or Course type. */
 export type ListFilter<T> = {
   label: string
-  /** The first choice, which shows everything, such as "All departments". */
   all: string
   options: { value: string; label: string }[]
   value: (row: T) => string
 }
 
-/** A change that asks for confirmation first, such as deactivating a course. */
 export type Confirmation = {
   question: string
   detail: string
   confirmLabel: string
   busyLabel?: string
-  /** Sends the change and says what happened, for the announcement. A refusal is thrown and shown in the box. */
   run: () => Promise<string>
 }
 
-/** What a row's actions can do besides Edit. */
 export type RowActions = {
-  /** Shows the confirmation above the list; focus returns to the button with this key when it closes. */
   confirm: (confirmation: Confirmation, focusKey: string) => void
 }
 
 type MasterSectionProps<T> = {
-  /** Plural and singular words, such as "Departments" and "department". */
   title: string
   singular: string
   intro: string
@@ -55,27 +47,17 @@ type MasterSectionProps<T> = {
   columns: MasterColumn<T>[]
   rowKey: (row: T) => number
   rowName: (row: T) => string
-  /** The text the filter box searches, such as the code and the name. */
   searchText: (row: T) => string
-  /** False when the toolbar already searches on the server, so the list does not get a second search box. */
   clientSearch?: boolean
-  /** The record's status, which adds a status filter. */
   rowStatus?: (row: T) => string
-  /** More filters on the list the API sent, such as Department. */
   filters?: ListFilter<T>[]
-  /** When adding needs other masters first, such as departments for a program: why it cannot start yet. */
   blockedReason?: string | null
-  /** The form for a new record. It calls `done` with an announcement once saved. */
   renderCreate?: (done: (announcement: string) => void, cancel: () => void) => ReactNode
   renderEdit: (row: T, done: (announcement: string) => void, cancel: () => void) => ReactNode
-  /** Instead of "No … yet.", such as "No course offerings available." */
   emptyTitle?: string
-  /** Instead of the academic-administration wording of a 403. */
   deniedTitle?: string
-  /** Filters the backend applies, shown before the search box, such as session and semester. */
   toolbar?: ReactNode
   rowActions?: (row: T, actions: RowActions) => ReactNode
-  /** Says why a refused confirmation was refused. */
   describeRefusal?: (status: number | null, apiMessage: string | null) => string
 }
 
@@ -92,12 +74,6 @@ function defaultRefusal(status: number | null, apiMessage: string | null): strin
   return apiMessage && status !== null && status < 500 ? apiMessage : 'Couldn’t save. Check your connection and try again.'
 }
 
-/**
- * One academic master as a card: its heading and Add button, one contained form at a time for adding or editing, a
- * search box and status filter, and the list as a shared table, a page at a time, with its loading, empty, error, and
- * no-access states. After a save every academic admin list is asked again quietly, since they feed each other's
- * choices; the form closes and the change is announced. A 403 never signs the user out.
- */
 export function MasterSection<T>({
   title,
   singular,
@@ -144,7 +120,6 @@ export function MasterSection<T>({
   const pageRows = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
   const statuses = rowStatus ? [...new Set((rows ?? []).map(rowStatus))] : []
 
-  // After a form closes, focus returns to the button that opened it, or to Add; whichever is visible on this screen.
   useEffect(() => {
     if (pendingFocus === null) {
       return
@@ -169,8 +144,6 @@ export function MasterSection<T>({
     close(focusKey)
   }
 
-  // The empty state's Add has its own key: after the first record is saved, focus waits for the Add above the list
-  // instead of landing on the empty state's button just before it disappears.
   const add = (focusKey: string) => (
     <Button
       variant="primary"

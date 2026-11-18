@@ -25,10 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of the permanent course catalog. A course has one owning department, named by its ID and loaded on the server; semester offerings are managed separately. Reading needs the admin role and {@code ACADEMIC_MASTER_VIEW}; creating and editing also need
- * {@code ACADEMIC_MASTER_MANAGE}. There is no delete.
- */
 @RestController
 @RequestMapping("/api/v1/admin/academic/courses")
 @Tag(name = "Admin academic masters")

@@ -11,7 +11,6 @@ import type { HostelOccupancy, RollCallDetail, RollCallMark } from '../../types/
 import { Alert, Badge, Button, Card, SelectField, TextField } from '../../ui'
 import { MARKS, markLabel } from './rollCallText'
 
-/** Today in the browser's own time zone, as yyyy-mm-dd for a date field. */
 function today(): string {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -23,7 +22,6 @@ function refusal(failure: unknown, what: string): string {
   return message && status !== null && status < 500 ? message : `Couldn’t ${what}. Try again.`
 }
 
-/** One sheet: a Present, Absent, or Out choice per resident while open; Save marks and Finalize (confirmed). */
 function Sheet({ detail, onChanged }: { detail: RollCallDetail; onChanged: (message: string) => Promise<void> }) {
   const [marks, setMarks] = useState<Record<number, RollCallMark>>(() =>
     Object.fromEntries(detail.entries.map((entry) => [entry.entryId, entry.status])),
@@ -107,10 +105,6 @@ function Sheet({ detail, onChanged }: { detail: RollCallDetail; onChanged: (mess
   )
 }
 
-/**
- * Night roll call for a warden's hostels: open tonight's sheet for a hostel or block (pre-filled from the gate log,
- * nobody starts as absent), mark residents, and finalize. Recent sheets are listed with their counts.
- */
 export function WardenRollCall({ hostels }: { hostels: HostelOccupancy[] }) {
   const queryClient = useQueryClient()
   const [hostelId, setHostelId] = useState<number>(hostels[0].hostelId)

@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** A student's own analytics, faculty course analytics, and background exports of reports one may already read. */
 @RestController
 @Tag(name = "Analytics and exports")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

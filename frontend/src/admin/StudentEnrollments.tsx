@@ -31,12 +31,6 @@ type StudentEnrollmentsProps = {
   onBack: () => void
 }
 
-/**
- * One student's official enrollments: a short summary, then every semester enrollment, newest first. An enrolled
- * semester enrollment can have its courses managed, or be completed or withdrawn after a confirmation, which the
- * backend refuses while a course is still enrolled. An ended one is read-only. The student can be enrolled in another
- * semester of their own program. Nothing about the student's account or profile can be changed here.
- */
 export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollmentsProps) {
   const queryClient = useQueryClient()
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -71,7 +65,6 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
             ? `No other semesters of ${student?.programCode ?? 'this program'} to enroll in.`
             : null
 
-  // Once the student has loaded, focus moves to their name, because the button that chose them is gone.
   useEffect(() => {
     focusLater('student')
   }, [focusLater])
@@ -81,8 +74,6 @@ export function StudentEnrollments({ studentProfileId, onBack }: StudentEnrollme
     void queryClient.invalidateQueries({ queryKey: queryKeys.admin.academic })
   }
 
-  // As with the masters, the empty state's button has its own key, so focus after the first enrollment waits for the
-  // button above the list.
   const enrollButton = (focusKey: string) => (
     <Button
       data-focus-key={focusKey}
@@ -341,10 +332,6 @@ type SectionPlacementFormProps = {
   onCancel: () => void
 }
 
-/**
- * Chooses the student's section among the active sections of their semester, or none. A full section is marked as such;
- * the backend refuses it anyway, under the section's lock, so the last place is never taken twice.
- */
 function SectionPlacementForm({ enrollment, studentLoginId, onDone, onCancel }: SectionPlacementFormProps) {
   const sections = useApiQuery(queryKeys.admin.sections(enrollment.semesterId), (signal) =>
     getSections(enrollment.semesterId, signal),

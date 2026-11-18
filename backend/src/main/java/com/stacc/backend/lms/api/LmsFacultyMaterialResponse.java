@@ -6,7 +6,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One study material as faculty manage it. Where the file is stored is never sent. */
 public record LmsFacultyMaterialResponse(
         @Schema(example = "7")
         Long id,

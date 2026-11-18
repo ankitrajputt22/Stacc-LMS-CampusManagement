@@ -17,10 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A resident's room complaint is an ordinary helpdesk ticket of the HOSTEL category (routed to its team), raised as the
- * student with their current room written at the top. There is no second ticket engine; the helpdesk does the rest.
- */
 @Service
 @Transactional
 public class HostelComplaintService {

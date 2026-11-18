@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** Links are https only; an item is verified once, and a verified or waiting item is no longer edited. */
 class PortfolioItemTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

@@ -25,11 +25,6 @@ const TABS = [
   { to: '/warden/bed-map', label: 'Bed map' },
 ]
 
-/**
- * /warden: the warden's own hostels, one section per page: Overview (occupancy and requests to decide), Roll call,
- * Notices, Mess, and the Bed map, where students are checked in. The backend lists only the hostels the account is an
- * active warden of and checks each hostel again.
- */
 export function WardenPage({ section = 'overview' }: { section?: WardenSection }) {
   const { account } = useAuth()
   const occupancy = useApiQuery(queryKeys.hostel.occupancy('warden'), (signal) => getHostelOccupancy('warden', signal))

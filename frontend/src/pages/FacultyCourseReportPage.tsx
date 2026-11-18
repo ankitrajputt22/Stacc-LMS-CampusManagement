@@ -70,10 +70,6 @@ function Report({ report }: { report: FacultyCourseReport }) {
   )
 }
 
-/**
- * The report of one course offering at /reports/faculty/course-offerings/:courseOfferingId, for the faculty member who
- * actively teaches it. Another offering and a missing one look the same: "Course report unavailable".
- */
 export function FacultyCourseReportPage() {
   const { courseOfferingId: param } = useParams()
   const courseOfferingId = param && /^[1-9]\d{0,17}$/.test(param) ? Number(param) : null

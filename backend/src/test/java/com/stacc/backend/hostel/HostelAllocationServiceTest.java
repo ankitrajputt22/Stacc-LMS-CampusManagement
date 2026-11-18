@@ -189,7 +189,6 @@ class HostelAllocationServiceTest {
 
     @Test
     void anApprovedApplicationCanBeAllocatedAgainAfterVacating() {
-        // Nothing ACTIVE remains for the application, the student, or the bed after a vacate.
         assertThat(service.allocate(1L, 42L, 3L).status()).isEqualTo("ACTIVE");
         verify(allocations).existsActiveForApplication(42L);
         verify(allocations).existsActiveForStudent(5L);

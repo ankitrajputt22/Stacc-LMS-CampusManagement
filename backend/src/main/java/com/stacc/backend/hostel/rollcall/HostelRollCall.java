@@ -18,7 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One night's roll call sheet of a hostel, or of one block of it. Finalized once; never deleted or reopened. */
 @Entity
 @Table(name = "hostel_roll_calls")
 public class HostelRollCall {
@@ -57,7 +56,6 @@ public class HostelRollCall {
     private Instant finalizedAt;
 
     protected HostelRollCall() {
-        // Required by JPA.
     }
 
     public HostelRollCall(Hostel hostel, String block, LocalDate rollDate, UserAccount createdBy, Instant now) {

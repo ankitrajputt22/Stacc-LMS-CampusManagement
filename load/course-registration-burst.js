@@ -4,9 +4,6 @@ import exec from 'k6/execution'
 import { Counter } from 'k6/metrics'
 import { annotate, BASE, signIn } from './common.js'
 
-// Many registrations for one course offering at once, several from each student, so the capacity lock and the
-// "not taken before" rule are raced. The demo data's third-semester students and CS305 (open to the whole semester)
-// are the defaults. Run it on a fresh throwaway stack: a student who already took the course cannot register again.
 const STUDENTS = (__ENV.STUDENTS || 'cse24001,cse24002,cse24003').split(',').map((id) => id.trim())
 const COURSE_CODE = __ENV.COURSE_CODE || 'CS305'
 const REQUESTS_PER_STUDENT = Number(__ENV.REQUESTS_PER_STUDENT || 10)
@@ -35,7 +32,6 @@ export const options = {
 
 const OVERVIEW = `${BASE}/students/me/course-registration`
 
-/** The student's term holding the offering, and what it says about the offering and their own enrollments in it. */
 function look(params, offeringId) {
   const response = http.get(OVERVIEW, params)
   if (response.status !== 200) {
@@ -88,7 +84,6 @@ export default function (data) {
 }
 
 export function teardown(data) {
-  // The eligible students who got in: every one of them, unless the free places ran out first.
   const expected = data.seats === null ? data.eligible : Math.min(data.eligible, data.seats)
   let gained = 0
   let seatsAfter = null

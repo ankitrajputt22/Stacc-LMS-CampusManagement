@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A hackathon: a draft, published, results released once after it ends, then archived. Never deleted. */
 @Entity
 @Table(name = "hackathons")
 public class Hackathon {
@@ -80,7 +79,6 @@ public class Hackathon {
         status = Status.PUBLISHED;
     }
 
-    /** Releases the results once, after the hackathon has ended. */
     public void releaseResults(Instant now) {
         if (status != Status.PUBLISHED || now.isBefore(endsAt)) {
             throw new IllegalStateException("Results are released once, after the hackathon has ended.");
@@ -93,12 +91,10 @@ public class Hackathon {
         status = Status.ARCHIVED;
     }
 
-    /** Teams form and hand in work while the hackathon is published and has not ended. */
     public boolean takingWork(Instant now) {
         return status == Status.PUBLISHED && now.isBefore(endsAt);
     }
 
-    /** Judges score once it has ended and until results are released. */
     public boolean judging(Instant now) {
         return status == Status.PUBLISHED && !now.isBefore(endsAt);
     }

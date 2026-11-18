@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A kind of grievance with its committee's response time. The code is fixed; categories are made inactive, never deleted. */
 @Entity
 @Table(name = "grievance_categories")
 public class GrievanceCategory {

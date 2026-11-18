@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Fees: a student's own ledger, scholarships, and refunds; and the accounts office's structures, payments, and decisions. */
 @RestController
 @Tag(name = "Fees")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

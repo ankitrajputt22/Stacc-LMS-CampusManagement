@@ -33,12 +33,6 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-/**
- * Calls the AI service over HTTP with the shared internal token, never a user's access token. Every call has a
- * connect and a read timeout, so a slow model can never hold a request forever; a knowledge refresh gets a longer
- * read timeout than a question. Failures become {@link AiServiceException}s; the log names only the kind of failure,
- * never the question, course text, or token.
- */
 @Component
 public class HttpAiServiceClient implements AiServiceClient {
 
@@ -69,7 +63,6 @@ public class HttpAiServiceClient implements AiServiceClient {
     private RestClient build(Duration readTimeout) {
         HttpClient http = HttpClient.newBuilder()
                 .connectTimeout(properties.connectTimeout())
-                // Plain HTTP/1.1 inside the private network: no upgrade attempts, no redirects.
                 .version(HttpClient.Version.HTTP_1_1)
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
@@ -79,7 +72,6 @@ public class HttpAiServiceClient implements AiServiceClient {
                 .requestFactory(factory)
                 .baseUrl(properties.serviceUrl())
                 .defaultHeader(TOKEN_HEADER, properties.internalToken())
-                // The current request's ID, so the AI service's log line can be matched with the backend's.
                 .requestInterceptor((request, body, execution) -> {
                     String requestId = MDC.get(RequestIdFilter.KEY);
                     if (requestId != null) {
@@ -108,7 +100,6 @@ public class HttpAiServiceClient implements AiServiceClient {
         }
     }
 
-    /** Says once, after startup, whether the configured AI service answers. It never delays or stops the startup. */
     @EventListener(ApplicationReadyEvent.class)
     void reportReachability() {
         if (client != null) {
@@ -173,7 +164,6 @@ public class HttpAiServiceClient implements AiServiceClient {
 
     @Override
     public AiServiceMessages.BankDraftResult questionBankDraft(String courseKey, AiServiceMessages.BankDraftRequest request) {
-        // Drafting and checking every keyed question takes longer than one answer, like a refresh.
         return post(syncClient, courseKey, "question-bank-draft", request, AiServiceMessages.BankDraftResult.class);
     }
 

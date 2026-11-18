@@ -1,6 +1,3 @@
-// The grievance API exactly as the backend sends it (GrievanceService and GrievanceAdminService). Cases are
-// confidential: the complainant's login ID reaches the committee only, and admins never read cases.
-
 export type GrievanceStatus = 'SUBMITTED' | 'UNDER_REVIEW' | 'RESOLVED' | 'APPEALED' | 'CLOSED'
 
 export type GrievanceCategoryOption = { categoryId: number; name: string; responseDays: number }
@@ -12,7 +9,6 @@ export type GrievanceSummary = {
   subject: string
   status: GrievanceStatus
   submittedAt: string
-  /** The time the committee should answer by: the appeal's while appealed. */
   respondBy: string
   overdue: boolean
 }
@@ -22,7 +18,6 @@ export type GrievanceCase = {
   caseNumber: string
   categoryName: string
   subject: string
-  /** Plain text, as are the resolution, appeal reason, and decision. */
   details: string
   status: GrievanceStatus
   submittedAt: string
@@ -36,9 +31,7 @@ export type GrievanceCase = {
   appealRespondBy: string | null
   appealDecision: string | null
   closedAt: string | null
-  /** While resolved: the last moment to appeal. */
   appealUntil: string | null
-  /** Sent to the committee only. */
   complainantLoginId: string | null
 }
 

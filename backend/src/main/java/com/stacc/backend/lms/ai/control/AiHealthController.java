@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** AI health on the admins' system health page (v0.13.7). */
 @RestController
 @Tag(name = "Operations")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

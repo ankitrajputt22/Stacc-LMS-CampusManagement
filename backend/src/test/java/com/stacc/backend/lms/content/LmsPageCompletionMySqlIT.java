@@ -12,11 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two "Mark as complete" clicks at the same moment record one completion: both lock the course enrollment row and then
- * read the completion with a locking read. Uses cse24003 and CS301's "Arrays and memory layout", whose
- * completions no other test touches.
- */
 class LmsPageCompletionMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

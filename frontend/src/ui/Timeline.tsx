@@ -5,15 +5,10 @@ export type TimelineTone = 'done' | 'current' | 'waiting' | 'danger' | 'neutral'
 
 export type TimelineEntry = {
   key: string | number
-  /** What happened, as words. */
   title: ReactNode
-  /** A status word beside the title, never only a colour. */
   badge?: ReactNode
-  /** Who did it, by login ID. */
   actor?: string | null
-  /** When, as an ISO moment. */
   at?: string | null
-  /** More detail, such as a comment, shown as given. */
   detail?: ReactNode
   tone?: TimelineTone
 }
@@ -26,10 +21,6 @@ const DOT: Record<TimelineTone, string> = {
   neutral: 'border-line-strong bg-line-strong',
 }
 
-/**
- * The one way Stacc shows a history or a sequence of steps: a vertical line with one marker per entry, oldest first,
- * each with its words, who, and when. Colour only repeats what the words say.
- */
 export function Timeline({ entries, label, empty = 'Nothing yet.' }: { entries: TimelineEntry[]; label: string; empty?: string }) {
   if (entries.length === 0) {
     return <p className="text-sm text-ink-muted">{empty}</p>

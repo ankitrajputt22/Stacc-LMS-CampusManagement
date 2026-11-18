@@ -17,11 +17,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The syllabus of one LMS course, at most one per course. Faculty save a draft as often as they like; publishing
- * copies the draft to the version students read and records the time. The text is formatted text (Stacc's small
- * formatting set), stored as written and never as HTML. Nothing unpublishes or deletes a syllabus.
- */
 @Entity
 @Table(name = "lms_syllabi")
 public class LmsSyllabus {
@@ -32,7 +27,6 @@ public class LmsSyllabus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: the course is never created or deleted through its syllabus.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_course_id", nullable = false, updatable = false, unique = true)
     private LmsCourse lmsCourse;
@@ -61,7 +55,6 @@ public class LmsSyllabus {
     private Instant updatedAt;
 
     protected LmsSyllabus() {
-        // Required by JPA.
     }
 
     public LmsSyllabus(LmsCourse lmsCourse, String draftContent, Instant now) {
@@ -101,21 +94,15 @@ public class LmsSyllabus {
         return publishedContent != null;
     }
 
-    /** Whether the draft differs from what students read, including never having been published. */
     public boolean hasUnpublishedChanges() {
         return !Objects.equals(draftContent, publishedContent);
     }
 
-    /** Replaces the draft. Students keep reading the published version until the next publish. */
     public void saveDraft(String content, Instant now) {
         this.draftContent = Require.text(content, "content", MAX_CONTENT_LENGTH);
         this.draftUpdatedAt = Require.notNull(now, "now");
     }
 
-    /**
-     * Makes the draft the version students read. The first publication time is kept; the latest one moves. Publishing
-     * a draft that students already read changes nothing.
-     */
     public void publish(Instant now) {
         Require.notNull(now, "now");
         if (!hasUnpublishedChanges()) {

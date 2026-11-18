@@ -3,10 +3,6 @@ import { ButtonLink } from '../ui'
 
 export type StepperEntry = { key: number; label: string; to: To }
 
-/**
- * Previous and Next links through the students on a grading screen, in the order the list shows them, with the
- * position. It only moves between records the list already returned; the backend checks each one again.
- */
 export function StudentStepper({ entries, currentKey, what }: { entries: StepperEntry[]; currentKey: number | null; what: string }) {
   const index = entries.findIndex((entry) => entry.key === currentKey)
   if (index < 0 || entries.length < 2) {

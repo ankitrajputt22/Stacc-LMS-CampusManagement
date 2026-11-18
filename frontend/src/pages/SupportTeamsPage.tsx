@@ -84,10 +84,6 @@ function TeamRow({ team, onSaved }: { team: HelpdeskTeam; onSaved: (message: str
   )
 }
 
-/**
- * /support/admin/teams: support teams, their members, and which team each category's new tickets go to. Teams are made
- * inactive, never deleted. The backend checks every change.
- */
 export function SupportTeamsPage() {
   const queryClient = useQueryClient()
   const teams = useApiQuery(queryKeys.helpdesk.teams(), (signal) => getHelpdeskTeams(signal))

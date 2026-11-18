@@ -19,10 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The admin enrollment monitor: every official course enrollment, searched and filtered on the server and read one
- * page at a time. It only reads; changes stay on the student's enrollment page.
- */
 @Service
 @Transactional(readOnly = true)
 public class EnrollmentMonitorService {
@@ -39,7 +35,6 @@ public class EnrollmentMonitorService {
         this.people = people;
     }
 
-    /** Filters a null field leaves out. */
     public record Filters(Long academicSessionId, Long programId, Long semesterId, Long sectionId, Long courseId,
             CourseEnrollmentStatus status, String query) {
     }

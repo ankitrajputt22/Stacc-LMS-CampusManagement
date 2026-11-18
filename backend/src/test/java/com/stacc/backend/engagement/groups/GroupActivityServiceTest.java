@@ -20,7 +20,6 @@ import com.stacc.backend.notification.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Only officers and the office write; outsiders get 404; an announcement tells active members, never its author. */
 class GroupActivityServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

@@ -37,7 +37,6 @@ function titleLine(title: LibraryTitle) {
   return [title.authors, title.publishedYear, title.subject].filter(Boolean).join(' · ')
 }
 
-/** Search on submit only, never per keystroke; an empty search lists the first titles. */
 function SearchForm({ label, onSearch }: { label: string; onSearch: (q: string) => void }) {
   const [text, setText] = useState('')
   return (
@@ -364,7 +363,6 @@ function Desk({ run }: { run: Run }) {
   )
 }
 
-/** /library: the catalog, loans, holds, and resources for members, and the lending desk for librarians. */
 export function LibraryPage() {
   const { account } = useAuth()
   const roles = account?.roles ?? []

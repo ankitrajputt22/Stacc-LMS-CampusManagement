@@ -6,11 +6,6 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-/**
- * The quality checks of an AI draft (v0.14.2), worked out once when it was drafted and kept for the reviewer: a possible
- * duplicate in the bank, whether that match is in a final exam paper, whether the question may be outside the course
- * content, and the model's difficulty and Bloom level as suggestions. They decide nothing; the question's own values do.
- */
 @Embeddable
 public class LmsQuestionAiChecks {
 
@@ -32,7 +27,6 @@ public class LmsQuestionAiChecks {
     private BloomLevel suggestedBloomLevel;
 
     protected LmsQuestionAiChecks() {
-        // Required by JPA; also the checks of a question written by hand: none.
     }
 
     public LmsQuestionAiChecks(Long duplicateOfQuestionId, boolean inPreviousPaper, boolean outOfSyllabus,

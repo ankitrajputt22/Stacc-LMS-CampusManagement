@@ -15,11 +15,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The subscription feed: the calendar of the account behind an active link, from 30 days back to 180 days ahead, built
- * with exactly the rules of the signed-in calendar from the account's current roles and permissions. A disabled
- * account, a revoked link, or an account that lost calendar access gets nothing.
- */
 @Service
 public class CalendarFeedService {
 

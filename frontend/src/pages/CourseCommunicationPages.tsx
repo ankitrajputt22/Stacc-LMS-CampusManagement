@@ -7,7 +7,6 @@ import { StudentCourseSection } from './CourseSectionPages'
 const DISCUSSIONS = { path: 'discussions', label: 'Discussions' }
 const MESSAGES = { path: 'messages', label: 'Messages' }
 
-/** /courses/:lmsCourseId/discussions */
 export function CourseDiscussionsPage() {
   return (
     <StudentCourseSection title="Discussions">
@@ -16,7 +15,6 @@ export function CourseDiscussionsPage() {
   )
 }
 
-/** /courses/:lmsCourseId/discussions/:threadId */
 export function CourseDiscussionPage() {
   const threadId = parseRouteId(useParams().threadId)
   return (
@@ -38,7 +36,6 @@ export function CourseDiscussionPage() {
   )
 }
 
-/** /courses/:lmsCourseId/messages */
 export function CourseMessagesPage() {
   return (
     <StudentCourseSection title="Messages">
@@ -47,7 +44,6 @@ export function CourseMessagesPage() {
   )
 }
 
-/** /courses/:lmsCourseId/messages/:conversationId */
 export function CourseConversationPage() {
   const conversationId = parseRouteId(useParams().conversationId)
   return (

@@ -27,11 +27,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * The repository is a stand-in, so it can hand back assignments in any state, course, or order. That shows
- * the student rule holds on its own, even if a query ever returned too much. Deadlines are fixed moments;
- * one is long past, and the service never looks at the clock.
- */
 class LmsStudentAssignmentQueryServiceTest {
 
     private static final Long STUDENT_ID = 12L;
@@ -141,7 +136,6 @@ class LmsStudentAssignmentQueryServiceTest {
     void draftArchivedForeignAndMissingAssignmentsAllLookTheSame() {
         found(assignment(course, 2, LmsContentStatus.DRAFT, "2026-10-20T18:29:00Z"));
         found(assignment(course, 3, LmsContentStatus.ARCHIVED, "2026-10-20T18:29:00Z"));
-        // Even if a lookup ever returned another course's assignment, it is not shown.
         found(assignment(otherCourse, 9, LmsContentStatus.PUBLISHED, "2026-10-20T18:29:00Z"));
 
         for (Long assignmentId : List.of(2L, 3L, 9L, 999L)) {

@@ -26,7 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty with the question bank permission read or change the bank; students have no route to it. */
 class LmsQuestionBankControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

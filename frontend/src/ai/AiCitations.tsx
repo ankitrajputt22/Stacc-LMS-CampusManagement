@@ -4,10 +4,6 @@ import { Badge } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 import { citationKind } from './aiText'
 
-/**
- * The sources a result is based on, as cards (v0.13.9): what kind of source, its title and file, the page or slide, and
- * a link to the course page it is on when the caller gives one. Plain text only.
- */
 export function AiCitations({ citations, headingLevel = 3, pageLink }: {
   citations: AiCitation[]
   headingLevel?: 3 | 4

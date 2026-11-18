@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The rubrics of a course, and which rubric an assignment is graded with, for the faculty who teach it. */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS rubrics")
@@ -51,7 +50,6 @@ public class LmsRubricController {
         this.assignments = assignments;
     }
 
-    /** The rubric an assignment is graded with; null for none. */
     public record AssignmentRubricRequest(@Schema(description = "An active rubric of the same course, or null for none.") Long rubricId) {
     }
 

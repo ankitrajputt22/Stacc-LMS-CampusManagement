@@ -22,10 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Which content AI knowledge is built from. The repositories here return every row whatever its status, so the test
- * proves the service applies the student visibility rule itself.
- */
 class AiKnowledgeSourcesTest {
 
     private final LmsTopicRepository topicRepository = mock(LmsTopicRepository.class);

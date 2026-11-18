@@ -8,7 +8,6 @@ import com.stacc.backend.auth.role.RoleName;
 import com.stacc.backend.campus.CampusFixtures;
 import org.junit.jupiter.api.Test;
 
-/** An accepted request moves forward only: being processed, ready, completed; nothing goes back. */
 class CampusRequestProgressTest {
 
     private final UserAccount student = CampusFixtures.account(5, "cse24001", RoleName.STUDENT);

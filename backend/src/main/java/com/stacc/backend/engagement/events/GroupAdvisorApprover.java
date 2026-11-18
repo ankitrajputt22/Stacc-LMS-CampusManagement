@@ -8,7 +8,6 @@ import com.stacc.backend.engagement.groups.CampusGroupService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The faculty advisor of the group a campus event belongs to; nothing for any other request. */
 @Component
 public class GroupAdvisorApprover implements ApproverRelationshipResolver {
 

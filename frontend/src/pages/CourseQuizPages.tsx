@@ -60,7 +60,6 @@ function QuizList({ course }: { course: LmsCourseDetail }) {
                   <NavIcon name="documents" className="mt-0.5 size-6 shrink-0 text-ink-muted" />
                   <div className="min-w-0 space-y-1.5">
                     <h3 className="text-lg font-bold break-words text-portal-navy">
-                      {/* The title is the one link; its click area covers the whole card. */}
                       <Link
                         to={`/courses/${course.lmsCourseId}/quizzes/${quiz.id}`}
                         className="after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none group-hover:underline group-hover:underline-offset-4"
@@ -113,7 +112,6 @@ function QuizList({ course }: { course: LmsCourseDetail }) {
   )
 }
 
-/** /courses/:lmsCourseId/quizzes: the course's published quizzes with the student's own attempts. */
 export function CourseQuizzesPage() {
   return <StudentCourseSection title="Quizzes">{(course) => <QuizList course={course} />}</StudentCourseSection>
 }
@@ -252,7 +250,6 @@ function QuizDetail({ course }: { course: LmsCourseDetail }) {
   )
 }
 
-/** /courses/:lmsCourseId/quizzes/:quizId: one quiz's rules and the student's attempts, with Start or Resume. */
 export function CourseQuizPage() {
   return (
     <StudentCourseSection title="Quiz" parent={QUIZZES}>
@@ -277,11 +274,9 @@ function Attempt({ course }: { course: LmsCourseDetail }) {
       </Card>
     )
   }
-  // Keyed by the attempt, so its answers are read once from the server and then kept on the page.
   return <QuizTaking key={attempt.data.id} attempt={attempt.data} lmsCourseId={course.lmsCourseId} />
 }
 
-/** /courses/:lmsCourseId/quizzes/:quizId/attempts/:attemptId: taking, or reading back, one of the student's attempts. */
 export function QuizAttemptPage() {
   return (
     <StudentCourseSection title="Quiz attempt" parent={QUIZZES}>
@@ -290,8 +285,6 @@ export function QuizAttemptPage() {
   )
 }
 
-/** /courses/:lmsCourseId/grades: the student's own published grades. */
 export function CourseGradesPage() {
   return <StudentCourseSection title="Grades">{(course) => <CourseGrades lmsCourseId={course.lmsCourseId} />}</StudentCourseSection>
 }
-

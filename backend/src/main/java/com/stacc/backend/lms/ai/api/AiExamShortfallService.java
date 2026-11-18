@@ -10,11 +10,6 @@ import com.stacc.backend.lms.question.QuestionDifficulty;
 import com.stacc.backend.lms.question.QuestionType;
 import org.springframework.stereotype.Service;
 
-/**
- * Exam papers, then AI (v0.14.4): for each blueprint row the bank is short of, AI drafts the missing questions into the
- * bank with the row's type, difficulty, topic, Bloom level, and outcome, as Needs review. Papers still take only reviewed
- * questions, so the teacher reviews the drafts and then builds the paper. At most 10 per row per request.
- */
 @Service
 public class AiExamShortfallService {
 
@@ -22,11 +17,9 @@ public class AiExamShortfallService {
     private static final List<QuestionType> ANY_TYPE = List.of(QuestionType.SINGLE_CHOICE, QuestionType.MULTIPLE_CHOICE,
             QuestionType.TRUE_FALSE, QuestionType.SHORT_ANSWER, QuestionType.DESCRIPTIVE);
 
-    /** What was drafted for one short row. */
     public record RowResult(int position, String sectionTitle, int missing, int added, int droppedForKeyMismatch) {
     }
 
-    /** What was drafted for the blueprint; {@code note} says why drafting stopped early, or is null. */
     public record Result(List<RowResult> rows, String note) {
 
         public int added() {
@@ -43,7 +36,6 @@ public class AiExamShortfallService {
     }
 
     public Result fill(Long accountId, Long blueprintId) {
-        // Checks faculty access and finds the course from the stored blueprint.
         LmsExamPaperService.BlueprintShortfall shortfall = papers.shortfall(accountId, blueprintId);
         List<RowResult> results = new ArrayList<>();
         String note = null;

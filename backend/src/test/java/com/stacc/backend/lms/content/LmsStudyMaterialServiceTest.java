@@ -40,13 +40,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
 
-/**
- * The faculty member behind ACCOUNT_ID teaches course 7, and the student behind STUDENT_ID may use it.
- * Storage is a stand-in, so these tests show what is stored, under which key, and when nothing is.
- */
 class LmsStudyMaterialServiceTest {
 
-    // Made-up IDs used only by these tests.
     private static final Long ACCOUNT_ID = 21L;
     private static final Long OTHER_ACCOUNT_ID = 22L;
     private static final Long STUDENT_ID = 12L;
@@ -80,7 +75,6 @@ class LmsStudyMaterialServiceTest {
     void facultyMemberWhoTeachesCourseSevenAndAStudentWhoTakesIt() {
         when(facultyAccess.canAccessCourse(ACCOUNT_ID, COURSE_ID)).thenReturn(true);
         when(studentAccess.canAccessCourse(STUDENT_ID, COURSE_ID)).thenReturn(true);
-        // The student may use the course and every module is open to them, unless a test says otherwise.
         when(paths.isOpenTo(org.mockito.ArgumentMatchers.eq(STUDENT_ID), org.mockito.ArgumentMatchers.eq(COURSE_ID),
                 org.mockito.ArgumentMatchers.anyLong())).thenReturn(true);
         when(topics.findWithModuleById(31L)).thenReturn(Optional.of(topic));
@@ -101,8 +95,6 @@ class LmsStudyMaterialServiceTest {
         assertEquals(status, refused.getStatus());
         assertEquals(message, refused.getMessage());
     }
-
-    // Upload
 
     @Test
     void uploadStoresTheFileUnderANewKeyThenRecordsADraftAtTheEnd() throws Exception {
@@ -191,8 +183,6 @@ class LmsStudyMaterialServiceTest {
         verifyNoInteractions(storage);
     }
 
-    // Changes
-
     @Test
     void editingChangesTheTextOnly() {
         LmsStudyMaterial edited = service.updateMaterial(ACCOUNT_ID, 7L, "Week 1 notes", "Updated");
@@ -264,8 +254,6 @@ class LmsStudyMaterialServiceTest {
         assertEquals(LmsContentStatus.PUBLISHED, first.getStatus());
     }
 
-    // Order
-
     @Test
     void materialsAreNumberedInTheRequestedOrder() {
         List<LmsStudyMaterial> ordered = service.reorderMaterials(ACCOUNT_ID, 31L, List.of(3L, 7L));
@@ -290,8 +278,6 @@ class LmsStudyMaterialServiceTest {
         assertEquals(1, first.getPosition());
         assertEquals(2, second.getPosition());
     }
-
-    // Download
 
     private void storedContent() {
         when(storage.open(anyString())).thenAnswer(call -> new ByteArrayInputStream(PDF));
@@ -349,10 +335,8 @@ class LmsStudyMaterialServiceTest {
     void aRuleTheTokenDoesNotAllowIsNeverUsed() {
         storedContent();
 
-        // The student may use the course, but a token without the student rule cannot download as one.
         assertRefused(HttpStatus.NOT_FOUND, LmsStudyMaterialService.MATERIAL_UNAVAILABLE,
                 () -> service.openForDownload(STUDENT_ID, AS_FACULTY, 7L));
-        // The faculty member teaches the course, but without the faculty rule only published files count.
         assertRefused(HttpStatus.NOT_FOUND, LmsStudyMaterialService.MATERIAL_UNAVAILABLE,
                 () -> service.openForDownload(ACCOUNT_ID, AS_STUDENT, 3L));
     }

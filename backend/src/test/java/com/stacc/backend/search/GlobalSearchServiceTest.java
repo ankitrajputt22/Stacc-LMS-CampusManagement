@@ -19,7 +19,6 @@ class GlobalSearchServiceTest {
 
     private final SearchActor student = new SearchActor(70L, Set.of("STUDENT"), Set.of("GLOBAL_SEARCH_USE"));
 
-    /** A provider with fixed totals per kind, which records the page requests it gets. */
     private static final class FakeProvider implements SearchProvider {
         private final Set<SearchResultType> types;
         private final long total;
@@ -124,7 +123,6 @@ class GlobalSearchServiceTest {
 
     @Test
     void theRealProvidersAnswerEveryKindOnce() {
-        // The six providers together cover every result kind; the constructor refuses overlaps.
         List<SearchResultType> covered = new ArrayList<>();
         for (SearchProvider provider : List.<SearchProvider>of(
                 new LmsSearchProvider(null, null, null, null, null, null), new CalendarSearchProvider(null, null),

@@ -101,7 +101,6 @@ function LatestOuting() {
   )
 }
 
-/** The hostel overview: the resident's allocation and application, notices, tonight's dinner, and the latest outing. */
 export function StudentHostelOverview({ detail }: { detail: HostelApplicationDetail | null }) {
   return (
     <div className="space-y-6">

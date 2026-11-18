@@ -10,10 +10,8 @@ export type SimpleField = {
   kind: 'text' | 'textarea' | 'checkbox'
   maxLength?: number
   required?: boolean
-  /** Shown but not editable, such as a code fixed after creation. */
   readOnly?: boolean
   hint?: string
-  /** For a checkbox: a note shown while it is unticked after being ticked, such as what deactivating means. */
   offNote?: string
 }
 
@@ -28,11 +26,6 @@ type SimpleFormProps = {
   onCancel: () => void
 }
 
-/**
- * A small contained form for one hostel, room, or bed. Every field has a real label; required text is checked before
- * sending and the backend checks everything again. A refusal, such as a taken number or an occupied bed (409), is shown
- * in the backend's words and keeps what was entered. A 403 never signs the user out.
- */
 export function SimpleForm({ heading, fields, initial, submitLabel, onSubmit, onCancel }: SimpleFormProps) {
   const id = useId()
   const formRef = useRef<HTMLFormElement>(null)

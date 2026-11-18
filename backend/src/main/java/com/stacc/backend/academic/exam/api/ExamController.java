@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Examinations: a student's own exams with seats, and the admin routes that build and publish exam sessions. */
 @RestController
 @Tag(name = "Examinations")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

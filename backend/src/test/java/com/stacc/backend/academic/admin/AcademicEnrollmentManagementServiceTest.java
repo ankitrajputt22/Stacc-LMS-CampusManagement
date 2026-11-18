@@ -266,8 +266,6 @@ class AcademicEnrollmentManagementServiceTest {
         assertEquals("COMPLETED", service.changeSemesterEnrollmentStatus(88L, semesterTo(SemesterEnrollmentStatus.COMPLETED)).status());
     }
 
-    // Sections: placing a student, moving them, and taking them out.
-
     private Section section(long id, com.stacc.backend.academic.semester.Semester semester, String code, Integer capacity) {
         Section section = MasterFixtures.withId(new Section(semester, code, null, capacity), id);
         when(sections.findByIdForUpdate(id)).thenReturn(Optional.of(section));

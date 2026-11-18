@@ -14,10 +14,6 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Issues, checks, and revokes passes. Issuing a pass for a source revokes its earlier open passes, so only the newest
- * code works. A code is 16 characters from an alphabet without look-alike letters, made from 80 random bits.
- */
 @Service
 @Transactional
 public class PassService {
@@ -26,7 +22,6 @@ public class PassService {
     private static final Pattern CODE = Pattern.compile("^[A-Z0-9]{16}$");
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    /** A new pass and its code. The code is never stored and cannot be shown again. */
     public record IssuedPass(Pass pass, String code) {
     }
 
@@ -47,7 +42,6 @@ public class PassService {
         return new IssuedPass(pass, code);
     }
 
-    /** The pass behind a code, whatever its state; empty for a malformed or unknown code. Only reads. */
     @Transactional(readOnly = true)
     public Optional<Pass> find(String code) {
         String normalized = code == null ? "" : code.strip().toUpperCase(java.util.Locale.ROOT).replace("-", "");

@@ -32,11 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The hostel inventory for the hostel office: hostels, rooms, and beds. Every route needs the admin role and
- * HOSTEL_MANAGE. Nothing is deleted: anything can be made inactive, but not while it holds an active allocation.
- * Occupancy and capacity are counted from allocations and beds, never stored.
- */
 @RestController
 @RequestMapping("/api/v1/hostel/admin")
 @Tag(name = "Hostel admin")

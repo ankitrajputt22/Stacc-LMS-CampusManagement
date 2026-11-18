@@ -11,12 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * Helpdesk tickets, scoped by {@link HelpdeskAccessService}, the helpdesk's one access rule: an admin with
- * HELPDESK_TICKET_VIEW_ALL searches every ticket; anyone else with HELPDESK_TICKET_VIEW_OWN only their own. Another
- * person's ticket never appears, and is never counted. The description is not searched. Every result opens the shared
- * ticket page, which checks access again.
- */
 @Component
 public class HelpdeskSearchProvider implements SearchProvider {
 

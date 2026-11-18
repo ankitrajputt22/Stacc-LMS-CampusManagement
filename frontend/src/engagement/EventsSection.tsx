@@ -101,7 +101,6 @@ function EventItem({ event, canRegister }: { event: CampusEvent; canRegister: bo
   )
 }
 
-/** Coming events with registration, the waitlist, and the reasons someone cannot register. */
 export function EventsSection({ canRegister, withinDays }: { canRegister: boolean; withinDays?: number }) {
   const events = useApiQuery(queryKeys.engagement.events(), (signal) => getEvents(signal))
   const [search, setSearch] = useState('')
@@ -185,7 +184,6 @@ function Attendees({ eventId, trial }: { eventId: number; trial: boolean }) {
   )
 }
 
-/** Events the account organizes: a new draft, Publish (a group event goes to its advisor), Cancel, and who registered. */
 export function EventOrganizer({ admin }: { admin: boolean }) {
   const queryClient = useQueryClient()
   const managed = useApiQuery(queryKeys.engagement.managedEvents(), (signal) => getManagedEvents(signal))
@@ -320,7 +318,6 @@ export function EventOrganizer({ admin }: { admin: boolean }) {
   )
 }
 
-/** My check-in: Show check-in code (a QR code and the code in words) and whether I attended. */
 function MyCheckIn({ eventId, title }: { eventId: number; title: string }) {
   const attendance = useApiQuery(queryKeys.engagement.myAttendance(eventId), (signal) => getMyEventAttendance(eventId, signal))
   const [code, setCode] = useState<EventCheckInCode | null>(null)
@@ -360,7 +357,6 @@ function MyCheckIn({ eventId, title }: { eventId: number; title: string }) {
   )
 }
 
-/** Check an attendee in by the code they show (typed or scanned into the field) or by college ID. */
 function CheckInForm({ eventId }: { eventId: number }) {
   const queryClient = useQueryClient()
   const [value, setValue] = useState('')
@@ -374,7 +370,6 @@ function CheckInForm({ eventId }: { eventId: number }) {
         if (typed === '') {
           return
         }
-        // A check-in code is letters and digits in groups; anything else is taken as a college ID.
         const input = /^[A-Z0-9]{4}(-?[A-Z0-9]{4})+$/i.test(typed) ? { code: typed } : { loginId: typed }
         void checkInEventAttendee(eventId, input)
           .then(async (result) => {
@@ -395,4 +390,3 @@ function CheckInForm({ eventId }: { eventId: number }) {
     </form>
   )
 }
-

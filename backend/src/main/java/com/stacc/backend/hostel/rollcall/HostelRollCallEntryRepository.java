@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface HostelRollCallEntryRepository extends JpaRepository<HostelRollCallEntry, Long> {
 
-    /** A sheet's residents by room and bed, with the student's account. */
     @Query("""
             select entry from HostelRollCallEntry entry join fetch entry.allocation allocation
             join fetch allocation.bed bed join fetch bed.room room
@@ -19,7 +18,6 @@ public interface HostelRollCallEntryRepository extends JpaRepository<HostelRollC
             """)
     List<HostelRollCallEntry> findAllForRollCall(@Param("rollCallId") Long rollCallId);
 
-    /** How many residents of each sheet are in each status. */
     @Query("""
             select entry.rollCall.id as rollCallId, entry.status as status, count(entry) as residents
             from HostelRollCallEntry entry where entry.rollCall.id in :rollCallIds group by entry.rollCall.id, entry.status

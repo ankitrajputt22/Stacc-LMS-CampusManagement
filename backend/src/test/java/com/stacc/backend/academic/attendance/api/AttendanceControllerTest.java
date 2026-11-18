@@ -33,10 +33,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the attendance routes through Spring Security. The services are stand-ins, so these tests are about who
- * gets in, what reaches the services, and what is sent back.
- */
 class AttendanceControllerTest extends DatabaseFreeApiTest {
 
     private static final long FACULTY_ACCOUNT = 21;
@@ -231,7 +227,6 @@ class AttendanceControllerTest extends DatabaseFreeApiTest {
                 .andExpect(jsonPath("$.courses[0].attendancePercentage").value(80.0))
                 .andExpect(jsonPath("$.courses[0].presentCount").value(8))
                 .andExpect(jsonPath("$.courses[0].sessions[0].status").value("PRESENT"))
-                // The student's own record ID is sent so they can ask for a correction (v0.16.5); never anyone else's.
                 .andExpect(jsonPath("$.courses[0].sessions[0].attendanceRecordId").value(41));
 
         verify(studentQueries).getMyAttendance(STUDENT_ACCOUNT);

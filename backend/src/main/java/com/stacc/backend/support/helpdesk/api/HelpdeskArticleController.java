@@ -32,10 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Self-help articles of the helpdesk: suggestions for someone writing a ticket, and the admins' article list with add,
- * edit, publish, and archive. Nothing deletes an article.
- */
 @RestController
 @Validated
 @Tag(name = "Helpdesk articles")

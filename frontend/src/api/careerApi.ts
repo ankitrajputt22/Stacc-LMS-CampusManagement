@@ -14,8 +14,6 @@ import type {
 import { apiClient } from './apiClient'
 import { FILE_TIMEOUT_MS } from './lmsContentApi'
 
-// Who is asking always comes from the session; files download through the API only.
-
 export const openIdCard = async () => (await apiClient.post<IdCard>('/me/id-card')).data
 export const checkIdCard = async (code: string) => (await apiClient.post<IdCheck>('/id-cards/check', { code })).data
 

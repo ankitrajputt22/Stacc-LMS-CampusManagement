@@ -18,11 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A student's answer to one question of one attempt: the chosen options (by their position in the question), a true or
- * false answer, or written text, as the question's type takes. Saving again replaces it while the attempt is open; an
- * empty answer means the question is left unanswered.
- */
 @Entity
 @Table(name = "lms_quiz_answers")
 public class LmsQuizAnswer {
@@ -39,7 +34,6 @@ public class LmsQuizAnswer {
     @JoinColumn(name = "lms_quiz_question_id", nullable = false, updatable = false)
     private LmsQuizQuestion quizQuestion;
 
-    // Part of the answer: replaced with it, never shared.
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "lms_quiz_answer_options", joinColumns = @JoinColumn(name = "lms_quiz_answer_id"))
     @Column(name = "position", nullable = false)
@@ -55,7 +49,6 @@ public class LmsQuizAnswer {
     private Instant answeredAt;
 
     protected LmsQuizAnswer() {
-        // Required by JPA.
     }
 
     public LmsQuizAnswer(LmsQuizAttempt attempt, LmsQuizQuestion quizQuestion) {
@@ -63,7 +56,6 @@ public class LmsQuizAnswer {
         this.quizQuestion = Require.notNull(quizQuestion, "quizQuestion");
     }
 
-    /** Replaces the answer; the service has checked it fits the question. */
     public void replace(Set<Integer> positions, Boolean trueFalse, String text, Instant at) {
         this.selectedPositions.clear();
         this.selectedPositions.addAll(positions);
@@ -84,7 +76,6 @@ public class LmsQuizAnswer {
         return quizQuestion;
     }
 
-    /** The chosen options' positions, smallest first. */
     public Set<Integer> getSelectedPositions() {
         return new TreeSet<>(selectedPositions);
     }

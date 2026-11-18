@@ -24,7 +24,6 @@ function failure(error: unknown, fallback: string): string | null {
   return message && status !== null && status < 500 ? message : fallback
 }
 
-/** Reads a QR code with the camera where the browser can; otherwise the code is typed. Nothing is stored. */
 function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
   const video = useRef<HTMLVideoElement>(null)
   const [on, setOn] = useState(false)
@@ -174,10 +173,6 @@ function Lookup() {
   )
 }
 
-/**
- * /gate: the security desk, phone first. Scan or type a pass code, see whether it lets the student out or back, and
- * record the movement; look students up by login ID; and read the latest movements. The backend decides everything.
- */
 export function GatePage() {
   const queryClient = useQueryClient()
   const movements = useApiQuery(queryKeys.hostel.movements(), (signal) => getGateMovements(signal))

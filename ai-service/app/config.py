@@ -1,9 +1,3 @@
-"""Settings for the AI service, read once from environment variables.
-
-Every limit has a default sized for a college mini-project. Model names have no default: the
-operator chooses them, and the service refuses to start with the Ollama provider until they are set.
-"""
-
 from __future__ import annotations
 
 import os
@@ -16,7 +10,7 @@ MIN_TOKEN_LENGTH = 32
 
 
 class SettingsError(ValueError):
-    """A setting is missing or invalid. The message names the variable, never its value."""
+    pass
 
 
 def _text(env: Mapping[str, str], name: str, default: str = "") -> str:
@@ -63,14 +57,12 @@ class Settings:
     index_dir: Path
     internal_token: str
     provider_timeout_seconds: float
-    # Request and extraction limits.
     max_request_bytes: int
     max_sources: int
     max_source_bytes: int
     max_chars_per_source: int
     max_total_chars: int
     max_chunks: int
-    # Chunking and retrieval.
     chunk_size: int
     chunk_overlap: int
     embedding_batch_size: int
@@ -78,7 +70,6 @@ class Settings:
     min_relevance: float
     keyword_search: bool
     max_context_chunks: int
-    # Generation.
     answer_temperature: float
     draft_temperature: float
     max_output_tokens: int
@@ -96,7 +87,6 @@ class Settings:
         embedding_model = _text(env, "AI_EMBEDDING_MODEL")
         if provider == "ollama" and (not chat_model or not embedding_model):
             raise SettingsError("AI_CHAT_MODEL and AI_EMBEDDING_MODEL must be set for the ollama provider")
-        # Chunks are measured in tokens (words and punctuation marks), not characters (v0.13.3).
         chunk_size = _int(env, "AI_CHUNK_TOKENS", 300, 50, 1000)
         chunk_overlap = _int(env, "AI_CHUNK_OVERLAP_TOKENS", 50, 0, 300)
         if chunk_overlap >= chunk_size // 2:
@@ -129,5 +119,4 @@ class Settings:
         )
 
     def __repr__(self) -> str:
-        # The default form would print the internal token.
         return f"Settings(provider={self.provider!r}, chat_model={self.chat_model!r}, index_dir={str(self.index_dir)!r})"

@@ -119,8 +119,6 @@ class ApprovalWorkflowServiceTest {
                 .isInstanceOfSatisfying(ApiException.class, refusal -> assertThat(refusal.getStatus()).isEqualTo(status));
     }
 
-    // Starting
-
     @Test
     void startingCreatesAPendingRequestWithASnapshotHistoryAndApproverNotice() {
         ApprovalRequest request = start("two_step", student);
@@ -161,14 +159,11 @@ class ApprovalWorkflowServiceTest {
 
         assertThat(first.getSteps()).extracting(ApprovalRequestStep::getRequiredRoleCode).containsExactly("FACULTY");
         assertThat(second.getSteps()).extracting(ApprovalRequestStep::getRequiredRoleCode).containsExactly("ADMIN");
-        // The old request is still decided by FACULTY, and not by ADMIN.
         assertRefused(() -> service.approveStep(ApprovalFixtures.approver(1, RoleName.ADMIN), stepId(first, 1), null),
                 HttpStatus.FORBIDDEN);
         assertThat(service.approveStep(ApprovalFixtures.approver(80, RoleName.FACULTY), stepId(first, 1), null)
                 .requestStatus()).isEqualTo("APPROVED");
     }
-
-    // Deciding
 
     @Test
     void approvingTheFirstStepActivatesTheSecondAndTellsItsApprovers() {
@@ -239,20 +234,15 @@ class ApprovalWorkflowServiceTest {
                 .requestStatus()).isEqualTo("REJECTED");
     }
 
-    // Who may decide
-
     @Test
     void onlyAnAccountHoldingTheStepsRoleWithThePermissionDecides() {
         ApprovalRequest request = start("TWO_STEP", student);
         long facultyStep = stepId(request, 1);
 
-        // ADMIN gets no pass on a FACULTY step.
         assertRefused(() -> service.approveStep(ApprovalFixtures.approver(1, RoleName.ADMIN), facultyStep, null),
                 HttpStatus.FORBIDDEN);
-        // A student has neither the role nor the permission.
         assertRefused(() -> service.approveStep(ApprovalFixtures.actor(71, "ROLE_STUDENT", ApprovalActor.REQUEST_VIEW_OWN),
                 facultyStep, null), HttpStatus.FORBIDDEN);
-        // FACULTY without APPROVAL_TASK_DECIDE cannot decide.
         assertRefused(() -> service.approveStep(ApprovalFixtures.actor(80, "ROLE_FACULTY", ApprovalActor.TASK_VIEW),
                 facultyStep, null), HttpStatus.FORBIDDEN);
         assertThat(request.getSteps().get(0).getStatus()).isEqualTo(ApprovalRequestStepStatus.PENDING);
@@ -293,8 +283,6 @@ class ApprovalWorkflowServiceTest {
         assertThat(request.getSteps()).extracting(step -> step.getActedBy().getLoginId())
                 .containsExactly("emp1005", "emp1005");
     }
-
-    // Stale, finished, and unknown
 
     @Test
     void aSecondDecisionOnTheSameStepIsAConflictAndNotifiesNobodyAgain() {
@@ -357,8 +345,6 @@ class ApprovalWorkflowServiceTest {
         verify(requests, times(2)).findByIdForUpdate(request.getId());
     }
 
-    // Cancelling
-
     @Test
     void cancellingIfPendingCancelsOnlyAPendingRequestAndSaysSo() {
         ApprovalRequest pending = start("TWO_STEP", student);
@@ -398,8 +384,6 @@ class ApprovalWorkflowServiceTest {
         assertThat(trail.get(0).getActor()).isSameAs(student);
         verify(notifications).cancelled(request, 70L);
     }
-
-    // Approvers by relationship
 
     private void headStepWorkflow() {
         ApprovalWorkflowDefinition headStep = ApprovalFixtures.withId(new ApprovalWorkflowDefinition("HEAD_STEP", "Head step", null,

@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A student project led by its creator. Open projects take join requests; projects are closed or archived, never deleted. */
 @Entity
 @Table(name = "projects")
 public class Project {
@@ -77,7 +76,6 @@ public class Project {
         this.maxMembers = newMax;
     }
 
-    /** Opens or closes the project to join requests; an archived project stays archived. */
     public void setStatus(Status next) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This project is archived.");

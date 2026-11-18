@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A booking of a facility. For a facility that needs approval, its state comes from the approval engine. */
 @Entity
 @Table(name = "campus_bookings")
 public class CampusBooking {
@@ -50,7 +49,6 @@ public class CampusBooking {
     private Instant createdAt;
 
     protected CampusBooking() {
-        // Required by JPA.
     }
 
     public CampusBooking(CampusFacility facility, UserAccount account, Instant startsAt, Instant endsAt, String purpose, Instant now) {

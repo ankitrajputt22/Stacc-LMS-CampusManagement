@@ -16,7 +16,6 @@ import com.stacc.backend.academic.offering.CourseOffering;
 import com.stacc.backend.identity.faculty.FacultyProfile;
 import org.junit.jupiter.api.Test;
 
-/** Faculty A (account 21) teaches offering 17, which has no LMS course; nothing here looks for one. */
 class FacultyTeachingAccessServiceTest {
 
     private static final Long FACULTY_A = 21L;

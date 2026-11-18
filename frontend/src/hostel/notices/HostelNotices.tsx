@@ -35,10 +35,6 @@ function NoticeText({ notice }: { notice: HostelNotice }) {
   )
 }
 
-/**
- * Notices of the hostels a manager may use (every hostel for the hostel office, their own for a warden): add a draft
- * for the hostel or a block, publish (an emergency tells every resident it reaches), and archive, each confirmed.
- */
 export function HostelNoticeManager({ hostels }: { hostels: { hostelId: number; name: string }[] }) {
   const queryClient = useQueryClient()
   const [hostelId, setHostelId] = useState(hostels[0].hostelId)
@@ -165,7 +161,6 @@ export function HostelNoticeManager({ hostels }: { hostels: { hostelId: number; 
   )
 }
 
-/** The published notices of the resident's current hostel and block, emergencies first. Nothing when there are none. */
 export function ResidentHostelNotices() {
   const notices = useApiQuery(queryKeys.hostel.myNotices(), (signal) => getMyHostelNotices(signal))
   if (notices.status !== 'loaded' || notices.data.length === 0) {

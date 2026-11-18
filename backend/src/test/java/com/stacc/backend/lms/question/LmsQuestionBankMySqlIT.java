@@ -12,11 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * An edit and a practice change at the same moment never overwrite each other: both lock the question row first, so an
- * edited question always ends up needing review and not offered for practice. Uses CS250's draft LMS course of emp1022,
- * whose question bank no other test touches.
- */
 class LmsQuestionBankMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

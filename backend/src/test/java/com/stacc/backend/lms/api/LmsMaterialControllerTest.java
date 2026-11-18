@@ -48,10 +48,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Calls the material routes through Spring Security. The service is a stand-in, so these tests are about
- * who gets in, what is checked at the door, and what goes back, including the download headers.
- */
 class LmsMaterialControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;
@@ -105,8 +101,6 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
                 post("/api/v1/lms/faculty/materials/7/archive"),
                 json(put("/api/v1/lms/faculty/materials/7/ai-exclusion"), "{\"excluded\":true}"));
     }
-
-    // Upload and changes
 
     @Test
     void uploadAnswersCreatedWithTheMaterialButNeverItsStorageKey() throws Exception {
@@ -221,8 +215,6 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         verifyNoInteractions(materialService);
     }
 
-    // Download
-
     @Test
     void downloadIsSentAsAnAttachmentWithItsStoredDetails() throws Exception {
         when(materialService.openForDownload(eq(ACCOUNT_ID), any(), eq(7L))).thenReturn(new LmsStudyMaterialService.Download(
@@ -250,7 +242,6 @@ class LmsMaterialControllerTest extends DatabaseFreeApiTest {
         mockMvc.perform(as(tokenWith("ROLE_STUDENT", "LMS_COURSE_VIEW", "ROLE_FACULTY"),
                 get("/api/v1/lms/materials/7/download"))).andExpect(status().isOk());
 
-        // The last token holds FACULTY without its view permission, so it opens the student rule only.
         verify(materialService, times(2)).openForDownload(ACCOUNT_ID, new LmsStudyMaterialService.Reader(true, false), 7L);
         verify(materialService).openForDownload(ACCOUNT_ID, new LmsStudyMaterialService.Reader(false, true), 7L);
         verify(materialService).openForDownload(ACCOUNT_ID, new LmsStudyMaterialService.Reader(true, true), 7L);

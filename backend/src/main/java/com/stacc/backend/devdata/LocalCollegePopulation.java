@@ -34,23 +34,11 @@ import com.stacc.backend.lms.course.LmsCourseStatus;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketPriority;
 import com.stacc.backend.support.helpdesk.HelpdeskTicketStatus;
 
-/**
- * A fuller college for trying Stacc by hand, after the main local data: a second department (Electronics and
- * Communication Engineering) with its head, teachers, courses, and fifteen students, and twelve more Computer Science
- * students in their own section, with coursework, hand-ins and grades, attendance with realistic gaps, published
- * results of the previous semester, helpdesk tickets, campus requests, and hostel applications waiting for a decision.
- * <p>
- * Login IDs are college IDs ({@code cse25004}, {@code ece25001}) and employee IDs ({@code emp2011}); every account
- * uses the same test password. Like the main seeder it only finds or creates, through the main seeder's helpers and so
- * through the feature services, and never changes or deletes what exists. Attendance marks and marks are worked out
- * from each student's place in the list, so a second run produces the same records.
- */
 final class LocalCollegePopulation {
 
     record Person(String loginId, String name) {
     }
 
-    /** New Computer Science students, in section C of semester 3. */
     static final List<Person> CSE_STUDENTS = List.of(
             new Person("cse25004", "Ishaan Kulkarni"), new Person("cse25005", "Ananya Reddy"),
             new Person("cse25006", "Vihaan Joshi"), new Person("cse25007", "Saanvi Desai"),
@@ -59,7 +47,6 @@ final class LocalCollegePopulation {
             new Person("cse25012", "Arnav Sinha"), new Person("cse25013", "Kiara Fernandes"),
             new Person("cse25014", "Dhruv Saxena"), new Person("cse25015", "Tara Krishnan"));
 
-    /** Electronics and Communication students: the first eight in section A, the rest in section B. */
     static final List<Person> ECE_STUDENTS = List.of(
             new Person("ece25001", "Nikhil Agarwal"), new Person("ece25002", "Pooja Hegde"),
             new Person("ece25003", "Rahul Bose"), new Person("ece25004", "Sneha Kapoor"),
@@ -77,7 +64,6 @@ final class LocalCollegePopulation {
     static final Person ANALOG_TEACHER = new Person("emp3003", "Manoj Tiwari");
     static final Person DIGITAL_TEACHER = new Person("emp3004", "Kavya Nair");
 
-    /** Students who often miss class, so low attendance can be tried. */
     private static final Set<String> OFTEN_ABSENT = Set.of("cse25008", "ece25005", "ece25012");
     private static final String[] GRADES = {"A+", "A", "B+", "B", "A", "C", "B+", "A", "B", "A+", "B", "C", "A", "B+", "B"};
 
@@ -106,8 +92,6 @@ final class LocalCollegePopulation {
         electronics(password, today, now, registrationOpened, admin, previous, current);
     }
 
-    // --- Computer Science: twelve more students in section C, and two more teachers.
-
     private void computerScience(String password, LocalDate today, Instant now, AcademicSession previous,
             AcademicSession current) {
         Department cse = seed.department("CSE", "Computer Science and Engineering");
@@ -134,12 +118,10 @@ final class LocalCollegePopulation {
             Person person = CSE_STUDENTS.get(index);
             UserAccount account = student(password, person);
             StudentProfile profile = seed.studentProfile(account, btech, previous, "25CSE" + person.loginId().substring(5));
-            // Last semester: Object-Oriented Programming, completed with a published result.
             SemesterEnrollment last = seed.semesterEnrollment(profile, previousSecond, SemesterEnrollment::markCompleted);
             CourseEnrollment oop = seed.courseEnrollment(last, cs201, CourseEnrollment::markCompleted);
             seed.result(emp1021, cs201, oop, String.valueOf(58 + (index * 7) % 40), "100", GRADES[index % GRADES.length],
                     null, true);
-            // This semester: section C, three courses.
             SemesterEnrollment now3 = seed.semesterEnrollment(profile, third, enrollment -> enrollment.placeIn(sectionC));
             inDataStructures.add(seed.courseEnrollment(now3, cs301, enrollment -> { }));
             seed.courseEnrollment(now3, cs302, enrollment -> { });
@@ -147,8 +129,6 @@ final class LocalCollegePopulation {
             students.add(account);
         }
 
-        // Coursework in Data Structures: most handed in the warm-up (late, its deadline has passed) and were graded;
-        // a few have started the linked list implementation.
         Long lms301 = seed.lmsCourse(emp1021, cs301, LmsCourseStatus.PUBLISHED);
         LmsAssignment warmUp = seed.assignment(emp1021, lms301, "Array warm-up exercises",
                 "Solve problems 1 to 5 from the arrays worksheet.", LocalTestDataSeeder.deadline(today, -5), "20",
@@ -172,14 +152,11 @@ final class LocalCollegePopulation {
             }
         }
 
-        // Attendance: two more finalized classes with the whole class, so percentages are worth reading.
         seed.attendance(emp1021, cs301, "Queues and circular buffers", now.minus(4, ChronoUnit.DAYS),
                 loginId -> mark(loginId, 1), true);
         seed.attendance(emp1021, cs301, "Recursion and the call stack", now.minus(3, ChronoUnit.DAYS),
                 loginId -> mark(loginId, 2), true);
     }
-
-    // --- Electronics and Communication Engineering: a whole department.
 
     private void electronics(String password, LocalDate today, Instant now, Instant registrationOpened, UserAccount admin,
             AcademicSession previous, AcademicSession current) {
@@ -252,7 +229,6 @@ final class LocalCollegePopulation {
             profiles.add(profile);
         }
 
-        // --- Signals and Systems: a published course with two units, a syllabus, an announcement, and assignments.
         Long lms301 = seed.lmsCourse(signalsAccount, ec301, LmsCourseStatus.PUBLISHED);
         Long unit1 = seed.module(signalsAccount, lms301, "Unit 1: Signals and Their Properties",
                 "Continuous and discrete signals, and how to classify them.", true);
@@ -331,7 +307,6 @@ final class LocalCollegePopulation {
             }
         }
 
-        // --- Analog Electronic Circuits: published, one unit, an assignment due soon.
         Long lms302 = seed.lmsCourse(analogAccount, ec302, LmsCourseStatus.PUBLISHED);
         Long diodes = seed.module(analogAccount, lms302, "Unit 1: Diodes and Rectifiers",
                 "Diode models and rectifier circuits.", true);
@@ -351,12 +326,10 @@ final class LocalCollegePopulation {
                 "Design a full-wave rectifier with a ripple below 5% for a 12 V, 500 mA load. Submit your calculations.",
                 LocalTestDataSeeder.deadline(today, 10), "25", LmsContentStatus.PUBLISHED);
 
-        // --- Digital Logic Design: a draft course its teacher is still preparing. Electromagnetic Theory has none yet.
         Long lms303 = seed.lmsCourse(digitalAccount, ec303, LmsCourseStatus.DRAFT);
         Long logic = seed.module(digitalAccount, lms303, "Unit 1: Number Systems and Boolean Algebra", "Being prepared.", false);
         seed.topic(digitalAccount, logic, "Boolean identities", "De Morgan's laws and simplification.", false);
 
-        // --- Attendance: five finalized classes in Signals and Systems and three in Analog, plus one still open.
         String[] signalsTopics = {"Introduction to signals", "Sampling and aliasing", "Even and odd signals",
             "Energy and power", "Impulse response"};
         for (int index = 0; index < signalsTopics.length; index++) {
@@ -372,14 +345,12 @@ final class LocalCollegePopulation {
         }
         seed.attendance(analogAccount, ec302, "Clipper and clamper circuits", now.minus(2, ChronoUnit.HOURS), loginId -> null, false);
 
-        // --- Calendar: department events in the current semester.
         seed.calendarEvent(current, third, "ECE laboratory practical examinations", AcademicCalendarEventCategory.EXAM,
                 today.plusDays(18), today.plusDays(20), "Practical examinations for every ECE laboratory course.",
                 AcademicCalendarEventStatus.PUBLISHED);
         seed.calendarEvent(current, third, "Guest lecture: 5G radio access networks", AcademicCalendarEventCategory.ACADEMIC,
                 today.plusDays(8), today.plusDays(8), "In the seminar hall at 3 pm.", AcademicCalendarEventStatus.PUBLISHED);
 
-        // --- Helpdesk, campus requests, and hostel applications from the department.
         Long lmsCategory = seed.helpdeskCategory("LMS", "LMS and courses", "Course access, content, assignments, and submissions.");
         Long academicCategory = seed.helpdeskCategory("ACADEMIC", "Academic records",
                 "Enrollment, attendance, results, and the academic calendar.");
@@ -406,8 +377,6 @@ final class LocalCollegePopulation {
         }
     }
 
-    // --- Shared.
-
     private UserAccount student(String password, Person person) {
         UserAccount account = seed.account(person.loginId(), password, RoleName.STUDENT);
         seed.person(account, person.name());
@@ -420,10 +389,6 @@ final class LocalCollegePopulation {
         return seed.facultyProfile(account, department);
     }
 
-    /**
-     * A student's mark in one class, the same on every run: most attend, students who often miss class are absent from
-     * most classes, and everyone else misses about one class in seven.
-     */
     static AttendanceStatus mark(String loginId, int session) {
         int seedValue = Math.floorMod(loginId.hashCode() + session * 31, 7);
         if (OFTEN_ABSENT.contains(loginId)) {

@@ -45,7 +45,6 @@ function ToolsState({ lmsCourseId, heading = 'Teacher AI', srOnly = true, childr
   )
 }
 
-/** The Teacher AI sections (v0.14.6), each its own address so it can be bookmarked. */
 const SECTIONS = [
   { key: '', label: 'Knowledge' },
   { key: 'bank', label: 'Question bank' },
@@ -54,7 +53,6 @@ const SECTIONS = [
   { key: 'more', label: 'More' },
 ] as const
 
-/** Where the AI help that lives on other teaching pages is. */
 function MoreAi({ lmsCourseId }: { lmsCourseId: number }) {
   const links = [
     { to: `/teaching/${lmsCourseId}/questions`, label: 'Question bank', text: 'Suggest a model answer on any short-answer or descriptive question.' },
@@ -142,11 +140,6 @@ function FacultyTools({ lmsCourseId, section }: { lmsCourseId: number | null; se
   }
 }
 
-/**
- * Teacher AI (v0.14.6) for one course they teach, at /teaching/:lmsCourseId/ai and its sections (bank, quizzes,
- * assignments, more), for accounts holding FACULTY. The backend
- * checks the faculty access policy on every request. Nothing here creates, publishes, or grades an assignment.
- */
 export function TeachingAiPage() {
   const { account } = useAuth()
   const { lmsCourseId, section } = useParams()

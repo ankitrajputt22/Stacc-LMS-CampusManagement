@@ -50,12 +50,6 @@ function TicketFacts({ ticket, showRequester }: { ticket: HelpdeskTicketDetail; 
   )
 }
 
-/**
- * One ticket at /support/tickets/:ticketId, the same page for the requester and the support team. The backend decides
- * who may see it: anything else, including a ticket of another account, answers the same 404 and shows "Ticket
- * unavailable". Admin accounts also get the management controls, for the interface only. The page shows only what the
- * ticket API returns.
- */
 export function SupportTicketPage() {
   const { ticketId: ticketParam } = useParams()
   const ticketId = idParam(ticketParam ?? null)
@@ -71,9 +65,7 @@ export function SupportTicketPage() {
   )
   const request = useApiRequest(load)
   const assignees = useApiRequest(isAdmin ? getHelpdeskAssignees : null)
-  // A change answers with the whole ticket; it is shown until the next load, which then replaces it.
   const [fresh, setFresh] = useState<{ ticket: HelpdeskTicketDetail; basedOn: HelpdeskTicketDetail } | null>(null)
-  // Why the last change was refused when the ticket had changed elsewhere, such as a 409 for a closed ticket.
   const [staleNotice, setStaleNotice] = useState<string | null>(null)
   const loaded = request.status === 'loaded' ? request.data : null
   const ticket = fresh !== null && fresh.basedOn === loaded ? fresh.ticket : loaded
@@ -90,7 +82,6 @@ export function SupportTicketPage() {
       setFresh({ ticket: next, basedOn: loaded })
     }
     if (next.status === 'CLOSED') {
-      // The controls are gone; focus returns to the top of the ticket, which now says it is closed.
       headingRef.current?.focus()
     }
   }
@@ -165,7 +156,6 @@ export function SupportTicketPage() {
             />
           </div>
           <div className="min-w-0 space-y-6">
-            {/* For the interface only: every change is checked by the backend. A closed ticket has no controls. */}
             {ticket.supportSide && !closed && (
               <TicketManagement
                 ticket={ticket}

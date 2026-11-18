@@ -48,7 +48,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, "Validation failed", servletRequest(request), headers, fieldErrors);
     }
 
-    // Spring answers 413 when an upload is larger than its configured limit. The limit itself is not repeated here.
     @Override
     protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
             MaxUploadSizeExceededException exception,
@@ -77,10 +76,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 List.of());
     }
 
-    /**
-     * Handles the remaining Spring MVC request errors, such as an unknown URL (404) or an unsupported
-     * HTTP method (405). They keep the status Spring chose and use the common error format.
-     */
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
             Exception exception,
@@ -108,7 +103,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, "Validation failed", request, HttpHeaders.EMPTY, fieldErrors);
     }
 
-    // A signed-in account without the required role or permission. The rule itself is not revealed.
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDenied(AccessDeniedException exception, HttpServletRequest request) {
         return response(HttpStatus.FORBIDDEN, ACCESS_DENIED_MESSAGE, request, HttpHeaders.EMPTY, List.of());

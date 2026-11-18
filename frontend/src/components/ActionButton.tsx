@@ -2,14 +2,9 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
-  /** A key the editor uses to move focus back here after a change. */
   focusKey?: string
 }
 
-/**
- * A small text button for the actions on a module or topic. Several fit on one line and wrap on
- * narrow screens, and each stays a comfortable size to tap.
- */
 export function ActionButton({ children, className = '', focusKey, type = 'button', ...props }: ActionButtonProps) {
   return (
     <button

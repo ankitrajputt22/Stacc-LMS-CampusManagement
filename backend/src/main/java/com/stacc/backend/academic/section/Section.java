@@ -20,11 +20,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A group of students within one semester, such as Section A of BTECH-CSE semester 3 in 2026-27. The semester says the
- * program and the session, so neither is stored again. Students are placed in a section through their semester
- * enrollment. A section that is no longer used is made inactive, never deleted.
- */
 @Entity
 @Table(name = "sections", uniqueConstraints = @UniqueConstraint(name = "uk_sections_semester_code",
         columnNames = {"semester_id", "code"}))
@@ -38,7 +33,6 @@ public class Section {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: the semester is never created or deleted through a section.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "semester_id", nullable = false, updatable = false)
     private Semester semester;
@@ -49,7 +43,6 @@ public class Section {
     @Column(length = MAX_NAME_LENGTH)
     private String name;
 
-    // Null means no limit.
     @Column
     private Integer capacity;
 
@@ -66,10 +59,8 @@ public class Section {
     private Instant updatedAt;
 
     protected Section() {
-        // Required by JPA.
     }
 
-    /** The code is stored in uppercase without surrounding spaces and is unique within the semester. */
     public Section(Semester semester, String code, String name, Integer capacity) {
         this.semester = Require.notNull(semester, "semester");
         this.code = Require.text(code, "code", MAX_CODE_LENGTH).toUpperCase(Locale.ROOT);
@@ -89,12 +80,10 @@ public class Section {
         return code;
     }
 
-    /** An optional longer name, or null. */
     public String getName() {
         return name;
     }
 
-    /** The most enrolled students the section holds, or null for no limit. */
     public Integer getCapacity() {
         return capacity;
     }

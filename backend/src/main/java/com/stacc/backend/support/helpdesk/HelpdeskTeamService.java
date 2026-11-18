@@ -18,11 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Support teams, their members, and which team each category routes to. Admins with HELPDESK_TICKET_MANAGE only.
- * Members must be active accounts holding ADMIN or a role with HELPDESK_TEAM_WORK. Teams are made inactive, never
- * deleted; replacing the member list changes only who works future and open tickets.
- */
 @Service
 @Transactional
 public class HelpdeskTeamService {
@@ -83,7 +78,6 @@ public class HelpdeskTeamService {
         return view(teams.saveAndFlush(team));
     }
 
-    /** Replaces the member list with these login IDs. */
     public TeamView setMembers(Long teamId, List<String> loginIds) {
         HelpdeskTeam team = team(teamId);
         Set<String> wanted = new LinkedHashSet<>();
@@ -112,7 +106,6 @@ public class HelpdeskTeamService {
         return view(team);
     }
 
-    /** Routes a category's new tickets to an active team, or to none with null. */
     public void routeCategory(Long categoryId, Long teamId) {
         HelpdeskCategory category = categories.findById(categoryId == null ? -1L : categoryId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Category not found."));

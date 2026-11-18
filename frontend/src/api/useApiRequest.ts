@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getHttpStatus } from './apiError'
 
-/** What a page shows while one backend request is under way, and once it has an answer. */
 export type ApiRequestState<T> =
   | { status: 'loading' }
   | { status: 'loaded'; data: T }
-  /** 404: it does not exist, or it is not available to this account. */
   | { status: 'notFound' }
-  /** 403: signed in, but not allowed. The user stays signed in. */
   | { status: 'denied' }
-  /** No answer, a timeout, or a server error. Worth trying again. */
   | { status: 'failed' }
 
 type Request<T> = (signal: AbortSignal) => Promise<T>
@@ -20,20 +16,6 @@ type Answer<T> = {
   state: Exclude<ApiRequestState<T>, { status: 'loading' }>
 }
 
-/**
- * Runs one backend request for a page and tracks what to show. retry() asks again from scratch,
- * showing loading meanwhile. refresh() asks again quietly: what is on screen stays until the new
- * answer arrives, for example after the user changed something.
- *
- * A request still running when the page closes, the request changes, or a retry starts is
- * cancelled, and an answer is only shown for the request and attempt it belongs to, so an old
- * answer never replaces a newer one. A 401 is left alone: the shared client has already ended
- * the session and the sign-in page is on its way.
- *
- * The request function must keep its identity between renders, for example a module function
- * or one made with useMemo, because a new function means a new request. Pass null when there is
- * nothing valid to ask for: nothing is sent, and the state is notFound.
- */
 export function useApiRequest<T>(
   request: Request<T> | null,
 ): ApiRequestState<T> & { retry: () => void; refresh: () => void } {
@@ -80,7 +62,6 @@ export function useApiRequest<T>(
     return { status: 'notFound', retry, refresh }
   }
 
-  // A refresh keeps the same request and attempt, so the last answer stays on screen until it is replaced.
   const isCurrent =
     answer !== null && answer.request === request && answer.attempt === attempt
 

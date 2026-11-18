@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One message in a conversation. Messages are never edited or deleted. */
 @Entity
 @Table(name = "lms_conversation_messages")
 public class LmsConversationMessage {
@@ -47,7 +46,6 @@ public class LmsConversationMessage {
     private Instant createdAt;
 
     protected LmsConversationMessage() {
-        // Required by JPA.
     }
 
     public LmsConversationMessage(LmsConversation conversation, UserAccount author, AuthorKind authorKind, String body, Instant now) {

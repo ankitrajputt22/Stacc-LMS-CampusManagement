@@ -31,7 +31,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Calls the report routes through Spring Security, with the report services as stand-ins. */
 class ReportControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean
@@ -44,7 +43,6 @@ class ReportControllerTest extends DatabaseFreeApiTest {
         return "Bearer " + TestTokens.valid("ACC-TEST-" + accountId, accountId, authorities);
     }
 
-    // Fresh builders every time: a builder keeps the headers of earlier calls.
     private static List<MockHttpServletRequestBuilder> facultyRoutes() {
         return List.of(get("/api/v1/reports/faculty/my-courses"), get("/api/v1/reports/faculty/course-offerings/31"));
     }

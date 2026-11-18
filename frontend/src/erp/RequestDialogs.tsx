@@ -38,7 +38,6 @@ function Actions({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
   )
 }
 
-/** Medical leave: the first and last day and a reason. The office decides; the student is told in the Inbox. */
 export function MedicalLeaveDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -64,7 +63,6 @@ export function MedicalLeaveDialog({ open, onClose }: { open: boolean; onClose: 
   )
 }
 
-/** A correction of one absence of the student's own, chosen from their finalized absences. */
 export function CorrectionDialog({ open, onClose, courses, recordId }: {
   open: boolean
   onClose: () => void

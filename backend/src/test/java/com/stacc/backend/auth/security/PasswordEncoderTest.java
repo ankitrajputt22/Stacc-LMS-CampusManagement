@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 class PasswordEncoderTest {
 
-    // Made-up values used only by these tests.
     private static final String PASSWORD = "TestPassword123!";
     private static final String WRONG_PASSWORD = "WrongPassword123!";
 
@@ -53,7 +52,6 @@ class PasswordEncoderTest {
         String hash = passwordEncoder.encode(PASSWORD);
 
         assertTrue(hash.startsWith("{bcrypt}"));
-        // The password_hash column holds 255 characters.
         assertTrue(hash.length() <= 255);
         UserAccount account = new UserAccount("EMP1024", hash);
         assertTrue(passwordEncoder.matches(PASSWORD, account.getPasswordHash()));

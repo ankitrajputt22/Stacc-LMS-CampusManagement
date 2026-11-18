@@ -18,23 +18,12 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The LMS learning space for one official course offering. The offering stays academic data
- * in the academic module; this is only the place where its teaching and learning will happen.
- *
- * <p>The course, semester, programme, academic session, and department are all reached
- * through the course offering, so none of them is stored here again. A published space is
- * not open to every student: access will depend on official course enrollment. A space that
- * is no longer used is archived rather than deleted.
- */
 @Entity
 @Table(name = "lms_courses")
 public class LmsCourse {
 
     public static final int MAX_WELCOME_LENGTH = 5_000;
 
-    // No cascade: a course offering is official academic data and is never created or
-    // deleted through its learning space.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,7 +40,6 @@ public class LmsCourse {
     @Column(name = "home_view", nullable = false, length = 20)
     private LmsCourseHomeView homeView = LmsCourseHomeView.OVERVIEW;
 
-    // Formatted text (Stacc's small formatting set), stored as written and never as HTML. Optional.
     @Column(name = "welcome_message", columnDefinition = "MEDIUMTEXT")
     private String welcomeMessage;
 
@@ -64,10 +52,8 @@ public class LmsCourse {
     private Instant updatedAt;
 
     protected LmsCourse() {
-        // Required by JPA.
     }
 
-    /** The course offering says what this learning space is for, so it cannot be changed afterwards. */
     public LmsCourse(CourseOffering courseOffering) {
         this.courseOffering = Require.notNull(courseOffering, "courseOffering");
     }
@@ -100,7 +86,6 @@ public class LmsCourse {
         return welcomeMessage;
     }
 
-    /** Chooses what the course home shows and its welcome message (blank removes it). An archived course cannot change. */
     public void changeHome(LmsCourseHomeView homeView, String welcomeMessage) {
         if (status == LmsCourseStatus.ARCHIVED) {
             throw new IllegalStateException("An archived LMS course cannot be changed");

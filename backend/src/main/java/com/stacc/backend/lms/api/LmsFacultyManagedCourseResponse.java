@@ -4,10 +4,6 @@ import java.math.BigDecimal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One course offering a faculty member officially teaches, with its LMS course if it has one. Nothing about the
- * teaching assignment, the faculty profile, or other teachers is exposed.
- */
 public record LmsFacultyManagedCourseResponse(
         @Schema(example = "31")
         Long courseOfferingId,

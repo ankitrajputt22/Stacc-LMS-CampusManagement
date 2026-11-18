@@ -17,10 +17,6 @@ import com.stacc.backend.academic.semester.SemesterRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit programs. A program belongs to one department, loaded on the server from the ID sent;
- * its department and code are set once, and its name, duration, and status can change. Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class ProgramManagementService {
@@ -72,10 +68,6 @@ public class ProgramManagementService {
         return ProgramResponse.of(AcademicMasterErrors.savedOrConflict(() -> programs.saveAndFlush(program), TAKEN));
     }
 
-    /**
-     * Changes the name, duration, credit limit, and status. An empty credit limit clears it. The duration cannot drop below the highest semester the program already
-     * has, so no existing semester ends up beyond the program's length.
-     */
     public ProgramResponse update(Long programId, ProgramUpdate request) {
         Program program = find(programId);
         String name = request.name().strip();

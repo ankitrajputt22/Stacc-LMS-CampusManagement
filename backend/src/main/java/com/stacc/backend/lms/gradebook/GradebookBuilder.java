@@ -33,32 +33,15 @@ import com.stacc.backend.lms.quiz.attempt.QuizScores;
 import com.stacc.backend.lms.quiz.attempt.QuizScoring;
 import org.springframework.stereotype.Component;
 
-/**
- * Builds a course's gradebook for some of its course enrollments, reading every mark from where it lives:
- *
- * <ul>
- * <li>a published assignment: the grade of each student's latest attempt (an ungraded latest attempt needs grading);</li>
- * <li>a published graded quiz: the best score among the student's fully marked attempts (a handed-in attempt waiting
- * for a teacher needs grading); for a student's own view only attempts whose result is released count;</li>
- * <li>a manual item: the marks entered for it.</li>
- * </ul>
- *
- * Columns come in that order: assignments by due date, then quizzes and manual items in the order they were made.
- * Nothing is stored or changed here.
- */
 @Component
 public class GradebookBuilder {
 
-    /** Whether a cell has marks yet. */
     public enum CellStatus {
         GRADED,
-        /** Handed in but not marked yet. */
         NEEDS_GRADING,
-        /** Nothing handed in, or no marks entered. */
         NO_MARKS
     }
 
-    /** One column: where its marks come from, its title and maximum, and the gradebook's own record, if any. */
     public record Column(GradeItemType type, Long sourceId, String title, BigDecimal maxMarks, Instant dueAt, LmsGradeItem item) {
 
         public boolean published() {
@@ -66,16 +49,13 @@ public class GradebookBuilder {
         }
     }
 
-    /** One student's marks in one column. */
     public record Cell(BigDecimal marks, CellStatus status, String feedback) {
 
         static final Cell EMPTY = new Cell(null, CellStatus.NO_MARKS, null);
     }
 
-    /** The columns and each course enrollment's cells, in column order. */
     public record Gradebook(List<Column> columns, Map<Long, List<Cell>> cells) {
 
-        /** The marks of the graded cells, and the maximum of their columns, over the columns kept. */
         public Total total(Long courseEnrollmentId, Predicate<Column> keep) {
             BigDecimal marks = BigDecimal.ZERO.setScale(2);
             BigDecimal outOf = BigDecimal.ZERO.setScale(2);
@@ -118,7 +98,6 @@ public class GradebookBuilder {
         this.entries = entries;
     }
 
-    /** The course's columns, published or not. */
     public List<Column> columns(Long lmsCourseId) {
         List<LmsGradeItem> stored = items.findAllByLmsCourseIdOrderByIdAsc(lmsCourseId);
         Map<Long, LmsGradeItem> byAssignment = new HashMap<>();
@@ -156,10 +135,6 @@ public class GradebookBuilder {
         return columns;
     }
 
-    /**
-     * The marks of these course enrollments in these columns. For a student's own view ({@code releasedOnly}), quiz
-     * attempts count only once their result is released.
-     */
     public Gradebook build(List<Column> columns, Collection<CourseEnrollment> enrollments, boolean releasedOnly, Instant now) {
         List<Long> enrollmentIds = enrollments.stream().map(CourseEnrollment::getId).toList();
         Map<Long, List<Cell>> cells = new HashMap<>();

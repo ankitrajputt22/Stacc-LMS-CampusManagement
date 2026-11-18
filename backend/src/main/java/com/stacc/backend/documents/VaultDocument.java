@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One document in a person's vault: issued by the college, or uploaded by them. The file is in private storage. */
 @Entity
 @Table(name = "vault_documents")
 public class VaultDocument {
@@ -69,7 +68,6 @@ public class VaultDocument {
     private Instant withdrawnAt;
 
     protected VaultDocument() {
-        // Required by JPA.
     }
 
     public VaultDocument(UserAccount owner, Origin origin, String title, StoredFile file, UserAccount issuedBy,

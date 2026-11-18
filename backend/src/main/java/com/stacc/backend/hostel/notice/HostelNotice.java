@@ -18,10 +18,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A plain-text notice for one hostel, or one block of it. Drafts change freely; a published notice can still be
- * corrected and keeps its first publication time; an archived one is final. Its hostel and block never change.
- */
 @Entity
 @Table(name = "hostel_notices")
 public class HostelNotice {
@@ -74,7 +70,6 @@ public class HostelNotice {
     private Instant updatedAt;
 
     protected HostelNotice() {
-        // Required by JPA.
     }
 
     public HostelNotice(Hostel hostel, String block, String title, String message, boolean emergency, Long createdByAccountId) {
@@ -84,7 +79,6 @@ public class HostelNotice {
         edit(title, message, emergency);
     }
 
-    /** Changes the text and the emergency flag of a draft, or corrects a published notice. */
     public void edit(String title, String message, boolean emergency) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This notice is archived and can no longer be changed.");
@@ -97,7 +91,6 @@ public class HostelNotice {
         this.emergency = emergency;
     }
 
-    /** Publishes a draft; returns whether this was its first publication. Publishing again changes nothing. */
     public boolean publish(Instant at) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This notice is archived and can no longer be published.");
@@ -117,7 +110,6 @@ public class HostelNotice {
         status = Status.ARCHIVED;
     }
 
-    /** Whether the notice reaches a resident of this block of its hostel: a hostel-wide notice reaches everyone. */
     public boolean reaches(String residentBlock) {
         return block == null || block.equalsIgnoreCase(residentBlock == null ? "" : residentBlock.strip());
     }

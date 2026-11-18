@@ -9,11 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Checks what the AI service returned before a browser sees it. Citations are rebuilt from Stacc's own records and
- * kept only when they name a source of the course's current published content, so a stale, foreign, or invented
- * source can never be shown. Text is trimmed and cut to fixed lengths.
- */
 final class AiResults {
 
     static final int ANSWER_MAX = 2000;
@@ -38,10 +33,6 @@ final class AiResults {
         return citations(cited, knowledge, teacher, null);
     }
 
-    /**
-     * As above, and also keeps citations of the teacher documents Teacher AI was allowed to use (v0.13.5). Without
-     * teacher knowledge, as for every student request, a teacher document citation is always dropped.
-     */
     static List<AiCitationResponse> citations(List<Citation> cited, AiCourseKnowledge knowledge, AiTeacherKnowledge teacher,
             AiStudentNoteKnowledge notes) {
         if (cited == null) {
@@ -65,7 +56,6 @@ final class AiResults {
                 teacher.document(id).ifPresent(document -> result.add(new AiCitationResponse(
                         AiTeacherKnowledge.SOURCE_TYPE, id, document.title(), null, null, null)));
             } else if (notes != null && AiStudentNoteKnowledge.SOURCE_TYPE.equals(citation.sourceType())) {
-                // Only the asking student's own notes, which the request carried (v0.13.6).
                 notes.note(id).ifPresent(note -> result.add(new AiCitationResponse(
                         AiStudentNoteKnowledge.SOURCE_TYPE, id, note.title(), null, null, null)));
             }

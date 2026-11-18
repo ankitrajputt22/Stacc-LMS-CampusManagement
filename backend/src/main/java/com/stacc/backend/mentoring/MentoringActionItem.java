@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** Something to do after a meeting, owned by the mentor or the student; completed once, never deleted. */
 @Entity
 @Table(name = "mentoring_action_items")
 public class MentoringActionItem {
@@ -63,7 +62,6 @@ public class MentoringActionItem {
         this.createdAt = createdAt;
     }
 
-    /** Completes the item; completing again changes nothing. */
     public void complete(Instant at) {
         if (completedAt == null) {
             completedAt = at;

@@ -36,13 +36,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Access is worked out live from the official enrollment and the course's state. Every test starts from a student who
- * is allowed in, and then changes exactly one thing, so each rule is shown to matter on its own.
- */
 class LmsStudentAccessServiceTest {
 
-    // Made-up IDs. The LMS course ID is deliberately different from the course offering ID.
     private static final Long ACCOUNT_ID = 12L;
     private static final Long OTHER_ACCOUNT_ID = 13L;
     private static final Long LMS_COURSE_ID = 7L;

@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A meeting or practice of a club or sports group, shown on its members' calendars. Cancelled, never deleted. */
 @Entity
 @Table(name = "engagement_group_sessions")
 public class GroupSession {
@@ -65,7 +64,6 @@ public class GroupSession {
     private Instant createdAt;
 
     protected GroupSession() {
-        // Required by JPA.
     }
 
     public GroupSession(CampusGroup group, Kind kind, String title, String location, Instant startsAt, Instant endsAt, Long by, Instant now) {

@@ -19,10 +19,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A teacher-only document of an LMS course (v0.13.5): plain-text notes or a draft that only Teacher AI reads. Students
- * never see it, and student AI never searches its index. It is archived, never deleted.
- */
 @Entity
 @Table(name = "ai_teacher_documents")
 public class AiTeacherDocument {
@@ -36,7 +32,6 @@ public class AiTeacherDocument {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: the course and the author are never created or deleted through a document.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
     private LmsCourse lmsCourse;
@@ -64,7 +59,6 @@ public class AiTeacherDocument {
     private Instant updatedAt;
 
     protected AiTeacherDocument() {
-        // Required by JPA.
     }
 
     public AiTeacherDocument(LmsCourse lmsCourse, UserAccount createdBy, String title, String content) {
@@ -108,7 +102,6 @@ public class AiTeacherDocument {
         return status == Status.ARCHIVED;
     }
 
-    /** Changes the title and text. An archived document can no longer be changed. */
     public void edit(String title, String content) {
         if (isArchived()) {
             throw new IllegalStateException("An archived teacher document cannot be changed");
@@ -117,7 +110,6 @@ public class AiTeacherDocument {
         this.content = Require.text(content, "content", MAX_CONTENT_LENGTH);
     }
 
-    /** Archiving keeps the row; Teacher AI stops using it at the next refresh. Archiving again changes nothing. */
     public void archive() {
         this.status = Status.ARCHIVED;
     }

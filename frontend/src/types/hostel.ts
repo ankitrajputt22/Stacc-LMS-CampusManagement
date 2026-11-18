@@ -1,6 +1,3 @@
-// The hostel API exactly as the backend sends it (HostelResponses and HostelRequests in com.stacc.backend.hostel).
-// The approval status always comes from the approval engine; there is no hostel status of its own.
-
 import type { ApprovalHistoryEntry, ApprovalStatus, ApprovalStep } from './approvals'
 
 export type HostelAllocationStatus = 'ACTIVE' | 'VACATED'
@@ -164,7 +161,6 @@ export type AllocationQuery = {
   size: number
 }
 
-/** Occupancy of one hostel, worked out live: active beds, those occupied, under maintenance, and free. */
 export type HostelOccupancy = {
   hostelId: number
   code: string
@@ -180,7 +176,6 @@ export type BedMapCell = {
   bedId: number
   bedNumber: string
   state: BedOccupancy
-  /** The student's login ID while occupied; nothing else about them. */
   studentLoginId: string | null
   allocationId: number | null
   checkedIn: boolean
@@ -207,13 +202,10 @@ export type HostelWardenAssignment = {
   endedAt: string | null
 }
 
-/** A waiting student's place in the queue for a bed: 1 is next; null when not waiting. */
 export type HostelQueuePlace = { position: number | null; waiting: number }
 
-/** One side of a room change: a resident and their bed. */
 export type RoomChangeSide = { loginId: string; hostel: string; room: string; bed: string }
 
-/** A room move or a proposed bed swap. The approval status is the warden's decision, as the approval engine has it. */
 export type RoomChange = {
   changeId: number
   kind: 'MOVE' | 'SWAP'
@@ -235,7 +227,6 @@ export type RoomChange = {
 export type RollCallStatus = 'OPEN' | 'FINALIZED'
 export type RollCallMark = 'UNMARKED' | 'PRESENT' | 'ABSENT' | 'OUT'
 
-/** A night's roll call sheet with its counts. */
 export type RollCallSummary = {
   rollCallId: number
   hostelId: number
@@ -251,7 +242,6 @@ export type RollCallSummary = {
   finalizedAt: string | null
 }
 
-/** One resident on a sheet; prefilledOut says the gate log showed them going out. */
 export type RollCallEntry = {
   entryId: number
   studentLoginId: string
@@ -263,7 +253,6 @@ export type RollCallEntry = {
 
 export type RollCallDetail = { summary: RollCallSummary; entries: RollCallEntry[] }
 
-/** A plain-text notice for one hostel or block. */
 export type HostelNotice = {
   noticeId: number
   hostelId: number
@@ -281,10 +270,8 @@ export type Meal = 'BREAKFAST' | 'LUNCH' | 'SNACKS' | 'DINNER'
 export type MealLine = { meal: Meal; items: string; changed: boolean; note: string | null }
 export type DayMenu = { date: string; meals: MealLine[] }
 export type RatedMeal = { date: string; meal: Meal; rating: number }
-/** Without a hostel bed: no hostel name and an empty week. */
 export type ResidentMess = { hostelName: string | null; week: DayMenu[]; rated: RatedMeal[] }
 export type MessTemplateLine = { dayOfWeek: number; meal: Meal; items: string }
-/** A meal's ratings of the last month; the average only for at least five ratings. */
 export type MealSummary = { meal: Meal; ratings: number; average: number | null }
 export type MealComment = { date: string; meal: Meal; rating: number; comment: string }
 export type ManagerMess = {
@@ -298,7 +285,6 @@ export type ManagerMess = {
 
 export type VisitStatus = 'EXPECTED' | 'ARRIVED' | 'LEFT' | 'CANCELLED'
 
-/** A hostel visitor; only the name and relation are kept. */
 export type HostelVisit = {
   visitId: number
   visitorName: string

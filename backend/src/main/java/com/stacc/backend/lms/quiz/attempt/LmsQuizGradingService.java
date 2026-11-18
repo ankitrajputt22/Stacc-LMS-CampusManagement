@@ -18,12 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty read the attempts at their quizzes and mark them. Every action checks the faculty access policy on the course
- * found from the stored quiz or attempt. Results can be read for published and archived quizzes; marks are given only
- * for published ones. Marking locks the attempt row first, needs the attempt handed in, and replaces an earlier mark
- * without history. The marker and time come from the server.
- */
 @Service
 public class LmsQuizGradingService {
 
@@ -56,12 +50,10 @@ public class LmsQuizGradingService {
         this.clock = clock;
     }
 
-    /** A quiz's attempts with their scores, by student login ID and attempt number. */
     public record QuizResults(LmsQuiz quiz, BigDecimal totalMarks, List<LmsQuizAttempt> attempts,
             Map<Long, QuizScoring.AttemptScore> scores, Instant now) {
     }
 
-    /** One attempt with every question in the quiz's order, its answer, the automatic marks, and the teacher's mark. */
     public record AttemptReview(LmsQuizAttempt attempt, QuizScoring.AttemptScore score, Instant now) {
     }
 
@@ -84,10 +76,6 @@ public class LmsQuizGradingService {
         return new AttemptReview(attempt, scores.of(attempt), now());
     }
 
-    /**
-     * Gives an answer marks from 0 to the question's marks in the quiz, with optional feedback, replacing an earlier
-     * mark. For a choice, true/false, or short answer this is a regrade that takes the place of the automatic marks.
-     */
     @Transactional
     public AttemptReview mark(Long userAccountId, Long attemptId, Long quizQuestionId, BigDecimal given, String feedback) {
         requireAttempt(userAccountId, attemptId, true);
@@ -112,10 +100,6 @@ public class LmsQuizGradingService {
         return review(userAccountId, attemptId);
     }
 
-    /**
-     * Closes an attempt the student left open after its time ran out, as handing it in would: its answers saved before
-     * the deadline count. An attempt whose time is not up is refused (409); a handed-in one changes nothing.
-     */
     @Transactional
     public AttemptReview close(Long userAccountId, Long attemptId) {
         requireAttempt(userAccountId, attemptId, true);
@@ -129,8 +113,6 @@ public class LmsQuizGradingService {
         return review(userAccountId, attemptId);
     }
 
-    // The course comes from the stored attempt; only its ID is read first, so a following locking read is the first to
-    // load the attempt. Marking needs a published quiz; reading also allows an archived one.
     private void requireAttempt(Long userAccountId, Long attemptId, boolean changing) {
         LmsQuizAttemptRepository.AttemptOwner owner = attemptId == null ? null : attempts.findOwnerById(attemptId).orElse(null);
         boolean allowed = owner != null

@@ -14,21 +14,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One time a student handed in work for an assignment: optional plain text, and files kept as
- * attachments. An attempt never changes once it is made. Handing in again makes a new attempt with the
- * next number, and earlier attempts stay as they were.
- *
- * <p>The assignment's deadline at the moment of the attempt is kept with it, so whether the attempt was
- * late never changes, even if the deadline is moved afterwards.
- */
 @Entity
 @Table(name = "lms_submission_attempts")
 public class LmsSubmissionAttempt {
 
     public static final int MAX_TEXT_LENGTH = 20_000;
 
-    // Every column is fixed when the row is written: there are no setters and nothing is updatable.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,7 +31,6 @@ public class LmsSubmissionAttempt {
     @Column(name = "attempt_number", nullable = false, updatable = false)
     private int attemptNumber;
 
-    // Plain text exactly as typed, line breaks kept. It is never treated as HTML. Null when only files were sent.
     @Column(name = "text_content", updatable = false, columnDefinition = "MEDIUMTEXT")
     private String textContent;
 
@@ -55,14 +45,8 @@ public class LmsSubmissionAttempt {
     private Instant createdAt;
 
     protected LmsSubmissionAttempt() {
-        // Required by JPA.
     }
 
-    /**
-     * @param textContent   plain text as typed; blank text counts as none
-     * @param submittedAt   when the server accepted the attempt, never a time from the client
-     * @param dueAtSnapshot the assignment's deadline at that moment
-     */
     public LmsSubmissionAttempt(
             LmsAssignmentSubmission submission, int attemptNumber, String textContent, Instant submittedAt, Instant dueAtSnapshot) {
         this.submission = Require.notNull(submission, "submission");
@@ -75,7 +59,6 @@ public class LmsSubmissionAttempt {
         this.dueAtSnapshot = Require.notNull(dueAtSnapshot, "dueAtSnapshot");
     }
 
-    /** The text as it will be stored: unchanged, or null when it is missing or blank. Too long is refused. */
     public static String textOrNull(String textContent) {
         if (textContent == null || textContent.isBlank()) {
             return null;
@@ -114,7 +97,6 @@ public class LmsSubmissionAttempt {
         return createdAt;
     }
 
-    /** Late when it was accepted after the deadline that applied at the time. Exactly on the deadline is on time. */
     public boolean isLate() {
         return submittedAt.isAfter(dueAtSnapshot);
     }

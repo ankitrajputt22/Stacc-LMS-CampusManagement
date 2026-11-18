@@ -33,7 +33,6 @@ class CampusNotificationsTest {
     @Test
     void aPublishedNoticeReachesTheActiveAccountsOfItsRolesOnceEach() {
         CampusNotice notice = CampusFixtures.notice(5, true, true, false);
-        // The query returns each account once, however many of the roles it holds.
         when(accounts.findDistinctIdsByRoleNamesAndStatus(any(), eq(AccountStatus.ACTIVE))).thenReturn(List.of(70L, 80L, 90L));
 
         campus.noticePublished(notice);

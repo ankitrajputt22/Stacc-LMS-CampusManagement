@@ -33,7 +33,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 class AccessTokenServiceTest {
 
-    // A made-up value that must never end up in a token.
     private static final String PASSWORD_HASH = "example-hash-value";
 
     private static final JwtProperties PROPERTIES = new JwtProperties(TestSecrets.JWT_SECRET);
@@ -52,7 +51,6 @@ class AccessTokenServiceTest {
 
     private static final String SESSION = "11111111-2222-4333-8444-555555555555";
 
-    /** A token for a session that ends twelve hours after the given time, as sessions do by default. */
     private static AccessToken issuedAt(Instant time) {
         return serviceAt(time).issue(facultyPrincipal(), SESSION, time.plus(12, ChronoUnit.HOURS));
     }

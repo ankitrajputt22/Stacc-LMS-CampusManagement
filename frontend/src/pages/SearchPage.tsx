@@ -19,7 +19,6 @@ import { textLinkClasses } from '../ui/styles'
 
 const PAGE_SIZE = 20
 
-/** The search field on the page. Submitting changes the address; the address alone decides what is searched. */
 function SearchForm({ initial, type }: { initial: string; type: SearchResultType | null }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState(initial)
@@ -71,7 +70,6 @@ const TYPE_ICON: Partial<Record<SearchResultType, NavIconName>> = {
   SEMESTER: 'calendar',
 }
 
-/** One result: an icon, its title as the link, its context and a short plain-text snippet, and a date when it has one. */
 function ResultRow({ item, typeLabel }: { item: SearchResultItem; typeLabel: string }) {
   return (
     <li className="flex gap-4 py-3">
@@ -87,7 +85,6 @@ function ResultRow({ item, typeLabel }: { item: SearchResultItem; typeLabel: str
           <p className="mt-0.5 text-[0.95rem] break-words text-ink">
             {item.subtitle}
             {item.subtitle && item.snippet && <span aria-hidden="true"> · </span>}
-            {/* Plain text: React shows it as text, never as HTML. */}
             {item.snippet && <span className="text-ink-muted">{item.snippet}</span>}
           </p>
         )}
@@ -149,7 +146,6 @@ const denied = (
   </StatePanel>
 )
 
-/** Every kind with results, in the backend's order, up to 5 each, with View all when there are more. */
 function GroupedResults({ query }: { query: string }) {
   const load = useMemo(() => (signal: AbortSignal) => searchStacc(query, signal), [query])
   const request = useApiRequest(load)
@@ -192,7 +188,6 @@ function GroupedResults({ query }: { query: string }) {
   )
 }
 
-/** One kind of result, page by page, from the address. */
 function TypeResults({ query, type, page }: { query: string; type: SearchResultType; page: number }) {
   const navigate = useNavigate()
   const contentRef = useRef<HTMLDivElement>(null)
@@ -247,11 +242,6 @@ function TypeResults({ query, type, page }: { query: string; type: SearchResultT
   )
 }
 
-/**
- * Search at /search. The address is the page's state (q, and for View all also type and page), so refresh, Back, and
- * Forward keep the search. Nothing is sent without a query of at least 2 characters, and nothing while typing. The
- * backend decides what each account may find; every result opens a page that checks access again.
- */
 export function SearchPage() {
   const [searchParams] = useSearchParams()
   const query = normalizeQuery(searchParams.get('q'))
@@ -289,7 +279,6 @@ export function SearchPage() {
     <>
       <title>{query ? `${query} · Search · Stacc` : 'Search · Stacc'}</title>
       <h1 className="text-3xl font-bold tracking-tight text-portal-navy">Search</h1>
-      {/* Keyed by the address, so Back and Forward show the query they lead to. */}
       <SearchForm key={`${query}|${type ?? ''}`} initial={query} type={type} />
       <div className="mt-6">{content}</div>
     </>

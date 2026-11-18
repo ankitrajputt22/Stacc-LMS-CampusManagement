@@ -24,12 +24,6 @@ import { SIGN_IN_AGAIN } from './MasterSection'
 
 type Ending = { courseEnrollmentId: number; status: Exclude<EnrollmentStatus, 'ENROLLED' | 'DROPPED'> }
 
-/**
- * The course enrollments of one semester enrollment. While it is enrolled, a course can be added from the offerings
- * of the same semester, which the backend filters, and each enrolled course can be completed or withdrawn after a
- * confirmation. An ended semester enrollment's courses are read-only. LMS access follows the official enrollment
- * live, whenever the offering's LMS course is published, so there is nothing to provision here.
- */
 export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: AdminSemesterEnrollment }) {
   const queryClient = useQueryClient()
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -50,7 +44,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
   const context = semesterContext(semesterEnrollment)
 
   const taken = new Set((rows ?? []).map((row) => row.courseOfferingId))
-  // Whole-semester offerings, and those of the student's own section; another section's offerings are not theirs.
   const choices =
     offerings.status === 'loaded'
       ? offerings.data.filter(
@@ -83,7 +76,6 @@ export function CourseEnrollments({ semesterEnrollment }: { semesterEnrollment: 
     return ending?.courseEnrollmentId === row.courseEnrollmentId ? ending : null
   }
 
-  // The empty state's button has its own key, so focus after the first course waits for the button above the list.
   const addButton = (focusKey: string) => (
     <Button
       data-focus-key={focusKey}

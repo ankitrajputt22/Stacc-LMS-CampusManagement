@@ -30,11 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin reports: academic and enrollment counts within optional filters, a per-offering enrollment report and its CSV,
- * and operational counts for the modules the admin may manage. Every route needs the ADMIN role with ADMIN_REPORT_VIEW.
- * Read-only; nothing is stored.
- */
 @RestController
 @RequestMapping("/api/v1/reports/admin")
 @Tag(name = "Reports")

@@ -15,25 +15,19 @@ public interface AcademicSessionRepository extends JpaRepository<AcademicSession
 
     Optional<AcademicSession> findByCode(String code);
 
-    /** The session, locked, so work that must not overlap within one session (such as timetable clashes) takes turns. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select s from AcademicSession s where s.id = :id")
     Optional<AcademicSession> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
 
-    /** The current session, if one is marked, locked so that changing it is done by one request at a time. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<AcademicSession> findFirstByCurrentTrue();
 
-    /** The current session, if one is marked, for reading. */
     Optional<AcademicSession> findByCurrentTrue();
 
-    /** Every academic session, the latest start first. */
     List<AcademicSession> findAllByOrderByStartDateDescIdDesc();
 
-    // Compares as the unique constraint does, in the column's collation.
     boolean existsByCode(String code);
 
-    /** Search: academic sessions, whatever their status, whose code contains the text; the latest start first. */
     @Query(value = """
             select academicSession
             from AcademicSession academicSession

@@ -29,8 +29,6 @@ public class LmsFacultyCourseController {
         this.courseQueryService = courseQueryService;
     }
 
-    // The rule below lets in a faculty account that may use the faculty course-view feature. Which
-    // courses that faculty member actually gets is decided by the query, from official teaching assignments.
     @GetMapping("/my-courses")
     @PreAuthorize("hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW')")
     @Operation(

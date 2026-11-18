@@ -2,10 +2,6 @@ import { type FormEvent, useState } from 'react'
 import { refusalText } from './refusal'
 import { Alert, Button, TextAreaField, TextField } from '../ui'
 
-/**
- * A plain-text post: an optional title (for a new thread or conversation) and the text. Checks that both are filled
- * before sending; the backend checks again and decides.
- */
 export function PostForm({
   titleLabel,
   bodyLabel,
@@ -17,7 +13,6 @@ export function PostForm({
   titleLabel?: string
   bodyLabel: string
   submitLabel: string
-  /** Offers up to 5 files, checked again by the backend. */
   allowFiles?: boolean
   onSubmit: (title: string, body: string, files: File[]) => Promise<void>
   onCancel?: () => void
@@ -84,7 +79,6 @@ export function PostForm({
   )
 }
 
-/** A post's text, shown as plain text with its line breaks; never as HTML. */
 export function PostText({ text }: { text: string }) {
   return <p className="text-sm leading-6 break-words whitespace-pre-line text-ink">{text}</p>
 }

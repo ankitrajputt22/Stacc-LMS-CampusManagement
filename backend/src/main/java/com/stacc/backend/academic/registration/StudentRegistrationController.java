@@ -26,10 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in student's own course registration. The student always comes from the access token; no route takes a
- * student, profile, or account ID.
- */
 @RestController
 @RequestMapping("/api/v1/students/me")
 @Tag(name = "Course registration")

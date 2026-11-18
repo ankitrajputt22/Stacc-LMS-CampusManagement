@@ -26,10 +26,8 @@ describe('KnowledgePanel', () => {
     expect(api.queueFacultyAiRefresh).toHaveBeenCalledWith(3, expect.anything())
     expect(await screen.findByText('Refresh queued. It starts in a moment.')).toBeInTheDocument()
 
-    // The panel asks again after its 3-second wait while the job is queued.
     expect(await screen.findByText(/Indexed 4 sources\./, undefined, { timeout: 5000 })).toBeInTheDocument()
 
-    // Once the job has finished, nothing asks again.
     const calls = vi.mocked(api.getFacultyAiStatus).mock.calls.length
     await new Promise((resolve) => setTimeout(resolve, 3500))
     expect(vi.mocked(api.getFacultyAiStatus).mock.calls.length).toBe(calls)

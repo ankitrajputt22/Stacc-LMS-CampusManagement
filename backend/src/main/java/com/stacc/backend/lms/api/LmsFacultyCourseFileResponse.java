@@ -5,10 +5,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One file of a course a faculty member teaches, drafts included: a study material that is not archived, with the page
- * and module it is on and their statuses, so the Files list can say whether students see it.
- */
 public record LmsFacultyCourseFileResponse(
         @Schema(example = "7")
         Long id,

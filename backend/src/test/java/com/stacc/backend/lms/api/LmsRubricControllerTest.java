@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Rubrics need the assignment management permission and rubric grading the grading permission; bodies are checked first. */
 class LmsRubricControllerTest extends DatabaseFreeApiTest {
 
     private static final String RUBRIC = """

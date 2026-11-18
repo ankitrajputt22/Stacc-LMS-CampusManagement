@@ -1,6 +1,5 @@
 import { formatDateTime } from './dates'
 
-/** Why no new attempt can be handed in now, or null when one can. */
 export function submissionClosedReason(
   window: 'NOT_OPEN' | 'OPEN' | 'CLOSED',
   availableFrom: string | null,
@@ -19,7 +18,6 @@ export function submissionClosedReason(
   return null
 }
 
-/** An assignment's submission rules in a few words, for faculty lists. */
 export function submissionRulesText(rules: {
   availableFrom: string | null
   availableUntil: string | null

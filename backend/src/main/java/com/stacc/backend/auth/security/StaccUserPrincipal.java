@@ -17,10 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-/**
- * What Spring Security knows about a Stacc account: who it is, its password hash,
- * whether it may sign in, and what it is allowed to do. It holds no profile details.
- */
 public final class StaccUserPrincipal implements UserDetails, CredentialsContainer {
 
     private static final String ROLE_PREFIX = "ROLE_";
@@ -44,15 +40,10 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
         this.authorities = authorities;
     }
 
-    /** The account's roles and their permissions must already be loaded. */
     public static StaccUserPrincipal from(UserAccount account) {
         return from(account, Instant.now());
     }
 
-    /**
-     * As {@link #from(UserAccount)}, judging a temporary password's expiry at the given moment. An expired temporary
-     * password counts as expired credentials, which Spring Security refuses only after the password itself matched.
-     */
     public static StaccUserPrincipal from(UserAccount account, Instant now) {
         return new StaccUserPrincipal(
                 account.getId(),
@@ -64,7 +55,6 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
                 authoritiesOf(account));
     }
 
-    // A role becomes ROLE_<name>. A permission keeps its code. Shared permissions appear once.
     private static Set<GrantedAuthority> authoritiesOf(UserAccount account) {
         Set<String> names = new TreeSet<>();
         for (Role role : account.getRoles()) {
@@ -91,7 +81,6 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
         return authorities;
     }
 
-    /** The account's role names without the ROLE_ prefix, in alphabetical order. */
     public List<String> getRoleNames() {
         return authorities.stream()
                 .map(GrantedAuthority::getAuthority)
@@ -100,13 +89,11 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
                 .toList();
     }
 
-    /** Spring Security's "username" is the Stacc login ID. */
     @Override
     public String getUsername() {
         return loginId;
     }
 
-    /** Spring Security's "password" is the stored hash, never a plain password. */
     @Override
     public String getPassword() {
         return passwordHash;
@@ -117,18 +104,15 @@ public final class StaccUserPrincipal implements UserDetails, CredentialsContain
         return enabled;
     }
 
-    /** False only for a temporary password that has run out. */
     @Override
     public boolean isCredentialsNonExpired() {
         return credentialsNonExpired;
     }
 
-    /** Whether the person must choose a new password before using anything else. */
     public boolean isPasswordChangeRequired() {
         return passwordChangeRequired;
     }
 
-    /** Spring Security calls this after a successful sign-in so the hash is not kept in memory. */
     @Override
     public void eraseCredentials() {
         this.passwordHash = null;

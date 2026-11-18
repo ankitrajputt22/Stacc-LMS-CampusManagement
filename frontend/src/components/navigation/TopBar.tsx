@@ -43,7 +43,6 @@ function AccountMenu() {
   const { pathname } = useLocation()
   const [openedAt, setOpenedAt] = useState(pathname)
 
-  // Moving to another page closes the menu.
   if (open && openedAt !== pathname) {
     setOpen(false)
   }
@@ -143,10 +142,6 @@ function AccountMenu() {
   )
 }
 
-/**
- * The white bar above every page: the menu button and the emblem on small screens, the page's place in the navigation
- * on wide ones, then Search, Calendar, the Inbox with the shared unread count, and the account menu.
- */
 export function TopBar({ menuId, isMenuOpen, onOpenMenu, menuButtonRef }: TopBarProps) {
   const { account } = useAuth()
   const { pathname } = useLocation()

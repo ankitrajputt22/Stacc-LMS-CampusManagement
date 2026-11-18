@@ -26,10 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/**
- * Calls the admin calendar routes through Spring Security. The service is a stand-in, so these tests are about who
- * gets in, what reaches the service, and what is sent back.
- */
 class AdminAcademicCalendarControllerTest extends DatabaseFreeApiTest {
 
     private static final String EVENTS = "/api/v1/admin/academic/calendar/events";
@@ -65,7 +61,6 @@ class AdminAcademicCalendarControllerTest extends DatabaseFreeApiTest {
                 post(EVENTS + "/14/cancel"));
     }
 
-    // Each call gets new requests, so a token is never added to a request that already carries one.
     private void refused(List<String> tokens, Supplier<List<MockHttpServletRequestBuilder>> requests) throws Exception {
         for (String denied : tokens) {
             for (MockHttpServletRequestBuilder request : requests.get()) {

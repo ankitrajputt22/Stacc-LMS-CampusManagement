@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-/** The planner: deadlines first, within each day's minutes, half on busy days, and pages spread by need. */
 class StudyPlannerTest {
 
     private static final LocalDate MONDAY = LocalDate.parse("2026-11-16");

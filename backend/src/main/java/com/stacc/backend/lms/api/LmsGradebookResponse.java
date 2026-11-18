@@ -11,7 +11,6 @@ import com.stacc.backend.lms.gradebook.GradebookBuilder;
 import com.stacc.backend.lms.gradebook.LmsGradebookService;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A course's gradebook for the faculty who teach it: the columns and every current student's marks, by college ID. */
 public record LmsGradebookResponse(List<Column> columns, List<StudentRow> students) {
 
     public record Column(

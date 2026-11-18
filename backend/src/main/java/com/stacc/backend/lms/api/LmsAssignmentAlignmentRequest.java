@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** What an assignment assesses: an optional Bloom level and outcomes of its own course. */
 public record LmsAssignmentAlignmentRequest(
         @Schema(description = "Or null for none.", allowableValues = {"REMEMBER", "UNDERSTAND", "APPLY", "ANALYZE", "EVALUATE", "CREATE"})
         BloomLevel bloomLevel,

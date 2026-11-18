@@ -5,7 +5,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.content.LmsStudyMaterial;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One published study material, as a student sees it. Where the file is stored is never sent. */
 public record LmsCourseMaterialResponse(
         @Schema(description = "Used to download the file.", example = "7")
         Long id,

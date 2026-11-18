@@ -16,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A reply in a discussion thread. Replies are never edited or deleted; faculty may hide one, and students then see only that it was hidden. */
 @Entity
 @Table(name = "lms_discussion_replies")
 public class LmsDiscussionReply {
@@ -50,7 +49,6 @@ public class LmsDiscussionReply {
     private Long hiddenByAccountId;
 
     protected LmsDiscussionReply() {
-        // Required by JPA.
     }
 
     public LmsDiscussionReply(LmsDiscussionThread thread, UserAccount author, AuthorKind authorKind, String body, Instant now) {
@@ -61,7 +59,6 @@ public class LmsDiscussionReply {
         this.createdAt = Require.notNull(now, "now");
     }
 
-    /** Hides the reply from students; hiding again keeps the first time and moderator. */
     public void hide(Long byAccountId, Instant at) {
         if (hiddenAt == null) {
             this.hiddenAt = Require.notNull(at, "at");

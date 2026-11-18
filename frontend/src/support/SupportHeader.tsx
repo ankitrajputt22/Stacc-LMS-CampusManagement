@@ -3,10 +3,6 @@ import { useAuth } from '../auth/AuthContext'
 import { hasAnyRole } from '../auth/roles'
 import { LinkTabs } from '../ui'
 
-/**
- * The top of every Support page: its title, a line about it, an optional action such as Create ticket, and for admins
- * the Support tabs. The tabs are for the interface only; the backend checks each page like any other.
- */
 export function SupportHeader({ title, description, action }: { title: string; description?: ReactNode; action?: ReactNode }) {
   const { account } = useAuth()
   const isAdmin = hasAnyRole(account?.roles ?? [], ['ADMIN'])

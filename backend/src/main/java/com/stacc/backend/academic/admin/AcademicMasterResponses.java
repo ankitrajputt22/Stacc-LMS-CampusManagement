@@ -12,10 +12,6 @@ import com.stacc.backend.academic.semester.Semester;
 import com.stacc.backend.academic.session.AcademicSession;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The academic masters as admins see them: each record's own fields and, for a child, the ID, code, and name of its
- * parents for context. Nothing else is exposed, and no entity is sent as it is.
- */
 public final class AcademicMasterResponses {
 
     private AcademicMasterResponses() {

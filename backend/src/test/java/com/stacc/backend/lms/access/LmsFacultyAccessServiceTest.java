@@ -33,13 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Every test starts from a faculty member who is allowed into a draft course, and then changes
- * exactly one thing. That is how each rule is shown to matter on its own.
- */
 class LmsFacultyAccessServiceTest {
 
-    // Made-up IDs. The LMS course ID is deliberately different from the course offering ID.
     private static final Long ACCOUNT_ID = 21L;
     private static final Long OTHER_ACCOUNT_ID = 22L;
     private static final Long LMS_COURSE_ID = 7L;
@@ -140,7 +135,6 @@ class LmsFacultyAccessServiceTest {
 
     @Test
     void accountWithoutAFacultyProfileIsDenied() {
-        // Without a profile the lookup, which goes through the profile, finds nothing.
         foundAssignments();
 
         assertFalse(service.canAccessCourse(ACCOUNT_ID, LMS_COURSE_ID));
@@ -148,7 +142,6 @@ class LmsFacultyAccessServiceTest {
 
     @Test
     void assignmentOfAnotherFacultyMemberIsDenied() {
-        // Even if the lookup returned someone else's assignment, it would not count for this account.
         foundAssignments(new TeachingAssignment(faculty("TEST-FACULTY-2", OTHER_ACCOUNT_ID), offering));
 
         assertFalse(canAccess());
@@ -156,7 +149,6 @@ class LmsFacultyAccessServiceTest {
 
     @Test
     void assignmentForAnotherCourseOfferingIsDenied() {
-        // Even if the lookup returned an assignment for another offering, it would not count.
         foundAssignments(new TeachingAssignment(faculty, offering("TST302", OTHER_OFFERING_ID)));
 
         assertFalse(canAccess());

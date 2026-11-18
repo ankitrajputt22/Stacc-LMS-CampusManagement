@@ -6,12 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The signed-in student's dashboard: short previews of their current LMS courses, upcoming assignments, recent
- * announcements, finalized attendance, and published results, with the full count beside each preview where one is
- * useful. Nothing is derived beyond what the owning features already send: no overall attendance, grade point
- * average, rank, pass or fail, or progress.
- */
 public record StudentDashboardResponse(
         @Schema(description = "How many LMS courses the student can use now, under the same rule as their course list.",
                 example = "4")

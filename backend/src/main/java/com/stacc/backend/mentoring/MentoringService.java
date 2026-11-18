@@ -19,11 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Mentoring (v0.12.4). A pairing, its meetings, and its action items open only for its mentor and its student; anyone
- * else gets the same 404 as for a missing one, and there is no admin pass to the meetings. Only the mentor records and
- * edits meetings, sets action items, and reads private notes. Admins pair and end pairings.
- */
 @Service
 @Transactional
 public class MentoringService {
@@ -41,7 +36,6 @@ public class MentoringService {
     public record ActionItemView(Long itemId, String description, MentoringActionItem.Owner owner, Instant dueAt, Instant completedAt) {
     }
 
-    /** A meeting; private notes are sent to the mentor only and are null for the student. */
     public record MeetingView(Long meetingId, String title, Instant heldAt, String sharedNotes, String privateNotes, List<ActionItemView> actionItems) {
     }
 
@@ -65,8 +59,6 @@ public class MentoringService {
         this.accounts = accounts;
         this.clock = clock;
     }
-
-    // --- The pair
 
     @Transactional(readOnly = true)
     public List<PairingView> pairings(Long accountId) {
@@ -103,7 +95,6 @@ public class MentoringService {
         return detail(found, accountId);
     }
 
-    /** Either of the pair marks an item done; again changes nothing. */
     public PairingDetail completeActionItem(Long accountId, Long itemId) {
         MentoringActionItem item = (itemId == null ? Optional.<MentoringActionItem>empty() : items.findById(itemId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
@@ -113,7 +104,6 @@ public class MentoringService {
         return detail(found, accountId);
     }
 
-    /** Open action items the account owns in its active pairings, for the To-Do list. */
     @Transactional(readOnly = true)
     public List<OpenItem> openItems(Long accountId) {
         return items.findOpenOwnedBy(accountId).stream().map(item -> {
@@ -123,8 +113,6 @@ public class MentoringService {
                     asMentor ? pair.getMentee().getLoginId() : pair.getMentor().getLoginId(), asMentor);
         }).toList();
     }
-
-    // --- Admins
 
     @Transactional(readOnly = true)
     public List<PairingView> allPairings() {

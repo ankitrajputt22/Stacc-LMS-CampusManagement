@@ -41,11 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty reports, for the course offerings the signed-in faculty member actively teaches (an ACTIVE faculty profile
- * with an ACTIVE teaching assignment), with or without an LMS course. Counts come from grouped database queries, a
- * fixed number per request whatever the number of offerings or students. It reads only.
- */
 @Service
 @Transactional(readOnly = true)
 public class FacultyReportQueryService {
@@ -83,10 +78,6 @@ public class FacultyReportQueryService {
         this.results = results;
     }
 
-    /**
-     * Every offering the faculty member teaches, as the Teaching page lists them, with four counts each. Five queries in
-     * all: the taught offerings, then one grouped count per kind of record over all of them.
-     */
     public List<FacultyReportCourseSummary> myCourses(Long accountId) {
         List<LmsFacultyManagedCourseResponse> taught = taughtCourses.getManagedCourses(accountId);
         if (taught.isEmpty()) {
@@ -109,7 +100,6 @@ public class FacultyReportQueryService {
                 .filter(row -> row.getStatus() == CourseResultStatus.PUBLISHED)
                 .collect(Collectors.toMap(CourseResultRepository.OfferingStatusCount::getCourseOfferingId,
                         CourseResultRepository.OfferingStatusCount::getTotal, Long::sum));
-        // No IN list is ever sent empty: without an open LMS course this query is not made.
         Map<Long, Long> assignmentTotals = openLmsCourseIds.isEmpty() ? Map.of()
                 : assignments.countByCourseAndStatus(openLmsCourseIds, LmsContentPolicy.IN_USE).stream()
                         .collect(Collectors.toMap(LmsAssignmentRepository.CourseStatusCount::getLmsCourseId,
@@ -124,11 +114,6 @@ public class FacultyReportQueryService {
                 published.getOrDefault(course.courseOfferingId(), 0L))).toList();
     }
 
-    /**
-     * The report of one offering. The faculty member must actively teach it ({@link FacultyTeachingAccessService});
-     * another faculty member's offering and a missing one answer the same 404. Without an LMS course faculty can open,
-     * the assignment section is empty; the rest of the report is official academic data and is always complete.
-     */
     public FacultyCourseReport courseReport(Long accountId, Long courseOfferingId) {
         if (courseOfferingId == null || !teachingAccess.canTeachCourseOffering(accountId, courseOfferingId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND);
@@ -160,7 +145,6 @@ public class FacultyReportQueryService {
                         enrollment.getOrDefault(CourseEnrollmentStatus.COMPLETED, 0L),
                         enrollment.getOrDefault(CourseEnrollmentStatus.WITHDRAWN, 0L)),
                 assignmentReport(lmsCourses.findByCourseOfferingId(courseOfferingId)),
-                // Only PRESENT and ABSENT are counted; an UNMARKED record is never counted as absent.
                 new FacultyAttendanceReport(sessions.getOrDefault(AttendanceSessionStatus.OPEN, 0L),
                         sessions.getOrDefault(AttendanceSessionStatus.FINALIZED, 0L),
                         records.getOrDefault(AttendanceStatus.PRESENT, 0L),
@@ -169,7 +153,6 @@ public class FacultyReportQueryService {
                         resultCounts.getOrDefault(CourseResultStatus.PUBLISHED, 0L)));
     }
 
-    /** Counts only in an LMS course faculty can use ({@link LmsFacultyAccessPolicy}: draft or published). */
     private FacultyAssignmentReport assignmentReport(Optional<LmsCourse> found) {
         if (found.isEmpty()) {
             return new FacultyAssignmentReport(false, null, null, 0, 0, 0, 0);

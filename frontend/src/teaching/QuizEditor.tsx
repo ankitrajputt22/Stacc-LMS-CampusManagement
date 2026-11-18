@@ -40,7 +40,6 @@ function refusalText(status: number | null, apiMessage: string | null, failed: s
 
 type Changes = ReturnType<typeof useContentChanges>
 
-/** One question of the quiz; in a draft with its marks, Move up, Move down, and Remove. */
 function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question: LmsQuizQuestion; changes: Changes }) {
   const draft = quiz.status === 'DRAFT'
   const [marks, setMarks] = useState(String(question.marks))
@@ -132,7 +131,6 @@ function QuizQuestionRow({ quiz, question, changes }: { quiz: LmsQuiz; question:
   )
 }
 
-/** The active bank questions not yet in the quiz, searchable, each with Add. Shown only while the quiz is a draft. */
 function BankPicker({ quiz, bank, changes }: { quiz: LmsQuiz; bank: LmsQuestion[]; changes: Changes }) {
   const [search, setSearch] = useState('')
   const [type, setType] = useState('')
@@ -213,7 +211,6 @@ function BankPicker({ quiz, bank, changes }: { quiz: LmsQuiz; bank: LmsQuestion[
   )
 }
 
-/** The quiz's settings as a short list, with the times in the browser's own time zone. */
 function SettingsSummary({ quiz }: { quiz: LmsQuiz }) {
   const rows: [string, string][] = [
     ['Type', quizTypeLabel(quiz.type)],
@@ -245,17 +242,11 @@ function SettingsSummary({ quiz }: { quiz: LmsQuiz }) {
   )
 }
 
-/**
- * One quiz as faculty manage it: its status with Publish and Archive (each confirmed), its settings, its questions (in a
- * draft: marks, Move up, Move down, Remove), and the bank questions to add. A published quiz keeps its questions,
- * type, shuffling, and negative marking; an archived one is read-only.
- */
 export function QuizEditor({ lmsCourseId, quizId }: { lmsCourseId: number; quizId: number }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const quiz = useApiQuery(queryKeys.lms.facultyQuiz(quizId), (signal) => getFacultyQuiz(quizId, signal))
   const isDraft = quiz.status === 'loaded' && quiz.data.status === 'DRAFT'
-  // The bank is needed only while questions can still be added.
   const bank = useApiQuery(isDraft ? queryKeys.lms.questions(lmsCourseId) : null, (signal) => getQuestions(lmsCourseId, signal))
   const [confirming, setConfirming] = useState<'publish' | 'archive' | null>(null)
   const [editingSettings, setEditingSettings] = useState(false)
@@ -402,7 +393,6 @@ export function QuizEditor({ lmsCourseId, quizId }: { lmsCourseId: number; quizI
         ) : (
           <ol className="divide-y divide-line">
             {data.questions.map((question) => (
-              // Keyed by marks too, so a saved or refused change shows the stored marks again.
               <QuizQuestionRow key={`${question.id}-${question.marks}`} quiz={data} question={question} changes={changes} />
             ))}
           </ol>

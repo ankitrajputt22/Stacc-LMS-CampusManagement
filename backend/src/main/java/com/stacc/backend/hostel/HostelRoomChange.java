@@ -16,11 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A resident's request to move to another bed, or a proposed swap of beds with another resident. Its status is the
- * business outcome only (open, completed, cancelled, declined by the partner); the warden's decision stays with the
- * approval engine. Nothing is deleted.
- */
 @Entity
 @Table(name = "hostel_room_changes")
 public class HostelRoomChange {
@@ -90,7 +85,6 @@ public class HostelRoomChange {
     private Instant createdAt;
 
     protected HostelRoomChange() {
-        // Required by JPA.
     }
 
     private HostelRoomChange(Kind kind, HostelAllocation requester, HostelAllocation partner, String reason, String preference,
@@ -104,12 +98,10 @@ public class HostelRoomChange {
         this.createdAt = Require.notNull(now, "now");
     }
 
-    /** A request to move to another bed, with an optional wish (only a wish: the hostel office chooses the bed). */
     public static HostelRoomChange move(HostelAllocation requester, String reason, String preference, Instant now) {
         return new HostelRoomChange(Kind.MOVE, requester, null, reason, preference, now);
     }
 
-    /** A proposed swap of beds with another resident, who must accept before the warden decides. */
     public static HostelRoomChange swap(HostelAllocation requester, HostelAllocation partner, String reason, Instant now) {
         return new HostelRoomChange(Kind.SWAP, requester, Require.notNull(partner, "partnerAllocation"), reason, null, now);
     }
@@ -121,7 +113,6 @@ public class HostelRoomChange {
         this.approvalRequestId = Require.notNull(approvalRequestId, "approvalRequestId");
     }
 
-    /** The partner's answer to a proposed swap, once; declining ends the change. */
     public void answer(boolean accept) {
         if (kind != Kind.SWAP || partnerResponse != PartnerResponse.PENDING || status != Status.OPEN) {
             throw new IllegalStateException("This swap is no longer waiting for an answer.");

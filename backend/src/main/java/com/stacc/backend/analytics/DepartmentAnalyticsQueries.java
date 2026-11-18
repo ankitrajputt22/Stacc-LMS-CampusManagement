@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Read-only counts for one department's view, bounded by the department and the current academic session. */
 public interface DepartmentAnalyticsQueries extends Repository<Department, Long> {
 
     interface ProgramCount {
@@ -17,7 +16,6 @@ public interface DepartmentAnalyticsQueries extends Repository<Department, Long>
         long getStudents();
     }
 
-    /** The department's programs with their students enrolled in a semester of the current session. */
     @Query("""
             select program.code as code, program.name as name,
               (select count(enrollment) from SemesterEnrollment enrollment
@@ -37,7 +35,6 @@ public interface DepartmentAnalyticsQueries extends Repository<Department, Long>
         long getPublishedResults();
     }
 
-    /** Offerings of the department's courses in the current session, with enrolled students and published results. */
     @Query("""
             select offering.id as offeringId, course.code as courseCode, course.name as courseName, program.code as programCode,
               semester.semesterNumber as semesterNumber,
@@ -57,7 +54,6 @@ public interface DepartmentAnalyticsQueries extends Repository<Department, Long>
         long getMarked();
     }
 
-    /** Present and marked records of finalized attendance sessions, per offering. */
     @Query("""
             select record.attendanceSession.courseOffering.id as offeringId,
               sum(case when record.status = com.stacc.backend.academic.attendance.AttendanceStatus.PRESENT then 1 else 0 end) as present,

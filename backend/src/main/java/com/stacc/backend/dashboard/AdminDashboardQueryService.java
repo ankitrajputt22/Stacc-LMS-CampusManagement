@@ -20,11 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Builds the admin dashboard with count queries and one bounded preview query, at request time; nothing is stored.
- * Master and offering counts are every row, whatever its status. "Active" enrollment means {@code ENROLLED} only. The
- * offering preview reuses the admin offering list's own query and order, limited to its first page.
- */
 @Service
 @Transactional(readOnly = true)
 public class AdminDashboardQueryService {
@@ -54,14 +49,12 @@ public class AdminDashboardQueryService {
         this.courseEnrollments = courseEnrollments;
     }
 
-    /** The dashboard as it is now. Empty data gives zero counts and an empty preview, never an error. */
     public AdminDashboardResponse getDashboard() {
         AcademicMasters masters = new AcademicMasters(departments.count(), programs.count(), academicSessions.count(),
                 semesters.count(), courses.count());
         AcademicOperations operations = new AcademicOperations(courseOfferings.count(),
                 semesterEnrollments.countByStatus(SemesterEnrollmentStatus.ENROLLED),
                 courseEnrollments.countByStatus(CourseEnrollmentStatus.ENROLLED));
-        // No filter, first page only: one query with the course, semester, program, and session joined in.
         var preview = courseOfferings.findAllWithContext(null, null, null, null, PageRequest.of(0, OFFERING_PREVIEW_LIMIT))
                 .stream()
                 .map(AdminDashboardQueryService::previewOf)

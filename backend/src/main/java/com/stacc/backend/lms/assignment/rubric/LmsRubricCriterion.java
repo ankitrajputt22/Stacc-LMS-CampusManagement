@@ -19,7 +19,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-/** One criterion of a rubric, part of it: what is judged, the most points it gives, and optional levels. */
 @Entity
 @Table(name = "lms_rubric_criteria")
 public class LmsRubricCriterion {
@@ -54,7 +53,6 @@ public class LmsRubricCriterion {
     private List<LmsRubricLevel> levels = new ArrayList<>();
 
     protected LmsRubricCriterion() {
-        // Required by JPA.
     }
 
     LmsRubricCriterion(LmsRubric rubric, int position, String title, String description, BigDecimal maxPoints,

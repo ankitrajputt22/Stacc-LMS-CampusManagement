@@ -14,11 +14,6 @@ import com.stacc.backend.academic.semester.Semester;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * A student's standing (v0.16.3), worked out on every read from their published results and the grade scale, never
- * stored: each course's grade and points, each semester's SGPA, and the CGPA, all weighted by course credits. Audit
- * courses carry no points. A result whose grade code the scale does not know is shown but left out of the averages.
- */
 @Service
 @Transactional(readOnly = true)
 public class AcademicStandingService {
@@ -32,7 +27,6 @@ public class AcademicStandingService {
             BigDecimal creditsEarned, BigDecimal weightedPoints, BigDecimal sgpa, BigDecimal cgpaAfter, List<CourseGrade> courses) {
     }
 
-    /** Semesters latest first; the CGPA is null until some graded credit exists. */
     public record Standing(List<SemesterStanding> semesters, BigDecimal cgpa, BigDecimal creditsEarned, BigDecimal creditsGraded,
             BigDecimal weightedPoints) {
     }
@@ -49,7 +43,6 @@ public class AcademicStandingService {
         return GradeScale.of(scale.findAllByOrderByPositionAsc());
     }
 
-    /** @param userAccountId the signed-in account, from the access token */
     public Standing standing(Long userAccountId) {
         GradeScale grades = scale();
         Map<String, List<CourseResult>> bySemester = new LinkedHashMap<>();
@@ -84,7 +77,6 @@ public class AcademicStandingService {
             semesters.add(new SemesterStanding(semester.getAcademicSession().getCode(), semester.getProgram().getCode(),
                     semester.getSemesterNumber(), credits, semesterEarned, points, average(points, credits), null, courses));
         }
-        // The CGPA after each semester counts that semester and every earlier one; the list is latest first.
         List<SemesterStanding> withHistory = new ArrayList<>();
         BigDecimal runningPoints = BigDecimal.ZERO;
         BigDecimal runningCredits = BigDecimal.ZERO;
@@ -98,7 +90,6 @@ public class AcademicStandingService {
         return new Standing(withHistory, average(totalPoints, totalCredits), earned, totalCredits, totalPoints);
     }
 
-    /** One published result with its grade and points under the scale. */
     public static CourseGrade gradeOf(CourseResult result, GradeScale grades) {
         CourseOffering offering = result.getCourseEnrollment().getCourseOffering();
         Course course = offering.getCourse();

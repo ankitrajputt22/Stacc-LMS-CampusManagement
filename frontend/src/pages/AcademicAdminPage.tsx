@@ -22,8 +22,6 @@ import { StatePanel } from '../components/states/StatePanel'
 import { LinkTabs, PageHeader } from '../ui'
 import { NotFoundPage } from './NotFoundPage'
 
-// The pages of academic administration, grouped by the kind of work, so each row of tabs stays short. A group's tab
-// opens its first page.
 const GROUPS = [
   { id: 'structure', label: 'Structure' },
   { id: 'teaching', label: 'Teaching' },
@@ -50,14 +48,6 @@ const SECTIONS = [
 
 const ID_PATTERN = /^[1-9]\d{0,17}$/
 
-/**
- * The admin workspace for academic data, at /admin/academic/:section; /admin/academic opens the departments. The
- * reusable masters can be added and edited, course offerings added and moved through their status, students enrolled
- * in semesters and course offerings, and official calendar events prepared, published, and cancelled; nothing is
- * deleted. An offering's roster is at /admin/academic/offerings/:courseOfferingId/enrollments. Accounts without the
- * admin role see an explanation instead and no request is made; the backend checks the role and the permissions on
- * every request.
- */
 export function AcademicAdminPage({ roster = false }: { roster?: boolean }) {
   const { account } = useAuth()
   const { section, courseOfferingId } = useParams()

@@ -7,10 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * A practice answer to mark (v0.15.4). The question and reference answer come from the student's own practice set on the
- * page; the marks are practice only and nothing is stored.
- */
 public record AiEvaluateRequest(
         @NotBlank @Size(max = 1500) String question,
         @NotBlank @Size(max = 2000) String referenceAnswer,

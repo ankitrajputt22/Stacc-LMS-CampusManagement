@@ -53,7 +53,6 @@ function ResultsTable({ semester }: { semester: SemesterStanding }) {
   )
 }
 
-/** Exams & Results → Results: a semester's published results with SGPA, and the CGPA after each semester. */
 export function ErpResultsPage() {
   const standing = useApiQuery(queryKeys.erp.standing(), getMyStanding)
   const [chosen, setChosen] = useState(0)

@@ -12,10 +12,6 @@ type PageCompletionProps = {
   completed: boolean
 }
 
-/**
- * The student's own completion of a page: Completed, or Mark as complete. Marking is recorded once by the backend and
- * cannot be undone; opening the page records nothing. A refusal (such as a module that became locked) is shown here.
- */
 export function PageCompletion({ lmsCourseId, pageId, required, completed }: PageCompletionProps) {
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState(false)

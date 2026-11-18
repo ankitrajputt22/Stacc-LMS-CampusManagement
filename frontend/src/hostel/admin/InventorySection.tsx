@@ -42,11 +42,6 @@ function idParam(value: string | null): number | undefined {
   return value !== null && /^[1-9]\d{0,17}$/.test(value) ? Number(value) : undefined
 }
 
-/**
- * Hostels, the rooms of the chosen hostel, and the beds of the chosen room, each with Add and Edit. There is no
- * Delete: anything can be made inactive, but the backend refuses while it holds an active allocation. Occupancy comes
- * from the backend, never from the page.
- */
 export function InventorySection() {
   const [searchParams, setSearchParams] = useSearchParams()
   const hostelId = idParam(searchParams.get('hostel'))

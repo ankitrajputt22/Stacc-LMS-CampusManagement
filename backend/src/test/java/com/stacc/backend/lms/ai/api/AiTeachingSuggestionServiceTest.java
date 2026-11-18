@@ -10,7 +10,6 @@ import com.stacc.backend.lms.ai.AiServiceMessages.RubricLevel;
 import com.stacc.backend.lms.ai.AiServiceMessages.RubricResult;
 import org.junit.jupiter.api.Test;
 
-/** Suggested rubrics always add up to the assignment's maximum, with levels within their criterion, or are left out. */
 class AiTeachingSuggestionServiceTest {
 
     private static RubricCriterion criterion(String title, String points, RubricLevel... levels) {

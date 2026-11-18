@@ -7,10 +7,6 @@ import com.stacc.backend.approval.ApproverRelationshipResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The warden of the requesting student's current hostel: the student's ACTIVE allocation, then that hostel's active
- * warden for the room's block if there is one, otherwise for the whole hostel.
- */
 @Component
 public class HostelWardenApprover implements ApproverRelationshipResolver {
 

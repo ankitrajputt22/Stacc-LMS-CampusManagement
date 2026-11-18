@@ -8,11 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * A new attempt, sent as multipart/form-data. Both parts are optional, but an attempt needs non-blank
- * text, at least one file, or both. Who is submitting, for which enrollment, and when, are decided by the
- * server; anything else in the request is ignored.
- */
 public record LmsSubmissionRequest(
         @Schema(description = "Optional plain text, up to 20,000 characters. Line breaks are kept; HTML is not interpreted.",
                 example = "My answers are in the attached file.")

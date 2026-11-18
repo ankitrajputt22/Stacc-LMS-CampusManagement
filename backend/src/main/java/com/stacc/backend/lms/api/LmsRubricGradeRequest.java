@@ -14,7 +14,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** Points for every criterion of the assignment's rubric, with optional comments and overall feedback. */
 public record LmsRubricGradeRequest(
         @NotEmpty(message = "Give points for every criterion")
         @Size(max = 20, message = "Too many criteria")

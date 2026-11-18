@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Degree progress, a student's standing (SGPA and CGPA), the grade scale, and the admin routes for requirements. */
 @RestController
 @Tag(name = "Degree progress and standing")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

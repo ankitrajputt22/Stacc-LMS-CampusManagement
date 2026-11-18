@@ -34,7 +34,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 class LmsFacultyCourseQueryServiceTest {
 
-    // Made-up IDs used only by these tests.
     private static final Long ACCOUNT_ID = 21L;
     private static final Long OTHER_ACCOUNT_ID = 22L;
 
@@ -72,7 +71,6 @@ class LmsFacultyCourseQueryServiceTest {
         return created;
     }
 
-    /** An active assignment of this faculty member to a new offering, with a draft LMS course. */
     private LmsCourse taught(String courseCode, long lmsCourseId) {
         return taught(faculty, offering(courseCode, semester), lmsCourseId);
     }
@@ -136,7 +134,6 @@ class LmsFacultyCourseQueryServiceTest {
     @Test
     void anotherFacultyMembersAssignmentIsLeftOut() {
         taught("TST301", 7);
-        // Even if the lookup returned someone else's assignment, it would not be listed for this account.
         taught(faculty(OTHER_ACCOUNT_ID), offering("TST302", semester), 8);
 
         assertEquals(List.of(7L), idsOf(list()));

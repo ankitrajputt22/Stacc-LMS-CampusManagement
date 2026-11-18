@@ -16,11 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Several hand-ins at once against a one-attempt assignment make exactly one attempt; the others are refused, because
- * the limit is counted under the course enrollment row lock. Uses its own assignment in CS301, handed in by
- * cse24003.
- */
 class SubmissionAttemptLimitMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

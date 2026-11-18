@@ -15,11 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A student's report of a discussion post (a thread, or one of its replies) to the course's faculty, with a reason.
- * It is resolved once, by hiding the post or dismissing the report, and never deleted. A person has at most one open
- * report per post.
- */
 @Entity
 @Table(name = "lms_discussion_reports")
 public class LmsDiscussionReport {
@@ -63,7 +58,6 @@ public class LmsDiscussionReport {
     private Resolution resolution;
 
     protected LmsDiscussionReport() {
-        // Required by JPA.
     }
 
     public LmsDiscussionReport(LmsDiscussionThread thread, LmsDiscussionReply reply, Long reporterAccountId, String reason, Instant now) {
@@ -74,7 +68,6 @@ public class LmsDiscussionReport {
         this.createdAt = Require.notNull(now, "now");
     }
 
-    /** Resolves an open report once; a resolved report never changes again. */
     public void resolve(Resolution resolution, Long byAccountId, Instant at) {
         if (resolvedAt != null) {
             return;

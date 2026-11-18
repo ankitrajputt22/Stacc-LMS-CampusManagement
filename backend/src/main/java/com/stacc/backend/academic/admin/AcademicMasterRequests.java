@@ -27,11 +27,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What an admin may send to create or edit an academic master. No request carries an ID of its own: the record being
- * edited comes from the route. Parents are named by ID and loaded on the server. Codes, and what a record belongs to,
- * are set on creation and never changed, because other records are identified by them.
- */
 public final class AcademicMasterRequests {
 
     private AcademicMasterRequests() {
@@ -175,7 +170,6 @@ public final class AcademicMasterRequests {
             Integer semesterNumber) {
     }
 
-    /** A semester's program, session, and number say what it is, so only its status can change. */
     public record SemesterUpdate(
             @Schema(description = "PLANNED, ACTIVE, or CLOSED. A semester cannot go back to PLANNED, and a closed one "
                     + "cannot be made active again.", allowableValues = {"PLANNED", "ACTIVE", "CLOSED"}, example = "ACTIVE")
@@ -183,10 +177,6 @@ public final class AcademicMasterRequests {
             SemesterStatus status) {
     }
 
-    /**
-     * A semester's registration period and drop deadline, all optional. Times carry a zone or offset, such as
-     * 2026-07-01T09:00:00+05:30, and are stored in UTC. Sending none clears the period.
-     */
     public record SemesterRegistrationUpdate(
             @Schema(description = "When students may start registering. Needed together with the closing time.",
                     example = "2026-07-01T09:00:00+05:30")

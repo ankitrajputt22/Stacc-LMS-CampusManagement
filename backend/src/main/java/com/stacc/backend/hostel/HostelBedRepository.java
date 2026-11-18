@@ -18,7 +18,6 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
     @Query("select bed from HostelBed bed join fetch bed.room room join fetch room.hostel where bed.id = :bedId")
     Optional<HostelBed> findWithContextById(@Param("bedId") Long bedId);
 
-    /** Where a bed is, as its room and hostel IDs, so they can be locked in order before the bed. */
     @Query("select bed.room.id as roomId, bed.room.hostel.id as hostelId from HostelBed bed where bed.id = :bedId")
     Optional<BedLocation> findLocationById(@Param("bedId") Long bedId);
 
@@ -33,7 +32,6 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
     @Query("select bed from HostelBed bed where bed.id = :bedId")
     Optional<HostelBed> findByIdForUpdate(@Param("bedId") Long bedId);
 
-    /** How many active beds each room of a hostel has: a room's capacity. */
     @Query("""
             select bed.room.id as roomId, count(bed) as total
             from HostelBed bed
@@ -52,10 +50,6 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
         Long getTotal();
     }
 
-    /**
-     * The beds a new allocation can use: active beds in active rooms of active hostels with no ACTIVE allocation,
-     * narrowed to one hostel or room when given. By hostel code, room number, and bed number.
-     */
     @Query("""
             select bed
             from HostelBed bed
@@ -72,7 +66,6 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
             """)
     List<HostelBed> findAvailable(@Param("hostelId") Long hostelId, @Param("roomId") Long roomId);
 
-    /** Every bed of a hostel with its room, by block, floor, room, and bed. */
     @Query("""
             select bed from HostelBed bed join fetch bed.room room
             where room.hostel.id = :hostelId
@@ -80,7 +73,6 @@ public interface HostelBedRepository extends JpaRepository<HostelBed, Long> {
             """)
     List<HostelBed> findAllInHostel(@Param("hostelId") Long hostelId);
 
-    /** Per hostel: active beds in active rooms, and how many of them are under maintenance. */
     interface HostelBedCount {
         Long getHostelId();
         long getBeds();

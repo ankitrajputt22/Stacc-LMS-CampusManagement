@@ -1,8 +1,5 @@
 import type { CampusNoticeStatus, CampusRequestStatus } from '../types/campus'
 
-// The one place campus codes become words. Pages never show a raw code. Approval words come from
-// approvals/approvalText: the request status and the approval status are shown separately.
-
 const REQUEST: Record<CampusRequestStatus, string> = {
   SUBMITTED: 'Submitted',
   APPROVED: 'Approved',
@@ -21,7 +18,6 @@ export const NOTICE_STATUSES: readonly CampusNoticeStatus[] = ['DRAFT', 'PUBLISH
 export const requestStatusLabel = (status: string) => REQUEST[status as CampusRequestStatus] ?? status
 export const noticeStatusLabel = (status: string) => NOTICE[status as CampusNoticeStatus] ?? status
 
-/** Who may use a service or read a notice, in the fixed order Students, Faculty, Admins. */
 export function audienceLabel(student: boolean, faculty: boolean, admin = false): string {
   return [student && 'Students', faculty && 'Faculty', admin && 'Admins'].filter(Boolean).join(', ')
 }

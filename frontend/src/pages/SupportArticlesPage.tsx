@@ -23,7 +23,6 @@ function StatusBadge({ status }: { status: AdminHelpArticle['status'] }) {
   return status === 'PUBLISHED' ? <Badge tone="success">Published</Badge> : status === 'ARCHIVED' ? <Badge tone="neutral">Archived</Badge> : <Badge tone="warning">Draft</Badge>
 }
 
-/** Adding or editing an article: a category, a title, and plain text. */
 function ArticleForm({
   categories,
   initial,
@@ -88,11 +87,6 @@ function ArticleForm({
 
 type Open = { kind: 'add' } | { kind: 'edit' | 'archive'; articleId: number } | null
 
-/**
- * /support/admin/articles: the helpdesk's self-help articles, drafts and archived ones included. Admins add, edit,
- * publish, and archive (confirmed first) them; requesters see published articles of active categories while writing a
- * ticket. There is no Delete.
- */
 export function SupportArticlesPage() {
   const queryClient = useQueryClient()
   const articles = useApiQuery(queryKeys.helpdesk.adminArticles(), (signal) => getAdminHelpArticles(signal))

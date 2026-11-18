@@ -13,12 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Area analytics (v0.16.4): live counts per campus area, each section only for holders of that area's own permission
- * (a missing permission leaves the section out, never shows zero). Rates follow {@link AnalyticsRules}: the event
- * attendance rate needs at least five registrations and the average helpdesk rating at least five ratings. AI usage is
- * the state of course knowledge indexes only, because AI requests are never stored.
- */
 @Service
 @Transactional(readOnly = true)
 public class AreaAnalyticsService {

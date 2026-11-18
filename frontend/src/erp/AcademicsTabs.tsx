@@ -1,6 +1,5 @@
 import { LinkTabs } from '../ui'
 
-/** The pages of Academics, as tabs with their own addresses. Calendar opens the shared academic calendar. */
 export function AcademicsTabs() {
   return (
     <LinkTabs

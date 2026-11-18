@@ -26,10 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of helpdesk categories. Every route needs the admin role and {@code HELPDESK_TICKET_MANAGE}. A
- * category's code is fixed once created, and categories are made inactive instead of deleted.
- */
 @RestController
 @RequestMapping("/api/v1/helpdesk/admin/categories")
 @Tag(name = "Helpdesk admin")

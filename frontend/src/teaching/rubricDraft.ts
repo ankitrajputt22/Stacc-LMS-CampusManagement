@@ -30,15 +30,10 @@ export function draftOfRubric(rubric: LmsRubric): RubricDraft {
   }
 }
 
-/** The total of the criteria's maximum points typed so far, ignoring ones not yet valid. */
 export function draftTotal(draft: RubricDraft): number {
   return draft.criteria.reduce((sum, criterion) => sum + (POINTS.test(criterion.maxPoints.trim()) ? Number(criterion.maxPoints) : 0), 0)
 }
 
-/**
- * Checks the rubric the way the backend does and, when it fits, turns it into what the API is sent. Messages name the
- * criterion and level by number.
- */
 export function checkRubric(draft: RubricDraft): { errors: string[]; input: LmsRubricInput | null } {
   const errors: string[] = []
   if (draft.title.trim() === '') {

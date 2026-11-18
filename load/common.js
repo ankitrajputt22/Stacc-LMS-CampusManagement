@@ -4,7 +4,6 @@ import { check } from 'k6'
 export const BASE = `${__ENV.BASE_URL || 'http://localhost:8080'}/api/v1`
 const PASSWORD = __ENV.STACC_TEST_PASSWORD
 
-/** Signs in through the one login and returns headers carrying the session token for API clients. */
 export function signIn(loginId) {
   const response = http.post(`${BASE}/auth/login`, JSON.stringify({ loginId, password: PASSWORD }), {
     headers: { 'Content-Type': 'application/json' },
@@ -26,10 +25,6 @@ function failedChecks(group, path, out) {
   return out
 }
 
-/**
- * The run's result as GitHub annotations: a notice with the request timings, and an error for each crossed threshold
- * and failed check, so CI shows them on the run's page. Use as `export const handleSummary = annotate('name')`.
- */
 export function annotate(name) {
   return (data) => {
     const duration = data.metrics.http_req_duration ? data.metrics.http_req_duration.values : {}

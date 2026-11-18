@@ -4,7 +4,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsModule;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One module as faculty manage it, without its topics. Returned after a change to the module. */
 public record LmsFacultyModuleResponse(
         @Schema(example = "12")
         Long id,

@@ -21,7 +21,6 @@ import { Button, ButtonLink, Card, PageHeader } from '../ui'
 
 const ATTENDANCE = { to: '/attendance', label: 'Attendance' }
 
-/** A page state with the breadcrumb above it and a heading for screen readers. */
 function AttendanceState({ children }: { children: ReactNode }) {
   return (
     <>
@@ -92,7 +91,6 @@ function SessionList({ course, sessions, onCreated }: SessionListProps) {
   const { state } = useLocation()
   const fromSession = (state as { fromSession?: unknown } | null)?.fromSession
 
-  // Coming back from a session, focus returns to its row.
   useEffect(() => {
     if (typeof fromSession === 'number') {
       listRef.current?.querySelector<HTMLElement>(`[data-session-id="${fromSession}"]`)?.focus()
@@ -218,12 +216,10 @@ function CourseAttendance({ courseOfferingId }: { courseOfferingId: number }) {
           sessions={sessions.data}
           onCreated={(created) => {
             sessions.refresh()
-            // The new session opens straight away, ready to mark.
             navigate({ search: `?session=${created.id}` })
           }}
         />
       ) : (
-        // A new view for each session, so nothing chosen or typed carries over to another one.
         <SessionView
           key={sessionParam}
           courseOfferingId={courseOfferingId}
@@ -236,12 +232,6 @@ function CourseAttendance({ courseOfferingId }: { courseOfferingId: number }) {
   )
 }
 
-/**
- * Attendance for one course offering the signed-in faculty member teaches, at /attendance/:courseOfferingId:
- * its sessions, a form for a new one, and ?session= for one session's roster. The backend checks the teaching
- * assignment on every request; no LMS course is involved. Accounts without the faculty role see an explanation
- * instead, and no request is made.
- */
 export function CourseAttendancePage() {
   const { account } = useAuth()
   const { courseOfferingId } = useParams()

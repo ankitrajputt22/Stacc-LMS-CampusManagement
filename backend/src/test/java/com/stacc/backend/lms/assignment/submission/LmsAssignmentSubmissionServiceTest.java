@@ -56,11 +56,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Student A (account 12, course enrollment 40) may use LMS course 7, which has published assignment 5.
- * The access service, the repositories, and the storage are stand-ins: the access rules themselves are
- * tested with LmsStudentAccessService. The clock is fixed, and the deadline is 2026-10-20T18:00Z.
- */
 class LmsAssignmentSubmissionServiceTest {
 
     private static final Long STUDENT_A = 12L;
@@ -102,7 +97,6 @@ class LmsAssignmentSubmissionServiceTest {
         when(assignmentRows.findById(5L)).thenReturn(Optional.of(published));
         when(courseEnrollments.findByIdForUpdate(anyLong())).thenAnswer(call ->
                 Optional.of(call.getArgument(0).equals(enrollmentA.getId()) ? enrollmentA : enrollmentB));
-        // The database stand-in: one submission row per assignment and enrollment, IDs given on save.
         when(submissions.findForUpdate(anyLong(), anyLong())).thenAnswer(call -> storedSubmissions.stream()
                 .filter(row -> row.getAssignment().getId().equals(call.getArgument(0))
                         && row.getCourseEnrollment().getId().equals(call.getArgument(1)))
@@ -143,8 +137,6 @@ class LmsAssignmentSubmissionServiceTest {
         verify(attempts, never()).saveAndFlush(any());
         verify(submissions, never()).saveAndFlush(any());
     }
-
-    // --- eligibility ---------------------------------------------------------------------------------
 
     @Test
     void publishedAssignmentInACourseTheStudentMayUseAcceptsAnAttempt() {
@@ -190,8 +182,6 @@ class LmsAssignmentSubmissionServiceTest {
         assertEquals(41L, storedSubmissions.get(1).getCourseEnrollment().getId());
         assertEquals(1, storedSubmissions.get(1).getLatestAttemptNumber());
     }
-
-    // --- content -------------------------------------------------------------------------------------
 
     @Test
     void textOnlyFileOnlyAndTextWithFilesAreAllValid() {
@@ -239,11 +229,8 @@ class LmsAssignmentSubmissionServiceTest {
         assertTrue(type.getMessage().startsWith("“tool.exe”: This type of file is not allowed."));
         assertRefused(HttpStatus.BAD_REQUEST, "“notes.pdf”: The file's contents do not match its type.",
                 () -> service.submit(STUDENT_A, 7L, 5L, null, List.of(disguised)));
-        // Every file is checked before any is stored.
         assertNothingStoredOrSaved();
     }
-
-    // --- attempts --------------------------------------------------------------------------------------
 
     @Test
     void everyHandInIsANewAttemptAndEarlierAttemptsStayAsTheyWere() {
@@ -344,8 +331,6 @@ class LmsAssignmentSubmissionServiceTest {
         verify(storage).delete(stored.getAllValues().get(1));
     }
 
-    // --- deadline ----------------------------------------------------------------------------------
-
     @Test
     void lateWorkIsAcceptedAndMarkedAgainstTheDeadlineThatAppliedThen() {
         LmsSubmissionAttempt onTime = service.submit(STUDENT_A, 7L, 5L, "Early", null).attempt();
@@ -354,7 +339,6 @@ class LmsAssignmentSubmissionServiceTest {
         assertFalse(onTime.isLate());
         assertTrue(late.isLate());
         assertEquals(SubmissionFixtures.DUE, late.getDueAtSnapshot());
-        // Stored at the precision the database keeps.
         assertEquals(Instant.parse("2026-10-20T19:00:00.123456Z"), late.getSubmittedAt());
 
         published.edit(published.getTitle(), published.getInstructions(), Instant.parse("2026-10-22T18:00:00Z"), published.getMaxMarks());
@@ -364,8 +348,6 @@ class LmsAssignmentSubmissionServiceTest {
         assertEquals(SubmissionFixtures.DUE, late.getDueAtSnapshot());
         assertFalse(afterExtension.isLate());
     }
-
-    // --- history ---------------------------------------------------------------------------------------
 
     @Test
     void studentWhoHasNotHandedInGetsAnEmptyHistory() {
@@ -384,7 +366,6 @@ class LmsAssignmentSubmissionServiceTest {
         when(submissions.findByAssignmentIdAndCourseEnrollmentId(5L, 40L)).thenReturn(Optional.of(own));
         when(attempts.findAllBySubmissionIdOrderByAttemptNumberDesc(70L)).thenReturn(List.of(second, first));
         when(attachments.findAllByAttemptIdInOrderByIdAsc(List.of(second.getId(), first.getId()))).thenReturn(List.of(file));
-        // The first attempt was graded before the student handed in again; the second is not graded yet.
         LmsSubmissionGrade firstGrade = new LmsSubmissionGrade(first, SubmissionFixtures.faculty(course, 21, 61),
                 new BigDecimal("14"), new BigDecimal("20"), "Good start.", BEFORE_DUE);
         when(grades.findAllByAttemptIdIn(List.of(second.getId(), first.getId()))).thenReturn(List.of(firstGrade));
@@ -399,8 +380,6 @@ class LmsAssignmentSubmissionServiceTest {
         assertTrue(history.get(0).attempt().isLate());
         verify(submissions).findByAssignmentIdAndCourseEnrollmentId(5L, 40L);
     }
-
-    // --- downloads -------------------------------------------------------------------------------------
 
     private LmsSubmissionAttachment attachmentOf(CourseEnrollment owner, LmsAssignment assignment, long id) {
         LmsAssignmentSubmission submission = new LmsAssignmentSubmission(assignment, owner);
@@ -451,15 +430,12 @@ class LmsAssignmentSubmissionServiceTest {
 
     @Test
     void submittedFilesAreOptionalPartsOfMultipartRequests() {
-        // A list of parts may contain nulls when a client sends odd form data; they are ignored.
         List<MultipartFile> withNull = new ArrayList<>();
         withNull.add(null);
         withNull.add(pdf("real.pdf"));
 
         assertEquals(1, service.submit(STUDENT_A, 7L, 5L, null, withNull).attachments().size());
     }
-
-    // --- submission rules (v0.7.8) -------------------------------------------------------------------------
 
     @Test
     void workIsTakenOnlyFromTheOpeningTimeAndLateOnlyWhenAllowedAndBeforeTheClosingTime() {
@@ -488,4 +464,3 @@ class LmsAssignmentSubmissionServiceTest {
         assertEquals(1, service.submit(STUDENT_B, 7L, 5L, "Other student", null).attempt().getAttemptNumber());
     }
 }
-

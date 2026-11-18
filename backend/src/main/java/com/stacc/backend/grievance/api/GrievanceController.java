@@ -37,10 +37,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Grievances: complainants submit, follow, appeal, and accept their own cases; committees work the cases of their
- * categories; admins manage categories and committees but never read cases. A case the caller may not open is a 404.
- */
 @RestController
 @RequestMapping("/api/v1")
 @Tag(name = "Grievances")
@@ -80,8 +76,6 @@ public class GrievanceController {
 
     public record MemberRequest(@NotBlank @Size(max = 100) String loginId) {
     }
-
-    // --- Complainants
 
     @GetMapping("/grievances/categories")
     @PreAuthorize(SUBMIT)
@@ -131,8 +125,6 @@ public class GrievanceController {
         return service.accept(AuthenticatedAccount.idFrom(token), caseId);
     }
 
-    // --- Committees
-
     @GetMapping("/grievances/committee")
     @PreAuthorize(COMMITTEE)
     @Operation(summary = "Cases of my committees", description = "Never one's own complaints.", security = @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH))
@@ -170,8 +162,6 @@ public class GrievanceController {
     public CaseView decideAppeal(@PathVariable Long caseId, @Valid @RequestBody TextRequest request, @AuthenticationPrincipal Jwt token) {
         return service.decideAppeal(AuthenticatedAccount.idFrom(token), caseId, request.text());
     }
-
-    // --- Admins
 
     @GetMapping("/admin/grievances/categories")
     @PreAuthorize(MANAGE)

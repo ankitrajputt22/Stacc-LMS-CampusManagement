@@ -15,14 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Every change faculty make to the modules and topics of an LMS course. Before any change, the
- * course behind the module or topic is found from stored data, and {@link LmsFacultyAccessService}
- * must allow the signed-in account to use it. A course ID sent by the client never proves anything.
- *
- * <p>Something that does not exist and something the faculty member may not manage get the same
- * 404, so IDs reveal nothing about other courses. Nothing is ever deleted: content is archived.
- */
 @Service
 @Transactional
 public class LmsContentManagementService {
@@ -51,7 +43,6 @@ public class LmsContentManagementService {
         this.facultyAccess = facultyAccess;
     }
 
-    /** Adds a draft module after the course's current modules. */
     public LmsModule createModule(Long userAccountId, Long lmsCourseId, String title, String description) {
         LmsCourse lmsCourse = manageableCourse(userAccountId, lmsCourseId);
         List<LmsModule> current = modules.findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(
@@ -66,24 +57,18 @@ public class LmsContentManagementService {
         return module;
     }
 
-    /** Publishes the module only. Its topics keep their own status. */
     public LmsModule publishModule(Long userAccountId, Long moduleId) {
         LmsModule module = changeableModule(userAccountId, moduleId);
         module.publish();
         return module;
     }
 
-    /** Archives the module and keeps its topics. Archiving an archived module changes nothing. */
     public LmsModule archiveModule(Long userAccountId, Long moduleId) {
         LmsModule module = manageableModule(userAccountId, moduleId);
         module.archive();
         return module;
     }
 
-    /**
-     * Puts the course's current modules in the given order, numbered 1, 2, 3 and so on. The list must
-     * hold every module that is not archived, each exactly once, and nothing else.
-     */
     public List<LmsModule> reorderModules(Long userAccountId, Long lmsCourseId, List<Long> moduleIds) {
         LmsCourse lmsCourse = manageableCourse(userAccountId, lmsCourseId);
         List<LmsModule> current = modules.findAllByLmsCourseIdAndStatusInOrderByPositionAscIdAsc(
@@ -91,12 +76,10 @@ public class LmsContentManagementService {
         return reorder(current, moduleIds, LmsModule::getId, LmsModule::moveTo, MODULE_ORDER_MISMATCH);
     }
 
-    /** Adds a draft plain-text topic after the module's current topics. */
     public LmsTopic createTopic(Long userAccountId, Long moduleId, String title, String content) {
         return createTopic(userAccountId, moduleId, title, content, null);
     }
 
-    /** Adds a draft topic after the module's current topics, with its text's format (plain when none is sent). */
     public LmsTopic createTopic(Long userAccountId, Long moduleId, String title, String content, LmsTextFormat format) {
         LmsModule module = changeableModule(userAccountId, moduleId);
         List<LmsTopic> current = topics.findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(
@@ -111,7 +94,6 @@ public class LmsContentManagementService {
         return updateTopic(userAccountId, topicId, title, content, null);
     }
 
-    /** Changes the title and text. Without a format the text keeps its current one. */
     public LmsTopic updateTopic(Long userAccountId, Long topicId, String title, String content, LmsTextFormat format) {
         LmsTopic topic = changeableTopic(userAccountId, topicId);
         topic.edit(title, content);
@@ -119,21 +101,18 @@ public class LmsContentManagementService {
         return topic;
     }
 
-    /** Publishes the topic only. Students see it once its module is published as well. */
     public LmsTopic publishTopic(Long userAccountId, Long topicId) {
         LmsTopic topic = changeableTopic(userAccountId, topicId);
         topic.publish();
         return topic;
     }
 
-    /** Archives the topic. Archiving an archived topic changes nothing. */
     public LmsTopic archiveTopic(Long userAccountId, Long topicId) {
         LmsTopic topic = manageableTopic(userAccountId, topicId);
         topic.archive();
         return topic;
     }
 
-    /** Like {@link #reorderModules}, for the current topics of one module. */
     public List<LmsTopic> reorderTopics(Long userAccountId, Long moduleId, List<Long> topicIds) {
         LmsModule module = changeableModule(userAccountId, moduleId);
         List<LmsTopic> current = topics.findAllByLmsModuleIdAndStatusInOrderByPositionAscIdAsc(
@@ -148,7 +127,6 @@ public class LmsContentManagementService {
         return lmsCourses.findById(lmsCourseId).orElseThrow(() -> notFound(COURSE_UNAVAILABLE));
     }
 
-    // The course is taken from the stored module, never from the request.
     private LmsModule manageableModule(Long userAccountId, Long moduleId) {
         LmsModule module = moduleId == null ? null : modules.findById(moduleId).orElse(null);
         if (module == null || !facultyAccess.canAccessCourse(userAccountId, module.getLmsCourse().getId())) {
@@ -157,14 +135,12 @@ public class LmsContentManagementService {
         return module;
     }
 
-    /** Whether students must complete the previous module before this one. */
     public LmsModule setModuleRequiresPrevious(Long userAccountId, Long moduleId, boolean requiresPrevious) {
         LmsModule module = changeableModule(userAccountId, moduleId);
         module.requirePrevious(requiresPrevious);
         return module;
     }
 
-    /** Whether students must complete the page; required pages decide module completion and progress. */
     public LmsTopic setTopicRequired(Long userAccountId, Long topicId, boolean required) {
         LmsTopic topic = changeableTopic(userAccountId, topicId);
         topic.markRequired(required);
@@ -179,7 +155,6 @@ public class LmsContentManagementService {
         return module;
     }
 
-    // The course is taken from the stored topic and its module, never from the request.
     private LmsTopic manageableTopic(Long userAccountId, Long topicId) {
         LmsTopic topic = topicId == null ? null : topics.findWithModuleById(topicId).orElse(null);
         if (topic == null
@@ -189,7 +164,6 @@ public class LmsContentManagementService {
         return topic;
     }
 
-    // A topic can be changed only while it and its module are both still in use.
     private LmsTopic changeableTopic(Long userAccountId, Long topicId) {
         LmsTopic topic = manageableTopic(userAccountId, topicId);
         if (topic.isArchived()) {

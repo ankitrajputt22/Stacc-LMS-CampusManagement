@@ -17,10 +17,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * One entry of an approval request's audit trail. The actor is the account that acted, or empty for a transition the
- * engine makes itself, such as activating the next step. Entries are append-only and never changed or deleted.
- */
 @Entity
 @Table(name = "approval_request_history")
 public class ApprovalRequestHistory {
@@ -52,7 +48,6 @@ public class ApprovalRequestHistory {
     private Instant createdAt;
 
     protected ApprovalRequestHistory() {
-        // Required by JPA.
     }
 
     public ApprovalRequestHistory(ApprovalRequest approvalRequest, UserAccount actor, ApprovalRequestHistoryAction action,

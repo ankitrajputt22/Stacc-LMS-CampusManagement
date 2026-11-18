@@ -25,7 +25,6 @@ const selectClasses = `h-11 sm:h-9 ${fieldClasses} ${border(false)}`
 
 const idParam = (value: string | null) => (value && /^[1-9]\d{0,17}$/.test(value) ? Number(value) : undefined)
 
-/** Session, program, and semester, filled from the admin academic API. They change the address only when applied. */
 function Filters({ applied, onApply }: { applied: ReportFilterQuery; onApply: (next: ReportFilterQuery) => void }) {
   const sessions = useApiRequest(getAcademicSessions)
   const programs = useApiRequest(getPrograms)
@@ -34,7 +33,6 @@ function Filters({ applied, onApply }: { applied: ReportFilterQuery; onApply: (n
   const [program, setProgram] = useState(applied.programId ? String(applied.programId) : '')
   const [semester, setSemester] = useState(applied.semesterId ? String(applied.semesterId) : '')
 
-  // Only semesters of the chosen program and session are offered, so a combination never contradicts itself.
   const semesterOptions = semesters.status === 'loaded'
     ? semesters.data.filter((item) => (program === '' || String(item.programId) === program)
         && (session === '' || String(item.academicSessionId) === session))
@@ -162,7 +160,6 @@ function Overview({ overview }: { overview: AdminReportOverview }) {
   )
 }
 
-/** One row per course offering: a table on wide screens, labelled records on narrow ones. */
 function EnrollmentReport({ filters, page, onPage }: { filters: ReportFilterQuery; page: number; onPage: (page: number) => void }) {
   const contentRef = useRef<HTMLDivElement>(null)
   const focusLater = usePendingFocus(contentRef)
@@ -278,10 +275,6 @@ function EnrollmentReport({ filters, page, onPage }: { filters: ReportFilterQuer
   )
 }
 
-/**
- * Admin reports: filters in the address (session, program, semester, page), the overview, operational sections the
- * backend returned, and the per-offering enrollment report with its CSV export.
- */
 export function AdminReportsSection({ showHeading = false }: { showHeading?: boolean }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const sessionParam = searchParams.get('session')
@@ -327,13 +320,11 @@ export function AdminReportsSection({ showHeading = false }: { showHeading?: boo
 
   return (
     <section aria-labelledby="admin-reports-heading">
-      {/* Shown when the account also has the faculty part, so the two parts read apart; said to screen readers always. */}
       <h2 id="admin-reports-heading" className={showHeading ? 'text-2xl font-bold text-ink' : 'sr-only'}>
         Academic and Operational Reports
       </h2>
       {showHeading && <span aria-hidden="true" className="mt-1.5 block h-0.5 w-12 rounded bg-portal-cta" />}
       <div className="mt-3">
-        {/* Keyed by the address, so Back and Forward show the filters they lead to. */}
         <Filters key={`${sessionParam}|${programParam}|${semesterParam}`} applied={filters} onApply={(next) => apply(next)} />
       </div>
       <div className="mt-4">{content}</div>

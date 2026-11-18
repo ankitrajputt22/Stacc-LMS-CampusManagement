@@ -68,7 +68,6 @@ function Department({ department }: { department: DepartmentAnalytics }) {
   )
 }
 
-/** /department: the head of department's view of the departments they head now. The backend decides which. */
 export function DepartmentAnalyticsPage() {
   const { account } = useAuth()
   const isHead = hasAnyRole(account?.roles ?? [], ['HOD'])

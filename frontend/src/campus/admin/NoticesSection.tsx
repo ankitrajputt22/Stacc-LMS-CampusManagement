@@ -30,7 +30,6 @@ const PAGE_SIZE = 20
 type Notify = (message: string, tone?: 'success' | 'error') => void
 type Field = 'title' | 'message' | 'audience'
 
-/** Add a draft or correct a draft or published notice: plain text and at least one role. */
 function NoticeForm({ notice, onSaved, onClose }: { notice: AdminCampusNotice | null; onSaved: Notify; onClose: () => void }) {
   const prefix = notice ? `campus-notice-${notice.noticeId}` : 'campus-notice-new'
   const busyRef = useRef(false)
@@ -68,7 +67,6 @@ function NoticeForm({ notice, onSaved, onClose }: { notice: AdminCampusNotice | 
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status === 409) {
-        // Archived meanwhile: the list shows it as it is now.
         onSaved(refusalText(409, getApiError(failure)?.message ?? null, 'save the notice'), 'error')
       } else if (status !== 401) {
         fail(null, refusalText(status, getApiError(failure)?.message ?? null, 'save the notice'))
@@ -130,7 +128,6 @@ function NoticeForm({ notice, onSaved, onClose }: { notice: AdminCampusNotice | 
   )
 }
 
-/** Publish or Archive, each confirmed. A 409 is shown at page level and the list is reloaded. */
 function LifecycleButton({ notice, kind, onChanged }: { notice: AdminCampusNotice; kind: 'publish' | 'archive'; onChanged: Notify }) {
   const [confirming, setConfirming] = useState(false)
   const label = kind === 'publish' ? 'Publish' : 'Archive'
@@ -173,7 +170,6 @@ function LifecycleButton({ notice, kind, onChanged }: { notice: AdminCampusNotic
   )
 }
 
-/** Every notice, newest first: drafts can be edited, published, or archived; published ones edited or archived. */
 export function NoticesSection() {
   const [page, setPage] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)

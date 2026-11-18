@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A team's one submission, replaced by its members until the hackathon ends. */
 @Entity
 @Table(name = "hackathon_submissions")
 public class HackathonSubmission {

@@ -70,10 +70,8 @@ function renderSection(data: Row[] = rows, blockedReason: string | null = null) 
   return { renderCreate }
 }
 
-// jsdom's name calculation drops the space before a screen-reader-only word ("Previouspage"); browsers keep it.
 const named = (text: string) => new RegExp(`^${text.replace(' ', '\\s*')}$`)
 
-/** The codes in the wide-screen table, in order. */
 function shownCodes() {
   const table = screen.getByRole('table', { name: 'Departments' })
   return within(table)

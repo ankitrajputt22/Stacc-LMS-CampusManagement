@@ -12,10 +12,6 @@ import { textLinkClasses } from '../ui/styles'
 
 type Row = QuizResults['attempts'][number]
 
-/**
- * Every attempt at one quiz with its automatic marks, teachers' marks, and score once fully marked, with Review for
- * each. Students appear by college ID only. Shows only what the results API sends.
- */
 export function QuizResultsTable({ lmsCourseId, quizId }: { lmsCourseId: number; quizId: number }) {
   const results = useApiQuery(queryKeys.lms.quizResults(quizId), (signal) => getQuizResults(quizId, signal))
   if (results.status !== 'loaded') {

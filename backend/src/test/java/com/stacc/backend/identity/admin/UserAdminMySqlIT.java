@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Admin user management on MySQL: the search query over the demo accounts, and creating one new student account. */
 class UserAdminMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

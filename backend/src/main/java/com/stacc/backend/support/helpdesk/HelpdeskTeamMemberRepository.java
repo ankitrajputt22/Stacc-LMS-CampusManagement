@@ -8,11 +8,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface HelpdeskTeamMemberRepository extends JpaRepository<HelpdeskTeamMember, Long> {
 
-    /** Whether the account is a member of the active team. */
     @Query("select count(m) > 0 from HelpdeskTeamMember m where m.team.id = :teamId and m.account.id = :accountId and m.team.active = true")
     boolean isActiveMember(@Param("teamId") Long teamId, @Param("accountId") Long accountId);
 
-    /** The active teams the account belongs to. */
     @Query("select m.team.id from HelpdeskTeamMember m where m.account.id = :accountId and m.team.active = true")
     List<Long> findActiveTeamIds(@Param("accountId") Long accountId);
 

@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** Fests and shifts keep their dates in order; an application is decided once and withdrawn only while live. */
 class FestRulesTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

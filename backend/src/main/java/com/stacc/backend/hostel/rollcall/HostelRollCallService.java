@@ -28,12 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Night roll calls, for the wardens of a hostel only ({@link HostelWardenService#isWardenOf}); another hostel's sheets
- * answer the same 404 as missing ones. A sheet lists the residents allocated in the hostel (or block) when it is
- * opened, pre-filled from the gate log ("tonight" is the date in the college's time zone); marks change only while it is open, under its row lock, and finalizing needs
- * every resident marked.
- */
 @Service
 @Transactional
 public class HostelRollCallService {
@@ -83,7 +77,6 @@ public class HostelRollCallService {
         this.clock = clock;
     }
 
-    /** Opens the night's sheet for the hostel, or one block of it, with the residents allocated there now. */
     public Detail open(Long wardenAccountId, Long hostelId, String block, LocalDate night) {
         if (hostelId == null || !wardens.isWardenOf(wardenAccountId, hostelId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, HOSTEL_NOT_FOUND);
@@ -111,7 +104,6 @@ public class HostelRollCallService {
         return detailOf(rollCall);
     }
 
-    /** The hostel's recent sheets, newest night first. */
     @Transactional(readOnly = true)
     public List<Summary> recent(Long wardenAccountId, Long hostelId) {
         if (hostelId == null || !wardens.isWardenOf(wardenAccountId, hostelId)) {
@@ -128,7 +120,6 @@ public class HostelRollCallService {
         return detailOf(rollCalls.findWithHostelById(rollCallId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND)));
     }
 
-    /** Marks residents of an open sheet; each entry must belong to it. */
     public Detail mark(Long wardenAccountId, Long rollCallId, List<Mark> marks) {
         HostelRollCall rollCall = lockedOpen(wardenAccountId, rollCallId);
         Map<Long, HostelRollCallEntry> sheet = entries.findAllForRollCall(rollCallId).stream()
@@ -149,7 +140,6 @@ public class HostelRollCallService {
         return detailOf(rollCall);
     }
 
-    /** Finalizes an open sheet with every resident marked; finalizing again changes nothing. */
     public Detail finalizeRollCall(Long wardenAccountId, Long rollCallId) {
         requireWarden(wardenAccountId, rollCallId);
         HostelRollCall rollCall = rollCalls.findByIdForUpdate(rollCallId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));

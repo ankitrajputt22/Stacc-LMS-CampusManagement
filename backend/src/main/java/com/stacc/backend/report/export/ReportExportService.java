@@ -28,12 +28,6 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Background exports: a request is recorded (and audited) and runs after it commits on the application's task executor,
- * writing an XLSX file to private storage. Only the person who asked can download it, until it expires after a day;
- * each download is audited. Expired files are removed when new exports are requested. The content uses exactly the
- * screens' own rules: the enrollment report's query, and course analytics with the faculty access check of the asker.
- */
 @Service
 public class ReportExportService {
 
@@ -70,10 +64,8 @@ public class ReportExportService {
         this.clock = clock;
     }
 
-    /** Records an export for the account (whose access the controller already checked) and starts it after commit. */
     public ExportView request(Long accountId, ReportExport.Kind kind, Long parameter) {
         if (kind == ReportExport.Kind.COURSE_ANALYTICS) {
-            // Fails now, with the same 404, if the course is not one the asker can open.
             analytics.forCourse(accountId, parameter);
         }
         ReportExport export = transactions().execute(status -> {

@@ -5,11 +5,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The admin dashboard: exact counts of the academic masters and of offerings and current enrollments, and a short
- * preview of course offerings. Nothing about individual students, faculty, or accounts is included, and nothing is
- * derived beyond the counts: no rates, averages, trends, or activity.
- */
 public record AdminDashboardResponse(
         AcademicMasters academicMasters,
         AcademicOperations academicOperations,
@@ -18,7 +13,6 @@ public record AdminDashboardResponse(
                 + AdminDashboardQueryService.OFFERING_PREVIEW_LIMIT + ".")
         List<CourseOfferingPreview> courseOfferings) {
 
-    /** Every record of each master, whatever its status. */
     public record AcademicMasters(
             @Schema(example = "4") long departmentCount,
             @Schema(example = "6") long programCount,

@@ -16,10 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * One student's marks for a manual gradebook item, through their official course enrollment, with optional feedback.
- * Entering marks again replaces them without history; the server sets who entered them and when.
- */
 @Entity
 @Table(name = "lms_grade_entries")
 public class LmsGradeEntry {
@@ -51,7 +47,6 @@ public class LmsGradeEntry {
     private Instant gradedAt;
 
     protected LmsGradeEntry() {
-        // Required by JPA.
     }
 
     public LmsGradeEntry(LmsGradeItem item, CourseEnrollment courseEnrollment) {
@@ -59,7 +54,6 @@ public class LmsGradeEntry {
         this.courseEnrollment = Require.notNull(courseEnrollment, "courseEnrollment");
     }
 
-    /** Sets the marks (0 to the item's maximum, two decimals) and feedback, replacing earlier ones. */
     public void grade(BigDecimal marks, String feedback, Long gradedByAccountId, Instant at) {
         Require.notNull(marks, "Marks");
         BigDecimal maximum = item.getMaxMarks();

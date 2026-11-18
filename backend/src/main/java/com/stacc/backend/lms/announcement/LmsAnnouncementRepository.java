@@ -15,31 +15,21 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsAnnouncementRepository extends JpaRepository<LmsAnnouncement, Long> {
 
-    /** The course of the announcement, read without loading the announcement, so access is checked before the row is locked. */
     @Query("select announcement.lmsCourse.id from LmsAnnouncement announcement where announcement.id = :announcementId")
     Optional<Long> findLmsCourseIdById(@Param("announcementId") Long announcementId);
 
-    /** The announcement, locked for a change, with its course. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select announcement from LmsAnnouncement announcement join fetch announcement.lmsCourse where announcement.id = :announcementId")
     Optional<LmsAnnouncement> findByIdForUpdate(@Param("announcementId") Long announcementId);
 
-    /** For faculty: the course's announcements in these statuses, newest created first. */
     List<LmsAnnouncement> findAllByLmsCourseIdAndStatusInOrderByCreatedAtDescIdDesc(
             Long lmsCourseId, Collection<LmsContentStatus> statuses);
 
-    /** The announcements of several courses in one status, as many as the page asks for, in the page's order. */
     List<LmsAnnouncement> findByLmsCourseIdInAndStatus(Collection<Long> lmsCourseIds, LmsContentStatus status, Pageable page);
 
-    /** For students: the course's announcements in one status, newest published first. */
     List<LmsAnnouncement> findAllByLmsCourseIdAndStatusOrderByPublishedAtDescIdDesc(
             Long lmsCourseId, LmsContentStatus status);
 
-    /**
-     * Search: announcements of these courses in these statuses whose title or message contains the text. Exact titles
-     * first, then titles that start with the text, then the rest; within each, the newest first. The caller passes
-     * only courses the account may use, never an empty collection.
-     */
     @Query(value = """
             select announcement
             from LmsAnnouncement announcement

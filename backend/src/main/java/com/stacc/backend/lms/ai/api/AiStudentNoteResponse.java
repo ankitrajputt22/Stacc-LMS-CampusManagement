@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import com.stacc.backend.lms.ai.notes.AiStudentNote;
 
-/** One of the signed-in student's own notes. */
 public record AiStudentNoteResponse(long id, String title, String content, Instant createdAt, Instant updatedAt) {
 
     static AiStudentNoteResponse of(AiStudentNote note) {

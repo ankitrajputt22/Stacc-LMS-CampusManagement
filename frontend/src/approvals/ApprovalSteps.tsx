@@ -17,10 +17,6 @@ function toneOf(status: ApprovalStep['status']): TimelineTone {
   }
 }
 
-/**
- * The approval progress, step by step on the shared timeline, as the approval engine reports it: the step's name, its
- * status in words, who decided and when, and the comment as plain text. A rejected step's comment is the rejection note.
- */
 export function ApprovalSteps({ steps }: { steps: ApprovalStep[] }) {
   return (
     <Timeline
@@ -36,7 +32,6 @@ export function ApprovalSteps({ steps }: { steps: ApprovalStep[] }) {
         detail: step.comment ? (
           <div className="rounded-control border border-line bg-surface-muted px-3 py-2">
             <p className="text-xs font-medium text-ink-muted">{step.status === 'REJECTED' ? 'Rejection note' : 'Comment'}</p>
-            {/* Plain text: React shows it as text, never as HTML. */}
             <p className="mt-0.5 break-words whitespace-pre-wrap text-ink">{step.comment}</p>
           </div>
         ) : undefined,

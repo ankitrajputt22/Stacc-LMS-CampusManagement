@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only wardens with the roll call permission reach roll calls; the hostel office and students do not. */
 class HostelRollCallControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

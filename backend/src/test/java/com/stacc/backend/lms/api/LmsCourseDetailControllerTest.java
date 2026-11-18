@@ -24,16 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Calls the course-page route through Spring Security. The query service is a stand-in, so these
- * tests are about who gets in, what is asked, and what is sent back. Which courses a student may
- * open is tested with the query service.
- */
 class LmsCourseDetailControllerTest extends DatabaseFreeApiTest {
 
     private static final String COURSE = "/api/v1/lms/courses/7";
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "TEST-STUDENT-1";
     private static final long ACCOUNT_ID = 12;
 

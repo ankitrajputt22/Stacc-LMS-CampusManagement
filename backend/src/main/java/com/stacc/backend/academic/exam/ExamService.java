@@ -33,12 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Examinations (v0.16.6). Admins build a semester's exam session as a draft (exams with a date, times, a hall, and its
- * seats), generate seat plans, and publish it once. Students see the published exams of the offerings they are enrolled
- * in now, with their seat once one is given. A seat plan locks the exam's row and reads its seats with a locking read,
- * then only adds seats, never past the hall's seats.
- */
 @Service
 @Transactional
 public class ExamService {
@@ -54,7 +48,6 @@ public class ExamService {
     public record SessionView(Long examSessionId, Long semesterId, String name, ExamSession.Status status, List<SlotView> exams) {
     }
 
-    /** One exam of the signed-in student: the seat is null until a seat plan gives one. */
     public record MyExam(Long slotId, String sessionName, String courseCode, String courseName, List<String> teachers,
             LocalDate examDate, LocalTime startsAt, LocalTime endsAt, String hall, Integer seatNumber) {
     }
@@ -85,8 +78,6 @@ public class ExamService {
         this.people = people;
         this.clock = clock;
     }
-
-    // --- Admins
 
     @Transactional(readOnly = true)
     public List<SessionView> forSemester(Long semesterId) {
@@ -150,10 +141,6 @@ public class ExamService {
         slots.saveAndFlush(slot);
     }
 
-    /**
-     * Gives a seat to every student enrolled now who has none yet, in college ID order, after the seats already given.
-     * The exam's row is locked first and its seats read with a locking read, so two plans at once never share a seat.
-     */
     public SeatPlan seatPlan(Long slotId) {
         ExamSlot slot = slots.findByIdForUpdate(slotId == null ? -1 : slotId)
                 .filter(found -> found.getRemovedAt() == null)
@@ -188,9 +175,6 @@ public class ExamService {
                 .filter(view -> view.examSessionId().equals(session.getId())).findFirst().orElseThrow();
     }
 
-    // --- Students
-
-    /** The published exams of the offerings the signed-in student is enrolled in now, earliest first. */
     @Transactional(readOnly = true)
     public List<MyExam> mine(Long accountId) {
         List<CourseEnrollment> mine = enrollments.findAllWithStudentByUserAccountId(accountId).stream()

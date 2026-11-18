@@ -4,16 +4,13 @@ import { Button } from '../ui'
 import type { RowActions } from './MasterSection'
 
 export type Toggle = {
-  /** Such as "department CSE". */
   name: string
   active: boolean
-  /** What deactivating stops, such as "takes no new programs or courses". */
   stops: string
   focusKey: string
   save: (status: ActiveStatus) => Promise<void>
 }
 
-/** Activate or Deactivate, confirmed first. Nothing is deleted, and history stays either way. */
 export function statusAction(actions: RowActions, toggle: Toggle): ReactNode {
   const target: ActiveStatus = toggle.active ? 'INACTIVE' : 'ACTIVE'
   const verb = toggle.active ? 'Deactivate' : 'Activate'

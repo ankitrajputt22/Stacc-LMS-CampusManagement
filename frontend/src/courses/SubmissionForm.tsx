@@ -4,19 +4,15 @@ import { Button } from '../components/Button'
 import { border, fieldClasses } from '../teaching/formStyles'
 import { extensionOf, formatFileSize, MATERIAL_ACCEPT, MATERIAL_EXTENSIONS, MATERIAL_TYPES_TEXT, MAX_MATERIAL_BYTES } from './materials'
 
-// The backend's defaults. It checks everything again and has the final say.
 const MAX_FILES = 3
 const MAX_TEXT_LENGTH = 20_000
 
-/** What happened to a submitted attempt: saved, or refused with messages to show. */
 export type SubmitOutcome =
   | { ok: true }
   | { ok: false; message: string | null; fieldErrors: Record<string, string> }
 
 type SubmissionFormProps = {
-  /** The student has handed in before, so this makes another attempt. */
   isResubmission: boolean
-  /** The deadline has passed. Submitting is still allowed; the attempt will be marked late. */
   isPastDue: boolean
   onSubmit: (textContent: string, files: File[]) => Promise<SubmitOutcome>
   onCancel?: () => void
@@ -49,11 +45,6 @@ function checkedErrors(textContent: string, files: File[]): { errors: Errors; fo
   return { errors, formError }
 }
 
-/**
- * The form for one new attempt: optional plain text and optional files, but at least one of them. Chosen
- * files can be removed before sending; nothing is sent until Submit. While it is sending, the button says
- * so and a second press does nothing. If it fails, what was entered stays for another try.
- */
 export function SubmissionForm({ isResubmission, isPastDue, onSubmit, onCancel }: SubmissionFormProps) {
   const id = useId()
   const textRef = useRef<HTMLTextAreaElement>(null)
@@ -64,7 +55,6 @@ export function SubmissionForm({ isResubmission, isPastDue, onSubmit, onCancel }
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // A form opened for another attempt starts at its first field.
   useEffect(() => {
     if (isResubmission) {
       textRef.current?.focus()
@@ -73,7 +63,6 @@ export function SubmissionForm({ isResubmission, isPastDue, onSubmit, onCancel }
 
   function chooseFiles(event: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(event.target.files ?? [])
-    // Cleared, so the same file can be chosen again after it was removed.
     event.target.value = ''
     if (chosen.length === 0) {
       return
@@ -190,8 +179,6 @@ export function SubmissionForm({ isResubmission, isPastDue, onSubmit, onCancel }
           onChange={chooseFiles}
           aria-invalid={filesError ? true : undefined}
           aria-describedby={filesError ? `${id}-files-hint ${id}-files-error` : `${id}-files-hint`}
-          // The chosen files are listed below. The input itself is emptied after each choice, so its own
-          // "No file chosen" text is hidden rather than shown next to that list.
           className="mt-1.5 block w-full max-w-full text-sm text-transparent file:mr-3 file:min-h-11 file:rounded-control file:border file:border-line-strong file:bg-surface file:px-3 file:text-sm file:font-medium file:text-ink hover:file:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary sm:file:min-h-9"
         />
         {filesError && (

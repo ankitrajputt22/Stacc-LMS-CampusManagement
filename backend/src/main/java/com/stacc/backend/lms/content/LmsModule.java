@@ -18,11 +18,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One module of an LMS course: a titled group of topics, such as "Introduction" or "Arrays".
- * Modules are listed by position, then by ID. A new module is a draft. A module that is no longer
- * wanted is archived, never deleted, so its topics and history are kept.
- */
 @Entity
 @Table(name = "lms_modules")
 public class LmsModule {
@@ -30,7 +25,6 @@ public class LmsModule {
     public static final int MAX_TITLE_LENGTH = 200;
     public static final int MAX_DESCRIPTION_LENGTH = 2000;
 
-    // No cascade: the LMS course is never created or deleted through one of its modules.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,14 +36,12 @@ public class LmsModule {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // Plain text. It is never treated as HTML.
     @Column(length = MAX_DESCRIPTION_LENGTH)
     private String description;
 
     @Column(nullable = false)
     private int position;
 
-    // When true, students must complete the module before this one first (sequential learning).
     @Column(name = "requires_previous", nullable = false)
     private boolean requiresPrevious;
 
@@ -66,7 +58,6 @@ public class LmsModule {
     private Instant updatedAt;
 
     protected LmsModule() {
-        // Required by JPA.
     }
 
     public LmsModule(LmsCourse lmsCourse, String title, String description, int position) {
@@ -111,19 +102,16 @@ public class LmsModule {
         return status == LmsContentStatus.ARCHIVED;
     }
 
-    /** Changes the title and the optional description. An archived module can no longer be changed. */
     public void edit(String title, String description) {
         requireNotArchived();
         this.title = Require.text(title, "title", MAX_TITLE_LENGTH);
         this.description = Require.optionalText(description, "description", MAX_DESCRIPTION_LENGTH);
     }
 
-    /** Places the module in its course's order. Positions start at 1. */
     public boolean isRequiresPrevious() {
         return requiresPrevious;
     }
 
-    /** Whether students must complete the previous module first. An archived module can no longer be changed. */
     public void requirePrevious(boolean requiresPrevious) {
         requireNotArchived();
         this.requiresPrevious = requiresPrevious;
@@ -133,13 +121,11 @@ public class LmsModule {
         this.position = Require.range(position, "position", 1, Integer.MAX_VALUE);
     }
 
-    /** Publishing an already published module changes nothing. It does not publish the topics. */
     public void publish() {
         requireNotArchived();
         this.status = LmsContentStatus.PUBLISHED;
     }
 
-    /** Archiving keeps the module and its topics. Archiving it again changes nothing. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
     }

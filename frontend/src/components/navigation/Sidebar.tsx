@@ -11,7 +11,6 @@ const itemBase = `flex min-h-10 items-center gap-3 rounded-lg px-3 text-[0.95rem
 const itemIdle = 'text-white/90 hover:bg-white/10 hover:text-white'
 const itemActive = 'bg-portal-bar-strong font-semibold text-portal-navy'
 
-/** The unread count beside Inbox: hidden at 0, "99+" from a hundred on, and read out in words. */
 function UnreadBadge() {
   const { unreadCount } = useUnreadCount()
   if (!unreadCount) {
@@ -46,7 +45,6 @@ function ItemLink({ item, onNavigate }: { item: NavigationItem; onNavigate?: () 
   )
 }
 
-/** A titled group: its small uppercase label toggles the list; a group with a page of its own also links to it. */
 function Group({ section, onNavigate }: { section: NavigationSection; onNavigate?: () => void }) {
   const { pathname } = useLocation()
   const [open, setOpen] = useState(true)
@@ -90,7 +88,6 @@ function Group({ section, onNavigate }: { section: NavigationSection; onNavigate
   )
 }
 
-/** The brand at the top of the sidebar: the emblem, the name, and what Stacc is. */
 function Brand({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <Link to="/" onClick={onNavigate} className={`flex items-center gap-3 rounded-lg px-2 py-1 text-white ${focusRing}`}>
@@ -104,11 +101,6 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-/**
- * The one navigation of the app, from the one list in `navigation.ts`: Overview, then a group per area the account
- * has (Learning, Teaching, ERP, Manage, Campus, Services) and Career. Showing an item protects nothing; the backend
- * checks every request.
- */
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { account } = useAuth()
   const sections = navigationFor(account?.roles ?? [])
@@ -135,7 +127,6 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-/** The sidebar of wide screens, always shown beside the page. */
 export function DesktopSidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-[17.5rem] shrink-0 flex-col overflow-y-auto bg-portal-navy lg:flex">
@@ -153,7 +144,6 @@ type DrawerProps = {
   onClose: () => void
 }
 
-/** The same navigation as a drawer on small screens, opened from the menu button in the top bar. */
 export function Sidebar({ id, isOpen, onClose }: DrawerProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 

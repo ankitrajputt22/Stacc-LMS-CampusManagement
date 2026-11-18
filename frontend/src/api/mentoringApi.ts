@@ -1,8 +1,6 @@
 import type { ActionOwner, MentoringPairing, MentoringPairingDetail } from '../types/mentoring'
 import { apiClient } from './apiClient'
 
-// The mentor and the student are always the signed-in account; the backend checks each pairing.
-
 export const getMyPairings = async (signal?: AbortSignal) => (await apiClient.get<MentoringPairing[]>('/mentoring/me', { signal })).data
 export const getPairing = async (assignmentId: number, signal?: AbortSignal) =>
   (await apiClient.get<MentoringPairingDetail>(`/mentoring/pairings/${assignmentId}`, { signal })).data

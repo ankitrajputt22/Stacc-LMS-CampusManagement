@@ -3,17 +3,11 @@ package com.stacc.backend.identity.admin;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A small reader for comma-separated text (RFC 4180): fields may be quoted with double quotes, a quote inside a quoted
- * field is written twice, and lines end with LF or CRLF. A leading byte-order mark is ignored. It reads text only and
- * never evaluates anything.
- */
 final class CsvRows {
 
     private CsvRows() {
     }
 
-    /** Every non-empty line, each as its fields. Throws IllegalArgumentException for an unclosed quote. */
     static List<List<String>> parse(String text) {
         String input = text.startsWith("﻿") ? text.substring(1) : text;
         List<List<String>> rows = new ArrayList<>();

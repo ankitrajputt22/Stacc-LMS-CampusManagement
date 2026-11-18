@@ -16,10 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Reading tickets: a requester's own list, the admin queue, and one ticket in full. A ticket the actor may not see
- * answers the same 404 as one that does not exist, so ticket IDs reveal nothing. It only reads.
- */
 @Service
 @Transactional(readOnly = true)
 public class HelpdeskTicketQueryService {
@@ -46,10 +42,6 @@ public class HelpdeskTicketQueryService {
         this.accounts = accounts;
     }
 
-    /**
-     * The accounts a ticket can be assigned to, for the support team's assignment choice: active admin accounts, by
-     * login ID only. Assignment checks the same rule again.
-     */
     public List<HelpdeskAssigneeResponse> assignees(HelpdeskActor actor) {
         if (!access.canManage(actor)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "You cannot manage helpdesk tickets.");
@@ -59,14 +51,12 @@ public class HelpdeskTicketQueryService {
                 .toList();
     }
 
-    /** The acting account's own tickets, newest first. */
     public HelpdeskTicketPage ownTickets(HelpdeskActor actor, HelpdeskTicketStatus status, HelpdeskTicketPriority priority,
             Long categoryId, int page, int size) {
         PageRequest request = pageOf(page, size);
         return pageOf(tickets.findOwn(actor.accountId(), status, priority, categoryId, request), request);
     }
 
-    /** Every ticket, newest first, for admins who may see them all. {@code assignedToMe} keeps the actor's own. */
     public HelpdeskTicketPage queue(HelpdeskActor actor, HelpdeskTicketStatus status, HelpdeskTicketPriority priority,
             Long categoryId, boolean assignedToMe, String requesterLoginId, int page, int size) {
         if (!(actor.admin() && actor.viewAll())) {
@@ -78,7 +68,6 @@ public class HelpdeskTicketQueryService {
                 request), request);
     }
 
-    /** One ticket in full, if the actor may see it. */
     public HelpdeskTicketDetail ticket(HelpdeskActor actor, Long ticketId) {
         HelpdeskTicket ticket = (ticketId == null ? null : tickets.findWithContextById(ticketId).orElse(null));
         if (ticket == null || !access.canView(actor, ticket)) {
@@ -89,7 +78,6 @@ public class HelpdeskTicketQueryService {
                 java.time.Instant.now());
     }
 
-    /** The tickets of the acting staff member's active teams, newest first. */
     public HelpdeskTicketPage teamQueue(HelpdeskActor actor, HelpdeskTicketStatus status, int page, int size) {
         if (!actor.teamWork()) {
             throw new ApiException(HttpStatus.FORBIDDEN, "You do not work on a support team.");

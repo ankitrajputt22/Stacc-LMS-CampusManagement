@@ -27,13 +27,6 @@ import com.stacc.backend.identity.student.StudentProfileStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The official enrollment records, one at a time. A student is enrolled in a semester of their own program, and
- * through that semester enrollment in course offerings of the same semester. New enrollments start {@code ENROLLED};
- * an enrolled one may become {@code COMPLETED} or {@code WITHDRAWN}, and an ended one never changes again. A semester
- * enrollment ends only after each of its course enrollments has been ended on its own: nothing cascades, and nothing
- * is ever deleted. Accounts and profiles are never created or changed here.
- */
 @Service
 @Transactional
 public class AcademicEnrollmentManagementService {
@@ -98,10 +91,6 @@ public class AcademicEnrollmentManagementService {
                 () -> semesterEnrollments.saveAndFlush(new SemesterEnrollment(student, semester)), SEMESTER_TAKEN));
     }
 
-    /**
-     * Ends an enrolled semester enrollment, or does nothing when it already has the status. The row stays locked
-     * until the change is saved, and adding a course takes the same lock, so no course is added while it ends.
-     */
     public SemesterEnrollmentResponse changeSemesterEnrollmentStatus(Long semesterEnrollmentId,
             SemesterEnrollmentStatusChange request) {
         SemesterEnrollment enrollment = semesterEnrollments.findByIdForUpdate(semesterEnrollmentId)
@@ -124,12 +113,6 @@ public class AcademicEnrollmentManagementService {
         return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
     }
 
-    /**
-     * Places an enrolled student in a section of their semester, moves them to another, or takes them out with no
-     * section. The semester enrollment is locked first and then the section, always in that order, and the section's
-     * enrolled students are counted only under its lock, so two placements can never take its last place twice.
-     * Placing a student in the section they are already in changes nothing.
-     */
     public SemesterEnrollmentResponse changeSection(Long semesterEnrollmentId, SemesterEnrollmentSectionChange request) {
         SemesterEnrollment enrollment = semesterEnrollments.findByIdForUpdate(semesterEnrollmentId)
                 .orElseThrow(() -> AcademicMasterErrors.notFound(SEMESTER_ENROLLMENT_NOT_FOUND));
@@ -164,13 +147,11 @@ public class AcademicEnrollmentManagementService {
         return SemesterEnrollmentResponse.of(semesterEnrollments.saveAndFlush(enrollment));
     }
 
-    /** Enrolls the semester enrollment's student in one offering of the same semester. */
     public CourseEnrollmentResponse createCourseEnrollment(Long semesterEnrollmentId, CourseEnrollmentCreate request) {
         SemesterEnrollment semesterEnrollment = semesterEnrollments.findByIdForUpdate(semesterEnrollmentId)
                 .orElseThrow(() -> AcademicMasterErrors.notFound(SEMESTER_ENROLLMENT_NOT_FOUND));
         CourseOffering offering = offerings.findWithContextById(request.courseOfferingId())
                 .orElseThrow(() -> AcademicMasterErrors.notFound(OFFERING_MISSING));
-        // Locked after the semester enrollment, as self-registration does, so a capacity holds.
         offerings.findByIdForUpdate(offering.getId());
         if (semesterEnrollment.getStatus() != SemesterEnrollmentStatus.ENROLLED) {
             throw AcademicMasterErrors.conflict(NOT_ENROLLED_IN_SEMESTER);
@@ -196,10 +177,6 @@ public class AcademicEnrollmentManagementService {
                 () -> courseEnrollments.saveAndFlush(new CourseEnrollment(semesterEnrollment, offering)), COURSE_TAKEN));
     }
 
-    /**
-     * Ends an enrolled course enrollment, or does nothing when it already has the status. An enrollment never
-     * returns to {@code ENROLLED}, so it can never be enrolled under a semester enrollment that has ended.
-     */
     public CourseEnrollmentResponse changeCourseEnrollmentStatus(Long courseEnrollmentId,
             CourseEnrollmentStatusChange request) {
         CourseEnrollment enrollment = courseEnrollments.findByIdForUpdate(courseEnrollmentId)

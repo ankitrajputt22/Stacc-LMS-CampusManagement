@@ -167,7 +167,6 @@ class AiFacultyServiceTest {
         when(client.assessmentDraft(anyString(), any())).thenReturn(new AssessmentDraftResult("Quiz", null, List.of(
                 new AssessmentQuestion("SHORT_ANSWER", "Why 3NF?", List.of(), "x", BigDecimal.ONE, List.of(teacherCited))), false));
 
-        // Not yet refreshed: the teacher index is left out, and a teacher citation is dropped.
         assertThat(service.assessmentDraft(FACULTY_A, COURSE_A, request(AiQuestionType.MIXED)).questions()).isEmpty();
         assertThat(service.status(FACULTY_A, COURSE_A).teacherDocumentsCurrent()).isFalse();
 

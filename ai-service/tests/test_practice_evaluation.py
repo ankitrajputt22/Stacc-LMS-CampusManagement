@@ -1,5 +1,3 @@
-"""v0.15.4: practice answers marked against the reference and the sources, viva follow-ups, and hint-only answers."""
-
 from __future__ import annotations
 
 import json

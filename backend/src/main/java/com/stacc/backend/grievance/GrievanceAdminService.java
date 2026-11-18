@@ -21,10 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Grievance categories and committees for admins (`GRIEVANCE_MANAGE`). Committee members are active accounts holding
- * `FACULTY` or `ADMIN`; adding and ending them is audited. Admins never read cases here: only committees do.
- */
 @Service
 @Transactional
 public class GrievanceAdminService {

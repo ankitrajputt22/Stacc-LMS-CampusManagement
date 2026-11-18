@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react'
 import { formatCount } from './reportFormat'
 
-/**
- * A compact list of labelled counts. Each number keeps its label as text (a definition list), so nothing depends on
- * position, colour, or a chart.
- */
 export function ReportStats({ items, label }: { items: { label: string; value: number }[]; label?: string }) {
   return (
     <dl aria-label={label} className="divide-y divide-line">
@@ -18,12 +14,10 @@ export function ReportStats({ items, label }: { items: { label: string; value: n
   )
 }
 
-/** A sub-heading inside a report section, as a tinted band above its counts. */
 export function ReportSubheading({ children }: { children: ReactNode }) {
   return <h4 className="rounded-sm bg-sky-50 px-2 py-1.5 text-base font-bold text-ink">{children}</h4>
 }
 
-/** A titled report section with a restrained border. */
 export function ReportSection({ id, title, children, note }: { id: string; title: string; children: ReactNode; note?: string }) {
   return (
     <section aria-labelledby={id} className="rounded-panel border border-line bg-surface p-4 sm:p-5">

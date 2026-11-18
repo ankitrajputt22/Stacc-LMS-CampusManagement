@@ -28,11 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin configuration of approval workflows. Every route needs the admin role and {@code APPROVAL_WORKFLOW_MANAGE}. A
- * workflow's code is fixed once created; workflows are made inactive instead of deleted, and editing one changes
- * future requests only.
- */
 @RestController
 @RequestMapping("/api/v1/approvals/admin/workflows")
 @Tag(name = "Approval workflows admin")

@@ -29,12 +29,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Read-only review of students' submissions, for faculty who grade them. Review applies to published
- * assignments in courses the signed-in faculty member may use now, decided by {@link LmsFacultyAccessService}
- * from official teaching assignments. Anything else, including another course's submissions, answers the
- * same 404 as something that does not exist. Students are identified by their account's login ID only.
- */
 @Service
 @Transactional(readOnly = true)
 public class LmsFacultySubmissionQueryService {
@@ -75,13 +69,6 @@ public class LmsFacultySubmissionQueryService {
         this.storage = storage;
     }
 
-    /**
-     * Every student who has handed in work for the assignment, newest latest attempt first, then by submission.
-     * Each row describes the latest attempt only: an older attempt's grade never makes it look graded. Students
-     * who have not handed anything in are not listed. The number of queries does not grow with the students.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<LmsFacultySubmissionSummaryResponse> listSubmissions(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = reviewableAssignment(userAccountId, assignmentId);
         List<LmsAssignmentSubmission> found = submissions.findAllWithStudentByAssignmentId(assignment.getId());
@@ -117,12 +104,6 @@ public class LmsFacultySubmissionQueryService {
                 .toList();
     }
 
-    /**
-     * One student's submission for the assignment, with every attempt newest first, each with its text, files,
-     * the deadline that applied, whether it was late, and its own grade.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public LmsFacultySubmissionDetailResponse submissionDetail(Long userAccountId, Long assignmentId, Long submissionId) {
         LmsAssignment assignment = reviewableAssignment(userAccountId, assignmentId);
         LmsAssignmentSubmission submission = submissionId == null
@@ -159,13 +140,6 @@ public class LmsFacultySubmissionQueryService {
                 LmsRubricResponse.ofNullable(assignment.getRubric()));
     }
 
-    /**
-     * Opens a student's submitted file for a faculty member who may review it: the file's assignment is
-     * published and in a course the caller teaches now. Anything else gets the same 404 as a file that does
-     * not exist. Owning the file as a student does not count here.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public LmsAssignmentSubmissionService.Download openAttachment(Long userAccountId, Long attachmentId) {
         LmsSubmissionAttachment attachment = attachmentId == null
                 ? null
@@ -191,7 +165,6 @@ public class LmsFacultySubmissionQueryService {
         return assignment;
     }
 
-    // Review is part of the normal workflow of a published assignment in a course the caller teaches now.
     private boolean isReviewable(Long userAccountId, LmsAssignment assignment) {
         return assignment.getStatus() == LmsContentStatus.PUBLISHED
                 && facultyAccess.canAccessCourse(userAccountId, assignment.getLmsCourse().getId());

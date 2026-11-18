@@ -17,7 +17,6 @@ public interface AiFlashcardSetRepository extends JpaRepository<AiFlashcardSet, 
 
     Optional<AiFlashcardSet> findByIdAndLmsCourseIdAndUserAccountId(Long id, Long lmsCourseId, Long userAccountId);
 
-    /** Cards and due cards per set, as (set ID, cards, due). */
     @Query("select card.set.id, count(card), sum(case when card.dueOn <= :today then 1 else 0 end) from AiFlashcard card"
             + " where card.set.id in :setIds group by card.set.id")
     List<Object[]> countCards(@Param("setIds") Collection<Long> setIds, @Param("today") LocalDate today);

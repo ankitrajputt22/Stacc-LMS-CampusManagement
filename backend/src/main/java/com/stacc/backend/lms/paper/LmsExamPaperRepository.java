@@ -16,7 +16,6 @@ public interface LmsExamPaperRepository extends JpaRepository<LmsExamPaper, Long
     @Query("select paper.lmsCourse.id from LmsExamPaper paper where paper.id = :paperId")
     Optional<Long> findLmsCourseIdById(@Param("paperId") Long paperId);
 
-    /** The paper with its course, offering, and catalog course, for the paper's heading. */
     @Query("""
             select paper from LmsExamPaper paper join fetch paper.lmsCourse lmsCourse join fetch lmsCourse.courseOffering offering
             join fetch offering.course where paper.id = :paperId

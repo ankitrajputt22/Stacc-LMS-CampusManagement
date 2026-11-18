@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The signed-in person's digital ID card, and the staff check of an ID code. */
 @RestController
 @Tag(name = "Digital ID")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

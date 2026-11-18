@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/** One ordered step of a workflow: its number, a name, and the role whose holders decide it. */
 @Entity
 @Table(name = "approval_workflow_step_definitions")
 public class ApprovalWorkflowStepDefinition {
@@ -35,7 +34,6 @@ public class ApprovalWorkflowStepDefinition {
     @Column(nullable = false, length = ApprovalWorkflowDefinition.MAX_NAME_LENGTH)
     private String name;
 
-    // The role is shared reference data: it is never created, changed, or deleted through a workflow.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "approver_role_id", nullable = false)
     private Role approverRole;
@@ -53,7 +51,6 @@ public class ApprovalWorkflowStepDefinition {
     private Instant updatedAt;
 
     protected ApprovalWorkflowStepDefinition() {
-        // Required by JPA.
     }
 
     ApprovalWorkflowStepDefinition(ApprovalWorkflowDefinition workflowDefinition, int stepOrder, String name,
@@ -72,7 +69,6 @@ public class ApprovalWorkflowStepDefinition {
         this.approverRelationship = relationship;
     }
 
-    /** The relationship that names this step's approver, or null for any holder of the role. */
     public ApproverRelationship getApproverRelationship() {
         return approverRelationship;
     }

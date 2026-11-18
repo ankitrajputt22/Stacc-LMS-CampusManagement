@@ -8,7 +8,6 @@ import { semesterLabel } from './enrollmentText'
 
 export type CalendarEventValues = {
   academicSessionId: string
-  /** Empty for an event across the whole session. */
   semesterId: string
   title: string
   category: string
@@ -30,15 +29,12 @@ type CalendarEventFormProps = {
   initial: CalendarEventValues
   sessions: AdminAcademicSession[]
   semesters: AdminSemester[]
-  /** A published event keeps its session and semester; only its details can be corrected. */
   scopeLocked: boolean
   submitLabel: string
-  /** Sends the event. A refusal is thrown and shown here; what was entered stays. */
   onSubmit: (request: CalendarEventRequest) => Promise<void>
   onCancel: () => void
 }
 
-// The backend's own rules, checked before sending; the backend checks everything again.
 function checked(values: CalendarEventValues): Errors {
   const errors: Errors = {}
   if (values.academicSessionId === '') {
@@ -79,12 +75,6 @@ function refusal(status: number | null, apiMessage: string | null): string {
   }
 }
 
-/**
- * The form for one official calendar event. The semester list follows the chosen session, and "All semesters" makes
- * the event session-wide. A published event's session and semester are shown but cannot change. Every field has a
- * real label; mistakes are announced next to the field, and a refusal keeps what was entered. A 403 never signs the
- * user out.
- */
 export function CalendarEventForm({
   heading,
   initial,
@@ -112,7 +102,6 @@ export function CalendarEventForm({
     setValues((current) => ({
       ...current,
       [field]: value,
-      // Another session has other semesters: the event becomes session-wide until one of them is chosen.
       ...(field === 'academicSessionId' ? { semesterId: '' } : {}),
     }))
     setErrors((current) => ({ ...current, [field]: undefined }))
@@ -152,7 +141,6 @@ export function CalendarEventForm({
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status !== 401) {
-        // A 401 is left to the shared client, which ends the session.
         const apiError = getApiError(failure)
         const fieldErrors = Object.fromEntries(
           (apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]),

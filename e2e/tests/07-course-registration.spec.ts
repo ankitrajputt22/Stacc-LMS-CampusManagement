@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { signIn } from './support'
 
 test('a student registers for an open elective after reviewing it, then drops it', async ({ page }) => {
-  // cse24002 is in section B: CS305 is open to the whole semester, CS306 only to section A.
   await signIn(page, 'erp', 'cse24002')
   await page.goto('/academic/registration')
   await expect(page.getByRole('heading', { level: 1, name: 'Course Registration' })).toBeVisible()

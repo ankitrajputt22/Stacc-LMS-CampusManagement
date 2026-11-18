@@ -11,11 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface HostelNoticeRepository extends JpaRepository<HostelNotice, Long> {
 
-    /** Every notice of a hostel, archived ones included, newest first. */
     @Query("select notice from HostelNotice notice join fetch notice.hostel where notice.hostel.id = :hostelId order by notice.id desc")
     List<HostelNotice> findAllForHostel(@Param("hostelId") Long hostelId);
 
-    /** The published notices of a hostel, newest published first. */
     @Query("""
             select notice from HostelNotice notice join fetch notice.hostel
             where notice.hostel.id = :hostelId and notice.status = com.stacc.backend.hostel.notice.HostelNotice.Status.PUBLISHED

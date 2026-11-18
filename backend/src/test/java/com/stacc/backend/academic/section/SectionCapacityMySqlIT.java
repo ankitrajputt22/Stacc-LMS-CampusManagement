@@ -16,11 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * A section's capacity under truly simultaneous placements on MySQL: two students placed at once into a section with one
- * free place leave exactly one in it. Uses its own section in the demo semester and puts the two demo students back in
- * their seeded sections afterwards.
- */
 class SectionCapacityMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

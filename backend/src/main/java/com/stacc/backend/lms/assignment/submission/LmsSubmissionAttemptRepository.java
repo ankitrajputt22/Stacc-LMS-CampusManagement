@@ -14,10 +14,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmissionAttempt, Long> {
 
-    /** Every attempt of one submission, newest first. */
     List<LmsSubmissionAttempt> findAllBySubmissionIdOrderByAttemptNumberDesc(Long submissionId);
 
-    /** One attempt with its submission, assignment, and LMS course, which decide who may grade it. */
     @Query("""
             select attempt
             from LmsSubmissionAttempt attempt
@@ -28,15 +26,10 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
             """)
     Optional<LmsSubmissionAttempt> findWithAssignmentById(@Param("attemptId") Long attemptId);
 
-    /**
-     * One attempt row, locked until the transaction ends. The attempt itself never changes; the lock only
-     * makes two graders of the same attempt take turns, so its first grade is created once.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select attempt from LmsSubmissionAttempt attempt where attempt.id = :attemptId")
     Optional<LmsSubmissionAttempt> findByIdForUpdate(@Param("attemptId") Long attemptId);
 
-    /** The newest attempt of each of these submissions, in one query. */
     @Query("""
             select attempt
             from LmsSubmissionAttempt attempt
@@ -46,7 +39,6 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
             """)
     List<LmsSubmissionAttempt> findLatestBySubmissionIdIn(@Param("submissionIds") Collection<Long> submissionIds);
 
-    /** How many attempts each of these submissions has, in one query. */
     @Query("""
             select attempt.submission.id as submissionId, count(attempt) as attemptCount
             from LmsSubmissionAttempt attempt
@@ -55,7 +47,6 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
             """)
     List<AttemptCount> countBySubmissionIdIn(@Param("submissionIds") Collection<Long> submissionIds);
 
-    /** The number of attempts of one submission. */
     interface AttemptCount {
 
         Long getSubmissionId();
@@ -63,13 +54,6 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
         long getAttemptCount();
     }
 
-    /**
-     * The latest attempt of each submission that has no grade yet, for the published assignments of these LMS
-     * courses: oldest hand-in first, then submission ID, one page of them with the total count. Only a submission's
-     * latest attempt counts ({@code attemptNumber = latestAttemptNumber}), so an older attempt left ungraded never
-     * puts a submission in the queue, and a graded older attempt never keeps one out of it. The submission's
-     * assignment and student account are loaded with each.
-     */
     @Query(value = """
             select attempt
             from LmsSubmissionAttempt attempt
@@ -98,10 +82,6 @@ public interface LmsSubmissionAttemptRepository extends JpaRepository<LmsSubmiss
     Page<LmsSubmissionAttempt> findLatestUngradedByLmsCourseIdIn(
             @Param("lmsCourseIds") Collection<Long> lmsCourseIds, Pageable page);
 
-    /**
-     * The count of {@link #findLatestUngradedByLmsCourseIdIn}, without loading anything: submissions of published
-     * assignments whose latest attempt has no grade. Older ungraded attempts never count.
-     */
     @Query("""
             select count(attempt)
             from LmsSubmissionAttempt attempt

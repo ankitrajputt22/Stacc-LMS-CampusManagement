@@ -19,11 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admin configuration of approval workflows: create and update, with their ordered steps. A code is set once; a
- * workflow is made inactive instead of deleted. Each step names an existing role that can decide approval steps.
- * Changing the steps changes future requests only: running requests keep the steps they copied when they started.
- */
 @Service
 @Transactional
 public class ApprovalWorkflowDefinitionService {
@@ -55,12 +50,10 @@ public class ApprovalWorkflowDefinitionService {
         try {
             return ApprovalWorkflowDetail.of(workflows.saveAndFlush(workflow));
         } catch (DataIntegrityViolationException clash) {
-            // Two requests raced for the same code; the unique constraint refused the second.
             throw new ApiException(HttpStatus.CONFLICT, CODE_TAKEN);
         }
     }
 
-    /** Replaces the name, description, active flag, and steps in one transaction. The code never changes. */
     public ApprovalWorkflowDetail update(Long workflowId, UpdateApprovalWorkflowRequest request) {
         ApprovalWorkflowDefinition workflow = (workflowId == null ? null
                 : workflows.findWithStepsById(workflowId).orElse(null));
@@ -79,7 +72,6 @@ public class ApprovalWorkflowDefinitionService {
         }
     }
 
-    /** The requested steps with their roles loaded on the server. Each role must exist and be able to decide steps. */
     private List<StepSpec> stepsOf(List<ApprovalWorkflowStepRequest> requested) {
         if (requested == null || requested.isEmpty() || requested.size() > ApprovalWorkflowDefinition.MAX_STEPS) {
             throw new ApiException(HttpStatus.BAD_REQUEST,
@@ -109,7 +101,6 @@ public class ApprovalWorkflowDefinitionService {
         if (role == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Unknown approver role: " + normalized + ".");
         }
-        // A step only its holders can decide would wait forever, so such a role is refused here.
         if (!role.hasPermission(ApprovalActor.TASK_DECIDE)) {
             throw new ApiException(HttpStatus.BAD_REQUEST,
                     "The " + normalized + " role cannot decide approval steps.");

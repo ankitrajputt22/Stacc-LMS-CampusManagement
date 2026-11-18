@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-/** Mastery weighs recent evidence more, confidence grows with evidence, and the level needs both. */
 class MasteryTest {
 
     private static List<AiLearningEvidence> newestFirst(double... scores) {

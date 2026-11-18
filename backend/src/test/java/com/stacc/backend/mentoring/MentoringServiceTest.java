@@ -18,7 +18,6 @@ import com.stacc.backend.common.error.ApiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Only the pair opens a pairing, only the mentor records meetings, and private notes never reach the student. */
 class MentoringServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

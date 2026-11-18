@@ -32,15 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * Students hand in work for published assignments, read back their own attempts, and download their own
- * files. The student is always the signed-in account, and their course enrollment is found on the server,
- * through {@link LmsStudentAccessService}: a request can never say whose submission it is.
- *
- * <p>Every hand-in is a new attempt. Earlier attempts are never changed or removed. Late work is accepted
- * and marked late against the deadline that applied at that moment. Files are checked with the same rules
- * as study materials and kept in private object storage; only their details are in the database.
- */
 @Service
 @Transactional
 public class LmsAssignmentSubmissionService {
@@ -94,39 +85,22 @@ public class LmsAssignmentSubmissionService {
         this.maxFiles = submissionProperties.maxFiles();
     }
 
-    /** One attempt with its files, in the order they were sent, and its grade, or null while it has none. */
     public record SubmittedAttempt(
             LmsSubmissionAttempt attempt, List<LmsSubmissionAttachment> attachments, LmsSubmissionGrade grade) {
     }
 
-    /** An opened file for a download. The caller must close the content stream. */
     public record Download(String fileName, String contentType, long sizeBytes, InputStream content) {
     }
 
     private record CheckedUpload(MultipartFile file, LmsMaterialFiles.CheckedFile checked) {
     }
 
-    /**
-     * Makes a new attempt for the student behind this account. The assignment must be published and in a
-     * course the student may use now; otherwise the answer is the same 404 as for one that does not exist.
-     * The attempt needs non-blank text, at least one file, or both.
-     *
-     * <p>Files are checked first and stored before anything is written to the database, so no lock is held
-     * while they upload. The attempt number is then reserved under a lock on the student's course enrollment,
-     * which must still be enrolled, and the submission record is read with a lock too, so two requests from the same student
-     * never get the same number; a unique constraint backs this up. The database and the storage cannot
-     * share a transaction: if a file cannot be stored, or the attempt cannot be saved, the files already
-     * stored for it are removed again.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public SubmittedAttempt submit(
             Long userAccountId, Long lmsCourseId, Long assignmentId, String textContent, List<MultipartFile> files) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
                 .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
         LmsAssignment assignment = visibleAssignment(lmsCourseId, assignmentId);
 
-        // Checked before any file is stored, and again with the attempt's own time once the locks are held.
         requireOpen(assignment, clock.instant());
         String text = validText(textContent);
         List<MultipartFile> chosen = chosenFiles(files);
@@ -141,19 +115,15 @@ public class LmsAssignmentSubmissionService {
         Long courseEnrollmentId = enrollment.getId();
         List<String> storedKeys = store(assignment.getId(), courseEnrollmentId, checked);
         try {
-            // A drop or withdrawal that finished meanwhile ends access here too.
             courseEnrollments.findByIdForUpdate(courseEnrollmentId)
                     .filter(locked -> locked.getStatus() == CourseEnrollmentStatus.ENROLLED)
                     .orElseThrow(() -> notFound(ASSIGNMENT_UNAVAILABLE));
             LmsAssignmentSubmission submission = submissions.findForUpdate(assignment.getId(), courseEnrollmentId)
                     .orElseGet(() -> submissions.saveAndFlush(
                             new LmsAssignmentSubmission(assignment, enrollment)));
-            // The attempt limit is counted under the locks, so two hand-ins at once never pass it together.
             if (assignment.getMaxAttempts() != null && submission.getLatestAttemptNumber() >= assignment.getMaxAttempts()) {
                 throw new ApiException(HttpStatus.CONFLICT, NO_ATTEMPTS_LEFT);
             }
-            // Accepted now, by the server's clock, at the precision the database keeps, so the answer shows
-            // exactly what every later read shows. The deadline that applies now is kept with the attempt.
             Instant acceptedAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
             requireOpen(assignment, acceptedAt);
             int attemptNumber = submission.takeNextAttemptNumber();
@@ -175,13 +145,6 @@ public class LmsAssignmentSubmissionService {
         }
     }
 
-    /**
-     * The student's own attempts for an assignment they may see now, newest first, each with its files and
-     * its own grade, if it has been graded. A student who has not handed anything in gets an empty list, not
-     * an error.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public List<SubmittedAttempt> history(Long userAccountId, Long lmsCourseId, Long assignmentId) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
@@ -193,14 +156,6 @@ public class LmsAssignmentSubmissionService {
                 .orElse(List.of());
     }
 
-    /**
-     * Opens one of the student's own files for download. The file must belong to an attempt made through
-     * the course enrollment that gives this account access to the course now, for an assignment that is
-     * still published. Anything else, including another student's file, gets the same 404 as a file that
-     * does not exist.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public Download openOwnAttachment(Long userAccountId, Long attachmentId) {
         LmsSubmissionAttachment attachment = attachmentId == null
@@ -235,8 +190,6 @@ public class LmsAssignmentSubmissionService {
         }
     }
 
-    // The assignment must be published and belong to the course in the request. The course is checked from
-    // the stored assignment, so an assignment of another course is unavailable here.
     private LmsAssignment visibleAssignment(Long lmsCourseId, Long assignmentId) {
         LmsAssignment assignment = assignmentId == null ? null : assignments.findById(assignmentId).orElse(null);
         if (assignment == null
@@ -256,7 +209,6 @@ public class LmsAssignmentSubmissionService {
         Map<Long, List<LmsSubmissionAttachment>> filesByAttempt = attachments.findAllByAttemptIdInOrderByIdAsc(attemptIds)
                 .stream()
                 .collect(Collectors.groupingBy(attachment -> attachment.getAttempt().getId()));
-        // Each grade stays with the attempt it was given for; a newer attempt starts without one.
         Map<Long, LmsSubmissionGrade> gradeByAttempt = grades.findAllByAttemptIdIn(attemptIds).stream()
                 .collect(Collectors.toMap(grade -> grade.getAttempt().getId(), Function.identity()));
         return found.stream()
@@ -272,7 +224,6 @@ public class LmsAssignmentSubmissionService {
         return LmsSubmissionAttempt.textOrNull(textContent);
     }
 
-    // A form with an empty file field sends a part with no name and no bytes. That is no file at all.
     private static List<MultipartFile> chosenFiles(Collection<MultipartFile> files) {
         if (files == null) {
             return List.of();
@@ -283,8 +234,6 @@ public class LmsAssignmentSubmissionService {
                 .toList();
     }
 
-    // The same checks as study materials: size, allowed type, declared type, and first bytes. A refusal
-    // names the file, because an attempt can have several.
     private CheckedUpload checked(MultipartFile file) {
         try {
             return new CheckedUpload(file, LmsMaterialFiles.check(file, maxFileBytes));
@@ -302,14 +251,11 @@ public class LmsAssignmentSubmissionService {
         return name.length() > 100 ? name.substring(0, 100) + "…" : name;
     }
 
-    // Keys are made here. Nothing the client sends, not even a file name, becomes part of one, and no
-    // login ID or name is in them. Every file gets its own random part.
     private List<String> store(Long assignmentId, Long courseEnrollmentId, List<CheckedUpload> uploads) {
         List<String> storedKeys = new ArrayList<>();
         for (CheckedUpload upload : uploads) {
             String key = "lms/submissions/assignments/%d/enrollments/%d/%s"
                     .formatted(assignmentId, courseEnrollmentId, UUID.randomUUID());
-            // Recorded before storing, so a store that fails half way is cleaned up as well.
             storedKeys.add(key);
             try (InputStream content = upload.file().getInputStream()) {
                 storage.store(key, content, upload.checked().sizeBytes(), upload.checked().type().contentType());

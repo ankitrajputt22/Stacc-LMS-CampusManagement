@@ -26,11 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Teacher-only documents (v0.13.5): plain-text notes and drafts that only the course's AI Tools read. Students never
- * see them. The same rule as the other AI Tools: a faculty account with the AI teaching permission may ask, and whether
- * it teaches the course is decided from official teaching assignments on every request.
- */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS AI teaching tools")

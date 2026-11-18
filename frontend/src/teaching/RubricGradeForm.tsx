@@ -8,10 +8,6 @@ const POINTS = /^\d{1,6}(\.\d{1,2})?$/
 
 type Score = { points: string; comment: string }
 
-/**
- * Grades one attempt with the assignment's rubric: points per criterion (a level's button fills them in), an optional
- * comment each, and overall feedback. The total is the sum and becomes the marks. An earlier rubric grade fills the form.
- */
 export function RubricGradeForm({
   attempt,
   rubric,

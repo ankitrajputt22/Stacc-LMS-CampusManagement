@@ -14,10 +14,6 @@ import com.stacc.backend.identity.person.PersonProfile;
 import com.stacc.backend.identity.person.PersonProfileRepository;
 import org.springframework.stereotype.Component;
 
-/**
- * Who teaches a set of offerings, for admin lists: every teaching assignment with the faculty member's login ID and,
- * where a person profile exists, their name. Two queries however many offerings are listed.
- */
 @Component
 public class OfferingFacultyLoader {
 
@@ -29,7 +25,6 @@ public class OfferingFacultyLoader {
         this.people = people;
     }
 
-    /** Each offering's assignments, active ones first, keyed by offering ID; an offering with none is missing. */
     public Map<Long, List<OfferingFaculty>> byOffering(Collection<Long> courseOfferingIds) {
         if (courseOfferingIds.isEmpty()) {
             return Map.of();
@@ -43,10 +38,6 @@ public class OfferingFacultyLoader {
                         names.get(assignment.getFacultyProfile().getUserAccount().getId())), Collectors.toList())));
     }
 
-    /**
-     * The names of the faculty actively teaching each offering, primary first; members without a person profile name
-     * are left out. Only names: never login IDs or contact details. Offerings with nobody are missing from the map.
-     */
     public Map<Long, List<String>> activeNamesByOffering(Collection<Long> courseOfferingIds) {
         Map<Long, List<String>> names = new LinkedHashMap<>();
         byOffering(courseOfferingIds).forEach((offeringId, members) -> names.put(offeringId, members.stream()
@@ -66,7 +57,6 @@ public class OfferingFacultyLoader {
                 .get(assignment.getFacultyProfile().getUserAccount().getId()));
     }
 
-    /** The display name of each account that has a person profile. */
     public Map<Long, String> namesOfAccounts(Collection<Long> accountIds) {
         if (accountIds.isEmpty()) {
             return Map.of();

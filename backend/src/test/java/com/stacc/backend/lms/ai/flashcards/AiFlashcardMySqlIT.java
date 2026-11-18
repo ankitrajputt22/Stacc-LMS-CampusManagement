@@ -16,7 +16,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** The 20th set is taken once under the account lock, two reviews of one card both count, and deleting removes the cards. */
 class AiFlashcardMySqlIT extends MySqlIntegrationTest {
 
     private static final LocalDate TODAY = LocalDate.parse("2026-11-16");

@@ -12,16 +12,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsCourseOutcomeRepository extends JpaRepository<LmsCourseOutcome, Long> {
 
-    /** Every outcome of the course, archived ones included, by number. */
     List<LmsCourseOutcome> findAllByLmsCourseIdOrderByNumberAsc(Long lmsCourseId);
 
-    /** The course's active outcomes, by number. */
     List<LmsCourseOutcome> findAllByLmsCourseIdAndStatusOrderByNumberAsc(Long lmsCourseId, LmsOutcomeStatus status);
 
-    /**
-     * Every outcome of the course, read with a lock after the course row lock. A locking read sees the latest committed
-     * rows, so the next number never repeats one another transaction has just used.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select outcome from LmsCourseOutcome outcome where outcome.lmsCourse.id = :lmsCourseId")
     List<LmsCourseOutcome> findAllByLmsCourseIdForUpdate(@Param("lmsCourseId") Long lmsCourseId);

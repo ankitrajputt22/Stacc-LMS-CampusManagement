@@ -106,7 +106,6 @@ function SettingsForm({ settings }: { settings: NotificationSettings }) {
   )
 }
 
-/** /inbox/settings: the person's own choices of what reaches the Inbox and email, per category. */
 export function NotificationSettingsPage() {
   const settings = useApiQuery(queryKeys.me.notificationSettings(), (signal) => getNotificationSettings(signal))
   return (

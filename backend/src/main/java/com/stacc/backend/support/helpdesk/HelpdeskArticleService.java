@@ -14,10 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Self-help articles of the helpdesk. Requesters read published articles of active categories, ranked by how many
- * words of their ticket subject they share; admins write, publish, and archive them. Nothing is deleted.
- */
 @Service
 public class HelpdeskArticleService {
 
@@ -25,7 +21,6 @@ public class HelpdeskArticleService {
     public static final String CATEGORY_INVALID = "Choose a helpdesk category.";
     public static final int MAX_SUGGESTIONS = 5;
 
-    // Common words that say nothing about the problem.
     private static final Set<String> IGNORED = Set.of("the", "and", "for", "with", "not", "can", "cannot", "how", "what",
             "why", "when", "does", "doesn", "don", "from", "into", "have", "has", "was", "are", "this", "that", "my", "our");
 
@@ -39,10 +34,6 @@ public class HelpdeskArticleService {
         this.clock = clock;
     }
 
-    /**
-     * The published articles of an active category for someone writing a ticket: with words, the ones sharing the most
-     * of them first and none that share none; without, the newest. At most {@value #MAX_SUGGESTIONS}.
-     */
     @Transactional(readOnly = true)
     public List<HelpdeskArticle> suggestions(Long categoryId, String text) {
         List<HelpdeskArticle> found = categoryId == null ? List.of() : articles.findPublishedForCategory(categoryId);
@@ -57,7 +48,6 @@ public class HelpdeskArticleService {
                 .toList();
     }
 
-    /** A published article of an active category; anything else answers the same 404. */
     @Transactional(readOnly = true)
     public HelpdeskArticle published(Long articleId) {
         return (articleId == null ? java.util.Optional.<HelpdeskArticle>empty() : articles.findWithCategoryById(articleId))
@@ -70,7 +60,6 @@ public class HelpdeskArticleService {
         return articles.findAllWithCategory();
     }
 
-    /** Adds a draft article. */
     @Transactional
     public HelpdeskArticle add(Long adminAccountId, Long categoryId, String title, String body) {
         HelpdeskCategory category = category(categoryId);
@@ -105,7 +94,6 @@ public class HelpdeskArticleService {
         return articles.saveAndFlush(article);
     }
 
-    /** The distinct lower-case words of at least three letters, without the common ones. */
     static Set<String> words(String text) {
         if (text == null || text.isBlank()) {
             return Set.of();

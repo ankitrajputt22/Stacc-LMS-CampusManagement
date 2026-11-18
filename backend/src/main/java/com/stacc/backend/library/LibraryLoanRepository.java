@@ -18,12 +18,10 @@ public interface LibraryLoanRepository extends JpaRepository<LibraryLoan, Long> 
     @Query("select l from LibraryLoan l join fetch l.copy c join fetch c.title where l.borrower.id = :accountId and l.returnedAt is null order by l.dueAt, l.id")
     List<LibraryLoan> findOpenForBorrower(@Param("accountId") Long accountId);
 
-    /** The borrower's open loans, read with a locking read after the borrower's account row lock. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select l from LibraryLoan l where l.borrower.id = :accountId and l.returnedAt is null")
     List<LibraryLoan> findOpenForBorrowerForUpdate(@Param("accountId") Long accountId);
 
-    /** Open loans on a title's copies, read with a locking read. */
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("select l from LibraryLoan l where l.copy.title.id = :titleId and l.returnedAt is null")
     List<LibraryLoan> findOpenForTitleForShare(@Param("titleId") Long titleId);

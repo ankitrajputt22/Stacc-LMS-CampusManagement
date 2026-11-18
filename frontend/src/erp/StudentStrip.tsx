@@ -3,7 +3,6 @@ import { queryKeys } from '../api/queryKeys'
 import { useApiQuery } from '../api/useApiQuery'
 import { useMyProfile } from '../person/useDisplayName'
 
-/** The student's name, IDs, programme, and where they study now, above the Academics pages. */
 export function StudentStrip() {
   const academic = useApiQuery(queryKeys.academic.myProfile(), getMyAcademicProfile)
   const person = useMyProfile()

@@ -30,10 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * A student's own hostel applications. The student always comes from the access token; no route takes a student,
- * profile, or account ID. Students never choose a hostel, room, or bed, and never decide approvals.
- */
 @RestController
 @RequestMapping("/api/v1/hostel/student")
 @Tag(name = "Hostel")

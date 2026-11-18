@@ -6,10 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * The title and text of a topic, for adding or editing one. The module, status, and position are not
- * part of it: they are set by the route and by the publish, archive, and reorder actions.
- */
 public record LmsTopicRequest(
         @Schema(example = "Course overview")
         @NotBlank(message = "Title is required")

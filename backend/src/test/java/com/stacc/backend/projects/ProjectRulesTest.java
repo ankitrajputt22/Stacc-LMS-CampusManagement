@@ -9,7 +9,6 @@ import java.time.Instant;
 import com.stacc.backend.auth.account.UserAccount;
 import org.junit.jupiter.api.Test;
 
-/** A project needs a title, summary, and 1 to 20 members; requests are decided once; mentors answer once. */
 class ProjectRulesTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

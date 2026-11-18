@@ -6,10 +6,6 @@ import java.util.List;
 import com.stacc.backend.auth.account.UserAccount;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The approval engine as clients see it. People appear by login ID only, never by account ID, and no entity or
- * business record is sent as it is.
- */
 public final class ApprovalResponses {
 
     private ApprovalResponses() {
@@ -67,7 +63,6 @@ public final class ApprovalResponses {
         }
     }
 
-    /** One of the signed-in account's requests in a list. */
     public record ApprovalRequestSummary(
             @Schema(example = "12") Long approvalRequestId,
             @Schema(example = "HOSTEL_APPLICATION") String workflowCode,
@@ -117,7 +112,6 @@ public final class ApprovalResponses {
         }
     }
 
-    /** One of the signed-in account's requests in full: its steps and its history, oldest first. */
     public record ApprovalRequestDetail(
             Long approvalRequestId,
             String workflowCode,
@@ -143,7 +137,6 @@ public final class ApprovalResponses {
         }
     }
 
-    /** A step waiting for the signed-in approver's decision. */
     public record ApprovalTaskSummary(
             @Schema(example = "31") Long approvalRequestStepId,
             @Schema(example = "12") Long approvalRequestId,
@@ -176,7 +169,6 @@ public final class ApprovalResponses {
             int totalPages) {
     }
 
-    /** What a decision did: the step's new status and where the request is now. */
     public record ApprovalDecisionResponse(
             Long approvalRequestStepId,
             Long approvalRequestId,

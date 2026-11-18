@@ -9,17 +9,11 @@ import { formatDateTime } from './dates'
 import { SectionState } from './SectionState'
 
 type CourseAnnouncementsProps = {
-  /** On the section's own page, whose title already names it: a plain card without its own heading. */
   standalone?: boolean
   announcements: ApiRequestState<LmsCourseAnnouncement[]> & { retry: () => void }
-  /** The course, for downloading announcement files. */
   lmsCourseId: number
 }
 
-/**
- * The course's published announcements, newest first, each shown as its format says, never as HTML. This part loads
- * on its own: if it fails, the rest of the course page stays as it is.
- */
 export function CourseAnnouncements({ announcements, lmsCourseId, standalone = false }: CourseAnnouncementsProps) {
   const article = (announcement: LmsCourseAnnouncement) => (
     <article aria-labelledby={`announcement-${announcement.id}`} className={standalone ? 'px-5 py-5' : 'px-4 py-4 sm:px-5'}>
@@ -44,7 +38,6 @@ export function CourseAnnouncements({ announcements, lmsCourseId, standalone = f
   )
 
   if (standalone) {
-    // The section's own page: each announcement on its own card, as the course mock-ups show.
     if (announcements.status !== 'loaded' || announcements.data.length === 0) {
       return (
         <Card padding="none">

@@ -24,10 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Students take the published quizzes of courses they may use now. The student comes from the access token and the
- * course enrollment from official enrollment; questions are sent without anything that gives their answers away.
- */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS quizzes")

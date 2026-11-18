@@ -6,7 +6,6 @@ import com.stacc.backend.lms.content.LmsModule;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One published module with its published topics, as a student sees it. */
 public record LmsCourseModuleResponse(
         @Schema(example = "12")
         Long id,

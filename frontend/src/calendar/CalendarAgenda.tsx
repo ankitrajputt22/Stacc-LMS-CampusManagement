@@ -21,17 +21,11 @@ type Day = { date: string; items: AgendaItem[] }
 const itemLinkClasses =
   'font-semibold break-words text-ink underline-offset-4 hover:text-stacc-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stacc-primary'
 
-/**
- * The month's items under one heading per day. An event over several days is listed once, on its first day in the
- * month, with its whole date range; a deadline is listed on the day it falls on in the browser's time zone. Within a
- * day, events come first in the backend's order, then deadlines by time.
- */
 function agendaDays(calendar: MyCalendarResponse): Day[] {
   const days = new Map<string, AgendaItem[]>()
   const add = (date: string, item: AgendaItem) => days.set(date, [...(days.get(date) ?? []), item])
 
   for (const event of calendar.academicEvents) {
-    // An event that began before the month is listed on the month's first day.
     add(event.startDate < calendar.fromDate ? calendar.fromDate : event.startDate, {
       kind: 'event',
       key: `event-${event.eventId}`,
@@ -55,8 +49,6 @@ function agendaDays(calendar: MyCalendarResponse): Day[] {
     })
   }
 
-  // Events first, then deadlines by time. The sort is stable, so events keep the backend's order and a student
-  // deadline stays before a teaching one due at the same moment.
   const compare = (a: AgendaItem, b: AgendaItem) => {
     if (a.kind === 'event' || b.kind === 'event') {
       return (a.kind === 'event' ? 0 : 1) - (b.kind === 'event' ? 0 : 1)
@@ -85,7 +77,6 @@ function EventItem({ event }: { event: AcademicCalendarEventSummary }) {
     <li className={`${itemClasses} ${cancelled ? 'bg-surface-muted' : ''}`}>
       <span className="flex flex-wrap gap-1.5 sm:flex-col sm:items-start">
         <Badge tone="info">{categoryLabel(event.category)}</Badge>
-        {/* Cancelled is said in words, not only by colour or a line through the title. */}
         {cancelled && <Badge tone="neutral">Cancelled</Badge>}
       </span>
       <div className="min-w-0 sm:border-l sm:border-line sm:pl-4">
@@ -95,7 +86,6 @@ function EventItem({ event }: { event: AcademicCalendarEventSummary }) {
         <Separator />
         {scopeText(event)}
       </p>
-      {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
       {event.description && (
         <p className="mt-1 text-sm leading-6 break-words whitespace-pre-line text-ink">{event.description}</p>
       )}
@@ -146,7 +136,6 @@ function FacultyDeadlineItem({ deadline }: { deadline: FacultyAssignmentDeadline
           <span>{marksText(deadline.maxMarks)}</span>
         </p>
       </div>
-      {/* The teaching course page is where assignments are managed; the calendar is not a second editor. */}
       <Link to={`/teaching/${deadline.lmsCourseId}/assignments`} className={`${actionLinkClasses} self-start`}>
         Open teaching course
         <span className="sr-only">
@@ -160,11 +149,9 @@ function FacultyDeadlineItem({ deadline }: { deadline: FacultyAssignmentDeadline
 
 type CalendarAgendaProps = {
   calendar: MyCalendarResponse
-  /** Whether student deadlines need telling apart from teaching ones, for an account that is both. */
   alsoTeaches: boolean
 }
 
-/** The agenda of one month: a heading per day with its events and deadlines, one column on every screen size. */
 export function CalendarAgenda({ calendar, alsoTeaches }: CalendarAgendaProps) {
   const today = todayIsoDate()
   return (

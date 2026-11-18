@@ -35,10 +35,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Raising, reading, and answering tickets. The requester and every author always come from the access token; no route
- * takes an account, requester, or author ID. A ticket the caller may not see answers the same 404 as a missing one.
- */
 @RestController
 @RequestMapping("/api/v1/helpdesk/tickets")
 @Tag(name = "Helpdesk")

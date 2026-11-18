@@ -8,10 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-/** Read-only counts for the area analytics; each is one bounded aggregate query over the area's own records. */
 public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
-
-    // --- Hostel
 
     @Query("select count(bed) from HostelBed bed where bed.active = true and bed.underMaintenance = false")
     long countBedsInService();
@@ -22,15 +19,11 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
     @Query("select count(allocation) from HostelAllocation allocation where allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE")
     long countActiveAllocations();
 
-    // --- Helpdesk
-
     @Query("select cast(ticket.status as string), count(ticket) from HelpdeskTicket ticket group by ticket.status")
     List<Object[]> countTicketsByStatus();
 
     @Query("select ticket.rating from HelpdeskTicket ticket where ticket.rating is not null")
     List<Integer> findRatings();
-
-    // --- Campus engagement
 
     @Query("select count(campusGroup) from CampusGroup campusGroup where campusGroup.active = true")
     long countActiveGroups();
@@ -47,7 +40,6 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
             + "and event.endsAt >= :now")
     long countComingEvents(@Param("now") Instant now);
 
-    /** Registered places and check-ins of published events that have ended. */
     @Query("""
             select count(registration), sum(case when registration.attendedAt is not null then 1 else 0 end)
             from CampusEventRegistration registration
@@ -57,8 +49,6 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
             """)
     List<Object[]> countPastRegistrations(@Param("now") Instant now);
 
-    // --- Placement
-
     @Query("select count(opportunity) from CareerOpportunity opportunity where opportunity.status = com.stacc.backend.career.CareerOpportunity.Status.OPEN")
     long countOpenOpportunities();
 
@@ -67,8 +57,6 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
 
     @Query("select cast(offer.status as string), count(offer) from CareerOffer offer group by offer.status")
     List<Object[]> countOffersByStatus();
-
-    // --- Library
 
     @Query("select count(title) from LibraryTitle title where title.active = true")
     long countActiveTitles();
@@ -81,8 +69,6 @@ public interface AreaAnalyticsQueries extends Repository<HostelBed, Long> {
 
     @Query("select count(hold) from LibraryHold hold where hold.status = com.stacc.backend.library.LibraryHold.Status.ACTIVE")
     long countActiveHolds();
-
-    // --- AI
 
     @Query("select cast(knowledge.status as string), count(knowledge) from AiCourseKnowledgeIndex knowledge"
             + " where knowledge.kind = com.stacc.backend.lms.ai.AiIndexKind.COURSE_CONTENT group by knowledge.status")

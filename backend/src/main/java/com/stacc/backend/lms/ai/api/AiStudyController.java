@@ -23,11 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The student AI study assistant of one LMS course. Each request checks again that the signed-in student may open the
- * course, takes the student from the access token, and saves nothing. Answers come only from the course's published
- * content and cite it.
- */
 @RestController
 @RequestMapping("/api/v1/lms/courses/{lmsCourseId}/ai")
 @Tag(name = "LMS AI study assistant")

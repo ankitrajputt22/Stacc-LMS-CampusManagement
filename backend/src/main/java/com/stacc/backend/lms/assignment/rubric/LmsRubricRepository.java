@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface LmsRubricRepository extends JpaRepository<LmsRubric, Long> {
 
-    /** Every rubric of the course with its criteria, archived ones included, newest first. */
     @Query("""
             select distinct rubric from LmsRubric rubric left join fetch rubric.criteria
             where rubric.lmsCourse.id = :lmsCourseId order by rubric.id desc
@@ -21,31 +20,23 @@ public interface LmsRubricRepository extends JpaRepository<LmsRubric, Long> {
     @Query("select rubric.lmsCourse.id from LmsRubric rubric where rubric.id = :rubricId")
     Optional<Long> findLmsCourseIdById(@Param("rubricId") Long rubricId);
 
-    /**
-     * Locks only the rubric row, before anything else is read. Editing and grading both take this lock first (exclusive
-     * to change, shared to grade), so they always meet at the rubric row and never deadlock over its criteria rows.
-     */
     @Query(value = "select id from lms_rubrics where id = :rubricId for update", nativeQuery = true)
     List<Long> lockRowForUpdate(@Param("rubricId") Long rubricId);
 
     @Query(value = "select id from lms_rubrics where id = :rubricId for share", nativeQuery = true)
     List<Long> lockRowForShare(@Param("rubricId") Long rubricId);
 
-    /** The rubric's criteria as stored now, read with a shared lock after the rubric row, never from a cached copy. */
     @Query(value = "select id from lms_rubric_criteria where lms_rubric_id = :rubricId for share", nativeQuery = true)
     List<Long> findCurrentCriterionIdsForShare(@Param("rubricId") Long rubricId);
 
-    /** The rubric with its criteria, locked for a change. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select distinct rubric from LmsRubric rubric left join fetch rubric.criteria where rubric.id = :rubricId")
     Optional<LmsRubric> findByIdForUpdate(@Param("rubricId") Long rubricId);
 
-    /** The rubric with its criteria, read with a shared lock while grading, so it cannot change meanwhile. */
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("select distinct rubric from LmsRubric rubric left join fetch rubric.criteria where rubric.id = :rubricId")
     Optional<LmsRubric> findByIdForShare(@Param("rubricId") Long rubricId);
 
-    /** Grades that used the rubric, read with a shared lock after the rubric row is locked; empty when it is unused. */
     @Query(value = """
             select score.lms_rubric_assessment_id from lms_rubric_scores score
             join lms_rubric_criteria criterion on criterion.id = score.lms_rubric_criterion_id
@@ -53,7 +44,6 @@ public interface LmsRubricRepository extends JpaRepository<LmsRubric, Long> {
             """, nativeQuery = true)
     List<Long> findUseForShare(@Param("rubricId") Long rubricId);
 
-    /** The course's rubrics already used for grading, which keep their criteria. */
     @Query(value = """
             select distinct criterion.lms_rubric_id from lms_rubric_scores score
             join lms_rubric_criteria criterion on criterion.id = score.lms_rubric_criterion_id

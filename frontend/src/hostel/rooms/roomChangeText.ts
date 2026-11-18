@@ -1,11 +1,9 @@
 import type { RoomChange, RoomChangeSide } from '../../types/hostel'
 
-/** "Main Hostel, room 101, bed A". */
 export function placeText(side: RoomChangeSide): string {
   return `${side.hostel}, room ${side.room}, bed ${side.bed}`
 }
 
-/** Where a room change stands, in words: its own status, the partner's answer, and the warden's decision kept apart. */
 export function roomChangeState(change: RoomChange): string {
   switch (change.status) {
     case 'COMPLETED':

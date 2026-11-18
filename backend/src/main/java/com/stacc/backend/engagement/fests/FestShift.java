@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A volunteer shift of a fest: a role, a time, and how many volunteers it takes. */
 @Entity
 @Table(name = "campus_fest_shifts")
 public class FestShift {
@@ -39,7 +38,6 @@ public class FestShift {
     private int places;
 
     protected FestShift() {
-        // Required by JPA.
     }
 
     public FestShift(CampusFest fest, String roleTitle, Instant startsAt, Instant endsAt, int places) {

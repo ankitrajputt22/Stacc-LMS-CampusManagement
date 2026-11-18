@@ -32,7 +32,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty with the quiz permission read or change quizzes; settings are checked before the service. */
 class LmsQuizControllerTest extends DatabaseFreeApiTest {
 
     private static final long ACCOUNT_ID = 21;

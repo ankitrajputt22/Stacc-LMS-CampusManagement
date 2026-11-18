@@ -15,12 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * Academic master data for admins, under the rules of Academic Admin: departments, programs, sessions, semesters,
- * and catalog courses need ADMIN with ACADEMIC_MASTER_VIEW; course offerings ADMIN with ACADEMIC_OFFERING_VIEW. The
- * role alone is no pass. Records of every status are found, as the admin lists show them. No account, student, or
- * faculty record is ever searched.
- */
 @Component
 public class AcademicSearchProvider implements SearchProvider {
 

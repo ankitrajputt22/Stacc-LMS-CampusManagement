@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProgramRepository extends JpaRepository<Program, Long> {
 
-    /** The program, locked, so changes to its degree requirements take turns. */
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select p from Program p where p.id = :id")
     java.util.Optional<Program> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
@@ -19,7 +18,6 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
 
     Optional<Program> findByDepartmentIdAndCode(Long departmentId, String code);
 
-    /** Every program with its department, in one query, by department code and then program code. */
     @Query("""
             select program
             from Program program
@@ -31,14 +29,12 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
     @Query("select program from Program program join fetch program.department where program.id = :programId")
     Optional<Program> findWithDepartmentById(@Param("programId") Long programId);
 
-    // These compare as the unique constraints do, in the columns' collation.
     boolean existsByDepartmentIdAndCode(Long departmentId, String code);
 
     boolean existsByDepartmentIdAndName(Long departmentId, String name);
 
     boolean existsByDepartmentIdAndNameAndIdNot(Long departmentId, String name, Long id);
 
-    /** Search: programs, whatever their status, whose code or name contains the text, with their department. */
     @Query(value = """
             select program
             from Program program

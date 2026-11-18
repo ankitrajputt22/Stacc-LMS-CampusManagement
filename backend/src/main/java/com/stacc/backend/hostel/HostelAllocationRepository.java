@@ -12,11 +12,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * Allocations, and the occupancy derived from them: a bed is occupied exactly when it has an ACTIVE allocation. These
- * existence checks are used under the allocation locks, so at most one ACTIVE allocation exists per bed, per
- * application, and per student.
- */
 public interface HostelAllocationRepository extends JpaRepository<HostelAllocation, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -56,7 +51,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     boolean existsActiveInHostel(@Param("hostelId") Long hostelId);
 
-    /** Whether any allocation, active or vacated, ever used a bed of the room: then its number is fixed. */
     @Query("select count(allocation) > 0 from HostelAllocation allocation where allocation.bed.room.id = :roomId")
     boolean existsAnyInRoom(@Param("roomId") Long roomId);
 
@@ -70,18 +64,15 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     long countActiveInHostel(@Param("hostelId") Long hostelId);
 
-    /** The beds of a room that are occupied now. */
     @Query("""
             select allocation.bed.id from HostelAllocation allocation
             where allocation.bed.room.id = :roomId and allocation.status = com.stacc.backend.hostel.HostelAllocationStatus.ACTIVE
             """)
     List<Long> findOccupiedBedIdsInRoom(@Param("roomId") Long roomId);
 
-    /** The beds of a room that were ever allocated: their numbers are fixed. */
     @Query("select distinct allocation.bed.id from HostelAllocation allocation where allocation.bed.room.id = :roomId")
     List<Long> findAllocatedBedIdsInRoom(@Param("roomId") Long roomId);
 
-    /** How many beds of each room of a hostel are occupied now. */
     @Query("""
             select allocation.bed.room.id as roomId, count(allocation) as total from HostelAllocation allocation
             where allocation.bed.room.hostel.id = :hostelId
@@ -90,11 +81,9 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     List<HostelBedRepository.RoomCount> countOccupiedByRoom(@Param("hostelId") Long hostelId);
 
-    /** The rooms of a hostel that were ever allocated: their numbers are fixed. */
     @Query("select distinct allocation.bed.room.id from HostelAllocation allocation where allocation.bed.room.hostel.id = :hostelId")
     List<Long> findAllocatedRoomIdsInHostel(@Param("hostelId") Long hostelId);
 
-    /** The allocations of these applications, oldest first, with their beds, rooms, hostels, and actors. */
     @Query("""
             select allocation
             from HostelAllocation allocation
@@ -124,7 +113,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     Optional<HostelAllocation> findWithContextById(@Param("allocationId") Long allocationId);
 
-    /** One page of every allocation, newest first, narrowed by each filter that is given. */
     @Query(value = """
             select allocation
             from HostelAllocation allocation
@@ -155,7 +143,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             @Param("academicSessionId") Long academicSessionId, @Param("studentLoginId") String studentLoginId,
             Pageable page);
 
-    /** Reports: how many allocations are in each status, in one grouped query. */
     @Query("select allocation.status as status, count(allocation) as total from HostelAllocation allocation group by allocation.status")
     List<StatusCount> countByStatus();
 
@@ -165,7 +152,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
         Long getTotal();
     }
 
-    /** The student's current allocation, with its bed, room, and hostel, by the student's account. */
     @Query("""
             select allocation from HostelAllocation allocation
             join fetch allocation.bed bed join fetch bed.room room join fetch room.hostel
@@ -175,7 +161,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     Optional<HostelAllocation> findActiveForStudentAccount(@Param("accountId") Long accountId);
 
-    /** Per hostel: occupied beds now. */
     interface HostelCount {
         Long getHostelId();
         long getCount();
@@ -187,7 +172,6 @@ public interface HostelAllocationRepository extends JpaRepository<HostelAllocati
             """)
     List<HostelCount> countOccupiedByHostel();
 
-    /** The current allocations of a hostel, with bed, room, and the student's account. */
     @Query("""
             select allocation from HostelAllocation allocation
             join fetch allocation.bed bed join fetch bed.room room

@@ -17,10 +17,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     Optional<CourseEnrollment> findBySemesterEnrollmentIdAndCourseOfferingId(
             Long semesterEnrollmentId, Long courseOfferingId);
 
-    /** The enrollments of one course offering in one status, such as everyone currently enrolled. */
     List<CourseEnrollment> findAllByCourseOfferingIdAndStatus(Long courseOfferingId, CourseEnrollmentStatus status);
 
-    /** Every enrollment of one course offering, whatever its status, with the student's account, in student ID order. */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -32,7 +30,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllWithStudentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
-    /** A semester enrollment's course enrollments with each offering and course, by course code. */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -54,14 +51,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
     boolean existsBySemesterEnrollmentIdAndStatus(Long semesterEnrollmentId, CourseEnrollmentStatus status);
 
-    /** How many course enrollments have this status, such as every one still {@code ENROLLED}. */
     long countByStatus(CourseEnrollmentStatus status);
 
-    /**
-     * The course enrollments of one offering whose student currently takes part in it: the course enrollment and its
-     * semester enrollment are both {@code ENROLLED} and the student profile is {@code ACTIVE}. The semester enrollment
-     * and profile are loaded with each, in course-enrollment order.
-     */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -75,7 +66,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllCurrentByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
-    /** The same current course enrollments with the student's account loaded, by the student's login ID. */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -90,19 +80,10 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllCurrentWithAccountByCourseOfferingId(@Param("courseOfferingId") Long courseOfferingId);
 
-    /**
-     * How many students are enrolled in one offering now, read with a shared lock. Called while the offering row is
-     * locked, so two registrations for the last place cannot both see it free.
-     */
     @Query(value = "select count(*) from course_enrollments where course_offering_id = :courseOfferingId "
             + "and status = 'ENROLLED' for share", nativeQuery = true)
     long countEnrolledInOfferingForShare(@Param("courseOfferingId") Long courseOfferingId);
 
-    /**
-     * Admin enrollment monitor: one page of course enrollments matching every filter that is not null, with the
-     * student, course, semester, program, session, and the student's section loaded. The pattern is lower-case and
-     * escaped with {@code !}; it matches the login ID, roll number, course code, or the person's full or preferred name.
-     */
     @Query(value = """
             select enrollment
             from CourseEnrollment enrollment
@@ -158,10 +139,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                                    or lower(person.preferredName) like :pattern escape '!')))
             """;
 
-    /**
-     * The course enrollments of the student behind one account, whatever their status, with the semester enrollment,
-     * student profile, account, and course offering loaded. Who may use what is decided by the caller.
-     */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -173,7 +150,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<CourseEnrollment> findAllWithStudentByUserAccountId(@Param("userAccountId") Long userAccountId);
 
-    /** The same, for one course offering only. */
     @Query("""
             select courseEnrollment
             from CourseEnrollment courseEnrollment
@@ -186,12 +162,10 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     List<CourseEnrollment> findAllWithStudentByUserAccountIdAndCourseOfferingId(
             @Param("userAccountId") Long userAccountId, @Param("courseOfferingId") Long courseOfferingId);
 
-    /** One enrollment, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select courseEnrollment from CourseEnrollment courseEnrollment where courseEnrollment.id = :courseEnrollmentId")
     Optional<CourseEnrollment> findByIdForUpdate(@Param("courseEnrollmentId") Long courseEnrollmentId);
 
-    /** Reports: how many enrollments of each of these course offerings are in each status, in one grouped query. */
     @Query("""
             select courseEnrollment.courseOffering.id as courseOfferingId, courseEnrollment.status as status,
                    count(courseEnrollment) as total
@@ -201,10 +175,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<OfferingStatusCount> countByOfferingAndStatus(@Param("courseOfferingIds") Collection<Long> courseOfferingIds);
 
-    /**
-     * Reports: how many course enrollments are in each status, for the offerings of the semesters that match every
-     * filter that is not null.
-     */
     @Query("""
             select courseEnrollment.status as status, count(courseEnrollment) as total
             from CourseEnrollment courseEnrollment
@@ -232,10 +202,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
         Long getTotal();
     }
 
-    /**
-     * Whether a semester enrollment is still enrolled in a course offering of some section other than this one (any
-     * section when it is null), which would no longer match the student's section after a move.
-     */
     @Query("""
             select count(enrollment) > 0
             from CourseEnrollment enrollment
@@ -248,7 +214,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     boolean existsEnrolledInOtherSectionOffering(@Param("semesterEnrollmentId") Long semesterEnrollmentId,
             @Param("sectionId") Long sectionId);
 
-    /** The course enrollments of these semester enrollments with their offering and course, by course code. */
     @Query("""
             select enrollment
             from CourseEnrollment enrollment

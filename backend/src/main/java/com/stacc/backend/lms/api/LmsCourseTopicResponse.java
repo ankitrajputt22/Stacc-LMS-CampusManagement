@@ -7,7 +7,6 @@ import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One published topic, as a student sees it. */
 public record LmsCourseTopicResponse(
         @Schema(example = "31")
         Long id,
@@ -36,7 +35,6 @@ public record LmsCourseTopicResponse(
                 topic.isRequired(), completed);
     }
 
-    /** The page in a locked module: its title and flags only, never its text or files. */
     LmsCourseTopicResponse withoutContent() {
         return new LmsCourseTopicResponse(id, title, null, List.of(), contentFormat, required, completed);
     }

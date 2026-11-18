@@ -14,7 +14,6 @@ import com.stacc.backend.lms.question.QuestionStatus;
 import com.stacc.backend.lms.question.QuestionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One question of the bank with its answers. Only faculty who teach the course receive it. */
 public record LmsQuestionResponse(
         Long id,
         QuestionType type,
@@ -47,7 +46,6 @@ public record LmsQuestionResponse(
         @Schema(description = "For an AI draft, its quality checks when it was drafted (v0.14.2); otherwise null.")
         AiChecks aiChecks) {
 
-    /** Flags and suggestions for the reviewer; they decide nothing. */
     public record AiChecks(
             @Schema(description = "A bank question this one may duplicate, or null.") Long duplicateOfQuestionId,
             @Schema(description = "The possible duplicate is in a final exam paper.") boolean inPreviousPaper,
@@ -59,7 +57,6 @@ public record LmsQuestionResponse(
     public record Option(String text, boolean correct) {
     }
 
-    /** A course source an AI draft was drafted from, as it was then. */
     public record Source(String sourceType, long sourceId, String title, String fileName, Integer pageNumber,
             Integer slideNumber, Long pageId) {
     }

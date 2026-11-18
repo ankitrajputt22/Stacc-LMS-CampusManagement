@@ -1,6 +1,5 @@
 import type { LmsRubric } from '../types/lms'
 
-/** A rubric's criteria with their maximum points and levels, read-only. Plain text throughout. */
 export function RubricView({ rubric }: { rubric: Pick<LmsRubric, 'title' | 'description' | 'totalPoints' | 'criteria'> }) {
   return (
     <div className="space-y-3">

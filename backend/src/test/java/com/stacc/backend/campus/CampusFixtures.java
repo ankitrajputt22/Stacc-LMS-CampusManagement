@@ -16,7 +16,6 @@ import com.stacc.backend.campus.services.CampusServiceRequest;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up accounts, services, requests, approvals, and notices for the campus tests. */
 public final class CampusFixtures {
 
     public static final Instant NOW = Instant.parse("2026-10-26T09:30:00.123456789Z");
@@ -42,13 +41,11 @@ public final class CampusFixtures {
                 workflowCode != null, workflowCode);
     }
 
-    /** A service; it needs approval with the given workflow, or none when the code is null. */
     public static CampusServiceDefinition service(long id, String code, boolean student, boolean faculty,
             String workflowCode) {
         return withId(new CampusServiceDefinition(code, settings(student, faculty, workflowCode)), id);
     }
 
-    /** A pending approval request of a one-step ADMIN workflow, as the CAMPUS_SERVICE_REQUEST workflow is set up. */
     public static ApprovalRequest approval(long id, UserAccount requester) {
         ApprovalWorkflowDefinition workflow = withId(new ApprovalWorkflowDefinition("CAMPUS_SERVICE_REQUEST",
                 "Campus Service Request Approval", null,

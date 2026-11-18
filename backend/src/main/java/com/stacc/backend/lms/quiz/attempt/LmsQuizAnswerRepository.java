@@ -18,10 +18,6 @@ public interface LmsQuizAnswerRepository extends JpaRepository<LmsQuizAnswer, Lo
 
     Optional<LmsQuizAnswer> findByAttemptIdAndQuizQuestionId(Long attemptId, Long quizQuestionId);
 
-    /**
-     * The answer, read with a locking read. Called while the attempt row is locked: a plain read could still see the
-     * snapshot from before an answer another request just saved.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select answer from LmsQuizAnswer answer where answer.attempt.id = :attemptId and answer.quizQuestion.id = :quizQuestionId")
     Optional<LmsQuizAnswer> findForUpdate(@Param("attemptId") Long attemptId, @Param("quizQuestionId") Long quizQuestionId);

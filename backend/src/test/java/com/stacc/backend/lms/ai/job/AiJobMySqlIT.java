@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** One live refresh per course, and two workers claiming at once never take the same job. Course jobs of their own. */
 class AiJobMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

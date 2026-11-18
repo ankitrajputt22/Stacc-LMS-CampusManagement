@@ -26,13 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 
-/**
- * The faculty member behind ACCOUNT_ID teaches the course with ID 7 and no other. Every change is
- * checked against the course found from stored data, never against anything the request says.
- */
 class LmsContentManagementServiceTest {
 
-    // Made-up IDs used only by these tests.
     private static final Long ACCOUNT_ID = 21L;
     private static final Long OTHER_ACCOUNT_ID = 22L;
     private static final Long COURSE_ID = 7L;
@@ -91,8 +86,6 @@ class LmsContentManagementServiceTest {
     private static List<Integer> positionsOf(LmsModule... list) {
         return Arrays.stream(list).map(LmsModule::getPosition).toList();
     }
-
-    // Modules
 
     @Test
     void newModuleIsADraftAddedAfterTheCurrentModules() {
@@ -218,8 +211,6 @@ class LmsContentManagementServiceTest {
 
         assertEquals(List.of(1, 2, 3), positionsOf(first, second, third));
     }
-
-    // Topics
 
     @Test
     void newTopicIsADraftAddedAfterTheModulesCurrentTopics() {

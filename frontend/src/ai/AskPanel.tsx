@@ -14,7 +14,6 @@ import { fieldErrorClasses, hintClasses, labelClasses, panelClasses } from './ai
 import { useAiAction } from './useAiAction'
 
 const MAX_QUESTION = 1000
-/** Earlier turns sent with a follow-up; the backend takes at most three. */
 const MAX_HISTORY = 3
 
 export type AskModule = { id: number; title: string }
@@ -25,21 +24,13 @@ const MODES: { value: AiAskMode; label: string; hint: string }[] = [
   { value: 'NOTES_ONLY', label: 'My notes only', hint: 'Only your own notes in this course.' },
 ]
 
-/** One question and its answer on this page. Kept only while the page is open (decision 6). */
 type Turn = { question: string; answer: string; citations: AiCitation[]; style: AiAnswerStyle; saved: boolean }
 
 const STYLE_LABEL: Record<AiAnswerStyle, string> = { NORMAL: '', SIMPLER: 'Simpler', EXAMPLE: 'With an example' }
 
-/**
- * Ask My Course (v0.13.9) with follow-ups (v0.15.1): one question at a time, sent only on a button, searching the
- * course, the course and the student's notes, or their notes only, optionally within one module. Answers stay on this
- * page only: follow-ups, Explain simpler, and Give an example send up to three earlier turns, and nothing is kept once
- * the page is left unless the student presses Save answer.
- */
 export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
   lmsCourseId: number
   modules?: AskModule[]
-  /** The course's published assignments still due; help with one is hints only (v0.15.4). */
   assignments?: { id: number; title: string }[]
 }) {
   const id = useId()
@@ -90,7 +81,6 @@ export function AskPanel({ lmsCourseId, modules = [], assignments = [] }: {
       return
     }
     setError(null)
-    // A new question starts a new set of turns.
     await ask(trimmed, [], 'NORMAL')
   }
 

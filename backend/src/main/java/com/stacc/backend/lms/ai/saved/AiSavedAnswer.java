@@ -18,10 +18,6 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/**
- * An AI answer a student chose to save (v0.15.1, decision 6), with its question and sources. Only that student reads
- * it, and deleting it removes it for good. Nothing else of an AI conversation is ever stored.
- */
 @Entity
 @Table(name = "ai_saved_answers")
 public class AiSavedAnswer {
@@ -55,7 +51,6 @@ public class AiSavedAnswer {
     private Instant createdAt;
 
     protected AiSavedAnswer() {
-        // Required by JPA.
     }
 
     public AiSavedAnswer(Long lmsCourseId, Long userAccountId, String question, String answer, List<AiSavedSource> sources) {

@@ -15,11 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * One bank question in a quiz, at a position, with the marks it carries in this quiz (the bank's marks unless faculty
- * chose others). The same bank question can be used by several quizzes, once each. The question itself stays in the
- * bank: nothing is copied.
- */
 @Entity
 @Table(name = "lms_quiz_questions")
 public class LmsQuizQuestion {
@@ -30,7 +25,6 @@ public class LmsQuizQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: neither the quiz nor the bank question is created or deleted through this link.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_quiz_id", nullable = false, updatable = false)
     private LmsQuiz quiz;
@@ -46,7 +40,6 @@ public class LmsQuizQuestion {
     private BigDecimal marks;
 
     protected LmsQuizQuestion() {
-        // Required by JPA.
     }
 
     public LmsQuizQuestion(LmsQuiz quiz, LmsQuestion question, int position, BigDecimal marks) {
@@ -60,7 +53,6 @@ public class LmsQuizQuestion {
         this.position = Require.range(position, "position", 1, LmsQuiz.MAX_QUESTIONS);
     }
 
-    /** Marks greater than zero, below 1,000,000, with at most two decimal places. */
     public void changeMarks(BigDecimal marks) {
         Require.notNull(marks, "Marks");
         if (marks.signum() <= 0 || marks.compareTo(MAX_MARKS) > 0 || marks.stripTrailingZeros().scale() > 2) {

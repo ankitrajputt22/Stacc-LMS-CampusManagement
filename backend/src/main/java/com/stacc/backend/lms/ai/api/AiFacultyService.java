@@ -32,11 +32,6 @@ import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-/**
- * Faculty AI tools for a course the faculty member teaches, checked with {@link LmsFacultyAccessService} on every
- * request: the course's AI knowledge status, refreshing it, and generating an assessment draft. A draft is only shown
- * to the teacher: nothing here creates, publishes, or grades an assignment, and nothing is saved.
- */
 @Service
 public class AiFacultyService {
 
@@ -89,7 +84,6 @@ public class AiFacultyService {
                 row.getStatus() == AiKnowledgeIndexStatus.FAILED ? row.getLastError() : null, jobs.latestRefresh(lmsCourseId).orElse(null));
     }
 
-    /** Queues a background refresh of the course's AI knowledge and answers at once. */
     public AiJobService.JobView queueRefresh(Long accountId, Long lmsCourseId) {
         requireAccess(accountId, lmsCourseId);
         return jobs.queueRefresh(accountId, lmsCourseId);
@@ -107,7 +101,6 @@ public class AiFacultyService {
                 () -> draft(accountId, lmsCourseId, request), AiAssessmentDraftResponse::insufficientContext);
     }
 
-    /** Turns the course's student AI Study Assistant on or off (v0.13.7) and answers the new state. */
     public boolean changeStudentAi(Long accountId, Long lmsCourseId, boolean enabled) {
         return controls.change(accountId, lmsCourseId, enabled);
     }
@@ -123,7 +116,6 @@ public class AiFacultyService {
             throw new ApiException(HttpStatus.CONFLICT, AiErrors.TEACHING_NOT_READY);
         }
         String note = AiResults.text(request.additionalInstruction(), 500);
-        // Teacher-only documents join only when their index covers exactly the current ones (v0.13.5).
         AiTeacherKnowledge teacher = teacherDocuments.knowledge(lmsCourseId);
         boolean withTeacher = !teacher.isEmpty() && teacherIndexAnswers(lmsCourseId, teacher);
         List<IndexRef> additional = withTeacher
@@ -146,7 +138,6 @@ public class AiFacultyService {
                 AiResults.text(result.instructionsSuggestion(), AiResults.INSTRUCTIONS_MAX), questions, false);
     }
 
-    /** Only well-formed, cited questions of the requested kind survive, at most as many as were asked for. */
     private static List<AiAssessmentQuestionResponse> questions(AssessmentDraftResult result, AiCourseKnowledge knowledge,
             AiTeacherKnowledge teacher, AiAssessmentDraftRequest request) {
         List<AiAssessmentQuestionResponse> accepted = new ArrayList<>();

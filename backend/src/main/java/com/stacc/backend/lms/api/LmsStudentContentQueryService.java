@@ -21,7 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Read-only answers about what a student sees inside an LMS course. */
 @Service
 public class LmsStudentContentQueryService {
 
@@ -46,15 +45,6 @@ public class LmsStudentContentQueryService {
         this.paths = paths;
     }
 
-    /**
-     * The published modules of a course the student may use, each with its published topics, in course
-     * order. Access is decided again on every call by {@link LmsStudentAccessService}. A course the student
-     * may not use answers the same 404 as a course that does not exist. Drafts and archived content never
-     * appear, a published topic in an unpublished module stays hidden, and a study material appears only
-     * when it, its topic, and its module are all published.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsCourseContentResponse getPublishedContent(Long userAccountId, Long lmsCourseId) {
         CourseEnrollment enrollment = accessService.findAccessGrantingEnrollment(userAccountId, lmsCourseId)
@@ -91,7 +81,6 @@ public class LmsStudentContentQueryService {
                 .map(module -> {
                     LmsLearningPath.ModuleState state = path.module(module.getId());
                     List<LmsCourseTopicResponse> pages = topicsByModule.getOrDefault(module.getId(), List.of());
-                    // A locked module's pages keep their titles but send no text or files.
                     return new LmsCourseModuleResponse(module.getId(), module.getTitle(), module.getDescription(),
                             state.locked() ? pages.stream().map(LmsCourseTopicResponse::withoutContent).toList() : pages,
                             module.isRequiresPrevious(), state.locked(), state.completed(), state.waitingFor());
@@ -99,12 +88,6 @@ public class LmsStudentContentQueryService {
                 .toList());
     }
 
-    /**
-     * The student's own progress in the course: required pages completed, and the next required page to do in a module
-     * that is open to them. Worked out from exactly what {@link #getPublishedContent} shows.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsCourseProgressResponse getProgress(Long userAccountId, Long lmsCourseId) {
         int required = 0;
@@ -126,13 +109,6 @@ public class LmsStudentContentQueryService {
         return new LmsCourseProgressResponse(required, completed, next);
     }
 
-    /**
-     * One published page (a topic) of a course the student may use, with the published pages before and after it in
-     * course order. It is found in exactly what {@link #getPublishedContent} shows, so the same rules decide: a page
-     * that is missing, a draft, archived, in an unpublished module, or in another course answers the same 404.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public LmsCoursePageResponse getPublishedPage(Long userAccountId, Long lmsCourseId, Long pageId) {
         List<LmsCourseModuleResponse> content = getPublishedContent(userAccountId, lmsCourseId).modules();
@@ -158,17 +134,10 @@ public class LmsStudentContentQueryService {
         throw new ApiException(HttpStatus.NOT_FOUND, PAGE_UNAVAILABLE_MESSAGE);
     }
 
-    /**
-     * Every published file of a course the student may use, in course order (module, page, then file), with the page
-     * and module it is on. It is taken from exactly what {@link #getPublishedContent} shows, so the same rules decide.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public List<LmsCourseFileResponse> getPublishedFiles(Long userAccountId, Long lmsCourseId) {
         List<LmsCourseFileResponse> files = new ArrayList<>();
         for (LmsCourseModuleResponse module : getPublishedContent(userAccountId, lmsCourseId).modules()) {
-            // A locked module's pages carry no files, so its files stay out of the list too.
             for (LmsCourseTopicResponse page : module.topics()) {
                 for (LmsCourseMaterialResponse file : page.materials()) {
                     files.add(LmsCourseFileResponse.of(file, page, module));

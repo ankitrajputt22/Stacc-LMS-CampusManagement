@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A tournament run by the campus office: a draft, then published, then archived; never deleted. */
 @Entity
 @Table(name = "campus_tournaments")
 public class CampusTournament {
@@ -63,7 +62,6 @@ public class CampusTournament {
         return stripped;
     }
 
-    /** Publishes a draft once; publishing again changes nothing. */
     public void publish(Instant at) {
         if (status == Status.ARCHIVED) {
             throw new IllegalStateException("This tournament is archived.");

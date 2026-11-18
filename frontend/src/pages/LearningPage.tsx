@@ -36,11 +36,6 @@ function PageState({ lmsCourseId, children }: { lmsCourseId: number | null; chil
   )
 }
 
-/**
- * /courses/:lmsCourseId/pages/:pageId: one published page of a course, with its study materials and the pages before
- * and after it. The backend checks the student's access to the course and the page on every request; a page that is
- * missing, unpublished, or in another course shows the same "Page unavailable".
- */
 export function LearningPage() {
   const { account } = useAuth()
   const params = useParams()

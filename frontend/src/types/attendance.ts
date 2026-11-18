@@ -1,11 +1,7 @@
-// Attendance is official academic data of a course offering. It never involves an LMS course.
-
 export type AttendanceSessionStatus = 'OPEN' | 'FINALIZED'
 
-/** UNMARKED means not marked yet; it never means absent. */
 export type AttendanceStatus = 'UNMARKED' | 'PRESENT' | 'ABSENT'
 
-/** A course offering the faculty member teaches, from GET /api/v1/attendance/faculty/my-courses. */
 export type AttendanceCourseOffering = {
   courseOfferingId: number
   courseCode: string
@@ -16,19 +12,14 @@ export type AttendanceCourseOffering = {
   academicSessionCode: string
 }
 
-/** One session in a course offering's list. */
 export type AttendanceSession = {
   id: number
-  /** When the class was held, as an ISO 8601 time in UTC. */
   heldAt: string
-  /** Plain text, or null. */
   topic: string | null
   status: AttendanceSessionStatus
-  /** When it was first finalized, or null while open. */
   finalizedAt: string | null
 }
 
-/** One student on a session's roster. The student is shown by college ID only. */
 export type AttendanceRosterRecord = {
   attendanceRecordId: number
   studentLoginId: string
@@ -36,7 +27,6 @@ export type AttendanceRosterRecord = {
   markedAt: string | null
 }
 
-/** One session with its whole roster, in student ID order. */
 export type AttendanceSessionDetail = {
   sessionId: number
   courseOfferingId: number
@@ -49,30 +39,24 @@ export type AttendanceSessionDetail = {
   records: AttendanceRosterRecord[]
 }
 
-/** When a class was held and its topic, for creating or changing a session. */
 export type AttendanceSessionInput = {
-  /** An absolute moment, such as 2026-10-19T04:30:00.000Z. */
   heldAt: string
   topic: string | null
 }
 
-/** One status to save, for the record with this ID. */
 export type AttendanceRecordChange = {
   attendanceRecordId: number
   status: AttendanceStatus
 }
 
-/** One finalized session in a student's own history. */
 export type StudentAttendanceSession = {
   attendanceSessionId: number
   heldAt: string
   topic: string | null
   status: 'PRESENT' | 'ABSENT'
-  /** The student's own record, for asking to correct an absence. */
   attendanceRecordId: number
 }
 
-/** A student's finalized attendance in one course offering, from GET /api/v1/attendance/student/me. */
 export type StudentCourseAttendance = {
   courseOfferingId: number
   courseCode: string
@@ -83,15 +67,11 @@ export type StudentCourseAttendance = {
   totalSessions: number
   presentCount: number
   absentCount: number
-  /** Calculated by the backend to two decimal places, such as 83.33. Null only if there were no sessions. */
   attendancePercentage: number | null
-  /** Latest class first. */
   sessions: StudentAttendanceSession[]
-  /** Below the college's minimum of 75%, decided by the backend. */
   lowAttendance: boolean
 }
 
 export type StudentAttendance = {
-  /** Only course offerings with at least one finalized session. */
   courses: StudentCourseAttendance[]
 }

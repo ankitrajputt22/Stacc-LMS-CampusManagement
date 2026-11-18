@@ -40,7 +40,6 @@ import { localValue, moment, registrationInOrder } from './registrationPeriod'
 import { statusAction } from './statusAction'
 import { lifecycleOptions } from './masterStatus'
 
-// The limits the backend enforces for each master, so the forms can say so before sending.
 const UPPERCASE = 'Stored in uppercase. It cannot be changed later.'
 
 function departmentOptions(departments: AdminDepartment[], activeOnly = false): FieldOption[] {
@@ -52,7 +51,6 @@ function departmentOptions(departments: AdminDepartment[], activeOnly = false): 
     }))
 }
 
-/** Department filter choices, by code. */
 function departmentFilter<T extends { departmentId: number }>(departments: AdminDepartment[] | null) {
   return {
     label: 'Department',
@@ -379,7 +377,6 @@ const registrationFields: FieldSpec[] = [
     hint: 'The last moment a student may drop a course. Without it, students cannot drop.' },
 ]
 
-/** "1 Jul 2026, 9:00 am – 15 Jul 2026, 5:00 pm" with the drop deadline under it, or Not set. */
 function RegistrationPeriod({ semester }: { semester: AdminSemester }) {
   if (semester.registrationOpensAt === null || semester.registrationClosesAt === null) {
     return <span className="text-ink-muted">Not set</span>

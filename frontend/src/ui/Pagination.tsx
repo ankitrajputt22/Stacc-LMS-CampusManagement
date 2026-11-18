@@ -1,19 +1,13 @@
 import { Button } from './Button'
 
 type PaginationProps = {
-  /** The page shown, from 1. */
   page: number
   pageSize: number
   total: number
   onPage: (page: number) => void
-  /** What is counted, such as "courses". */
   noun: string
 }
 
-/**
- * "Showing 21–40 of 75 courses" with Previous and Next. Shown only when there is more than one page. The count is
- * announced when it changes, so moving between pages is heard as well as seen.
- */
 export function Pagination({ page, pageSize, total, onPage, noun }: PaginationProps) {
   const pages = Math.max(1, Math.ceil(total / pageSize))
   if (pages <= 1) {

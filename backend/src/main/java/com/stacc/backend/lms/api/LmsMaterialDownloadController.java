@@ -39,8 +39,6 @@ public class LmsMaterialDownloadController {
         this.materialService = materialService;
     }
 
-    // The rule lets in a student or a faculty account that may view LMS courses. Whether this caller may
-    // have this file is decided by the service, through whichever of the two rules the token allows.
     @GetMapping("/materials/{materialId}/download")
     @PreAuthorize("(hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW'))"
             + " or (hasRole('FACULTY') and hasAuthority('FACULTY_COURSE_VIEW'))")
@@ -70,7 +68,6 @@ public class LmsMaterialDownloadController {
         Long userAccountId = AuthenticatedAccount.idFrom((Jwt) authentication.getPrincipal());
 
         LmsStudyMaterialService.Download download = materialService.openForDownload(userAccountId, reader, materialId);
-        // Always an attachment, never shown inline, so an uploaded file cannot act as a page of this site.
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(download.contentType()))
                 .contentLength(download.sizeBytes())

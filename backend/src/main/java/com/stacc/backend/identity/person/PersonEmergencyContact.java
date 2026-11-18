@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** Someone to call in an emergency, kept by the person on their own profile (at most three). */
 @Entity
 @Table(name = "person_emergency_contacts")
 public class PersonEmergencyContact {

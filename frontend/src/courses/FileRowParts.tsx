@@ -5,7 +5,6 @@ import type { useMaterialDownload } from './useMaterialDownload'
 
 type Downloads = ReturnType<typeof useMaterialDownload>
 
-/** A file's title with its name, type, and size under it, for a Files list. */
 export function FileTitle({ file }: { file: { title: string; originalFileName: string; sizeBytes: number } }) {
   const type = fileTypeLabel(file.originalFileName)
   return (
@@ -23,7 +22,6 @@ export function UploadedAt({ at }: { at: string | null }) {
   return at ? <time dateTime={at}>{formatDateTime(at)}</time> : <span className="text-ink-muted">—</span>
 }
 
-/** Download through the API, with its own failure message under it. */
 export function DownloadButton({ file, downloads }: { file: { id: number; title: string; originalFileName: string }; downloads: Downloads }) {
   const busy = downloads.downloadingId === file.id
   const failed = downloads.failure?.fileId === file.id ? downloads.failure.message : null

@@ -48,12 +48,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Local demo data for the v0.8 to v0.12 areas, after {@link LocalTestDataSeeder}: staff accounts (stf2011, stf2012,
- * stf2013, stf2014, stf2015) with the same test password, the Main Hostel's warden, the maintenance team,
- * a club and a sports group with officers, two facilities, a college event, and a placement opportunity. Like the main
- * seeder it only finds or creates, through the feature services, and never changes or deletes what exists.
- */
 @Component
 @Profile(LocalTestDataSeeder.PROFILE)
 @Order(10)

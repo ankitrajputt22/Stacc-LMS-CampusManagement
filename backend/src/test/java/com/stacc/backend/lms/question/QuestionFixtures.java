@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.stacc.backend.lms.content.LmsTextFormat;
 
-/** Question contents for tests. */
 public final class QuestionFixtures {
 
     private QuestionFixtures() {

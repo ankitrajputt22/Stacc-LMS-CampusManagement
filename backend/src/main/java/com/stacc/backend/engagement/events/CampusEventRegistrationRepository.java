@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface CampusEventRegistrationRepository extends JpaRepository<CampusEventRegistration, Long> {
 
-    /** The event's current places and waitlist in order, read with a lock after locking the event row. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from CampusEventRegistration r where r.event.id = :eventId and r.status in "
             + "(com.stacc.backend.engagement.events.CampusEventRegistration.Status.REGISTERED, "
@@ -32,7 +31,6 @@ public interface CampusEventRegistrationRepository extends JpaRepository<CampusE
     @Query("select r from CampusEventRegistration r join fetch r.account join fetch r.event where r.id = :registrationId")
     Optional<CampusEventRegistration> findByIdForUpdate(@Param("registrationId") Long registrationId);
 
-    /** Registrations the account attended, with their events, newest first. */
     @Query("select r from CampusEventRegistration r join fetch r.event where r.account.id = :accountId and r.attendedAt is not null order by r.attendedAt desc")
     List<CampusEventRegistration> findAttendedByAccount(@Param("accountId") Long accountId);
 }

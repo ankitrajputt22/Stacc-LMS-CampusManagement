@@ -2,7 +2,6 @@ package com.stacc.backend.lms.ai.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The draft quiz built (v0.14.3). It is an ordinary draft quiz; publishing still needs every question reviewed. */
 public record AiQuizDraftResponse(
         long quizId,
         @Schema(description = "Reviewed bank questions used.") int fromBank,

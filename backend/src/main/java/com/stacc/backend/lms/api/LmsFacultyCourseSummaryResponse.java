@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** What a faculty member needs to recognise one of the LMS courses they teach. Nothing else is exposed. */
 public record LmsFacultyCourseSummaryResponse(
         @Schema(description = "The ID of the LMS course. It identifies the learning space.", example = "42")
         Long lmsCourseId,

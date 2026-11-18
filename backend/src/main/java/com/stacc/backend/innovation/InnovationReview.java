@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** One reviewer's score (1 to 5) and comment on an idea, replaced by that reviewer while the idea is open. */
 @Entity
 @Table(name = "innovation_reviews")
 public class InnovationReview {

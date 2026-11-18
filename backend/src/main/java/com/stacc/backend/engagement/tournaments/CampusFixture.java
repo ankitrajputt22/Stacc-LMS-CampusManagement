@@ -15,10 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A match in a tournament between two sides, each one of our teams or an external opponent named in text. A played
- * fixture keeps text scores and a result, which may be corrected; a cancelled one stays listed. Never deleted.
- */
 @Entity
 @Table(name = "campus_fixtures")
 public class CampusFixture {
@@ -78,7 +74,6 @@ public class CampusFixture {
     protected CampusFixture() {
     }
 
-    /** Each side is one of our teams or an external opponent's name, and the two sides differ. */
     public CampusFixture(CampusTournament tournament, CampusTeam homeTeam, String homeName, CampusTeam awayTeam, String awayName,
             Instant startsAt, String venue) {
         tournament.requireOpen();
@@ -98,7 +93,6 @@ public class CampusFixture {
         this.venue = venue == null || venue.isBlank() ? null : venue.strip();
     }
 
-    /** Records or corrects the scores (as text, such as "152/6") and the result. */
     public void record(String home, String away, Result outcome, Long by, Instant at) {
         tournament.requireOpen();
         if (status == Status.CANCELLED) {

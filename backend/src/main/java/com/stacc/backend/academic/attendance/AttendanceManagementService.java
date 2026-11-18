@@ -26,15 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty take attendance here: create a session, mark the students, finalize it, and correct it afterwards.
- * Every action starts from the signed-in account and checks {@link FacultyTeachingAccessService} for the
- * course offering, found from the stored session when there is one, never from the request. The acting faculty
- * profile comes from that check. A course offering or session the caller may not use answers the same 404 as
- * one that does not exist. No LMS data is read or needed.
- *
- * <p>Sessions and records are never deleted, and a finalized session is never reopened.
- */
 @Service
 @Transactional
 public class AttendanceManagementService {
@@ -47,7 +38,6 @@ public class AttendanceManagementService {
     static final String FINALIZED_UNMARK = "Finalized attendance can only be corrected to present or absent.";
     static final String NOT_ALL_MARKED = "All students must be marked before finalizing attendance.";
 
-    /** One requested change: the record, by the ID the server gave it, and its new status. */
     public record RecordChange(Long attendanceRecordId, AttendanceStatus status) {
     }
 
@@ -73,13 +63,6 @@ public class AttendanceManagementService {
         this.notifications = notifications;
     }
 
-    /**
-     * Creates an open session and, in the same transaction, one unmarked record for every course enrollment of
-     * the offering that is enrolled right now. That roster is a snapshot: later enrollments and withdrawals never
-     * change it. The client never chooses the students.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public AttendanceSession createSession(Long userAccountId, Long courseOfferingId, Instant heldAt, String topic) {
         TeachingAssignment teaching = teachingAccess.findCurrentTeachingAssignment(userAccountId, courseOfferingId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE));
@@ -93,7 +76,6 @@ public class AttendanceManagementService {
         return session;
     }
 
-    /** Changes when an open session's class was held and its topic. A finalized session answers 409. */
     public AttendanceSession updateSession(Long userAccountId, Long sessionId, Instant heldAt, String topic) {
         AttendanceSession session = lockedSession(sessionId);
         actingFaculty(userAccountId, session);
@@ -104,12 +86,6 @@ public class AttendanceManagementService {
         return sessions.saveAndFlush(session);
     }
 
-    /**
-     * Saves the given statuses. Records are named by their own IDs and must all belong to this session, each
-     * once. An open session takes any status, so attendance can be saved part of the way; a finalized one only
-     * takes corrections between present and absent. A record whose status changes to present or absent records
-     * the acting faculty profile and the time; the session's finalization time never changes.
-     */
     public AttendanceSession saveRecords(Long userAccountId, Long sessionId, List<RecordChange> changes) {
         AttendanceSession session = lockedSession(sessionId);
         FacultyProfile actor = actingFaculty(userAccountId, session);
@@ -135,8 +111,6 @@ public class AttendanceManagementService {
             AttendanceRecord record = roster.get(change.attendanceRecordId());
             AttendanceStatus before = record.getStatus();
             record.mark(change.status(), actor, now);
-            // Marking an open session is ordinary work; only a real correction of attendance students already see
-            // tells the student.
             if (session.isFinalized() && record.getStatus() != before) {
                 corrected.add(record);
             }
@@ -155,10 +129,6 @@ public class AttendanceManagementService {
                 NotificationSourceType.ATTENDANCE_RECORD, record.getId(), "/academic/attendance"), student);
     }
 
-    /**
-     * Finalizes an open session once every student on its roster is present or absent; students then see it.
-     * Finalizing a finalized session changes nothing and keeps its first finalization time.
-     */
     public AttendanceSession finalizeSession(Long userAccountId, Long sessionId) {
         AttendanceSession session = lockedSession(sessionId);
         actingFaculty(userAccountId, session);
@@ -172,7 +142,6 @@ public class AttendanceManagementService {
         return sessions.saveAndFlush(session);
     }
 
-    // The lock comes before the access check, so the check and the change see the same session.
     private AttendanceSession lockedSession(Long sessionId) {
         if (sessionId == null) {
             throw sessionUnavailable();

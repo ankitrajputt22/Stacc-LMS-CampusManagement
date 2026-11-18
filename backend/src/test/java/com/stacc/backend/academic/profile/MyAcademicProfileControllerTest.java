@@ -18,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Academic profile routes: own profiles from the token, admin routes with the admin profile permissions. */
 class MyAcademicProfileControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

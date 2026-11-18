@@ -8,7 +8,6 @@ import org.springframework.mock.env.MockEnvironment;
 
 class ProductionSettingsCheckTest {
 
-    /** Settings a real deployment could start with. */
     private static MockEnvironment safe() {
         MockEnvironment environment = new MockEnvironment()
                 .withProperty("spring.datasource.username", "stacc")

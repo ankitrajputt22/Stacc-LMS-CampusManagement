@@ -22,11 +22,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * What the gradebook itself keeps about a column: a manual item's title and maximum marks, or, for an assignment or
- * quiz column, only that it exists once its grades are published. Publishing records the moment once and is never
- * undone.
- */
 @Entity
 @Table(name = "lms_grade_items")
 public class LmsGradeItem {
@@ -75,7 +70,6 @@ public class LmsGradeItem {
     private Instant updatedAt;
 
     protected LmsGradeItem() {
-        // Required by JPA.
     }
 
     private LmsGradeItem(LmsCourse lmsCourse, GradeItemType type, Long createdByAccountId) {
@@ -90,21 +84,18 @@ public class LmsGradeItem {
         return item;
     }
 
-    /** The record of an assignment column, made when its grades are first published. */
     public static LmsGradeItem forAssignment(LmsAssignment assignment, Long createdByAccountId) {
         LmsGradeItem item = new LmsGradeItem(assignment.getLmsCourse(), GradeItemType.ASSIGNMENT, createdByAccountId);
         item.assignment = assignment;
         return item;
     }
 
-    /** The record of a quiz column, made when its grades are first published. */
     public static LmsGradeItem forQuiz(LmsQuiz quiz, Long createdByAccountId) {
         LmsGradeItem item = new LmsGradeItem(quiz.getLmsCourse(), GradeItemType.QUIZ, createdByAccountId);
         item.quiz = quiz;
         return item;
     }
 
-    /** Renames a manual item or changes its maximum marks: above 0 and below 1,000,000, with two decimals. */
     public void edit(String title, BigDecimal maxMarks) {
         if (type != GradeItemType.MANUAL) {
             throw new IllegalStateException("Only a manual item has its own title and marks.");
@@ -119,7 +110,6 @@ public class LmsGradeItem {
         this.maxMarks = maxMarks.setScale(2, RoundingMode.UNNECESSARY);
     }
 
-    /** Shows the column's grades to students from now on. Publishing again changes nothing. */
     public void publish(Instant at) {
         if (publishedAt == null) {
             this.publishedAt = Require.notNull(at, "at");

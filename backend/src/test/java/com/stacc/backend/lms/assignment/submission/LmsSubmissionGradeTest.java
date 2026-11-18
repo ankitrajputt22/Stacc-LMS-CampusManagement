@@ -15,7 +15,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.course.LmsCourse;
 import org.junit.jupiter.api.Test;
 
-/** The grade of one attempt and its rules. Timestamps are fixed UTC moments. */
 class LmsSubmissionGradeTest {
 
     private static final Instant GRADED = Instant.parse("2026-10-21T04:00:00Z");

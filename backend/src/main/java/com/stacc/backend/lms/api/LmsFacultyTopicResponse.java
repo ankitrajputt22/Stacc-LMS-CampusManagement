@@ -5,7 +5,6 @@ import com.stacc.backend.lms.content.LmsTopic;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One topic as faculty manage it. */
 public record LmsFacultyTopicResponse(
         @Schema(example = "31")
         Long id,

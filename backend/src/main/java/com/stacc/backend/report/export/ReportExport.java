@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One background export: who asked, what, its state, and its private file until it expires. */
 @Entity
 @Table(name = "report_exports")
 public class ReportExport {
@@ -60,7 +59,6 @@ public class ReportExport {
     private Instant expiresAt;
 
     protected ReportExport() {
-        // Required by JPA.
     }
 
     public ReportExport(Long accountId, Kind kind, Long parameter, Instant now, Instant expiresAt) {

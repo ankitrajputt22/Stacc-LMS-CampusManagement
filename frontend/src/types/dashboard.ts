@@ -1,8 +1,5 @@
 import type { LmsCourseLifecycleStatus } from './lms'
 
-// The student dashboard as GET /api/v1/dashboard/student sends it: short previews with their full counts. Every value
-// comes from the feature that owns it; nothing is derived here.
-
 export type DashboardCourse = {
   lmsCourseId: number
   courseCode: string
@@ -19,7 +16,6 @@ export type DashboardAssignment = {
   courseCode: string
   courseName: string
   title: string
-  /** An absolute moment, such as 2026-10-30T18:29:00Z. */
   dueAt: string
   maxMarks: number
 }
@@ -43,7 +39,6 @@ export type DashboardAttendanceCourse = {
   totalSessions: number
   presentCount: number
   absentCount: number
-  /** As the attendance page sends it; null only when nothing was finalized. */
   attendancePercentage: number | null
 }
 
@@ -56,7 +51,6 @@ export type DashboardResult = {
   academicSessionCode: string
   marksObtained: number
   maxMarks: number
-  /** Null when no grade was entered. */
   gradeCode: string | null
   publishedAt: string
 }
@@ -73,8 +67,6 @@ export type StudentDashboard = {
   recentResults: DashboardResult[]
 }
 
-// The faculty dashboard as GET /api/v1/dashboard/faculty sends it.
-
 export type FacultyDashboardCourse = {
   courseOfferingId: number
   courseCode: string
@@ -83,7 +75,6 @@ export type FacultyDashboardCourse = {
   semesterNumber: number
   programCode: string
   academicSessionCode: string
-  /** Both null when the offering has no LMS course yet. */
   lmsCourseId: number | null
   lmsCourseStatus: LmsCourseLifecycleStatus | null
 }
@@ -99,7 +90,6 @@ export type FacultyDashboardAssignment = {
   status: 'DRAFT' | 'PUBLISHED'
 }
 
-/** A submission whose latest attempt has no grade yet. */
 export type FacultyDashboardPendingSubmission = {
   submissionId: number
   assignmentId: number
@@ -136,9 +126,6 @@ export type FacultyDashboard = {
   openAttendanceSessions: FacultyDashboardOpenSession[]
 }
 
-// The admin dashboard as GET /api/v1/dashboard/admin sends it: exact counts and a short offering preview.
-
-/** Every record of each master, whatever its status. */
 export type AdminAcademicMasterSummary = {
   departmentCount: number
   programCount: number
@@ -149,7 +136,6 @@ export type AdminAcademicMasterSummary = {
 
 export type AdminAcademicOperationsSummary = {
   courseOfferingCount: number
-  /** ENROLLED only; completed and withdrawn enrollments are not counted. */
   activeSemesterEnrollmentCount: number
   activeCourseEnrollmentCount: number
 }
@@ -167,6 +153,5 @@ export type AdminDashboardCourseOffering = {
 export type AdminDashboard = {
   academicMasters: AdminAcademicMasterSummary
   academicOperations: AdminAcademicOperationsSummary
-  /** The first offerings in the admin list's order. */
   courseOfferings: AdminDashboardCourseOffering[]
 }

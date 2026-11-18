@@ -78,7 +78,6 @@ function ApplyForm({ sessions, onApplied }: { sessions: EligibleHostelSession[];
     setBusy(true)
     setError(null)
     try {
-      // Only the session and note are sent: the student is the account in the access token.
       const created = await applyForHostel({
         academicSessionId: Number(sessionId),
         note: note.trim() === '' ? null : note.trim(),
@@ -190,7 +189,6 @@ function AllocationFacts({ allocation }: { allocation: StudentHostelAllocation }
   )
 }
 
-/** An approved student's place in the queue for a bed, as the backend works it out. */
 function QueueText({ applicationId }: { applicationId: number }) {
   const place = useApiQuery(queryKeys.hostel.queue(applicationId), (signal) => getHostelQueuePlace(applicationId, signal))
   const position = place.status === 'loaded' ? place.data.position : null
@@ -281,11 +279,6 @@ function ApplicationPanel({ detail, onChanged }: { detail: HostelApplicationDeta
   )
 }
 
-/**
- * The student's Hostel page at /hostel: applying for a session they are enrolled in, their applications with the
- * approval progress from the approval engine, and their allocation. Students never choose a hostel, room, or bed, and
- * nothing here decides an approval. Only accounts holding STUDENT see it; the backend checks every request.
- */
 export type HostelSection = 'overview' | 'applications' | 'room-changes' | 'outings' | 'mess' | 'visitors' | 'room-problem'
 
 const SECTIONS: { section: HostelSection; to: string; label: string }[] = [
@@ -304,7 +297,6 @@ const PROCESS = [
   { title: 'Hostel office allocates a bed', text: 'After approval, the hostel office assigns you a bed from the beds available.' },
 ]
 
-/** The resident's name, college ID, and roll number under the page title. */
 function IdentityLine() {
   const person = useMyProfile()
   const { account } = useAuth()
@@ -315,10 +307,6 @@ function IdentityLine() {
   return <p className="mt-1 text-[0.95rem] text-ink">{[name, account.loginId].filter(Boolean).join(' · ')}</p>
 }
 
-/**
- * The student's hostel area, one section per page: Overview, Applications, Room changes, Outings, Mess, Visitors, and
- * Room problem. Approval and allocation stay separate, and a student never chooses a bed.
- */
 export function StudentHostelPage({ section = 'overview' }: { section?: HostelSection }) {
   const { account } = useAuth()
   const isStudent = hasAnyRole(account?.roles ?? [], ['STUDENT'])

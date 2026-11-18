@@ -6,7 +6,6 @@ import java.time.Instant;
 import com.stacc.backend.lms.content.LmsContentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One assignment in a faculty member's list across all the courses they teach. */
 public record LmsFacultyAssignmentOverviewResponse(
         @Schema(description = "The LMS course the assignment belongs to.", example = "42")
         Long lmsCourseId,

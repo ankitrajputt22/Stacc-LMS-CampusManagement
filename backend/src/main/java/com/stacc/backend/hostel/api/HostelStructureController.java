@@ -41,11 +41,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Hostel structure and daily work: room details, beds under maintenance, wardens, occupancy, the bed map, check-in, and
- * vacating with a condition note (admins with HOSTEL_MANAGE); the warden's own hostels (WARDEN with HOSTEL_WARDEN_VIEW,
- * other hostels the same 404); and a student's place in the queue for a bed.
- */
 @RestController
 @Tag(name = "Hostel structure and wardens")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

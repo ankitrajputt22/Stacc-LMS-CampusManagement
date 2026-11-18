@@ -18,11 +18,6 @@ import com.stacc.backend.auth.account.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Creates notifications for trusted backend code only: feature services call it when a real change happens, in the
- * same transaction as that change, so a change that rolls back leaves no notification behind. There is no endpoint
- * that reaches it. Recipients are account IDs the feature found on the server, never IDs a client sent.
- */
 @Service
 @Transactional
 public class NotificationService {
@@ -47,16 +42,10 @@ public class NotificationService {
         this.clock = clock;
     }
 
-    /** Notifies one account. Nothing is created without an account. */
     public Optional<Notification> notifyUser(NotificationMessage message, Long userAccountId) {
         return notifyUsers(message, userAccountId == null ? List.of() : List.of(userAccountId));
     }
 
-    /**
-     * Notifies several accounts with one notification. Repeated and missing IDs are dropped, so an account reached
-     * through several roles still gets it once; the unique constraint backs this up. With nobody left, nothing is
-     * created at all.
-     */
     public Optional<Notification> notifyUsers(NotificationMessage message, Collection<Long> userAccountIds) {
         Set<Long> unique = new LinkedHashSet<>();
         userAccountIds.stream().filter(Objects::nonNull).forEach(unique::add);
@@ -65,7 +54,6 @@ public class NotificationService {
         }
         Notification notification = notifications.save(new Notification(message.type(), message.title(),
                 message.message(), message.sourceType(), message.sourceId(), message.actionPath()));
-        // Each person's choice for this category; without a row, the Inbox is on and nothing is emailed.
         Map<Long, NotificationPreference> chosen = preferences
                 .findAllByCategoryAndUserAccountIdIn(NotificationCategory.of(message.type()), unique).stream()
                 .collect(Collectors.toMap(NotificationPreference::getUserAccountId, Function.identity()));
@@ -84,7 +72,6 @@ public class NotificationService {
                 daily.add(accountId);
             }
         }
-        // References only: the accounts themselves are never loaded or changed.
         recipients.saveAll(inbox.stream()
                 .map(accountId -> new NotificationRecipient(notification, accounts.getReferenceById(accountId)))
                 .toList());

@@ -11,14 +11,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Approval requests. Every change locks the request's own row first. */
 public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest, Long> {
 
-    /**
-     * One request, locked until the transaction ends ({@code SELECT ... FOR UPDATE}). Decisions and cancellations take
-     * this lock before they read the steps, so two decisions on the same request take turns and the second one sees the
-     * first one's result.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select request from ApprovalRequest request where request.id = :requestId")
     Optional<ApprovalRequest> findByIdForUpdate(@Param("requestId") Long requestId);
@@ -32,7 +26,6 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
             """)
     Optional<ApprovalRequest> findWithContextById(@Param("requestId") Long requestId);
 
-    /** One page of the requests one account made, newest first, narrowed by status when it is given. */
     @Query(value = """
             select request
             from ApprovalRequest request
@@ -50,7 +43,6 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
     Page<ApprovalRequest> findOwn(@Param("requesterId") Long requesterId, @Param("status") ApprovalRequestStatus status,
             Pageable page);
 
-    /** Every request for one business record, oldest first, for the module that owns the record. */
     @Query("""
             select request
             from ApprovalRequest request

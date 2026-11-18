@@ -26,12 +26,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One run of a workflow for one business record. It names the record only loosely, by source type and ID, with a short
- * subject to read; the owning module keeps the record itself and is never changed from here. When it starts, the
- * workflow's steps are copied into it, so later edits to the workflow never change it. While it is PENDING exactly one
- * step is PENDING and {@code currentStepOrder} points at it; once it is APPROVED, REJECTED, or CANCELLED nothing changes.
- */
 @Entity
 @Table(name = "approval_requests")
 public class ApprovalRequest {
@@ -74,7 +68,6 @@ public class ApprovalRequest {
     @Column(name = "completed_at")
     private Instant completedAt;
 
-    // The steps are created with the request and never removed.
     @OneToMany(mappedBy = "approvalRequest", cascade = CascadeType.PERSIST)
     @OrderBy("stepOrder ASC")
     private List<ApprovalRequestStep> steps = new ArrayList<>();
@@ -88,10 +81,8 @@ public class ApprovalRequest {
     private Instant updatedAt;
 
     protected ApprovalRequest() {
-        // Required by JPA.
     }
 
-    /** Starts a request: the workflow's steps are copied, the first is PENDING, and the others are WAITING. */
     public ApprovalRequest(ApprovalWorkflowDefinition workflowDefinition, UserAccount requester, String sourceType,
             String sourceId, String subject, Instant submittedAt) {
         this.workflowDefinition = Require.notNull(workflowDefinition, "workflowDefinition");
@@ -111,7 +102,6 @@ public class ApprovalRequest {
         this.currentStepOrder = 1;
     }
 
-    /** The step that can be decided now, while the request is PENDING. */
     public Optional<ApprovalRequestStep> currentStep() {
         if (status != ApprovalRequestStatus.PENDING || currentStepOrder == null) {
             return Optional.empty();
@@ -119,10 +109,6 @@ public class ApprovalRequest {
         return steps.stream().filter(step -> step.getStepOrder() == currentStepOrder).findFirst();
     }
 
-    /**
-     * Approves the current step. Returns the next step, now PENDING, or empty when this was the last step and the
-     * whole request is APPROVED.
-     */
     public Optional<ApprovalRequestStep> approve(ApprovalRequestStep step, UserAccount actor, String comment, Instant at) {
         requireCurrent(step);
         Instant now = micros(at);
@@ -139,7 +125,6 @@ public class ApprovalRequest {
         return next;
     }
 
-    /** Rejects the current step: the request is REJECTED and every later step is SKIPPED. */
     public void reject(ApprovalRequestStep step, UserAccount actor, String comment, Instant at) {
         requireCurrent(step);
         Instant now = micros(at);
@@ -147,7 +132,6 @@ public class ApprovalRequest {
         finish(ApprovalRequestStatus.REJECTED, now);
     }
 
-    /** Cancels a PENDING request: the current and waiting steps are SKIPPED; decided steps stay as they are. */
     public void cancel(Instant at) {
         if (status != ApprovalRequestStatus.PENDING) {
             throw new IllegalStateException("Only a pending request can be cancelled");

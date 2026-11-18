@@ -33,12 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Student requests to the ERP office (v0.16.5): medical leave, the correction of an absence, and the revaluation of a
- * result. Students raise and cancel only their own, found from the account in the token; the office (`ADMIN` with
- * `ERP_REQUEST_MANAGE`) decides each once under the request's row lock. An approved correction marks the record present;
- * an approved revaluation with new marks applies them to the result, which stays published.
- */
 @Service
 @Transactional
 public class StudentRequestService {
@@ -78,8 +72,6 @@ public class StudentRequestService {
         this.collegeZone = college.zone();
     }
 
-    // --- Students
-
     @Transactional(readOnly = true)
     public List<RequestView> mine(Long accountId) {
         return requests.findAllByRequester(accountId).stream().map(StudentRequestService::view).toList();
@@ -97,7 +89,6 @@ public class StudentRequestService {
         return view(requests.saveAndFlush(StudentRequest.medicalLeave(student, from, to, reasonOf(reason), clock.instant())));
     }
 
-    /** Asks for a finalized absence of one's own to be corrected. Anyone else's record is the same 404 as none. */
     public RequestView correction(Long accountId, Long attendanceRecordId, String reason) {
         UserAccount student = activeStudent(accountId);
         AttendanceRecord record = (attendanceRecordId == null ? Optional.<AttendanceRecord>empty() : records.findById(attendanceRecordId))
@@ -110,7 +101,6 @@ public class StudentRequestService {
         return saveOnce(StudentRequest.correction(student, record, reasonOf(reason), clock.instant()));
     }
 
-    /** Asks for a published result of one's own to be checked again. */
     public RequestView revaluation(Long accountId, Long courseResultId, String reason) {
         UserAccount student = activeStudent(accountId);
         CourseResult result = (courseResultId == null ? Optional.<CourseResult>empty() : results.findById(courseResultId))
@@ -132,8 +122,6 @@ public class StudentRequestService {
         return view(requests.saveAndFlush(request));
     }
 
-    // --- The ERP office
-
     @Transactional(readOnly = true)
     public List<RequestView> queue(StudentRequest.Kind kind, StudentRequest.Status status, String loginId) {
         String text = loginId == null ? "" : loginId.strip().toLowerCase(Locale.ROOT);
@@ -144,10 +132,6 @@ public class StudentRequestService {
         return requests.queue(kind, status, like, PageRequest.of(0, 200)).stream().map(StudentRequestService::view).toList();
     }
 
-    /**
-     * Approves a request. A correction marks the absence present; a revaluation with new marks applies them (on the
-     * external part when the result is split), and without new marks records that nothing changed.
-     */
     public RequestView approve(Long officeAccountId, Long requestId, String comment, BigDecimal newMarks) {
         StudentRequest request = lockedSubmitted(requestId);
         Instant now = clock.instant();
@@ -162,7 +146,6 @@ public class StudentRequestService {
         return view(saved);
     }
 
-    /** Rejects a request, always with a comment the student can read. */
     public RequestView reject(Long officeAccountId, Long requestId, String comment) {
         StudentRequest request = lockedSubmitted(requestId);
         request.decide(false, accounts.getReferenceById(officeAccountId), commentOf(comment, true), null, clock.instant());
@@ -199,7 +182,6 @@ public class StudentRequestService {
             }
             result.recordSplit(result.getInternalMarks(), result.getInternalMax(), external, result.getExternalMax());
         }
-        // An entered grade on the scale is re-graded from the new marks; with none, the scale keeps deciding.
         String grade = result.getGradeCode();
         GradeScale scale = standing.scale();
         if (grade != null && scale.gradeOf(grade, old, result.getMaxMarks()).isPresent()) {

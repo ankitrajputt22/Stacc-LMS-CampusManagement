@@ -1,9 +1,3 @@
-"""The Stacc AI service: an internal FastAPI app that only the Stacc backend calls.
-
-Start it with ``uvicorn app.main:create_app --factory``. Settings come from the environment (see
-``app/config.py`` and docs/ai-learning.md); the app refuses to start without the internal token.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -25,7 +19,6 @@ from app.retrieval.service import LearningService
 
 log = logging.getLogger("stacc.ai")
 
-# The backend's request ID, so a log line here can be matched with the backend's. Anything else is logged as "-".
 _REQUEST_ID = re.compile(r"[A-Za-z0-9._-]{8,64}")
 
 
@@ -35,7 +28,6 @@ def _request_id(request: Request) -> str:
 
 
 def _task_and_course(path: str) -> tuple[str, str]:
-    """The last path part as the task, and the opaque course key after "indexes" when there is one."""
     parts = path.strip("/").split("/")
     task = parts[-1] if parts else ""
     if "indexes" in parts:
@@ -50,7 +42,6 @@ def _error(error: ServiceError) -> JSONResponse:
 
 
 class _BodyLimit:
-    """Refuses request bodies over the limit, whether or not they declare their length."""
 
     def __init__(self, app, limit: int) -> None:
         self.app = app
@@ -98,7 +89,6 @@ def create_app(settings: Settings | None = None, models: ModelProvider | None = 
 
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
-        # Operational metadata only: never the question, course text, prompt, or model output.
         started = time.perf_counter()
         response = await call_next(request)
         task, course = _task_and_course(request.url.path)
@@ -113,7 +103,6 @@ def create_app(settings: Settings | None = None, models: ModelProvider | None = 
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(_: Request, __: RequestValidationError):
-        # The submitted values are never echoed back.
         return _error(ServiceError(400, "INVALID_REQUEST", "The request is not valid."))
 
     @app.exception_handler(ProviderUnavailable)

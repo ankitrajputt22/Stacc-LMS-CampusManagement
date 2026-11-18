@@ -15,11 +15,6 @@ import com.stacc.backend.academic.session.AcademicSession;
 import com.stacc.backend.identity.student.StudentProfile;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * Course offerings and official enrollments as admins see them: each record's own ID and status with the codes and
- * names that say what it is. A student appears only by profile ID, login ID, program, and admission session. No
- * password, hash, role, permission, or other account data is ever included, and no entity is sent as it is.
- */
 public final class OfferingEnrollmentResponses {
 
     private OfferingEnrollmentResponses() {
@@ -64,7 +59,6 @@ public final class OfferingEnrollmentResponses {
         }
     }
 
-    /** One faculty member's teaching assignment to an offering, with the name from their person profile if any. */
     public record OfferingFaculty(
             @Schema(example = "7") Long teachingAssignmentId,
             @Schema(example = "3") Long courseOfferingId,
@@ -83,7 +77,6 @@ public final class OfferingEnrollmentResponses {
         }
     }
 
-    /** A faculty member to choose from when assigning who teaches: never contact details. */
     public record FacultyLookupResponse(
             @Schema(example = "11") Long facultyProfileId,
             @Schema(example = "emp1021") String loginId,

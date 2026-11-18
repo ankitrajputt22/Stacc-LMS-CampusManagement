@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** The append-only history of approval requests. Nothing here changes or deletes an entry. */
 public interface ApprovalRequestHistoryRepository extends JpaRepository<ApprovalRequestHistory, Long> {
 
     @Query("""

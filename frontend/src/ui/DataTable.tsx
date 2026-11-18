@@ -1,32 +1,21 @@
 import type { ReactNode } from 'react'
 
 export type Column<Row> = {
-  /** A stable key for the column. */
   key: string
-  /** The column heading, also used as the label in the stacked phone layout. */
   header: string
-  /** What the cell shows for a row. */
   cell: (row: Row) => ReactNode
-  /** Numbers and short amounts read best right-aligned. */
   align?: 'left' | 'right'
-  /** The row's main cell: a row header on wide screens and the record's title on phones. One column should set it. */
   primary?: boolean
 }
 
 type DataTableProps<Row> = {
-  /** What the table lists, read by screen readers, such as "Course offerings". */
   caption: string
   columns: readonly Column<Row>[]
   rows: readonly Row[]
   rowKey: (row: Row) => string | number
-  /** Shown instead of the table when there are no rows. */
   empty?: ReactNode
 }
 
-/**
- * A data table that stays readable on every screen: a real table with column and row headers from the md breakpoint,
- * and stacked records (title, then label and value pairs) on phones, so a page never scrolls sideways.
- */
 export function DataTable<Row>({ caption, columns, rows, rowKey, empty }: DataTableProps<Row>) {
   if (rows.length === 0 && empty) {
     return <>{empty}</>

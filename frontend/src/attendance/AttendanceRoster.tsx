@@ -33,19 +33,10 @@ function refusal(status: number | null, apiMessage: string | null, action: 'save
 
 type AttendanceRosterProps = {
   session: AttendanceSessionDetail
-  /** The session as the backend now holds it, after a save or a finalization. */
   onChanged: (session: AttendanceSessionDetail) => void
-  /** After finalizing, so the session list behind this view is up to date. */
   onFinalized: () => void
 }
 
-/**
- * A session's roster: one Present/Absent choice per student, as real radio buttons. A student nobody has marked
- * shows "Not marked"; nothing is ever assumed absent. Choices stay on this page until **Save attendance** is
- * pressed, which can happen part of the way. An open session is finalized once every student is saved as present
- * or absent; afterwards each row can still be corrected between present and absent. The backend checks access
- * and every rule again, and a 403 never signs the user out.
- */
 export function AttendanceRoster({ session, onChanged, onFinalized }: AttendanceRosterProps) {
   const id = useId()
   const busyRef = useRef(false)

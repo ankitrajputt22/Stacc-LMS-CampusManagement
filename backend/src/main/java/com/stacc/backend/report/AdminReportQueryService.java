@@ -44,11 +44,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admin reports: academic and enrollment counts within optional session, program, and semester filters, one row per
- * course offering, and college-wide operational counts for the modules the admin may manage. Every count is a grouped
- * database query over the source tables; nothing is stored or cached. It reads only.
- */
 @Service
 @Transactional(readOnly = true)
 public class AdminReportQueryService {
@@ -90,10 +85,6 @@ public class AdminReportQueryService {
         this.campusRequests = campusRequests;
     }
 
-    /**
-     * Checks the filters: each one given must exist (400 otherwise), and a semester must belong to the given program
-     * and session, so a combination never quietly answers nothing.
-     */
     public AdminReportFilters filters(Long academicSessionId, Long programId, Long semesterId) {
         if (academicSessionId != null && !sessions.existsById(academicSessionId)) {
             throw badRequest("The academic session filter does not match an academic session.");
@@ -136,7 +127,6 @@ public class AdminReportQueryService {
                 new AdminOperationalReport(helpdesk(actor), hostel(actor), campusServices(actor)));
     }
 
-    /** One page of course offerings, in the admin offering list's order, each with its enrollments by status. */
     public AdminCourseEnrollmentReportPage enrollments(AdminReportFilters filters, int page, int size) {
         if (page < 0) {
             throw badRequest("The page must be 0 or more.");
@@ -151,17 +141,14 @@ public class AdminReportQueryService {
         return new AdminCourseEnrollmentReportPage(items, page, size, total, (int) Math.ceil((double) total / size));
     }
 
-    /** Every row of the enrollment report, as CSV, under exactly the screen's filters. No IDs are written. */
     public String enrollmentCsv(AdminReportFilters filters) {
         return ReportCsv.write(CSV_HEADER, enrollmentRows(filters));
     }
 
-    /** The column names of the enrollment report export. */
     public List<String> enrollmentHeader() {
         return CSV_HEADER;
     }
 
-    /** Every row of the enrollment report under the filters, as text cells, for the CSV and XLSX exports. */
     public List<List<String>> enrollmentRows(AdminReportFilters filters) {
         List<CourseOffering> all = offeringsOf(filters, Pageable.unpaged());
         List<List<String>> lines = new ArrayList<>();
@@ -176,12 +163,10 @@ public class AdminReportQueryService {
     }
 
     private List<CourseOffering> offeringsOf(AdminReportFilters filters, Pageable page) {
-        // The admin offering list's own query and order: the latest session first, then program, semester, course.
         return offerings.findAllWithContext(filters.semesterId(), null, filters.academicSessionId(), filters.programId(),
                 page);
     }
 
-    /** The rows of these offerings, with every count in one grouped query. */
     private List<AdminCourseEnrollmentReportRow> rowsOf(List<CourseOffering> rows) {
         if (rows.isEmpty()) {
             return List.of();
@@ -202,7 +187,6 @@ public class AdminReportQueryService {
         }).toList();
     }
 
-    /** Only for an admin who may see every ticket, under the helpdesk's own rule. */
     private AdminHelpdeskReport helpdesk(ReportActor actor) {
         if (!helpdeskAccess.canViewAll(HelpdeskActor.of(actor.accountId(), actor.grantedAuthorities()))) {
             return null;
@@ -227,7 +211,6 @@ public class AdminReportQueryService {
                 byStatus.getOrDefault(HostelAllocationStatus.VACATED, 0L));
     }
 
-    /** Counted by the status a request shows: a SUBMITTED one whose approval was decided counts as that decision. */
     private AdminCampusServiceReport campusServices(ReportActor actor) {
         if (!actor.holdsWith("ADMIN", "CAMPUS_SERVICE_MANAGE")) {
             return null;

@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/** Residents register, only security records at the gate, only the hostel office sets visiting hours. */
 class HostelVisitorControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

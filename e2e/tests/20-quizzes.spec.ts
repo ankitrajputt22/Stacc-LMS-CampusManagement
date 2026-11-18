@@ -7,7 +7,6 @@ test('a faculty member builds a quiz from reviewed bank questions and publishes 
   await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
 
-  // A reviewed question of its own, so the journey does not depend on the demo bank.
   await openCourseSection(page, 'Question bank')
   const form = page.getByRole('region', { name: 'Add a question' })
   await form.getByLabel('Question type').selectOption('TRUE_FALSE')
@@ -43,7 +42,6 @@ test('a faculty member builds a quiz from reviewed bank questions and publishes 
   await expect(questions.getByRole('button', { name: /Remove/ })).toHaveCount(0)
   await expect(page.getByRole('region', { name: 'Add from the question bank' })).toHaveCount(0)
 
-  // The bank now keeps the question as the published quiz asks it.
   await openCourseSection(page, 'Question bank')
   const used = page.getByRole('region', { name: 'Questions' }).getByRole('listitem').filter({ hasText: QUESTION })
   await expect(used.getByText('In a published quiz')).toBeVisible()

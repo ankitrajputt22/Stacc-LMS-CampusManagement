@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** What is served at one meal on one date instead of the weekly line, with an optional note such as "Festival". */
 @Entity
 @Table(name = "hostel_mess_menu_changes")
 public class MessMenuChange {
@@ -50,7 +49,6 @@ public class MessMenuChange {
     private Instant updatedAt;
 
     protected MessMenuChange() {
-        // Required by JPA.
     }
 
     public MessMenuChange(Hostel hostel, LocalDate menuDate, Meal meal, String items, String note, Long byAccountId, Instant now) {

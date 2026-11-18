@@ -5,22 +5,17 @@ import { Alert, Button, Card, SelectField, TextAreaField, TextField } from '../u
 
 export type FieldOption = { value: string; label: string }
 
-/** One field of a master form, mirroring the backend's request field of the same name. */
 export type FieldSpec = {
   name: string
   label: string
   kind: 'text' | 'textarea' | 'integer' | 'decimal' | 'date' | 'datetime' | 'select'
-  /** May be left empty; the backend stores nothing for it. */
   optional?: boolean
   hint?: string
   maxLength?: number
-  /** Smallest allowed value, inclusive. */
   min?: number
-  /** Values must be above this, such as credits above zero. */
   above?: number
   max?: number
   options?: FieldOption[]
-  /** The first, empty choice of a select, such as "Choose a department". */
   choose?: string
 }
 
@@ -28,17 +23,13 @@ export type Values = Record<string, string>
 
 type MasterFormProps = {
   heading: string
-  /** A short neutral note under the heading, such as what cannot change. */
   note?: string
   fields: FieldSpec[]
   initial: Values
   submitLabel: string
-  /** Rules across fields, such as an end date after the start date. */
   validate?: (values: Values) => Partial<Record<string, string>>
-  /** Sends the values. A refusal is thrown and shown here; what was entered stays. */
   onSubmit: (values: Values) => Promise<void>
   onCancel: () => void
-  /** What a 403 says, such as "You don’t have access to academic enrollment administration." */
   deniedMessage?: string
 }
 
@@ -88,12 +79,6 @@ function refusal(status: number | null, apiMessage: string | null, deniedMessage
   }
 }
 
-/**
- * A small contained form for one academic master, in its own card. Every field has a real label; obvious mistakes are caught before
- * sending, mirroring the backend's rules, and the backend checks everything again. While it sends, the button says
- * "Saving…" and a second press does nothing. A refusal is shown in safe words and keeps what was entered; a 403 never
- * signs the user out.
- */
 export function MasterForm({
   heading,
   note,
@@ -148,7 +133,6 @@ export function MasterForm({
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status !== 401) {
-        // A 401 is left to the shared client, which ends the session.
         const apiError = getApiError(failure)
         const fieldErrors = Object.fromEntries((apiError?.fieldErrors ?? []).map((error) => [error.field, error.message]))
         const hasFieldErrors = status === 400 && Object.keys(fieldErrors).length > 0

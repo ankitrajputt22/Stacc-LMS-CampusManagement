@@ -32,7 +32,6 @@ function useRun(notify: Notify) {
       .catch((caught: unknown) => notify(failureText(caught, fallback) ?? '', true))
 }
 
-/** The other person in the pairing, as the signed-in account sees them. */
 function otherOf(pairing: MentoringPairing): string {
   return pairing.iAmMentor ? pairing.menteeLoginId : pairing.mentorLoginId
 }
@@ -54,7 +53,6 @@ function SubHeading({ children }: { children: string }) {
   )
 }
 
-/** The action items of one meeting as rows: what, who, due or completed, status, and Mark done while open. */
 function ActionItems({ meeting, pairing, notify }: { meeting: MentoringMeeting; pairing: MentoringPairing; notify: Notify }) {
   const run = useRun(notify)
   if (meeting.actionItems.length === 0) {
@@ -113,7 +111,6 @@ function Meeting({ meeting, pairing, notify }: { meeting: MentoringMeeting; pair
           <p className="mt-0.5 text-[0.95rem] break-words whitespace-pre-wrap text-ink">{meeting.sharedNotes}</p>
         </div>
       )}
-      {/* Private notes come from the backend for the mentor only; students never get even the heading. */}
       {meeting.privateNotes && (
         <div className="rounded-control bg-surface-muted px-3 py-2.5">
           <p className="text-sm font-semibold text-ink">Private notes (only you see these)</p>
@@ -213,7 +210,6 @@ function PairingDetails({ pairing }: { pairing: MentoringPairing }) {
   )
 }
 
-/** /mentoring/:assignmentId: one pairing with its meetings, notes, and action items, opened only by its two people. */
 function PairingPage({ assignmentId, notify }: { assignmentId: number; notify: Notify }) {
   const detail = useApiQuery(queryKeys.mentoring.pairing(assignmentId), (signal) => getPairing(assignmentId, signal))
   if (detail.status !== 'loaded') {
@@ -259,7 +255,6 @@ function PairingPage({ assignmentId, notify }: { assignmentId: number; notify: N
   )
 }
 
-/** One pairing's open items for the signed-in account, as list rows inside the home's open-items card. */
 function OpenItemsOf({ pairing, notify }: { pairing: MentoringPairing; notify: Notify }) {
   const detail = useApiQuery(queryKeys.mentoring.pairing(pairing.assignmentId), (signal) => getPairing(pairing.assignmentId, signal))
   const run = useRun(notify)
@@ -283,7 +278,6 @@ function OpenItemsOf({ pairing, notify }: { pairing: MentoringPairing; notify: N
   )
 }
 
-/** /mentoring: the account's pairings, as mentor or as student, and the action items still open for it. */
 function MentoringHome({ notify }: { notify: Notify }) {
   const pairings = useApiQuery(queryKeys.mentoring.mine(), (signal) => getMyPairings(signal))
   if (pairings.status !== 'loaded') {
@@ -346,7 +340,6 @@ function MentoringHome({ notify }: { notify: Notify }) {
   )
 }
 
-/** /mentoring and /mentoring/:assignmentId. The backend opens a pairing only to its mentor and student. */
 export function MentoringPage() {
   const { assignmentId } = useParams()
   const id = Number(assignmentId)

@@ -13,7 +13,6 @@ import com.stacc.backend.auth.role.RoleName;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Made-up roles, accounts, workflows, and requests for the approval tests, with IDs set the way the database would. */
 final class ApprovalFixtures {
 
     static final Instant NOW = Instant.parse("2026-10-26T09:30:00.123456789Z");
@@ -26,7 +25,6 @@ final class ApprovalFixtures {
         return entity;
     }
 
-    /** A role as V49 sets it up: FACULTY and ADMIN can decide approval steps, STUDENT cannot. */
     static Role role(RoleName name) {
         Role role = withId(new Role(name), name.ordinal() + 1);
         if (name != RoleName.STUDENT) {
@@ -56,7 +54,6 @@ final class ApprovalFixtures {
         return workflow;
     }
 
-    /** Gives a new request and its steps IDs, as saving it would. Step IDs are the request ID times 10 plus the order. */
     static ApprovalRequest saved(ApprovalRequest request, AtomicLong ids) {
         if (request.getId() == null) {
             withId(request, ids.incrementAndGet());
@@ -79,7 +76,6 @@ final class ApprovalFixtures {
         return ApprovalActor.of(accountId, AuthorityUtils.createAuthorityList(authorities));
     }
 
-    /** An approver with the task permissions, as V49 gives FACULTY and ADMIN, holding these roles. */
     static ApprovalActor approver(long accountId, RoleName... roles) {
         List<String> authorities = new ArrayList<>(List.of(ApprovalActor.REQUEST_VIEW_OWN, ApprovalActor.TASK_VIEW,
                 ApprovalActor.TASK_DECIDE));

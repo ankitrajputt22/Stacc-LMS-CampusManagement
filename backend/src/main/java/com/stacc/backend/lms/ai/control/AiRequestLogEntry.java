@@ -11,10 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/**
- * One AI request without its content (v0.13.7): what kind, which course, how it ended, and how long it took. Never the
- * question, answer, sources, or who asked.
- */
 @Entity
 @Table(name = "ai_request_log")
 public class AiRequestLogEntry {
@@ -45,7 +41,6 @@ public class AiRequestLogEntry {
     private Instant createdAt;
 
     protected AiRequestLogEntry() {
-        // Required by JPA.
     }
 
     public AiRequestLogEntry(Kind kind, Long lmsCourseId, Outcome outcome, int durationMs, Instant createdAt) {

@@ -25,12 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Every change faculty make to the assignments of an LMS course. Before any change, the course is found
- * from stored data, never from the request, and {@link LmsFacultyAccessService} must allow the signed-in
- * account to use it. An assignment that does not exist and one in a course the caller does not teach get
- * the same 404. Nothing is deleted: assignments are archived.
- */
 @Service
 @Transactional
 public class LmsAssignmentManagementService {
@@ -66,13 +60,11 @@ public class LmsAssignmentManagementService {
         this.rubrics = rubrics;
     }
 
-    /** Adds a draft assignment with plain-text instructions to the course. */
     public LmsAssignment create(
             Long userAccountId, Long lmsCourseId, String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
         return create(userAccountId, lmsCourseId, title, instructions, null, dueAt, maxMarks);
     }
 
-    /** Adds a draft assignment to the course, with its instructions' format (plain when none is sent). */
     public LmsAssignment create(Long userAccountId, Long lmsCourseId, String title, String instructions,
             LmsTextFormat format, Instant dueAt, BigDecimal maxMarks) {
         if (!facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
@@ -84,16 +76,11 @@ public class LmsAssignmentManagementService {
         return assignments.save(assignment);
     }
 
-    /**
-     * Changes the definition of a draft or published assignment, including its deadline. Publication time
-     * is kept, and nobody is notified.
-     */
     public LmsAssignment update(
             Long userAccountId, Long assignmentId, String title, String instructions, Instant dueAt, BigDecimal maxMarks) {
         return update(userAccountId, assignmentId, title, instructions, null, dueAt, maxMarks);
     }
 
-    /** As above; without a format the instructions keep their current one. */
     public LmsAssignment update(Long userAccountId, Long assignmentId, String title, String instructions,
             LmsTextFormat format, Instant dueAt, BigDecimal maxMarks) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
@@ -109,14 +96,9 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /**
-     * Publishes a draft now and tells the students who may use the course. Publishing a published assignment changes
-     * nothing and tells nobody again.
-     */
     public LmsAssignment publish(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
         boolean firstPublication = assignment.getStatus() != LmsContentStatus.PUBLISHED;
-        // The database keeps microseconds, so this answer shows the same moment as every later read.
         assignment.publish(clock.instant().truncatedTo(ChronoUnit.MICROS));
         if (firstPublication) {
             notifications.published(assignment);
@@ -124,20 +106,17 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /** Archives the assignment and keeps it. Archiving again changes nothing. */
     public LmsAssignment archive(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = manageable(userAccountId, assignmentId);
         assignment.archive();
         return assignment;
     }
 
-    /** An assignment of a course the faculty member teaches, for reading only (v0.14.5); anything else is the same 404. */
     @Transactional(readOnly = true)
     public LmsAssignment find(Long userAccountId, Long assignmentId) {
         return manageable(userAccountId, assignmentId);
     }
 
-    // The course is taken from the stored assignment, never from the request.
     private LmsAssignment manageable(Long userAccountId, Long assignmentId) {
         LmsAssignment assignment = assignmentId == null ? null : assignments.findById(assignmentId).orElse(null);
         if (assignment == null || !facultyAccess.canAccessCourse(userAccountId, assignment.getLmsCourse().getId())) {
@@ -146,10 +125,6 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /**
-     * Aligns the assignment with a Bloom level (or none) and outcomes of its own course. A newly added outcome must be
-     * active; one already aligned may stay after it is archived. Anything else is refused (409).
-     */
     public LmsAssignment align(Long userAccountId, Long assignmentId, BloomLevel bloomLevel, Collection<Long> outcomeIds) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
         Set<Long> wanted = new HashSet<>(outcomeIds);
@@ -165,10 +140,6 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /**
-     * Grades the assignment with an active rubric of its course from now on, or without a rubric (null). The rubric's
-     * total must equal the maximum marks (409). Grades already given keep their own scores.
-     */
     public LmsAssignment useRubric(Long userAccountId, Long assignmentId, Long rubricId) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);
         LmsRubric rubric = null;
@@ -186,10 +157,6 @@ public class LmsAssignmentManagementService {
         return assignment;
     }
 
-    /**
-     * Sets when the assignment takes work: opening and closing times around the due date, whether late work is accepted,
-     * and an attempt limit. Attempts already handed in stay; the rules apply to new ones.
-     */
     public LmsAssignment changeSubmissionRules(Long userAccountId, Long assignmentId, Instant opens, Instant closes,
             boolean allowLate, Integer attempts) {
         LmsAssignment assignment = changeable(userAccountId, assignmentId);

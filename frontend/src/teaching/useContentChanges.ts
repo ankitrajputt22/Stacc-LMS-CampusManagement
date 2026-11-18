@@ -1,26 +1,20 @@
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { getApiError, getHttpStatus } from '../api/apiError'
 
-/** Where focus should go next. After a change it waits until the refreshed content is on screen. */
 export type PendingFocus = { keys: string[]; afterRefresh: boolean }
 
-/** The outcome of one change: its answer, or why it was refused. */
 export type ChangeResult<T> =
   | { ok: true; data: T }
   | { ok: false; message: string | null; fieldErrors: Record<string, string> }
 
 type ChangeOptions<T> = {
-  /** Read out to screen readers once the change is saved. */
   done: string
-  /** Where focus should go once the refreshed content is on screen, best choice first. */
   focus?: (data: T) => string[]
-  /** Show a refusal in the editor's shared message area. Forms show their own instead. */
   showError?: boolean
 }
 
 const REFRESHED = 'The list has been refreshed.'
 
-/** What a 403 says by default: the account may not change course content. */
 const CONTENT_FORBIDDEN =
   'You don’t have permission to change this course’s content. If your access changed recently, sign out and sign in again.'
 
@@ -32,7 +26,6 @@ function refusalMessage(
 ): string | null {
   switch (status) {
     case 400:
-      // Field errors are shown next to their fields. A bare 400 here means the content changed meanwhile.
       return hasFieldErrors ? null : `The course content changed in the meantime. ${REFRESHED} Try again.`
     case 403:
       return forbidden
@@ -49,12 +42,6 @@ function refusalMessage(
   }
 }
 
-/**
- * Runs the editor's changes one at a time. A second click while one is saving is ignored, so nothing
- * is sent twice. After every change, and after a refusal that means the list is out of date, the
- * content is quietly reloaded. A 403 never signs the user out; a 401 is left to the shared client.
- * `forbidden` is what a 403 says, for changes that need a permission of their own.
- */
 export function useContentChanges(reload: () => void, forbidden: string = CONTENT_FORBIDDEN) {
   const busyRef = useRef(false)
   const [busy, setBusy] = useState(false)
@@ -109,11 +96,6 @@ export function useContentChanges(reload: () => void, forbidden: string = CONTEN
   return { busy, error, announcement, run, pendingFocus, focusNext, focusHandled }
 }
 
-/**
- * Moves focus to the first available element named by the pending focus keys, inside the container.
- * After a change it waits until the reloaded data is on screen, so focus lands on the item in its new
- * place; a disabled button is skipped.
- */
 export function useFocusAfterChanges<T>(
   container: RefObject<HTMLElement | null>,
   data: T,

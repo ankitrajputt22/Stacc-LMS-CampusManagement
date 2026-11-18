@@ -21,14 +21,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The official record that one student takes part in one semester. A student has one of
- * these for each semester over the years, which is how the academic history is kept.
- *
- * <p>The account, programme, department, and academic session are all reached through the
- * student profile and the semester, so none of them is stored here again. An enrollment is
- * never deleted: it ends as completed or withdrawn.
- */
 @Entity
 @Table(
         name = "semester_enrollments",
@@ -37,8 +29,6 @@ import org.hibernate.annotations.UpdateTimestamp;
                 columnNames = {"student_profile_id", "semester_id"}))
 public class SemesterEnrollment {
 
-    // No cascade on either link: the student profile and the semester are never created or
-    // deleted through an enrollment.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,7 +41,6 @@ public class SemesterEnrollment {
     @JoinColumn(name = "semester_id", nullable = false, updatable = false)
     private Semester semester;
 
-    // The section the student is placed in for this semester, or none yet. Kept after the enrollment ends.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id")
     private Section section;
@@ -69,14 +58,8 @@ public class SemesterEnrollment {
     private Instant updatedAt;
 
     protected SemesterEnrollment() {
-        // Required by JPA.
     }
 
-    /**
-     * The student and semester say what this enrollment is, so they cannot be changed afterwards.
-     * Whether the student's programme matches the semester's programme is checked by the feature
-     * that creates enrollments, not here.
-     */
     public SemesterEnrollment(StudentProfile studentProfile, Semester semester) {
         this.studentProfile = Require.notNull(studentProfile, "studentProfile");
         this.semester = Require.notNull(semester, "semester");
@@ -94,15 +77,10 @@ public class SemesterEnrollment {
         return semester;
     }
 
-    /** The section the student is placed in, or null. */
     public Section getSection() {
         return section;
     }
 
-    /**
-     * Places the student in a section of this same semester, or takes them out of one with null. Capacity and whether
-     * the section is active are checked by the feature that places students, under the section's row lock.
-     */
     public void placeIn(Section section) {
         if (section != null && !section.getSemester().getId().equals(semester.getId())) {
             throw new IllegalArgumentException("section must belong to the enrollment's semester");

@@ -50,7 +50,6 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
           <Badge tone="success">{`${completedCount} completed`}</Badge>
         ) : null}
       </div>
-      {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
       {module.description && (
         <p className="px-4 pt-3 text-sm leading-6 break-words whitespace-pre-line text-ink-muted sm:px-5">{module.description}</p>
       )}
@@ -86,11 +85,6 @@ function PublishedModule({ lmsCourseId, module, number }: PublishedModuleProps) 
   )
 }
 
-/**
- * The published modules of the course, each listing its published pages as links to the page itself
- * (/courses/:lmsCourseId/pages/:pageId), where the text and study materials are. Everything the API sends is already
- * published, so no status is shown. A failure here does not hide the course details above it.
- */
 export function CourseContent({ lmsCourseId, content }: CourseContentProps) {
   return (
     <section aria-labelledby={HEADING_ID} className="mt-6">

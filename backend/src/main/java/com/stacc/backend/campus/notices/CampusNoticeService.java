@@ -10,11 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins' changes to campus notices: create as a draft, correct, publish, and archive. Each change locks the notice row,
- * so two publishes at once notify once. Only the first publication notifies, through the Inbox; drafts, edits, repeated
- * publishes, and archiving do not. There is no delete, restore, or scheduling.
- */
 @Service
 @Transactional
 public class CampusNoticeService {
@@ -43,7 +38,6 @@ public class CampusNoticeService {
         return AdminCampusNoticeResponse.of(notices.saveAndFlush(notice));
     }
 
-    /** Corrects a draft or published notice; a published one stays published and keeps its publication time. */
     public AdminCampusNoticeResponse update(Long noticeId, CampusNoticeInput input) {
         CampusNotice notice = locked(noticeId);
         if (notice.getStatus() == CampusNoticeStatus.ARCHIVED) {
@@ -57,7 +51,6 @@ public class CampusNoticeService {
         return AdminCampusNoticeResponse.of(notices.saveAndFlush(notice));
     }
 
-    /** Publishes a draft and notifies its readers once. Publishing a published notice changes nothing. */
     public AdminCampusNoticeResponse publish(Long noticeId) {
         CampusNotice notice = locked(noticeId);
         if (notice.getStatus() == CampusNoticeStatus.ARCHIVED) {
@@ -70,7 +63,6 @@ public class CampusNoticeService {
         return AdminCampusNoticeResponse.of(notice);
     }
 
-    /** Archives a draft or published notice for good. Archiving an archived notice changes nothing. */
     public AdminCampusNoticeResponse archive(Long noticeId) {
         CampusNotice notice = locked(noticeId);
         if (notice.archive()) {

@@ -68,7 +68,6 @@ class HelpdeskAccessServiceTest {
         assertThat(access.canViewAll(viewAllWithoutAdmin)).isFalse();
         assertThat(access.canViewOwn(owner)).isTrue();
         assertThat(access.canViewOwn(HelpdeskFixtures.actor(70, "ROLE_STUDENT"))).isFalse();
-        // Whoever may see every ticket sees this one; an own-only actor sees it only when it is theirs.
         assertThat(access.canView(viewAllWithoutAdmin, ticket)).isFalse();
     }
 }

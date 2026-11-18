@@ -11,7 +11,6 @@ public interface MentorAssignmentRepository extends JpaRepository<MentorAssignme
     @Query("select a from MentorAssignment a join fetch a.mentor join fetch a.mentee order by case when a.endedAt is null then 0 else 1 end, a.mentor.loginId, a.mentee.loginId")
     List<MentorAssignment> findAllForAdmin();
 
-    /** Pairings the account is the mentor or the mentee of, active first. */
     @Query("""
             select a from MentorAssignment a join fetch a.mentor join fetch a.mentee
             where a.mentor.id = :accountId or a.mentee.id = :accountId order by case when a.endedAt is null then 0 else 1 end, a.startedAt desc

@@ -4,7 +4,6 @@ import { COURSE_CODE, COURSE_NAME, openCourseSection, signIn, signOut } from './
 const QUIZ = 'Stacks and queues check'
 
 test('a teacher marks a written quiz answer and the student then sees the score', async ({ page }) => {
-  // cse24002 takes the quiz and answers only the written question.
   await signIn(page, 'lms', 'cse24002')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Quizzes')
@@ -21,7 +20,6 @@ test('a teacher marks a written quiz answer and the student then sees the score'
   await expect(page.getByText('Your result appears once your teacher has marked the written answers.')).toBeVisible()
   await signOut(page)
 
-  // emp1021 marks it.
   await signIn(page, 'lms', 'emp1021')
   await page.getByRole('link', { name: `Open LMS course ${COURSE_CODE}` }).click()
   await openCourseSection(page, 'Quizzes')
@@ -36,7 +34,6 @@ test('a teacher marks a written quiz answer and the student then sees the score'
   await expect(page.getByText(/Score 3\.00 \/ 10\.00|Score 3 \/ 10/)).toBeVisible()
   await signOut(page)
 
-  // cse24002 sees the result.
   await signIn(page, 'lms', 'cse24002')
   await page.getByRole('link', { name: new RegExp(COURSE_NAME) }).first().click()
   await openCourseSection(page, 'Quizzes')

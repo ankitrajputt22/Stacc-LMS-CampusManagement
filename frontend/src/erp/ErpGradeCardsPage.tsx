@@ -10,7 +10,6 @@ import { Button, Card, PageHeader, SelectField } from '../ui'
 import { ExamsTabs } from './ExamsTabs'
 import { gpa, plain } from './examFormat'
 
-/** Exams & Results → Grade cards: a printable grade card of one semester, from the published results. */
 export function ErpGradeCardsPage() {
   const standing = useApiQuery(queryKeys.erp.standing(), getMyStanding)
   const academic = useApiQuery(queryKeys.academic.myProfile(), getMyAcademicProfile)

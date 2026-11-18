@@ -18,7 +18,6 @@ import com.stacc.backend.lms.quiz.QuizResultRelease;
 import com.stacc.backend.lms.quiz.QuizType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** A quiz with its settings and questions, for the faculty who teach the course. */
 public record LmsQuizResponse(
         Long id,
         Long lmsCourseId,
@@ -44,7 +43,6 @@ public record LmsQuizResponse(
         @Schema(description = "The questions in order.")
         List<Question> questions) {
 
-    /** One question of the quiz: its place and marks here, and what the bank says about it. */
     public record Question(
             @Schema(description = "The ID of this question in this quiz, used to re-mark, move, or remove it.")
             Long id,

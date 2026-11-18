@@ -23,13 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins decide who teaches each course offering: a faculty member is assigned as primary or co-faculty, the role can
- * change, and an assignment is made inactive instead of deleted, so its history stays. An active assignment is what
- * gives a faculty member attendance, results, and LMS access for the offering (through
- * {@code FacultyTeachingAccessService}), so every change takes effect at once. Every change locks the offering first,
- * so it never ends up with two active primary faculty members.
- */
 @Service
 @Transactional
 public class FacultyAssignmentService {
@@ -58,7 +51,6 @@ public class FacultyAssignmentService {
         this.loader = loader;
     }
 
-    /** Every assignment of one offering, active first, with names where a person profile exists. */
     @Transactional(readOnly = true)
     public List<OfferingFaculty> forOffering(Long courseOfferingId) {
         if (!offerings.existsById(courseOfferingId)) {
@@ -67,7 +59,6 @@ public class FacultyAssignmentService {
         return loader.forOffering(courseOfferingId);
     }
 
-    /** Faculty profiles whose login ID contains the text, by login ID, at most 50. Empty text lists the first 50. */
     @Transactional(readOnly = true)
     public List<FacultyLookupResponse> lookup(String query) {
         String text = query == null ? "" : query.strip().toLowerCase(java.util.Locale.ROOT);
@@ -79,10 +70,6 @@ public class FacultyAssignmentService {
                 .toList();
     }
 
-    /**
-     * Assigns a faculty member to an offering. An earlier inactive assignment of the same pair is made active again
-     * with the new role, so there is always one row per pair and its history is kept.
-     */
     public OfferingFaculty assign(FacultyAssignmentCreate request) {
         CourseOffering offering = lockOpenOffering(request.courseOfferingId());
         FacultyProfile faculty = facultyProfiles.findWithAccountById(request.facultyProfileId())
@@ -109,7 +96,6 @@ public class FacultyAssignmentService {
         return loader.describe(assignments.findWithFacultyById(saved.getId()).orElseThrow());
     }
 
-    /** Changes the role or makes the assignment active or inactive. Making it active again checks the faculty member. */
     public OfferingFaculty update(Long teachingAssignmentId, FacultyAssignmentUpdate request) {
         TeachingAssignment assignment = assignments.findWithFacultyById(teachingAssignmentId)
                 .orElseThrow(() -> AcademicMasterErrors.notFound(NOT_FOUND));

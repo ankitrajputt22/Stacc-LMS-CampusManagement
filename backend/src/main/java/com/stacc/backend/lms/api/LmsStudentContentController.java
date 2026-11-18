@@ -35,8 +35,6 @@ public class LmsStudentContentController {
         this.completions = completions;
     }
 
-    // The same rule as the student course routes. Whether this student may open this course, and which
-    // content is published, is decided by the query, every time.
     @GetMapping("/courses/{lmsCourseId}/content")
     @PreAuthorize("hasRole('STUDENT') and hasAuthority('LMS_COURSE_VIEW')")
     @Operation(

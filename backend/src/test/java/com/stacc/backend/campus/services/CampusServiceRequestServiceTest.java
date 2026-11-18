@@ -83,8 +83,6 @@ class CampusServiceRequestServiceTest {
         return request;
     }
 
-    // Creating
-
     @Test
     void aServiceThatNeedsApprovalStartsSubmittedWithItsApprovalLinked() {
         ArgumentCaptor<CampusServiceRequest> saved = ArgumentCaptor.forClass(CampusServiceRequest.class);
@@ -175,8 +173,6 @@ class CampusServiceRequestServiceTest {
                         refusal -> assertThat(refusal.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
     }
 
-    // Cancelling
-
     @Test
     void cancellingAPendingRequestCancelsItsApprovalInTheEngine() {
         CampusServiceRequest request = stored(CampusFixtures.request(42, idCard, student, pending));
@@ -212,7 +208,6 @@ class CampusServiceRequestServiceTest {
         assertRefused(() -> service.cancel(70L, 44L), HttpStatus.CONFLICT, CampusServiceRequestService.CANNOT_CANCEL);
         assertThat(lost.getStatus()).isEqualTo(CampusServiceRequestStatus.REJECTED);
 
-        // Approved first: the request is accepted for handling and may still be cancelled before completion.
         ApprovalRequest approved = CampusFixtures.approved(14, student, admin);
         CampusServiceRequest open = stored(CampusFixtures.request(45, idCard, student, approved));
         when(approvals.cancelApprovalIfPending(14L, 70L)).thenReturn(false);
@@ -241,8 +236,6 @@ class CampusServiceRequestServiceTest {
         assertRefused(() -> service.cancel(70L, 999L), HttpStatus.NOT_FOUND, CampusServiceRequestService.NOT_FOUND);
         verify(approvals, never()).cancelApprovalIfPending(anyLong(), any());
     }
-
-    // Completing
 
     @Test
     void anApprovedRequestCompletesOnceAndTellsTheRequester() {
@@ -280,7 +273,6 @@ class CampusServiceRequestServiceTest {
             assertRefused(() -> service.complete(adminActor, id), HttpStatus.CONFLICT,
                     CampusServiceRequestService.CANNOT_COMPLETE);
         }
-        // The rejection reached the business status; the approval was never touched.
         assertThat(rejected.getStatus()).isEqualTo(CampusServiceRequestStatus.REJECTED);
         assertThat(pending.getStatus()).isEqualTo(ApprovalRequestStatus.PENDING);
         verify(notifications, never()).serviceCompleted(any());

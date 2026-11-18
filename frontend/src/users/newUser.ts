@@ -1,6 +1,5 @@
 import type { RoleName } from '../types/users'
 
-/** The values of the Add user form, as typed. */
 export type Values = {
   loginId: string
   fullName: string
@@ -25,7 +24,6 @@ export const EMPTY: Values = {
 
 export type Errors = Partial<Record<keyof Values | 'roles', string>>
 
-/** Obvious mistakes, caught before sending. The backend checks everything again, including the password policy. */
 export function checkNewUser(values: Values, roles: RoleName[]): Errors {
   const errors: Errors = {}
   if (values.loginId.trim() === '') errors.loginId = 'Enter the login ID.'

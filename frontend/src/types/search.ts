@@ -1,6 +1,3 @@
-// Global search exactly as the backend sends it (SearchResponses in com.stacc.backend.search). Results are plain
-// text; the action path is an internal route that the destination page checks again.
-
 export const SEARCH_RESULT_TYPES = [
   'COURSE',
   'TEACHING_COURSE',
@@ -30,7 +27,6 @@ export type SearchResultItem = {
   title: string
   subtitle: string | null
   snippet: string | null
-  /** An internal route such as /courses/42; the page it opens checks access again. */
   actionPath: string
   occurredAt: string | null
 }
@@ -38,9 +34,7 @@ export type SearchResultItem = {
 export type SearchSection = {
   type: SearchResultType
   label: string
-  /** How many results of this kind the signed-in account may see. */
   totalCount: number
-  /** At most 5. */
   items: SearchResultItem[]
 }
 

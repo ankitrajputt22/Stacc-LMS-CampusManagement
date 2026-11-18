@@ -5,11 +5,6 @@ import { useApiQuery } from '../api/useApiQuery'
 import { Card } from '../ui'
 import { textLinkClasses } from '../ui/styles'
 
-/**
- * The student's own progress in the course: required pages completed, and Continue to the next one. Shown only when
- * the course has required pages; worked out by the backend every time, never stored. It is the student's own view, not
- * a grade.
- */
 export function CourseProgressCard({ lmsCourseId }: { lmsCourseId: number }) {
   const progress = useApiQuery(queryKeys.lms.progress(lmsCourseId), (signal) => getCourseProgress(lmsCourseId, signal))
   if (progress.status !== 'loaded' || progress.data.requiredPages === 0) {

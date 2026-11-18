@@ -1,7 +1,3 @@
-// The campus API exactly as the backend sends it (CampusServiceResponses and CampusNoticeResponses in
-// com.stacc.backend.campus). The request status is the business status; when a service needs approval, the approval
-// status is the approval engine's and is sent separately. Requesters never see account details.
-
 import type { ApprovalHistoryEntry, ApprovalStatus, ApprovalStep } from './approvals'
 
 export type CampusRequestStatus = 'SUBMITTED' | 'APPROVED' | 'IN_PROGRESS' | 'READY' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
@@ -9,7 +5,6 @@ export type CampusNoticeStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
 export type Page<T> = { items: T[]; page: number; size: number; totalElements: number; totalPages: number }
 
-/** A service the signed-in account may request. */
 export type CampusService = {
   serviceId: number
   code: string
@@ -38,11 +33,9 @@ export type CampusRequestDetail = {
   serviceCode: string
   serviceName: string
   subject: string
-  /** Plain text. */
   details: string
   status: CampusRequestStatus
   approvalStatus: ApprovalStatus | null
-  /** The approver's comment, exactly as written, when the approval was rejected. */
   rejectionComment: string | null
   canCancel: boolean
   submittedAt: string
@@ -50,20 +43,15 @@ export type CampusRequestDetail = {
   approvalSteps: ApprovalStep[]
   processingAt: string | null
   readyAt: string | null
-  /** The document issued with the request, kept in the requester's document vault. */
   issuedDocumentTitle: string | null
 }
 
 export type CampusNotice = {
   noticeId: number
-  /** Plain text. */
   title: string
-  /** Plain text. */
   message: string
   publishedAt: string
 }
-
-// --- Admin
 
 export type AdminCampusService = {
   serviceId: number

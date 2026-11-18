@@ -15,10 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two reports of the same post by the same student at once leave one open report; hiding resolves it, and students
- * then no longer see the thread; a locked thread takes no replies. Uses a thread of its own in CS301's published course.
- */
 class LmsDiscussionModerationMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

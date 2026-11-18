@@ -21,10 +21,8 @@ const RATINGS: { value: ReviewRating; label: string }[] = [
   { value: 'EASY', label: 'Easy' },
 ]
 
-/** Reviews the cards of one set that are due today, one at a time: show the front, then the answer, then rate it. */
 function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFlashcardSet; onClose: () => void }) {
   const queryClient = useQueryClient()
-  // The college's day, as the backend counts due cards.
   const today = set.today
   const [queue, setQueue] = useState<AiFlashcard[]>(() => set.cards.filter((card) => card.dueOn <= today))
   const [shown, setShown] = useState(false)
@@ -41,11 +39,9 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
     setError(null)
     try {
       const next = await reviewFlashcard(lmsCourseId, set.id, card.id, rating)
-      // A card rated Again is due today, so it comes round once more at the end.
       setQueue((current) => [...current.slice(1), ...(next.dueOn <= today ? [next] : [])])
       setShown(false)
       setReviewed((count) => count + 1)
-      // A review is learning evidence: mastery and next steps may have changed.
       void queryClient.invalidateQueries({ queryKey: queryKeys.lms.mastery(lmsCourseId) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.lms.studyHome() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.lms.flashcardSets(lmsCourseId) })
@@ -105,10 +101,6 @@ function Review({ lmsCourseId, set, onClose }: { lmsCourseId: number; set: AiFla
   )
 }
 
-/**
- * Flashcards (v0.15.3): the student makes sets with AI from a published page, module, file, or the whole course, and
- * reviews the cards due today with spaced repetition. Sets are the student's own; deleting one is for good.
- */
 export function FlashcardsPanel({ lmsCourseId, choices }: { lmsCourseId: number; choices: SummaryChoices }) {
   const id = useId()
   const queryClient = useQueryClient()

@@ -24,11 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Global search. The caller, its roles, and its permissions come from the access token; no request names an account.
- * GLOBAL_SEARCH_USE only lets an account use search: every kind of result is still decided by its own domain's rules,
- * and a kind the account may not see is simply absent.
- */
 @RestController
 @RequestMapping("/api/v1/search")
 @Tag(name = "Search")

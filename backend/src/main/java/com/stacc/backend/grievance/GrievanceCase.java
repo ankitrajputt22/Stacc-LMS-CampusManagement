@@ -16,10 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A confidential grievance. It moves forward only: submitted, under review, resolved; the complainant then accepts the
- * resolution (closed) or appeals once (appealed), and the committee's appeal decision closes it. Never deleted.
- */
 @Entity
 @Table(name = "grievance_cases")
 public class GrievanceCase {
@@ -27,7 +23,6 @@ public class GrievanceCase {
     public enum Status { SUBMITTED, UNDER_REVIEW, RESOLVED, APPEALED, CLOSED }
 
     public static final int MAX_TEXT = 10_000;
-    /** How long after a resolution the complainant may appeal. */
     public static final Duration APPEAL_WINDOW = Duration.ofDays(14);
 
     @Id
@@ -112,7 +107,6 @@ public class GrievanceCase {
         caseNumber = String.format("GRV-%06d", id);
     }
 
-    /** The committee starts its review; again changes nothing. */
     public boolean startReview(Instant now) {
         if (status == Status.UNDER_REVIEW) {
             return false;
@@ -133,7 +127,6 @@ public class GrievanceCase {
         status = Status.RESOLVED;
     }
 
-    /** The complainant appeals once, within the appeal window after the resolution. */
     public void appeal(String reason, Instant now) {
         require(Status.RESOLVED, "Only a resolved grievance can be appealed, once.");
         if (!now.isBefore(resolvedAt.plus(APPEAL_WINDOW))) {
@@ -145,7 +138,6 @@ public class GrievanceCase {
         status = Status.APPEALED;
     }
 
-    /** The complainant accepts the resolution, which closes the case. */
     public void accept(Instant now) {
         require(Status.RESOLVED, "Only a resolved grievance can be accepted.");
         status = Status.CLOSED;
@@ -159,7 +151,6 @@ public class GrievanceCase {
         closedAt = now;
     }
 
-    /** Past its respond-by time with no answer yet, worked out on read. */
     public boolean overdue(Instant now) {
         return status == Status.SUBMITTED && now.isAfter(respondBy) || status == Status.APPEALED && now.isAfter(appealRespondBy);
     }

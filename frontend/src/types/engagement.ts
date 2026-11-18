@@ -12,7 +12,6 @@ export type CampusGroup = {
   active: boolean
   members: number
   officers: { officerId: number; loginId: string; title: OfficerTitle }[]
-  /** PENDING or ACTIVE when the signed-in account has asked or belongs; null otherwise. */
   myMembership: 'PENDING' | 'ACTIVE' | null
   iAmOfficer: boolean
 }
@@ -21,7 +20,6 @@ export type GroupMember = { membershipId: number; loginId: string; status: 'PEND
 
 export type FacilityKind = 'ROOM' | 'CLASSROOM' | 'LAB' | 'EQUIPMENT' | 'HALL' | 'COURT' | 'GROUND' | 'OTHER'
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
-/** Weekly class hours in the college's time zone; no booking overlaps them. */
 export type ClassHour = { classHourId: number; dayOfWeek: DayOfWeek; startsAt: string; endsAt: string; label: string }
 
 export type CampusFacility = {
@@ -31,7 +29,6 @@ export type CampusFacility = {
   kind: FacilityKind
   location: string | null
   capacity: number | null
-  /** Daily hours in the college's time zone, such as 08:00. */
   opensAt: string
   closesAt: string
   needsApproval: boolean
@@ -72,10 +69,8 @@ export type CampusEvent = {
   waitlisted: number
   myRegistration: 'REGISTERED' | 'WAITLISTED' | null
   myWaitlistPosition: number | null
-  /** Why the signed-in account cannot register, in words from the backend; empty when it can. */
   cannotRegisterBecause: string[]
   canManage: boolean
-  /** Marked as a trial: attendees get Selected or Not selected. */
   trial: boolean
 }
 
@@ -110,11 +105,9 @@ export type GroupSession = {
 
 export type GroupAnnouncement = { announcementId: number; title: string; message: string; createdAt: string }
 
-/** A group's sessions and announcements; canManage when the account may add them (officers, the campus office). */
 export type GroupActivity = { canManage: boolean; sessions: GroupSession[]; announcements: GroupAnnouncement[] }
 
 export type EventCheckInCode = { code: string; validFrom: string; validUntil: string }
-/** certificateEligible: attended and the event has ended. */
 export type TrialOutcome = 'SELECTED' | 'NOT_SELECTED'
 export type MyEventAttendance = { registered: boolean; attendedAt: string | null; certificateEligible: boolean; trialOutcome: TrialOutcome | null }
 export type EventAttendanceRow = {
@@ -127,8 +120,6 @@ export type EventAttendanceRow = {
   trialOutcome: TrialOutcome | null
 }
 export type EventCheckIn = { loginId: string; attendedAt: string; alreadyCheckedIn: boolean }
-
-// --- Fests (FestService views)
 
 export type FestStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 export type VolunteerStatus = 'APPLIED' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN'
@@ -149,7 +140,6 @@ export type FestShift = {
 export type CampusFest = {
   festId: number
   name: string
-  /** Plain text. */
   description: string | null
   startsOn: string
   endsOn: string
@@ -170,14 +160,10 @@ export type FestApplication = {
   appliedAt: string
 }
 
-// --- Teams (TeamService views)
-
 export type TeamRole = 'PLAYER' | 'CAPTAIN' | 'VICE_CAPTAIN'
 export type TeamPlayer = { playerId: number; loginId: string; role: TeamRole; joinedAt: string }
 export type CampusTeam = { teamId: number; name: string; season: string; active: boolean; players: TeamPlayer[] }
 export type GroupTeams = { canManage: boolean; teams: CampusTeam[] }
-
-// --- Tournaments (TournamentService views)
 
 export type TournamentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 export type FixtureStatus = 'SCHEDULED' | 'PLAYED' | 'CANCELLED'
@@ -190,7 +176,6 @@ export type Fixture = {
   startsAt: string
   venue: string | null
   status: FixtureStatus
-  /** Scores are text as recorded, such as "152/6". */
   homeScore: string | null
   awayScore: string | null
   result: FixtureResult | null
@@ -203,7 +188,6 @@ export type Tournament = {
   season: string
   status: TournamentStatus
   fixtures: Fixture[]
-  /** Worked out from played matches by the backend: 3 points for a win, 1 for a draw. */
   standings: Standing[]
 }
 export type TeamOption = { teamId: number; name: string; season: string; groupName: string }

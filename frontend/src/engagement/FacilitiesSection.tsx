@@ -193,7 +193,6 @@ function MyBookings() {
   )
 }
 
-/** Facilities with hours and closures, their taken times, booking, and the account's own bookings. */
 export function FacilitiesSection({ canBook }: { canBook: boolean }) {
   const facilities = useApiQuery(queryKeys.engagement.facilities(), (signal) => getFacilities(signal))
   return (

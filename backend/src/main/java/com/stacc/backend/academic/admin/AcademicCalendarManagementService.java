@@ -18,14 +18,6 @@ import com.stacc.backend.academic.session.AcademicSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, edit, publish, and cancel official calendar events. An event belongs to an academic session
- * and, optionally, to one semester of that same session, both loaded on the server from the IDs sent. A new event is
- * a draft. A draft can be edited in full; once published, its session and semester are fixed and only its title,
- * description, category, and dates can be corrected; a cancelled event cannot be changed at all. Publishing and
- * cancelling record their time from the server's clock and tell the users who see the event in their Inbox, with no
- * email or push. Nothing is ever restored or deleted.
- */
 @Service
 @Transactional
 public class AcademicCalendarManagementService {
@@ -58,10 +50,6 @@ public class AcademicCalendarManagementService {
         this.notifications = notifications;
     }
 
-    /**
-     * Events in every status, narrowed by each filter that is not null, the earliest start first. The dates keep the
-     * events that overlap them; a semester keeps the events of exactly that semester.
-     */
     @Transactional(readOnly = true)
     public List<AdminCalendarEventResponse> list(LocalDate from, LocalDate to, Long academicSessionId, Long semesterId,
             AcademicCalendarEventStatus status) {
@@ -80,7 +68,6 @@ public class AcademicCalendarManagementService {
                 .orElseThrow(() -> AcademicMasterErrors.notFound(NOT_FOUND));
     }
 
-    /** Creates a draft. Nothing else about its status can be sent. */
     public AdminCalendarEventResponse create(AcademicCalendarEventCreate request) {
         requireDates(request.startDate(), request.endDate());
         AcademicSession session = findSession(request.academicSessionId());
@@ -101,17 +88,12 @@ public class AcademicCalendarManagementService {
             event.rescope(session, findSemesterOf(request.semesterId(), session));
         } else if (!request.academicSessionId().equals(event.getAcademicSession().getId())
                 || !Objects.equals(request.semesterId(), event.getSemester() == null ? null : event.getSemester().getId())) {
-            // Moving a published event would silently take it off some calendars and put it on others.
             throw AcademicMasterErrors.conflict(SCOPE_FIXED);
         }
         event.edit(request.title(), request.description(), request.category(), request.startDate(), request.endDate());
         return AdminCalendarEventResponse.of(events.saveAndFlush(event));
     }
 
-    /**
-     * Publishes a draft and tells everyone who will see it. An already published event stays as it is and tells nobody
-     * again; a cancelled one is refused.
-     */
     public AdminCalendarEventResponse publish(Long eventId) {
         AcademicCalendarEvent event = findForUpdate(eventId);
         if (event.isCancelled()) {
@@ -126,10 +108,6 @@ public class AcademicCalendarManagementService {
         return AdminCalendarEventResponse.of(saved);
     }
 
-    /**
-     * Cancels a draft or a published event. A published one tells everyone who saw it; a draft was never seen, so
-     * nobody is told. An already cancelled event stays as it is.
-     */
     public AdminCalendarEventResponse cancel(Long eventId) {
         AcademicCalendarEvent event = findForUpdate(eventId);
         boolean wasPublished = event.getStatus() == AcademicCalendarEventStatus.PUBLISHED;
@@ -158,7 +136,6 @@ public class AcademicCalendarManagementService {
         return sessions.findById(academicSessionId).orElseThrow(() -> AcademicMasterErrors.notFound(SESSION_MISSING));
     }
 
-    /** The semester named, or null for a session-wide event. It must be a semester of the given session. */
     private Semester findSemesterOf(Long semesterId, AcademicSession session) {
         if (semesterId == null) {
             return null;

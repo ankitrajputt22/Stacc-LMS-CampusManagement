@@ -14,11 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Read-only answers about assignments, for faculty: one course's assignments, and all assignments of the
- * courses they teach. Which courses count comes from official teaching assignments every time. Archived
- * assignments are kept but not listed.
- */
 @Service
 @Transactional(readOnly = true)
 public class LmsFacultyAssignmentQueryService {
@@ -38,12 +33,6 @@ public class LmsFacultyAssignmentQueryService {
         this.assignments = assignments;
     }
 
-    /**
-     * The draft and published assignments of a course the faculty member teaches, earliest deadline first.
-     * A course they may not use answers the same 404 as a course that does not exist.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<LmsFacultyAssignmentResponse> getManagedAssignments(Long userAccountId, Long lmsCourseId) {
         if (!facultyAccess.canAccessCourse(userAccountId, lmsCourseId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, COURSE_UNAVAILABLE_MESSAGE);
@@ -57,14 +46,6 @@ public class LmsFacultyAssignmentQueryService {
                 .toList();
     }
 
-    /**
-     * The draft and published assignments of every course the faculty member may use right now, earliest
-     * deadline first. The courses are the ones in their course list, decided by the same rule as every
-     * single-course check: an active faculty profile, an active teaching assignment, and a draft or
-     * published LMS course.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public List<LmsFacultyAssignmentOverviewResponse> getMyAssignments(Long userAccountId) {
         Map<Long, LmsFacultyCourseSummaryResponse> coursesById = facultyCourses.getAccessibleCourses(userAccountId).stream()
                 .collect(Collectors.toMap(LmsFacultyCourseSummaryResponse::lmsCourseId, Function.identity(), (first, same) -> first));

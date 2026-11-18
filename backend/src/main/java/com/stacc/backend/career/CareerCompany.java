@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A company that recruits through the college. Made inactive, never deleted. */
 @Entity
 @Table(name = "career_companies")
 public class CareerCompany {
@@ -35,7 +34,6 @@ public class CareerCompany {
     private Instant createdAt;
 
     protected CareerCompany() {
-        // Required by JPA.
     }
 
     public CareerCompany(String name, String website, String description, Instant now) {

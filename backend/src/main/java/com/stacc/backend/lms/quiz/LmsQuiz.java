@@ -22,13 +22,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * A quiz of one LMS course: its title, instructions, type, and the rules students take it under. Its questions are
- * {@link LmsQuizQuestion} rows. A new quiz is a draft; publishing records the first publication; an archived quiz is
- * kept and can no longer change. After publishing, the type, shuffling, and negative marking stay as they are, and the
- * questions are fixed; the title, instructions, availability, time limit, attempt limit, and result settings may still
- * be corrected.
- */
 @Entity
 @Table(name = "lms_quizzes")
 public class LmsQuiz {
@@ -39,7 +32,6 @@ public class LmsQuiz {
     public static final int MAX_ATTEMPTS = 100;
     public static final int MAX_QUESTIONS = 100;
     public static final BigDecimal MAX_NEGATIVE_PERCENT = new BigDecimal("100");
-    /** The range of moments accepted: wide enough for any real course, and storable in MySQL. */
     public static final Instant EARLIEST_MOMENT = Instant.parse("2000-01-01T00:00:00Z");
     public static final Instant LATEST_MOMENT = Instant.parse("9999-12-31T00:00:00Z");
 
@@ -50,7 +42,6 @@ public class LmsQuiz {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: the LMS course is never created or deleted through a quiz.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
     private LmsCourse lmsCourse;
@@ -119,7 +110,6 @@ public class LmsQuiz {
     private Instant updatedAt;
 
     protected LmsQuiz() {
-        // Required by JPA.
     }
 
     public LmsQuiz(LmsCourse lmsCourse, Long createdByAccountId, LmsQuizSettings settings) {
@@ -128,11 +118,6 @@ public class LmsQuiz {
         write(settings);
     }
 
-    /**
-     * Changes the settings. A draft may change anything; a published quiz keeps its type, shuffling, and negative
-     * marking (an {@link IllegalStateException} otherwise). An archived quiz can no longer change. Without a format the
-     * instructions keep their current one.
-     */
     public void edit(LmsQuizSettings settings) {
         requireNotArchived();
         Require.notNull(settings, "settings");
@@ -144,7 +129,6 @@ public class LmsQuiz {
         write(settings);
     }
 
-    /** Publishes a draft now. Publishing a published quiz changes nothing; an archived one cannot be published. */
     public void publish(Instant at) {
         requireNotArchived();
         if (status != LmsContentStatus.PUBLISHED) {
@@ -153,12 +137,10 @@ public class LmsQuiz {
         }
     }
 
-    /** Keeps the quiz for history only. Archiving again changes nothing; nothing restores it. */
     public void archive() {
         this.status = LmsContentStatus.ARCHIVED;
     }
 
-    /** Whether an attempt may start now: from the opening time (or publication) until the closing time. */
     public QuizAvailability availabilityAt(Instant now) {
         if (availableFrom != null && now.isBefore(availableFrom)) {
             return QuizAvailability.NOT_OPEN;
@@ -220,10 +202,6 @@ public class LmsQuiz {
         this.showAnswers = settings.showAnswers();
     }
 
-    /**
-     * Whether results of fully marked attempts may be shown now: at once after marking, or for {@code AFTER_DUE_DATE}
-     * from the due date (or the closing time without one; at once with neither).
-     */
     public boolean resultsReleasedAt(Instant now) {
         if (resultRelease == QuizResultRelease.AFTER_MARKING) {
             return true;
@@ -236,7 +214,6 @@ public class LmsQuiz {
         return resultRelease;
     }
 
-    /** Whether results come with the correct answers and explanations. */
     public boolean isShowAnswers() {
         return showAnswers;
     }
@@ -255,7 +232,6 @@ public class LmsQuiz {
         return moment;
     }
 
-    // A percentage of a question's marks taken off for a wrong answer: 0 (none) to 100, with at most two decimals.
     private static BigDecimal validNegative(BigDecimal percent) {
         BigDecimal value = percent == null ? BigDecimal.ZERO : percent;
         if (value.signum() < 0 || value.compareTo(MAX_NEGATIVE_PERCENT) > 0 || value.stripTrailingZeros().scale() > 2) {
@@ -316,7 +292,6 @@ public class LmsQuiz {
         return shuffleOptions;
     }
 
-    /** The share of a question's marks taken off for a wrong objective answer, with two decimal places. */
     public BigDecimal getNegativeMarkPercent() {
         return negativeMarkPercent;
     }

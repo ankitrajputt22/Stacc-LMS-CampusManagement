@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ClassTimetableSlotRepository extends JpaRepository<ClassTimetableSlot, Long> {
 
-    /** The slots in use of these offerings, with each offering's course, semester, and section. */
     @Query("""
             select slot from ClassTimetableSlot slot
             join fetch slot.courseOffering offering
@@ -23,7 +22,6 @@ public interface ClassTimetableSlotRepository extends JpaRepository<ClassTimetab
             """)
     List<ClassTimetableSlot> findActiveForOfferings(@Param("offeringIds") Collection<Long> offeringIds);
 
-    /** The slots in use of every offering of a semester. */
     @Query("""
             select slot from ClassTimetableSlot slot
             join fetch slot.courseOffering offering
@@ -34,10 +32,6 @@ public interface ClassTimetableSlotRepository extends JpaRepository<ClassTimetab
             """)
     List<ClassTimetableSlot> findActiveForSemester(@Param("semesterId") Long semesterId);
 
-    /**
-     * The slots in use of an academic session on one day, read after the session's row lock with a locking read, so the
-     * check sees every slot committed before the lock (a plain read could see an older snapshot).
-     */
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("""
             select slot from ClassTimetableSlot slot

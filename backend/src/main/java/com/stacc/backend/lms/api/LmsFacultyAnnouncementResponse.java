@@ -8,7 +8,6 @@ import com.stacc.backend.lms.content.LmsContentStatus;
 import com.stacc.backend.lms.content.LmsTextFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One announcement as faculty manage it. */
 public record LmsFacultyAnnouncementResponse(
         @Schema(example = "5")
         Long id,

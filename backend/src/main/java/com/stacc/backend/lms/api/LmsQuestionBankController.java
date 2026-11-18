@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The question bank of a course, for the faculty who teach it. Students have no route here: questions carry answers. */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS question bank")

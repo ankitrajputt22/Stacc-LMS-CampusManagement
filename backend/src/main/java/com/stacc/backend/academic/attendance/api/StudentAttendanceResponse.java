@@ -6,10 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The signed-in student's own finalized attendance, one entry per course offering that has at least one
- * finalized session. Open sessions are never included. There is no threshold, warning, or eligibility here.
- */
 public record StudentAttendanceResponse(List<Course> courses) {
 
     public record Course(

@@ -17,10 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * One resident on a roll call sheet: UNMARKED until the warden marks them PRESENT, ABSENT, or OUT. A resident whose
- * last gate movement was going out starts as OUT; nobody starts as ABSENT.
- */
 @Entity
 @Table(name = "hostel_roll_call_entries")
 public class HostelRollCallEntry {
@@ -59,7 +55,6 @@ public class HostelRollCallEntry {
     private Instant markedAt;
 
     protected HostelRollCallEntry() {
-        // Required by JPA.
     }
 
     public HostelRollCallEntry(HostelRollCall rollCall, HostelAllocation allocation, boolean outside) {
@@ -69,7 +64,6 @@ public class HostelRollCallEntry {
         this.status = outside ? Status.OUT : Status.UNMARKED;
     }
 
-    /** Marks the resident; a sheet only takes real marks, never back to UNMARKED. */
     public void mark(Status marked, UserAccount by, Instant at) {
         if (marked == null || marked == Status.UNMARKED) {
             throw new IllegalArgumentException("Mark each resident present, absent, or out.");

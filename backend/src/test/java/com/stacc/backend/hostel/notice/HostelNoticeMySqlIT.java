@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Publishing the same emergency notice twice at once publishes it once and tells the residents once. Main Hostel, stf2011. */
 class HostelNoticeMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

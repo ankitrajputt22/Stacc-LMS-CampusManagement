@@ -12,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Helpdesk categories: the active ones for requesters, and all of them for admins, who add and edit them. A code is
- * set once. A category is made inactive rather than deleted, so its old tickets keep it.
- */
 @Service
 @Transactional
 public class HelpdeskCategoryService {
@@ -57,12 +53,10 @@ public class HelpdeskCategoryService {
         try {
             return HelpdeskCategoryAdminResponse.of(categories.saveAndFlush(category));
         } catch (DataIntegrityViolationException clash) {
-            // Two requests raced for the same code; the unique constraint refused the second.
             throw new ApiException(HttpStatus.CONFLICT, CODE_TAKEN);
         }
     }
 
-    /** Changes the name, description, and whether new tickets may use it. The code never changes. */
     public HelpdeskCategoryAdminResponse update(Long categoryId, UpdateHelpdeskCategoryRequest request) {
         HelpdeskCategory category = categories.findById(categoryId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));

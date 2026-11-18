@@ -18,10 +18,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
-/**
- * A role that the college can assign to accounts. Role rows are shared
- * reference data, so they are never created or deleted through an account.
- */
 @Entity
 @Table(name = "roles")
 public class Role {
@@ -34,7 +30,6 @@ public class Role {
     @Column(nullable = false, unique = true, length = 50)
     private RoleName name;
 
-    // No cascade: permissions are shared reference data and must never be created or deleted through a role.
     @ManyToMany
     @JoinTable(
             name = "role_permissions",
@@ -43,7 +38,6 @@ public class Role {
     private Set<Permission> permissions = new HashSet<>();
 
     protected Role() {
-        // Required by JPA.
     }
 
     public Role(RoleName name) {
@@ -65,7 +59,6 @@ public class Role {
         return Collections.unmodifiableSet(permissions);
     }
 
-    /** Tells only whether this role currently holds the permission. It is not an access check. */
     public boolean hasPermission(String code) {
         return permissions.stream().anyMatch(permission -> permission.getCode().equals(code));
     }
@@ -81,7 +74,6 @@ public class Role {
         permissions.remove(permission);
     }
 
-    // Two roles are the same role when they have the same unique name.
     @Override
     public boolean equals(Object other) {
         return other instanceof Role role && name == role.getName();

@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""Writes docs/authorization-matrix.md: every API route with the role and permission rule on it, read from the
-controllers' @*Mapping and @PreAuthorize annotations (constants resolved). Routes without @PreAuthorize are listed as
-"signed in" unless SecurityConfig makes them public. Run from the repository root: python3 scripts/authorization-matrix.py
-"""
 import pathlib
 import re
 

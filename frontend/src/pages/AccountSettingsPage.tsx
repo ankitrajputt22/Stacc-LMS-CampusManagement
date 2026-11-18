@@ -234,7 +234,6 @@ function Profile() {
   return <ProfileCard key={profile.data.loginId} profile={profile.data} />
 }
 
-/** /account: the signed-in person's profile, password, and sessions in one place. Needs only a signed-in session. */
 export function AccountSettingsPage() {
   return (
     <div className="max-w-4xl space-y-4">

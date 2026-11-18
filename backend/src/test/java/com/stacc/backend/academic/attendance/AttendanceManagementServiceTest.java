@@ -46,11 +46,6 @@ import org.mockito.InOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Course offering 17 has no LMS course. Faculty A (account 21) and co-teacher C (account 23) teach it; faculty B
- * (account 22) teaches nothing. Students A and B are enrolled, student C has withdrawn. The real teaching access
- * service decides over stand-in repositories, and the stand-ins keep what is saved, as the database would.
- */
 class AttendanceManagementServiceTest {
 
     private static final Long FACULTY_A = 21L;
@@ -94,7 +89,6 @@ class AttendanceManagementServiceTest {
         when(teachingAssignments.findAllByUserAccountIdAndCourseOfferingId(anyLong(), anyLong())).thenReturn(List.of());
         when(teachingAssignments.findAllByUserAccountIdAndCourseOfferingId(FACULTY_A, OFFERING)).thenReturn(List.of(teachingA));
         when(teachingAssignments.findAllByUserAccountIdAndCourseOfferingId(FACULTY_C, OFFERING)).thenReturn(List.of(teachingC));
-        // As the database query: only the offering's enrollments that are enrolled right now.
         when(courseEnrollments.findAllByCourseOfferingIdAndStatus(OFFERING, CourseEnrollmentStatus.ENROLLED))
                 .thenAnswer(call -> enrollmentsOfOffering.stream()
                         .filter(enrollment -> enrollment.getStatus() == CourseEnrollmentStatus.ENROLLED).toList());
@@ -330,7 +324,6 @@ class AttendanceManagementServiceTest {
         serviceAt(NOW).finalizeSession(FACULTY_A, session.getId());
         verifyNoInteractions(notifications);
 
-        // Student A stays present, so only student B, whose record really changes, is told.
         serviceAt(LATER).saveRecords(FACULTY_C, session.getId(),
                 List.of(new RecordChange(a, AttendanceStatus.PRESENT), new RecordChange(b, AttendanceStatus.PRESENT)));
 

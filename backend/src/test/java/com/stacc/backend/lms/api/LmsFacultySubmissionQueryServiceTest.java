@@ -42,11 +42,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Faculty A (account 21) may review LMS course 7, whose published assignment 5 has 20 marks. The access
- * service and the repositories are stand-ins: the access rules themselves are tested with
- * LmsFacultyAccessService and the grading service. Timestamps are fixed UTC moments.
- */
 class LmsFacultySubmissionQueryServiceTest {
 
     private static final Long FACULTY_A = 21L;
@@ -67,7 +62,6 @@ class LmsFacultySubmissionQueryServiceTest {
     private final LmsAssignment assignment = SubmissionFixtures.assignment(course, 5, LmsContentStatus.PUBLISHED);
     private final FacultyProfile grader = mock(FacultyProfile.class);
 
-    /** A submission by the student with this login ID, with its attempts numbered 1 to the count. */
     private LmsAssignmentSubmission submission(LmsAssignment of, long id, String studentLoginId, int attemptCount) {
         LmsAssignmentSubmission created = new LmsAssignmentSubmission(of,
                 SubmissionFixtures.enrollment(of.getLmsCourse(), id + 1000, id + 40, studentLoginId));
@@ -122,7 +116,6 @@ class LmsFacultySubmissionQueryServiceTest {
         when(submissions.findAllWithStudentByAssignmentId(5L)).thenReturn(List.of(early, late));
         when(attempts.findLatestBySubmissionIdIn(List.of(12L, 13L))).thenReturn(List.of(earlyLatest, lateLatest));
         when(attempts.countBySubmissionIdIn(List.of(12L, 13L))).thenReturn(List.of(count(12, 2), count(13, 1)));
-        // Only the older attempt of the first student is graded; its latest attempt is not.
         when(grades.findAllByAttemptIdIn(List.of(102L, 103L))).thenReturn(List.of(grade(lateLatest, "15")));
         assertEquals(1, earlyFirst.getAttemptNumber());
 

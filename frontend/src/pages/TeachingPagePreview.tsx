@@ -35,7 +35,6 @@ function PreviewState({ lmsCourseId, children }: { lmsCourseId: number | null; c
   )
 }
 
-/** Why students cannot see the page yet, from what the API sent, or null when they can. */
 function hiddenBecause(page: LmsFacultyPage): string | null {
   const reasons = [
     page.status === 'DRAFT' && 'the page is a draft',
@@ -45,11 +44,6 @@ function hiddenBecause(page: LmsFacultyPage): string | null {
   return reasons.length === 0 ? null : reasons.join(', ')
 }
 
-/**
- * /teaching/:lmsCourseId/pages/:pageId: a page as students will see it, drafts included, with whether they can see it
- * now. Editing stays in the course content editor. The backend finds the course from the stored page and checks that
- * the faculty member teaches it; anything else shows "Page unavailable".
- */
 export function TeachingPagePreview() {
   const { account } = useAuth()
   const params = useParams()
@@ -101,7 +95,6 @@ export function TeachingPagePreview() {
   }
 
   const data = page.data
-  // The course comes from the stored page, so links use it rather than the address.
   const coursePath = `/teaching/${data.lmsCourseId}`
   const hidden = hiddenBecause(data)
   return (

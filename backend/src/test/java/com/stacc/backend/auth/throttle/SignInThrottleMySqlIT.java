@@ -13,10 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Failed sign-ins on MySQL: failures arriving at the same moment for one login ID are all counted, one row per key,
- * so a burst of guesses cannot slip past the threshold. Uses a login ID and an address no other test uses.
- */
 class SignInThrottleMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

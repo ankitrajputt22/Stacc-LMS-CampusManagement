@@ -3,18 +3,12 @@ import { ActionButton } from '../components/ActionButton'
 const pagerClasses = 'aria-disabled:cursor-not-allowed aria-disabled:text-ink-muted/60 aria-disabled:hover:bg-surface'
 
 type PagerProps = {
-  /** From 0, as the backend counts. */
   page: number
   totalPages: number
-  /** Such as "Ticket pages". */
   label: string
   onPage: (page: number, focusKey: string) => void
 }
 
-/**
- * Previous, "Page X of Y", and Next for a list paged by the backend. The buttons use aria-disabled rather than disabled,
- * so focus stays on them at either end; the caller moves focus back to the same button after the next page loads.
- */
 export function Pager({ page, totalPages, label, onPage }: PagerProps) {
   if (totalPages <= 1) {
     return null

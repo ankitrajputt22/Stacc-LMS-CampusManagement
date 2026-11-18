@@ -23,12 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit course offerings. An offering is one catalog course taught in one semester, both
- * loaded on the server from the IDs sent, at most once per pair. The course and semester say what the offering is:
- * enrollments, teaching assignments, attendance, results, and an LMS course hang off it, so they never change after
- * creation. Only the status can, moving forward from planned to active to closed. Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class CourseOfferingManagementService {
@@ -68,7 +62,6 @@ public class CourseOfferingManagementService {
         this.faculty = faculty;
     }
 
-    /** Offerings narrowed by any of the given IDs that are not null: the latest session first. */
     @Transactional(readOnly = true)
     public List<CourseOfferingResponse> list(Long semesterId, Long courseId, Long academicSessionId, Long programId) {
         List<CourseOffering> found =
@@ -130,8 +123,6 @@ public class CourseOfferingManagementService {
 
     public CourseOfferingResponse update(Long courseOfferingId, CourseOfferingUpdate request) {
         CourseOffering offering = find(courseOfferingId);
-        // A course or semester that is sent must be the stored one: moving an offering would silently move its
-        // enrollments, teaching, attendance, results, and LMS course with it.
         if (differs(request.courseId(), offering.getCourse().getId())
                 || differs(request.semesterId(), offering.getSemester().getId())) {
             throw AcademicMasterErrors.conflict(FIXED);

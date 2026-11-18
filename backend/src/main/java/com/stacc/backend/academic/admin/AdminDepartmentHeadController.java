@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Who heads each department, managed by admins with the department head permissions. */
 @RestController
 @RequestMapping("/api/v1/admin/academic")
 @Tag(name = "Admin department heads")

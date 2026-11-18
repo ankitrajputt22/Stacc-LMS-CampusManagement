@@ -84,7 +84,6 @@ class AiKnowledgeRefresherTest {
         order.verify(records).markReady(COURSE, "f".repeat(64));
         verify(records, never()).markFailed(any(), any());
 
-        // The topic with text and the readable small file; the blank topic, the image, and the oversized file are skipped.
         assertThat(sent.getValue().sources()).extracting(AiServiceMessages.IndexSource::sourceId).containsExactly(1L, 20L);
         assertThat(sent.getValue().contentFingerprint()).isEqualTo("f".repeat(64));
         assertThat(outcome.indexedSourceCount()).isEqualTo(2);

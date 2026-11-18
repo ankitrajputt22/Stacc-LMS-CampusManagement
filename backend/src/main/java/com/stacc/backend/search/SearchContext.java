@@ -4,11 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/**
- * One search request: who is searching, the text, and what the providers looked up for this account already, such as
- * the student's accessible courses, so a preview asks for them once rather than once per section. It lives for one
- * request and is never stored.
- */
 public final class SearchContext {
 
     private final SearchActor actor;
@@ -28,7 +23,6 @@ public final class SearchContext {
         return text;
     }
 
-    /** The value under this key, looked up once per request. */
     @SuppressWarnings("unchecked")
     public <T> T remember(String key, Supplier<T> lookup) {
         if (!memo.containsKey(key)) {

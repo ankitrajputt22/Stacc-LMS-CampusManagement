@@ -36,11 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin user management. Reading needs {@code ADMIN} and {@code USER_VIEW}; every change also needs
- * {@code USER_MANAGE}. The account is always named by the route, the admin always comes from the token, and no answer
- * ever carries a password or a hash. There is no delete: accounts are disabled.
- */
 @RestController
 @RequestMapping("/api/v1/admin/users")
 @Tag(name = "Admin users")

@@ -40,11 +40,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Hostel outings and the gate: residents ask for gate passes and leave, extend leave, open their pass, and report room
- * problems; security checks pass codes and records movements; wardens see overdue students of their hostels. Approval
- * decisions go through the approval task routes.
- */
 @RestController
 @Tag(name = "Hostel outings and gate")
 @ApiResponse(responseCode = "401", description = "No valid access token was sent.",

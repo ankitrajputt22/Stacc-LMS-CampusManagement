@@ -1,11 +1,5 @@
 package com.stacc.backend.campus.api;
 
-/**
- * The route rules of the campus API, in one place. Students and faculty request services and manage their own
- * requests; every role holding CAMPUS_NOTICE_VIEW reads the notice feed; admins manage services, requests, and notices
- * with their own permissions. Approval decisions are not here: they go through the approval task routes, which check
- * the step's role and APPROVAL_TASK_DECIDE. CAMPUS_SERVICE_MANAGE is no approval pass.
- */
 final class CampusAccess {
 
     static final String REQUEST = "hasAnyRole('STUDENT', 'FACULTY') and hasAuthority('CAMPUS_SERVICE_REQUEST_CREATE')";

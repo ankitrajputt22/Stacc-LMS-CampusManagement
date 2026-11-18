@@ -28,16 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Faculty grade one attempt at a time. The attempt's course is found from the stored attempt, never from the
- * request, and {@link LmsFacultyAccessService} must allow the signed-in account to use it; the grader is that
- * account's own faculty profile. An attempt that does not exist, one of an assignment that is not published,
- * and one in a course the caller does not teach all get the same 404.
- *
- * <p>The first grade keeps the assignment's maximum marks at that moment; a revision keeps that maximum and
- * replaces only the marks and feedback, recording the latest grader and time. Lateness never changes the
- * marks: faculty decide them.
- */
 @Service
 @Transactional
 public class LmsAssignmentGradingService {
@@ -73,15 +63,6 @@ public class LmsAssignmentGradingService {
         this.rubrics = rubrics;
     }
 
-    /**
-     * Grades the attempt, or revises its grade. The marks must be from zero up to the maximum: the
-     * assignment's maximum now for a first grade, the grade's own maximum for a revision.
-     *
-     * <p>The attempt row is locked first and the grade is read with a lock, so two graders of the same attempt
-     * take turns and its first grade is created once; a unique constraint backs this up.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     public LmsSubmissionGrade grade(Long userAccountId, Long attemptId, BigDecimal marksAwarded, String feedback) {
         LmsSubmissionAttempt attempt = gradable(userAccountId, attemptId);
         FacultyProfile grader = grader(userAccountId);
@@ -90,19 +71,12 @@ public class LmsAssignmentGradingService {
         }
         String validFeedback = validFeedback(feedback);
         attempts.findByIdForUpdate(attempt.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
-        // Marks given without the rubric replace any rubric scores, so the marks always match what is kept.
         return save(attempt, grader, marksAwarded, validFeedback, LmsSubmissionGrade::clearRubric);
     }
 
-    /** Points for one rubric criterion, with an optional comment. */
     public record RubricScoreInput(Long criterionId, BigDecimal points, String comment) {
     }
 
-    /**
-     * Grades the attempt, or revises its grade, with the assignment's rubric: points for every criterion exactly once,
-     * from 0 to its maximum, with optional comments. The marks are the sum of the points. After the attempt row, the
-     * rubric is read with a shared lock, so it cannot change while the scores are kept.
-     */
     public LmsSubmissionGrade gradeWithRubric(Long userAccountId, Long attemptId, List<RubricScoreInput> scores, String feedback) {
         LmsSubmissionAttempt attempt = gradable(userAccountId, attemptId);
         FacultyProfile grader = grader(userAccountId);
@@ -112,11 +86,8 @@ public class LmsAssignmentGradingService {
             throw new ApiException(HttpStatus.CONFLICT, NO_RUBRIC);
         }
         attempts.findByIdForUpdate(attempt.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
-        // The rubric row first, alone, as an edit does; only then its criteria (see LmsRubricRepository#lockRowForShare).
         rubrics.lockRowForShare(chosen.getId());
         LmsRubric rubric = rubrics.findByIdForShare(chosen.getId()).orElseThrow(LmsAssignmentGradingService::notFound);
-        // An edit that won the rubric lock may have replaced the criteria this request loaded earlier: compare with the
-        // stored ones and refuse cleanly instead of saving scores for criteria that no longer exist.
         java.util.Set<Long> stored = new java.util.HashSet<>(rubrics.findCurrentCriterionIdsForShare(rubric.getId()));
         if (!stored.equals(rubric.getCriteria().stream().map(LmsRubricCriterion::getId).collect(java.util.stream.Collectors.toSet()))) {
             throw new ApiException(HttpStatus.CONFLICT, "The rubric changed while you were grading. Reload the page and grade again.");
@@ -154,16 +125,13 @@ public class LmsAssignmentGradingService {
         return save(attempt, grader, marks, validFeedback, grade -> grade.useRubric(made));
     }
 
-    // Creates the attempt's grade or revises it, with the attempt row already locked; the grade is read with a lock.
     private LmsSubmissionGrade save(LmsSubmissionAttempt attempt, FacultyProfile grader, BigDecimal marksAwarded,
             String validFeedback, Consumer<LmsSubmissionGrade> rubricScores) {
-        // The database keeps microseconds, so the answer shows the same moment as every later read.
         Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         Optional<LmsSubmissionGrade> existing = grades.findForUpdateByAttemptId(attempt.getId());
         if (existing.isPresent()) {
             LmsSubmissionGrade grade = existing.get();
             requireWithin(marksAwarded, grade.getMaxMarksSnapshot());
-            // The student hears about a revision only when the marks or the feedback really changed.
             boolean changed = grade.getMarksAwarded().compareTo(marksAwarded) != 0
                     || !Objects.equals(grade.getFeedback(), validFeedback);
             grade.revise(grader, marksAwarded, validFeedback, now);
@@ -191,14 +159,12 @@ public class LmsAssignmentGradingService {
         return attempt;
     }
 
-    // The same active profile the access rule just accepted for this account.
     private FacultyProfile grader(Long userAccountId) {
         return facultyProfiles.findByUserAccountId(userAccountId)
                 .filter(profile -> profile.getStatus() == FacultyProfileStatus.ACTIVE)
                 .orElseThrow(LmsAssignmentGradingService::notFound);
     }
 
-    // Grading is part of the normal workflow of a published assignment in a course the caller teaches now.
     private boolean isGradable(Long userAccountId, LmsSubmissionAttempt attempt) {
         LmsAssignment assignment = attempt.getSubmission().getAssignment();
         return assignment.getStatus() == LmsContentStatus.PUBLISHED

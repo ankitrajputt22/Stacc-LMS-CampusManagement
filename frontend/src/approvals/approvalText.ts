@@ -1,8 +1,5 @@
 import type { ApprovalStatus, ApprovalStepStatus } from '../types/approvals'
 
-// The one place approval codes become words, for every module that shows approval progress (hostel, campus). Pages
-// never show a raw code. The approval engine owns these statuses; modules only display them.
-
 const APPROVAL: Record<ApprovalStatus, string> = {
   PENDING: 'Pending',
   APPROVED: 'Approved',
@@ -28,7 +25,6 @@ export const COMMENT_MAX = 5000
 export const SIGN_IN_AGAIN =
   'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** A refused change in safe words: the backend's own message for 400, 404, and 409, never request details. */
 export function refusalText(status: number | null, apiMessage: string | null, what = 'save'): string {
   switch (status) {
     case 400:
@@ -44,7 +40,6 @@ export function refusalText(status: number | null, apiMessage: string | null, wh
 
 const tag = 'inline-block shrink-0 rounded-sm border px-1.5 py-0.5 text-xs font-medium'
 
-/** Quiet tag classes: the word carries the meaning, the border only supports it. */
 export function approvalTagClasses(status: string): string {
   switch (status) {
     case 'APPROVED':

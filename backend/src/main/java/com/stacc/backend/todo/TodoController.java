@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The signed-in person's own To-Do list, worked out live. */
 @RestController
 @RequestMapping("/api/v1/me/todo")
 @Tag(name = "To-Do")

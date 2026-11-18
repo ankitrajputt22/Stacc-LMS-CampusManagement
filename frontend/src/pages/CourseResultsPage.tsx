@@ -18,7 +18,6 @@ import { ButtonLink, Card, PageHeader } from '../ui'
 
 const RESULTS = { to: '/results', label: 'Results' }
 
-/** A page state with the breadcrumb above it and a heading for screen readers. */
 function ResultsState({ children }: { children: ReactNode }) {
   return (
     <>
@@ -132,11 +131,6 @@ function CourseResults({ courseOfferingId }: { courseOfferingId: number }) {
   }
 }
 
-/**
- * Official results for one course offering the signed-in faculty member teaches, at /results/:courseOfferingId.
- * The backend checks the teaching assignment on every request; no LMS course is involved, and nothing is calculated
- * from assignments or attendance. Accounts without the faculty role see an explanation instead, and no request is made.
- */
 export function CourseResultsPage() {
   const { account } = useAuth()
   const { courseOfferingId } = useParams()

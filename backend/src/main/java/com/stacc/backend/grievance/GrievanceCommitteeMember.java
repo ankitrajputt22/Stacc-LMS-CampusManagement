@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** An account on a category's committee; ended, never deleted. */
 @Entity
 @Table(name = "grievance_committee_members")
 public class GrievanceCommitteeMember {

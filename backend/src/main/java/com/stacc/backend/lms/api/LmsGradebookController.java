@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The course gradebook for faculty, and each student's own published grades. */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS gradebook")
@@ -54,14 +53,12 @@ public class LmsGradebookController {
         this.studentGrades = studentGrades;
     }
 
-    /** A manual item. */
     public record ItemResponse(Long id, String title, BigDecimal maxMarks, Instant publishedAt) {
         static ItemResponse of(LmsGradeItem item) {
             return new ItemResponse(item.getId(), item.getTitle(), item.getMaxMarks(), item.getPublishedAt());
         }
     }
 
-    /** A student's marks for a manual item. */
     public record EntryResponse(Long courseEnrollmentId, BigDecimal marks, String feedback, Instant gradedAt) {
         static EntryResponse of(LmsGradeEntry entry) {
             return new EntryResponse(entry.getCourseEnrollment().getId(), entry.getMarks(), entry.getFeedback(), entry.getGradedAt());

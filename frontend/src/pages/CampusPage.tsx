@@ -25,11 +25,6 @@ const LABELS: Record<CampusTab, string> = {
   notices: 'Notices',
 }
 
-/**
- * The campus hub at /campus/:tab, one place for every role held: what is happening soon, clubs and sports to join,
- * events to register for, facilities to book, services to request, and notices. The backend decides what each account
- * may see and do; hiding a button here protects nothing.
- */
 export function CampusPage() {
   const { account } = useAuth()
   const { tab = 'happening' } = useParams()

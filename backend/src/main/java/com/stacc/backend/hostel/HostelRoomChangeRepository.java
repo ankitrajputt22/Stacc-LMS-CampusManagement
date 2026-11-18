@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface HostelRoomChangeRepository extends JpaRepository<HostelRoomChange, Long> {
 
-    /** The room changes where the account is the requester or the swap partner, newest first, with both sides. */
     @Query("""
             select change from HostelRoomChange change
             join fetch change.requesterAllocation requester join fetch requester.bed requesterBed
@@ -28,7 +27,6 @@ public interface HostelRoomChangeRepository extends JpaRepository<HostelRoomChan
             """)
     List<HostelRoomChange> findAllForAccount(@Param("accountId") Long accountId);
 
-    /** Every room change in these statuses, oldest first, with both sides. */
     @Query("""
             select change from HostelRoomChange change
             join fetch change.requesterAllocation requester join fetch requester.bed requesterBed
@@ -44,7 +42,6 @@ public interface HostelRoomChangeRepository extends JpaRepository<HostelRoomChan
             """)
     List<HostelRoomChange> findAllInStatuses(@Param("statuses") Collection<HostelRoomChange.Status> statuses);
 
-    /** Whether an open room change involves either allocation, on either side. Called under the student row locks. */
     @Query("""
             select count(change) > 0 from HostelRoomChange change
             where change.status = com.stacc.backend.hostel.HostelRoomChange.Status.OPEN

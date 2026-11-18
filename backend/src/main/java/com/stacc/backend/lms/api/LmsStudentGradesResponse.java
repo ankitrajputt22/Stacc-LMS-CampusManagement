@@ -10,7 +10,6 @@ import com.stacc.backend.lms.gradebook.GradebookBuilder;
 import com.stacc.backend.lms.gradebook.LmsStudentGradesService;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** The signed-in student's own published grades in one course, with the total of what is graded. */
 public record LmsStudentGradesResponse(List<Item> items, BigDecimal totalMarks, BigDecimal totalOutOf) {
 
     public record Item(GradeItemType type, String title, Instant dueAt,

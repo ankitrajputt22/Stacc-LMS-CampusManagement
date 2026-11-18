@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** v0.14.4: several sets from one blueprint, with or without repeats, and what the bank has for each row. */
 class ExamPaperSetsTest {
 
     private static final long FACULTY = 5L;
@@ -88,7 +87,6 @@ class ExamPaperSetsTest {
                     assertThat(refused.getMessage()).startsWith("Set C: Row 1 (A) needs 2 questions");
                 });
         verify(papers, never()).saveAndFlush(any());
-        // Allowing repeats builds them from the same five questions.
         assertThat(service.buildPaperSets(FACULTY, 9L, "End term", null, 60, 3, false)).hasSize(3);
         assertThatThrownBy(() -> service.buildPaperSets(FACULTY, 9L, null, null, 60, 5, false)).isInstanceOf(ApiException.class);
     }

@@ -84,7 +84,6 @@ class TeachingAssignmentTest {
 
     @Test
     void primaryDepartmentDoesNotLimitWhatAFacultyMemberTeaches() {
-        // A computing faculty member may teach a course owned by the mathematics department.
         TeachingAssignment assignment = new TeachingAssignment(facultyA, discreteMaths);
 
         assertSame(computing, assignment.getFacultyProfile().getDepartment());

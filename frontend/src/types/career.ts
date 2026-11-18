@@ -26,7 +26,6 @@ export type VaultDocument = {
   sizeBytes: number
   createdAt: string
   issuedByLoginId: string | null
-  /** For issued documents: the code anyone can check on the public verification page. */
   verificationCode: string | null
   withdrawn: boolean
 }

@@ -17,7 +17,6 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/** A student's flashcard set in one course (v0.15.3). Its cards are part of it and go with it when it is deleted. */
 @Entity
 @Table(name = "ai_flashcard_sets")
 public class AiFlashcardSet {
@@ -37,7 +36,6 @@ public class AiFlashcardSet {
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
 
-    // The set owns its cards: they are made with it and deleted with it.
     @OneToMany(mappedBy = "set", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position")
     private List<AiFlashcard> cards = new ArrayList<>();
@@ -47,7 +45,6 @@ public class AiFlashcardSet {
     private Instant createdAt;
 
     protected AiFlashcardSet() {
-        // Required by JPA.
     }
 
     public AiFlashcardSet(Long lmsCourseId, Long userAccountId, String title) {

@@ -3,16 +3,10 @@ package com.stacc.backend.auth.session;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * How long a sign-in lasts, and how its cookie is sent. A session ends after {@code maxDuration} whatever happens, and
- * earlier after {@code idleTimeout} without a request. The cookie is HttpOnly and SameSite=Lax always; {@code secure}
- * must be true wherever Stacc is served over HTTPS (the prod profile requires it).
- */
 @ConfigurationProperties(prefix = "stacc.session")
 public record SessionProperties(Duration maxDuration, Duration idleTimeout, boolean secureCookie) {
 
     public static final String COOKIE_NAME = "STACC_SESSION";
-    /** Only API requests carry the cookie; pages, images, and scripts never do. */
     public static final String COOKIE_PATH = "/api";
 
     public SessionProperties {

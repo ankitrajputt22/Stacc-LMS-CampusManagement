@@ -5,7 +5,6 @@ import java.time.Instant;
 import com.stacc.backend.academic.attendance.AttendanceSession;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One session as faculty see it in a list. Who created it is not sent. */
 public record AttendanceSessionResponse(
         @Schema(example = "8")
         Long id,

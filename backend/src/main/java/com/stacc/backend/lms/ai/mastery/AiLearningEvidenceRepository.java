@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface AiLearningEvidenceRepository extends JpaRepository<AiLearningEvidence, Long> {
 
-    /** The student's evidence in the course, newest first, at most the most recent few hundred. */
     List<AiLearningEvidence> findTop500ByLmsCourseIdAndUserAccountIdOrderByCreatedAtDescIdDesc(Long lmsCourseId, Long userAccountId);
 
     @Modifying

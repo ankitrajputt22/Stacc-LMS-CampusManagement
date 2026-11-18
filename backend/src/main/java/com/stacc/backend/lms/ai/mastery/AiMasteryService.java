@@ -17,18 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Learning evidence and mastery (v0.15.5). Evidence is recorded when the student's own practice answer is marked or a
- * flashcard is reviewed, for the published page it is about; mastery is worked out per published page on read. Only the
- * student sees it, from the token, under the student access policy; clearing removes their evidence in the course for good.
- */
 @Service
 public class AiMasteryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AiMasteryService.class);
     public static final String COURSE_UNAVAILABLE = "Course not found or unavailable.";
 
-    /** One published page's mastery. */
     public record TopicMastery(long topicId, String title, Mastery.Result result) {
     }
 
@@ -45,10 +39,6 @@ public class AiMasteryService {
         this.clock = clock;
     }
 
-    /**
-     * Records one piece of evidence about a page; a score outside 0 to 1 is clamped. Recording never decides whether the
-     * request it belongs to works: the row is saved in its own short transaction, and a failure is only logged.
-     */
     public void record(Long accountId, Long lmsCourseId, Long topicId, AiLearningEvidence.Kind kind, double score) {
         if (topicId == null) {
             return;
@@ -60,7 +50,6 @@ public class AiMasteryService {
         }
     }
 
-    /** Every published page of the course in course order, with the student's mastery of it. */
     @Transactional(readOnly = true)
     public List<TopicMastery> view(Long accountId, Long lmsCourseId) {
         requireCourse(accountId, lmsCourseId);
@@ -74,7 +63,6 @@ public class AiMasteryService {
                 .toList();
     }
 
-    /** Removes the student's evidence in the course for good; their mastery starts over. */
     @Transactional
     public int clear(Long accountId, Long lmsCourseId) {
         requireCourse(accountId, lmsCourseId);

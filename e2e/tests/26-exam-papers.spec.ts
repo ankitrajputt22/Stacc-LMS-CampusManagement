@@ -7,7 +7,6 @@ test('a faculty member plans a paper with a blueprint, builds it from the bank, 
   await openCourseSection(page, 'Exam papers')
   await expect(page.getByRole('heading', { name: 'Exam papers', level: 1 })).toBeVisible()
 
-  // A one-row blueprint: one reviewed true-or-false question worth 3 marks (the demo bank has one).
   const blueprints = page.getByRole('region', { name: 'Blueprints' })
   await blueprints.getByRole('button', { name: 'New blueprint' }).click()
   await blueprints.getByLabel('Blueprint title').fill('Journey blueprint')
@@ -26,7 +25,6 @@ test('a faculty member plans a paper with a blueprint, builds it from the bank, 
   await expect(page.getByRole('heading', { name: 'Journey paper' })).toBeVisible()
   await expect(page.getByText('1 question · 3 marks · 30 minutes')).toBeVisible()
 
-  // The Word document downloads through the API.
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download Word', exact: true }).click()
   expect((await download).suggestedFilename()).toBe('Journey paper.docx')

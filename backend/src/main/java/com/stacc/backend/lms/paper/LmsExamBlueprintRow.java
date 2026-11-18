@@ -12,10 +12,6 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-/**
- * One row of a blueprint: how many bank questions to take for a section, which ones may be taken (any filter left
- * empty matches every question), and the marks each carries in the paper.
- */
 @Embeddable
 public class LmsExamBlueprintRow {
 
@@ -55,7 +51,6 @@ public class LmsExamBlueprintRow {
     private BigDecimal marksEach;
 
     protected LmsExamBlueprintRow() {
-        // Required by JPA.
     }
 
     public LmsExamBlueprintRow(int position, String sectionTitle, QuestionType questionType, QuestionDifficulty difficulty,
@@ -80,7 +75,6 @@ public class LmsExamBlueprintRow {
         return marks.setScale(2, RoundingMode.UNNECESSARY);
     }
 
-    /** Whether a bank question may fill this row: every filter that is set must match. */
     public boolean matches(QuestionType type, QuestionDifficulty questionDifficulty, BloomLevel level, Long questionOutcomeId,
             String questionTopic) {
         return (questionType == null || questionType == type)

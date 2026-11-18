@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * What clients may send about campus services. No input names a requester, account, status, request number, or
- * approval request: those come from the server and the access token. A service's code is not part of its update.
- */
 public final class CampusServiceInputs {
 
     private CampusServiceInputs() {

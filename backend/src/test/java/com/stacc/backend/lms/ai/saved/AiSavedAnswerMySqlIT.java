@@ -14,7 +14,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Two tabs saving a student's 50th answer at once: the account row lock lets exactly one through; deleting is for good. */
 class AiSavedAnswerMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -35,7 +34,6 @@ class AiSavedAnswerMySqlIT extends MySqlIntegrationTest {
     @Test
     void theFiftiethPlaceIsTakenOnceAndDeletingRemovesTheRow() throws Exception {
         Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
-        // The first course cse24001 may use; the notes test uses the last one, and no other test saves answers.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> studentAccess.canAccessCourse(student, id)).findFirst().orElseThrow();
         for (long i = answers.countByLmsCourseIdAndUserAccountId(course, student); i < AiSavedAnswerService.MAX_SAVED - 1; i++) {

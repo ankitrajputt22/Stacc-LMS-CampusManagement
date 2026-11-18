@@ -13,17 +13,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     Optional<Course> findByCode(String code);
 
-    /** The whole catalog with each owning department, in one query, by course code. */
     @Query("select course from Course course join fetch course.department order by course.code asc, course.id asc")
     List<Course> findAllWithDepartment();
 
     @Query("select course from Course course join fetch course.department where course.id = :courseId")
     Optional<Course> findWithDepartmentById(@Param("courseId") Long courseId);
 
-    // Compares as the unique constraint does, in the column's collation.
     boolean existsByCode(String code);
 
-    /** Search: catalog courses, whatever their status, whose code or name contains the text, with their department. */
     @Query(value = """
             select course
             from Course course

@@ -22,10 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The signed-in person's own profile. The person always comes from the access token: no route takes an account or
- * profile ID. A profile belongs to an account, so every role may use it.
- */
 @RestController
 @RequestMapping("/api/v1/me/profile")
 @Tag(name = "My profile")
@@ -35,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
 public class MyPersonProfileController {
 
-    // Every role holds both permissions (V64, V77): a profile belongs to an account, whatever roles it holds.
     static final String VIEW = "hasAuthority('PERSON_PROFILE_VIEW_OWN')";
     static final String EDIT = "hasAuthority('PERSON_PROFILE_EDIT_OWN')";
 

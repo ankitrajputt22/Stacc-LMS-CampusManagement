@@ -16,13 +16,9 @@ import { useMySubmissions } from './useMySubmissions'
 type AssignmentSubmissionProps = {
   lmsCourseId: number
   assignmentId: number
-  /** The assignment's current deadline, for the warning before submitting. Past attempts use their own result. */
   dueAt: string
-  /** Whether a new attempt is taken now, as the backend said when the page loaded; it decides again on hand-in. */
   submissionWindow?: 'NOT_OPEN' | 'OPEN' | 'CLOSED'
-  /** When work is first taken, to say so before it opens. */
   availableFrom?: string | null
-  /** Attempts each student may make; null means unlimited. */
   maxAttempts?: number | null
 }
 
@@ -72,22 +68,15 @@ function AttemptItem({ attempt, isLatest, downloads }: AttemptItemProps) {
       <p className="text-xs text-ink-muted">
         Submitted <time dateTime={attempt.submittedAt}>{formatDateTime(attempt.submittedAt)}</time>
       </p>
-      {/* Plain text: React shows it as text, never as HTML. Line breaks are kept. */}
       {attempt.textContent && (
         <p className="mt-2 text-sm leading-6 break-words whitespace-pre-line text-ink">{attempt.textContent}</p>
       )}
       <AttemptFiles attemptNumber={attempt.attemptNumber} files={attempt.attachments} downloads={downloads} />
-      {/* This attempt's own grade: an earlier attempt's grade never shows here. */}
       <GradeSummary grade={attempt.grade} />
     </article>
   )
 }
 
-/**
- * The student's own submission for an assignment: the form for an attempt, and every earlier attempt with
- * its text, files, and whether it was on time. Each hand-in is a new attempt; nothing earlier is replaced.
- * This section loads on its own: if it fails, the assignment above stays as it is.
- */
 export function AssignmentSubmission({
   lmsCourseId,
   assignmentId,
@@ -106,7 +95,6 @@ export function AssignmentSubmission({
   const attempts = history.status === 'loaded' ? history.data.attempts : null
   const latest = attempts?.[0] ?? null
 
-  // After a new attempt, focus moves to it once the reloaded history shows it.
   useEffect(() => {
     if (focusAttempt === null) {
       return
@@ -131,7 +119,6 @@ export function AssignmentSubmission({
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status === 401) {
-        // The shared client has ended the session; the sign-in page is on its way.
         return { ok: false, message: null, fieldErrors: {} }
       }
       const apiError = getApiError(failure)

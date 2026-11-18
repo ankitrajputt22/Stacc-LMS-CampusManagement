@@ -52,9 +52,7 @@ describe('FormattedText', () => {
   it('draws maths without trusted commands', async () => {
     const { container } = show('Area is $\\pi r^2$ and $\\href{javascript:alert(1)}{click}$.')
 
-    // The plain fallback shows the same words while the renderer loads, so wait for the maths itself.
     await waitFor(() => expect(container.querySelector('.katex')).not.toBeNull(), { timeout: 5000 })
-    // The refused \\href is shown as words, never as a link.
     expect(container.querySelector('a, [href]')).toBeNull()
   })
 })

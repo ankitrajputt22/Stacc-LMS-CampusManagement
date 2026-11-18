@@ -17,7 +17,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Read-only answers about the LMS courses a faculty member teaches. */
 @Service
 public class LmsFacultyCourseQueryService {
 
@@ -33,14 +32,6 @@ public class LmsFacultyCourseQueryService {
         this.lmsCourses = lmsCourses;
     }
 
-    /**
-     * The LMS courses of the faculty member behind this account, in course code order. A course is
-     * listed only if {@link LmsFacultyAccessPolicy} currently grants access to it, which is the same
-     * rule the single-course access check uses. A teaching assignment whose offering has no LMS
-     * course yet is simply not listed: nothing is created here.
-     *
-     * @param userAccountId the ID of the signed-in account, never an ID sent by the client
-     */
     @Transactional(readOnly = true)
     public List<LmsFacultyCourseSummaryResponse> getAccessibleCourses(Long userAccountId) {
         if (userAccountId == null) {
@@ -63,13 +54,11 @@ public class LmsFacultyCourseQueryService {
                         .getOrDefault(assignment.getCourseOffering().getId(), List.of()).stream()
                         .filter(lmsCourse -> LmsFacultyAccessPolicy.grantsCurrentAccess(assignment, lmsCourse, userAccountId))
                         .map(lmsCourse -> summaryOf(assignment.getCourseOffering(), lmsCourse)))
-                // Consistent data never lists a course twice. This keeps the answer clean if it is not.
                 .distinct()
                 .sorted(BY_COURSE_CODE)
                 .toList();
     }
 
-    // The course details are read from the academic records every time. The LMS keeps no copy.
     private static LmsFacultyCourseSummaryResponse summaryOf(CourseOffering courseOffering, LmsCourse lmsCourse) {
         Course course = courseOffering.getCourse();
         Semester semester = courseOffering.getSemester();

@@ -16,7 +16,6 @@ import { MasterSection } from './MasterSection'
 
 const DENIED = 'You don’t have access to department heads.'
 
-/** The person's name, or the login ID before a name is recorded. */
 function who(head: { name: string | null; loginId: string }): string {
   return head.name ?? head.loginId
 }
@@ -41,7 +40,6 @@ function HeadCell({ head }: { head: DepartmentHeadTerm | null }) {
   )
 }
 
-/** Every earlier and current term of one department, the latest first. */
 function HeadHistory({ departmentId }: { departmentId: number }) {
   const history = useApiQuery(queryKeys.admin.departmentHeadHistory(departmentId), (signal) =>
     getDepartmentHeadHistory(departmentId, signal),
@@ -68,11 +66,6 @@ function HeadHistory({ departmentId }: { departmentId: number }) {
   )
 }
 
-/**
- * Who heads each department. Edit sets a head from the active accounts holding the Head of Department role, ending
- * the current term first; End term ends it after confirmation. Terms are kept as history and nothing is deleted. A head
- * whose account is disabled or lost the role is shown as not counted, as the backend works it out.
- */
 export function DepartmentHeadsSection() {
   const request = useApiQuery(queryKeys.admin.departmentHeads(), getDepartmentHeads)
   const candidates = useApiQuery(queryKeys.admin.departmentHeadCandidates(), getDepartmentHeadCandidates)

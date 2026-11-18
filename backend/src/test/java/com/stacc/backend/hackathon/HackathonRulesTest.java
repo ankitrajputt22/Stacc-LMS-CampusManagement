@@ -7,7 +7,6 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 
-/** Work is taken before the end, judging runs after it, and results are released once after the end. */
 class HackathonRulesTest {
 
     private static final Instant START = Instant.parse("2026-12-01T04:00:00Z");

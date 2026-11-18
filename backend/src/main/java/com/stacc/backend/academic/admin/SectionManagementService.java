@@ -18,11 +18,6 @@ import com.stacc.backend.academic.semester.SemesterStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Admins list, create, and edit the student sections of each semester. A section's semester and code are set once;
- * its name, capacity, and status can change. Placing students in a section belongs to official enrollment
- * ({@link AcademicEnrollmentManagementService#changeSection}). Nothing is ever deleted.
- */
 @Service
 @Transactional
 public class SectionManagementService {
@@ -43,7 +38,6 @@ public class SectionManagementService {
         this.enrollments = enrollments;
     }
 
-    /** Every section, or one semester's when a semester ID is given, each with how many students are enrolled in it. */
     @Transactional(readOnly = true)
     public List<SectionResponse> list(Long semesterId) {
         List<Section> found = semesterId == null ? sections.findAllWithContext()
@@ -73,10 +67,6 @@ public class SectionManagementService {
         return SectionResponse.of(section, 0);
     }
 
-    /**
-     * Changes the name, capacity, and status. The section is locked first, as placing a student does, so the capacity
-     * is never set below the students enrolled in it.
-     */
     public SectionResponse update(Long sectionId, SectionUpdate request) {
         Section section = sections.findByIdForUpdate(sectionId).orElseThrow(() -> AcademicMasterErrors.notFound(NOT_FOUND));
         long enrolled = enrollments.countEnrolledInSectionForShare(section.getId());

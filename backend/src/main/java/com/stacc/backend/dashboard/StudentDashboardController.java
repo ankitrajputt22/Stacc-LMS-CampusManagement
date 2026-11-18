@@ -16,10 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The student dashboard. The route needs the student role and {@code STUDENT_DASHBOARD_VIEW}; what it shows is still
- * decided by the course, attendance, and result rules for the account in the access token. It takes no parameters.
- */
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard")

@@ -15,7 +15,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-/** One plain-text message in a ticket's conversation. Messages are append-only: never edited, never deleted. */
 @Entity
 @Table(name = "helpdesk_ticket_messages")
 public class HelpdeskTicketMessage {
@@ -37,7 +36,6 @@ public class HelpdeskTicketMessage {
     @Column(nullable = false, updatable = false, columnDefinition = "TEXT")
     private String message;
 
-    // An internal note: seen only by the support side, never by the requester.
     @Column(nullable = false, updatable = false)
     private boolean internal;
 
@@ -46,7 +44,6 @@ public class HelpdeskTicketMessage {
     private Instant createdAt;
 
     protected HelpdeskTicketMessage() {
-        // Required by JPA.
     }
 
     public HelpdeskTicketMessage(HelpdeskTicket ticket, UserAccount author, String message, boolean internal) {

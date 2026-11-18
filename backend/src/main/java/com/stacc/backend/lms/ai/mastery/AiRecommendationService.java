@@ -15,11 +15,6 @@ import com.stacc.backend.lms.assignment.LmsAssignment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Recommendations (v0.15.6): what to do next, from fixed rules that each say why, worked out on read from the student's
- * own mastery, flashcards, and the course's published assignments. No model is involved and nothing is stored or ranked.
- * At most six, in the order the rules are listed.
- */
 @Service
 public class AiRecommendationService {
 
@@ -30,7 +25,6 @@ public class AiRecommendationService {
 
     public enum Kind { PRACTISE_WEAK, START_PAGE, REVIEW_FLASHCARDS, ASSIGNMENT_SOON, REFRESH_PAGE }
 
-    /** One suggestion: what, about which record (a page, a set, or an assignment), and why. */
     public record Recommendation(Kind kind, Long targetId, String title, String reason) {
     }
 
@@ -49,7 +43,6 @@ public class AiRecommendationService {
         this.clock = clock;
     }
 
-    /** The student's recommendations in the course; the mastery view checks course access first. */
     @Transactional(readOnly = true)
     public List<Recommendation> recommend(Long accountId, Long lmsCourseId) {
         List<AiMasteryService.TopicMastery> topics = mastery.view(accountId, lmsCourseId);
@@ -57,37 +50,28 @@ public class AiRecommendationService {
                 flashcards.list(accountId, lmsCourseId, clock.instant().atZone(college.zone()).toLocalDate()));
     }
 
-    /**
-     * The same rules over a mastery view and flashcard sets the caller already read for the student, so a page that
-     * shows them too reads them once. The caller has checked the student's access through {@link AiMasteryService#view}.
-     */
     @Transactional(readOnly = true)
     public List<Recommendation> recommend(Long accountId, Long lmsCourseId, List<AiMasteryService.TopicMastery> topics,
             List<AiFlashcardStore.SetSummary> sets) {
         Instant now = clock.instant();
         ZoneId zone = college.zone();
         List<Recommendation> result = new ArrayList<>();
-        // 1. Pages the student is weakest at, weakest first.
         topics.stream().filter(topic -> topic.result().level() == Mastery.Level.LEARNING)
                 .sorted((first, second) -> Double.compare(first.result().mastery(), second.result().mastery()))
                 .limit(2)
                 .forEach(topic -> result.add(new Recommendation(Kind.PRACTISE_WEAK, topic.topicId(), "Practise " + topic.title(),
                         AdaptiveChoice.reason(topic.result()))));
-        // 2. Flashcards due today.
         sets.stream().filter(set -> set.due() > 0).limit(1)
                 .forEach(set -> result.add(new Recommendation(Kind.REVIEW_FLASHCARDS, set.set().getId(), "Review " + set.set().getTitle(),
                         set.due() + (set.due() == 1 ? " card is" : " cards are") + " due today.")));
-        // 3. Published assignments due within a week and not handed in yet.
         openAssignments.stillToHandIn(accountId, lmsCourseId, now).stream()
                 .filter(assignment -> assignment.getDueAt().isBefore(now.plus(ASSIGNMENT_SOON)))
                 .limit(1)
                 .forEach((LmsAssignment assignment) -> result.add(new Recommendation(Kind.ASSIGNMENT_SOON, assignment.getId(),
                         "Prepare for " + assignment.getTitle(), "It is due " + DAY.format(assignment.getDueAt().atZone(zone)) + ".")));
-        // 4. Pages not started yet, in course order.
         topics.stream().filter(topic -> topic.result().level() == Mastery.Level.NOT_STARTED).limit(2)
                 .forEach(topic -> result.add(new Recommendation(Kind.START_PAGE, topic.topicId(), "Start " + topic.title(),
                         "You have not practised this page yet.")));
-        // 5. Mastered pages not practised for three weeks.
         topics.stream().filter(topic -> topic.result().level() == Mastery.Level.MASTERED && topic.result().lastPractisedAt() != null
                         && topic.result().lastPractisedAt().isBefore(now.minus(REFRESH_AFTER)))
                 .limit(1)

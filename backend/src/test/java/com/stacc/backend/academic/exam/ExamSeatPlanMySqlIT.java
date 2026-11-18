@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-/** Two seat plans of one exam at once: the exam row lock lets them take turns, so no seat is given twice. An exam of its own. */
 class ExamSeatPlanMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

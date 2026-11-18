@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One crossing of the gate, recorded by security. Append-only: the movement log is never edited or deleted. */
 @Entity
 @Table(name = "gate_movements")
 public class GateMovement {
@@ -39,7 +38,6 @@ public class GateMovement {
     private Long recordedBy;
 
     protected GateMovement() {
-        // Required by JPA.
     }
 
     public GateMovement(Long studentAccountId, Long outingId, Direction direction, Instant recordedAt, Long recordedBy) {

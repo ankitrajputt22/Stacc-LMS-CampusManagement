@@ -18,14 +18,9 @@ type FormattedTextFieldProps = {
   maxLength: number
   error?: string
   textareaRef?: Ref<HTMLTextAreaElement>
-  /** False when the text is always formatted, such as a syllabus: the format choice is not offered. */
   formatChoice?: boolean
 }
 
-/**
- * A text area for course text with its format: Formatted (the small formatting set, with Write and Preview tabs) or
- * Plain text (shown exactly as typed). What students will see is the preview; nothing is sent until the form is saved.
- */
 export function FormattedTextField({
   id,
   label,

@@ -27,7 +27,6 @@ class StaccApplicationTests extends DatabaseFreeApiTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.path").value("/does-not-exist"));
 
-        // Inside /api the caller must be signed in before the route is even looked up.
         String token = TestTokens.valid("2408400100011", 12, "ROLE_STUDENT");
         mockMvc.perform(get("/api/v1/does-not-exist").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isNotFound())
@@ -40,8 +39,6 @@ class StaccApplicationTests extends DatabaseFreeApiTest {
 
     @Test
     void unversionedApiAddressesAreRefusedLikeAnyUnknownProtectedPath() throws Exception {
-        // The routes moved to /api/v1. The old addresses are still under the /api protection, so they need a sign-in
-        // first and then simply do not exist; they never reach a route or reveal anything.
         mockMvc.perform(get("/api/lms/my-courses"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}"))

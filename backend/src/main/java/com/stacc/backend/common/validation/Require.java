@@ -1,6 +1,5 @@
 package com.stacc.backend.common.validation;
 
-/** Small checks for values given to domain objects. Each failure names the field. */
 public final class Require {
 
     private Require() {
@@ -13,7 +12,6 @@ public final class Require {
         return value;
     }
 
-    /** Returns the text without surrounding spaces. Missing, blank, or over-long text is rejected. */
     public static String text(String value, String name, int maxLength) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(name + " is required");
@@ -25,7 +23,6 @@ public final class Require {
         return trimmed;
     }
 
-    /** Like {@link #text}, but the value may be left out: missing or blank text becomes null. */
     public static String optionalText(String value, String name, int maxLength) {
         if (value == null || value.isBlank()) {
             return null;

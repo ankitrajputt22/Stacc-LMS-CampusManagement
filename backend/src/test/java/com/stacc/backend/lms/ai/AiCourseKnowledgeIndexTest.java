@@ -31,7 +31,6 @@ class AiCourseKnowledgeIndexTest {
         index.ready(FIRST, AT);
         assertThat(index.answersFor(FIRST)).isTrue();
         assertThat(index.isStaleFor(FIRST)).isFalse();
-        // Published content changed: stale, and students wait for a refresh.
         assertThat(index.isStaleFor(CHANGED)).isTrue();
         assertThat(index.answersFor(CHANGED)).isFalse();
     }
@@ -45,7 +44,6 @@ class AiCourseKnowledgeIndexTest {
         index.failed("The AI service was unavailable.");
         assertThat(index.getStatus()).isEqualTo(AiKnowledgeIndexStatus.FAILED);
         assertThat(index.answersFor(FIRST)).isFalse();
-        // The last successful fingerprint and time are kept.
         assertThat(index.getContentFingerprint()).isEqualTo(FIRST);
         assertThat(index.getIndexedAt()).isEqualTo(AT);
         index.startBuilding();

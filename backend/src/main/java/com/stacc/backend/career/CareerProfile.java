@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** A student's career profile: a headline, skills, and links, one per account, written by the student. */
 @Entity
 @Table(name = "career_profiles")
 public class CareerProfile {
@@ -35,7 +34,6 @@ public class CareerProfile {
     private Instant updatedAt;
 
     protected CareerProfile() {
-        // Required by JPA.
     }
 
     public CareerProfile(Long accountId, Instant now) {
@@ -43,7 +41,6 @@ public class CareerProfile {
         this.updatedAt = now;
     }
 
-    /** Skills and links are newline-separated lists; links must be https. */
     public void edit(String headline, String skills, String links, Instant now) {
         String cleanLinks = Require.optionalText(links, "links", 1500);
         if (cleanLinks != null) {

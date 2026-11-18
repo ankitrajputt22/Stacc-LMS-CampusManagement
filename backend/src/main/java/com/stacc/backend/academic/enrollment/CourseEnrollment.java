@@ -19,15 +19,6 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * The official record that a student, through a semester enrollment, takes part in one
- * course offering. This is the record that official course access will later depend on.
- *
- * <p>The student, account, semester, course, programme, and session are all reached through
- * the semester enrollment and the course offering, so none of them is stored here again.
- * The status describes the enrollment only. It is not a grade or a result, and "completed"
- * does not mean "passed". An enrollment is never deleted: it ends as completed or withdrawn.
- */
 @Entity
 @Table(
         name = "course_enrollments",
@@ -36,8 +27,6 @@ import org.hibernate.annotations.UpdateTimestamp;
                 columnNames = {"semester_enrollment_id", "course_offering_id"}))
 public class CourseEnrollment {
 
-    // No cascade on either link: the semester enrollment and the course offering are never
-    // created or deleted through a course enrollment.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -66,14 +55,8 @@ public class CourseEnrollment {
     private Instant updatedAt;
 
     protected CourseEnrollment() {
-        // Required by JPA.
     }
 
-    /**
-     * The semester enrollment and course offering say what this enrollment is, so they cannot be
-     * changed afterwards. The offering must belong to the same semester as the semester
-     * enrollment. That is checked by the feature that creates course enrollments, not here.
-     */
     public CourseEnrollment(SemesterEnrollment semesterEnrollment, CourseOffering courseOffering) {
         this.semesterEnrollment = Require.notNull(semesterEnrollment, "semesterEnrollment");
         this.courseOffering = Require.notNull(courseOffering, "courseOffering");
@@ -95,7 +78,6 @@ public class CourseEnrollment {
         return status;
     }
 
-    /** When the student dropped the course, or null when they did not. */
     public Instant getDroppedAt() {
         return droppedAt;
     }
@@ -118,7 +100,6 @@ public class CourseEnrollment {
         this.status = CourseEnrollmentStatus.WITHDRAWN;
     }
 
-    /** The student drops the course; the record stays as history. */
     public void drop(Instant moment) {
         requireStillEnrolled();
         this.status = CourseEnrollmentStatus.DROPPED;

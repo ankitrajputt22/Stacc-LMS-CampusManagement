@@ -28,11 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Admin management of course offerings: one catalog course taught in one semester. Reading needs the admin role and
- * {@code ACADEMIC_OFFERING_VIEW}; creating and editing also need {@code ACADEMIC_OFFERING_MANAGE}. The roster is
- * enrollment data and needs {@code ACADEMIC_ENROLLMENT_VIEW}. There is no delete.
- */
 @RestController
 @RequestMapping("/api/v1/admin/academic/offerings")
 @Tag(name = "Admin course offerings")

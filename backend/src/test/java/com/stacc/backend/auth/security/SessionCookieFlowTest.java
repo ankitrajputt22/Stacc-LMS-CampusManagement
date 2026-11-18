@@ -24,7 +24,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
-/** Browsers sign in by the HttpOnly session cookie; these are the rules around it. */
 class SessionCookieFlowTest extends DatabaseFreeApiTest {
 
     private static final String TOKEN = TestTokens.valid("cse24001", 7, "ROLE_STUDENT", "ROLE_FACULTY", "LMS_COURSE_VIEW");
@@ -33,7 +32,6 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
         return new Cookie(SessionProperties.COOKIE_NAME, TOKEN);
     }
 
-    /** The XSRF token a page would read from the XSRF-TOKEN cookie Stacc sets on its answers. */
     private String xsrfToken() throws Exception {
         MvcResult answer = mockMvc.perform(get("/api/v1/auth/session").cookie(session())).andReturn();
         return answer.getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
@@ -66,7 +64,6 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
                 .andReturn();
 
         verify(sessionService).end(TestTokens.SESSION_ID, 7L, SessionEndReason.SIGNED_OUT);
-        // The browser is told to forget the cookie at once.
         assertThat(SessionCookieAssertions.sessionCookie(result)).contains("Max-Age=0");
     }
 
@@ -77,7 +74,6 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        // A browser keeps the last cookie it is given, so a deletion here would leave the page with no token.
         assertThat(answer.getResponse().getHeaders(HttpHeaders.SET_COOKIE))
                 .noneMatch(cookie -> cookie.startsWith("XSRF-TOKEN=") && (cookie.contains("Max-Age=0")
                         || cookie.contains("1970")));
@@ -107,7 +103,6 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
 
         mockMvc.perform(post("/api/v1/auth/login").cookie(new Cookie(SessionProperties.COOKIE_NAME, "expired.or.garbage"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"loginId\":\"x\",\"password\":\"y\"}"))
-                // The ordinary failed-login answer: the cookie was not even looked at.
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid login ID or password."));
         verify(sessionService, never()).check(eq("expired.or.garbage"), any());
@@ -120,7 +115,6 @@ class SessionCookieFlowTest extends DatabaseFreeApiTest {
 
     @Test
     void withoutACookieOrHeaderAChangeIsSimplyUnauthorized() throws Exception {
-        // No session cookie means nothing to forge, so the answer is the usual 401, not a CSRF 403.
         mockMvc.perform(post("/api/v1/auth/logout")).andExpect(status().isUnauthorized());
     }
 }

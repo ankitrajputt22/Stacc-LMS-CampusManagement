@@ -38,7 +38,6 @@ import { teachingCourseBanner } from '../courses/courseFactsLine'
 
 const TEACHING = { to: '/teaching', label: 'Teaching' }
 
-/** A page state with the breadcrumb above it and a heading. */
 function TeachingCourseState({ heading, srOnlyHeading = true, children }: { heading: string; srOnlyHeading?: boolean; children: ReactNode }) {
   return (
     <>
@@ -57,13 +56,8 @@ function TeachingCourseState({ heading, srOnlyHeading = true, children }: { head
   )
 }
 
-/** A page of the course: its title and heading, and for a page inside a section, that section (such as Quizzes). */
 type Section = { title: string; heading: string; parent?: { path: string; label: string } }
 
-/**
- * Loads the course the faculty member teaches once (from the shared cache) and shows its loading, missing, refused,
- * and failed states the same way on every teaching page; then the page's own part, with the course and a reload.
- */
 function TeachingCourseFrame({
   section,
   children,
@@ -144,17 +138,11 @@ function TeachingCourseFrame({
   }
 }
 
-/**
- * /teaching/:lmsCourseId, the course's home for faculty: its official details, Course settings (publish and archive),
- * and the course home students see first. Modules, announcements, assignments, files, the syllabus, and AI tools have
- * their own pages in the course navigation. The backend checks access from official teaching assignments every time.
- */
 export function TeachingCoursePage() {
   return (
     <TeachingCourseFrame section={{ title: 'Course', heading: '' }}>
       {(course, reload) => (
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-          {/* Not keyed by the saved values: a save reloads the course, and remounting would drop "Course home saved." */}
           <CourseHomeSettings course={course} />
           <div className="space-y-6">
             <Card title="Course details" icon="info">
@@ -182,7 +170,6 @@ export function TeachingCoursePage() {
   )
 }
 
-/** /teaching/:lmsCourseId/modules: modules and their pages, with every change the content editor offers. */
 export function TeachingModulesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Modules', heading: 'Modules' }}>
@@ -196,7 +183,6 @@ export function TeachingModulesPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/announcements: the course's announcements, drafts included. */
 export function TeachingAnnouncementsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Announcements', heading: 'Announcements' }}>
@@ -205,7 +191,6 @@ export function TeachingAnnouncementsPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/assignments: the course's assignments, with links to their submissions. */
 export function TeachingAssignmentsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Assignments', heading: 'Assignments' }}>
@@ -214,7 +199,6 @@ export function TeachingAssignmentsPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/outcomes: the course's learning outcomes. */
 export function TeachingOutcomesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Outcomes', heading: 'Course outcomes' }}>
@@ -223,7 +207,6 @@ export function TeachingOutcomesPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/questions: the course's question bank. */
 export function TeachingQuestionBankPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Question bank', heading: 'Question bank' }}>
@@ -232,7 +215,6 @@ export function TeachingQuestionBankPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/papers: the course's exam blueprints and papers. */
 export function TeachingExamPapersPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Exam papers', heading: 'Exam papers' }}>
@@ -241,7 +223,6 @@ export function TeachingExamPapersPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/papers/:paperId: one exam paper with its builder. */
 export function TeachingExamPaperPage() {
   const paperId = parseCourseId(useParams().paperId)
   return (
@@ -257,7 +238,6 @@ export function TeachingExamPaperPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/papers/:paperId/print: the paper as it is printed. */
 export function TeachingExamPaperPrintPage() {
   const paperId = parseCourseId(useParams().paperId)
   return (
@@ -273,7 +253,6 @@ export function TeachingExamPaperPrintPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/quizzes: the course's quizzes, with New quiz. */
 export function TeachingQuizzesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Quizzes', heading: 'Quizzes' }}>
@@ -282,7 +261,6 @@ export function TeachingQuizzesPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/quizzes/:quizId: one quiz with its settings and questions. */
 export function TeachingQuizPage() {
   const quizId = parseCourseId(useParams().quizId)
   return (
@@ -291,7 +269,6 @@ export function TeachingQuizPage() {
         quizId === null ? (
           <p className="text-sm text-ink-muted">This quiz address is not valid.</p>
         ) : (
-          // Keyed by the quiz, so moving to another quiz starts with its own state.
           <QuizEditor key={quizId} lmsCourseId={course.lmsCourseId} quizId={quizId} />
         )
       }
@@ -299,7 +276,6 @@ export function TeachingQuizPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/quizzes/:quizId/results: every attempt at a quiz with its marks. */
 export function TeachingQuizResultsPage() {
   const quizId = parseCourseId(useParams().quizId)
   return (
@@ -315,7 +291,6 @@ export function TeachingQuizResultsPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/quiz-attempts/:attemptId: one attempt for marking. */
 export function TeachingQuizAttemptPage() {
   const attemptId = parseCourseId(useParams().attemptId)
   return (
@@ -331,7 +306,6 @@ export function TeachingQuizAttemptPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/gradebook: every current student's marks, with publishing and manual items. */
 export function TeachingGradebookPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Gradebook', heading: 'Gradebook' }}>
@@ -340,7 +314,6 @@ export function TeachingGradebookPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/gradebook/items/:itemId: a manual item's marks. */
 export function TeachingGradeItemPage() {
   const itemId = parseCourseId(useParams().itemId)
   return (
@@ -356,7 +329,6 @@ export function TeachingGradeItemPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/rubrics: the course's rubrics. */
 export function TeachingRubricsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Rubrics', heading: 'Rubrics' }}>
@@ -366,7 +338,6 @@ export function TeachingRubricsPage() {
 }
 
 
-/** /teaching/:lmsCourseId/discussions: the course's discussions, where faculty also pin and accept answers. */
 export function TeachingDiscussionsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Discussions', heading: 'Discussions' }}>
@@ -375,7 +346,6 @@ export function TeachingDiscussionsPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/discussions/:threadId */
 export function TeachingDiscussionPage() {
   const threadId = parseCourseId(useParams().threadId)
   return (
@@ -397,7 +367,6 @@ export function TeachingDiscussionPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/messages: every student's private conversation with the course's faculty. */
 export function TeachingMessagesPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Messages', heading: 'Messages' }}>
@@ -406,7 +375,6 @@ export function TeachingMessagesPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/messages/:conversationId */
 export function TeachingConversationPage() {
   const conversationId = parseCourseId(useParams().conversationId)
   return (
@@ -428,7 +396,6 @@ export function TeachingConversationPage() {
   )
 }
 
-/** /teaching/:lmsCourseId/analytics: class analytics of the course, with an Excel export. */
 export function TeachingAnalyticsPage() {
   return (
     <TeachingCourseFrame section={{ title: 'Analytics', heading: 'Course analytics' }}>

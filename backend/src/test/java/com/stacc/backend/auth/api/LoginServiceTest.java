@@ -37,7 +37,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 class LoginServiceTest {
 
-    // Made-up values used only by these tests.
     private static final String LOGIN_ID = "EMP1024";
     private static final String PASSWORD = " Test Password 123! ";
 
@@ -87,7 +86,6 @@ class LoginServiceTest {
         verify(authenticationManager).authenticate(attempt.capture());
         assertFalse(attempt.getValue().isAuthenticated());
         assertEquals(LOGIN_ID, attempt.getValue().getPrincipal());
-        // The password keeps its spaces: it is never trimmed or changed.
         assertEquals(PASSWORD, attempt.getValue().getCredentials());
     }
 

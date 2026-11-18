@@ -23,13 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Campus events. Admins (CAMPUS_ENGAGEMENT_MANAGE) create and publish any event; a group's officers create events for
- * their group, which their faculty advisor approves (GROUP_EVENT workflow) before they show. An event's shown status is
- * worked out from its approval on read. Registration checks eligibility on the server and gives reasons; it locks the
- * event row, then reads the places with a locking read, so a capacity is never passed: a full event puts people on the
- * waitlist, and a cancelled place goes to the first person waiting.
- */
 @Service
 @Transactional
 public class CampusEventService {
@@ -37,7 +30,6 @@ public class CampusEventService {
     public static final String WORKFLOW_CODE = "GROUP_EVENT";
     public static final String SOURCE_TYPE = "CAMPUS_EVENT";
 
-    /** Who is asking: the account and what it holds, from the token. */
     public record Viewer(Long accountId, boolean student, boolean faculty, boolean admin) {
     }
 
@@ -79,9 +71,6 @@ public class CampusEventService {
         this.clock = clock;
     }
 
-    // --- Reading
-
-    /** Events people can see: published (or approved) and cancelled ones that have not ended, soonest first. */
     @Transactional(readOnly = true)
     public List<EventView> upcoming(Viewer viewer) {
         return events.findShowable(now()).stream().map(event -> view(event, viewer))
@@ -98,7 +87,6 @@ public class CampusEventService {
         return view;
     }
 
-    /** The events the viewer may manage: all for admins, otherwise their own and their groups'. */
     @Transactional(readOnly = true)
     public List<EventView> managed(Viewer viewer) {
         List<CampusEvent> found = viewer.admin() ? events.findAllForAdmin() : events.findManagedBy(viewer.accountId());
@@ -114,8 +102,6 @@ public class CampusEventService {
         return registrations.findCurrent(eventId).stream()
                 .map(r -> new AttendeeView(r.getAccount().getLoginId(), r.getStatus().name(), r.getRegisteredAt())).toList();
     }
-
-    // --- Organizing
 
     public EventView create(Viewer viewer, EventInput input) {
         CampusGroup group = null;
@@ -138,7 +124,6 @@ public class CampusEventService {
         return view(event, viewer);
     }
 
-    /** Publishes a draft: at once for admins and for events without a group; a group event goes to its advisor first. */
     public EventView publish(Viewer viewer, Long eventId) {
         CampusEvent event = managedLocked(viewer, eventId);
         String status = statusOf(event);
@@ -163,8 +148,6 @@ public class CampusEventService {
         return view(event, viewer);
     }
 
-    // --- Registering
-
     public EventView register(Viewer viewer, Long eventId) {
         CampusEvent event = events.findByIdForUpdate(eventId == null ? -1L : eventId).orElseThrow(CampusEventService::missing);
         List<CampusEventRegistration> current = registrations.findCurrentForUpdate(event.getId());
@@ -178,7 +161,6 @@ public class CampusEventService {
         return view(event, viewer);
     }
 
-    /** Gives up a place or leaves the waitlist; a freed place goes to the first person waiting. */
     public EventView unregister(Viewer viewer, Long eventId) {
         CampusEvent event = events.findByIdForUpdate(eventId == null ? -1L : eventId).orElseThrow(CampusEventService::missing);
         List<CampusEventRegistration> current = registrations.findCurrentForUpdate(event.getId());
@@ -194,9 +176,6 @@ public class CampusEventService {
         return view(event, viewer);
     }
 
-    // --- Shared
-
-    /** The event's shown status: a pending group event follows its approval. */
     String statusOf(CampusEvent event) {
         if (event.getStatus() != CampusEvent.Status.PENDING_APPROVAL || event.getApprovalRequestId() == null) {
             return event.getStatus().name();
@@ -265,7 +244,6 @@ public class CampusEventService {
         if (!canManage(event, viewer)) {
             throw missing();
         }
-        // A refused group event goes back to being a draft that can be corrected.
         if (event.getStatus() == CampusEvent.Status.PENDING_APPROVAL && statusOf(event).equals("DRAFT")) {
             event.backToDraft();
         }

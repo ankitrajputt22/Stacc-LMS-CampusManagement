@@ -32,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Quiz drafts use reviewed bank questions first and AI only for the gap, through the bank and quiz services. */
 class AiQuizDraftServiceTest {
 
     private static final long FACULTY = 5L;

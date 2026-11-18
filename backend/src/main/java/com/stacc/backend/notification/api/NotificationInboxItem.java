@@ -6,7 +6,6 @@ import com.stacc.backend.notification.Notification;
 import com.stacc.backend.notification.NotificationRecipient;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One notification in the signed-in account's Inbox. No account ID or other recipient is ever included. */
 public record NotificationInboxItem(
         @Schema(description = "The ID of this Inbox row, used to mark it read or unread.", example = "310")
         Long notificationRecipientId,

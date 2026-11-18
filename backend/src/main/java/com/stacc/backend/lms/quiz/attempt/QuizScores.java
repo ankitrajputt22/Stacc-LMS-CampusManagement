@@ -10,10 +10,6 @@ import com.stacc.backend.lms.quiz.LmsQuizQuestion;
 import com.stacc.backend.lms.quiz.LmsQuizQuestionRepository;
 import org.springframework.stereotype.Component;
 
-/**
- * Scores attempts with {@link QuizScoring}, loading the questions, answers, and teachers' marks they need in three
- * queries however many attempts there are. Callers check access first; this only reads.
- */
 @Component
 public class QuizScores {
 
@@ -27,7 +23,6 @@ public class QuizScores {
         this.marks = marks;
     }
 
-    /** Each attempt's score by attempt ID, with its questions in the quiz's order. */
     public Map<Long, QuizScoring.AttemptScore> of(Collection<LmsQuizAttempt> attempts) {
         if (attempts.isEmpty()) {
             return Map.of();

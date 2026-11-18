@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** An examination period of one semester, built as a draft and published once. */
 @Entity
 @Table(name = "exam_sessions")
 public class ExamSession {
@@ -52,7 +51,6 @@ public class ExamSession {
         this.createdAt = createdAt;
     }
 
-    /** Publishes once; publishing again changes nothing. */
     public boolean publish(Instant at) {
         if (status == Status.PUBLISHED) {
             return false;

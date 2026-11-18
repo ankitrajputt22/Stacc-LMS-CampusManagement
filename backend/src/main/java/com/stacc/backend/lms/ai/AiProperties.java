@@ -5,20 +5,6 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.unit.DataSize;
 
-/**
- * How the backend reaches the internal AI service. AI is off unless {@code AI_ENABLED=true}; then the service address
- * and the shared internal token must be set. The token is never logged or sent anywhere but the AI service.
- *
- * @param enabled         whether AI learning features are switched on
- * @param serviceUrl      the AI service's internal address, such as http://ai-service:8000 in Docker
- * @param internalToken   the secret the AI service expects in {@code X-Stacc-AI-Token}
- * @param connectTimeout  how long to wait for a connection
- * @param readTimeout     how long to wait for an answer, summary, practice set, or assessment draft
- * @param syncReadTimeout how long to wait for a knowledge refresh, which extracts and embeds every source
- * @param maxSyncSources  the most published sources sent in one refresh; the rest are skipped and counted
- * @param maxSyncBytes    the most study-material bytes read and sent in one refresh
- * @param buildingTimeout after this long, a refresh still marked as building is treated as abandoned
- */
 @ConfigurationProperties(prefix = "stacc.ai")
 public record AiProperties(
         boolean enabled,
@@ -31,7 +17,6 @@ public record AiProperties(
         DataSize maxSyncBytes,
         Duration buildingTimeout) {
 
-    /** The AI service refuses shorter tokens, so a shorter one means AI is not usable. */
     public static final int MIN_TOKEN_LENGTH = 32;
 
     public AiProperties {
@@ -45,7 +30,6 @@ public record AiProperties(
         internalToken = internalToken == null ? "" : internalToken.strip();
     }
 
-    /** Switched on and fully configured. When false, every AI route answers 503 and nothing calls the AI service. */
     public boolean usable() {
         return enabled && internalToken.length() >= MIN_TOKEN_LENGTH && validUrl();
     }
@@ -63,7 +47,6 @@ public record AiProperties(
         return value == null || value.isNegative() || value.isZero() ? fallback : value;
     }
 
-    // The default text form of a record would include the token.
     @Override
     public String toString() {
         return "AiProperties[enabled=" + enabled + ", serviceUrl=" + serviceUrl + "]";

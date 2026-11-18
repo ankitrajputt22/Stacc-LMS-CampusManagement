@@ -19,7 +19,6 @@ public interface StudentRequestRepository extends JpaRepository<StudentRequest, 
     @Query("select r from StudentRequest r join fetch r.requester where r.id = :id")
     Optional<StudentRequest> findByIdForUpdate(@Param("id") Long id);
 
-    /** The queue: filtered by kind, status, and the requester's login ID (lower-cased, escaped LIKE), newest first. */
     @Query("""
             select r from StudentRequest r join fetch r.requester requester
             where (:kind is null or r.kind = :kind)

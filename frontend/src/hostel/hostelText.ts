@@ -1,8 +1,5 @@
 import type { BedOccupancy, HostelAllocationStatus } from '../types/hostel'
 
-// The one place hostel codes become words. Pages never show a raw code. The approval words are shared with every
-// module that shows approval progress and live in approvals/approvalText.
-
 export {
   APPROVAL_STATUSES,
   approvalStatusLabel,

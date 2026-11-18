@@ -1,13 +1,8 @@
 package com.stacc.backend.support.helpdesk.api;
 
-/**
- * The route rules of the helpdesk, in one place. They let a caller ask; the helpdesk access rules still decide per
- * ticket. Admins get no pass beyond the explicit "all" permissions.
- */
 final class HelpdeskAccess {
 
     private static final String ANY_ROLE = "hasAnyRole('STUDENT', 'FACULTY', 'ADMIN')";
-    /** Staff and admin members of support teams; the ticket's team still decides per ticket. */
     static final String TEAM = "hasAnyRole('ADMIN', 'MAINTENANCE', 'WARDEN', 'LIBRARIAN') and hasAuthority('HELPDESK_TEAM_WORK')";
 
     static final String CREATE = ANY_ROLE + " and hasAuthority('HELPDESK_TICKET_CREATE')";

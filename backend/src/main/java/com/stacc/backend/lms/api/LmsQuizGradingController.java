@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Quiz results and marking, for the faculty who teach the course. */
 @RestController
 @RequestMapping("/api/v1/lms/faculty")
 @Tag(name = "LMS quizzes")

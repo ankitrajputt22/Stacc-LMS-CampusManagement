@@ -18,14 +18,9 @@ import type {
 } from '../types/admin'
 import { apiClient } from './apiClient'
 
-// The client's base URL already ends in /api. Every route needs the admin role and an offering or enrollment
-// permission; the backend checks both on every request. The student or enrollment being changed is always named by
-// the URL, never the body, and a new enrollment's status is never sent: it always starts ENROLLED.
-
 const OFFERINGS = '/admin/academic/offerings'
 const ENROLLMENTS = '/admin/academic/enrollments'
 
-/** One page of course enrollments matching the filters, searched on the server. */
 export async function searchCourseEnrollments(filters: EnrollmentMonitorFilters, signal?: AbortSignal) {
   const response = await apiClient.get<EnrollmentMonitorPage>(`${ENROLLMENTS}/course-enrollments`, { params: filters, signal })
   return response.data
@@ -56,7 +51,6 @@ export async function getCourseOfferingEnrollments(courseOfferingId: number, sig
   return response.data
 }
 
-/** Students whose login ID contains the text; the backend sends at most 50. */
 export async function searchEnrollmentStudents(q: string, signal?: AbortSignal) {
   const response = await apiClient.get<EnrollmentStudent[]>(`${ENROLLMENTS}/students`, { params: { q }, signal })
   return response.data
@@ -85,7 +79,6 @@ export async function updateSemesterEnrollmentStatus(semesterEnrollmentId: numbe
   return response.data
 }
 
-/** Places the student in a section of their semester, or takes them out of their section with null. */
 export async function changeSemesterEnrollmentSection(semesterEnrollmentId: number, sectionId: number | null) {
   const response = await apiClient.put<AdminSemesterEnrollment>(
     `${ENROLLMENTS}/semester-enrollments/${semesterEnrollmentId}/section`,
@@ -118,13 +111,11 @@ export async function updateCourseEnrollmentStatus(courseEnrollmentId: number, s
   return response.data
 }
 
-/** Who teaches an offering, active first. */
 export async function getOfferingFaculty(courseOfferingId: number, signal?: AbortSignal) {
   const response = await apiClient.get<OfferingFaculty[]>(`${OFFERINGS}/${courseOfferingId}/faculty`, { signal })
   return response.data
 }
 
-/** Faculty members whose employee ID contains the text, at most 50. */
 export async function searchFaculty(q: string, signal?: AbortSignal) {
   const response = await apiClient.get<FacultyLookup[]>('/admin/academic/faculty', { params: { q }, signal })
   return response.data

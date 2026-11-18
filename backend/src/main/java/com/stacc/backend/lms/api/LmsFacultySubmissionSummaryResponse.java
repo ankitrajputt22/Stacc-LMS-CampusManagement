@@ -5,7 +5,6 @@ import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** One student's submission for an assignment, summed up by its latest attempt, for faculty. */
 public record LmsFacultySubmissionSummaryResponse(
         @Schema(example = "12")
         Long submissionId,

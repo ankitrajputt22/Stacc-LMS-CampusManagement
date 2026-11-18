@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** A student's marks for a manual item, with optional plain-text feedback. */
 public record LmsGradeEntryRequest(
         @Schema(example = "18.5")
         @NotNull(message = "Marks are required")

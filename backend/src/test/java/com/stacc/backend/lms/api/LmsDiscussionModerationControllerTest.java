@@ -25,7 +25,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty with the moderation permission hide, lock, and resolve; only students report; hidden replies reach students empty. */
 class LmsDiscussionModerationControllerTest extends DatabaseFreeApiTest {
 
     private static final Instant NOW = Instant.parse("2026-11-12T05:00:00Z");

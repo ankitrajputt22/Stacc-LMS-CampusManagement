@@ -4,7 +4,6 @@ import { changePassword } from '../api/authApi'
 import { useAuth } from '../auth/AuthContext'
 import { Alert, Button, Card, PageHeader, TextField } from '../ui'
 
-/** The same limits the backend's password policy uses; the backend still checks everything. */
 export const PASSWORD_MIN_LENGTH = 10
 export const PASSWORD_MAX_LENGTH = 128
 
@@ -15,7 +14,6 @@ type Errors = Partial<Record<Field, string>>
 const FIELD_ORDER: Field[] = ['currentPassword', 'newPassword', 'confirmPassword']
 const EMPTY: Values = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
-// Characters, not UTF-16 units, so the count matches what the backend counts.
 const lengthOf = (text: string) => [...text].length
 
 function checked(values: Values): Errors {
@@ -30,14 +28,9 @@ function checked(values: Values): Errors {
 }
 
 type ChangePasswordPageProps = {
-  /** The college requires a new password: the page stands alone, and signing out is the only other way on. */
   required?: boolean
 }
 
-/**
- * Change password, for the signed-in person. Passwords are sent exactly as typed and kept only in this form; they
- * are cleared once the change is saved.
- */
 export function ChangePasswordPage({ required = false }: ChangePasswordPageProps) {
   const { passwordChanged, logout } = useAuth()
   const submittingRef = useRef(false)
@@ -76,12 +69,10 @@ export function ChangePasswordPage({ required = false }: ChangePasswordPageProps
       await changePassword(values.currentPassword, values.newPassword)
       setValues(EMPTY)
       setSaved(true)
-      // After a required change the rest of the app opens again, at the page that was asked for.
       passwordChanged()
     } catch (failure) {
       const status = getHttpStatus(failure)
       if (status === 401) {
-        // The session has ended; the app is already on its way to the sign-in page.
         return
       }
       const message = getApiError(failure)?.message

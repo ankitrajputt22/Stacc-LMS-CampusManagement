@@ -20,10 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Who tickets can be assigned to, for the support team's assignment choice. It needs the admin role and
- * {@code HELPDESK_TICKET_MANAGE}, and lists login IDs only.
- */
 @RestController
 @RequestMapping("/api/v1/helpdesk/admin/assignees")
 @Tag(name = "Helpdesk admin")

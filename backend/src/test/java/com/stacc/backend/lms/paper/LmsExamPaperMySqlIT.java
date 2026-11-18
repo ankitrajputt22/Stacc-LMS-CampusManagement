@@ -17,11 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Editing a bank question and making final a paper that uses it, at the same moment, never both succeed: either the
- * edit finishes first and finalizing finds the question needing review, or finalizing finishes first and the edit finds
- * the final paper. Uses CS302's draft LMS course of emp1022, with its own questions and papers.
- */
 class LmsExamPaperMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

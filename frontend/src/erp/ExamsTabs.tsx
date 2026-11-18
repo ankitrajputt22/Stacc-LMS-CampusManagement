@@ -1,6 +1,5 @@
 import { LinkTabs } from '../ui'
 
-/** The pages of Exams & Results, as tabs with their own addresses. */
 export function ExamsTabs() {
   return (
     <LinkTabs

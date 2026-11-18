@@ -11,11 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Records that a student completed a page, once. The student is found from the enrollment that gives the signed-in
- * account access, never from the client. The page must be one they can see, in a module that is open to them. The
- * enrollment row is locked first, so two clicks at once record one completion.
- */
 @Service
 public class LmsPageCompletionService {
 
@@ -40,7 +35,6 @@ public class LmsPageCompletionService {
         this.clock = clock;
     }
 
-    /** Marks the page complete for the student, or returns the earlier completion. */
     @Transactional
     public LmsPageCompletion complete(Long userAccountId, Long lmsCourseId, Long pageId) {
         CourseEnrollment enrollment = studentAccess.findAccessGrantingEnrollment(userAccountId, lmsCourseId)

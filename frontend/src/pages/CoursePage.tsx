@@ -31,12 +31,10 @@ import { ButtonLink, PageHeader } from '../ui'
 const COURSES_PATH = '/courses'
 const ASK_THE_COLLEGE = 'If you think you should, contact the college administration.'
 
-/** "Courses / Course name": the way back to the list, and where the student is. */
 function CourseBreadcrumb({ courseName }: { courseName?: string }) {
   return <Breadcrumb parent={{ to: COURSES_PATH, label: 'Courses' }} current={courseName} />
 }
 
-/** A page state with the breadcrumb above it and a heading for screen readers. */
 function CourseState({ children }: { children: ReactNode }) {
   return (
     <>
@@ -72,14 +70,7 @@ type CourseHomeProps = {
   content: ApiRequestState<LmsCourseContent> & { retry: () => void }
 }
 
-/** "Section A · Taught by Meera Iyer and Rohan Gupta", from what the API sent; empty when it sent neither. */
 
-
-/**
- * The course home: the official course details, then what the faculty chose students see first: the overview
- * (welcome message, progress, announcements, assignments, and modules), the modules, or the syllabus. Only what the
- * backend sent; the course navigation leads to everything else.
- */
 function CourseHome({ course, announcements, assignments, content }: CourseHomeProps) {
   return (
     <div>
@@ -125,7 +116,6 @@ function CourseHome({ course, announcements, assignments, content }: CourseHomeP
 }
 
 function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
-  // All the requests start together. Each section below the course details has its own states.
   const course = useLmsCourse(lmsCourseId)
   const announcements = useCourseAnnouncements(lmsCourseId)
   const assignments = useCourseAssignments(lmsCourseId)
@@ -166,11 +156,6 @@ function StudentCourse({ lmsCourseId }: { lmsCourseId: number | null }) {
   }
 }
 
-/**
- * One LMS course for the signed-in student, at /courses/:lmsCourseId. Arriving from the list
- * proves nothing: the backend checks access again for every request. Accounts without the
- * student role see an explanation instead, and no request is made.
- */
 export function CoursePage() {
   const { account } = useAuth()
   const { lmsCourseId } = useParams()

@@ -2,7 +2,6 @@ import http from 'k6/http'
 import { check } from 'k6'
 import { BASE, signIn } from './common.js'
 
-// Pass EVENT_ID of a published event with a small capacity. Every request must answer 200 or 409, never 5xx.
 export const options = { vus: 20, iterations: 20 }
 
 export function setup() {

@@ -20,11 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Two teachers marking the same answer at once both succeed, one after the other under the attempt row lock, leaving
- * exactly one mark with one of their values. Uses its own quiz in CS301, taken by cse24003, whom no other quiz
- * test uses.
- */
 class LmsQuizMarkingMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

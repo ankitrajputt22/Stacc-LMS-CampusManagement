@@ -1,7 +1,3 @@
-"""The internal API. Only ``/health`` is open (for container health checks, and it says nothing about
-the setup); every ``/internal`` route needs the internal token. The Stacc backend is the only client:
-it has already checked who the user is and what they may see before it calls any of these."""
-
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -55,8 +51,6 @@ def rubric(course_key: str, body: schemas.RubricRequest, request: Request):
 
 @internal.delete("/indexes/{course_key}", status_code=204)
 def delete_index(course_key: str, request: Request) -> Response:
-    """Removes an index completely, such as a student's notes index after their last note is deleted. Deleting a
-    missing index changes nothing."""
     request.app.state.store.delete(checked_course_key(course_key))
     return Response(status_code=204)
 

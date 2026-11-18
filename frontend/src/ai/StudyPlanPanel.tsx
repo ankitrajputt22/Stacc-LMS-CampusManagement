@@ -10,11 +10,6 @@ function dayName(date: string): string {
   return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
-/**
- * Study planner (v0.15.7): a plan for the next 7 or 14 days, scheduled by code around assignment deadlines, the student's
- * own mastery and flashcards, and busy days in their calendar. Nothing is stored unless the student adds it to their
- * calendar or To-Do list.
- */
 export function StudyPlanPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const [days, setDays] = useState('7')

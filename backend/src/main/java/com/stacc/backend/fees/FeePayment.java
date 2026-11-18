@@ -19,7 +19,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A payment the accounts office received from a student, recorded once and never changed or deleted. */
 @Entity
 @Table(name = "fee_payments")
 public class FeePayment {
@@ -72,7 +71,6 @@ public class FeePayment {
         this.createdAt = createdAt;
     }
 
-    /** The receipt number people quote, such as RCP-2026-000045: the year it was recorded and its number. */
     public String receiptNumber() {
         return "RCP-" + createdAt.atZone(ZoneOffset.UTC).getYear() + "-" + String.format("%06d", id);
     }

@@ -12,11 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Publishing the same column twice at once makes one grade item, and entering a student's marks twice at once leaves one
- * entry. Uses its own manual item and the gradebook column of CS301's published "Linked list implementation", which no
- * other test publishes.
- */
 class LmsGradebookMySqlIT extends MySqlIntegrationTest {
 
     @Autowired

@@ -15,10 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.ResultActions;
 
-/**
- * Checks role rules through real requests. The "/api/v1/test/roles/..." routes exist only in
- * test code and each one requires a role with @PreAuthorize.
- */
 class RoleAuthorizationTest extends DatabaseFreeApiTest {
 
     private static final String STUDENT_ONLY = "/api/v1/test/roles/student";

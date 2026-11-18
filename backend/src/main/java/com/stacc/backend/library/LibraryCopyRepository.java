@@ -19,7 +19,6 @@ public interface LibraryCopyRepository extends JpaRepository<LibraryCopy, Long> 
     @Query("select c from LibraryCopy c join fetch c.title where c.barcode = :barcode")
     Optional<LibraryCopy> findByBarcodeForUpdate(@Param("barcode") String barcode);
 
-    /** Copies of a title that are not withdrawn, read with a locking read. */
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("select c from LibraryCopy c where c.title.id = :titleId and c.withdrawnAt is null")
     List<LibraryCopy> findInServiceForShare(@Param("titleId") Long titleId);

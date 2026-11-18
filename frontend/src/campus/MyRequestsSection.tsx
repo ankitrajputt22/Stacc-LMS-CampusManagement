@@ -19,7 +19,6 @@ import { requestStatusLabel } from './campusText'
 
 const PAGE_SIZE = 20
 
-/** The account's own service requests, newest first, page by page. Each opens its detail page. */
 export function MyRequestsSection() {
   const [page, setPage] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)

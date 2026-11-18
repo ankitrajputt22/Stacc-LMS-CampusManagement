@@ -8,7 +8,6 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-/** The spacing rule: gaps grow with good answers, AGAIN starts over today, and ease stays within its bounds. */
 class SpacedRepetitionTest {
 
     private static final LocalDate TODAY = LocalDate.parse("2026-11-16");

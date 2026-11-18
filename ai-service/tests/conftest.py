@@ -1,5 +1,3 @@
-"""Shared fixtures. Everything runs with the deterministic fake providers: no network, GPU, or model."""
-
 from __future__ import annotations
 
 import pytest

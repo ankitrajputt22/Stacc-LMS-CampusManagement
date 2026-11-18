@@ -11,11 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Course learning outcomes. Students read the active outcomes of a course the student access policy allows; faculty read
- * all and add, correct, or archive them under the faculty access policy, finding the course from the stored outcome. A
- * new outcome takes the next number of its course under the course row lock, so two at once never share a code.
- */
 @Service
 public class LmsOutcomeService {
 
@@ -50,7 +45,6 @@ public class LmsOutcomeService {
         return outcomes.findAllByLmsCourseIdOrderByNumberAsc(lmsCourseId);
     }
 
-    /** Adds the course's next outcome, numbered after every earlier one, archived ones included. */
     @Transactional
     public LmsCourseOutcome add(Long userAccountId, Long lmsCourseId, String description) {
         requireFaculty(userAccountId, lmsCourseId);
@@ -71,7 +65,6 @@ public class LmsOutcomeService {
         return outcome;
     }
 
-    /** Archives the outcome. Assessments aligned to it keep the link; nothing new can be aligned to it. */
     @Transactional
     public LmsCourseOutcome archive(Long userAccountId, Long outcomeId) {
         LmsCourseOutcome outcome = manageable(userAccountId, outcomeId);
@@ -79,7 +72,6 @@ public class LmsOutcomeService {
         return outcome;
     }
 
-    // The course comes from the stored outcome, never from the client.
     private LmsCourseOutcome manageable(Long userAccountId, Long outcomeId) {
         LmsCourseOutcome outcome = outcomeId == null ? null : outcomes.findWithCourseById(outcomeId).orElse(null);
         if (outcome == null || !facultyAccess.canAccessCourse(userAccountId, outcome.getLmsCourse().getId())) {

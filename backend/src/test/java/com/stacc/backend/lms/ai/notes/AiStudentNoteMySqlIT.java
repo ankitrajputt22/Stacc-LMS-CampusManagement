@@ -14,7 +14,6 @@ import com.stacc.backend.lms.course.LmsCourseRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Two tabs adding a student's 20th note at once: the account row lock lets exactly one through. */
 class AiStudentNoteMySqlIT extends MySqlIntegrationTest {
 
     @Autowired
@@ -35,7 +34,6 @@ class AiStudentNoteMySqlIT extends MySqlIntegrationTest {
     @Test
     void theTwentiethPlaceIsTakenOnce() throws Exception {
         Long student = accounts.findByLoginId("cse24001").orElseThrow().getId();
-        // The last course cse24001 may use; no other test writes notes.
         Long course = courses.findAll().stream().map(LmsCourse::getId)
                 .filter(id -> studentAccess.canAccessCourse(student, id)).reduce((first, second) -> second).orElseThrow();
         for (long i = notes.countByLmsCourseIdAndUserAccountId(course, student); i < AiStudentNoteService.MAX_NOTES - 1; i++) {

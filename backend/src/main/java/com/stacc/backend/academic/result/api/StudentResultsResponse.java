@@ -6,11 +6,6 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * The signed-in student's own published course results, the latest academic session first, then the highest
- * semester number, then course code. Drafts are never included, and nothing is derived from them: no percentage,
- * grade point average, rank, or pass or fail.
- */
 public record StudentResultsResponse(List<Result> results) {
 
     public record Result(

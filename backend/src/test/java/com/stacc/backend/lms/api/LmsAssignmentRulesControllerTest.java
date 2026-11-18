@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** Only faculty who manage assignments set submission rules; the body is checked before the service. */
 class LmsAssignmentRulesControllerTest extends DatabaseFreeApiTest {
 
     @MockitoBean

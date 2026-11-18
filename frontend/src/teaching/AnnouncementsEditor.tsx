@@ -45,7 +45,6 @@ type AnnouncementItemProps = {
   changes: Changes
 }
 
-/** Add files: up to 5 at once, checked again by the backend (type, size, and at most 10 on an announcement). */
 function AddFilesForm({ announcementId, name, changes }: { announcementId: number; name: string; changes: Changes }) {
   const input = useRef<HTMLInputElement>(null)
   const [chosen, setChosen] = useState<File[]>([])
@@ -222,11 +221,6 @@ function AnnouncementItem({
   )
 }
 
-/**
- * The announcements of a course in the faculty page: drafts and published ones, newest created first.
- * Each change goes to the backend, which checks access again, and the list then reloads. Archived
- * announcements are kept but not listed.
- */
 export function AnnouncementsEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const announcements = useFacultyAnnouncements(lmsCourseId)
   const changes = useContentChanges(announcements.refresh)

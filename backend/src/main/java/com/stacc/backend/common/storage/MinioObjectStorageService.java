@@ -11,11 +11,6 @@ import io.minio.RemoveObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 
-/**
- * Object storage on MinIO, or any S3-compatible server the MinIO client can reach. The bucket is created
- * on first use if it is missing, and it is left private: no access policy is ever set, so objects can only
- * be read with the application's credentials.
- */
 public class MinioObjectStorageService implements ObjectStorageService {
 
     private final MinioClient client;
@@ -54,7 +49,6 @@ public class MinioObjectStorageService implements ObjectStorageService {
     @Override
     public boolean isReachable() {
         try {
-            // Asks only whether the bucket exists: a missing bucket still means the store answers.
             client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
             return true;
         } catch (MinioException | RuntimeException failure) {
@@ -71,7 +65,6 @@ public class MinioObjectStorageService implements ObjectStorageService {
         }
     }
 
-    // Checked once per run. Startup does not depend on storage being up; the first upload creates the bucket.
     private void ensureBucket() {
         if (bucketReady) {
             return;
@@ -85,7 +78,6 @@ public class MinioObjectStorageService implements ObjectStorageService {
                     client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
                 }
             } catch (ErrorResponseException failure) {
-                // Another instance created it at the same moment: that is the outcome we wanted.
                 if (!"BucketAlreadyOwnedByYou".equals(failure.errorResponse().code())) {
                     throw new ObjectStorageException("Could not prepare the storage bucket", failure);
                 }

@@ -107,7 +107,6 @@ class CourseOfferingManagementServiceTest {
 
     @Test
     void anOfferingWithEnrollmentsIsNeverMovedToAnotherCourseOrSemester() {
-        // Offering A already has a student enrolled; moving it would move that history with it.
         college.courseEnrollment(college.semesterEnrollment(college.studentA, college.third, 88), college.offeringA, 140);
 
         assertRefused(HttpStatus.CONFLICT, CourseOfferingManagementService.FIXED,

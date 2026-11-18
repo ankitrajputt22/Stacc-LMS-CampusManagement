@@ -87,10 +87,6 @@ function NoteForm({ lmsCourseId, draft, onSaved, onCancel }: {
   )
 }
 
-/**
- * The student's private notes in this course (v0.13.6), used by the assistant only when they choose Course + my notes,
- * and cited as "My note". Nobody else sees them. Deleting (confirmed first) removes a note for good, from the AI too.
- */
 export function MyNotesPanel({ lmsCourseId }: { lmsCourseId: number }) {
   const id = useId()
   const queryClient = useQueryClient()

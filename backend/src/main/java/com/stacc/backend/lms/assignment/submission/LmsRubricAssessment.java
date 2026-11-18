@@ -17,10 +17,6 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-/**
- * How a grade was given with a rubric: the points and comment per criterion, part of the grade. Grading again replaces
- * it; grading without the rubric removes it, so a grade's marks always match its scores.
- */
 @Entity
 @Table(name = "lms_rubric_assessments")
 public class LmsRubricAssessment {
@@ -40,7 +36,6 @@ public class LmsRubricAssessment {
     private List<LmsRubricScore> scores = new ArrayList<>();
 
     protected LmsRubricAssessment() {
-        // Required by JPA.
     }
 
     LmsRubricAssessment(LmsSubmissionGrade grade) {

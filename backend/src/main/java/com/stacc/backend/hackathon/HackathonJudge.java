@@ -10,7 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A faculty member named to judge a hackathon. */
 @Entity
 @Table(name = "hackathon_judges")
 public class HackathonJudge {

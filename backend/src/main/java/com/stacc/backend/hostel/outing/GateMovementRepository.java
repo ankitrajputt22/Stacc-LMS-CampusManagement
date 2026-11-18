@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface GateMovementRepository extends JpaRepository<GateMovement, Long> {
 
-    /** The student's latest movement: OUT means outside now. */
     Optional<GateMovement> findFirstByStudentAccountIdOrderByRecordedAtDescIdDesc(Long studentAccountId);
 
     @Query("select m from GateMovement m order by m.recordedAt desc, m.id desc")

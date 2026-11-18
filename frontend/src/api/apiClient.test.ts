@@ -4,7 +4,6 @@ import { apiBaseUrl, apiClient, onUnauthorized } from './apiClient'
 
 const originalAdapter = apiClient.defaults.adapter
 
-/** Answers every request with this status instead of calling a server. */
 function answerWith(status: number): { sent: InternalAxiosRequestConfig[] } {
   const sent: InternalAxiosRequestConfig[] = []
   const adapter: AxiosAdapter = async (config) => {
@@ -44,7 +43,6 @@ describe('apiClient', () => {
   })
 
   it('is set up to copy the XSRF-TOKEN cookie into the X-XSRF-TOKEN header', () => {
-    // Axios copies it inside its browser adapter, which these tests replace; the end-to-end journeys exercise the copy.
     expect(apiClient.defaults.withXSRFToken).toBe(true)
     expect(apiClient.defaults.xsrfCookieName).toBe('XSRF-TOKEN')
     expect(apiClient.defaults.xsrfHeaderName).toBe('X-XSRF-TOKEN')

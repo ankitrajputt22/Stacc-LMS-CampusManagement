@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
 
-    /** Requested and active places of these projects, with their accounts. */
     @Query("""
             select m from ProjectMember m join fetch m.account where m.project.id in :projectIds
             and m.status in (com.stacc.backend.projects.ProjectMember.Status.REQUESTED, com.stacc.backend.projects.ProjectMember.Status.ACTIVE)
@@ -20,7 +19,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
             """)
     List<ProjectMember> findLiveFor(@Param("projectIds") Collection<Long> projectIds);
 
-    /** Active places of a project, read with a locking read after the project row lock. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from ProjectMember m where m.project.id = :projectId and m.status = com.stacc.backend.projects.ProjectMember.Status.ACTIVE")
     List<ProjectMember> findActiveForUpdate(@Param("projectId") Long projectId);

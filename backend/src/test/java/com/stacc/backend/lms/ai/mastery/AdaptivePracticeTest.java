@@ -17,7 +17,6 @@ import com.stacc.backend.lms.ai.flashcards.AiFlashcardStore;
 import com.stacc.backend.lms.assignment.LmsAssignment;
 import org.junit.jupiter.api.Test;
 
-/** Adaptive practice favours weak pages and says why; recommendations follow their rules, each with a reason. */
 class AdaptivePracticeTest {
 
     private static final Instant NOW = Instant.parse("2026-11-16T05:00:00Z");

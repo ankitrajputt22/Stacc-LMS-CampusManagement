@@ -49,11 +49,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Campus engagement: groups and memberships, facilities and bookings, and events with registration. People use them with
- * CAMPUS_ENGAGEMENT_USE (students and faculty); admins set them up with CAMPUS_ENGAGEMENT_MANAGE. Every check of who may
- * do what per record (officers, organizers, bookers) happens in the services.
- */
 @RestController
 @RequestMapping("/api/v1/engagement")
 @Tag(name = "Campus engagement")
@@ -118,8 +113,6 @@ public class EngagementController {
         this.facilities = facilities;
         this.events = events;
     }
-
-    // --- Groups
 
     @GetMapping("/groups")
     @PreAuthorize(ANY)
@@ -188,8 +181,6 @@ public class EngagementController {
     public GroupView endOfficer(@PathVariable Long officerId) {
         return groups.endOfficer(officerId);
     }
-
-    // --- Facilities
 
     @GetMapping("/facilities")
     @PreAuthorize(ANY)
@@ -266,8 +257,6 @@ public class EngagementController {
     public FacilityView removeClassHour(@PathVariable Long classHourId) {
         return facilities.removeClassHour(classHourId);
     }
-
-    // --- Events
 
     @GetMapping("/events")
     @PreAuthorize(ANY)

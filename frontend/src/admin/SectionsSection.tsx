@@ -9,17 +9,12 @@ import { MasterStatus } from './MasterParts'
 import { MasterSection } from './MasterSection'
 import { statusAction } from './statusAction'
 
-/** "12 of 60" or "12 enrolled, no limit". */
 function placesText(section: AdminSection): string {
   return section.capacity === null
     ? `${section.enrolledCount} enrolled, no limit`
     : `${section.enrolledCount} of ${section.capacity}`
 }
 
-/**
- * Student sections (A, B, …) of each semester. A section's semester and code never change; its name, capacity, and
- * status can. Students are placed in sections under Enrollments. Nothing is deleted.
- */
 export function SectionsSection() {
   const request = useApiQuery(queryKeys.admin.sections(), (signal) => getSections(undefined, signal))
   const semesters = useApiQuery(queryKeys.admin.semesters(), getSemesters)

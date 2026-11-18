@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Teams of sports groups: rosters by season, with a captain and a vice-captain, managed by officers and the campus office. */
 @RestController
 @RequestMapping("/api/v1/engagement")
 @Tag(name = "Campus engagement")

@@ -386,7 +386,6 @@ function ModuleItem({
         )}
       </div>
 
-      {/* Topics sit inside their module, set in by a line, so the hierarchy reads at any width. */}
       <div className="border-t border-line px-4 pb-3 sm:px-5">
         {module.topics.length > 0 ? (
           <ol aria-label={`Pages in ${module.title}`} className="divide-y divide-line">
@@ -460,11 +459,6 @@ type CourseContentEditorProps = {
   reload: () => void
 }
 
-/**
- * The faculty member's editor for a course's modules and topics. Every change goes to the backend,
- * which checks access again, and the content is then reloaded. Order is changed with Move up and Move
- * down buttons, which work from the keyboard; there is no drag and drop.
- */
 export function CourseContentEditor({ course, reload }: CourseContentEditorProps) {
   const changes = useContentChanges(reload)
   const downloads = useMaterialDownload()
@@ -474,7 +468,6 @@ export function CourseContentEditor({ course, reload }: CourseContentEditorProps
   const [confirming, setConfirming] = useState<Confirming | null>(null)
   const moduleIds = course.modules.map((module) => module.id)
 
-  // After a change, focus waits for the reloaded content, so it lands on the item in its new place.
   useFocusAfterChanges(containerRef, course, pendingFocus, focusHandled)
 
   const addModuleForm = openForm?.type === 'addModule' ? openForm : null
@@ -510,7 +503,6 @@ export function CourseContentEditor({ course, reload }: CourseContentEditorProps
         Students see published topics inside published modules. Archived items are kept but no longer listed here.
       </p>
 
-      {/* Screen readers hear each saved change. */}
       <p role="status" className="sr-only">
         {changes.announcement}
       </p>

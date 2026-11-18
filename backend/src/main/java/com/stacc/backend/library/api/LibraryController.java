@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The library: the catalog, loans, holds, and digital resources for members, and the desk for librarians. */
 @RestController
 @RequestMapping("/api/v1/library")
 @Tag(name = "Library")
@@ -122,8 +121,6 @@ public class LibraryController {
     public List<ResourceView> resources() {
         return service.resources(false);
     }
-
-    // --- The desk
 
     @GetMapping("/desk/titles")
     @PreAuthorize(MANAGE)

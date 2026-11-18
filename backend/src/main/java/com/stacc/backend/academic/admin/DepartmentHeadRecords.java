@@ -5,7 +5,6 @@ import java.time.Instant;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-/** What admins send and receive when managing who heads each department. Never contact details. */
 public final class DepartmentHeadRecords {
 
     private DepartmentHeadRecords() {

@@ -1,6 +1,5 @@
 import { getApiError, getHttpStatus } from '../api/apiError'
 
-/** A refused change in safe words; null for a 401 (the session ends on its own). */
 export function failureText(error: unknown, fallback: string): string | null {
   const status = getHttpStatus(error)
   if (status === 401) {
@@ -24,7 +23,6 @@ export const FEST_STATUS_LABEL = { DRAFT: 'Draft', PUBLISHED: 'Published', ARCHI
 export const VOLUNTEER_LABEL = { APPLIED: 'Applied', ACCEPTED: 'Accepted', DECLINED: 'Declined', WITHDRAWN: 'Withdrawn' } as const
 export const EVENT_STATUS_LABEL = { DRAFT: 'Draft', PENDING_APPROVAL: 'Waiting for the advisor', PUBLISHED: 'Published', CANCELLED: 'Cancelled' } as const
 
-/** A datetime-local value (browser time) as an ISO moment, or null. */
 export function localToIso(value: string): string | null {
   if (value === '') {
     return null

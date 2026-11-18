@@ -1,8 +1,6 @@
 import type { DeskLoan, LibraryCopy, LibraryLoan, LibraryResource, LibraryTitle, MyLibrary } from '../types/library'
 import { apiClient } from './apiClient'
 
-// Members and librarians are always the signed-in account; the backend checks loans, holds, and the queue.
-
 export const searchLibrary = async (q: string, signal?: AbortSignal) => (await apiClient.get<LibraryTitle[]>('/library/titles', { params: { q }, signal })).data
 export const getMyLibrary = async (signal?: AbortSignal) => (await apiClient.get<MyLibrary>('/library/me', { signal })).data
 export async function placeLibraryHold(titleId: number) {
@@ -24,7 +22,6 @@ export async function addLibraryCopy(titleId: number, barcode: string, shelf: st
   await apiClient.post(`/library/desk/titles/${titleId}/copies`, { barcode, shelf })
 }
 export const lendCopy = async (barcode: string, loginId: string) => (await apiClient.post<LibraryLoan>('/library/desk/issue', { barcode, loginId })).data
-/** Takes a copy back; answers the borrower's login ID. */
 export const takeBackCopy = async (barcode: string) => (await apiClient.post<string>('/library/desk/return', { barcode })).data
 export const getOpenLoans = async (signal?: AbortSignal) => (await apiClient.get<DeskLoan[]>('/library/desk/loans', { signal })).data
 export const getAllLibraryResources = async (signal?: AbortSignal) => (await apiClient.get<LibraryResource[]>('/library/desk/resources', { signal })).data

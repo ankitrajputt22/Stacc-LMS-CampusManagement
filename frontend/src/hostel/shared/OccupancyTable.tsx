@@ -1,7 +1,6 @@
 import type { HostelOccupancy } from '../../types/hostel'
 import { Badge, Button, ButtonLink } from '../../ui'
 
-/** Occupancy per hostel as the API counts it; choosing a hostel opens its bed map. */
 export function OccupancyTable({
   rows,
   selected,
@@ -11,7 +10,6 @@ export function OccupancyTable({
   rows: HostelOccupancy[]
   selected: number | null
   onSelect: (hostelId: number) => void
-  /** When given, each row links to this bed map page instead of choosing the hostel here. */
   linkTo?: string
 }) {
   return (

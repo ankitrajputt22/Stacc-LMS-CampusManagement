@@ -81,7 +81,6 @@ class AcademicCalendarEventQueryServiceTest {
 
         assertThat(scope.semesterIds()).containsExactlyInAnyOrder(9L, 12L);
         assertThat(scope.academicSessionIds()).containsExactlyInAnyOrder(2L, 5L);
-        // Withdrawn enrollments are left out by the query itself.
         verify(semesterEnrollments).findEnrolledSemestersByUserAccountId(STUDENT_ACCOUNT,
                 Set.of(SemesterEnrollmentStatus.ENROLLED, SemesterEnrollmentStatus.COMPLETED));
     }
@@ -113,7 +112,6 @@ class AcademicCalendarEventQueryServiceTest {
                 LocalDate.of(2026, 10, 2), LocalDate.of(2026, 10, 2));
         nextYearWide.publish(PUBLISHED_AT);
         AcademicCalendarScope scope = new AcademicCalendarScope(Set.of(9L), Set.of(2L));
-        // Even if the query returned more, only what applies to the scope is kept.
         when(events.findVisibleInRangeForScope(FROM, TO, scope.semesterIds(), scope.academicSessionIds()))
                 .thenReturn(List.of(holiday, thirdExam, fourthExam, nextYear, nextYearWide));
 

@@ -9,7 +9,6 @@ test('an admin filters the course catalog, sees the sections, opens a roster, an
   const courses = page.getByRole('table', { name: 'Courses' })
   await expect(courses.getByRole('rowheader', { name: /CS201/ })).toBeVisible()
 
-  // No demo course is a lab course, so filtering by Lab leaves none.
   await page.getByLabel('Type').selectOption('LAB')
   await expect(page.getByText('No courses match.')).toBeVisible()
   await page.getByLabel('Type').selectOption('CORE')
@@ -21,7 +20,6 @@ test('an admin filters the course catalog, sees the sections, opens a roster, an
 
   const tabs = page.getByRole('navigation', { name: 'Academic admin sections' })
 
-  // The CSE semester has sections A, B, and C, with two students placed in A. ECE has its own sections A and B.
   await tabs.getByRole('link', { name: 'Sections' }).click()
   const sections = page.getByRole('table', { name: 'Sections' })
   await expect(sections.getByRole('row').filter({ has: page.getByRole('rowheader', { name: /^A/ }) }).filter({ hasText: 'BTECH-CSE' }))
@@ -36,7 +34,6 @@ test('an admin filters the course catalog, sees the sections, opens a roster, an
   await expect(page.getByRole('table', { name: /Enrolled students/ }).getByRole('rowheader', { name: 'cse24001' })).toBeVisible()
   await expect(tabs.getByRole('link', { name: 'Course Offerings' })).toHaveAttribute('aria-current', 'page')
 
-  // Who teaches CS301: the demo primary faculty member, by name, with their role.
   await page.goto('/admin/academic/offerings')
   const cs301 = page.getByRole('table', { name: 'Course offerings' }).getByRole('row')
     .filter({ has: page.getByRole('rowheader', { name: /CS301/ }) })

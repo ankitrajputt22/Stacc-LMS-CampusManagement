@@ -41,11 +41,6 @@ function offeringName(offering: AdminCourseOffering): string {
   } · ${offering.academicSessionCode}`
 }
 
-/**
- * Who teaches each course offering. An admin picks an offering, sees every assignment with its role, assigns a faculty
- * member as primary or co-faculty, changes the role, and makes an assignment inactive or active again; nothing is
- * deleted. An active assignment is what gives the faculty member attendance, results, and LMS access for the offering.
- */
 export function FacultyAssignmentsSection() {
   const [searchParams, setSearchParams] = useSearchParams()
   const offeringParam = searchParams.get('offering')

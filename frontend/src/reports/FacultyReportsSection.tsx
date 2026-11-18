@@ -11,7 +11,6 @@ import { formatCount } from './reportFormat'
 
 const SIGN_IN_AGAIN = 'If your access changed recently, sign out and sign in again. Otherwise, contact the college administration.'
 
-/** Every offering the faculty member teaches, with or without an LMS course, with four counts and a link to its report. */
 export function FacultyReportsSection() {
   const courses = useApiRequest(getFacultyReportCourses)
 

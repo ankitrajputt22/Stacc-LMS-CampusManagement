@@ -19,7 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
-/** A fest: a few days of the college calendar with a schedule of campus events. Draft, published, or archived. */
 @Entity
 @Table(name = "campus_fests")
 public class CampusFest {
@@ -46,7 +45,6 @@ public class CampusFest {
     @Column(nullable = false, length = 10)
     private Status status = Status.DRAFT;
 
-    // The events on the fest's schedule, by ID; each event belongs to at most one fest.
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "campus_fest_events", joinColumns = @JoinColumn(name = "fest_id"))
     @Column(name = "event_id")
@@ -59,7 +57,6 @@ public class CampusFest {
     private Instant createdAt;
 
     protected CampusFest() {
-        // Required by JPA.
     }
 
     public CampusFest(String name, String description, LocalDate startsOn, LocalDate endsOn, Long by, Instant now) {

@@ -35,14 +35,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * One reusable question of an LMS course's question bank, with its answers. Each type keeps its answers its own way:
- * choice questions as options with the correct ones marked, true/false as one answer, short answer as the accepted
- * answers, and descriptive questions as optional guidance for the marker.
- *
- * <p>A new or edited question needs review; only a reviewed question may be offered for practice. An archived question
- * can no longer change. Nothing deletes a question.
- */
 @Entity
 @Table(name = "lms_questions")
 public class LmsQuestion {
@@ -59,7 +51,6 @@ public class LmsQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // No cascade: the course is never created or deleted through its questions.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "lms_course_id", nullable = false, updatable = false)
     private LmsCourse lmsCourse;
@@ -78,7 +69,6 @@ public class LmsQuestion {
     @Column(name = "text_format", nullable = false, length = 10)
     private LmsTextFormat textFormat = LmsTextFormat.PLAIN;
 
-    // Small and always shown with the question, so it is loaded with it.
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "lms_question_options", joinColumns = @JoinColumn(name = "lms_question_id"))
     @OrderBy("position")
@@ -115,8 +105,6 @@ public class LmsQuestion {
     @Column(name = "practice_allowed", nullable = false)
     private boolean practiceAllowed;
 
-    // v0.14.1: drafted by AI, with the sources it was drafted from. Loaded in its own select, so it never multiplies
-    // the options it is read with.
     @Column(name = "ai_generated", nullable = false, updatable = false)
     private boolean aiGenerated;
 
@@ -145,7 +133,6 @@ public class LmsQuestion {
     private Instant updatedAt;
 
     protected LmsQuestion() {
-        // Required by JPA.
     }
 
     public LmsQuestion(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content) {
@@ -154,10 +141,6 @@ public class LmsQuestion {
         write(content);
     }
 
-    /**
-     * Replaces everything written about the question. The type may change too, as nothing uses the question yet. An
-     * edited question needs a new review and is no longer offered for practice.
-     */
     public void edit(LmsQuestionContent content) {
         requireActive();
         write(content);
@@ -165,17 +148,11 @@ public class LmsQuestion {
         this.practiceAllowed = false;
     }
 
-    /** Marks the question reviewed; reviewing again changes nothing. */
-    /**
-     * A question drafted by AI (v0.14.1): it needs review like every new question, says it was drafted by AI, and keeps
-     * the sources it was drafted from.
-     */
     public static LmsQuestion aiDraft(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content,
             List<LmsQuestionSource> sources) {
         return aiDraft(lmsCourse, createdByAccountId, content, sources, LmsQuestionAiChecks.none());
     }
 
-    /** As above, with the quality checks worked out when it was drafted (v0.14.2). */
     public static LmsQuestion aiDraft(LmsCourse lmsCourse, Long createdByAccountId, LmsQuestionContent content,
             List<LmsQuestionSource> sources, LmsQuestionAiChecks checks) {
         LmsQuestion question = new LmsQuestion(lmsCourse, createdByAccountId, content);
@@ -185,7 +162,6 @@ public class LmsQuestion {
         return question;
     }
 
-    /** The quality checks of an AI draft; empty for a question written by hand. */
     public LmsQuestionAiChecks getAiChecks() {
         return aiChecks == null ? LmsQuestionAiChecks.none() : aiChecks;
     }
@@ -203,7 +179,6 @@ public class LmsQuestion {
         this.reviewStatus = QuestionReviewStatus.REVIEWED;
     }
 
-    /** Offers the question for practice or stops offering it. Only a reviewed question may be offered. */
     public void allowPractice(boolean allowed) {
         requireActive();
         if (allowed && reviewStatus != QuestionReviewStatus.REVIEWED) {
@@ -212,7 +187,6 @@ public class LmsQuestion {
         this.practiceAllowed = allowed;
     }
 
-    /** Archives the question and stops offering it for practice; archiving again changes nothing, and nothing restores it. */
     public void archive() {
         this.status = QuestionStatus.ARCHIVED;
         this.practiceAllowed = false;
@@ -246,7 +220,6 @@ public class LmsQuestion {
 
         this.type = validType;
         this.text = validText;
-        // Left out, a new question is PLAIN and an edited one keeps its format.
         this.textFormat = content.textFormat() == null ? this.textFormat : content.textFormat();
         this.explanation = validExplanation;
         this.options.clear();

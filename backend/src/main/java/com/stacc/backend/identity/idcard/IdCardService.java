@@ -21,11 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * The digital ID card: the holder's name, login ID, roles, and where they study or work, with a code that lasts 90
- * seconds; opening the card again makes a new code and the old one stops working. Staff with ID_CARD_VERIFY check a
- * code: a valid one shows who it belongs to, nothing more (no contact details).
- */
 @Service
 @Transactional
 public class IdCardService {

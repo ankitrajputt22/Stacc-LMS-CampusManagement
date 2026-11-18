@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/** A faculty member invited to mentor a project: they accept or decline; an accepted mentor may step down. Kept as history. */
 @Entity
 @Table(name = "project_mentors")
 public class ProjectMentor {

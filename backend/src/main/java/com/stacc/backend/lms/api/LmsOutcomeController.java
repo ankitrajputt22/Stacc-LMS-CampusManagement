@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Course learning outcomes: students read the active ones; faculty add, correct, and archive them. */
 @RestController
 @RequestMapping("/api/v1/lms")
 @Tag(name = "LMS course outcomes")

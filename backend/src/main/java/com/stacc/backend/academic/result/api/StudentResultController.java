@@ -27,8 +27,6 @@ public class StudentResultController {
         this.queryService = queryService;
     }
 
-    // The rule lets in a student account that may view results. Whose results are returned is decided by the query,
-    // from the account in the token and that student's own course enrollments.
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT') and hasAuthority('ACADEMIC_RESULT_VIEW')")
     @Operation(

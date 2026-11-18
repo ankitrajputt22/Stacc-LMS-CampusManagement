@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** What draft quiz to build (v0.14.3): reviewed bank questions first, AI only for the gap when allowed. */
 public record AiQuizDraftRequest(
         @Schema(example = "Unit 2 class test") @NotBlank @Size(max = 200) String title,
         @NotNull QuizType type,

@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface HelpdeskTicketMessageRepository extends JpaRepository<HelpdeskTicketMessage, Long> {
 
-    /** A ticket's conversation, oldest first, with each author. */
     @Query("""
             select message
             from HelpdeskTicketMessage message

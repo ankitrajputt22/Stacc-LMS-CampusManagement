@@ -18,12 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Tournaments (v0.11.10). The campus office creates, publishes, and archives them, adds fixtures between our teams or
- * named external opponents, and records text scores with a result. Students and faculty read published tournaments.
- * Standings (played, won, drawn, lost, and points at 3 for a win and 1 for a draw) are worked out from played fixtures
- * on every read and never stored. Changes take the tournament row lock first, then the fixture's.
- */
 @Service
 @Transactional
 public class TournamentService {
@@ -74,7 +68,6 @@ public class TournamentService {
         return views(tournaments.findAllForOffice());
     }
 
-    /** Active teams of every sports group, to choose sides from. */
     @Transactional(readOnly = true)
     public List<TeamOption> teamOptions() {
         return teams.findActiveWithGroup().stream()
@@ -109,7 +102,6 @@ public class TournamentService {
         return reload(tournament);
     }
 
-    /** Records or corrects a match's text scores and result. */
     public TournamentView record(Long adminId, Long fixtureId, String homeScore, String awayScore, CampusFixture.Result result) {
         CampusFixture fixture = lockedFixture(fixtureId);
         valid(() -> {
@@ -130,7 +122,6 @@ public class TournamentService {
         return reload(fixture.getTournament());
     }
 
-    /** Standings from played fixtures: 3 points for a win, 1 for a draw; ordered by points, then wins, then name. */
     static List<Standing> standings(List<CampusFixture> played) {
         Map<String, int[]> table = new LinkedHashMap<>();
         Map<String, Boolean> ours = new LinkedHashMap<>();
@@ -197,7 +188,6 @@ public class TournamentService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, NOT_FOUND));
     }
 
-    /** The tournament row first, then the fixture's, the same order as adding fixtures. */
     private CampusFixture lockedFixture(Long fixtureId) {
         Long tournamentId = (fixtureId == null ? Optional.<Long>empty() : fixtures.findTournamentIdOf(fixtureId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, FIXTURE_NOT_FOUND));

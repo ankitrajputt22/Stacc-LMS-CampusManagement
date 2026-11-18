@@ -1,10 +1,5 @@
 package com.stacc.backend.search;
 
-/**
- * The kinds of search results, in the fixed order the sections appear. Student and teaching results are separate
- * kinds: they lead to different pages (the course home or the teaching page), so a multi-role account sees both and
- * neither replaces the other.
- */
 public enum SearchResultType {
     COURSE("Courses"),
     TEACHING_COURSE("Teaching courses"),

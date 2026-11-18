@@ -4,10 +4,6 @@ import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * One published file of a course, as a student sees it in the course's Files list: a study material with the page and
- * module it is on. Where the file is stored is never sent; it downloads through the API.
- */
 public record LmsCourseFileResponse(
         @Schema(description = "Used to download the file.", example = "7")
         Long id,

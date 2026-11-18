@@ -79,7 +79,6 @@ function draftOf(blueprint: ExamBlueprint | null): { title: string; rows: RowDra
   }
 }
 
-/** The blueprint's rows as the API takes them, or the first problem in words. */
 function rowsOf(rows: RowDraft[]): ExamBlueprintRowInput[] | string {
   const inputs: ExamBlueprintRowInput[] = []
   for (const [index, row] of rows.entries()) {
@@ -105,7 +104,6 @@ function rowsOf(rows: RowDraft[]): ExamBlueprintRowInput[] | string {
   return inputs
 }
 
-/** Adding or editing a blueprint: a title and rows, each with Move up, Move down, and Remove. */
 function BlueprintForm({
   lmsCourseId,
   blueprint,
@@ -298,7 +296,6 @@ function BlueprintForm({
   )
 }
 
-/** A paper's title, duration, and instructions, for a new, built, or edited paper. */
 export function PaperDetailsForm({
   initial,
   titleOptional = false,
@@ -385,11 +382,6 @@ type Open =
   | { kind: 'bank'; id: number }
   | { kind: 'archive'; id: number }
 
-/**
- * The course's exam blueprints and papers: New blueprint (rows of section, filters, count, and marks), Edit, Build
- * paper (questions chosen at random from the reviewed bank), and Archive (confirmed); New paper for one built by hand,
- * and every paper with its status and size. Nothing is deleted.
- */
 export function ExamPapersEditor({ lmsCourseId }: { lmsCourseId: number }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
