@@ -7,7 +7,7 @@ import { annotate, BASE, signIn } from './common.js'
 // Many registrations for one course offering at once, several from each student, so the capacity lock and the
 // "not taken before" rule are raced. The demo data's third-semester students and CS305 (open to the whole semester)
 // are the defaults. Run it on a fresh throwaway stack: a student who already took the course cannot register again.
-const STUDENTS = (__ENV.STUDENTS || 'student1,student2,studentfaculty1').split(',').map((id) => id.trim())
+const STUDENTS = (__ENV.STUDENTS || 'cse24001,cse24002,cse24003').split(',').map((id) => id.trim())
 const COURSE_CODE = __ENV.COURSE_CODE || 'CS305'
 const REQUESTS_PER_STUDENT = Number(__ENV.REQUESTS_PER_STUDENT || 10)
 const TOTAL = STUDENTS.length * REQUESTS_PER_STUDENT

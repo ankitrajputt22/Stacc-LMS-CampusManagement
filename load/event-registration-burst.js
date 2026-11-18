@@ -6,7 +6,7 @@ import { BASE, signIn } from './common.js'
 export const options = { vus: 20, iterations: 20 }
 
 export function setup() {
-  return ['student1', 'student2', 'studentfaculty1'].map((id) => signIn(id))
+  return ['cse24001', 'cse24002', 'cse24003'].map((id) => signIn(id))
 }
 
 export default function (sessions) {
