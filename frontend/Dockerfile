@@ -12,7 +12,7 @@ COPY . .
 # the backend. A container name such as "backend" must never go here: browsers cannot resolve it.
 ARG VITE_API_BASE_URL=/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-RUN npm run build
+RUN NODE_OPTIONS=--max-old-space-size=1536 npm run build
 
 # Runtime stage: Nginx serves the built files. No Node, no source code, no development server.
 FROM nginx:1.28-alpine

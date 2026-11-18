@@ -173,3 +173,4 @@ docker compose -f compose.yaml -f compose.prod.yaml up -d --build
 - **Required settings:** besides the usual `.env` values, set `FRONTEND_ORIGIN` (the site's https address) and `STACC_TLS_DIR`. Mail settings are optional.
 - **Installing as an app:** the page offers itself as an installable app through `public/manifest.webmanifest`. There is no service worker, so nothing private is cached on the device.
 - **Backups:** see `docs/disaster-recovery.md`.
+- **Server size:** at least 2 GB of memory, with some swap. The frontend build lets Node use up to 1.5 GB, so it also builds on a small server with swap; build `backend` and `frontend` one at a time there (`docker compose build backend`, then `frontend`).
